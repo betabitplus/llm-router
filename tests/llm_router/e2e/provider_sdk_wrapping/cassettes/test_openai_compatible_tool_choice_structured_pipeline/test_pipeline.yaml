@@ -1,0 +1,146 @@
+interactions:
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
+      and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and b=2,
+      then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
+      ONLY valid JSON. No markdown."}],"model":"meta/llama-4-maverick-17b-128e-instruct","response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
+      result for the forced-tool-choice scenario.","properties":{"tool_name":{"title":"Tool
+      Name","type":"string"},"final_result":{"title":"Final Result","type":"integer"},"explanation":{"title":"Explanation","type":"string"}},"required":["tool_name","final_result","explanation"],"title":"ToolResult","type":"object"},"strict":true}},"seed":42,"temperature":0.0,"tool_choice":{"type":"function","function":{"name":"add"}},"tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
+      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
+      a*b as JSON."}}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1412'
+      Content-Type:
+      - application/json
+      Host:
+      - integrate.api.nvidia.com
+      User-Agent:
+      - OpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - 'false'
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: https://integrate.api.nvidia.com/v1/chat/completions
+  response:
+    body:
+      string: '{"id":"chatcmpl-bd1938a9b32822c6","object":"chat.completion","created":1773581688,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[{"id":"chatcmpl-tool-89cb57fe281506f2","type":"function","function":{"name":"add","arguments":"{\"a\":
+        40, \"b\": 2}"}}],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":384,"total_tokens":397,"completion_tokens":13,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
+    headers:
+      Access-Control-Expose-Headers:
+      - nvcf-reqid
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '740'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 15 Mar 2026 13:34:48 GMT
+      Nvcf-Reqid:
+      - 4b27ff61-53d8-414e-9b20-b79342356f06
+      Nvcf-Status:
+      - fulfilled
+      Server:
+      - uvicorn
+      Vary:
+      - Origin
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
+      and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and b=2,
+      then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
+      ONLY valid JSON. No markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"chatcmpl-tool-89cb57fe281506f2","type":"function","function":{"name":"add","arguments":"{\"a\":
+      40, \"b\": 2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"chatcmpl-tool-89cb57fe281506f2"}],"model":"meta/llama-4-maverick-17b-128e-instruct","response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
+      result for the forced-tool-choice scenario.","properties":{"tool_name":{"title":"Tool
+      Name","type":"string"},"final_result":{"title":"Final Result","type":"integer"},"explanation":{"title":"Explanation","type":"string"}},"required":["tool_name","final_result","explanation"],"title":"ToolResult","type":"object"},"strict":true}},"seed":42,"temperature":0.0,"tool_choice":"auto","tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
+      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
+      a*b as JSON."}}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1634'
+      Content-Type:
+      - application/json
+      Host:
+      - integrate.api.nvidia.com
+      User-Agent:
+      - OpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - 'false'
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: https://integrate.api.nvidia.com/v1/chat/completions
+  response:
+    body:
+      string: '{"id":"chatcmpl-839831d871f7831c","object":"chat.completion","created":1773581688,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"{\"tool_name\":
+        \"add\", \"final_result\": 42, \"explanation\": \"Used the add function with
+        a=40 and b=2\"}","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":433,"total_tokens":466,"completion_tokens":33,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
+    headers:
+      Access-Control-Expose-Headers:
+      - nvcf-reqid
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '729'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 15 Mar 2026 13:34:49 GMT
+      Nvcf-Reqid:
+      - 80284450-fbf2-4482-8fa1-dfb565d1b8ad
+      Nvcf-Status:
+      - fulfilled
+      Server:
+      - uvicorn
+      Vary:
+      - Origin
+    status:
+      code: 200
+      message: OK
+version: 1

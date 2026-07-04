@@ -1,0 +1,191 @@
+interactions:
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"Reply ONLY with A."}],"model":"meta/llama-4-maverick-17b-128e-instruct","seed":42,"temperature":0.0}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '227'
+      Content-Type:
+      - application/json
+      Host:
+      - integrate.api.nvidia.com
+      User-Agent:
+      - AsyncOpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - async:asyncio
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: https://integrate.api.nvidia.com/v1/chat/completions
+  response:
+    body:
+      string: '{"id":"chatcmpl-ab7d0ba7c66bc7f0","object":"chat.completion","created":1773581799,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"A.","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":31,"total_tokens":34,"completion_tokens":3,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
+    headers:
+      Access-Control-Expose-Headers:
+      - nvcf-reqid
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '620'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 15 Mar 2026 13:36:39 GMT
+      Nvcf-Reqid:
+      - 1f8ffd2f-c76c-494a-9a7d-dad27c168b04
+      Nvcf-Status:
+      - fulfilled
+      Server:
+      - uvicorn
+      Vary:
+      - Origin
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"Reply ONLY with B."}],"model":"meta/llama-4-maverick-17b-128e-instruct","seed":42,"temperature":0.0}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '227'
+      Content-Type:
+      - application/json
+      Host:
+      - integrate.api.nvidia.com
+      User-Agent:
+      - AsyncOpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - async:asyncio
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: https://integrate.api.nvidia.com/v1/chat/completions
+  response:
+    body:
+      string: '{"id":"chatcmpl-96cc160d94916d1e","object":"chat.completion","created":1773581799,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"B.","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":31,"total_tokens":34,"completion_tokens":3,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
+    headers:
+      Access-Control-Expose-Headers:
+      - nvcf-reqid
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '620'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 15 Mar 2026 13:36:39 GMT
+      Nvcf-Reqid:
+      - cf5c999b-e2e9-40b1-8418-82216264e673
+      Nvcf-Status:
+      - fulfilled
+      Server:
+      - uvicorn
+      Vary:
+      - Origin
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"Reply ONLY with C."}],"model":"meta/llama-4-maverick-17b-128e-instruct","seed":42,"temperature":0.0}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '227'
+      Content-Type:
+      - application/json
+      Host:
+      - integrate.api.nvidia.com
+      User-Agent:
+      - AsyncOpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - async:asyncio
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: https://integrate.api.nvidia.com/v1/chat/completions
+  response:
+    body:
+      string: '{"id":"chatcmpl-822574aa01af4ea0","object":"chat.completion","created":1773581800,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"C.","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":31,"total_tokens":34,"completion_tokens":3,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
+    headers:
+      Access-Control-Expose-Headers:
+      - nvcf-reqid
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '620'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 15 Mar 2026 13:36:41 GMT
+      Nvcf-Reqid:
+      - 84842a0b-ab98-4792-b898-67c87189cf1a
+      Nvcf-Status:
+      - fulfilled
+      Server:
+      - uvicorn
+      Vary:
+      - Origin
+    status:
+      code: 200
+      message: OK
+version: 1

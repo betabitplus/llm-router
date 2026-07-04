@@ -1,0 +1,170 @@
+interactions:
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
+      and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and b=2,
+      then reply with ONLY the number."}],"model":"gemini-2.5-flash-lite","seed":42,"temperature":0.0,"tool_choice":{"type":"function","function":{"name":"add"}},"tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
+      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
+      a*b as JSON."}}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '880'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:7860
+      User-Agent:
+      - OpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - 'false'
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: http://localhost:7860/v1/chat/completions
+  response:
+    body:
+      string: '{"choices":[{"finish_reason":"tool_calls","index":0,"message":{"content":"","role":"assistant","tool_calls":[{"function":{"arguments":"{\"a\":40,\"b\":2}","name":"add"},"id":"call_1773581844056_wvahy8llor","index":0,"type":"function"}]}}],"created":1773581844,"id":"chatcmpl-1773581844056_8bf64f66obe","model":"gemini-2.5-flash-lite","object":"chat.completion","usage":{"completion_tokens":19,"completion_tokens_details":{"image_tokens":0,"output_text_tokens":19,"reasoning_tokens":0},"prompt_tokens":151,"prompt_tokens_details":{"text_tokens":151,"tool_tokens":0},"total_tokens":170}}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
+        x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
+        openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
+        x-stainless-os, x-stainless-arch, x-stainless-runtime, x-stainless-runtime-version,
+        x-stainless-retry-count, x-stainless-timeout, sec-ch-ua, sec-ch-ua-mobile,
+        sec-ch-ua-platform, anthropic-version, anthropic-beta, anthropic-dangerous-direct-browser-access,
+        x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
+        x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
+        x-goog-upload-status
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Allow-Private-Network:
+      - 'true'
+      Access-Control-Expose-Headers:
+      - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
+        x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
+        x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
+        content-type, content-length, location
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '585'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Sun, 15 Mar 2026 13:37:24 GMT
+      ETag:
+      - W/"249-Jxa5HDPrfDunN5uHcYjfoqfVoJ0"
+      Keep-Alive:
+      - timeout=120
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
+      and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and b=2,
+      then reply with ONLY the number."},{"role":"assistant","content":"","tool_calls":[{"id":"call_1773581844056_wvahy8llor","type":"function","function":{"name":"add","arguments":"{\"a\":40,\"b\":2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_1773581844056_wvahy8llor","name":"add"}],"model":"gemini-2.5-flash-lite","seed":42,"temperature":0.0,"tool_choice":"auto","tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
+      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
+      a*b as JSON."}}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1110'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:7860
+      User-Agent:
+      - OpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - 'false'
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: http://localhost:7860/v1/chat/completions
+  response:
+    body:
+      string: '{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"42\n","role":"assistant"}}],"created":1773581844,"id":"chatcmpl-1773581844809_i55k1h0wmaf","model":"gemini-2.5-flash-lite","object":"chat.completion","usage":{"completion_tokens":2,"completion_tokens_details":{"image_tokens":0,"output_text_tokens":2,"reasoning_tokens":0},"prompt_tokens":184,"prompt_tokens_details":{"text_tokens":184,"tool_tokens":0},"total_tokens":186}}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
+        x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
+        openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
+        x-stainless-os, x-stainless-arch, x-stainless-runtime, x-stainless-runtime-version,
+        x-stainless-retry-count, x-stainless-timeout, sec-ch-ua, sec-ch-ua-mobile,
+        sec-ch-ua-platform, anthropic-version, anthropic-beta, anthropic-dangerous-direct-browser-access,
+        x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
+        x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
+        x-goog-upload-status
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Allow-Private-Network:
+      - 'true'
+      Access-Control-Expose-Headers:
+      - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
+        x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
+        x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
+        content-type, content-length, location
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '440'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Sun, 15 Mar 2026 13:37:24 GMT
+      ETag:
+      - W/"1b8-J2MT6ycH53ruqJAogR0Dew4wOvw"
+      Keep-Alive:
+      - timeout=120
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+version: 1

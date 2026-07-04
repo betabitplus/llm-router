@@ -1,0 +1,48 @@
+interactions:
+- request:
+    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You are a JSON API. Output MUST be valid JSON and MUST conform to this JSON Schema.\n\nReturn ONLY the JSON (no markdown, no code fences, no extra text).\n\nJSON Schema:\n{\"$defs\": {\"RemediationItem\": {\"properties\": {\"owner\": {\"title\": \"Owner\", \"type\": \"string\"}, \"action\": {\"title\": \"Action\", \"type\": \"string\"}, \"priority\": {\"description\": \"One of: P0, P1, P2\", \"title\": \"Priority\", \"type\": \"string\"}, \"status\": {\"description\": \"One of: open, in_progress, done\", \"title\": \"Status\", \"type\": \"string\"}}, \"required\": [\"owner\", \"action\", \"priority\", \"status\"], \"title\": \"RemediationItem\", \"type\": \"object\"}, \"RootCause\": {\"properties\": {\"category\": {\"description\": \"Short category label, e.g. config, deploy, dependency\", \"title\": \"Category\", \"type\": \"string\"}, \"summary\": {\"title\": \"Summary\", \"type\": \"string\"}, \"contributing_factors\": {\"items\": {\"type\": \"string\"}, \"title\": \"Contributing Factors\", \"type\": \"array\"}}, \"required\": [\"category\", \"summary\"], \"title\": \"RootCause\", \"type\": \"object\"}, \"Service\": {\"properties\": {\"name\": {\"description\": \"Service name, e.g. payments-api\", \"title\": \"Name\", \"type\": \"string\"}, \"environment\": {\"description\": \"Environment, e.g. prod or staging\", \"title\": \"Environment\", \"type\": \"string\"}}, \"required\": [\"name\", \"environment\"], \"title\": \"Service\", \"type\": \"object\"}, \"TimelineEvent\": {\"properties\": {\"timestamp\": {\"description\": \"ISO 8601 timestamp, e.g. 2026-02-25T12:34:56Z\", \"title\": \"Timestamp\", \"type\": \"string\"}, \"description\": {\"title\": \"Description\", \"type\": \"string\"}}, \"required\": [\"timestamp\", \"description\"], \"title\": \"TimelineEvent\", \"type\": \"object\"}}, \"properties\": {\"incident_id\": {\"title\": \"Incident Id\", \"type\": \"string\"}, \"title\": {\"title\": \"Title\", \"type\": \"string\"}, \"severity\": {\"description\": \"One of: SEV1, SEV2, SEV3\", \"title\": \"Severity\", \"type\": \"string\"}, \"started_at\": {\"description\": \"ISO 8601 timestamp\", \"title\": \"Started At\", \"type\": \"string\"}, \"ended_at\": {\"anyOf\": [{\"type\": \"string\"}, {\"type\": \"null\"}], \"default\": null, \"description\": \"ISO 8601 timestamp or null\", \"title\": \"Ended At\"}, \"impact_summary\": {\"title\": \"Impact Summary\", \"type\": \"string\"}, \"affected_services\": {\"items\": {\"$ref\": \"#/$defs/Service\"}, \"title\": \"Affected Services\", \"type\": \"array\"}, \"customer_message\": {\"title\": \"Customer Message\", \"type\": \"string\"}, \"timeline\": {\"items\": {\"$ref\": \"#/$defs/TimelineEvent\"}, \"title\": \"Timeline\", \"type\": \"array\"}, \"root_cause\": {\"$ref\": \"#/$defs/RootCause\"}, \"remediation_items\": {\"items\": {\"$ref\": \"#/$defs/RemediationItem\"}, \"title\": \"Remediation Items\", \"type\": \"array\"}}, \"required\": [\"incident_id\", \"title\", \"severity\", \"started_at\", \"impact_summary\", \"affected_services\", \"customer_message\", \"timeline\", \"root_cause\", \"remediation_items\"], \"title\": \"IncidentReport\", \"type\": \"object\"}\n\nFollow instructions exactly. Reply with only what is asked.\n\nCreate an incident report for a simulated outage.\n\nConstraints:\n- Use incident_id: INC-1042\n- Severity: SEV2\n- Environment for services: prod\n- affected_services: exactly 2 items\n- timeline: exactly 4 events\n- remediation_items: exactly 3 items\n- Keep all strings short and professional.\n"}],"stream":false,"temperature":0.0,"seed":42}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '3646'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:3264
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/chat/completions
+  response:
+    body:
+      string: '{"id":"ab64916e-8678-4fe1-a8b1-59de58b8a72a","object":"chat.completion","created":1772017865,"model":"qwen-max-latest","choices":[{"index":0,"message":{"role":"assistant","content":"{\n  \"incident_id\": \"INC-1042\",\n  \"title\": \"Partial Service Outage\",\n  \"severity\": \"SEV2\",\n  \"started_at\": \"2026-02-25T08:00:00Z\",\n  \"ended_at\": \"2026-02-25T11:30:00Z\",\n  \"impact_summary\": \"Intermittent failures in payment processing and user login.\",\n  \"affected_services\": [\n    {\n      \"name\": \"payments-api\",\n      \"environment\": \"prod\"\n    },\n    {\n      \"name\": \"auth-service\",\n      \"environment\": \"prod\"\n    }\n  ],\n  \"customer_message\": \"We experienced temporary issues with payments and login. Services restored.\",\n  \"timeline\": [\n    {\n      \"timestamp\": \"2026-02-25T08:00:00Z\",\n      \"description\": \"Incident detected via monitoring alerts.\"\n    },\n    {\n      \"timestamp\": \"2026-02-25T08:30:00Z\",\n      \"description\": \"Initial triage completed; root cause identified.\"\n    },\n    {\n      \"timestamp\": \"2026-02-25T10:00:00Z\",\n      \"description\": \"Fix deployed to affected services.\"\n    },\n    {\n      \"timestamp\": \"2026-02-25T11:30:00Z\",\n      \"description\": \"Monitoring confirms resolution.\"\n    }\n  ],\n  \"root_cause\": {\n    \"category\": \"deploy\",\n    \"summary\": \"Faulty configuration pushed during deployment.\",\n    \"contributing_factors\": [\n      \"Lack of pre-deploy validation.\",\n      \"Insufficient rollback plan.\"\n    ]\n  },\n  \"remediation_items\": [\n    {\n      \"owner\": \"DevOps\",\n      \"action\": \"Implement automated config validation.\",\n      \"priority\": \"P0\",\n      \"status\": \"in_progress\"\n    },\n    {\n      \"owner\": \"QA\",\n      \"action\": \"Enhance regression testing coverage.\",\n      \"priority\": \"P1\",\n      \"status\": \"open\"\n    },\n    {\n      \"owner\": \"Engineering\",\n      \"action\": \"Document rollback procedures.\",\n      \"priority\": \"P2\",\n      \"status\": \"open\"\n    }\n  ]\n}"},"finish_reason":"stop"}],"usage":{"input_tokens":1072,"output_tokens":516,"total_tokens":1588},"chatId":"a776acbc-3b20-4343-ba20-50c0622f88a5","parentId":"ab64916e-8678-4fe1-a8b1-59de58b8a72a"}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2285'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Wed, 25 Feb 2026 11:11:05 GMT
+      ETag:
+      - W/"8ed-stSFeYwxIsDm7ryFeoM3xyMagOE"
+      Keep-Alive:
+      - timeout=5
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+version: 1

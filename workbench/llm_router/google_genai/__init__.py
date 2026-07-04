@@ -1,0 +1,1 @@
+"""Google GenAI workbench entrypoints."""

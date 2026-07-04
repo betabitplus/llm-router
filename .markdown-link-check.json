@@ -1,0 +1,30 @@
+{
+    "ignorePatterns": [
+        {
+            "pattern": "^file://"
+        },
+        {
+            "pattern": "^http://localhost"
+        },
+        {
+            "pattern": "^https://ai.google.dev"
+        },
+        {
+            "pattern": "^https://platform.openai.com"
+        }
+    ],
+    "replacementPatterns": [
+        {
+            "pattern": "^/",
+            "replacement": "./"
+        }
+    ],
+    "timeout": "20s",
+    "retryOn429": true,
+    "retryCount": 5,
+    "fallbackToGet": true,
+    "aliveStatusCodes": [
+        200,
+        206
+    ]
+}

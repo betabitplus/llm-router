@@ -1,0 +1,186 @@
+interactions:
+- request:
+    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"Follow instructions exactly. Reply with only what is asked.\n\nUser: Remember this secret code exactly: 81723. Reply only OK."}],"stream":false,"temperature":0.0,"seed":42}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '237'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:3264
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/chat/completions
+  response:
+    body:
+      string: '{"id":"ca54f463-86d8-4516-b857-f15b49233c31","object":"chat.completion","created":1772017871,"model":"qwen-max-latest","choices":[{"index":0,"message":{"role":"assistant","content":"OK"},"finish_reason":"stop"}],"usage":{"input_tokens":210,"output_tokens":1,"total_tokens":211},"chatId":"a871d10a-c95d-4b18-8a06-a4f16602930d","parentId":"ca54f463-86d8-4516-b857-f15b49233c31"}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '376'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Wed, 25 Feb 2026 11:11:11 GMT
+      ETag:
+      - W/"178-EhYRbajKc47GQ8hq0bCU6XCPSCQ"
+      Keep-Alive:
+      - timeout=5
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"Follow instructions exactly. Reply with only what is asked.\n\nUser: Remember this secret code exactly: 81723. Reply only OK.\n\nAssistant: OK\n\nUser: Update the secret code to 12345. Reply only OK."}],"stream":false,"temperature":0.0,"seed":42}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '311'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:3264
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/chat/completions
+  response:
+    body:
+      string: '{"id":"4017412e-c8ad-49be-9add-b2a95a8ad8c8","object":"chat.completion","created":1772017874,"model":"qwen-max-latest","choices":[{"index":0,"message":{"role":"assistant","content":"OK"},"finish_reason":"stop"}],"usage":{"input_tokens":655,"output_tokens":1,"total_tokens":656},"chatId":"c3ed8e15-6184-4e06-9f11-f4aa7d3bd924","parentId":"4017412e-c8ad-49be-9add-b2a95a8ad8c8"}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '376'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Wed, 25 Feb 2026 11:11:14 GMT
+      ETag:
+      - W/"178-UEyFRMnvAYrf8AcpxOe/sl2pqGk"
+      Keep-Alive:
+      - timeout=5
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"Follow instructions exactly. Reply with only what is asked.\n\nUser: Remember this secret code exactly: 81723. Reply only OK.\n\nAssistant: OK\n\nUser: Update the secret code to 12345. Reply only OK.\n\nAssistant: OK\n\nUser: What is the secret code? Reply only digits, no punctuation or words."}],"stream":false,"temperature":0.0,"seed":42}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '406'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:3264
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/chat/completions
+  response:
+    body:
+      string: '{"id":"c547c75a-3657-41e2-b9ad-0e4458eeb218","object":"chat.completion","created":1772017880,"model":"qwen-max-latest","choices":[{"index":0,"message":{"role":"assistant","content":"12345"},"finish_reason":"stop"}],"usage":{"input_tokens":676,"output_tokens":5,"total_tokens":681},"chatId":"f1ad4ca8-e774-4747-8234-9e0ac24ef9a1","parentId":"c547c75a-3657-41e2-b9ad-0e4458eeb218"}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '379'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Wed, 25 Feb 2026 11:11:20 GMT
+      ETag:
+      - W/"17b-i31dFlFpHcbMrOLAbIz0fYAVKB4"
+      Keep-Alive:
+      - timeout=5
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"Follow instructions exactly. Reply with only what is asked.\n\nUser: Remember this secret code exactly: 81723. Reply only OK.\n\nAssistant: OK\n\nUser: What is the secret code? Reply only digits, no punctuation or words."}],"stream":false,"temperature":0.0,"seed":42}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '332'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:3264
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/chat/completions
+  response:
+    body:
+      string: '{"id":"bc61d8f3-f452-44b2-817b-605961884c66","object":"chat.completion","created":1772017882,"model":"qwen-max-latest","choices":[{"index":0,"message":{"role":"assistant","content":"81723"},"finish_reason":"stop"}],"usage":{"input_tokens":231,"output_tokens":5,"total_tokens":236},"chatId":"631ad438-8e1e-470c-995d-91a71f40b9a1","parentId":"bc61d8f3-f452-44b2-817b-605961884c66"}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '379'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Wed, 25 Feb 2026 11:11:22 GMT
+      ETag:
+      - W/"17b-RVFTtYLv5OXib7gPEAlTFNsNmK0"
+      Keep-Alive:
+      - timeout=5
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+version: 1

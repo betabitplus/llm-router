@@ -1,0 +1,112 @@
+interactions:
+- request:
+    body: LLM_ROUTER_MULTIPART_SIGNATURE:{"kind":"bytes_sha256","sha256":"efb472561d18a69c78cb8eda083f1211f0a38d830919762c7d12a9145d5b8425","size":1705848}
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1706007'
+      Content-Type:
+      - multipart/form-data; boundary=llm-router-qwenchat-upload
+      Host:
+      - localhost:3264
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/files/upload
+  response:
+    body:
+      string: '{"success":true,"file":{"name":"1775569728085-81b3a59700d22ad1-jumper.mp4","url":"https://qwen-webui-prod.oss-accelerate.aliyuncs.com/1d377366-2716-4fb2-bf98-6982701697d7/0ef65434-45e8-4ea2-b544-4d2daaca302a_1775569728085-81b3a59700d22ad1-jumper.mp4?x-oss-security-token=CAIS0AJ1q6Ft5B2yfSjIr5vQPOqCh7ZK1rGoVE7yoW06dvpVlY%2F9sjz2IHhMf3RvBeAbs%2Fs1lWBZ7vwflrN6SJtIXleCZtF94plR7QKoZ73Zocur7LAJksVJmOIwtUWpsvXJasDVEfn%2FGJ70GX2m%2BwZ3xbzlD0bAO3WuLZyOj7N%2Bc90TRXPWRDFaBdBQVGAAwY1gQhm3D%2Fu2NQPwiWf9FVdhvhEG6Vly8qOi2MaRmHG85R%2FYsrZN%2BNmgecP%2FNpE3bMwiCYyPsbYoJvab4kl58ANX8ap6tqtA9Arcs8uVa1sruE3eaLeLro0ycVAjN%2FhrQ%2FQZtpn1lvl1ofeWkJznAJW0o2rsz001LaPXI6uscIvBXr5R%2Frb6P8HSd%2BBvcUDdbFPzvT5QadqaV2UZCJubMDyE8plulhUXSOByyrcJ%2BxQl4EgfMHeW5rVBFKviIAsrjOrxuU4agAEY9Xr52oF22I0UFr43Ou9HHNQ7j8Be1dhM5djzfFsugOHjr%2FipRrg3Nj7F2pPWbfD7yd2zjXdA0RbZutOUJGdyhWS8HPi9vNfVaIEhBpaobonCSUmVSEhyMacXcMBLnZFhZvZKsB9edQSIIbeldp%2B1bjPvKU%2FCTe1PJJKwJamF0SAA&x-oss-date=20260407T134848Z&x-oss-expires=300&x-oss-signature-version=OSS4-HMAC-SHA256&x-oss-credential=STS.NXewP6jikasCVhCEmozuyzJVP%2F20260407%2Fap-southeast-1%2Foss%2Faliyun_v4_request&x-oss-signature=480c1b2a9b52567573fa23638f38d8d06c23cc2ed2374bc6dd8847091522fc54","size":1705848,"type":"video/mp4"}}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1243'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 07 Apr 2026 13:49:03 GMT
+      ETag:
+      - W/"4db-S0UtwBzs91N7vz56NPe3WvJQmXo"
+      Keep-Alive:
+      - timeout=5
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"model":"qwen2.5-vl-32b-instruct","messages":[{"role":"user","content":[{"type":"text","text":"You
+      are a JSON API. Output MUST be valid JSON and MUST conform to this JSON Schema.\n\nReturn
+      ONLY the JSON (no markdown, no code fences, no extra text).\n\nJSON Schema:\n{\"description\":
+      \"Minimal structured summary for a short video clip.\", \"properties\": {\"action\":
+      {\"minLength\": 4, \"title\": \"Action\", \"type\": \"string\"}, \"location\":
+      {\"minLength\": 4, \"title\": \"Location\", \"type\": \"string\"}, \"evidence\":
+      {\"items\": {\"type\": \"string\"}, \"minItems\": 2, \"title\": \"Evidence\",
+      \"type\": \"array\"}}, \"required\": [\"action\", \"location\", \"evidence\"],
+      \"title\": \"VideoObservation\", \"type\": \"object\"}\n\nFollow instructions
+      exactly. Reply with only what is asked.\n\nYou are given a short video clip.\n\nReturn
+      JSON with exactly three keys:\n- action: the main action as a short lowercase
+      verb or gerund\n- location: a short phrase describing where the action happens\n\n-
+      evidence: exactly 2 short strings describing visible motion or scene cues\n\nIf
+      the clip shows a person jumping or leaping, use a value containing \"jump\"
+      or \"leap\" for action.\nIf it happens on a rooftop, skyscraper, or tall building,
+      mention that in location.\nIn evidence, mention motion or jump-related details.\n\nReturn
+      ONLY valid JSON. No markdown."},{"type":"file","file":"https://qwen-webui-prod.oss-accelerate.aliyuncs.com/1d377366-2716-4fb2-bf98-6982701697d7/0ef65434-45e8-4ea2-b544-4d2daaca302a_1775569728085-81b3a59700d22ad1-jumper.mp4?x-oss-security-token=CAIS0AJ1q6Ft5B2yfSjIr5vQPOqCh7ZK1rGoVE7yoW06dvpVlY%2F9sjz2IHhMf3RvBeAbs%2Fs1lWBZ7vwflrN6SJtIXleCZtF94plR7QKoZ73Zocur7LAJksVJmOIwtUWpsvXJasDVEfn%2FGJ70GX2m%2BwZ3xbzlD0bAO3WuLZyOj7N%2Bc90TRXPWRDFaBdBQVGAAwY1gQhm3D%2Fu2NQPwiWf9FVdhvhEG6Vly8qOi2MaRmHG85R%2FYsrZN%2BNmgecP%2FNpE3bMwiCYyPsbYoJvab4kl58ANX8ap6tqtA9Arcs8uVa1sruE3eaLeLro0ycVAjN%2FhrQ%2FQZtpn1lvl1ofeWkJznAJW0o2rsz001LaPXI6uscIvBXr5R%2Frb6P8HSd%2BBvcUDdbFPzvT5QadqaV2UZCJubMDyE8plulhUXSOByyrcJ%2BxQl4EgfMHeW5rVBFKviIAsrjOrxuU4agAEY9Xr52oF22I0UFr43Ou9HHNQ7j8Be1dhM5djzfFsugOHjr%2FipRrg3Nj7F2pPWbfD7yd2zjXdA0RbZutOUJGdyhWS8HPi9vNfVaIEhBpaobonCSUmVSEhyMacXcMBLnZFhZvZKsB9edQSIIbeldp%2B1bjPvKU%2FCTe1PJJKwJamF0SAA&x-oss-date=20260407T134848Z&x-oss-expires=300&x-oss-signature-version=OSS4-HMAC-SHA256&x-oss-credential=STS.NXewP6jikasCVhCEmozuyzJVP%2F20260407%2Fap-southeast-1%2Foss%2Faliyun_v4_request&x-oss-signature=480c1b2a9b52567573fa23638f38d8d06c23cc2ed2374bc6dd8847091522fc54"}]}],"stream":false,"temperature":0.0,"seed":42}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2571'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:3264
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/chat/completions
+  response:
+    body:
+      string: '{"id":"1173e8ae-c7dc-41c2-9734-f190c737ef31","object":"chat.completion","created":1775569759,"model":"qwen2.5-vl-32b-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"```json\n{\n  \"action\":
+        \"jump\",\n  \"location\": \"on a rooftop\",\n  \"evidence\": [\n    \"person
+        leaps into the air\",\n    \"background shows urban skyline\"\n  ]\n}\n```"},"finish_reason":"stop"}],"usage":{"input_tokens":497,"output_tokens":46,"characters":0,"total_tokens":543,"input_tokens_details":{"text_tokens":497},"output_tokens_details":{"text_tokens":46}},"chatId":"5c87c2d8-ff99-4d20-a410-46c350bc584a","parentId":"1173e8ae-c7dc-41c2-9734-f190c737ef31"}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '662'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 07 Apr 2026 13:49:19 GMT
+      ETag:
+      - W/"296-nVMDtHs9otAXTCcBCiyf1Ntnq1A"
+      Keep-Alive:
+      - timeout=5
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+version: 1

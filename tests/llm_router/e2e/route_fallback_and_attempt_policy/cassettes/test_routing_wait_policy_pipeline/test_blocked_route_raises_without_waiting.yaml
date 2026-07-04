@@ -1,0 +1,65 @@
+interactions:
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"Reply ONLY with A."}],"model":"meta/llama-4-maverick-17b-128e-instruct"}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '199'
+      Content-Type:
+      - application/json
+      Host:
+      - integrate.api.nvidia.com
+      User-Agent:
+      - OpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - 'false'
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: https://integrate.api.nvidia.com/v1/chat/completions
+  response:
+    body:
+      string: '{"id":"chatcmpl-aff41247c89c572e","object":"chat.completion","created":1773581682,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"A.","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":31,"total_tokens":34,"completion_tokens":3,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
+    headers:
+      Access-Control-Expose-Headers:
+      - nvcf-reqid
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '620'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 15 Mar 2026 13:34:42 GMT
+      Nvcf-Reqid:
+      - e0259e4b-14ed-4e55-98b3-ad40610cca41
+      Nvcf-Status:
+      - fulfilled
+      Server:
+      - uvicorn
+      Vary:
+      - Origin
+    status:
+      code: 200
+      message: OK
+version: 1

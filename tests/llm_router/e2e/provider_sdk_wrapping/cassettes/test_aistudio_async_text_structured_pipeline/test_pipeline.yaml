@@ -1,0 +1,95 @@
+interactions:
+- request:
+    body: '{"messages":[{"role":"user","content":"You are a movie database API."},{"role":"user","content":"Generate
+      a database entry for the 2010 movie Inception.\n\nReturn JSON with:\n- movie_title\n-
+      director\n- cast: at least 3 actors with `name` and `character_name`\n- reviews:
+      at least 2 entries with `source` and numeric `rating`\n- tagline\n\nReturn ONLY
+      valid JSON. No markdown."}],"model":"gemini-3-flash-preview","response_format":{"type":"json_schema","json_schema":{"name":"MovieRecord","schema":{"description":"Structured
+      movie record used by the AI Studio text scenario.","properties":{"movie_title":{"title":"Movie
+      Title","type":"string"},"director":{"title":"Director","type":"string"},"cast":{"items":{"description":"Structured
+      cast member entry.","properties":{"name":{"title":"Name","type":"string"},"character_name":{"title":"Character
+      Name","type":"string"}},"required":["name","character_name"],"title":"Actor","type":"object"},"minItems":3,"title":"Cast","type":"array"},"reviews":{"items":{"description":"Short
+      review entry.","properties":{"source":{"title":"Source","type":"string"},"rating":{"description":"Rating
+      out of 10","title":"Rating","type":"number"}},"required":["source","rating"],"title":"Review","type":"object"},"minItems":2,"title":"Reviews","type":"array"},"tagline":{"title":"Tagline","type":"string"}},"required":["movie_title","director","cast","reviews","tagline"],"title":"MovieRecord","type":"object"},"strict":true}},"seed":42,"temperature":0.0}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1484'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:7860
+      User-Agent:
+      - AsyncOpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - async:asyncio
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: http://localhost:7860/v1/chat/completions
+  response:
+    body:
+      string: '{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"{\"movie_title\":\"Inception\",\"director\":\"Christopher
+        Nolan\",\"cast\":[{\"name\":\"Leonardo DiCaprio\",\"character_name\":\"Dom
+        Cobb\"},{\"name\":\"Joseph Gordon-Levitt\",\"character_name\":\"Arthur\"},{\"name\":\"Elliot
+        Page\",\"character_name\":\"Ariadne\"}],\"reviews\":[{\"source\":\"IMDb\",\"rating\":8.8},{\"source\":\"Rotten
+        Tomatoes\",\"rating\":8.7}],\"tagline\":\"Your mind is the scene of the crime.\"}","role":"assistant"}}],"created":1773581766,"id":"chatcmpl-1773581766476_7mstyltvfxr","model":"gemini-3-flash-preview","object":"chat.completion","usage":{"completion_tokens":798,"completion_tokens_details":{"image_tokens":0,"output_text_tokens":95,"reasoning_tokens":703},"prompt_tokens":86,"prompt_tokens_details":{"text_tokens":86,"tool_tokens":0},"total_tokens":884}}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
+        x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
+        openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
+        x-stainless-os, x-stainless-arch, x-stainless-runtime, x-stainless-runtime-version,
+        x-stainless-retry-count, x-stainless-timeout, sec-ch-ua, sec-ch-ua-mobile,
+        sec-ch-ua-platform, anthropic-version, anthropic-beta, anthropic-dangerous-direct-browser-access,
+        x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
+        x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
+        x-goog-upload-status
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Allow-Private-Network:
+      - 'true'
+      Access-Control-Expose-Headers:
+      - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
+        x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
+        x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
+        content-type, content-length, location
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '858'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Sun, 15 Mar 2026 13:36:06 GMT
+      ETag:
+      - W/"35a-gjo6aCmIDtAtLVpO65QR9xr5LpY"
+      Keep-Alive:
+      - timeout=120
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+version: 1

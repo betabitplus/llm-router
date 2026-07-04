@@ -1,0 +1,154 @@
+interactions:
+- request:
+    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You can
+      use local tools.\n\nAvailable tools:\n- add(a, b): Return a+b as JSON.\n- multiply(a,
+      b): Return a*b as JSON.\n\nWhen a tool is needed, reply with exactly one function
+      call and nothing else.\nUse the format tool_name(arg=value) or tool_name(value1,
+      value2).\nYou MUST use only the tool `add` when a tool is used.\nDo not solve
+      tool work yourself.\nIf all required tool work is complete, return ONLY valid
+      JSON.\n\nYou are a JSON API. Output MUST be valid JSON and MUST conform to this
+      JSON Schema.\n\nReturn ONLY the JSON (no markdown, no code fences, no extra
+      text).\n\nJSON Schema:\n{\"description\": \"Structured result for the forced-tool-choice
+      scenario.\", \"properties\": {\"tool_name\": {\"title\": \"Tool Name\", \"type\":
+      \"string\"}, \"final_result\": {\"title\": \"Final Result\", \"type\": \"integer\"},
+      \"explanation\": {\"title\": \"Explanation\", \"type\": \"string\"}}, \"required\":
+      [\"tool_name\", \"final_result\", \"explanation\"], \"title\": \"ToolResult\",
+      \"type\": \"object\"}\n\nOriginal task:\nFollow instructions exactly. Reply
+      with only what is asked.\n\nYou have tools add(a, b) and multiply(a, b), each
+      returning {result}.\nUse ONLY add with a=40 and b=2, then return JSON with:\n-
+      tool_name\n- final_result\n- explanation\n\nReturn ONLY valid JSON. No markdown.\n\nFollow
+      instructions exactly. Reply with only what is asked.\n\nYou have tools add(a,
+      b) and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and
+      b=2, then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
+      ONLY valid JSON. No markdown."}],"stream":false,"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
+      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
+      a*b as JSON."}}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2183'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:3264
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/chat/completions
+  response:
+    body:
+      string: '{"id":"57aa9273-1e0a-450b-af59-dd05306a4d4a","object":"chat.completion","created":1775569616,"model":"qwen-max-latest","choices":[{"index":0,"message":{"role":"assistant","content":"add(a=40,
+        b=2)"},"finish_reason":"stop"}],"usage":{"input_tokens":540,"output_tokens":10,"total_tokens":550},"chatId":"c26948bb-c202-4929-9c75-7b7e2ac84459","parentId":"57aa9273-1e0a-450b-af59-dd05306a4d4a"}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '389'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 07 Apr 2026 13:46:56 GMT
+      ETag:
+      - W/"185-F9aoyMxemteKGn4GOen/Lh+wscU"
+      Keep-Alive:
+      - timeout=5
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You can
+      use local tools.\n\nAvailable tools:\n- add(a, b): Return a+b as JSON.\n- multiply(a,
+      b): Return a*b as JSON.\n\nWhen a tool is needed, reply with exactly one function
+      call and nothing else.\nUse the format tool_name(arg=value) or tool_name(value1,
+      value2).\nYou MUST use only the tool `add` when a tool is used.\nDo not solve
+      tool work yourself.\nIf all required tool work is complete, return ONLY valid
+      JSON.\n\nYou are a JSON API. Output MUST be valid JSON and MUST conform to this
+      JSON Schema.\n\nReturn ONLY the JSON (no markdown, no code fences, no extra
+      text).\n\nJSON Schema:\n{\"description\": \"Structured result for the forced-tool-choice
+      scenario.\", \"properties\": {\"tool_name\": {\"title\": \"Tool Name\", \"type\":
+      \"string\"}, \"final_result\": {\"title\": \"Final Result\", \"type\": \"integer\"},
+      \"explanation\": {\"title\": \"Explanation\", \"type\": \"string\"}}, \"required\":
+      [\"tool_name\", \"final_result\", \"explanation\"], \"title\": \"ToolResult\",
+      \"type\": \"object\"}\n\nOriginal task:\nFollow instructions exactly. Reply
+      with only what is asked.\n\nYou have tools add(a, b) and multiply(a, b), each
+      returning {result}.\nUse ONLY add with a=40 and b=2, then return JSON with:\n-
+      tool_name\n- final_result\n- explanation\n\nReturn ONLY valid JSON. No markdown.\n\nFollow
+      instructions exactly. Reply with only what is asked.\n\nYou have tools add(a,
+      b) and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and
+      b=2, then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
+      ONLY valid JSON. No markdown."},{"role":"assistant","content":"add(a=40, b=2)"},{"role":"user","content":"Original
+      task:\nFollow instructions exactly. Reply with only what is asked.\n\nYou have
+      tools add(a, b) and multiply(a, b), each returning {result}.\nUse ONLY add with
+      a=40 and b=2, then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
+      ONLY valid JSON. No markdown.\n\nCompleted tool steps so far:\n[{\"args\":{\"a\":40,\"b\":2},\"call_id\":null,\"result\":{\"result\":42},\"tool_name\":\"add\"}]\n\nTool
+      add returned {\"result\":42}.\nIf another tool is needed, reply with exactly
+      one function call and nothing else.\nIf all required tool work is complete,
+      return ONLY valid JSON.\n\nYou are a JSON API. Output MUST be valid JSON and
+      MUST conform to this JSON Schema.\n\nReturn ONLY the JSON (no markdown, no code
+      fences, no extra text).\n\nJSON Schema:\n{\"description\": \"Structured result
+      for the forced-tool-choice scenario.\", \"properties\": {\"tool_name\": {\"title\":
+      \"Tool Name\", \"type\": \"string\"}, \"final_result\": {\"title\": \"Final
+      Result\", \"type\": \"integer\"}, \"explanation\": {\"title\": \"Explanation\",
+      \"type\": \"string\"}}, \"required\": [\"tool_name\", \"final_result\", \"explanation\"],
+      \"title\": \"ToolResult\", \"type\": \"object\"}"}],"stream":false,"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
+      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
+      a*b as JSON."}}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '3455'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:3264
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/chat/completions
+  response:
+    body:
+      string: '{"id":"33aec413-74c4-4cf6-a3cd-01935662287d","object":"chat.completion","created":1775569620,"model":"qwen-max-latest","choices":[{"index":0,"message":{"role":"assistant","content":"{\"tool_name\":
+        \"add\", \"final_result\": 42, \"explanation\": \"Added 40 and 2 to get 42.\"}"},"finish_reason":"stop"}],"usage":{"input_tokens":447,"output_tokens":34,"total_tokens":481},"chatId":"a3ea31b2-900a-466b-8725-35a7d1d61e8d","parentId":"33aec413-74c4-4cf6-a3cd-01935662287d"}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '469'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Tue, 07 Apr 2026 13:47:00 GMT
+      ETag:
+      - W/"1d5-6ljYAMbhShp4syC0tDTChS3MeOI"
+      Keep-Alive:
+      - timeout=5
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+version: 1

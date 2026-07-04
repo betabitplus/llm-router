@@ -1,0 +1,48 @@
+interactions:
+- request:
+    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"Follow instructions exactly. Reply with only what is asked.\n\nReply with only: pong"}],"stream":false,"temperature":0.0,"seed":42}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '196'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:3264
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/chat/completions
+  response:
+    body:
+      string: '{"id":"3c85e85c-4233-4499-a154-0d56f9948b93","object":"chat.completion","created":1772017901,"model":"qwen-max-latest","choices":[{"index":0,"message":{"role":"assistant","content":"pong"},"finish_reason":"stop"}],"usage":{"input_tokens":184,"output_tokens":1,"total_tokens":185},"chatId":"20cfda5a-f879-482b-a13a-9b8f270b6025","parentId":"3c85e85c-4233-4499-a154-0d56f9948b93"}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '378'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Wed, 25 Feb 2026 11:11:41 GMT
+      ETag:
+      - W/"17a-Wr1wt/UXz9YGqBimwsQlaCb30PY"
+      Keep-Alive:
+      - timeout=5
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+version: 1

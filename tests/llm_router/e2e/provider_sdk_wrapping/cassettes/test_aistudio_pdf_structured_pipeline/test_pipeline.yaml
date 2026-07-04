@@ -1,0 +1,124 @@
+interactions:
+- request:
+    body: '{"contents":[{"parts":[{"text":"Follow instructions exactly. Reply with
+      only what is asked."},{"text":"You are given a PDF file attachment.\n\nExtract
+      content from the PDF (focus on the paper itself, not file metadata).\nReturn
+      JSON with:\n- metadata.title: exact paper title from page 1, as a single line\n-
+      metadata.title_words: exactly 3 distinct words taken from the title, preserving
+      case\n- abstract_one_sentence: one sentence summarizing the Abstract (<= 25
+      words)\n- contributions: exactly 3 short bullet points (<= 12 words each)\n-
+      evidence: exactly 2 verbatim snippets copied from page 1 (8+ chars). Choose
+      snippets that are not broken by hyphenation across lines.\n  - source must be
+      one of: title, abstract, introduction\n- key_entities: exactly 4 proper nouns
+      or model names that appear on page 1 (preserve case)\n\nReturn ONLY valid JSON.
+      No markdown."},{"inlineData":{"data":{"kind":"bytes_sha256","sha256":"f58863f804f28e06adeae577b98d74bee19564fb8a8dc949bebb00f5c110f7cd","size":2112983},"mimeType":"application/pdf"}}]}],"generationConfig":{"responseMimeType":"application/json","responseSchema":{"description":"Structured
+      digest extracted from the shared PDF fixture.","properties":{"abstract_one_sentence":{"min_length":20,"title":"Abstract
+      One Sentence","type":"STRING"},"contributions":{"items":{"type":"STRING"},"max_items":3,"min_items":3,"title":"Contributions","type":"ARRAY"},"evidence":{"items":{"description":"Short
+      grounded evidence copied from page one.","properties":{"source":{"enum":["title","abstract","introduction"],"title":"Source","type":"STRING"},"text":{"min_length":8,"title":"Text","type":"STRING"}},"property_ordering":["text","source"],"required":["text","source"],"title":"EvidenceSnippet","type":"OBJECT"},"max_items":2,"min_items":2,"title":"Evidence","type":"ARRAY"},"key_entities":{"items":{"type":"STRING"},"max_items":4,"min_items":4,"title":"Key
+      Entities","type":"ARRAY"},"metadata":{"description":"Structured title metadata
+      for the shared PDF fixture.","properties":{"title":{"title":"Title","type":"STRING"},"title_words":{"items":{"type":"STRING"},"max_items":3,"min_items":3,"title":"Title
+      Words","type":"ARRAY"}},"property_ordering":["title","title_words"],"required":["title","title_words"],"title":"PaperMetadata","type":"OBJECT"}},"property_ordering":["metadata","abstract_one_sentence","contributions","evidence","key_entities"],"required":["metadata","abstract_one_sentence","contributions","evidence","key_entities"],"title":"PDFDigest","type":"OBJECT"},"temperature":0.0}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2819738'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:7860
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:7860/v1beta/models/gemini-2.5-flash:streamGenerateContent
+  response:
+    body:
+      string: "data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"{\\\"metadata\\\
+        \": {\\\"title\\\": \\\"AI\"}],\"role\":\"model\"},\"index\":0}],\"usageMetadata\"\
+        :{\"promptTokenCount\":4581,\"candidatesTokenCount\":8,\"totalTokenCount\"\
+        :5823,\"promptTokensDetails\":[{\"modality\":\"TEXT\",\"tokenCount\":195},{\"\
+        modality\":\"DOCUMENT\",\"tokenCount\":4386}],\"thoughtsTokenCount\":1234},\"\
+        modelVersion\":\"gemini-2.5-flash\",\"responseId\":\"kgXVaf-KD_OhkdUP54DOqQo\"\
+        ,\"turnToken\":\"v1_ChdrZ1hWYWUzQkRMdm43TThQb19PY29BNBIXa2dYVmFmLUtEX09oa2RVUDU0RE9xUW8\"\
+        }\r\n\r\ndata: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"-assisted\
+        \ Automated Short Answer Grading of Handwritten University Level Mathematics\
+        \ Exams\\\", \\\"title_words\\\": [\\\"AI-assisted\\\", \\\"Mathematics\\\"\
+        , \\\"Exams\\\"]}, \\\"abstract_one_sentence\\\": \\\"This study evaluates\
+        \ GPT-4\\u0027s effectiveness in\"}],\"role\":\"model\"},\"index\":0}],\"\
+        usageMetadata\":{\"promptTokenCount\":4581,\"candidatesTokenCount\":56,\"\
+        totalTokenCount\":5871,\"promptTokensDetails\":[{\"modality\":\"TEXT\",\"\
+        tokenCount\":195},{\"modality\":\"DOCUMENT\",\"tokenCount\":4386}],\"thoughtsTokenCount\"\
+        :1234},\"modelVersion\":\"gemini-2.5-flash\",\"responseId\":\"kgXVaf-KD_OhkdUP54DOqQo\"\
+        ,\"turnToken\":\"v1_ChdrZ1hWYWUzQkRMdm43TThQb19PY29BNBIXa2dYVmFmLUtEX09oa2RVUDU0RE9xUW8\"\
+        }\r\n\r\ndata: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\" grading\
+        \ semi-open handwritten mathematics exam responses, finding it provides reliable\
+        \ initial grading subject to human verification.\\\", \\\"contributions\\\"\
+        : [\\\"Evaluates GPT-4 for grading handwritten university mathematics exams.\\\
+        \", \\\"GPT-4 offers reliable and cost-effective initial\"}],\"role\":\"model\"\
+        },\"index\":0}],\"usageMetadata\":{\"promptTokenCount\":4581,\"candidatesTokenCount\"\
+        :104,\"totalTokenCount\":5919,\"promptTokensDetails\":[{\"modality\":\"TEXT\"\
+        ,\"tokenCount\":195},{\"modality\":\"DOCUMENT\",\"tokenCount\":4386}],\"thoughtsTokenCount\"\
+        :1234},\"modelVersion\":\"gemini-2.5-flash\",\"responseId\":\"kgXVaf-KD_OhkdUP54DOqQo\"\
+        ,\"turnToken\":\"v1_ChdrZ1hWYWUzQkRMdm43TThQb19PY29BNBIXa2dYVmFmLUtEX09oa2RVUDU0RE9xUW8\"\
+        }\r\n\r\ndata: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\" grading.\\\
+        \", \\\"Highlights need for refining grading rules and improving handwritten\
+        \ response extraction.\\\"], \\\"evidence\\\": [{\\\"text\\\": \\\"AI-assisted\
+        \ Automated Short Answer Grading\\\", \\\"source\\\": \\\"title\\\"}, {\\\"\
+        text\\\": \\\"Effective and timely feedback in educational assessments is\"\
+        }],\"role\":\"model\"},\"index\":0}],\"usageMetadata\":{\"promptTokenCount\"\
+        :4581,\"candidatesTokenCount\":152,\"totalTokenCount\":5967,\"promptTokensDetails\"\
+        :[{\"modality\":\"TEXT\",\"tokenCount\":195},{\"modality\":\"DOCUMENT\",\"\
+        tokenCount\":4386}],\"thoughtsTokenCount\":1234},\"modelVersion\":\"gemini-2.5-flash\"\
+        ,\"responseId\":\"kgXVaf-KD_OhkdUP54DOqQo\",\"turnToken\":\"v1_ChdrZ1hWYWUzQkRMdm43TThQb19PY29BNBIXa2dYVmFmLUtEX09oa2RVUDU0RE9xUW8\"\
+        }\r\n\r\ndata: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\" essential\\\
+        \", \\\"source\\\": \\\"abstract\\\"}], \\\"key_entities\\\": [\\\"GPT-4\\\
+        \", \\\"ETH Zurich\\\", \\\"Springer Nature\\\", \\\"Thomas Willwacher\\\"\
+        ]}\"}],\"role\":\"model\"},\"finishReason\":\"STOP\",\"index\":0}],\"usageMetadata\"\
+        :{\"promptTokenCount\":4581,\"candidatesTokenCount\":185,\"totalTokenCount\"\
+        :6000,\"promptTokensDetails\":[{\"modality\":\"TEXT\",\"tokenCount\":195},{\"\
+        modality\":\"DOCUMENT\",\"tokenCount\":4386}],\"thoughtsTokenCount\":1234},\"\
+        modelVersion\":\"gemini-2.5-flash\",\"responseId\":\"kgXVaf-KD_OhkdUP54DOqQo\"\
+        ,\"turnToken\":\"v1_ChdrZ1hWYWUzQkRMdm43TThQb19PY29BNBIXa2dYVmFmLUtEX09oa2RVUDU0RE9xUW8\"\
+        }\r\n\r\n"
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
+        x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
+        openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
+        x-stainless-os, x-stainless-arch, x-stainless-runtime, x-stainless-runtime-version,
+        x-stainless-retry-count, x-stainless-timeout, sec-ch-ua, sec-ch-ua-mobile,
+        sec-ch-ua-platform, anthropic-version, anthropic-beta, anthropic-dangerous-direct-browser-access,
+        x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
+        x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
+        x-goog-upload-status
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Allow-Private-Network:
+      - 'true'
+      Access-Control-Expose-Headers:
+      - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
+        x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
+        x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
+        content-type, content-length, location
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream; charset=utf-8
+      Date:
+      - Tue, 07 Apr 2026 13:24:43 GMT
+      Keep-Alive:
+      - timeout=120
+      Transfer-Encoding:
+      - chunked
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+version: 1

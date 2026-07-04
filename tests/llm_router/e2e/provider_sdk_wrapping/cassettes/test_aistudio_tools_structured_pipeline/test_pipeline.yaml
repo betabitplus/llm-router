@@ -1,0 +1,357 @@
+interactions:
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
+      and multiply(a, b), each returning {result}.\nStep 1: use add with a=40 and
+      b=2.\nStep 2: multiply the step-1 result by 2.\nReturn JSON with:\n- steps:
+      a list of tool call summaries with `tool_name` and `result`\n- final_result\n\nReturn
+      ONLY valid JSON. No markdown."}],"model":"gemini-2.5-flash-lite","seed":42,"temperature":0.0,"tool_choice":"required","tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
+      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
+      a*b as JSON."}}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1002'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:7860
+      User-Agent:
+      - OpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - 'false'
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: http://localhost:7860/v1/chat/completions
+  response:
+    body:
+      string: '{"choices":[{"finish_reason":"tool_calls","index":0,"message":{"content":"","role":"assistant","tool_calls":[{"function":{"arguments":"{\"a\":40,\"b\":2}","name":"add"},"id":"call_1773581758971_mqjnyx06f9n","index":0,"type":"function"}]}}],"created":1773581758,"id":"chatcmpl-1773581758971_2c5kw2659lw","model":"gemini-2.5-flash-lite","object":"chat.completion","usage":{"completion_tokens":19,"completion_tokens_details":{"image_tokens":0,"output_text_tokens":19,"reasoning_tokens":0},"prompt_tokens":201,"prompt_tokens_details":{"text_tokens":201,"tool_tokens":0},"total_tokens":220}}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
+        x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
+        openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
+        x-stainless-os, x-stainless-arch, x-stainless-runtime, x-stainless-runtime-version,
+        x-stainless-retry-count, x-stainless-timeout, sec-ch-ua, sec-ch-ua-mobile,
+        sec-ch-ua-platform, anthropic-version, anthropic-beta, anthropic-dangerous-direct-browser-access,
+        x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
+        x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
+        x-goog-upload-status
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Allow-Private-Network:
+      - 'true'
+      Access-Control-Expose-Headers:
+      - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
+        x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
+        x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
+        content-type, content-length, location
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '586'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Sun, 15 Mar 2026 13:35:58 GMT
+      ETag:
+      - W/"24a-6G6RfBsMqe2bei2bVHJVwoNa99M"
+      Keep-Alive:
+      - timeout=120
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
+      and multiply(a, b), each returning {result}.\nStep 1: use add with a=40 and
+      b=2.\nStep 2: multiply the step-1 result by 2.\nReturn JSON with:\n- steps:
+      a list of tool call summaries with `tool_name` and `result`\n- final_result\n\nReturn
+      ONLY valid JSON. No markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"call_1773581758971_mqjnyx06f9n","type":"function","function":{"name":"add","arguments":"{\"a\":40,\"b\":2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_1773581758971_mqjnyx06f9n","name":"add"}],"model":"gemini-2.5-flash-lite","seed":42,"temperature":0.0,"tool_choice":"auto","tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
+      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
+      a*b as JSON."}}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1269'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:7860
+      User-Agent:
+      - OpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - 'false'
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: http://localhost:7860/v1/chat/completions
+  response:
+    body:
+      string: '{"choices":[{"finish_reason":"tool_calls","index":0,"message":{"content":"","role":"assistant","tool_calls":[{"function":{"arguments":"{\"a\":42,\"b\":2}","name":"multiply"},"id":"call_1773581759795_xe0pjc6sel","index":0,"type":"function"}]}}],"created":1773581759,"id":"chatcmpl-1773581759795_g9t4nb4f94","model":"gemini-2.5-flash-lite","object":"chat.completion","usage":{"completion_tokens":19,"completion_tokens_details":{"image_tokens":0,"output_text_tokens":19,"reasoning_tokens":0},"prompt_tokens":234,"prompt_tokens_details":{"text_tokens":234,"tool_tokens":0},"total_tokens":253}}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
+        x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
+        openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
+        x-stainless-os, x-stainless-arch, x-stainless-runtime, x-stainless-runtime-version,
+        x-stainless-retry-count, x-stainless-timeout, sec-ch-ua, sec-ch-ua-mobile,
+        sec-ch-ua-platform, anthropic-version, anthropic-beta, anthropic-dangerous-direct-browser-access,
+        x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
+        x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
+        x-goog-upload-status
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Allow-Private-Network:
+      - 'true'
+      Access-Control-Expose-Headers:
+      - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
+        x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
+        x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
+        content-type, content-length, location
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '589'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Sun, 15 Mar 2026 13:35:59 GMT
+      ETag:
+      - W/"24d-gCusJtKciAnKhsO2TEeIpuss/ys"
+      Keep-Alive:
+      - timeout=120
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
+      and multiply(a, b), each returning {result}.\nStep 1: use add with a=40 and
+      b=2.\nStep 2: multiply the step-1 result by 2.\nReturn JSON with:\n- steps:
+      a list of tool call summaries with `tool_name` and `result`\n- final_result\n\nReturn
+      ONLY valid JSON. No markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"call_1773581758971_mqjnyx06f9n","type":"function","function":{"name":"add","arguments":"{\"a\":40,\"b\":2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_1773581758971_mqjnyx06f9n","name":"add"},{"role":"assistant","content":"","tool_calls":[{"id":"call_1773581759795_xe0pjc6sel","type":"function","function":{"name":"multiply","arguments":"{\"a\":42,\"b\":2}"}}]},{"role":"tool","content":"{\"result\":84}","tool_call_id":"call_1773581759795_xe0pjc6sel","name":"multiply"}],"model":"gemini-2.5-flash-lite","seed":42,"temperature":0.0,"tool_choice":"auto","tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
+      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
+      a*b as JSON."}}]}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1548'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:7860
+      User-Agent:
+      - OpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - 'false'
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: http://localhost:7860/v1/chat/completions
+  response:
+    body:
+      string: '{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"```json\n{\n    \"steps\":
+        [\n        {\n            \"tool_name\": \"add\",\n            \"result\":
+        42\n        },\n        {\n            \"tool_name\": \"multiply\",\n            \"result\":
+        84\n        }\n    ],\n    \"final_result\": 84\n}\n```\n","role":"assistant"}}],"created":1773581760,"id":"chatcmpl-1773581760534_nkzwmjzrxpr","model":"gemini-2.5-flash-lite","object":"chat.completion","usage":{"completion_tokens":75,"completion_tokens_details":{"image_tokens":0,"output_text_tokens":75,"reasoning_tokens":0},"prompt_tokens":267,"prompt_tokens_details":{"text_tokens":267,"tool_tokens":0},"total_tokens":342}}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
+        x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
+        openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
+        x-stainless-os, x-stainless-arch, x-stainless-runtime, x-stainless-runtime-version,
+        x-stainless-retry-count, x-stainless-timeout, sec-ch-ua, sec-ch-ua-mobile,
+        sec-ch-ua-platform, anthropic-version, anthropic-beta, anthropic-dangerous-direct-browser-access,
+        x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
+        x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
+        x-goog-upload-status
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Allow-Private-Network:
+      - 'true'
+      Access-Control-Expose-Headers:
+      - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
+        x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
+        x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
+        content-type, content-length, location
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '690'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Sun, 15 Mar 2026 13:36:00 GMT
+      ETag:
+      - W/"2b2-lfwiUE0Ihla+miqK8izUYf+NIoA"
+      Keep-Alive:
+      - timeout=120
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
+      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
+      and multiply(a, b), each returning {result}.\nStep 1: use add with a=40 and
+      b=2.\nStep 2: multiply the step-1 result by 2.\nReturn JSON with:\n- steps:
+      a list of tool call summaries with `tool_name` and `result`\n- final_result\n\nReturn
+      ONLY valid JSON. No markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"call_1773581758971_mqjnyx06f9n","type":"function","function":{"name":"add","arguments":"{\"a\":40,\"b\":2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_1773581758971_mqjnyx06f9n","name":"add"},{"role":"assistant","content":"","tool_calls":[{"id":"call_1773581759795_xe0pjc6sel","type":"function","function":{"name":"multiply","arguments":"{\"a\":42,\"b\":2}"}}]},{"role":"tool","content":"{\"result\":84}","tool_call_id":"call_1773581759795_xe0pjc6sel","name":"multiply"},{"role":"assistant","content":"```json\n{\n    \"steps\":
+      [\n        {\n            \"tool_name\": \"add\",\n            \"result\": 42\n        },\n        {\n            \"tool_name\":
+      \"multiply\",\n            \"result\": 84\n        }\n    ],\n    \"final_result\":
+      84\n}\n```\n"},{"role":"user","content":"Return ONLY JSON matching the response
+      schema."}],"model":"gemini-2.5-flash-lite","response_format":{"type":"json_schema","json_schema":{"name":"CalculationAudit","schema":{"description":"Structured
+      result for the AI Studio tools scenario.","properties":{"steps":{"items":{"description":"Structured
+      tool-step summary.","properties":{"tool_name":{"title":"Tool Name","type":"string"},"result":{"title":"Result","type":"integer"}},"required":["tool_name","result"],"title":"CalculationStep","type":"object"},"minItems":2,"title":"Steps","type":"array"},"final_result":{"title":"Final
+      Result","type":"integer"}},"required":["steps","final_result"],"title":"CalculationAudit","type":"object"},"strict":true}},"seed":42,"temperature":0.0}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2017'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:7860
+      User-Agent:
+      - OpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - 'false'
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: http://localhost:7860/v1/chat/completions
+  response:
+    body:
+      string: '{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"{\n    \"steps\":
+        [\n        {\n            \"tool_name\": \"add\",\n            \"result\":
+        42\n        },\n        {\n            \"tool_name\": \"multiply\",\n            \"result\":
+        84\n        }\n    ],\n    \"final_result\": 84\n}","role":"assistant"}}],"created":1773581761,"id":"chatcmpl-1773581761515_ek4kingtrhh","model":"gemini-2.5-flash-lite","object":"chat.completion","usage":{"completion_tokens":72,"completion_tokens_details":{"image_tokens":0,"output_text_tokens":70,"reasoning_tokens":2},"prompt_tokens":257,"prompt_tokens_details":{"text_tokens":257,"tool_tokens":0},"total_tokens":329}}'
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
+        x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
+        openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
+        x-stainless-os, x-stainless-arch, x-stainless-runtime, x-stainless-runtime-version,
+        x-stainless-retry-count, x-stainless-timeout, sec-ch-ua, sec-ch-ua-mobile,
+        sec-ch-ua-platform, anthropic-version, anthropic-beta, anthropic-dangerous-direct-browser-access,
+        x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
+        x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
+        x-goog-upload-status
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Allow-Private-Network:
+      - 'true'
+      Access-Control-Expose-Headers:
+      - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
+        x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
+        x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
+        content-type, content-length, location
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '674'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Sun, 15 Mar 2026 13:36:01 GMT
+      ETag:
+      - W/"2a2-+L8eLqS/jqg73GouDPXgRavkutw"
+      Keep-Alive:
+      - timeout=120
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+version: 1

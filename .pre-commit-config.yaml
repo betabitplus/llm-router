@@ -1,0 +1,469 @@
+# Pre-commit hooks configuration
+# Install all hook types:
+#   pre-commit install -t pre-commit -t pre-push -t commit-msg -t post-merge -t post-checkout -t post-rewrite
+# Run manually: pre-commit run --all-files
+# Update hooks: pre-commit autoupdate
+
+# Stop on first failure to avoid wasting time on subsequent hooks
+fail_fast: true
+
+repos:
+  # =============================================================================
+  # Ruff - Fast Python linter and formatter (locked via uv)
+  # =============================================================================
+  - repo: local
+    hooks:
+      # Linter - runs first to catch issues
+      - id: ruff
+        name: ruff (lint + autofix)
+        entry: uv run ruff check --fix --unsafe-fixes src tests
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+        exclude: ^sandbox/
+
+      # Formatter - runs after linter fixes
+      - id: ruff-format
+        name: ruff-format
+        entry: uv run ruff format src tests
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+        exclude: ^sandbox/
+
+  # =============================================================================
+  # Local hooks - Baseline repo verification and maintenance
+  # =============================================================================
+  - repo: local
+    hooks:
+      # ty: Fast Rust-based type checker (complements pyright)
+      - id: ty
+        name: ty (fast type checker)
+        entry: uvx ty check
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+        # Run when Python code changes, or when dependency metadata changes (since
+        # missing/extra deps often manifest as unresolved imports in type checks).
+        files: (\.py$|^pyproject\.toml$|^uv\.lock$)
+        exclude: ^sandbox/
+
+      - id: reusable-zones-project-agnostic
+        name: reusable zones stay project-agnostic
+        entry: ./.venv/bin/python scripts/checks/check_reusable_zones_project_references.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        files: (^tests/support/|^scripts/_shared/|^scripts/checks/check_reusable_zones_project_references\.py$)
+        stages: [pre-push]
+
+      - id: uv-sync-post-merge
+        name: uv sync after merge (if deps changed)
+        entry: bash -c 'if git diff --name-only "$PRE_COMMIT_FROM_REF" HEAD 2>/dev/null | grep -qE "pyproject.toml|uv.lock"; then uv sync --group dev --frozen; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [post-merge]
+
+      - id: uv-lock-check
+        name: uv lock check (verify lockfile is current)
+        entry: uv lock --check
+        language: system
+        pass_filenames: false
+        files: (pyproject\.toml|uv\.lock)$
+        stages: [pre-commit]
+
+      - id: clean-pycache
+        name: clean __pycache__ after checkout
+        entry: bash -c 'find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [post-checkout]
+
+      - id: uv-sync-post-checkout
+        name: uv sync after checkout (if deps changed)
+        entry: bash -c 'if git diff --name-only "$PRE_COMMIT_FROM_REF" "$PRE_COMMIT_TO_REF" 2>/dev/null | grep -qE "pyproject.toml|uv.lock"; then uv sync --group dev --frozen; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [post-checkout]
+
+      # Enforce Git Flow naming conventions (feature/, fix/, etc.)
+      - id: check-branch-name
+        name: check branch naming convention
+        entry: bash -c 'branch=$(git rev-parse --abbrev-ref HEAD); if ! echo "$branch" | grep -qE "^(feature|fix|chore|hotfix|release|codex|dev|main)/|^(dev|main)$"; then echo "❌ Branch name must start with feature/, fix/, chore/, hotfix/, release/, or codex/"; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      # Block direct pushes to main branch (use dev branch + PRs)
+      - id: no-push-to-main
+        name: block direct push to main
+        entry: bash -c 'branch=$(git rev-parse --abbrev-ref HEAD); if [ "$branch" = "main" ]; then echo "❌ Direct push to main is not allowed. Use dev branch and create a PR."; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+  # =============================================================================
+  # Local hooks - Product architecture and verification
+  # =============================================================================
+  - repo: local
+    hooks:
+      # pyright: Strict Microsoft type checker (runs on push)
+      - id: pyright
+        name: pyright (strict type checker)
+        entry: uv run pyright
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
+        args: [--project, pyproject.toml]
+        stages: [pre-push]
+        exclude: ^sandbox/
+
+      - id: import-linter
+        name: import-linter (product architecture)
+        entry: env PYTHONPATH=src:. uv run lint-imports --config pyproject.toml
+        language: system
+        pass_filenames: false
+        always_run: true
+        files: (^src/|^tests/|^workbench/|^pyproject.toml$)
+        stages: [pre-push]
+
+      - id: public-contract-private-core
+        name: public-contract private-core boundary
+        entry: ./.venv/bin/python scripts/checks/check_public_contract_private_references.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        files: (^tests/|^scripts/checks/check_public_contract_private_references\.py$)
+        stages: [pre-push]
+
+  # =============================================================================
+  # Typos - Fast spell checker (Rust-based)
+  # =============================================================================
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.28.4
+    hooks:
+      - id: typos
+        args: [--config, typos.toml]
+        stages: [pre-commit]
+        exclude: ^(tests/.*/__snapshots__/|tests/.*/cassettes/|\.[^/]+/archive/|logs/|data/|records/)
+
+  # =============================================================================
+  # Product code complexity analysis
+  # =============================================================================
+  - repo: local
+    hooks:
+      - id: radon-cc
+        name: radon (cyclomatic complexity)
+        entry: bash -c 'output=$(uv run radon cc --min C --show-complexity src); if [ -n "$output" ]; then echo "$output" >&2; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+        # Fail on any functions with CC grade C or worse (CC >= 11)
+        # Grades: A (1-5), B (6-10), C (11-20), D (21-30), E (31-40), F (41+)
+        exclude: ^(sandbox/|tests/|scripts/)
+
+      - id: radon-mi
+        name: radon (maintainability index)
+        entry: bash -c 'output=$(uv run radon mi --min B --show src); if [ -n "$output" ]; then echo "$output" >&2; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+        # Fail on any files with MI grade B or worse (MI <= 19)
+        # Grades: A (20–100), B (10–19), C (0–9)
+        exclude: ^(sandbox/|tests/|scripts/)
+
+  # =============================================================================
+  # Product code structure checks
+  # =============================================================================
+  - repo: local
+    hooks:
+      - id: flake8
+        name: flake8 (cognitive complexity)
+        entry: uv run flake8 --select=CCR --max-cognitive-complexity=15 src
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+        exclude: ^(sandbox/|tests/|scripts/)
+
+      - id: flake8
+        name: flake8 (class attributes order)
+        entry: uv run flake8 --select=CCE --class-attributes-order=field,nested_class,magic_method,property_method,static_method,class_method,method src
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+        exclude: ^(sandbox/|tests/|scripts/)
+
+  # Product security checks
+  # =============================================================================
+  - repo: local
+    hooks:
+      # bandit: Categorizes and reports common security issues
+      - id: bandit
+        name: bandit (security scanner)
+        entry: uv run bandit -c pyproject.toml -r src
+        language: system
+        pass_filenames: false
+        always_run: true
+        exclude: ^(sandbox/|tests/|scripts/)
+        stages: [pre-push]
+
+  # =============================================================================
+  # Security - Detect secrets (gitleaks)
+  # =============================================================================
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.0
+    hooks:
+      # gitleaks: Fast, comprehensive secret scanner (Rust-based)
+      - id: gitleaks
+        name: gitleaks (secret scanner)
+        stages: [pre-commit]
+
+  # =============================================================================
+  # Security - Dependency vulnerability scanner
+  # =============================================================================
+  - repo: local
+    hooks:
+      - id: pip-audit-uv
+        name: pip-audit (uv dependencies)
+        # Audit shipped/runtime dependencies only; pip-audit doesn't support
+        # config files, so the hook keeps the audit invocation self-contained.
+        entry: bash -c 'reqs=$(mktemp) && trap "rm -f \"$reqs\"" EXIT && uv export --frozen --format requirements-txt --no-hashes --no-dev --no-header --no-annotate --no-emit-project > "$reqs" && uv run pip-audit --no-deps --disable-pip -r "$reqs"'
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+  # =============================================================================
+  # Docs - Interrogate docstring coverage
+  # =============================================================================
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.7.0
+    hooks:
+      # interrogate: Checks for missing docstrings in modules, classes, and funcs
+      - id: interrogate
+        name: interrogate (docstring coverage)
+        args: [-c, pyproject.toml]
+        pass_filenames: false
+        stages: [pre-push]
+
+  # =============================================================================
+  # Project hygiene - Deptry dependency checker
+  # =============================================================================
+  - repo: local
+    hooks:
+      - id: deptry
+        name: deptry (dependency hygiene)
+        entry: uv run deptry
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+        # ignore DEP002 unused packages warning project wide
+        # cause it is a problem with sandbox dir happened with false positives.
+        args: [--config, pyproject.toml, -i, DEP002, .]
+
+  # =============================================================================
+  # Build validation - Check-manifest
+  # =============================================================================
+  - repo: https://github.com/mgedmin/check-manifest
+    rev: "0.50"
+    hooks:
+      - id: check-manifest
+        args: [--no-build-isolation]
+        additional_dependencies: [wheel]
+        stages: [pre-push] # Only run on push (slower check)
+
+  # =============================================================================
+  # TOML validation and formatting
+  # =============================================================================
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: 2.2.4
+    hooks:
+      # pyproject-fmt: Enforces consistent pyproject.toml formatting
+      - id: pyproject-fmt
+        name: pyproject-fmt
+        files: pyproject\.toml$
+        stages: [pre-commit]
+
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.23
+    hooks:
+      - id: validate-pyproject
+        name: validate-pyproject
+        files: pyproject\.toml$
+        stages: [pre-commit]
+
+  # =============================================================================
+  # .env file linting
+  # =============================================================================
+  - repo: https://github.com/wemake-services/dotenv-linter
+    rev: 0.7.0
+    hooks:
+      # dotenv-linter: Validates .env files for common issues
+      - id: dotenv-linter
+        name: dotenv-linter
+        stages: [pre-commit]
+        exclude: (^|/)\.envrc(\.local)?$
+
+  # =============================================================================
+  # Markdown formatting
+  # =============================================================================
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.45.0
+    hooks:
+      # markdownlint: Checks for Markdown stylistic and structural violations
+      - id: markdownlint
+        name: markdownlint (general)
+        args: [--fix, --config, .markdownlint.yaml]
+        stages: [pre-commit]
+        exclude: ^(logs/|data/|records/|prompts/|CHANGELOG\.md)
+
+      - id: markdownlint
+        name: markdownlint (prompts)
+        args: [--fix, --config, prompts/.markdownlint.yaml]
+        files: ^prompts/
+        stages: [pre-commit]
+
+  - repo: https://github.com/hukkin/mdformat
+    rev: 0.7.21
+    hooks:
+      # mdformat: Opinionated Markdown formatter (tables, frontmatter, etc.)
+      - id: mdformat
+        name: mdformat
+        additional_dependencies:
+          - mdformat-gfm # GitHub Flavored Markdown (tables, task lists)
+          - mdformat-frontmatter # YAML frontmatter support
+          - mdformat-tables # Table formatting and alignment
+          - mdformat-ruff # Python code block formatting (using Ruff)
+          - mdformat-beautysh # Shell script block formatting
+        stages: [pre-commit]
+        exclude: ^(logs/|data/|records/|prompts/)
+
+  - repo: https://github.com/tcort/markdown-link-check
+    rev: v3.12.2
+    hooks:
+      # markdown-link-check: Detects broken internal and external links
+      - id: markdown-link-check
+        name: markdown-link-check
+        args: [--quiet, --config, .markdown-link-check.json]
+        stages: [pre-push]
+
+  # =============================================================================
+  # General file hygiene
+  # =============================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Prevent giant files from being committed
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+        stages: [pre-commit]
+        exclude: ^(tests/[^/]+/(e2e/.*/cassettes/|data/))
+
+      # Check for files that would conflict on case-insensitive filesystems
+      - id: check-case-conflict
+        stages: [pre-commit]
+
+      # Check YAML syntax
+      - id: check-yaml
+        args: [--unsafe] # Allow custom tags and complex inline structures
+        stages: [pre-commit]
+
+      # Check TOML syntax
+      - id: check-toml
+        stages: [pre-commit]
+
+      # Check JSON syntax (exclude JSONC files that allow comments)
+      - id: check-json
+        stages: [pre-commit]
+        exclude: ^(\.vscode/|\.devcontainer/)
+
+      # Ensure files end with a newline
+      - id: end-of-file-fixer
+        stages: [pre-commit]
+        exclude: ^(logs/|data/|records/)
+
+      # Remove trailing whitespace
+      - id: trailing-whitespace
+        stages: [pre-commit]
+        exclude: ^(logs/|data/|records/)
+
+      # Check for merge conflict markers
+      - id: check-merge-conflict
+        stages: [pre-commit]
+
+      # Validate Python AST
+      - id: check-ast
+        stages: [pre-commit]
+
+  # =============================================================================
+  # Commitizen - Conventional commits + changelog automation (locked via uv)
+  # =============================================================================
+  - repo: local
+    hooks:
+      # cz-commit-msg-verify: Validates commit messages against Conventional Commits
+      - id: commitizen
+        name: commitizen
+        entry: uv run cz check --commit-msg-file
+        language: system
+        stages: [commit-msg]
+
+  # =============================================================================
+  # Dockerfile linting
+  # =============================================================================
+  - repo: local
+    hooks:
+      # hadolint: Lints Dockerfiles for best practices and efficiency
+      - id: hadolint
+        name: hadolint
+        entry: hadolint
+        language: system
+        types: [dockerfile]
+        stages: [pre-commit]
+
+  # =============================================================================
+  # Shell script linting
+  # =============================================================================
+  - repo: local
+    hooks:
+      # shellcheck: Lints shell scripts for common errors and pitfalls
+      - id: shellcheck
+        name: shellcheck
+        entry: shellcheck
+        language: system
+        types: [shell]
+        stages: [pre-commit]
+
+  # =============================================================================
+  # Product behavior verification
+  # =============================================================================
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest (full, randomized, non-slow)
+        entry: uv run pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+        args: [tests, -n, auto, -p, randomly, -m, "not slow", --snapshot-warn-unused, -q, --no-cov]
+        files: ^(src/|tests/)
+        stages: [pre-push]
+
+# =============================================================================
+# CI Configuration
+# =============================================================================
+ci:
+  # Skip hooks that need local environment or are slow
+  skip: [pyright, radon-cc, radon-mi, check-manifest, deptry]
+  autoupdate_schedule: monthly

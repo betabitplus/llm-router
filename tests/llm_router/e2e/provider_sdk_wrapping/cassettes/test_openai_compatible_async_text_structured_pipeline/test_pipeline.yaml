@@ -1,0 +1,82 @@
+interactions:
+- request:
+    body: '{"messages":[{"role":"user","content":"You are a legal assistant. Extract
+      case details."},{"role":"user","content":"In the High Court of Techville. Case
+      No. 2025-CV-001.\n\nBetween:\nGlobal AI Corp (a Delaware corporation), Plaintiff\nv.\nJohn
+      Doe (an individual) and Hackers United Ltd., Defendants.\n\nSummary:\nGlobal
+      AI Corp alleges that John Doe, a former employee, stole proprietary\nalgorithms
+      and shared them with Hackers United Ltd. The plaintiff claims\nbreach of contract
+      and trade secret misappropriation.\nThey are seeking $10 million in damages
+      and a permanent injunction\npreventing further use of the algorithms."}],"model":"meta/llama-4-maverick-17b-128e-instruct","response_format":{"type":"json_schema","json_schema":{"name":"LegalCase","schema":{"$defs":{"Party":{"description":"Structured
+      party entry.","properties":{"name":{"title":"Name","type":"string"},"type":{"$ref":"#/$defs/PartyType"},"role":{"title":"Role","type":"string"}},"required":["name","type","role"],"title":"Party","type":"object"},"PartyType":{"description":"Party
+      type labels used in the structured legal-case schema.","enum":["individual","corporation","government"],"title":"PartyType","type":"string"}},"description":"Structured
+      legal-case output used by OpenAI-compatible text tests.","properties":{"case_name":{"title":"Case
+      Name","type":"string"},"court":{"title":"Court","type":"string"},"plaintiffs":{"items":{"$ref":"#/$defs/Party"},"minItems":1,"title":"Plaintiffs","type":"array"},"defendants":{"items":{"$ref":"#/$defs/Party"},"minItems":1,"title":"Defendants","type":"array"},"legal_issues":{"items":{"type":"string"},"minItems":1,"title":"Legal
+      Issues","type":"array"}},"required":["case_name","court","plaintiffs","defendants","legal_issues"],"title":"LegalCase","type":"object"},"strict":true}},"temperature":0.0}'
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1821'
+      Content-Type:
+      - application/json
+      Host:
+      - integrate.api.nvidia.com
+      User-Agent:
+      - AsyncOpenAI/Python 2.20.0
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Async:
+      - async:asyncio
+      X-Stainless-Lang:
+      - python
+      X-Stainless-OS:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 2.20.0
+      X-Stainless-Runtime:
+      - CPython
+      X-Stainless-Runtime-Version:
+      - 3.13.7
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+    method: POST
+    uri: https://integrate.api.nvidia.com/v1/chat/completions
+  response:
+    body:
+      string: '{"id":"chatcmpl-b642825f5c7c5b75","object":"chat.completion","created":1773771577,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"{
+        \n\"case_name\": \"Global AI Corp v. John Doe and Hackers United Ltd.\",\n\"court\":
+        \"High Court of Techville\",\n\"plaintiffs\": [\n{\n\"name\": \"Global AI
+        Corp\",\n\"type\": \"corporation\",\n\"role\": \"Plaintiff\"\n}\n],\n\"defendants\":
+        [\n{\n\"name\": \"John Doe\",\n\"type\": \"individual\",\n\"role\": \"Defendant\"\n},\n{\n\"name\":
+        \"Hackers United Ltd.\",\n\"type\": \"corporation\",\n\"role\": \"Defendant\"\n}\n],\n\"legal_issues\":
+        [\n\"Breach of contract\",\n\"Trade secret misappropriation\"\n]\n}","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":136,"total_tokens":266,"completion_tokens":130,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
+    headers:
+      Access-Control-Expose-Headers:
+      - nvcf-reqid
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1139'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 17 Mar 2026 18:19:38 GMT
+      Nvcf-Reqid:
+      - 033a5378-c9b3-4229-8f99-fc21d58fd2d0
+      Nvcf-Status:
+      - fulfilled
+      Server:
+      - uvicorn
+      Vary:
+      - Origin
+    status:
+      code: 200
+      message: OK
+version: 1

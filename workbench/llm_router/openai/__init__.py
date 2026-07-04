@@ -1,0 +1,1 @@
+"""OpenAI-compatible workbench entrypoints."""

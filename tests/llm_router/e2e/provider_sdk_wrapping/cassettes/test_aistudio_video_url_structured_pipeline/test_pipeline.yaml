@@ -1,0 +1,73 @@
+interactions:
+- request:
+    body: '{"contents":[{"parts":[{"text":"Follow instructions exactly. Reply with
+      only what is asked."},{"text":"You are given a short video clip.\n\nReturn JSON
+      with exactly three keys:\n- action: the main activity as a short lowercase word
+      or phrase\n- location: a short phrase describing where it happens\n\n- evidence:
+      exactly 2 short strings describing visible motion or scene cues\n\nIf the clip
+      happens indoors in a gym, dance studio, or training room, mention that in location.\nIn
+      evidence, mention movement, posture, or indoor scene details.\n\nReturn ONLY
+      valid JSON. No markdown."},{"fileData":{"mimeType":"video/mp4","fileUri":"https://www.youtube.com/shorts/QUxqvF0pyGw"}}]}],"generationConfig":{"temperature":0.0,"responseMimeType":"application/json","responseSchema":{"description":"Minimal
+      structured summary for a short video clip.","properties":{"action":{"min_length":4,"title":"Action","type":"STRING"},"location":{"min_length":4,"title":"Location","type":"STRING"},"evidence":{"items":{"type":"STRING"},"min_items":2,"title":"Evidence","type":"ARRAY"}},"property_ordering":["action","location","evidence"],"required":["action","location","evidence"],"title":"VideoObservation","type":"OBJECT"}}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1207'
+      Content-Type:
+      - application/json
+      Host:
+      - localhost:7860
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:7860/v1beta/models/gemini-3-flash-preview:streamGenerateContent
+  response:
+    body:
+      string: "data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"{\\n  \\\"action\\\":
+        \\\"performing a partner squat stunt\\\",\\n  \\\"location\\\": \\\"indoor
+        gym and fitness studio\\\",\\n  \\\"evidence\\\": [\\n    \\\"lifting a person
+        onto shoulders\\\",\\n    \\\"gym mirrors and exercise equipment\\\"\\n  ]\\n}\"}],\"role\":\"model\"},\"index\":0}],\"usageMetadata\":{\"promptTokenCount\":112,\"candidatesTokenCount\":54,\"totalTokenCount\":845,\"promptTokensDetails\":[{\"modality\":\"TEXT\",\"tokenCount\":112}],\"thoughtsTokenCount\":679},\"modelVersion\":\"gemini-3-flash-preview\",\"responseId\":\"aLW2aYnzKcP1kdUP6OaMqQc\",\"turnToken\":\"v1_ChdZN1cyYWVpZ0hvREFrZFVQLU9xMHdRcxIXYUxXMmFZbnpLY1Axa2RVUDZPYU1xUWM\"}\r\n\r\ndata:
+        {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"\",\"thoughtSignature\":\"EvcZCvQZAb4+9vtT/zk3zVvOmAA5bEgJyrB/4XPhpJ1xP1ivmK5a6u6eGeJSkhMCUyk0gohP4bxWAoa+7L/ViJPTv0wtCZRjQYgzOTdg7gdayLj6BDHn/u8+3xUiZRxUXMr+pyjvZ3DkS8UKlb8tHNzRQtDo/YWoJhaWOyP/bGdPnWgpGaDn3FrRiNiR8GIwzT/c57oULPRdy+vpG8xzVGsOd5mp4bYqaemkSE2Ig+MuvjCrte8x73r62WecrLWsTBKbsZp8p5W+he2u2x8PkQkk5E1n0cnc7ZISEMgOdVa054m4XfG1ZjARNctXMYG/+1MHmxvPVS2Ryryhg1qj/p6thjrqwmj0zI2mFv1uFhblHgfAZ9JfHkTCyIlVVXmV0arhcC6alTgruXqzVNkjna6PYQzOagQdD5E95Xb9yG3z2uw00lmjvlsyO/LkfAENWt8Uaj5ctGe6IEZIYn1BjyJwPavCZXGS2bYRaPT0Jw/UGHkAQ9RkE9EirhaG/Gjdk72IHWDTQfpek/mW1agpu9UA1p172asD1EzHHy4E/4aJzVN/pvZo7HPaOrVXXOn/RZAC0x87slS2M8uOy5coZ8XLHylGJ7NnMVeqD0ifYpie/TtBOn0uEKCgDgNrTFA6XVwhJU2k1Ti870cvldeM1F/nOjSeGXlFWjfh1cEv9l44n7sSxCfaWnvyORcjlGuC/BoF5OyNjuJRbgC3sRZGKbCYFsPKfl00OrrEhSw5PIayrUvQb2KHcQsjdKmq5ozhEhYIrsjf5y9uNqi+zn3Cz+5sW6XBEP4hvvcXIRewze8aE0qQARfwqHjpHe+g5Cy6qZnbqlO65y6RdyX6aoTl9QqKyHq7/JPUbYXUHLtyRdAtPjrreeGsriKbGLViJ7yrNExPKM4IWTuvDlEHOjYvvRr9J0tK4AEmS5FCvuDGoRqaLnCJrZKs9Az6cCip++vUbuOs+kw/A9ffy083D6icOkZ+UGRPDZLS27hMEAioQhlV/cT/uUR9OEYTCj5X3aPyzKkcmcnbZ/r79VcimUDXb77FX7Za1xirNsUYQT/l2vp0xYX8bLRwq23k9wG1OQgnUKonm4Yg0OqemkGV5ClFWG7sHkWdbIdcHA7DJ8YW1cq0goT21iljpz0sia90AFwHMKu5NwGL8oX7wCuNy+lW8LB2b+y2fbLcujES1r5mgQSxPPuLIEZ4YUi4uvNkjFh+JiTkHyN9j2ftnOQ4zov12wXqWZLok/Z7cR41p+z8046aeceVRin0KY9j+fJ3/kENLP0NhdMlsRHEz6GLlcfnLPxMbjoY+rBGd+npuhPX/tSgvvEUFt0cmtUn/7flAj2iMbVdBWreF0pcJrjni3GVVVNa1f2pW73+gXAUj5xTWx+4WLjMhZzA3gD5vF72i1+UyFZ4BKMlhZuCDdCEZJJCAF1yqMDWsnWmr3GkGPXVYlD2Bskdi2H8zrNvYxFGoli7QH/yZOLl8PWAliM1CSD4Wrifkm/aJejcpDnxZji5ml1yA60YGhNni5T+QohIFr3JdoJwO3p4gKbls7OZ19lUqOa9Sw9w6N5gMljvFoJy3XvUmDhHFBR180fi+Bcm/Hs5VCHkBRqWEk86MdcNvusMUJe6SyLClppcK01BdbB9gGTcrLM84kksOCSpYVJj+cLJiYUPzIfk2If+TDqpTiYOuPlflG/Z9eKJQwe2qtKbQlsSdJdawPu6vKEAtIEF4SorJCti61nlNENINB5oETckpt/WMMTRUy8YwBElXtgEcNAzhgA/5Qy03NBcN4CswPJLRYc0hjUSDmfrfLuz5MkiH4gcWzWzIIjXXkhGOvpoo6qxeqCAsF9X+LNOlOnMCoWFbppR9k0zXmBo+v2PEPPGhtRzdLhJZOz9Cb3OrLt4WWC1rrHAEyFZurA6/WKnOFOw/QijQzjaexzOlbBvpOTLdXynyZNYDbpCBTrvzNcE495BV/WZ72C9YnhEQ99rCYGxU4d3mykq4nu7UEwo5+ngTHvpOxdikAKD6ZMYcBd8pz1bUDFDk583CLuI0bYNKFUPUXSiK7zAJHpJEXXOkTsmG/OZxXbo56iMkSm3WJIDELylS4ycypkJJSI8oWO0gm8CMmpgGs3a7l9mXaK0uQtUlPY7GpMD9iq5y9hXPdaiOia9VS4QbQ2WscrrKeockSxmLuM0jMOqZYAYq3+IhJoloIP/VcqlaSXLne7cQAIABQqWbeRh+EVKurdPYgJ9US1QD4m3OoGU6PcikQrCOsqWGX7iCAKIvyASYLfDo2GKf8cUDzns6zTAZX4MD7pNRiuk3HsFqy4lX17kHEPWTFhI2+L12ED+eNVZMUCXftQwyPkpRKLaFfNgGLD4LcrqhNoQb03LOusAg3Zl2KuxgDCLDs5AJQJpiVzb+tsCnHMuM00hbaOyVU4xPTmj+YwQ5O8oeJbM/llXrXr5ZHOqmtAXFuSxoHwi4ljnmbuD+labV/Ym2UjMnvrabjXzeMobu0OWmQgVvZ5gn/oEmNfhzswIrJ5G6hj52+G1Qwlal8cCUkHjwWGnkLBcjQg4QMBJOm8uZR1Gi9T06mk6yDoLFUA+gUbOQz7aWAqEFwc96L3QCSJO0MV3PzMdsQs8ysGXwNfISdn9qsAv9kgAzpUCrnaWRZIXmetVVED+TdTO0YpNfEusVP82aEd7aXrZkGEkOePw3zlfVL1T1Vj/eKPRCbhV3fCSYeROlE9NE7wfYftnUBivIzct1D4orhtxyaajuwb6l4KB0G7ibiCItWeoUzrlOXm3qUAc899EOEgAIabkqb6iavrKMCgJfJ3rhSoiHDgZGRF2QLAmddBb5FCYsvJdGWpNCnKDpO3Q7Ofr2ujRfCrAQMMJpFdBiDm+WbPfEKrw2J5OoxsLNwmAw71JmV+8JjYkRlNCv2QiVKyjKdxmkHZE/6SWTipk7+H/YWdPiriXW1tOMtx1XXwg8uuDXo1EgjfqdgZEEzoziPD8RHStA0yU1+ICvI074nEfDNE/mRozX+eFEvKfOT8qLJyjucjKZTjy2cgSmZe7ekHVl00S70H+P3KdbiDOHIwf18aeGxidUFuVqoYtiwunJUVN9kf0m0jzFGa8vQaTokGI562rZ/4ccqaWsctGzbpWRUrzeCkiVz4fpJ2fgHzDp0fU3s3F60ItMUdYkpK5tuZ3mtOBj47j+rYcWFZgwPYV4K0iD93wIlkTA9Lv5NjESNv5qYreH5Gs+7zWCAMu4ACno5V7/OoYb33Ytuo8FaUPKzvaVouZV5d+rLALF224Mr+KdCJ62mVTcWxSoEF8kecWz8aYipimapBYFZaGOO3xzBFSd6YosNv0B2LV4IexZ+86/hETexbYrbG+Mly67RvdxvFiIn3jEfYqieph5Vz8WTcupV8pPpBR9KuE1m6F2kIVzumRjF2syV6w5k2aaYwHC9e/nLU4k+uUHzub7XgYzOrbRns4narHBtZqgE8tlqbDtY+l+ydLdGnqcCbvr757sITKRe0yjYoJ7O1EzpGk3zZAP9JKShNS4+cCqtnERv7F0cflu2fBzSEXNWdpskNc0ZdkfHeb6GAcgMILr7NpPFYq2tbbvupbDacMQQAuGzAl/D9kEtYwZ5d9MUX5U2Wt5nl3bM6toKGdrwlN03jHJC2p1GVf4gjgO17Ue6T8A0aKrdzgSUfTMe7HXPvyxU2jDKLeyzfhjFsi9jbq7JKd9RAY7wJF6GAJZ2UV0GnilLiA8wH39ptfuq/ot4kzvxcaPm7oMvYnWnry++J8Cfx/GGfr+X+J3nBbaj146+qPsl6IFWS3gbHXKPiWKKonE/98R8/yL28FLpJNw/IUWdZHG/LyN6BxHlX0GDDkQGR2EwaaKDsBYC7z8C7be97yO/RjUOv2kU5vqpqjdoQJcvB11hG1i2cTFEj56fWVudOtI3ZzQfo3RQ+BZEAGcq96wxnWOUefZ6t1YTbxaHWpbwA/N9a86d80SxJUYUaI04ApZuT3F5f7KeotR5c4Dzmeym+fTYFzulSdcQCBli718UT4fV/WyjxfpaGTP1zTwVEFrHw63l04BGzGsCCOMdB6v8yi5kvNhkgndb9pkl4tRvMH72yDpQWS04uPKwD3n+7k05ejvNK6CL7uoGrqZ/iL8BVi7Zj3++jZ15Hy+yEn0G/oTtZri7EzzND2XubZ9rR/wJ6fiavwe814CNimbL+3/yv0Z85UAIFya+L1gz/OEm8pcyemNaieckoMI6bNB2ESJLFBGDF4WfPq5vhSnDUv65DU668cw9CBveMUdde3y+9Rsl5yPRr2JZlPKwoeCdm8ok2Z+KkTLywmXjki7m6NXvdMjLV5prkFbUSXjceP8fQtf6Cwz6UMJo4gnPPsAZzgt3fRRBHTRwRi7VpHLEDMHOCELvjp+0KDT0Wx5PI3DlnhC7YNZ1hGZrZeWxlVhWgoTQ==\"}],\"role\":\"model\"},\"finishReason\":\"STOP\",\"index\":0,\"detailedFinishReason\":{\"recipeRunnerFinishReason\":\"GRANULAR_FINISH_REASON_NATURAL_STOP\"}}],\"usageMetadata\":{\"promptTokenCount\":1305,\"candidatesTokenCount\":54,\"totalTokenCount\":2038,\"promptTokensDetails\":[{\"modality\":\"TEXT\",\"tokenCount\":112},{\"modality\":\"VIDEO\",\"tokenCount\":1193}],\"thoughtsTokenCount\":679},\"modelVersion\":\"gemini-3-flash-preview\",\"responseId\":\"aLW2aYnzKcP1kdUP6OaMqQc\",\"turnToken\":\"v1_ChdZN1cyYWVpZ0hvREFrZFVQLU9xMHdRcxIXYUxXMmFZbnpLY1Axa2RVUDZPYU1xUWM\"}\r\n\r\n"
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
+        x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
+        openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
+        x-stainless-os, x-stainless-arch, x-stainless-runtime, x-stainless-runtime-version,
+        x-stainless-retry-count, x-stainless-timeout, sec-ch-ua, sec-ch-ua-mobile,
+        sec-ch-ua-platform, anthropic-version, anthropic-beta, anthropic-dangerous-direct-browser-access,
+        x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
+        x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
+        x-goog-upload-status
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Allow-Private-Network:
+      - 'true'
+      Access-Control-Expose-Headers:
+      - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
+        x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
+        x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
+        content-type, content-length, location
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream; charset=utf-8
+      Date:
+      - Sun, 15 Mar 2026 13:34:32 GMT
+      Keep-Alive:
+      - timeout=120
+      Transfer-Encoding:
+      - chunked
+      X-Powered-By:
+      - Express
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -1,0 +1,220 @@
+interactions:
+- request:
+    body: '{"contents": [{"parts": [{"text": "You have a tool named multiply(a, b)
+      that returns {result}.\nCompute 17*19 using the tool.\nThen return JSON with:\n-
+      final_result\n- tool_calls: a list of tool call summaries with `tool_name` and
+      `result`\n\nReturn ONLY valid JSON. No markdown."}], "role": "user"}], "tools":
+      [{"functionDeclarations": [{"description": "Return a*b as JSON.", "name": "multiply",
+      "parameters": {"properties": {"a": {"type": "INTEGER"}, "b": {"type": "INTEGER"}},
+      "required": ["a", "b"], "type": "OBJECT"}}]}], "toolConfig": {"functionCallingConfig":
+      {"mode": "ANY"}}, "generationConfig": {"temperature": 0.0, "seed": 42}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '639'
+      Content-Type:
+      - application/json
+      Host:
+      - generativelanguage.googleapis.com
+      user-agent:
+      - google-genai-sdk/1.62.0 gl-python/3.13.7
+      x-goog-api-client:
+      - google-genai-sdk/1.62.0 gl-python/3.13.7
+    method: POST
+    uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent
+  response:
+    body:
+      string: "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\":
+        [\n          {\n            \"functionCall\": {\n              \"name\": \"multiply\",\n
+        \             \"args\": {\n                \"a\": 17,\n                \"b\":
+        19\n              }\n            }\n          }\n        ],\n        \"role\":
+        \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0,\n
+        \     \"finishMessage\": \"Model generated function call(s).\"\n    }\n  ],\n
+        \ \"usageMetadata\": {\n    \"promptTokenCount\": 119,\n    \"candidatesTokenCount\":
+        20,\n    \"totalTokenCount\": 139,\n    \"promptTokensDetails\": [\n      {\n
+        \       \"modality\": \"TEXT\",\n        \"tokenCount\": 119\n      }\n    ]\n
+        \ },\n  \"modelVersion\": \"gemini-2.5-flash-lite\",\n  \"responseId\": \"8rW2aZSlMpulvdIP3--08As\"\n}\n"
+    headers:
+      Alt-Svc:
+      - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Sun, 15 Mar 2026 13:36:50 GMT
+      Server:
+      - scaffolding on HTTPServer2
+      Server-Timing:
+      - gfet4t7; dur=473
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - X-Origin
+      - Referer
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - '0'
+      content-length:
+      - '724'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"contents": [{"parts": [{"text": "You have a tool named multiply(a, b)
+      that returns {result}.\nCompute 17*19 using the tool.\nThen return JSON with:\n-
+      final_result\n- tool_calls: a list of tool call summaries with `tool_name` and
+      `result`\n\nReturn ONLY valid JSON. No markdown."}], "role": "user"}, {"parts":
+      [{"functionCall": {"args": {"a": 17, "b": 19}, "name": "multiply"}}], "role":
+      "model"}, {"parts": [{"functionResponse": {"name": "multiply", "response": {"result":
+      323}}}], "role": "user"}], "tools": [{"functionDeclarations": [{"description":
+      "Return a*b as JSON.", "name": "multiply", "parameters": {"properties": {"a":
+      {"type": "INTEGER"}, "b": {"type": "INTEGER"}}, "required": ["a", "b"], "type":
+      "OBJECT"}}]}], "toolConfig": {"functionCallingConfig": {"mode": "AUTO"}}, "generationConfig":
+      {"temperature": 0.0, "seed": 42}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '840'
+      Content-Type:
+      - application/json
+      Host:
+      - generativelanguage.googleapis.com
+      user-agent:
+      - google-genai-sdk/1.62.0 gl-python/3.13.7
+      x-goog-api-client:
+      - google-genai-sdk/1.62.0 gl-python/3.13.7
+    method: POST
+    uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent
+  response:
+    body:
+      string: "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\":
+        [\n          {\n            \"text\": \"```json\\n{\\n  \\\"final_result\\\":
+        323,\\n  \\\"tool_calls\\\": [\\n    {\\n      \\\"tool_name\\\": \\\"multiply\\\",\\n
+        \     \\\"result\\\": 323\\n    }\\n  ]\\n}\\n```\"\n          },\n          {\n
+        \           \"text\": \"\\n\"\n          }\n        ],\n        \"role\":
+        \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n
+        \   }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 154,\n    \"candidatesTokenCount\":
+        56,\n    \"totalTokenCount\": 210,\n    \"promptTokensDetails\": [\n      {\n
+        \       \"modality\": \"TEXT\",\n        \"tokenCount\": 154\n      }\n    ]\n
+        \ },\n  \"modelVersion\": \"gemini-2.5-flash-lite\",\n  \"responseId\": \"87W2aeKxFsP1xs0P8N2MgQY\"\n}\n"
+    headers:
+      Alt-Svc:
+      - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Sun, 15 Mar 2026 13:36:51 GMT
+      Server:
+      - scaffolding on HTTPServer2
+      Server-Timing:
+      - gfet4t7; dur=437
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - X-Origin
+      - Referer
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - '0'
+      content-length:
+      - '713'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"contents": [{"parts": [{"text": "You have a tool named multiply(a, b)
+      that returns {result}.\nCompute 17*19 using the tool.\nThen return JSON with:\n-
+      final_result\n- tool_calls: a list of tool call summaries with `tool_name` and
+      `result`\n\nReturn ONLY valid JSON. No markdown."}], "role": "user"}, {"parts":
+      [{"functionCall": {"args": {"a": 17, "b": 19}, "name": "multiply"}}], "role":
+      "model"}, {"parts": [{"functionResponse": {"name": "multiply", "response": {"result":
+      323}}}], "role": "user"}, {"parts": [{"text": "```json\n{\n  \"final_result\":
+      323,\n  \"tool_calls\": [\n    {\n      \"tool_name\": \"multiply\",\n      \"result\":
+      323\n    }\n  ]\n}\n```"}, {"text": "\n"}], "role": "model"}, {"parts": [{"text":
+      "Return ONLY JSON matching the response schema."}], "role": "user"}], "generationConfig":
+      {"temperature": 0.0, "seed": 42, "responseMimeType": "application/json", "responseSchema":
+      {"description": "Structured result for the profile-tools scenario.", "properties":
+      {"final_result": {"title": "Final Result", "type": "INTEGER"}, "tool_calls":
+      {"items": {"description": "Structured tool-call summary for the final JSON response.",
+      "properties": {"tool_name": {"title": "Tool Name", "type": "STRING"}, "result":
+      {"title": "Result", "type": "INTEGER"}}, "property_ordering": ["tool_name",
+      "result"], "required": ["tool_name", "result"], "title": "ToolCallSummary",
+      "type": "OBJECT"}, "min_items": 1, "title": "Tool Calls", "type": "ARRAY"}},
+      "property_ordering": ["final_result", "tool_calls"], "required": ["final_result",
+      "tool_calls"], "title": "CalculationAudit", "type": "OBJECT"}}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1607'
+      Content-Type:
+      - application/json
+      Host:
+      - generativelanguage.googleapis.com
+      user-agent:
+      - google-genai-sdk/1.62.0 gl-python/3.13.7
+      x-goog-api-client:
+      - google-genai-sdk/1.62.0 gl-python/3.13.7
+    method: POST
+    uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent
+  response:
+    body:
+      string: "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\":
+        [\n          {\n            \"text\": \"{\\n  \\\"final_result\\\": 323,\\n
+        \ \\\"tool_calls\\\": [\\n    {\\n      \\\"tool_name\\\": \\\"multiply\\\",\\n
+        \     \\\"result\\\": 323\\n    }\\n  ]\\n}\"\n          }\n        ],\n        \"role\":
+        \"model\"\n      },\n      \"finishReason\": \"STOP\",\n      \"index\": 0\n
+        \   }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\": 173,\n    \"candidatesTokenCount\":
+        51,\n    \"totalTokenCount\": 224,\n    \"promptTokensDetails\": [\n      {\n
+        \       \"modality\": \"TEXT\",\n        \"tokenCount\": 173\n      }\n    ]\n
+        \ },\n  \"modelVersion\": \"gemini-2.5-flash-lite\",\n  \"responseId\": \"9LW2abKkBdSLxN8PzpOmuAo\"\n}\n"
+    headers:
+      Alt-Svc:
+      - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Sun, 15 Mar 2026 13:36:52 GMT
+      Server:
+      - scaffolding on HTTPServer2
+      Server-Timing:
+      - gfet4t7; dur=546
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - X-Origin
+      - Referer
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - '0'
+      content-length:
+      - '649'
+    status:
+      code: 200
+      message: OK
+version: 1

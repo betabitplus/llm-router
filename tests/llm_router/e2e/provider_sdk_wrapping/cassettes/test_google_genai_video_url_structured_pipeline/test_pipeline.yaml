@@ -1,0 +1,82 @@
+interactions:
+- request:
+    body: '{"contents": [{"parts": [{"text": "Follow instructions exactly. Reply with
+      only what is asked."}, {"text": "You are given a short video clip.\n\nReturn
+      JSON with exactly three keys:\n- action: the main activity as a short lowercase
+      word or phrase\n- location: a short phrase describing where it happens\n\n-
+      evidence: exactly 2 short strings describing visible motion or scene cues\n\nIf
+      the clip happens indoors in a gym, dance studio, or training room, mention that
+      in location.\nIn evidence, mention movement, posture, or indoor scene details.\n\nReturn
+      ONLY valid JSON. No markdown."}, {"fileData": {"fileUri": "https://www.youtube.com/shorts/QUxqvF0pyGw"},
+      "videoMetadata": {"fps": 1.0}}], "role": "user"}], "generationConfig": {"temperature":
+      0.0, "seed": 42, "responseMimeType": "application/json", "responseSchema": {"description":
+      "Minimal structured summary for a short video clip.", "properties": {"action":
+      {"min_length": 4, "title": "Action", "type": "STRING"}, "location": {"min_length":
+      4, "title": "Location", "type": "STRING"}, "evidence": {"items": {"type": "STRING"},
+      "min_items": 2, "title": "Evidence", "type": "ARRAY"}}, "property_ordering":
+      ["action", "location", "evidence"], "required": ["action", "location", "evidence"],
+      "title": "VideoObservation", "type": "OBJECT"}}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1296'
+      Content-Type:
+      - application/json
+      Host:
+      - generativelanguage.googleapis.com
+      user-agent:
+      - google-genai-sdk/1.62.0 gl-python/3.13.7
+      x-goog-api-client:
+      - google-genai-sdk/1.62.0 gl-python/3.13.7
+    method: POST
+    uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent
+  response:
+    body:
+      string: "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\":
+        [\n          {\n            \"text\": \"{\\n  \\\"action\\\": \\\"performing
+        a partner squat stunt\\\",\\n  \\\"location\\\": \\\"indoor gym and fitness
+        studio\\\",\\n  \\\"evidence\\\": [\\n    \\\"lifting a person onto shoulders\\\",\\n
+        \   \\\"gym mirrors and exercise equipment\\\"\\n  ]\\n}\",\n            \"thoughtSignature\":
+        \"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\"\n
+        \         }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\":
+        \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\":
+        1306,\n    \"candidatesTokenCount\": 54,\n    \"totalTokenCount\": 2039,\n
+        \   \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n
+        \       \"tokenCount\": 113\n      },\n      {\n        \"modality\": \"VIDEO\",\n
+        \       \"tokenCount\": 1193\n      }\n    ],\n    \"thoughtsTokenCount\":
+        679\n  },\n  \"modelVersion\": \"gemini-3-flash-preview\",\n  \"responseId\":
+        \"d7W2aZGPNaChxN8PgbuP2Q0\"\n}\n"
+    headers:
+      Alt-Svc:
+      - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Sun, 15 Mar 2026 13:34:47 GMT
+      Server:
+      - scaffolding on HTTPServer2
+      Server-Timing:
+      - gfet4t7; dur=5337
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Origin
+      - X-Origin
+      - Referer
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - '0'
+      content-length:
+      - '4674'
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -1,0 +1,50 @@
+def test_public_entrypoint_exports_current_contract_names() -> None:
+    import llm_router
+
+    expected_names = [
+        "ApiKeyNotFoundError",
+        "BehaviorDefaults",
+        "ChatMessage",
+        "ChatPart",
+        "ChatRole",
+        "Config",
+        "ConfigurationError",
+        "FileSchema",
+        "ImageSchema",
+        "KeyId",
+        "LLMRouter",
+        "LLMRouterConfig",
+        "LLMRouterError",
+        "LLMRouterResponse",
+        "MessageContent",
+        "Model",
+        "ModelNotFoundError",
+        "Policy",
+        "Profile",
+        "Provider",
+        "ProviderCatalog",
+        "ProviderError",
+        "ProviderLimits",
+        "ProviderNotFoundError",
+        "ProviderSpec",
+        "RetryPolicy",
+        "RouterConfig",
+        "RouterPolicy",
+        "RouterPolicyDefaults",
+        "RouterProfile",
+        "RoutingAttempt",
+        "Session",
+        "ToolCall",
+        "ToolExecutionError",
+        "ToolStep",
+        "UsageStats",
+        "VideoSchema",
+        "VideoUrlSchema",
+        "__version__",
+        "get_config",
+        "install_config",
+    ]
+
+    assert llm_router.__all__ == expected_names
+    for name in expected_names:
+        assert hasattr(llm_router, name)

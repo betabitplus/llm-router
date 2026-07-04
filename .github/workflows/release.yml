@@ -1,0 +1,92 @@
+# Automated version bump and changelog generation on merge to main
+# Uses Commitizen to analyze conventional commits and determine version bump
+#
+# Trigger: Push to main (typically via merged PR)
+# Actions: Bump version in pyproject.toml, update CHANGELOG.md, create git tag, create GitHub Release
+
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bump-version:
+    name: Bump version and create release
+    runs-on: ubuntu-latest
+    # Skip if commit message already contains version bump (avoid infinite loop)
+    if: "!startsWith(github.event.head_commit.message, 'bump:')"
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Full history for changelog generation
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install Commitizen
+        run: pip install commitizen==4.13.7
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Bump version and update changelog
+        id: cz
+        run: |
+          # Get current version before bump
+          CURRENT_VERSION=$(cz version --project)
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # Bump version (will fail if no bumpable commits since last tag)
+          if cz bump --changelog --yes; then
+            NEW_VERSION=$(cz version --project)
+            echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "bumped=true" >> $GITHUB_OUTPUT
+          else
+            echo "No version bump needed (no feat/fix commits since last release)"
+            echo "bumped=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push changes and tags
+        if: steps.cz.outputs.bumped == 'true'
+        run: |
+          git push origin main --follow-tags
+
+      - name: Create GitHub Release
+        if: steps.cz.outputs.bumped == 'true'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ steps.cz.outputs.new_version }}
+          name: Release v${{ steps.cz.outputs.new_version }}
+          body_path: CHANGELOG.md
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+      - name: Fast-forward dev to main
+        run: |
+          git fetch origin main dev
+          git checkout -B dev origin/dev
+
+          if ! git merge-base --is-ancestor origin/dev origin/main; then
+            echo "origin/dev diverged from origin/main; cannot fast-forward safely." >&2
+            exit 1
+          fi
+
+          git merge --ff-only origin/main
+          git push origin dev

@@ -1,0 +1,15 @@
+[flake8]
+# Configuration for flake8-cognitive-complexity
+# Ruff handles all other linting rules, so we only enable cognitive complexity (CCR)
+select = CCR
+max-cognitive-complexity = 15
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    build,
+    dist,
+    tests,
+    sandbox,
+    scripts,
+    examples
