@@ -1,4 +1,4 @@
-name: Issue 246 Apply Atomic Template Commit
+name: Issue 246 Failure Diagnostics
 
 on:
   pull_request:
@@ -13,25 +13,14 @@ permissions:
   contents: read
 
 jobs:
-  update:
+  diagnose:
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.ref == 'issue-246-standard-onboarding'
     runs-on: ubuntu-latest
     steps:
-      - name: Create target write token
-        id: target-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
-          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: llm-router
-          permission-contents: write
-          permission-workflows: write
-
-      - name: Create shared read token
-        id: shared-token
+      - name: Create shared package token
+        id: app-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
@@ -49,175 +38,99 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Detect explicit update request
-        id: gate
-        shell: bash
-        run: |
-          subject="$(git log -1 --pretty=%s)"
-          if [ "$subject" = 'ci: grant workflow permission for Issue 246 updater' ]; then
-            echo 'apply=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'apply=false' >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Set up Python
-        if: steps.gate.outputs.apply == 'true'
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
       - name: Set up uv
-        if: steps.gate.outputs.apply == 'true'
         uses: astral-sh/setup-uv@v8.2.0
         with:
           enable-cache: auto
 
-      - name: Install current development environment
-        if: steps.gate.outputs.apply == 'true'
+      - name: Configure private Git access through the App
         env:
-          SHARED_PACKAGE_TOKEN: ${{ steps.shared-token.outputs.token }}
+          SHARED_PACKAGE_TOKEN: ${{ steps.app-token.outputs.token }}
         shell: bash
         run: |
           set -euo pipefail
           auth_header="$(printf 'x-access-token:%s' "$SHARED_PACKAGE_TOKEN" | base64 | tr -d '\n')"
           printf '::add-mask::%s\n' "$auth_header"
-          GIT_CONFIG_COUNT=1 \
-          GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
-          GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth_header}" \
-            uv sync --group dev --frozen --python "$(command -v python)"
+          git config --global http.https://github.com/.extraheader \
+            "AUTHORIZATION: basic ${auth_header}"
 
-      - name: Apply official Copier update to v0.29.3
-        if: steps.gate.outputs.apply == 'true'
-        env:
-          SHARED_PACKAGE_TOKEN: ${{ steps.shared-token.outputs.token }}
+      - name: Install system and project dependencies
         shell: bash
         run: |
           set -euo pipefail
-          auth_header="$(printf 'x-access-token:%s' "$SHARED_PACKAGE_TOKEN" | base64 | tr -d '\n')"
-          printf '::add-mask::%s\n' "$auth_header"
-          GIT_CONFIG_COUNT=1 \
-          GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
-          GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth_header}" \
-            uv run py-lib-template-update --vcs-ref v0.29.3
-
-      - name: Verify exact stable update result
-        if: steps.gate.outputs.apply == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -Eq '^_commit: v0\.29\.3$' _copier_answers.yml
-          grep -q 'py-lib-starter.git@v0.29.3#subdirectory=packages/py-lib-runtime' pyproject.toml
-          grep -q 'py-lib-starter.git@v0.29.3#subdirectory=packages/py-lib-tooling' pyproject.toml
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          version=v2.12.0
+          sudo curl -fsSL \
+            -o /usr/local/bin/hadolint \
+            "https://github.com/hadolint/hadolint/releases/download/${version}/hadolint-Linux-x86_64"
+          sudo chmod +x /usr/local/bin/hadolint
+          bash scripts/env/setup.sh
           uv lock --check
-          git diff --check
-          actual="$(git diff --name-only | sort)"
-          expected="$(printf '%s\n' \
-            '.github/workflows/ci.yml' \
-            '.github/workflows/sync-starter-template.yml' \
-            '_copier_answers.yml' \
-            'pyproject.toml' \
-            'uv.lock' | sort)"
-          test "$actual" = "$expected"
 
-      - name: Capture base Git objects
-        if: steps.gate.outputs.apply == 'true'
-        id: base
+      - name: Run diagnostic matrix
+        id: matrix
         shell: bash
         run: |
-          echo "parent=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          echo "tree=$(git rev-parse HEAD^{tree})" >> "$GITHUB_OUTPUT"
+          set -uo pipefail
+          evidence=.issue246-diagnostics
+          rm -rf "$evidence"
+          mkdir -p "$evidence/logs"
+          overall=0
+          run_check() {
+            local name="$1"
+            shift
+            set +e
+            "$@" >"$evidence/logs/${name}.log" 2>&1
+            local status=$?
+            set -e
+            cat "$evidence/logs/${name}.log"
+            printf '%s=%s\n' "$name" "$status" >>"$evidence/statuses.txt"
+            if [ "$status" -ne 0 ]; then
+              overall=1
+            fi
+          }
+          run_check template-check uv run py-lib-template-check
+          run_check project-structure uv run py-lib-check-project-structure --strict-template
+          run_check docs-structure uv run py-lib-check-project-docs-structure
+          run_check public-contract uv run py-lib-check-public-contract-boundary
+          export SKIP=check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout
+          run_check pre-commit uv run pre-commit run --all-files --show-diff-on-failure
+          run_check pre-push uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
+          unset SKIP
+          run_check non-e2e uv run pytest \
+            tests/llm_router/unit \
+            tests/llm_router/integration \
+            tests/llm_router/property_based \
+            -n auto -p randomly -m 'not slow' -q --no-cov
+          run_check build uv build
+          run_check installed-artifact-smoke uv run py-lib-smoke-installed-artifact
+          run_check public-api-smoke uv run py-lib-smoke-public-api
+          run_check copier-same-version uv run py-lib-template-update --vcs-ref v0.29.3
+          run_check template-check-after-update uv run py-lib-template-check
+          run_check no-diff-after-update git diff --exit-code
+          git status --short >"$evidence/git-status.txt"
+          git diff >"$evidence/git-diff.patch"
+          printf 'overall=%s\n' "$overall" >>"$GITHUB_OUTPUT"
+          exit 0
 
-      - name: Create CI workflow blob
-        if: steps.gate.outputs.apply == 'true'
-        id: ci_blob
-        env:
-          GH_TOKEN: ${{ steps.target-token.outputs.token }}
+      - name: Upload diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-246-diagnostics-${{ github.run_id }}
+          path: .issue246-diagnostics
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Assert diagnostic matrix success
+        if: always()
         shell: bash
         run: |
-          sha="$(jq -Rs '{content: ., encoding: "utf-8"}' .github/workflows/ci.yml | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq '.sha')"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-
-      - name: Create sync workflow blob
-        if: steps.gate.outputs.apply == 'true'
-        id: sync_blob
-        env:
-          GH_TOKEN: ${{ steps.target-token.outputs.token }}
-        shell: bash
-        run: |
-          sha="$(jq -Rs '{content: ., encoding: "utf-8"}' .github/workflows/sync-starter-template.yml | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq '.sha')"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-
-      - name: Create Copier answers blob
-        if: steps.gate.outputs.apply == 'true'
-        id: answers_blob
-        env:
-          GH_TOKEN: ${{ steps.target-token.outputs.token }}
-        shell: bash
-        run: |
-          sha="$(jq -Rs '{content: ., encoding: "utf-8"}' _copier_answers.yml | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq '.sha')"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-
-      - name: Create pyproject blob
-        if: steps.gate.outputs.apply == 'true'
-        id: pyproject_blob
-        env:
-          GH_TOKEN: ${{ steps.target-token.outputs.token }}
-        shell: bash
-        run: |
-          sha="$(jq -Rs '{content: ., encoding: "utf-8"}' pyproject.toml | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq '.sha')"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-
-      - name: Create lockfile blob
-        if: steps.gate.outputs.apply == 'true'
-        id: lock_blob
-        env:
-          GH_TOKEN: ${{ steps.target-token.outputs.token }}
-        shell: bash
-        run: |
-          sha="$(jq -Rs '{content: ., encoding: "utf-8"}' uv.lock | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq '.sha')"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-
-      - name: Create updater tree
-        if: steps.gate.outputs.apply == 'true'
-        id: updater_tree
-        env:
-          GH_TOKEN: ${{ steps.target-token.outputs.token }}
-        shell: bash
-        run: |
-          sha="$(jq -n \
-            --arg base_tree '${{ steps.base.outputs.tree }}' \
-            --arg ci_sha '${{ steps.ci_blob.outputs.sha }}' \
-            --arg sync_sha '${{ steps.sync_blob.outputs.sha }}' \
-            --arg answers_sha '${{ steps.answers_blob.outputs.sha }}' \
-            --arg pyproject_sha '${{ steps.pyproject_blob.outputs.sha }}' \
-            --arg lock_sha '${{ steps.lock_blob.outputs.sha }}' \
-            '{base_tree: $base_tree, tree: [
-              {path: ".github/workflows/ci.yml", mode: "100644", type: "blob", sha: $ci_sha},
-              {path: ".github/workflows/sync-starter-template.yml", mode: "100644", type: "blob", sha: $sync_sha},
-              {path: "_copier_answers.yml", mode: "100644", type: "blob", sha: $answers_sha},
-              {path: "pyproject.toml", mode: "100644", type: "blob", sha: $pyproject_sha},
-              {path: "uv.lock", mode: "100644", type: "blob", sha: $lock_sha}
-            ]}' | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/trees" --input - --jq '.sha')"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-
-      - name: Create updater commit
-        if: steps.gate.outputs.apply == 'true'
-        id: updater_commit
-        env:
-          GH_TOKEN: ${{ steps.target-token.outputs.token }}
-        shell: bash
-        run: |
-          sha="$(jq -n \
-            --arg message 'chore: update managed shell to starter v0.29.3' \
-            --arg tree '${{ steps.updater_tree.outputs.sha }}' \
-            --arg parent '${{ steps.base.outputs.parent }}' \
-            '{message: $message, tree: $tree, parents: [$parent]}' | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/commits" --input - --jq '.sha')"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-
-      - name: Fast-forward migration branch
-        if: steps.gate.outputs.apply == 'true'
-        env:
-          GH_TOKEN: ${{ steps.target-token.outputs.token }}
-        shell: bash
-        run: |
-          jq -n --arg sha '${{ steps.updater_commit.outputs.sha }}' '{sha: $sha, force: false}' | gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/heads/issue-246-standard-onboarding" --input - >/dev/null
+          cat .issue246-diagnostics/statuses.txt
+          test '${{ steps.matrix.outputs.overall }}' = '0'
