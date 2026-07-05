@@ -13,7 +13,7 @@ from typing import cast
 
 from pydantic import BaseModel
 
-from llm_router._api.contracts import LLMRouterResponse, ToolCall, ToolStep
+from llm_router._internal.contracts.models import LLMRouterResponse, ToolCall, ToolStep
 from llm_router._internal.providers.base import ProviderResult
 from py_lib_runtime import preview_value
 

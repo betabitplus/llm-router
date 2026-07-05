@@ -17,7 +17,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from llm_router._api.contracts import ToolCall
+from llm_router._internal.contracts.models import ToolCall
 from llm_router._internal.capabilities.content import (
     NormalizedMessage,
     TextPart,

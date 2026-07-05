@@ -18,8 +18,8 @@ from typing import Any
 
 import httpx
 
-from llm_router._api.errors import ProviderError
-from llm_router._api.types import Provider
+from llm_router._internal.contracts.errors import ProviderError
+from llm_router._internal.contracts.types import Provider
 from llm_router._internal.capabilities.content import MediaPart, TextPart
 from llm_router._internal.capabilities.media import (
     FileMedia,

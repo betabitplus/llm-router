@@ -5,7 +5,7 @@ from dataclasses import replace
 import pytest
 
 from llm_router import ConfigurationError, Model, ModelNotFoundError, Provider
-from llm_router._api.contracts import ProviderLimits, RouterProfile
+from llm_router._internal.contracts.models import ProviderLimits, RouterProfile
 from llm_router._internal.config import build_default_config
 from llm_router._internal.runtime.routes import expand_route_plan
 

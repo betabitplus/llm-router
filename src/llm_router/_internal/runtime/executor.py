@@ -12,9 +12,9 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from typing import Any
 
-from llm_router._api.contracts import LLMRouterResponse
-from llm_router._api.errors import LLMRouterError, ProviderError, ToolExecutionError
-from llm_router._api.types import Provider
+from llm_router._internal.contracts.models import LLMRouterResponse
+from llm_router._internal.contracts.errors import LLMRouterError, ProviderError, ToolExecutionError
+from llm_router._internal.contracts.types import Provider
 from llm_router._internal.capabilities.content import (
     NormalizedMessage,
     normalize_content,
@@ -31,7 +31,7 @@ from llm_router._internal.capabilities.tools import (
     run_tool_round,
 )
 from llm_router._internal.config import LLMRouterConfig
-from llm_router._internal.output import build_public_response
+from llm_router._internal.runtime.output import build_public_response
 from llm_router._internal.providers.base import (
     ProviderAdapter,
     ProviderCredential,

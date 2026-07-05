@@ -1,3 +1,4 @@
+# %%
 """Internal Gemini WebAPI Opera-cookie client helpers.
 
 Why:

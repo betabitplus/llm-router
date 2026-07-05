@@ -10,9 +10,9 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 
-from llm_router._api.contracts import RoutingAttempt, ToolCall, ToolStep
-from llm_router._api.errors import ProviderError
-from llm_router._api.types import Provider
+from llm_router._internal.contracts.models import RoutingAttempt, ToolCall, ToolStep
+from llm_router._internal.contracts.errors import ProviderError
+from llm_router._internal.contracts.types import Provider
 from llm_router._internal.capabilities.content import (
     NormalizedMessage,
     TextPart,

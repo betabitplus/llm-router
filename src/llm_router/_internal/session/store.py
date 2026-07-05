@@ -11,8 +11,8 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-from llm_router._api.contracts import ChatMessage, ChatPart, MessageContent
-from llm_router._internal.errors import SessionSerializationError
+from llm_router._internal.contracts.models import ChatMessage, ChatPart, MessageContent
+from llm_router._internal.runtime.errors import SessionSerializationError
 from llm_router._internal.session.serialization import (
     atomic_write_text,
     decode_session,

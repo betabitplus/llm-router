@@ -15,6 +15,8 @@ structure stays aligned with `architecture/concepts/` and
 
 ## Files
 
+- [public-boundary.md](public-boundary.md)
+  Proves the real public config read/install lifecycle through top-level imports.
 - [provider-sdk-wrapping.md](provider-sdk-wrapping.md)
   Explains text, image, document, video, and tool loop workflows proven
   across provider families.

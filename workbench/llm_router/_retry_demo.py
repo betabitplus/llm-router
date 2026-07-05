@@ -1,3 +1,4 @@
+# %%
 """Shared retry-demo helpers for workbench provider scripts.
 
 Why:

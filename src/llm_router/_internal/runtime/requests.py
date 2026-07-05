@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
-from llm_router._api.contracts import ChatPart, LLMRouterResponse
+from llm_router._internal.contracts.models import ChatPart, LLMRouterResponse
 from llm_router._internal.runtime.effective_settings import EffectiveSettings
 from llm_router._internal.runtime.limiter import ResolvedKey
 from llm_router._internal.runtime.routes import ExpandedRoute

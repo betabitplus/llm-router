@@ -1,3 +1,4 @@
+# %%
 """Google GenAI workbench tool-loop helpers.
 
 Why:

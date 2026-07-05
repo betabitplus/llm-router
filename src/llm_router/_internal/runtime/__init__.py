@@ -13,4 +13,3 @@ What does not belong here:
 
 from llm_router._internal.runtime.router import RouterRuntime
 
-__all__ = ["RouterRuntime"]

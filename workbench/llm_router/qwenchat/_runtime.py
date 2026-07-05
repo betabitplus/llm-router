@@ -1,3 +1,4 @@
+# %%
 """QwenChat workbench runtime helpers.
 
 Why:

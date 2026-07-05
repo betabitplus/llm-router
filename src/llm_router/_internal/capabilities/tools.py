@@ -15,8 +15,8 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any, Literal, get_type_hints
 
-from llm_router._api.contracts import ToolCall, ToolStep
-from llm_router._api.errors import ToolExecutionError
+from llm_router._internal.contracts.models import ToolCall, ToolStep
+from llm_router._internal.contracts.errors import ToolExecutionError
 
 
 @dataclass(frozen=True, slots=True)

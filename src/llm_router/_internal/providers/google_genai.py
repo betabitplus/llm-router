@@ -18,9 +18,9 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel
 
-from llm_router._api.contracts import ToolCall
-from llm_router._api.errors import ProviderError
-from llm_router._api.types import Provider
+from llm_router._internal.contracts.models import ToolCall
+from llm_router._internal.contracts.errors import ProviderError
+from llm_router._internal.contracts.types import Provider
 from llm_router._internal.capabilities.content import (
     MediaPart,
     NormalizedMessage,

@@ -21,7 +21,7 @@ from tenacity import (
     wait_random_exponential,
 )
 
-from llm_router._api.errors import ProviderError
+from llm_router._internal.contracts.errors import ProviderError
 from llm_router._internal.config.models import RetryPolicy
 from py_lib_runtime import build_retry_before_sleep_logger
 

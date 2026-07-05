@@ -1,3 +1,4 @@
+# %%
 """QwenChat workbench chat-completion helpers.
 
 Why:

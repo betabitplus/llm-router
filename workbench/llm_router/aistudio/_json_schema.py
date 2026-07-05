@@ -1,3 +1,4 @@
+# %%
 """AI Studio workbench JSON-schema helpers.
 
 Why:

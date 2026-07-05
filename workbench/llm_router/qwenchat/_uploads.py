@@ -1,3 +1,4 @@
+# %%
 """QwenChat workbench upload and content-assembly helpers.
 
 Why:

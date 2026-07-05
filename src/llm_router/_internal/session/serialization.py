@@ -16,14 +16,14 @@ from pathlib import Path
 
 from PIL import Image
 
-from llm_router._api.contracts import (
+from llm_router._internal.contracts.models import (
     ChatMessage,
     ChatPart,
     FileSchema,
     VideoSchema,
     VideoUrlSchema,
 )
-from llm_router._internal.errors import SessionSerializationError
+from llm_router._internal.runtime.errors import SessionSerializationError
 
 _SESSION_VERSION = 1
 
