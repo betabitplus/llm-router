@@ -13,7 +13,7 @@ name = "llm-router"
 version = "0.8.1"
 description = "A provider-agnostic LLM routing and orchestration library."
 readme = "README.md"
-keywords = ["gemini", "llm", "openai", "orchestration", "router"]
+keywords = [ "gemini", "llm", "openai", "orchestration", "router" ]
 license = "MIT"
 authors = [ { name = "betabitplus", email = "8123085+betabitplus@users.noreply.github.com" } ]
 requires-python = ">=3.13"
@@ -25,7 +25,17 @@ classifiers = [
   "Typing :: Typed",
 ]
 # --- Main Dependencies ---
-dependencies = ["browser-cookie3", "gemini-webapi>=1.19.2,<1.20", "google-genai>=1.73.1", "httpx", "openai", "pillow>=12.2", "pydantic", "py-lib-runtime @ git+https://github.com/betabitplus/py-lib-starter.git@v0.29.1#subdirectory=packages/py-lib-runtime", "tenacity>=9.1.4"]
+dependencies = [
+  "browser-cookie3",
+  "gemini-webapi>=1.19.2,<1.20",
+  "google-genai>=1.73.1",
+  "httpx",
+  "openai",
+  "pillow>=12.2",
+  "py-lib-runtime @ git+https://github.com/betabitplus/py-lib-starter.git@v0.29.3#subdirectory=packages/py-lib-runtime",
+  "pydantic",
+  "tenacity>=9.1.4",
+]
 # --- Project URLs ---
 urls."Bug Tracker" = "https://github.com/betabitplus/llm-router/issues"
 urls.Documentation = "https://github.com/betabitplus/llm-router/tree/main/docs"
@@ -33,7 +43,52 @@ urls.Homepage = "https://github.com/betabitplus/llm-router"
 urls.Repository = "https://github.com/betabitplus/llm-router"
 
 [dependency-groups]
-dev = ["bandit>=1.9.4", "check-manifest>=0.51", "commitizen>=4.16.3", "deptry>=0.25.1", "flake8>=7.3", "flake8-class-attributes-order>=0.3", "flake8-cognitive-complexity>=0.1", "hypothesis>=6.155.3", "import-linter>=2.11", "interrogate>=1.7", "ipykernel>=7.3.0", "ipython>=9.14.1", "nest-asyncio>=1.6", "pillow>=12.2", "pip-audit>=2.10.1", "pre-commit>=4.6.0", "py-lib-tooling @ git+https://github.com/betabitplus/py-lib-starter.git@v0.29.1#subdirectory=packages/py-lib-tooling", "pyright>=1.1.410", "pytest>=9.1.0", "pytest-cov>=7.1.0", "pytest-randomly>=4.1.0", "pytest-recording>=0.13.4", "pytest-xdist>=3.8.0", "radon>=6.0.1", "rich>=15", "ruff>=0.15.17", "syrupy>=5.3.2", "ty>=0.0.50", "types-pillow>=10.2.0.20240822", "wheel>=0.47.0", "beartype>=0.22.9", "brotli>=1.2.0", "ipywidgets>=8.1.8", "jupyter>=1.1.1", "pygments>=2.20.0", "pymupdf", "pytest-asyncio>=1.3.0"]
+dev = [
+  # Security auditing
+  "bandit>=1.9.4",
+  "beartype>=0.22.9",
+  "brotli>=1.2.0",
+  "check-manifest>=0.51",
+  "commitizen>=4.16.3",
+  # Project hygiene
+  "deptry>=0.25.1",
+  "flake8>=7.3",
+  "flake8-class-attributes-order>=0.3",
+  "flake8-cognitive-complexity>=0.1",
+  "hypothesis>=6.155.3",
+  "import-linter>=2.11",
+  # Docs consistency
+  "interrogate>=1.7",
+  # Interactive development
+  "ipykernel>=7.3.0",
+  "ipython>=9.14.1",
+  "ipywidgets>=8.1.8",
+  "jupyter>=1.1.1",
+  "nest-asyncio>=1.6",
+  "pillow>=12.2",
+  "pip-audit>=2.10.1",
+  "pre-commit>=4.6.0",
+  # Shared repo tooling and test support
+  "py-lib-tooling @ git+https://github.com/betabitplus/py-lib-starter.git@v0.29.3#subdirectory=packages/py-lib-tooling",
+  "pygments>=2.20.0",
+  "pymupdf",
+  "pyright>=1.1.410",
+  # Test runner and plugins
+  "pytest>=9.1.0",
+  "pytest-asyncio>=1.3.0",
+  "pytest-cov>=7.1.0",
+  "pytest-randomly>=4.1.0",
+  "pytest-recording>=0.13.4",
+  "pytest-xdist>=3.8.0",
+  # Code quality and formatting
+  "radon>=6.0.1",
+  "rich>=15",
+  "ruff>=0.15.17",
+  "syrupy>=5.3.2",
+  "ty>=0.0.50",
+  "types-pillow>=10.2.0.20240822",
+  "wheel>=0.47.0",
+]
 
 [tool.setuptools]
 # Package discovery is scoped to `src/`; keep non-package code outside `src/`.
@@ -319,8 +374,6 @@ rules.unresolved-attribute = "ignore"
 
 [tool.pytest]
 ini_options.pythonpath = [ ".", "src" ]  # Enable imports from project root and src/
-ini_options.asyncio_default_fixture_loop_scope = "function"
-ini_options.filterwarnings = ["ignore:builtin type .* has no __module__ attribute:DeprecationWarning"]
 ini_options.norecursedirs = [
   "*.egg-info",
   ".artifact-smoke*",
@@ -335,7 +388,27 @@ ini_options.norecursedirs = [
 ]
 # ---------------- Pytest configuration ----------------
 ini_options.addopts = "--cov --cov-report=term-missing"
-ini_options.markers = ["e2e_behavior: end-to-end behavior tests", "e2e_contract: end-to-end public contract tests", "hermetic: marks tests that run fully offline", "slow: marks tests that are slow and should be skipped in fast runs", "vcr: marks tests that use VCR.py for HTTP recording/replay", "e2e_contract: provider contract tests for end-to-end request/response flows", "e2e_behavior: router behavior tests for retry, routing, and session mechanics", "cap_async: tests async query execution paths", "cap_file: tests file attachment handling", "cap_image: tests image attachment handling", "cap_resilience: tests retry and recovery behavior under failure", "cap_routing: tests route selection, fallback, or key rotation behavior", "cap_session: tests session persistence, resume, or branching behavior", "cap_structured: tests structured-output parsing or response schemas", "cap_tools: tests tool-calling execution paths", "cap_video: tests video attachment handling", "hermetic: marks tests that run fully offline using VCR cassettes"]
+ini_options.markers = [
+  "cap_async: tests async query execution paths",
+  "cap_file: tests file attachment handling",
+  "cap_image: tests image attachment handling",
+  "cap_resilience: tests retry and recovery behavior under failure",
+  "cap_routing: tests route selection, fallback, or key rotation behavior",
+  "cap_session: tests session persistence, resume, or branching behavior",
+  "cap_structured: tests structured-output parsing or response schemas",
+  "cap_tools: tests tool-calling execution paths",
+  "cap_video: tests video attachment handling",
+  "e2e_behavior: end-to-end behavior tests",
+  "e2e_behavior: router behavior tests for retry, routing, and session mechanics",
+  "e2e_contract: end-to-end public contract tests",
+  "e2e_contract: provider contract tests for end-to-end request/response flows",
+  "hermetic: marks tests that run fully offline",
+  "hermetic: marks tests that run fully offline using VCR cassettes",
+  "slow: marks tests that are slow and should be skipped in fast runs",
+  "vcr: marks tests that use VCR.py for HTTP recording/replay",
+]
+ini_options.filterwarnings = [ "ignore:builtin type .* has no __module__ attribute:DeprecationWarning" ]
+ini_options.asyncio_default_fixture_loop_scope = "function"
 
 [tool.coverage]
 run.source = [ "src" ]
@@ -476,14 +549,14 @@ allow_indirect_imports = true
 name = "Private implementation must not depend on facade entrypoints"
 id = "private-core-not-dependent-on-facade-entrypoints"
 type = "forbidden"
-source_modules = ["llm_router._internal"]
-forbidden_modules = ["llm_router._api.router", "llm_router._api.session", "llm_router._api.presets"]
+source_modules = [ "llm_router._internal" ]
+forbidden_modules = [ "llm_router._api.router", "llm_router._api.session", "llm_router._api.presets" ]
 as_packages = false
 
 [[tool.importlinter.contracts]]
 name = "Private implementation must stay layered"
 id = "private-core-layering"
 type = "layers"
-containers = ["llm_router._internal"]
-layers = ["runtime", "providers|session", "config:errors"]
-ignore_imports = ["llm_router._internal.config.** -> llm_router._internal.**"]
+containers = [ "llm_router._internal" ]
+layers = [ "runtime", "providers|session", "config:errors" ]
+ignore_imports = [ "llm_router._internal.config.** -> llm_router._internal.**" ]

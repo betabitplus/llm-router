@@ -41,6 +41,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: public-boundary
+            path: tests/llm_router/e2e/public_boundary
           - name: public-output-and-errors
             path: tests/llm_router/e2e/public_output_and_errors
           - name: provider-sdk-wrapping

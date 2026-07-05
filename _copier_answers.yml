@@ -1,27 +1,29 @@
-_commit: v0.29.1
+_commit: v0.29.3
 _src_path: https://github.com/betabitplus/py-lib-starter.git
 author_email: 8123085+betabitplus@users.noreply.github.com
 author_name: betabitplus
 ci_image_copy_paths:
-- .pre-commit-config.yaml
-- pyproject.toml
-- src
-- tests
+  - .pre-commit-config.yaml
+  - pyproject.toml
+  - src
+  - tests
 ci_playwright_browsers: []
 config_class_name: LLMRouterConfig
 copyright_year: '2026'
 e2e_slices:
--   name: public-output-and-errors
+  - name: public-boundary
+    path: tests/llm_router/e2e/public_boundary
+  - name: public-output-and-errors
     path: tests/llm_router/e2e/public_output_and_errors
--   name: provider-sdk-wrapping
+  - name: provider-sdk-wrapping
     path: tests/llm_router/e2e/provider_sdk_wrapping
--   name: session-state-and-isolation
+  - name: session-state-and-isolation
     path: tests/llm_router/e2e/session_state_and_isolation
--   name: provider-retries-and-output-repair
+  - name: provider-retries-and-output-repair
     path: tests/llm_router/e2e/provider_retries_and_output_repair
--   name: route-fallback-and-attempt-policy
+  - name: route-fallback-and-attempt-policy
     path: tests/llm_router/e2e/route_fallback_and_attempt_policy
--   name: settings-overrides-and-propagation
+  - name: settings-overrides-and-propagation
     path: tests/llm_router/e2e/settings_overrides_and_propagation
 env_prefix: LLM_ROUTER
 error_class_name: LLMRouterError
@@ -37,14 +39,14 @@ project_title: LLM Router
 project_title_lower: llm router
 renovate_uv_ignored_updates: []
 repository_name: llm-router
-runtime_git_ref: v0.29.1
+runtime_git_ref: v0.29.3
 runtime_git_subdirectory: packages/py-lib-runtime
 runtime_git_url: https://github.com/betabitplus/py-lib-starter.git
 template_profile: python-lib-standard
-tooling_git_ref: v0.29.1
+tooling_git_ref: v0.29.3
 tooling_git_subdirectory: packages/py-lib-tooling
 tooling_git_url: https://github.com/betabitplus/py-lib-starter.git
 workspace_python_paths:
-- src
+  - src
 workspace_test_paths:
-- tests
+  - tests
