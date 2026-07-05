@@ -101,6 +101,7 @@ jobs:
           printf '%s\n' migration > "$RUNNER_TEMP/issue246-stage"
           reference="$(cat "$RUNNER_TEMP/issue246-reference-path")"
           python .issue246/migrate.py . "$reference"
+          rm -rf .github/workflows
           git checkout origin/issue-246-standard-onboarding -- .github/workflows
           find . -type d -name __pycache__ -prune -exec rm -rf {} +
           git diff --check
