@@ -1,8 +1,9 @@
-# Automated version bump and changelog generation on merge to main
-# Uses Commitizen to analyze conventional commits and determine version bump
+# Automated version bump and release creation on merge to main.
+# Uses Commitizen to analyze conventional commits and determine version bump.
 #
 # Trigger: Push to main (typically via merged PR)
-# Actions: Bump version in pyproject.toml, update CHANGELOG.md, create git tag, create GitHub Release
+# Actions: Create one bump commit and tag, then use the bump-triggered run to
+# reconcile the GitHub Release and synchronize dev with final main.
 
 name: Release
 
@@ -18,75 +19,299 @@ concurrency:
 jobs:
   bump-version:
     name: Bump version and create release
-    runs-on: ubuntu-latest
-    # Skip if commit message already contains version bump (avoid infinite loop)
-    if: "!startsWith(github.event.head_commit.message, 'bump:')"
-
+    runs-on: ${{ github.event.repository.private == true && fromJSON(vars.CI_RUNNER_LABELS_JSON || '["ubuntu-latest"]') || 'ubuntu-latest' }}
     permissions:
-      contents: write
+      contents: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+      - name: Create release write token
+        id: release-write-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          fetch-depth: 0 # Full history for changelog generation
-          token: ${{ secrets.PAT_TOKEN }}
+          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
+          permission-contents: write
+          permission-workflows: write
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Create shared package read token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          python-version: "3.13"
+          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }},py-lib-starter
+          permission-contents: read
 
-      - name: Install Commitizen
-        run: pip install commitizen==4.13.7
-
-      - name: Configure Git
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-      - name: Bump version and update changelog
-        id: cz
-        run: |
-          # Get current version before bump
-          CURRENT_VERSION=$(cz version --project)
-          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-
-          # Bump version (will fail if no bumpable commits since last tag)
-          if cz bump --changelog --yes; then
-            NEW_VERSION=$(cz version --project)
-            echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-            echo "bumped=true" >> $GITHUB_OUTPUT
-          else
-            echo "No version bump needed (no feat/fix commits since last release)"
-            echo "bumped=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Push changes and tags
-        if: steps.cz.outputs.bumped == 'true'
-        run: |
-          git push origin main --follow-tags
-
-      - name: Create GitHub Release
-        if: steps.cz.outputs.bumped == 'true'
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: v${{ steps.cz.outputs.new_version }}
-          name: Release v${{ steps.cz.outputs.new_version }}
-          body_path: CHANGELOG.md
-          generate_release_notes: true
+      - name: Verify automation access
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-
-      - name: Fast-forward dev to main
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REQUIRED_REPOSITORY: ${{ github.repository }}
         run: |
-          git fetch origin main dev
-          git checkout -B dev origin/dev
-
-          if ! git merge-base --is-ancestor origin/dev origin/main; then
-            echo "origin/dev diverged from origin/main; cannot fast-forward safely." >&2
+          set -euo pipefail
+          if ! gh api "repos/${REQUIRED_REPOSITORY}" >/dev/null; then
+            echo "::error::The automation App cannot access ${REQUIRED_REPOSITORY}."
             exit 1
           fi
 
-          git merge --ff-only origin/main
-          git push origin dev
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ steps.release-write-token.outputs.token }}
+
+      - name: Set up dev environment
+        uses: ./.github/actions/setup-dev-env
+        with:
+          python-version: "3.13"
+          shared-package-token: ${{ steps.app-token.outputs.token }}
+
+      - name: Validate main commit subject
+        if: "!startsWith(github.event.head_commit.message, 'bump:')"
+        run: |
+          set -euo pipefail
+          main_subject="$(git log -1 --format=%s)"
+          uv run python -m \
+            py_lib_tooling._internal.quality_gates.change_title \
+            "$main_subject"
+
+      - name: Configure Git as the automation App
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          app_slug="${{ steps.app-token.outputs.app-slug }}"
+          app_user_id="$(gh api "/users/${app_slug}[bot]" --jq .id)"
+          git config --local user.name "${app_slug}[bot]"
+          git config --local user.email "${app_user_id}+${app_slug}[bot]@users.noreply.github.com"
+
+      - name: Bump version and update changelog
+        if: "!startsWith(github.event.head_commit.message, 'bump:')"
+        id: cz
+        run: |
+          set -euo pipefail
+
+          cz() {
+            uv run cz "$@"
+          }
+
+          CURRENT_VERSION="$(cz version --project)"
+          echo "current_version=${CURRENT_VERSION}" >> "${GITHUB_OUTPUT}"
+
+          set +e
+          DRY_RUN_OUTPUT="$(cz bump --changelog --dry-run --yes 2>&1)"
+          DRY_RUN_STATUS=$?
+          set -e
+          printf '%s\n' "${DRY_RUN_OUTPUT}"
+
+          initial_release_without_prior_tag() {
+            local status="$1"
+            local output="$2"
+
+            if [ "$status" -ne 16 ]; then
+              return 1
+            fi
+            grep -q '^tag to create:' <<<"$output" &&
+              grep -q '^No tag found to do an incremental changelog$' <<<"$output"
+          }
+
+          set_commitizen_bool_setting() {
+            local setting="$1"
+            local old_value="$2"
+            local new_value="$3"
+            SETTING="${setting}" OLD_VALUE="${old_value}" NEW_VALUE="${new_value}" python3 <<'PY'
+          from pathlib import Path
+          import os
+
+          path = Path("pyproject.toml")
+          text = path.read_text(encoding="utf-8")
+          key = os.environ["SETTING"]
+          old = f"{key} = {os.environ['OLD_VALUE']}"
+          new = f"{key} = {os.environ['NEW_VALUE']}"
+          if old not in text:
+              raise SystemExit(f"Missing Commitizen setting: {old}")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+          }
+
+          bump_without_changelog_update() {
+            local output="$1"
+            local tag_name
+            local bump_status
+
+            tag_name="$(sed -n 's/^tag to create: //p' <<<"$output" | head -n 1)"
+            [ -n "${tag_name}" ] || return 1
+
+            # Commitizen cannot produce an incremental changelog before the
+            # first tag, so create the release section non-incrementally first.
+            set_commitizen_bool_setting changelog_incremental true false
+            cz changelog --unreleased-version="${tag_name}"
+            set_commitizen_bool_setting changelog_incremental false true
+            set_commitizen_bool_setting update_changelog_on_bump true false
+
+            set +e
+            cz bump --yes
+            bump_status=$?
+            set -e
+
+            set_commitizen_bool_setting update_changelog_on_bump false true
+            if [ "$bump_status" -eq 0 ]; then
+              actual_tag="v$(cz version --project)"
+              [ "${actual_tag}" = "${tag_name}" ] || return 1
+              grep -Eq "^## ${tag_name}( |$)" CHANGELOG.md
+              git add CHANGELOG.md pyproject.toml uv.lock
+              git commit --amend --no-edit
+              git tag -d "$tag_name"
+              git tag -a "$tag_name" -m "$tag_name"
+            fi
+
+            return "$bump_status"
+          }
+
+          if [ "${DRY_RUN_STATUS}" -eq 0 ]; then
+            cz bump --changelog --yes
+            NEW_VERSION="$(cz version --project)"
+            echo "new_version=${NEW_VERSION}" >> "${GITHUB_OUTPUT}"
+            echo "bumped=true" >> "${GITHUB_OUTPUT}"
+          elif initial_release_without_prior_tag "$DRY_RUN_STATUS" "$DRY_RUN_OUTPUT"; then
+            bump_without_changelog_update "$DRY_RUN_OUTPUT"
+            NEW_VERSION="$(cz version --project)"
+            echo "new_version=${NEW_VERSION}" >> "${GITHUB_OUTPUT}"
+            echo "bumped=true" >> "${GITHUB_OUTPUT}"
+          elif [ "${DRY_RUN_STATUS}" -eq 3 ] || [ "${DRY_RUN_STATUS}" -eq 21 ]; then
+            echo "No version bump needed."
+            echo "bumped=false" >> "${GITHUB_OUTPUT}"
+          else
+            exit "${DRY_RUN_STATUS}"
+          fi
+
+      - name: Validate release bump scope
+        if: steps.cz.outputs.bumped == 'true'
+        env:
+          RELEASE_VERSION: ${{ steps.cz.outputs.new_version }}
+        run: |
+          set -euo pipefail
+          git diff --check HEAD^ HEAD
+          grep -Eq "^## v${RELEASE_VERSION}( |$)" CHANGELOG.md
+
+          changed_files="$(
+            {
+              git diff --name-only HEAD^ HEAD
+              git diff --name-only
+            } | sort -u
+          )"
+          while IFS= read -r path; do
+            [ -n "${path}" ] || continue
+            case "${path}" in
+              CHANGELOG.md|pyproject.toml|uv.lock) ;;
+              *)
+                echo "Release bump modified unapproved path: ${path}" >&2
+                exit 1
+                ;;
+            esac
+          done <<< "${changed_files}"
+
+      - name: Push changes and tags
+        if: steps.cz.outputs.bumped == 'true'
+        run: git push --atomic origin main --follow-tags
+
+      - name: Recover release metadata
+        id: recover
+        if: startsWith(github.event.head_commit.message, 'bump:')
+        run: |
+          set -euo pipefail
+          release_commit="$(git rev-parse HEAD)"
+          version="$(uv run cz version --project)"
+          tag="v${version}"
+          if [ "$(git rev-list -n 1 "${tag}" 2>/dev/null || true)" != "${release_commit}" ]; then
+            echo "Release tag ${tag} does not point to ${release_commit}." >&2
+            exit 1
+          fi
+          {
+            echo "bumped=true"
+            echo "new_version=${version}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Prepare release notes
+        if: steps.recover.outputs.bumped == 'true'
+        env:
+          RELEASE_VERSION: ${{ steps.recover.outputs.new_version }}
+        run: |
+          python3 <<'PY'
+          import os
+          from pathlib import Path
+
+          version = os.environ["RELEASE_VERSION"]
+          lines = Path("CHANGELOG.md").read_text(encoding="utf-8").splitlines()
+          heading = f"## v{version}"
+          try:
+              start = next(
+                  index
+                  for index, line in enumerate(lines)
+                  if line == heading or line.startswith(f"{heading} (")
+              )
+          except StopIteration as exc:
+              raise SystemExit(f"Missing changelog section for v{version}") from exc
+          end = next(
+              (index for index in range(start + 1, len(lines)) if lines[index].startswith("## ")),
+              len(lines),
+          )
+          Path("release-notes.md").write_text(
+              "\n".join(lines[start:end]).rstrip() + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Create GitHub Release
+        if: steps.recover.outputs.bumped == 'true'
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
+        with:
+          tag_name: v${{ steps.recover.outputs.new_version }}
+          name: Release v${{ steps.recover.outputs.new_version }}
+          body_path: release-notes.md
+          token: ${{ steps.release-write-token.outputs.token }}
+
+      - name: Synchronize dev with main
+        if: startsWith(github.event.head_commit.message, 'bump:') || steps.cz.outputs.bumped != 'true'
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          main_sha="$(git rev-parse origin/main)"
+
+          if ! git ls-remote --exit-code --heads origin dev >/dev/null; then
+            git push origin "${main_sha}:refs/heads/dev"
+            exit 0
+          fi
+
+          git fetch origin dev
+          dev_sha="$(git rev-parse origin/dev)"
+          [ "${dev_sha}" = "${main_sha}" ] && exit 0
+
+          if git merge-base --is-ancestor "${dev_sha}" "${main_sha}"; then
+            git push origin "${main_sha}:refs/heads/dev"
+            exit 0
+          fi
+
+          represented_main_sha="${main_sha}"
+          main_subject="$(git log -1 --format=%s "${main_sha}")"
+          if [ "${main_subject#bump:}" != "${main_subject}" ]; then
+            represented_main_sha="${main_sha}^"
+          fi
+
+          if [ "$(git rev-parse "${represented_main_sha}^{tree}")" = "$(git rev-parse "${dev_sha}^{tree}")" ]; then
+            git push origin "${main_sha}:refs/heads/dev" \
+              --force-with-lease="refs/heads/dev:${dev_sha}"
+            exit 0
+          fi
+
+          dev_unique_commits="$(
+            git log --right-only --cherry-pick --oneline "${main_sha}...${dev_sha}"
+          )"
+          if [ -n "${dev_unique_commits}" ]; then
+            echo "origin/dev contains commits not represented on origin/main:" >&2
+            printf '%s\n' "${dev_unique_commits}" >&2
+            exit 1
+          fi
+
+          git push origin "${main_sha}:refs/heads/dev" \
+            --force-with-lease="refs/heads/dev:${dev_sha}"

@@ -1,191 +1,111 @@
 # CI Pipeline
-# Splits baseline repository verification from product-specific verification.
+# Thin generated orchestration over reusable starter-owned CI workflows.
+# Self-hosted runners and App credentials are used only for trusted same-repo
+# events. Fork pull requests run the baseline on GitHub-hosted infrastructure.
 
 name: CI
 
-env:
-  PYTHON_VERSION: "3.13"
-
 on:
+  workflow_dispatch:
   push:
-    branches: [main, dev]
+    branches: [dev]
   pull_request:
     branches: [main, dev]
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   baseline:
     name: Baseline Repo Verification
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    uses: ./.github/workflows/python-lib-ci-baseline.yml
+    with:
+      python-version: "3.13"
+    secrets: inherit
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Set up dev environment
-        uses: ./.github/actions/setup-dev-env
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install system tools for hooks
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y shellcheck
-
-      - name: Install hadolint
-        run: |
-          set -euo pipefail
-          HADOLINT_VERSION="v2.12.0"
-          arch="$(uname -m)"
-          case "$arch" in
-            x86_64|amd64) asset="hadolint-Linux-x86_64" ;;
-            aarch64|arm64) asset="hadolint-Linux-arm64" ;;
-            *) echo "Unsupported architecture for hadolint: $arch" >&2; exit 2 ;;
-          esac
-          sudo curl -fsSL \
-            -o /usr/local/bin/hadolint \
-            "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/${asset}"
-          sudo chmod +x /usr/local/bin/hadolint
-          hadolint --version
-
-      - name: Cache pre-commit hooks
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
-          restore-keys: |
-            pre-commit-
-
-      - name: Run pre-commit hooks (commit-time)
-        env:
-          # Not meaningful in CI (detached HEAD / no real push), or local-only maintenance hooks.
-          SKIP: check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout,clean-pycache,pytest
-        run: uv run pre-commit run --all-files --show-diff-on-failure
-
-      - name: Run baseline pre-push hooks
-        env:
-          SKIP: check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout,clean-pycache,pyright,import-linter,public-contract-private-core,radon-cc,radon-mi,flake8,bandit,pytest
-        run: uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
-
-      - name: Build package artifacts
-        run: |
-          rm -rf dist
-          uv build
-
-      - name: Run installed-artifact smoke suite
-        run: |
-          uv venv .artifact-smoke-wheel --python ${{ env.PYTHON_VERSION }}
-          uv pip install --no-cache --python .artifact-smoke-wheel/bin/python dist/*.whl
-          env -u PYTHONPATH .artifact-smoke-wheel/bin/python scripts/smoke/installed_artifact.py
-          env -u PYTHONPATH .artifact-smoke-wheel/bin/python scripts/smoke/public_api.py
-
-          uv venv .artifact-smoke-sdist --python ${{ env.PYTHON_VERSION }}
-          uv pip install --no-cache --python .artifact-smoke-sdist/bin/python dist/*.tar.gz
-          env -u PYTHONPATH .artifact-smoke-sdist/bin/python scripts/smoke/installed_artifact.py
-          env -u PYTHONPATH .artifact-smoke-sdist/bin/python scripts/smoke/public_api.py
-
-  product:
-    name: Product Verification
-    runs-on: ubuntu-latest
-    needs: baseline
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Set up dev environment
-        uses: ./.github/actions/setup-dev-env
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Cache pre-commit hooks
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
-          restore-keys: |
-            pre-commit-
-
-      - name: Run product pre-push hooks
-        env:
-          SKIP: check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout,clean-pycache,reusable-zones-project-agnostic,markdown-link-check,pip-audit-uv,interrogate,deptry,check-manifest
-        run: uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
+  package:
+    name: Package Verification
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    uses: ./.github/workflows/python-lib-ci-package.yml
+    with:
+      python-version: "3.13"
+    secrets: inherit
 
   e2e-slices:
     name: E2E Slice (${{ matrix.name }})
-    runs-on: ubuntu-latest
-    needs: product
-    permissions:
-      contents: read
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    uses: ./.github/workflows/python-lib-ci-e2e-slice.yml
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: behavior-session
-            marker: e2e_behavior and cap_session
-          - name: behavior-routing
-            marker: e2e_behavior and cap_routing
-          - name: behavior-resilience
-            marker: e2e_behavior and cap_resilience
-          - name: contract-tools
-            marker: e2e_contract and cap_tools
-          - name: contract-async
-            marker: e2e_contract and cap_async
-          - name: contract-video
-            marker: e2e_contract and cap_video
+          - name: public-output-and-errors
+            path: tests/llm_router/e2e/public_output_and_errors
+          - name: provider-sdk-wrapping
+            path: tests/llm_router/e2e/provider_sdk_wrapping
+          - name: session-state-and-isolation
+            path: tests/llm_router/e2e/session_state_and_isolation
+          - name: provider-retries-and-output-repair
+            path: tests/llm_router/e2e/provider_retries_and_output_repair
+          - name: route-fallback-and-attempt-policy
+            path: tests/llm_router/e2e/route_fallback_and_attempt_policy
+          - name: settings-overrides-and-propagation
+            path: tests/llm_router/e2e/settings_overrides_and_propagation
+    with:
+      python-version: "3.13"
+      e2e-path: ${{ matrix.path }}
+      playwright-browsers: ""
+    secrets: inherit
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Set up dev environment
-        uses: ./.github/actions/setup-dev-env
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Run hermetic e2e slice
-        run: |
-          uv run pytest tests/*/e2e \
-            -m "${{ matrix.marker }}" \
-            -q -rs
-
-  issue-246-export:
-    name: Issue 246 Baseline Export
-    runs-on: ubuntu-latest
+  merge-gate:
+    name: ci/merge-gate
+    runs-on: ${{ github.event.repository.private != true && 'ubuntu-latest' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON(vars.CI_RUNNER_LABELS_JSON || '["ubuntu-latest"]') }}
+    needs:
+      - baseline
+      - package
+      - e2e-slices
+    if: ${{ always() }}
     permissions:
       contents: read
-    steps:
-      - name: Checkout complete repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
-      - name: Create recoverable baseline artifacts
-        shell: bash
+    steps:
+      - name: Enforce source policy and require applicable CI jobs to pass
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_BRANCH: ${{ github.base_ref }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPOSITORY: ${{ github.repository }}
+          HEAD_BRANCH: ${{ github.head_ref }}
+          BASELINE_RESULT: ${{ needs.baseline.result }}
+          PACKAGE_RESULT: ${{ needs.package.result }}
+          E2E_RESULT: ${{ needs['e2e-slices'].result }}
         run: |
           set -euo pipefail
-          git fetch origin '+refs/heads/*:refs/remotes/origin/*' '+refs/tags/*:refs/tags/*' --force
-          expected=c6a1d737b7874d7578e1ab127d336b2dd999d12a
-          test "$(git rev-parse refs/remotes/origin/dev)" = "$expected"
-          test "$(git rev-parse refs/remotes/origin/main)" = "$expected"
-          test "$(git rev-parse refs/tags/v0.8.1^{commit})" = "$expected"
-          git bundle create llm-router-pre-standard-onboarding-20260705.bundle --all
-          tar --exclude=.git \
-            --exclude=llm-router-pre-standard-onboarding-20260705.bundle \
-            -czf llm-router-source-c6a1d737.tar.gz .
-          sha256sum llm-router-pre-standard-onboarding-20260705.bundle \
-            llm-router-source-c6a1d737.tar.gz > SHA256SUMS
 
-      - name: Upload baseline backup
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-246-baseline-backup
-          path: |
-            llm-router-pre-standard-onboarding-20260705.bundle
-            llm-router-source-c6a1d737.tar.gz
-            SHA256SUMS
-          if-no-files-found: error
-          retention-days: 90
+          if [ "${EVENT_NAME}" = pull_request ] && [ "${BASE_BRANCH}" = main ]; then
+            if [ "${HEAD_REPOSITORY}" != "${BASE_REPOSITORY}" ] || [ "${HEAD_BRANCH}" != dev ]; then
+              echo "Only the same repository's dev branch may open pull requests to main." >&2
+              exit 1
+            fi
+          fi
+
+          if [ "${BASELINE_RESULT}" != success ]; then
+            echo "Baseline result: ${BASELINE_RESULT}" >&2
+            exit 1
+          fi
+
+          if [ "${EVENT_NAME}" = pull_request ] && [ "${HEAD_REPOSITORY}" != "${BASE_REPOSITORY}" ]; then
+            [ "${PACKAGE_RESULT}" = skipped ] && [ "${E2E_RESULT}" = skipped ] || {
+              echo "Fork PR must not run package or e2e jobs." >&2
+              exit 1
+            }
+            exit 0
+          fi
+
+          if [ "${PACKAGE_RESULT}" != success ] || [ "${E2E_RESULT}" != success ]; then
+            printf 'CI job results: baseline=%s package=%s e2e-slices=%s\n' \
+              "${BASELINE_RESULT}" "${PACKAGE_RESULT}" "${E2E_RESULT}" >&2
+            exit 1
+          fi
