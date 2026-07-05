@@ -48,7 +48,7 @@ jobs:
         id: gate
         shell: bash
         run: |
-          if [ "$(git log -1 --pretty=%s)" = 'ci: apply final verified Issue 246 boundary' ]; then
+          if [ "$(git log -1 --pretty=%s)" = 'ci: rerun final Issue 246 apply from clean tree' ]; then
             echo 'apply=true' >> "$GITHUB_OUTPUT"
           else
             echo 'apply=false' >> "$GITHUB_OUTPUT"
@@ -86,9 +86,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p issue246-final-apply
+          out="$RUNNER_TEMP/issue246-final-apply"
+          mkdir -p "$out"
           uv run py-lib-template-update --vcs-ref v0.29.4 \
-            >issue246-final-apply/template-update.log 2>&1
+            >"$out/template-update.log" 2>&1
           grep -Eq '^_commit: v0\.29\.4$' _copier_answers.yml
           grep -q 'py-lib-starter.git@v0.29.4#subdirectory=packages/py-lib-runtime' pyproject.toml
           grep -q 'py-lib-starter.git@v0.29.4#subdirectory=packages/py-lib-tooling' pyproject.toml
@@ -138,7 +139,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          out=issue246-final-apply
+          out="$RUNNER_TEMP/issue246-final-apply"
           converged=false
           for pass in 1 2 3 4 5; do
             before="$(git diff --binary | sha256sum | cut -d' ' -f1)"
@@ -164,7 +165,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          out=issue246-final-apply
+          out="$RUNNER_TEMP/issue246-final-apply"
           python -m compileall -q src tests
           find . -type d -name __pycache__ -prune -exec rm -rf {} +
           uv run py-lib-template-check >"$out/template-check.log" 2>&1
@@ -184,7 +185,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: issue-246-final-apply-${{ github.run_id }}
-          path: issue246-final-apply
+          path: ${{ runner.temp }}/issue246-final-apply
           if-no-files-found: error
           retention-days: 14
 
@@ -196,7 +197,6 @@ jobs:
         run: |
           set -euo pipefail
           git add -A
-          git reset -- issue246-final-apply
           git config user.name 'betabitplus-py-lib-automation[bot]'
           git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
           git commit -m 'refactor: restore canonical public declarations and starter v0.29.4'
