@@ -1,4 +1,4 @@
-name: Issue 246 Apply Verified Boundary
+name: Issue 246 Hook Diagnostics
 
 on:
   pull_request:
@@ -9,22 +9,12 @@ permissions:
   contents: read
 
 jobs:
-  apply:
+  diagnose:
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.ref == 'issue-246-standard-onboarding'
     runs-on: ubuntu-latest
     steps:
-      - name: Create target write token
-        id: target-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
-          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: llm-router
-          permission-contents: write
-
       - name: Create shared read token
         id: shared-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
@@ -43,28 +33,28 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Detect explicit apply commit
+      - name: Detect explicit diagnostic commit
         id: gate
         shell: bash
         run: |
-          if [ "$(git log -1 --pretty=%s)" = 'ci: repair final canonical Issue 246 test import' ]; then
-            echo 'apply=true' >> "$GITHUB_OUTPUT"
+          if [ "$(git log -1 --pretty=%s)" = 'ci: diagnose Issue 246 commit and pre-push hooks' ]; then
+            echo 'run=true' >> "$GITHUB_OUTPUT"
           else
-            echo 'apply=false' >> "$GITHUB_OUTPUT"
+            echo 'run=false' >> "$GITHUB_OUTPUT"
           fi
 
       - uses: actions/setup-python@v6
-        if: steps.gate.outputs.apply == 'true'
+        if: steps.gate.outputs.run == 'true'
         with:
           python-version: '3.13'
 
       - uses: astral-sh/setup-uv@v8.2.0
-        if: steps.gate.outputs.apply == 'true'
+        if: steps.gate.outputs.run == 'true'
         with:
           enable-cache: auto
 
-      - name: Install exact development environment
-        if: steps.gate.outputs.apply == 'true'
+      - name: Install exact development environment and system tools
+        if: steps.gate.outputs.run == 'true'
         env:
           SHARED_PACKAGE_TOKEN: ${{ steps.shared-token.outputs.token }}
         shell: bash
@@ -73,10 +63,15 @@ jobs:
           auth_header="$(printf 'x-access-token:%s' "$SHARED_PACKAGE_TOKEN" | base64 | tr -d '\n')"
           printf '::add-mask::%s\n' "$auth_header"
           git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth_header}"
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          sudo curl -fsSL -o /usr/local/bin/hadolint \
+            https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64
+          sudo chmod +x /usr/local/bin/hadolint
           bash scripts/env/setup.sh
 
-      - name: Apply exact V2 transformation and final import repairs
-        if: steps.gate.outputs.apply == 'true'
+      - name: Apply verified canonical boundary transformation
+        if: steps.gate.outputs.run == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -114,13 +109,13 @@ jobs:
           uv run ruff check --fix "${changed[@]}"
           uv run ruff format "${changed[@]}"
 
-      - name: Run all boundary checks and preserve evidence
-        if: steps.gate.outputs.apply == 'true'
+      - name: Run hooks and preserve complete evidence
+        if: steps.gate.outputs.run == 'true'
         id: checks
         shell: bash
         run: |
           set -uo pipefail
-          out=issue246-boundary-v2-diagnostics
+          out=issue246-hook-diagnostics
           mkdir -p "$out"
           failed=0
           check() {
@@ -138,6 +133,10 @@ jobs:
           check docs uv run py-lib-check-project-docs-structure
           check public-contract uv run py-lib-check-public-contract-boundary
           check tests uv run pytest tests/llm_router/unit tests/llm_router/integration tests/llm_router/property_based -n auto -p randomly -m 'not slow' -q --no-cov
+          export SKIP=check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout
+          check pre-commit uv run pre-commit run --all-files --show-diff-on-failure
+          check pre-push uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
+          unset SKIP
           check diff-check git diff --check
           git status --short >"$out/git-status.txt"
           git diff --stat >"$out/git-diff-stat.txt"
@@ -146,33 +145,15 @@ jobs:
           echo "failed=$failed" >>"$GITHUB_OUTPUT"
           exit 0
 
-      - name: Upload boundary evidence
-        if: steps.gate.outputs.apply == 'true' && always()
+      - name: Upload hook diagnostics
+        if: steps.gate.outputs.run == 'true' && always()
         uses: actions/upload-artifact@v4
         with:
-          name: issue-246-boundary-apply-${{ github.run_id }}
-          path: issue246-boundary-v2-diagnostics
+          name: issue-246-hooks-${{ github.run_id }}
+          path: issue246-hook-diagnostics
           if-no-files-found: error
           retention-days: 14
 
-      - name: Assert boundary checks
-        if: steps.gate.outputs.apply == 'true' && always()
-        shell: bash
+      - name: Assert hooks
+        if: steps.gate.outputs.run == 'true' && always()
         run: test '${{ steps.checks.outputs.failed }}' = '0'
-
-      - name: Commit and push canonical boundary
-        if: steps.gate.outputs.apply == 'true' && steps.checks.outputs.failed == '0'
-        env:
-          TARGET_TOKEN: ${{ steps.target-token.outputs.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          git add src tests
-          git config user.name 'betabitplus-py-lib-automation[bot]'
-          git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
-          git commit -m 'refactor: restore canonical public declarations'
-          git config --global --unset-all http.https://github.com/.extraheader || true
-          write_header="$(printf 'x-access-token:%s' "$TARGET_TOKEN" | base64 | tr -d '\n')"
-          printf '::add-mask::%s\n' "$write_header"
-          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic ${write_header}" \
-            push origin HEAD:issue-246-standard-onboarding
