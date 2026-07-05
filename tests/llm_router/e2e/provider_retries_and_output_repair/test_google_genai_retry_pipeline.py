@@ -47,7 +47,7 @@ from tests.llm_router.support.workers.retry import (
     google_success_response,
     run_retry_worker,
 )
-from tests.support.console import console
+from py_lib_tooling import console
 
 pytestmark = [
     pytest.mark.e2e_behavior,

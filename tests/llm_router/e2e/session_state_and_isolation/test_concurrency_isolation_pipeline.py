@@ -51,7 +51,7 @@ from tests.llm_router.support.workers.concurrency_isolation import (
     ConcurrencyIsolationWorkerResult,
     run_concurrency_isolation_inprocess,
 )
-from tests.support.console import console
+from py_lib_tooling import console
 
 pytestmark = [
     pytest.mark.e2e_behavior,

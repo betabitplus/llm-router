@@ -1,20 +1,21 @@
 # Scripts
 
-Purpose-grouped repository scripts live here.
+Repo-local scripts live here only when the implementation is specific to this
+repository. Shared development commands come from `py-lib-tooling` console
+scripts.
 
-## Shared repo config
+## Shared Repo Config
 
-`_shared/project_config.py` is the single reader for repo-local tooling
+`py_lib_tooling.get_project_tooling_config` is the single reader for repo-local tooling
 metadata in `[tool.py_lib_starter]` in `pyproject.toml`.
 
-- Use it from repository scripts and `tests/support/` when behavior depends on
-  the distribution name, the primary package, the package list, or repo-scoped
-  env vars.
-- Do not hardcode project package names in reusable checks, smokes, or
-  shared test support; read them from `[tool.py_lib_starter]`.
-- When this repo shape is copied into another library, update `[project].name`
-  and `[tool.py_lib_starter]` in `pyproject.toml`; the shared checks and smoke
-  scripts should then follow that config.
+- Use it when behavior depends on the distribution name, the primary package,
+  the package list, or the env var prefix.
+- Do not hardcode project package names in reusable checks, smokes, or shared
+  test support; read them from `[tool.py_lib_starter]`.
+- When the template is rendered or updated for another library, keep
+  `[project].name` and `[tool.py_lib_starter]` in `pyproject.toml` accurate; the
+  shared checks and smoke commands should then follow that config.
 - `package_names` supports future multi-package repos; `primary_package`
   remains the default import/smoke target.
 - Keep this helper out of runtime package code under `src/`; it is only for
@@ -23,25 +24,44 @@ metadata in `[tool.py_lib_starter]` in `pyproject.toml`.
 Example:
 
 ```python
-from scripts._shared.project_config import get_project_tooling_config
+from py_lib_tooling import get_project_tooling_config
 
 project_config = get_project_tooling_config()
 package_name = project_config.primary_package
 package_names = project_config.package_names
-env_file_var = project_config.env_file_var
 ```
 
-- `checks/`
-  Lightweight repository boundary and structure checks. Some checks read
-  `[tool.py_lib_starter]` so CI and hooks can target the configured package
-  without hiding complex behavior behind generated config.
-- `_shared/`
-  Shared helpers used by repository-local scripts and test support, including
-  `pyproject.toml`-backed tooling config.
+## Local Scripts
+
 - `env/`
-  Local contributor environment setup and health checks.
-- `smoke/`
-  Small package and public-surface smoke checks.
-  This folder is the canonical list of smoke scripts.
-- `runtime/`
-  Runtime-context helpers such as already-running-loop reproduction.
+  Local contributor environment setup and health checks. `project_config.sh`
+  reads `[tool.py_lib_starter]` from `pyproject.toml`.
+
+Use shared smoke commands directly:
+
+```bash
+uv run py-lib-smoke-installed-artifact
+uv run py-lib-smoke-public-api
+```
+
+Check and apply starter template and shared package updates through the shared
+commands:
+
+```bash
+uv run py-lib-template-check
+uv run py-lib-template-update
+```
+
+Run cleanup, structural, and artifact checks directly when needed:
+
+```bash
+uv run py-lib-check-legacy-support-cleanup
+uv run py-lib-check-project-docs-structure
+uv run py-lib-smoke-built-artifacts
+```
+
+Use the running-loop diagnostic helper only for real workbench modules:
+
+```bash
+uv run py-lib-reproduce-running-loop workbench.llm_router.<module>
+```

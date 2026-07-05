@@ -51,8 +51,8 @@ from llm_router._internal.runtime.tracing import (
     next_tool_choice_after_tool_round,
     structured_output_error,
 )
-from llm_router._support.error_formatting import preview_value
-from llm_router._support.logging import get_logger, log_retry_exhausted
+from py_lib_runtime import preview_value
+from py_lib_runtime import get_logger, log_retry_exhausted
 
 logger = get_logger(__name__)
 
@@ -163,6 +163,7 @@ class ProviderRouteExecutor:
                 log_retry_exhausted(
                     logger,
                     error=exc,
+                    event_type="llm_router.provider.retry.exhausted",
                     context=_retry_context(request),
                 )
             raise _provider_boundary_error(exc, request=request) from exc
@@ -186,6 +187,7 @@ class ProviderRouteExecutor:
                 log_retry_exhausted(
                     logger,
                     error=exc,
+                    event_type="llm_router.provider.retry.exhausted",
                     context=_retry_context(request),
                 )
             raise _provider_boundary_error(exc, request=request) from exc

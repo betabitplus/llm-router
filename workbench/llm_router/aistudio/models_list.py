@@ -31,7 +31,7 @@ from typing import Any, cast
 
 import httpx
 
-from tests.support.console import console
+from py_lib_tooling import console
 from workbench.llm_router.aistudio._sdk_helpers import api_key_env_name, openai_base_url
 
 # =============================================================================

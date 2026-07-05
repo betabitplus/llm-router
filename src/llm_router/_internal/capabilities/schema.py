@@ -16,7 +16,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from llm_router._support.error_formatting import preview_text, preview_value
+from py_lib_runtime import preview_text, preview_value
 
 _MIN_FENCED_JSON_LINES = 2
 

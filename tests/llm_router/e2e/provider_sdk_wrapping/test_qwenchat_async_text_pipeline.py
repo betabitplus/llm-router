@@ -28,9 +28,9 @@ from __future__ import annotations
 import pytest
 
 from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProfile
-from tests.support.console import console
-from tests.support.e2e_vcr_guard import require_vcr_cassette_or_record_mode
-from tests.support.setup import run_async
+from py_lib_tooling import console
+from py_lib_tooling import require_vcr_cassette_or_record_mode
+from py_lib_tooling import run_async
 
 pytestmark = [
     pytest.mark.e2e_contract,

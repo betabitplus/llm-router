@@ -23,7 +23,7 @@ from tests.llm_router.support.workers.worker_patches import (
     install_fast_worker_runtime_config,
     prepare_fault_case,
 )
-from tests.support.paths import get_test_data_path
+from py_lib_tooling import get_test_data_path
 
 VIDEO_PATH = get_test_data_path("llm_router") / "jumper.mp4"
 

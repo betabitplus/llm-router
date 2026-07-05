@@ -60,8 +60,8 @@ from tests.llm_router.support.media.pdf import (
     build_pdf_digest_prompt,
     extract_expected_pdf_facts,
 )
-from tests.support.console import console
-from tests.support.e2e_vcr_guard import require_vcr_cassette_or_record_mode
+from py_lib_tooling import console
+from py_lib_tooling import require_vcr_cassette_or_record_mode
 
 pytestmark = [
     pytest.mark.e2e_contract,

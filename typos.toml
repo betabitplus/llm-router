@@ -1,16 +1,7 @@
-# Typos configuration
-# See: https://github.com/crate-ci/typos
+# Spell-check repo-authored text with narrow, reviewable exceptions.
 
 [files]
-# Exclude VCR cassettes - they contain recorded API responses that may have
-# truncated words or technical terms that trigger false positives
-extend-exclude = ["cassettes"]
-
-[default.extend-words]
-# Real Python package names that look like typos
-astroid = "astroid"
-# Async send helper name
-asend = "asend"
-# Reddit Geo Filters
-ND = "ND"
-US_ND = "US_ND"
+extend-exclude = [
+  # Lockfile; dependency validation owns this file.
+  "uv.lock",
+]

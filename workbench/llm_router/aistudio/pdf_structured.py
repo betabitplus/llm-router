@@ -37,7 +37,7 @@ from tests.llm_router.support.media.pdf import (
     extract_expected_pdf_facts,
     normalize_text_for_match,
 )
-from tests.support.console import console
+from py_lib_tooling import console
 from workbench.llm_router.aistudio._native_media import (
     build_local_file_part,
     build_text_part,

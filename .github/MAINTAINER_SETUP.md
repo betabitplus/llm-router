@@ -1,107 +1,79 @@
 # Maintainer Setup
 
-Use this file for one-time GitHub and repository administration. It is for
-repository maintainers, not for ordinary local contributor bootstrap. Use
-[SETUP.md](../SETUP.md) for local environment setup and
-[CONTRIBUTING.md](../CONTRIBUTING.md) for the normal development workflow.
+A repository generated from `py-lib-starter` may be either managed or standalone.
+Ordinary contributor bootstrap is documented in [SETUP.md](../SETUP.md), and the
+normal development workflow is in [CONTRIBUTING.md](../CONTRIBUTING.md).
 
-This playbook was rechecked against GitHub Docs on April 13, 2026. It matches
-this repository's current release flow: `dev` is the default integration
-branch, `main` is the protected release branch, and GitHub Actions uses
-`PAT_TOKEN` to publish the release bump commit, tag, and GitHub Release.
+## Repository Mode
 
-## Target state
+- A managed downstream is listed in the starter downstream registry and
+  participates in fleet operations. Registry entries with `auto_sync: true`
+  receive starter release dispatches.
+- A standalone repository is generated from the same template but is absent from
+  the registry. It keeps its own release and manual template-sync workflows
+  without starter fleet dispatches.
+- Template origin, GitHub App installation, or local discovery does not imply
+  managed membership.
 
-- `dev` is the default branch and normal PR target.
+## Platform Setup
+
+From an up-to-date `py-lib-starter` checkout, create or resume a managed
+repository with:
+
+```bash
+uv run py-lib-create-managed-repository <repository-name>
+```
+
+For an existing standalone repository, configure GitHub App credentials, the
+standard `main` ruleset, and repository checks without registry mutation:
+
+```bash
+scripts/platform/setup_github_app_repository.sh OWNER/REPOSITORY
+```
+
+Do not add a standalone repository to the downstream registry unless it is
+intentionally joining the managed fleet and automatic starter synchronization.
+
+## Target State
+
+- `dev` is the default branch and normal pull-request target.
 - `main` is the protected release branch.
-- CI runs for pushes and pull requests on `dev` and `main`.
-- A push to `main` triggers the release workflow.
-- The release workflow bumps version and changelog, pushes the bump commit and
-  tag, creates the GitHub Release, and fast-forwards `dev` to `main`.
+- Pull requests to `main` come only from this repository's `dev` branch.
+- Full CI runs on `dev` pushes and pull requests to `dev` or `main`.
+- Release and template-sync commits use `betabitplus-py-lib-automation`.
+- Public and private repositories use the same workflow and credential topology.
 
-## 1. Set the default branch
+## Automation Identity
 
-On GitHub, open the repository and go to `Settings -> Branches -> Default branch`, then set the default branch to `dev`.
+`betabitplus-py-lib-automation` must remain installed in `All repositories` mode
+with:
 
-Keep `main` non-default so ordinary work lands on `dev`.
+- `Contents: Read and write`
+- `Pull requests: Read and write`
+- `Workflows: Read and write`
 
-## 2. Create the release token
+Repository Actions values are:
 
-Prefer a fine-grained personal access token.
+```text
+Variable: PY_LIB_AUTOMATION_APP_ID
+Variable: PY_LIB_AUTOMATION_CLIENT_ID
+Secret:   PY_LIB_AUTOMATION_PRIVATE_KEY
+```
 
-On GitHub, go to `Profile -> Settings -> Developer settings -> Personal access tokens -> Fine-grained tokens -> Generate new token`, then use:
+Never commit the private key or add PAT fallback credentials. Generated local
+reusable CI workflows create scoped App tokens only for trusted operations; fork
+pull requests do not receive App credentials or repository secrets.
 
-- Resource owner: the owner of this repository
-- Repository access: `Only select repositories` -> this repository
-- Repository permissions: `Contents: Read and write`
-- Expiration: use a finite lifetime unless policy requires something else
+## Protection and Verification
 
-If the organization requires approval for fine-grained tokens, wait until the
-token is approved before using it.
+`main` requires pull requests, an up-to-date branch, squash merge, and only
+`ci/merge-gate`; force pushes and deletion remain blocked. Only the automation
+App receives the narrow release and synchronization bypass.
 
-The current workflow does not use a GitHub App. A PAT can only do what its
-owner can already do, so the token owner must already have the repository
-access needed to push the release bump commit, push tags, and create releases.
+For missing credentials, installation access, workflow permissions, ruleset
+rejection, key rotation, repository transfer, or visibility changes, rerun the
+appropriate setup command or follow the authoritative policy:
 
-## 3. Store `PAT_TOKEN`
-
-On GitHub, go to `Settings -> Secrets and variables -> Actions -> New repository secret`, then create:
-
-- Name: `PAT_TOKEN`
-- Value: the fine-grained token created above
-
-Keep GitHub Actions enabled for the repository. The expected workflows are
-`ci.yml`, `release.yml`, and the optional manual `build-ci-image.yml`.
-
-## 4. Protect `main`
-
-Prefer `Settings -> Rules -> Rulesets -> New branch ruleset` and target
-`main`.
-
-Keep these rules enabled:
-
-- require a pull request before merging
-- require status checks before merging
-- require branches to be up to date before merging
-- block force pushes
-- block branch deletion
-
-Keep the release path compatible with the `PAT_TOKEN` owner. If your ruleset
-would block the workflow's push back to `main`, either give the token owner a
-valid bypass path through the ruleset model or move the release automation to a
-GitHub App.
-
-If you also protect `dev`, do not break the documented contributor flow in
-[CONTRIBUTING.md](../CONTRIBUTING.md), which relies on local fast-forward merges
-back into `dev`.
-
-## 5. Configure required checks
-
-Required checks must match the current job names from [`workflows/ci.yml`](workflows/ci.yml).
-As of April 13, 2026, keep `main` protection aligned with:
-
-- `Lint, typecheck, test`
-- `E2E Slice (behavior-session)`
-- `E2E Slice (behavior-routing)`
-- `E2E Slice (behavior-resilience)`
-- `E2E Slice (contract-tools)`
-- `E2E Slice (contract-async)`
-- `E2E Slice (contract-video)`
-
-If CI job names change, update the ruleset at the same time.
-
-## 6. Verify the setup
-
-Check the full path once after setup:
-
-1. Confirm `dev` is the default branch.
-2. Open a PR to `main` and confirm the required checks are enforced.
-3. Merge or push to `main` and confirm the `Release` workflow starts.
-4. Confirm the workflow can:
-   - run `cz bump --changelog --yes`
-   - push the bump commit to `main`
-   - push the tag
-   - create the GitHub Release
-   - fast-forward `dev` to `main`
-
-If `dev` has diverged from `main`, the final fast-forward step fails by design.
+```text
+https://github.com/betabitplus/py-lib-starter/blob/dev/docs/platform-ops/github-app-automation-policy.md
+```

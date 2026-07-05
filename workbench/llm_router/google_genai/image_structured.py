@@ -34,7 +34,7 @@ from typing import Any
 from google.genai import types
 
 from tests.llm_router.support.builders import build_test_image
-from tests.support.console import console
+from py_lib_tooling import console
 from workbench.llm_router.google_genai._sdk_helpers import (
     build_client,
     parsed_response_dict,

@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from llm_router._api.contracts import LLMRouterResponse, ToolCall, ToolStep
 from llm_router._internal.providers.base import ProviderResult
-from llm_router._support.error_formatting import preview_value
+from py_lib_runtime import preview_value
 
 
 class _PublicDataMapping(dict[str, object]):

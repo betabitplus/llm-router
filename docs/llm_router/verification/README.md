@@ -14,6 +14,9 @@ validation.
 
 ## Files
 
+- [public-boundary-and-errors.md](public-boundary-and-errors.md)
+  Describes the checks that protect the installed public output and error boundary.
+  Use it when changing response normalization or public exception translation.
 - [property-based-testing.md](property-based-testing.md)
   Explains invariant-driven checks over generated public inputs and stable
   public rules.

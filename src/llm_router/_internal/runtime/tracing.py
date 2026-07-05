@@ -23,7 +23,7 @@ from llm_router._internal.capabilities.tools import ToolChoice
 from llm_router._internal.providers.base import ProviderRequest, ProviderResult
 from llm_router._internal.runtime.effective_settings import EffectiveSettings
 from llm_router._internal.runtime.routes import ExpandedRoute
-from llm_router._support.error_formatting import preview_value
+from py_lib_runtime import preview_value
 
 
 def build_attempt_trace(

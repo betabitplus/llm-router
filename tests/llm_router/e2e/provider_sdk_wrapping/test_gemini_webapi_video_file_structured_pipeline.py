@@ -50,8 +50,8 @@ from tests.llm_router.support.media.video import (
     assert_rooftop_video_response,
     build_rooftop_video_prompt,
 )
-from tests.support.console import console
-from tests.support.e2e_vcr_guard import require_vcr_cassette_or_record_mode
+from py_lib_tooling import console
+from py_lib_tooling import require_vcr_cassette_or_record_mode
 
 pytestmark = [
     pytest.mark.e2e_contract,

@@ -13,7 +13,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from tests.support.setup import configure_direct_module_process
+from py_lib_tooling import configure_direct_module_process
 
 configure_direct_module_process(
     main_file=getattr(sys.modules.get("__main__"), "__file__", None),

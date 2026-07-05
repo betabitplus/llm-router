@@ -20,7 +20,7 @@ Notes:
 """
 
 from llm_router._api.types import Model, Provider
-from llm_router._support.error_formatting import (
+from py_lib_runtime import (
     preview_exception_message,
     preview_mapping,
     preview_text,

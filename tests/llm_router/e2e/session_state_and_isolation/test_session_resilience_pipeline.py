@@ -58,7 +58,7 @@ from tests.llm_router.support.workers.session_resilience import (
     SessionResilienceWorkerResult,
     run_session_resilience_inprocess,
 )
-from tests.support.console import console
+from py_lib_tooling import console
 
 pytestmark = [
     pytest.mark.e2e_behavior,

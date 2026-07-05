@@ -14,7 +14,7 @@ from typing import Any
 from llm_router._api.types import Provider
 from llm_router._internal.config import LLMRouterConfig
 from llm_router._internal.providers.base import ProviderAdapter
-from llm_router._support.logging import get_logger
+from py_lib_runtime import get_logger
 
 logger = get_logger(__name__)
 

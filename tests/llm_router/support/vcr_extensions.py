@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Any
 
 from tests.llm_router.support._vcr_body_matching import body_llmrouter
-from tests.support.vcr_matchers import method_case_insensitive
+from py_lib_tooling import method_case_insensitive
 
 _VCR_EXTENSIONS_REGISTERED_ATTR = "_llm_router_vcr_extensions_registered"
 

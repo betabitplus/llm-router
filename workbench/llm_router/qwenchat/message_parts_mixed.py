@@ -35,7 +35,7 @@ from __future__ import annotations
 from typing import Any
 
 from tests.llm_router.support.builders import get_llm_router_test_data_path
-from tests.support.console import console
+from py_lib_tooling import console
 from workbench.llm_router.qwenchat._chat_completions import (
     build_payload,
     post_completion_sync,

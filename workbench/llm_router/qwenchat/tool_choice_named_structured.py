@@ -32,7 +32,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from tests.support.console import console
+from py_lib_tooling import console
 from workbench.llm_router.qwenchat._runtime import build_sync_client, qwenchat_base_url
 from workbench.llm_router.qwenchat._structured_output import (
     ForcedToolChoiceResult,

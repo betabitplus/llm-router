@@ -50,7 +50,7 @@ from tests.llm_router.support.workers.tool_failure import (
     openai_tool_call_response,
     run_tool_failure_worker,
 )
-from tests.support.console import console
+from py_lib_tooling import console
 
 pytestmark = [
     pytest.mark.e2e_behavior,

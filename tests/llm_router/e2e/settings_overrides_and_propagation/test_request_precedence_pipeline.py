@@ -61,7 +61,7 @@ from tests.llm_router.support.workers.retry import (
     openai_chat_path,
     openai_success_response,
 )
-from tests.support.console import console
+from py_lib_tooling import console
 
 pytestmark = [
     pytest.mark.e2e_contract,

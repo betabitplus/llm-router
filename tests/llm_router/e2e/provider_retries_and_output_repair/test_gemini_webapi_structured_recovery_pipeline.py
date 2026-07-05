@@ -65,7 +65,7 @@ from tests.llm_router.support.workers.structured_recovery import (
     StructuredRecoveryWorkerResult,
     run_structured_recovery_worker,
 )
-from tests.support.console import console
+from py_lib_tooling import console
 
 pytestmark = [
     pytest.mark.e2e_behavior,

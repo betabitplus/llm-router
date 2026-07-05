@@ -34,8 +34,8 @@ from typing import Any
 import httpx
 import tenacity
 
-from tests.support.console import console
-from tests.support.setup import run_async
+from py_lib_tooling import console
+from py_lib_tooling import run_async
 from workbench.llm_router._retry_demo import (
     build_retry_params,
     event_dicts,

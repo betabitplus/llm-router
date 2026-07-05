@@ -27,7 +27,7 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-from tests.support.console import console
+from py_lib_tooling import console
 from workbench.llm_router.google_genai._sdk_helpers import build_client
 
 # =============================================================================
