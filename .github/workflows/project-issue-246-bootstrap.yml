@@ -57,12 +57,13 @@ jobs:
               -m 'Safety baseline before Issue #246 standard onboarding'
             git push origin "refs/tags/$tag"
           fi
+          rm -f .issue246/FAILED
           cat > .issue246/RUN <<EOF
           run_id=${GITHUB_RUN_ID}
           source_sha=${GITHUB_SHA}
           status=running
           EOF
-          git add .issue246/RUN
+          git add .issue246/RUN .issue246/FAILED
           git commit -m 'chore: record Issue 246 bootstrap run'
           git push origin HEAD:issue-246-standard-onboarding
 
@@ -100,6 +101,7 @@ jobs:
           printf '%s\n' migration > "$RUNNER_TEMP/issue246-stage"
           reference="$(cat "$RUNNER_TEMP/issue246-reference-path")"
           python .issue246/migrate.py . "$reference"
+          git checkout origin/issue-246-standard-onboarding -- .github/workflows
           find . -type d -name __pycache__ -prune -exec rm -rf {} +
           git diff --check
           git add -A
@@ -142,9 +144,8 @@ jobs:
           printf '%s\n' final-push > "$RUNNER_TEMP/issue246-stage"
           find . -type d -name __pycache__ -prune -exec rm -rf {} +
           rm -rf .issue246
-          rm -f .github/workflows/project-issue-246-bootstrap.yml
           git add -A
-          git commit -m 'chore: remove Issue 246 migration bootstrap'
+          git commit -m 'chore: remove Issue 246 migration bootstrap data'
           git push origin HEAD:issue-246-standard-onboarding
 
       - name: Record bootstrap failure without partial migration
