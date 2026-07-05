@@ -12,6 +12,7 @@ concurrency:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   validate:
@@ -130,3 +131,14 @@ jobs:
           uv run py-lib-template-update --vcs-ref v0.29.1
           uv run py-lib-template-check
           git diff --exit-code
+
+      - name: Report validation run
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/issues/2/comments" \
+            -f body="Issue #246 migration validation run ${GITHUB_RUN_ID}: ${JOB_STATUS} at ${GITHUB_SHA}."
