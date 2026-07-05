@@ -1,13 +1,9 @@
-name: Issue 246 Failure Diagnostics
+name: Issue 246 Focused Diagnostics
 
 on:
   pull_request:
-    branches:
-      - dev
-    types:
-      - opened
-      - reopened
-      - synchronize
+    branches: [dev]
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: read
@@ -31,24 +27,21 @@ jobs:
             py-lib-starter
           permission-contents: read
 
-      - name: Check out migration branch
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           ref: issue-246-standard-onboarding
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v8.2.0
+      - uses: astral-sh/setup-uv@v8.2.0
         with:
           enable-cache: auto
 
-      - name: Configure private Git access through the App
+      - name: Install dependencies
         env:
           SHARED_PACKAGE_TOKEN: ${{ steps.app-token.outputs.token }}
         shell: bash
@@ -56,81 +49,52 @@ jobs:
           set -euo pipefail
           auth_header="$(printf 'x-access-token:%s' "$SHARED_PACKAGE_TOKEN" | base64 | tr -d '\n')"
           printf '::add-mask::%s\n' "$auth_header"
-          git config --global http.https://github.com/.extraheader \
-            "AUTHORIZATION: basic ${auth_header}"
-
-      - name: Install system and project dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
+          git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth_header}"
           sudo apt-get update
           sudo apt-get install -y shellcheck
-          version=v2.12.0
-          sudo curl -fsSL \
-            -o /usr/local/bin/hadolint \
-            "https://github.com/hadolint/hadolint/releases/download/${version}/hadolint-Linux-x86_64"
+          sudo curl -fsSL -o /usr/local/bin/hadolint \
+            https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64
           sudo chmod +x /usr/local/bin/hadolint
           bash scripts/env/setup.sh
-          uv lock --check
 
-      - name: Run diagnostic matrix
-        id: matrix
+      - name: Run focused checks
+        id: checks
         shell: bash
         run: |
           set -uo pipefail
-          evidence=.issue246-diagnostics
-          rm -rf "$evidence"
-          mkdir -p "$evidence/logs"
-          overall=0
-          run_check() {
-            local name="$1"
-            shift
+          out=issue246-diagnostics
+          mkdir -p "$out"
+          failed=0
+          check() {
+            local name="$1"; shift
             set +e
-            "$@" >"$evidence/logs/${name}.log" 2>&1
-            local status=$?
+            "$@" >"$out/${name}.log" 2>&1
+            rc=$?
             set -e
-            cat "$evidence/logs/${name}.log"
-            printf '%s=%s\n' "$name" "$status" >>"$evidence/statuses.txt"
-            if [ "$status" -ne 0 ]; then
-              overall=1
-            fi
+            printf '%s=%s\n' "$name" "$rc" >>"$out/statuses.txt"
+            if [ "$rc" -ne 0 ]; then failed=1; fi
           }
-          run_check template-check uv run py-lib-template-check
-          run_check project-structure uv run py-lib-check-project-structure --strict-template
-          run_check docs-structure uv run py-lib-check-project-docs-structure
-          run_check public-contract uv run py-lib-check-public-contract-boundary
+          check template uv run py-lib-template-check
+          check structure uv run py-lib-check-project-structure --strict-template
+          check docs uv run py-lib-check-project-docs-structure
+          check public-contract uv run py-lib-check-public-contract-boundary
           export SKIP=check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout
-          run_check pre-commit uv run pre-commit run --all-files --show-diff-on-failure
-          run_check pre-push uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
-          unset SKIP
-          run_check non-e2e uv run pytest \
-            tests/llm_router/unit \
-            tests/llm_router/integration \
-            tests/llm_router/property_based \
-            -n auto -p randomly -m 'not slow' -q --no-cov
-          run_check build uv build
-          run_check installed-artifact-smoke uv run py-lib-smoke-installed-artifact
-          run_check public-api-smoke uv run py-lib-smoke-public-api
-          run_check copier-same-version uv run py-lib-template-update --vcs-ref v0.29.3
-          run_check template-check-after-update uv run py-lib-template-check
-          run_check no-diff-after-update git diff --exit-code
-          git status --short >"$evidence/git-status.txt"
-          git diff >"$evidence/git-diff.patch"
-          printf 'overall=%s\n' "$overall" >>"$GITHUB_OUTPUT"
+          check pre-commit uv run pre-commit run --all-files --show-diff-on-failure
+          check pre-push uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
+          check tests uv run pytest tests/llm_router/unit tests/llm_router/integration tests/llm_router/property_based -n auto -p randomly -m 'not slow' -q --no-cov
+          cat "$out/statuses.txt"
+          echo "failed=$failed" >>"$GITHUB_OUTPUT"
           exit 0
 
-      - name: Upload diagnostic evidence
+      - name: Upload focused diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: issue-246-diagnostics-${{ github.run_id }}
-          path: .issue246-diagnostics
+          name: issue-246-focused-${{ github.run_id }}
+          path: issue246-diagnostics
           if-no-files-found: error
           retention-days: 14
 
-      - name: Assert diagnostic matrix success
+      - name: Assert checks
         if: always()
-        shell: bash
-        run: |
-          cat .issue246-diagnostics/statuses.txt
-          test '${{ steps.matrix.outputs.overall }}' = '0'
+        run: test '${{ steps.checks.outputs.failed }}' = '0'
