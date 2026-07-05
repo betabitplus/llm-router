@@ -28,6 +28,7 @@ concurrency:
 
 env:
   PYTHON_VERSION: "3.13"
+  COPIER_ANSWERS_FILE: "_copier_answers.yml"
 
 jobs:
   sync:
@@ -140,7 +141,24 @@ jobs:
           echo "starter_ref=${starter_ref:-latest}" >> "$GITHUB_OUTPUT"
           echo "sync_label=${sync_label}" >> "$GITHUB_OUTPUT"
 
-          tooling_source="py-lib-tooling @ git+https://github.com/betabitplus/py-lib-starter.git@${starter_ref:-v0.30.0}#subdirectory=packages/py-lib-tooling"
+          read_answers_value() {
+            local answers_file="$1"
+            local key="$2"
+
+            uv run py-lib-template-answer --answers-file "${answers_file}" "${key}"
+          }
+
+          template_profile="$(read_answers_value "${COPIER_ANSWERS_FILE}" "template_profile")"
+          case "${template_profile}" in
+            python-lib-standard|python-starter-platform) ;;
+            *)
+              echo "::error::Unsupported template_profile ${template_profile:-<missing>} in ${COPIER_ANSWERS_FILE}."
+              exit 1
+              ;;
+          esac
+          echo "template_profile=${template_profile}" >> "$GITHUB_OUTPUT"
+
+          tooling_source="py-lib-tooling @ git+https://github.com/betabitplus/py-lib-starter.git@${starter_ref:-v0.31.0}#subdirectory=packages/py-lib-tooling"
 
           run_tooling_command() {
             local command_name="$1"
@@ -154,14 +172,10 @@ jobs:
             uv run "${command_name}" "$@"
           }
 
-          run_template_update() {
-            run_tooling_command py-lib-template-update "${update_args[@]}"
-          }
-
-          refresh_shared_lock_packages() {
-            # Keep shared lock refreshes in the workflow as a bootstrap guard after
-            # the template update has moved pyproject.toml to the new starter tag.
-            run_tooling_command py-lib-refresh-shared-lock
+          run_pre_commit_stage() {
+            if ! uv run pre-commit run --all-files "$@"; then
+              uv run pre-commit run --all-files "$@"
+            fi
           }
 
           if [ "${GITHUB_EVENT_NAME}" = "repository_dispatch" ] && [ "${ROOT_BUMPED:-false}" != "true" ]; then
@@ -169,16 +183,31 @@ jobs:
             exit 1
           fi
 
-          update_args=()
+          update_args=(--answers-file "${COPIER_ANSWERS_FILE}")
           if [ -n "${starter_ref}" ]; then
             update_args+=(--vcs-ref "${starter_ref}")
           fi
-          run_template_update
-          refresh_shared_lock_packages
+          run_tooling_command py-lib-template-update "${update_args[@]}"
 
-          uv lock
-          uv run py-lib-template-check
-          uv lock --check
+          case "${template_profile}" in
+            python-lib-standard)
+              # Bootstrap guard after pyproject.toml moves to the new starter tag.
+              run_tooling_command py-lib-refresh-shared-lock
+              uv lock
+              run_tooling_command py-lib-template-check                 --answers-file "${COPIER_ANSWERS_FILE}"
+              uv lock --check
+              validation_result="Template update, lock refresh, and validation completed successfully."
+              ;;
+            python-starter-platform)
+              uv lock --check
+              uv run py-lib-check-platform-profile --require-adoption
+              uv run py-lib-check-template-components
+              run_pre_commit_stage
+              run_pre_commit_stage --hook-stage pre-push
+              validation_result="platform profile, component, lock, and repository validation passed"
+              ;;
+          esac
+          echo "validation_result=${validation_result}" >> "$GITHUB_OUTPUT"
 
           if [ -z "$(git status --porcelain)" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -211,7 +240,7 @@ jobs:
           if git diff --cached --name-only -- .github/workflows | grep -q .; then
             echo "::notice::This sync changes workflow files; betabitplus-py-lib-automation must have Workflows: read and write permission."
           fi
-          git commit -m "chore: sync starter template ${{ steps.sync.outputs.sync_label }}"
+          git commit -m "chore(template): sync starter template ${{ steps.sync.outputs.sync_label }}"
           git push origin dev
 
       - name: Ensure dev to main PR exists
@@ -230,29 +259,47 @@ jobs:
           }
 
           old_answers_file="$(mktemp)"
-          if git show HEAD^:_copier_answers.yml > "${old_answers_file}" 2>/dev/null; then
+          if git show "HEAD^:${COPIER_ANSWERS_FILE}" > "${old_answers_file}" 2>/dev/null; then
             old_starter_ref="$(read_answers_value "${old_answers_file}" "_commit")"
           else
             old_starter_ref=""
           fi
           rm -f "${old_answers_file}"
 
-          new_starter_ref="$(read_answers_value "_copier_answers.yml" "_commit")"
-          runtime_ref="$(read_answers_value "_copier_answers.yml" "runtime_git_ref")"
-          tooling_ref="$(read_answers_value "_copier_answers.yml" "tooling_git_ref")"
-          release_url="https://github.com/betabitplus/py-lib-starter/releases/tag/${{ steps.sync.outputs.starter_ref }}"
+          template_profile="${{ steps.sync.outputs.template_profile }}"
+          validation_result="${{ steps.sync.outputs.validation_result }}"
+          new_starter_ref="$(read_answers_value "${COPIER_ANSWERS_FILE}" "_commit")"
+          runtime_ref="$(read_answers_value "${COPIER_ANSWERS_FILE}" "runtime_git_ref")"
+          tooling_ref="$(read_answers_value "${COPIER_ANSWERS_FILE}" "tooling_git_ref")"
+          release_ref="${new_starter_ref:-${{ steps.sync.outputs.starter_ref }}}"
+          release_url="https://github.com/betabitplus/py-lib-starter/releases/tag/${release_ref}"
           pr_body_file="$(mktemp)"
 
           {
-            printf '%s\n\n' 'Automated strict sync with py-lib-starter.'
-            printf '%s\n' '## Baseline'
-            printf -- '- Previous starter ref: `%s`\n' "${old_starter_ref:-unknown}"
-            printf -- '- New starter ref: `%s`\n' "${new_starter_ref:-${{ steps.sync.outputs.starter_ref }}}"
-            printf -- '- Runtime ref: `%s`\n' "${runtime_ref:-not declared}"
-            printf -- '- Tooling ref: `%s`\n' "${tooling_ref:-not declared}"
-            printf -- '- Release notes: %s\n\n' "${release_url}"
-            printf '%s\n' '## Validation'
-            printf '%s\n' '- Template update, lock refresh, and validation completed successfully.'
+            printf '%s
+
+' 'Automated profile-aware sync with py-lib-starter.'
+            printf '%s
+' '## Baseline'
+            printf -- '- Profile: `%s`
+' "${template_profile}"
+            printf -- '- Answers file: `%s`
+' "${COPIER_ANSWERS_FILE}"
+            printf -- '- Previous starter ref: `%s`
+' "${old_starter_ref:-unknown}"
+            printf -- '- New starter ref: `%s`
+' "${new_starter_ref:-${{ steps.sync.outputs.starter_ref }}}"
+            printf -- '- Runtime ref: `%s`
+' "${runtime_ref:-not declared}"
+            printf -- '- Tooling ref: `%s`
+' "${tooling_ref:-not declared}"
+            printf -- '- Release notes: %s
+
+' "${release_url}"
+            printf '%s
+' '## Validation'
+            printf -- '- %s.
+' "${validation_result}"
           } > "${pr_body_file}"
 
           open_pull_request="${OPEN_PULL_REQUEST_INPUT:-true}"
