@@ -1,4 +1,4 @@
-name: Issue 246 Boundary V2 Diagnostics
+name: Issue 246 Apply Verified Boundary
 
 on:
   pull_request:
@@ -9,14 +9,24 @@ permissions:
   contents: read
 
 jobs:
-  diagnose:
+  apply:
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.ref == 'issue-246-standard-onboarding'
     runs-on: ubuntu-latest
     steps:
+      - name: Create target write token
+        id: target-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: llm-router
+          permission-contents: write
+
       - name: Create shared read token
-        id: app-token
+        id: shared-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
@@ -33,17 +43,30 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Detect explicit apply commit
+        id: gate
+        shell: bash
+        run: |
+          if [ "$(git log -1 --pretty=%s)" = 'ci: apply canonical Issue 246 boundary from diagnostics' ]; then
+            echo 'apply=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'apply=false' >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-python@v6
+        if: steps.gate.outputs.apply == 'true'
         with:
           python-version: '3.13'
 
       - uses: astral-sh/setup-uv@v8.2.0
+        if: steps.gate.outputs.apply == 'true'
         with:
           enable-cache: auto
 
       - name: Install exact development environment
+        if: steps.gate.outputs.apply == 'true'
         env:
-          SHARED_PACKAGE_TOKEN: ${{ steps.app-token.outputs.token }}
+          SHARED_PACKAGE_TOKEN: ${{ steps.shared-token.outputs.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -52,7 +75,8 @@ jobs:
           git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth_header}"
           bash scripts/env/setup.sh
 
-      - name: Apply exact V2 transformation
+      - name: Apply exact V2 transformation and final import repair
+        if: steps.gate.outputs.apply == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -64,11 +88,26 @@ jobs:
           ' .github/workflows/project-issue-246-boundary-apply-v2.yml > /tmp/apply-v2.sh
           test -s /tmp/apply-v2.sh
           bash /tmp/apply-v2.sh
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/llm_router/_internal/config/validation.py")
+          text = path.read_text(encoding="utf-8")
+          old = (
+              "from llm_router._internal.config.defaults import "
+              "_PROVIDERS_REQUIRING_BASE_URL"
+          )
+          new = "from llm_router._api.defaults import _PROVIDERS_REQUIRING_BASE_URL"
+          if text.count(old) != 1:
+              raise RuntimeError("expected one stale private-default import")
+          path.write_text(text.replace(old, new), encoding="utf-8")
+          PY
           mapfile -t changed < <(git diff --name-only --diff-filter=ACMR -- '*.py')
           uv run ruff check --fix "${changed[@]}"
           uv run ruff format "${changed[@]}"
 
-      - name: Run V2 checks and preserve evidence
+      - name: Run all boundary checks and preserve evidence
+        if: steps.gate.outputs.apply == 'true'
         id: checks
         shell: bash
         run: |
@@ -99,15 +138,33 @@ jobs:
           echo "failed=$failed" >>"$GITHUB_OUTPUT"
           exit 0
 
-      - name: Upload V2 diagnostics
-        if: always()
+      - name: Upload boundary evidence
+        if: steps.gate.outputs.apply == 'true' && always()
         uses: actions/upload-artifact@v4
         with:
-          name: issue-246-boundary-v2-${{ github.run_id }}
+          name: issue-246-boundary-apply-${{ github.run_id }}
           path: issue246-boundary-v2-diagnostics
           if-no-files-found: error
           retention-days: 14
 
-      - name: Assert V2 checks
-        if: always()
+      - name: Assert boundary checks
+        if: steps.gate.outputs.apply == 'true' && always()
+        shell: bash
         run: test '${{ steps.checks.outputs.failed }}' = '0'
+
+      - name: Commit and push canonical boundary
+        if: steps.gate.outputs.apply == 'true' && steps.checks.outputs.failed == '0'
+        env:
+          TARGET_TOKEN: ${{ steps.target-token.outputs.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add src tests
+          git config user.name 'betabitplus-py-lib-automation[bot]'
+          git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
+          git commit -m 'refactor: restore canonical public declarations'
+          git config --global --unset-all http.https://github.com/.extraheader || true
+          write_header="$(printf 'x-access-token:%s' "$TARGET_TOKEN" | base64 | tr -d '\n')"
+          printf '::add-mask::%s\n' "$write_header"
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic ${write_header}" \
+            push origin HEAD:issue-246-standard-onboarding
