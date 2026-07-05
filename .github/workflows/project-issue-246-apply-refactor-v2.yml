@@ -61,22 +61,54 @@ jobs:
             "$RUNNER_TEMP/refactor_standard_structure.py" \
             | sha256sum --check
 
-      - name: Apply and verify product structure refactor
+      - name: Apply product structure refactor
         if: steps.gate.outputs.apply == 'true'
         shell: bash
         run: |
           set -euo pipefail
           python "$RUNNER_TEMP/refactor_standard_structure.py" .
+
+      - name: Compile refactored Python tree
+        if: steps.gate.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
           python -m compileall -q src tests workbench examples
           find . -type d -name __pycache__ -prune -exec rm -rf {} +
-          ! grep -R --line-number \
+
+      - name: Verify private imports do not depend on public facades
+        if: steps.gate.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R --line-number \
             -E '^from llm_router\._api|^import llm_router\._api' \
-            src/llm_router/_internal
-          ! grep -R --line-number -E '^__all__\s*=' src/llm_router/_internal
+            src/llm_router/_internal; then
+            exit 1
+          fi
+
+      - name: Verify private modules do not declare public exports
+        if: steps.gate.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R --line-number -E '^__all__\s*=' src/llm_router/_internal; then
+            exit 1
+          fi
+
+      - name: Verify loose private modules were moved
+        if: steps.gate.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
           test ! -e src/llm_router/_internal/errors.py
           test ! -e src/llm_router/_internal/ids.py
           test ! -e src/llm_router/_internal/output.py
-          git diff --check
+
+      - name: Verify refactor diff
+        if: steps.gate.outputs.apply == 'true'
+        shell: bash
+        run: git diff --check
 
       - name: Commit and push product refactor
         if: steps.gate.outputs.apply == 'true'
