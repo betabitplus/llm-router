@@ -9,10 +9,11 @@ from __future__ import annotations
 
 from threading import RLock
 
+from py_lib_runtime import get_logger
+
 from llm_router._internal.config.assembly import build_default_config
 from llm_router._internal.config.models import LLMRouterConfig
 from llm_router._internal.config.validation import validate_config
-from llm_router._support.logging import get_logger
 
 _installed_config: LLMRouterConfig = build_default_config()
 _config_lock = RLock()

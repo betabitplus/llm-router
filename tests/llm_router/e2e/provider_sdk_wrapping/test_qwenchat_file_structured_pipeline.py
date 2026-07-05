@@ -42,6 +42,7 @@ from typing import Literal
 
 import fitz
 import pytest
+from py_lib_tooling import console, require_vcr_cassette_or_record_mode
 from pydantic import BaseModel, Field
 
 from llm_router import (
@@ -60,8 +61,6 @@ from tests.llm_router.support.builders import (
     build_test_pdf_file,
     get_llm_router_test_data_path,
 )
-from tests.support.console import console
-from tests.support.e2e_vcr_guard import require_vcr_cassette_or_record_mode
 
 pytestmark = [
     pytest.mark.e2e_contract,

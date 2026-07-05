@@ -1,7 +1,14 @@
-def test_internal_root_exports_only_api_consumed_names() -> None:
-    import llm_router._internal as internal
+"""Private-root boundary regression tests."""
 
-    expected_names = [
+from __future__ import annotations
+
+import llm_router._internal as internal
+
+
+def test_internal_root_uses_explicit_facade_without_public_all() -> None:
+    """Keep private entrypoints narrow without presenting public API."""
+    assert not hasattr(internal, "__all__")
+    expected = {
         "BehaviorDefaults",
         "LLMRouterConfig",
         "ProviderCatalog",
@@ -13,25 +20,17 @@ def test_internal_root_exports_only_api_consumed_names() -> None:
         "clear_adapter_caches",
         "get_config",
         "install_config",
-    ]
-
-    assert internal.__all__ == expected_names
-    for name in expected_names:
-        assert hasattr(internal, name)
-
-
-def test_internal_root_does_not_export_provider_adapter_internals() -> None:
-    import llm_router._internal as internal
-
-    blocked_names = {
-        "ProviderAdapter",
-        "ProviderRequest",
-        "ProviderResult",
-        "openai_compatible",
-        "google_genai",
-        "aistudio",
-        "gemini_webapi",
-        "qwenchat",
     }
+    assert expected <= set(vars(internal))
 
-    assert blocked_names.isdisjoint(internal.__all__)
+
+def test_internal_root_does_not_export_provider_adapters() -> None:
+    """Do not leak concrete provider adapters through the root."""
+    forbidden = {
+        "AIStudioAdapter",
+        "GeminiWebApiAdapter",
+        "GoogleGenAIAdapter",
+        "OpenAICompatibleAdapter",
+        "QwenChatAdapter",
+    }
+    assert forbidden.isdisjoint(vars(internal))

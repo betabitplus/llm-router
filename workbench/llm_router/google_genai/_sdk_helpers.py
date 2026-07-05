@@ -1,3 +1,4 @@
+# %%
 """Internal Google GenAI workbench SDK helpers.
 
 Why:

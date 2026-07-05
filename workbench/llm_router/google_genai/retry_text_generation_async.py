@@ -35,9 +35,8 @@ import httpx
 import tenacity
 from google.genai import types
 from google.genai.errors import APIError
+from py_lib_tooling import console, run_async
 
-from tests.support.console import console
-from tests.support.setup import run_async
 from workbench.llm_router._retry_demo import (
     build_retry_params,
     event_dicts,

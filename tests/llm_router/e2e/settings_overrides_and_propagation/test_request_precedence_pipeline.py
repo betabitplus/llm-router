@@ -50,6 +50,7 @@ import json
 from dataclasses import dataclass
 
 import pytest
+from py_lib_tooling import console
 from pydantic import BaseModel
 
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -61,7 +62,6 @@ from tests.llm_router.support.workers.retry import (
     openai_chat_path,
     openai_success_response,
 )
-from tests.support.console import console
 
 pytestmark = [
     pytest.mark.e2e_contract,

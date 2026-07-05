@@ -26,7 +26,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from llm_router._api.contracts import ChatMessage, ChatPart, MessageContent
+from llm_router._api.types import ChatMessage, ChatPart, MessageContent
 from llm_router._internal import SessionStore
 
 

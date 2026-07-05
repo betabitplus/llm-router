@@ -1,20 +1,10 @@
-# Gitleaks configuration
-# Docs: https://github.com/gitleaks/gitleaks#configuration
+title = "Gitleaks config for Python library projects"
 
-title = "Gitleaks config for llm_router project"
-
-[extend]
-# Use the default gitleaks rules as a baseline
-useDefault = true
-
-# Paths to ignore (similar to detect-secrets excludes)
 [allowlist]
+description = "Allow common generated and local-only paths"
 paths = [
-    '''tests/''',
-    '''scripts/''',
-    '''\.env$''',
-    '''uv\.lock$''',      # Lockfile contains no secrets
-    '''\.testmondata''',  # Test cache files
-    '''cassettes/''',     # VCR cassettes may have redacted tokens
-    '''__snapshots__/''', # Snapshot tests
+    '''uv\.lock''',
+    '''\.venv/''',
+    '''\.pytest_cache/''',
+    '''\.ruff_cache/''',
 ]

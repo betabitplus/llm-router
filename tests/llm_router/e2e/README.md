@@ -25,5 +25,5 @@ Each group folder may contain:
 
 Shared helpers still belong in:
 
-- `tests/support/`
-- `tests/llm_router/support/`
+- `py_lib_tooling` for repository-agnostic support
+- `tests/llm_router/support/` for product-specific support

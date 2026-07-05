@@ -1,3 +1,4 @@
+# %%
 """Google GenAI workbench tool-loop helpers.
 
 Why:
@@ -186,7 +187,7 @@ def _append_function_responses(
 
 def run_sync_tool_loop(  # noqa: PLR0913
     *,
-    client: Any,  # noqa: ANN401
+    client: Any,
     model: str,
     prompt: str,
     tool_functions: Sequence[Callable[..., Any]],
@@ -261,7 +262,7 @@ def run_sync_tool_loop(  # noqa: PLR0913
 
 async def run_async_tool_loop(  # noqa: PLR0913
     *,
-    client: Any,  # noqa: ANN401
+    client: Any,
     model: str,
     prompt: str,
     tool_functions: Sequence[Callable[..., Any]],

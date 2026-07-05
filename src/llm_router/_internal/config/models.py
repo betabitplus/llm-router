@@ -16,7 +16,7 @@ from llm_router._api.types import Model, Provider
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from llm_router._api.contracts import ProviderLimits
+    from llm_router._api.types import ProviderLimits
 
 
 def _freeze_mapping[K, V](mapping: Mapping[K, V]) -> Mapping[K, V]:

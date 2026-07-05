@@ -1,3 +1,4 @@
+# %%
 """AI Studio native-media workbench helpers.
 
 Why:

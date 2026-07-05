@@ -1,3 +1,4 @@
+# %%
 """Google GenAI workbench structured-output helpers.
 
 Why:

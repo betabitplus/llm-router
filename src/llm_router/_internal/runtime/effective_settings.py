@@ -12,9 +12,8 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any
 
-from llm_router._api.contracts import ProviderLimits
 from llm_router._api.errors import ConfigurationError
-from llm_router._api.types import KeyId, Provider
+from llm_router._api.types import KeyId, Provider, ProviderLimits
 from llm_router._internal.config import LLMRouterConfig
 from llm_router._internal.runtime.routes import RouteGenerationDefaults
 

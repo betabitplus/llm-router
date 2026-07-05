@@ -37,6 +37,7 @@ Examples:
 from __future__ import annotations
 
 import pytest
+from py_lib_tooling import console
 
 from llm_router import Model, ToolExecutionError
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -50,7 +51,6 @@ from tests.llm_router.support.workers.tool_failure import (
     openai_tool_call_response,
     run_tool_failure_worker,
 )
-from tests.support.console import console
 
 pytestmark = [
     pytest.mark.e2e_behavior,

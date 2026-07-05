@@ -9,7 +9,7 @@ cd "$repo_root"
 # Install dev dependencies (creates/updates .venv)
 uv sync --group dev
 
-# Install all pre-commit hook types
-uv run pre-commit install -t pre-commit -t pre-push -t commit-msg -t post-merge -t post-checkout -t post-rewrite
+# Install every hook stage declared by default_install_hook_types
+uv run pre-commit install
 
 echo "Setup complete! All pre-commit hooks installed."

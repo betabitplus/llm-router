@@ -1,3 +1,4 @@
+# %%
 """OpenAI-compatible workbench structured-output helpers.
 
 Why:

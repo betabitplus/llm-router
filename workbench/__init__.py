@@ -14,17 +14,16 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from tests.support.setup import configure_direct_module_process
+from py_lib_tooling import configure_direct_module_process
 
 _PACKAGE_ROOT = Path(__file__).resolve().parent
 
 
-def _select_main_file() -> str:
+def _select_main_file() -> str | None:
     """Choose one real path inside `workbench/` for direct-run setup."""
     candidates = (
         getattr(sys.modules.get("__main__"), "__file__", None),
         (sys.argv[0] if sys.argv else None),
-        str(Path(__file__).resolve()),
     )
     for candidate in candidates:
         if not isinstance(candidate, str) or not candidate:
@@ -35,7 +34,7 @@ def _select_main_file() -> str:
         except (OSError, ValueError):
             continue
         return str(candidate_path)
-    return str(Path(__file__).resolve())
+    return None
 
 
 configure_direct_module_process(

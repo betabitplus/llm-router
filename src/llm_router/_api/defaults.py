@@ -23,8 +23,7 @@ Notes:
 
 from __future__ import annotations
 
-from llm_router._api.contracts import ProviderLimits
-from llm_router._api.types import Model, Provider
+from llm_router._api.types import Model, Provider, ProviderLimits
 
 # ================================================================================
 # Default Route Selection

@@ -12,6 +12,4 @@ What does not belong here:
     Provider-native payloads or SDK-specific conversation state.
 """
 
-from llm_router._internal.session.store import SessionStore
-
-__all__ = ["SessionStore"]
+from llm_router._internal.session.store import SessionStore as SessionStore

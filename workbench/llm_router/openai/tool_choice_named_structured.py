@@ -29,7 +29,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from tests.support.console import console
+from py_lib_tooling import console
+
 from workbench.llm_router.openai._sdk_helpers import build_client, provider_api_key_env
 from workbench.llm_router.openai._structured_output import (
     FORCED_TOOL_RESPONSE_FORMAT,

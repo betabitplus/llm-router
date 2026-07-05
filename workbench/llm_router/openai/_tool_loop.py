@@ -1,3 +1,4 @@
+# %%
 """OpenAI-compatible workbench tool-loop helpers.
 
 Why:

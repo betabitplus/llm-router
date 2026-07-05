@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any, Protocol
 
+from py_lib_runtime import build_retry_before_sleep_logger
 from tenacity import (
     AsyncRetrying,
     Retrying,
@@ -23,7 +24,6 @@ from tenacity import (
 
 from llm_router._api.errors import ProviderError
 from llm_router._internal.config.models import RetryPolicy
-from llm_router._support.logging import build_retry_before_sleep_logger
 
 
 class RetryLogger(Protocol):
@@ -145,6 +145,7 @@ def build_provider_retrying(
         retry=retry_if_exception(is_retryable_provider_error),
         before_sleep=build_retry_before_sleep_logger(
             logger,
+            event_type="llm_router.provider.retry.scheduled",
             context_getter=context_getter,
             state_sink=state_sink,
         ),
@@ -169,6 +170,7 @@ def build_provider_async_retrying(
         retry=retry_if_exception(is_retryable_provider_error),
         before_sleep=build_retry_before_sleep_logger(
             logger,
+            event_type="llm_router.provider.retry.scheduled",
             context_getter=context_getter,
             state_sink=state_sink,
         ),

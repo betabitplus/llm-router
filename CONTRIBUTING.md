@@ -1,78 +1,68 @@
 # Contributing
 
-Start with [SETUP.md](SETUP.md) to provision the local environment.
-If your local environment feels off, run `bash scripts/env/doctor.sh` before
-debugging deeper.
+Start with [SETUP.md](SETUP.md) to provision the local environment. If your
+local environment feels off, run `bash scripts/env/doctor.sh` before debugging
+deeper.
 
-Use [docs/llm_router/README.md](docs/llm_router/README.md) for package docs,
-[tests/README.md](tests/README.md) for test-tree layout, and
-[docs/llm_router/verification/workbench.md](docs/llm_router/verification/workbench.md)
-for the live probe matrix.
-Use [.github/MAINTAINER_SETUP.md](.github/MAINTAINER_SETUP.md) for one-time GitHub and
-repository administration setup.
-Repository-wide package and reusable-zone checks read their repo metadata from
+Use [docs/llm_router/README.md](docs/llm_router/README.md) for package
+docs, [tests/README.md](tests/README.md) for test-tree layout, and
+[docs/llm_router/verification/README.md](docs/llm_router/verification/README.md)
+for verification guidance.
+
+Repository-wide package and reusable-zone checks read metadata from
 `[tool.py_lib_starter]` in `pyproject.toml`. When repo-local scripts or shared
 test support need package names or env-var prefixes, use
-`scripts._shared.project_config` instead of hardcoding package names.
+`py_lib_tooling.get_project_tooling_config` instead of hardcoding them.
 
-## Branch and target flow
+`py-lib-runtime` is consumed as a runtime dependency and `py-lib-tooling` is
+consumed as a dev dependency from the shared py starter repository through
+one shared version tag. Keep this repo thin: import shared runtime helpers, call
+shared console commands, and import shared test helpers instead of copying
+reusable implementation files locally.
+
+## Branch And Target Flow
 
 - Normal development lands on `dev`.
 - Direct pushes to `main` are blocked by a pre-push hook.
-- Branch names must match the enforced local convention:
-  `feature/`, `fix/`, `chore/`, `hotfix/`, `release/`, `codex/`, or the
-  long-lived `dev` / `main` branches.
+- Branch names must match the enforced local convention: `feature/`, `fix/`,
+  `chore/`, `hotfix/`, `release/`, `codex/`, or the long-lived `dev` / `main`
+  branches.
 
-## Worktree flow
+## Local Validation
 
-### Merge back into `dev`
-
-When finished: commit on a `feature/...` branch, ensure hooks pass (`uv run pre-commit run --all-files` + `uv run pre-commit run --all-files --hook-stage pre-push`), then merge **locally** into `dev` and push `dev`:
-
-```bash
-git checkout dev
-git pull --ff-only
-git merge --ff-only feature/your-branch
-git push origin dev  # or your preferred remote (see `git remote -v`)
-```
-
-### Cleanup after merge/push
-
-```bash
-# From the main/original checkout
-git worktree remove /path/to/worktree
-git branch -d feature/your-branch
-git worktree prune
-```
-
-## Local validation
-
-### Commit-time hooks
-
-Run the same commit-time hook stage that local commits use:
+Run commit-time hooks:
 
 ```bash
 uv run pre-commit run --all-files
 ```
 
-This stage covers formatting, fast linting, branch policy, secret scanning,
-docs formatting, file hygiene, and other repository checks.
-
-### Push-time hooks
-
-Run the heavier push-time hook stage before pushing:
+Run push-time hooks:
 
 ```bash
 uv run pre-commit run --all-files --hook-stage pre-push
 ```
 
-This stage adds strict typing, architecture checks, security and dependency
-scanning, package-manifest checks, link checks, and the default automated test
-path.
+## Template And Tooling Updates
 
-## Running tests
+Check whether this repo is behind the shared starter template:
 
-### Full suite
+```bash
+uv run py-lib-template-check
+```
+
+Apply the latest starter template release, normalize shared package refs to one
+version tag, and refresh shared package lock entries:
+
+```bash
+uv run py-lib-template-update
+```
+
+The update command leaves product-owned `src/`, `tests/`, `docs/`,
+`examples/`, and `workbench/` files alone by default. Review the resulting
+diff, run validation, then land the update through the normal `dev` to `main`
+PR flow.
+
+## Running Tests
 
 Run the package test suite:
 
@@ -80,100 +70,76 @@ Run the package test suite:
 uv run pytest tests/llm_router
 ```
 
-### Hermetic tests
-
 Run only hermetic tests:
-
-- Some hermetic scenarios replay committed VCR cassettes.
-- Others are fully local and use scripted servers or worker helpers instead of
-  network replay.
 
 ```bash
 uv run pytest tests/llm_router -m hermetic
 ```
 
-### Update VCR cassettes (if needed)
+Run all tests:
 
 ```bash
-uv run pytest tests/llm_router -m hermetic --record-mode=all
+uv run pytest
 ```
 
-### Update snapshots
+## Running Tests Directly
+
+If you run test files directly, ensure the repo root is on `PYTHONPATH`.
+The tracked `.envrc` configures this automatically for direnv-aware shells.
+
+## Runnable Examples
+
+`examples/` is for committed public API demonstrations. Add an example when a
+complete caller flow is clearer as a real Python file than as a short docs
+snippet.
+
+Run an example directly:
 
 ```bash
-uv run pytest tests/llm_router --snapshot-update
+direnv exec . uv run python examples/llm_router/<module>.py
 ```
 
-### Running tests directly
+Keep examples focused on imports from `llm_router`. If an example
+needs private modules, move that investigation to `workbench/` or convert it
+into a test.
 
-If you run test files directly (e.g.,
-`python tests/<package>/e2e/test_server_errors.py`), you may encounter import
-errors for `tests.*` modules. To fix this, ensure the repo root is on
-`PYTHONPATH`:
+Every committed example should have a matching link from the package usage docs.
+The e2e examples smoke test discovers and runs committed example scripts so
+docs examples do not drift silently.
 
-- For shell/direnv: the tracked `.envrc` configures `PYTHONPATH`
-  automatically.
-- For VS Code/Jupyter in the devcontainer: the container reads
-  `$HOME/researcher-local/.env` directly, and notebook kernels inherit that
-  environment.
-- For VS Code/Jupyter on the host: start VS Code or Jupyter from a shell where
-  `direnv allow` has already loaded the repo environment, or use a
-  direnv-aware editor workflow.
+## Live Workbench Scripts
 
-Reload VS Code and restart kernels after changes. For pytest, this is not
-needed.
+`workbench/` is manual-only. Add focused probes there when a behavior needs
+live investigation outside committed pytest coverage.
 
-## Live workbench scripts
-
-`workbench/` is manual-only. It is not part of the default commit or CI path.
-
-Run one script directly:
+Run a probe directly:
 
 ```bash
-direnv exec . uv run python -m workbench.llm_router.qwenchat.text_generation_async
+direnv exec . uv run python -m workbench.llm_router.<module>
 ```
 
-Reproduce the same script inside an already-running event loop:
+Reproduce the same probe inside an already-running event loop:
 
 ```bash
-direnv exec . uv run python scripts/runtime/reproduce_running_loop.py \
-    workbench.llm_router.qwenchat.text_generation_async
+direnv exec . uv run py-lib-reproduce-running-loop \
+    workbench.llm_router.<module>
 ```
 
-## Commit and release conventions
+## Commit And Release Conventions
 
 This project uses [Commitizen](https://commitizen-tools.github.io/commitizen/)
-for version management and changelog generation.
+for version management and changelog generation. Commit messages and pull
+request titles must follow [Conventional Commits](https://www.conventionalcommits.org/)
+format, for example `feat: add retry policy`, `fix(cache): preserve metadata`,
+or `chore(ci): update workflows`. Use GitHub's draft state instead of a `WIP`
+title prefix.
 
-### Commit messages
+For an aggregated `dev` to `main` pull request, choose the title according to
+the highest release impact it contains: breaking change first, then `feat`,
+then `fix`, otherwise an appropriate non-release type such as `docs` or
+`chore`. CI validates the format, while the maintainer remains responsible for
+choosing the correct semantic type.
 
-**Commit messages** must follow
-[Conventional Commits](https://www.conventionalcommits.org/) format (enforced
-by pre-commit hook):
-
-```text
-feat: add new feature
-fix: resolve bug
-docs: update documentation
-refactor: restructure code
-```
-
-### Release flow (recommended)
-
-```bash
-# 1) Merge conventional-commit PRs into main
-# 2) GitHub Actions "Release" workflow bumps version/changelog automatically
-# 3) Workflow pushes bump commit+tag and creates GitHub Release
-```
-
-The workflow runs `cz bump --changelog --yes` on `main`, pushes the bump
-commit/tag, creates a GitHub Release, and syncs `main` back to `dev`.
-
-CI runs on pushes and pull requests targeting `dev` and `main`. It reruns both
-commit-time and push-time hooks, builds package artifacts, and then runs the
-hermetic e2e suite in slices.
-
-### GitHub prerequisite for protected `main`
-
-Configure `PAT_TOKEN` secret with a token/user that is allowed by your
-repository rules to push release commits to `main`.
+Full CI runs on `dev` pushes and on pull requests targeting `dev` or
+`main`. Pull requests targeting `main` must come from the same repository's
+`dev` branch. `main` pushes run Release only.

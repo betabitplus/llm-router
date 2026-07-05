@@ -33,8 +33,8 @@ from pathlib import Path
 from typing import Any
 
 from google.genai import types
+from py_lib_tooling import console
 
-from tests.support.console import console
 from workbench.llm_router.google_genai._media_parts import build_video_file_part
 from workbench.llm_router.google_genai._sdk_helpers import (
     build_client,

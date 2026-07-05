@@ -1,3 +1,4 @@
+# %%
 """Internal AI Studio workbench SDK helpers.
 
 Why:

@@ -21,8 +21,13 @@ from typing import ClassVar
 
 from google.genai import types
 
-from llm_router._api.contracts import RouterConfig, RouterPolicy, RouterProfile
-from llm_router._api.types import Model, Provider
+from llm_router._api.types import (
+    Model,
+    Provider,
+    RouterConfig,
+    RouterPolicy,
+    RouterProfile,
+)
 
 # ================================================================================
 # Generation Config Presets

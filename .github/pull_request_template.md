@@ -7,6 +7,7 @@ Describe the change in a few sentences.
 - [ ] `src/`
 - [ ] `tests/`
 - [ ] `docs/`
+- [ ] `examples/`
 - [ ] `workbench/`
 - [ ] repository tooling, release, or CI
 
@@ -15,6 +16,7 @@ Describe the change in a few sentences.
 - [ ] Ran `uv run pre-commit run --all-files`
 - [ ] Ran `uv run pre-commit run --all-files --hook-stage pre-push`
 - [ ] Ran targeted tests if behavior changed
+- [ ] Ran affected `examples/` scripts if public API demos changed
 - [ ] Ran affected `workbench/` scripts manually if probe logic changed
 
 ## Docs

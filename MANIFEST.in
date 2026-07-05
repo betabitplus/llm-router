@@ -1,11 +1,9 @@
 # Minimal sdist inputs for the Python library package.
 include pyproject.toml
 include .editorconfig
-include *.md
-include README.md
-include AGENTS.md
 include .envrc
-include CHANGELOG.md
+include *.md
+include *.json5
 include LICENSE
 include MANIFEST.in
 

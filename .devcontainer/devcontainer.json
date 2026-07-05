@@ -8,9 +8,7 @@
     }
   },
   "runArgs": [
-    "--init",
-    "--env-file",
-    "${localEnv:HOME}/researcher-local/.env"
+    "--init"
   ],
   "remoteUser": "vscode",
   "containerEnv": {

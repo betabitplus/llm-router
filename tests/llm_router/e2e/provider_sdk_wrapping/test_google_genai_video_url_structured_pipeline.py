@@ -32,6 +32,7 @@ Examples:
 from __future__ import annotations
 
 import pytest
+from py_lib_tooling import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     LLMRouter,
@@ -47,8 +48,6 @@ from tests.llm_router.support.media.video import (
     assert_indoor_video_response,
     build_indoor_video_prompt,
 )
-from tests.support.console import console
-from tests.support.e2e_vcr_guard import require_vcr_cassette_or_record_mode
 
 pytestmark = [
     pytest.mark.e2e_contract,

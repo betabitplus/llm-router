@@ -145,4 +145,4 @@ MD053: true
 # MD060 - Table column style
 # Enforce consistent spacing around table pipes
 MD060:
-  style: compact
+  style: padded

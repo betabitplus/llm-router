@@ -22,7 +22,7 @@ import sys
 from collections.abc import Sequence
 from typing import Any
 
-from tests.support.paths import get_repo_root
+from py_lib_tooling import get_repo_root
 
 REPO_ROOT = get_repo_root()
 

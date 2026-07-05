@@ -1,3 +1,4 @@
+# %%
 """AI Studio workbench tool-loop helpers.
 
 Why:

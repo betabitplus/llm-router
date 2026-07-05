@@ -7,6 +7,8 @@ Why:
 
 from __future__ import annotations
 
+from py_lib_runtime import get_logger
+
 from llm_router._api import defaults as api_defaults
 from llm_router._api.types import Provider
 from llm_router._internal.config.models import (
@@ -18,7 +20,6 @@ from llm_router._internal.config.models import (
     RouterPolicyDefaults,
 )
 from llm_router._internal.config.validation import validate_config
-from llm_router._support.logging import get_logger
 
 logger = get_logger(__name__)
 

@@ -32,9 +32,9 @@ from pathlib import Path
 from typing import Any
 
 from google.genai import types
+from py_lib_tooling import console
 
 from tests.llm_router.support.media.pdf import extract_expected_pdf_facts
-from tests.support.console import console
 from workbench.llm_router.google_genai._media_parts import build_pdf_part
 from workbench.llm_router.google_genai._sdk_helpers import (
     build_client,

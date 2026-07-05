@@ -1,3 +1,4 @@
+# %%
 """Google GenAI workbench media-part helpers.
 
 Why:

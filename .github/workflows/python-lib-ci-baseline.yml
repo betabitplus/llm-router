@@ -1,0 +1,167 @@
+# Reusable generated-library baseline verification.
+#
+# Called by starter-generated repositories. Keep job internals here instead of
+# stamping long CI job bodies into every library repo.
+
+name: Python Library CI Baseline
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: Python version to install.
+        required: false
+        type: string
+        default: "3.13"
+
+env:
+  PYTEST_XDIST_AUTO_NUM_WORKERS: "2"
+
+jobs:
+  baseline:
+    name: Baseline Repo Verification
+    runs-on: ${{ github.event.repository.private != true && 'ubuntu-latest' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON(vars.CI_RUNNER_LABELS_JSON || '["ubuntu-latest"]') }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: auto
+
+      - name: Prepare shared package token scope
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        id: token-scope
+        run: |
+          set -euo pipefail
+          current_repository="${GITHUB_REPOSITORY#*/}"
+          python3 - "${current_repository}" <<'PY' >> "${GITHUB_OUTPUT}"
+          import sys
+
+          repositories = list(dict.fromkeys((sys.argv[1], "py-lib-starter")))
+          print("repositories<<EOF")
+          print("\n".join(repositories))
+          print("EOF")
+          PY
+
+      - name: Create shared package token
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ steps.token-scope.outputs.repositories }}
+          permission-contents: read
+
+      - name: Verify shared py-lib Git access
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          SHARED_PACKAGE_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "${SHARED_PACKAGE_TOKEN}" | base64 | tr -d '\n')"
+          printf '::add-mask::%s\n' "${auth_header}"
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
+          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth_header}"
+          read_shared_repository() {
+            local repository="$1"
+            git ls-remote "https://github.com/${repository}.git" HEAD >/dev/null 2>&1
+          }
+          for repository in "${GITHUB_REPOSITORY}" "betabitplus/py-lib-starter"; do
+            for attempt in 1 2 3 4 5; do
+              if read_shared_repository "${repository}"; then
+                continue 2
+              fi
+              if [ "${attempt}" -lt 5 ]; then
+                sleep 10
+              fi
+            done
+            echo "::error::The betabitplus-py-lib-automation GitHub App cannot read ${repository}. Install or re-authorize the App for that repository before dependency installation."
+            exit 1
+          done
+
+      - name: Install dependencies (dev)
+        env:
+          SHARED_PACKAGE_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          python_path="$(command -v python)"
+          if [ -n "${SHARED_PACKAGE_TOKEN}" ]; then
+            auth_header="$(printf 'x-access-token:%s' "${SHARED_PACKAGE_TOKEN}" | base64 | tr -d '\n')"
+            printf '::add-mask::%s\n' "${auth_header}"
+            GIT_CONFIG_COUNT=1 \
+            GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth_header}" \
+              uv sync --group dev --frozen --python "${python_path}"
+          else
+            uv sync --group dev --frozen --python "${python_path}"
+          fi
+
+      - name: Validate pull request title
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: >-
+          uv run python -m
+          py_lib_tooling._internal.quality_gates.change_title
+          "$PR_TITLE"
+
+      - name: Install system tools for hooks
+        run: |
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y shellcheck
+          fi
+
+      - name: Install hadolint
+        run: |
+          set -euo pipefail
+          if command -v hadolint >/dev/null 2>&1; then
+            hadolint --version
+            exit 0
+          fi
+          arch="$(uname -m)"
+          case "${arch}" in
+            x86_64|amd64) asset=hadolint-Linux-x86_64 ;;
+            aarch64|arm64) asset=hadolint-Linux-arm64 ;;
+            *) echo "Unsupported architecture for hadolint: ${arch}" >&2; exit 2 ;;
+          esac
+          sudo curl -fsSL \
+            -o /usr/local/bin/hadolint \
+            "https://github.com/hadolint/hadolint/releases/latest/download/${asset}"
+          sudo chmod +x /usr/local/bin/hadolint
+          hadolint --version
+
+      - name: Cache pre-commit hooks
+        if: runner.environment == 'github-hosted'
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-
+
+      - name: Run pre-commit hooks (commit-time)
+        env:
+          SKIP: check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout,pytest
+        run: uv run pre-commit run --all-files --show-diff-on-failure
+
+      - name: Run baseline pre-push hooks
+        env:
+          SKIP: check-branch-name,no-push-to-main,pytest
+        run: uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure

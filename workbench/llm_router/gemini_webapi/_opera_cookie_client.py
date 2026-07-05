@@ -1,3 +1,4 @@
+# %%
 """Internal Gemini WebAPI Opera-cookie client helpers.
 
 Why:
@@ -14,7 +15,7 @@ from __future__ import annotations
 import contextlib
 import os
 import tempfile
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -162,7 +163,7 @@ async def init_client(
 async def managed_client(
     *,
     init_timeout_seconds: float = 30.0,
-) -> AsyncIterator[GeminiClient]:
+) -> AsyncGenerator[GeminiClient]:
     """Yield one initialized live Gemini WebAPI client and always close it."""
     client = build_client()
     await init_client(client, init_timeout_seconds=init_timeout_seconds)

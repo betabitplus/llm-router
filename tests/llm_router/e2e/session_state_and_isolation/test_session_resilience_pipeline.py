@@ -47,6 +47,7 @@ from __future__ import annotations
 import json
 
 import pytest
+from py_lib_tooling import console
 
 from llm_router import Model, Provider
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -58,7 +59,6 @@ from tests.llm_router.support.workers.session_resilience import (
     SessionResilienceWorkerResult,
     run_session_resilience_inprocess,
 )
-from tests.support.console import console
 
 pytestmark = [
     pytest.mark.e2e_behavior,
