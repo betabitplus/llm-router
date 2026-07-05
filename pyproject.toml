@@ -437,6 +437,9 @@ package_names = [ "llm_router" ]
 library_lane = "standard-lib"
 env_prefix = "LLM_ROUTER"
 
+[tool.py_lib_starter.secrets]
+env_files = [ "llm-keys.sops.env" ]
+
 # ---------------- Pip Audit (dependency vulnerability scanning) ----------------
 [tool.pip-audit]
 # Ignore vulnerabilities that are not applicable or have no fix yet.

@@ -38,6 +38,15 @@ direnv exec . uv run pytest tests/llm_router -m hermetic -q
 direnv exec . uv run py-lib-smoke-public-api
 ```
 
+## Live Provider Secrets
+
+Live provider demos and recording-mode e2e checks load API keys from the
+encrypted `betabit-secrets/llm-keys.sops.env` file through
+`scripts/env/secrets.sh`, which is wired by `.envrc` from the
+`[tool.py_lib_starter.secrets]` declaration in `pyproject.toml`. The loader
+clones `https://github.com/betabitplus/betabit-secrets.git` into the user data
+cache when the checkout is missing.
+
 ## Devcontainer
 
 The devcontainer provisions an in-container `.venv` with `uv sync --group dev`.
