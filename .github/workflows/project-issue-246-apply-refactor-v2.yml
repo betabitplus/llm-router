@@ -1,4 +1,4 @@
-name: Issue 246 Commit Stable Template Update
+name: Issue 246 Apply Stable Template Update
 
 on:
   pull_request:
@@ -46,14 +46,14 @@ jobs:
         with:
           ref: issue-246-standard-onboarding
           fetch-depth: 0
-          token: ${{ steps.target-token.outputs.token }}
+          persist-credentials: false
 
-      - name: Detect explicit commit request
+      - name: Detect explicit update request
         id: gate
         shell: bash
         run: |
           subject="$(git log -1 --pretty=%s)"
-          if [ "$subject" = 'ci: commit Issue 246 template v0.29.3' ]; then
+          if [ "$subject" = 'ci: atomically apply Issue 246 template v0.29.3' ]; then
             echo 'apply=true' >> "$GITHUB_OUTPUT"
           else
             echo 'apply=false' >> "$GITHUB_OUTPUT"
@@ -99,7 +99,7 @@ jobs:
           GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth_header}" \
             uv run py-lib-template-update --vcs-ref v0.29.3
 
-      - name: Verify stable update result
+      - name: Verify exact stable update result
         if: steps.gate.outputs.apply == 'true'
         shell: bash
         run: |
@@ -109,15 +109,61 @@ jobs:
           grep -q 'py-lib-starter.git@v0.29.3#subdirectory=packages/py-lib-tooling' pyproject.toml
           uv lock --check
           git diff --check
-          test -n "$(git status --short)"
+          actual="$(git diff --name-only | sort)"
+          expected="$(printf '%s\n' \
+            '.github/workflows/ci.yml' \
+            '.github/workflows/sync-starter-template.yml' \
+            '_copier_answers.yml' \
+            'pyproject.toml' \
+            'uv.lock' | sort)"
+          test "$actual" = "$expected"
 
-      - name: Commit and push stable template update
+      - name: Create one atomic Git commit through the App
         if: steps.gate.outputs.apply == 'true'
+        env:
+          GH_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
         run: |
           set -euo pipefail
-          git add -A
-          git config user.name 'betabitplus-py-lib-automation[bot]'
-          git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
-          git commit -m 'chore: update managed shell to starter v0.29.3'
-          git push origin HEAD:issue-246-standard-onboarding
+          parent_sha="$(git rev-parse HEAD)"
+          base_tree="$(git rev-parse HEAD^{tree})"
+          create_blob() {
+            jq -Rs '{content: ., encoding: "utf-8"}' "$1" |
+              gh api --method POST \
+                "repos/${GITHUB_REPOSITORY}/git/blobs" \
+                --input - --jq '.sha'
+          }
+          ci_sha="$(create_blob .github/workflows/ci.yml)"
+          sync_sha="$(create_blob .github/workflows/sync-starter-template.yml)"
+          answers_sha="$(create_blob _copier_answers.yml)"
+          pyproject_sha="$(create_blob pyproject.toml)"
+          lock_sha="$(create_blob uv.lock)"
+          tree_sha="$(jq -n \
+            --arg base_tree "$base_tree" \
+            --arg ci_sha "$ci_sha" \
+            --arg sync_sha "$sync_sha" \
+            --arg answers_sha "$answers_sha" \
+            --arg pyproject_sha "$pyproject_sha" \
+            --arg lock_sha "$lock_sha" \
+            '{base_tree: $base_tree, tree: [
+              {path: ".github/workflows/ci.yml", mode: "100644", type: "blob", sha: $ci_sha},
+              {path: ".github/workflows/sync-starter-template.yml", mode: "100644", type: "blob", sha: $sync_sha},
+              {path: "_copier_answers.yml", mode: "100644", type: "blob", sha: $answers_sha},
+              {path: "pyproject.toml", mode: "100644", type: "blob", sha: $pyproject_sha},
+              {path: "uv.lock", mode: "100644", type: "blob", sha: $lock_sha}
+            ]}' |
+            gh api --method POST \
+              "repos/${GITHUB_REPOSITORY}/git/trees" \
+              --input - --jq '.sha')"
+          commit_sha="$(jq -n \
+            --arg message 'chore: update managed shell to starter v0.29.3' \
+            --arg tree "$tree_sha" \
+            --arg parent "$parent_sha" \
+            '{message: $message, tree: $tree, parents: [$parent]}' |
+            gh api --method POST \
+              "repos/${GITHUB_REPOSITORY}/git/commits" \
+              --input - --jq '.sha')"
+          jq -n --arg sha "$commit_sha" '{sha: $sha, force: false}' |
+            gh api --method PATCH \
+              "repos/${GITHUB_REPOSITORY}/git/refs/heads/issue-246-standard-onboarding" \
+              --input - >/dev/null
