@@ -1,88 +1,84 @@
 # ==============================================================================
 # Build System Configuration
 # ==============================================================================
-
 [build-system]
 build-backend = "setuptools.build_meta"
+requires = [ "setuptools>=82.0.1" ]
+
 # ==============================================================================
 # Project Metadata
 # ==============================================================================
-requires = [ "setuptools>=82.0.1", "wheel" ]
-
 [project]
 name = "llm-router"
 version = "0.8.1"
-
 description = "A provider-agnostic LLM routing and orchestration library."
 readme = "README.md"
-keywords = [ "gemini", "llm", "openai", "orchestration", "router" ]
+keywords = ["gemini", "llm", "openai", "orchestration", "router"]
 license = "MIT"
-authors = [ { email = "8123085+betabitplus@users.noreply.github.com", name = "betabitplus" } ]
+authors = [ { name = "betabitplus", email = "8123085+betabitplus@users.noreply.github.com" } ]
 requires-python = ">=3.13"
 classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Typing :: Typed",
 ]
 # --- Main Dependencies ---
-dependencies = [
-  "browser-cookie3",
-  "gemini-webapi>=1.19.2,<1.20",
-  "google-genai>=1.73.1",
-  "httpx",
-  "openai",
-  "pillow>=12.2",
-  "pydantic",
-  "structlog>=25.5",
-  "tenacity>=9.1.4",
-]
+dependencies = ["browser-cookie3", "gemini-webapi>=1.19.2,<1.20", "google-genai>=1.73.1", "httpx", "openai", "pillow>=12.2", "pydantic", "py-lib-runtime @ git+https://github.com/betabitplus/py-lib-starter.git@v0.29.1#subdirectory=packages/py-lib-runtime", "tenacity>=9.1.4"]
 # --- Project URLs ---
 urls."Bug Tracker" = "https://github.com/betabitplus/llm-router/issues"
 urls.Documentation = "https://github.com/betabitplus/llm-router/tree/main/docs"
 urls.Homepage = "https://github.com/betabitplus/llm-router"
 urls.Repository = "https://github.com/betabitplus/llm-router"
 
+[dependency-groups]
+dev = ["bandit>=1.9.4", "check-manifest>=0.51", "commitizen>=4.16.3", "deptry>=0.25.1", "flake8>=7.3", "flake8-class-attributes-order>=0.3", "flake8-cognitive-complexity>=0.1", "hypothesis>=6.155.3", "import-linter>=2.11", "interrogate>=1.7", "ipykernel>=7.3.0", "ipython>=9.14.1", "nest-asyncio>=1.6", "pillow>=12.2", "pip-audit>=2.10.1", "pre-commit>=4.6.0", "py-lib-tooling @ git+https://github.com/betabitplus/py-lib-starter.git@v0.29.1#subdirectory=packages/py-lib-tooling", "pyright>=1.1.410", "pytest>=9.1.0", "pytest-cov>=7.1.0", "pytest-randomly>=4.1.0", "pytest-recording>=0.13.4", "pytest-xdist>=3.8.0", "radon>=6.0.1", "rich>=15", "ruff>=0.15.17", "syrupy>=5.3.2", "ty>=0.0.50", "types-pillow>=10.2.0.20240822", "wheel>=0.47.0", "beartype>=0.22.9", "brotli>=1.2.0", "ipywidgets>=8.1.8", "jupyter>=1.1.1", "pygments>=2.20.0", "pymupdf", "pytest-asyncio>=1.3.0"]
+
 [tool.setuptools]
-
-[tool.setuptools.package-dir]
-"" = "src"
-
-[tool.setuptools.packages.find]
-where = [ "src" ]
 # Package discovery is scoped to `src/`; keep non-package code outside `src/`.
-include = [ "*" ]
+packages.find.where = [ "src" ]
+packages.find.include = [ "*" ]
+# ==============================================================================
+# Setuptools Configuration
+# ==============================================================================
+package-dir."" = "src"
 
 # ---------------- Ruff configuration ----------------
-
 [tool.ruff]
 # Target the project runtime Python version.
 target-version = "py313"
-
-# Match Black’s defaults (line length = 88).
-# To change later: just edit this number (e.g., 100, 120).
+# Match Black's defaults (line length = 88).
 line-length = 88
 # Enable auto-fixes for safe rules (`ruff check --fix`).
 fix = true
-# --- Complexity / readability rules ---
-# Uncomment if you want Ruff to catch complex code:
-# C901 = function is too complex
-# PLR = readability/refactor rules, e.g.:
-# - PLR0913: too many arguments
-# - PLR0912: too many branches
-# - PLR0915: too many statements
+# Format Python snippets inside docstrings.
 format.docstring-code-format = true
-#
-# Additional useful rule sets:
+# Useful rule sets:
 # A = flake8-builtins (prevent shadowing builtins like list, dict)
-# PIE = flake8-pie (catch useless code patterns)
-# PT = flake8-pytest-style (pytest best practices)
-# ERA = eradicate (find commented-out code)
-# W = pycodestyle warnings (trailing whitespace, missing newlines)
-# RSE = flake8-raise (raise statement hygiene)
-# FLY = flynt (prefer f-strings)
-# TC = flake8-type-checking (proper TYPE_CHECKING usage)
-# PGH = pygrep-hooks (blanket noqa/type-ignore detection)
-# PLC, PLE, PLW = convention, error, warning rule groups
+# ANN = flake8-annotations (public typing discipline)
+# ARG = unused arguments
+# ASYNC = async correctness checks
+# B = flake8-bugbear
+# C4 = flake8-comprehensions
+# C901 = complexity
+# D = pydocstyle
+# ERA = commented-out code
+# F = Pyflakes
+# FAST = FastAPI rules (harmless unless FastAPI appears)
+# FBT = boolean trap checks
+# FLY = prefer f-strings
+# I = import sorting
+# LOG = logging hygiene
+# N = pep8-naming
+# PERF = performance anti-patterns
+# PGH = blanket noqa/type-ignore detection
+# PIE = flake8-pie
+# PLC, PLE, PLW = Pylint convention/error/warning rule groups
+# PT = pytest style
+# RUF = Ruff-specific checks
+# S = Bandit security checks
+# TC = type-checking import placement
 lint.select = [
   "A",
   "ANN",
@@ -131,382 +127,252 @@ lint.select = [
   "W",
   "YTT",
 ]
-# Ignore rules that are too noisy or conflict with formatter/project style:
+# Ignore rules that are too noisy or conflict with formatter/project style.
 lint.ignore = [
   "COM812",  # Trailing comma (conflicts with formatter)
   "ISC001",  # Implicit string concatenation (conflicts with formatter)
   "PLC0415", # import-outside-top-level (sometimes needed for lazy loading)
   "S603",    # subprocess without shell=True (handled by Bandit locally)
-  "TC001",   # typing-only first-party import (enable once TYPE_CHECKING blocks used)
-  "TC002",   # typing-only third-party import (enable once TYPE_CHECKING blocks used)
-  "TC003",   # typing-only stdlib import (enable once TYPE_CHECKING blocks used)
-  "UP047",   # Keep TypeVar-style generic functions (more stable for current type checkers)
+  "TC001",   # typing-only first-party import (enable after cleanup)
+  "TC002",   # typing-only third-party import (enable after cleanup)
+  "TC003",   # typing-only stdlib import (enable after cleanup)
+  "UP047",   # Keep TypeVar-style generics for current type checkers
 ]
-# Scripts are experimental/utility code - relax strict linting
+lint.per-file-ignores."examples/*" = [
+  "T20", # Examples may print their public API output.
+]
+# Scripts are utility code; keep them readable without production strictness.
 lint.per-file-ignores."scripts/*" = [
   "ANN",    # No type annotation requirements
   "D",      # No docstring requirements
-  "ERA001", # Allow commented-out code (experimental/WIP)
+  "ERA001", # Allow commented-out experiments
   "T20",    # Allow print statements
 ]
 lint.per-file-ignores."tests/*" = [
-  "ANN",     # Type annotations not required
+  "ANN",     # Type annotations not required everywhere
   "ARG005",  # Allow unused lambda arguments
-  "D",       # Docstrings not required
-  "DTZ",     # Allow naive datetime in test fixtures
-  "EM",      # Allow string literals in exceptions (conflicts with PT012)
-  "ERA001",  # Allow commented-out code
+  "D",       # Docstrings are useful but not required in every tiny test helper
+  "DTZ",     # Allow naive datetime in fixtures
+  "EM",      # Allow string literals in exceptions
+  "ERA001",  # Allow commented-out exploratory cases
   "FBT",     # Allow boolean positional arguments
-  "PLR0913", # Allow many function arguments
-  "PLR2004", # Allow magic values
+  "PLR0913", # Allow many function arguments in fixtures
+  "PLR2004", # Allow magic values in assertions
   "PT012",   # Allow multi-statement pytest.raises blocks
   "S101",    # Allow assert statements
-  "T20",     # Allow print statements
+  "T20",     # Allow print statements in direct-runnable e2e modules
   "TRY003",  # Allow long exception messages
 ]
-lint.per-file-ignores."workbench/manual_checks/*" = [
-  "ANN",     # Type annotations not required
-  "D",       # Docstrings not required
-  "PLR2004", # Allow magic values
+lint.per-file-ignores."workbench/*" = [
+  "ANN",     # Manual probes do not need full typing
+  "D",       # Manual probes can keep lightweight docs
+  "PLR2004", # Allow scenario constants
   "S101",    # Allow assert statements
+  "T20",     # Allow print statements
 ]
 lint.flake8-tidy-imports.ban-relative-imports = "all"
 lint.isort.combine-as-imports = true
 lint.isort.known-first-party = [ "llm_router" ]
-# ---------------- Flake8 (cognitive complexity + class attributes) ----------------
-# Note: Flake8 requires setup.cfg or .flake8 for pyproject.toml config (not natively supported)
-# These settings are passed via args in .pre-commit-config.yaml instead.
-# Documented here for reference only:
-# - max-cognitive-complexity = 15
-# - class-attributes-order = field,nested_class,magic_method,property_method,static_method,class_method,method
-
-# --- Setuptools Configuration ---
-# This tells setuptools to find all packages under the `src/` directory.
 # Choose docstring convention: "google", "numpy", or "pep257".
 lint.pydocstyle.convention = "google"
 
+# ---------------- Interrogate (docstring coverage) ----------------
+[tool.interrogate]
+fail-under = 100
+# Require docstrings in production code.
+ignore-init-method = false
+ignore-init-module = false
+ignore-magic = false
+ignore-semiprivate = false
+ignore-private = false
+ignore-property-decorators = false
+ignore-module = false
+ignore-nested-functions = false
+ignore-nested-classes = false
+ignore-setters = false
+ignore-overloaded-functions = true
+ignore-regex = [ "^wrapper$" ]
+exclude = [ ".agents", ".artifact-smoke*", "docs", "scripts", "tests" ]
+color = true
+verbose = 1
+quiet = false
+omit-covered-files = true
+
+# ---------------- Manifest validation ----------------
 [tool.check-manifest]
 ignore = [
   "*.egg-info/**",
+  ".agents/**",
+  ".devcontainer/**",
   ".git/**",
   ".github/**",
-  ".idea/**",
+  ".gitleaks.toml",
+  ".markdown-link-check.json",
+  ".markdownlint.yaml",
+  ".mdformat.toml",
+  ".pre-commit-config.yaml",
   ".pytest_cache/**",
   ".ruff_cache/**",
   ".venv/**",
   ".vscode/**",
   "__pycache__/**",
-  ".flake8",
-  ".gitleaks.toml",
-  ".markdown-link-check.json",
-  ".markdownlint.yaml",
-  ".mdformat.toml",
-  "data/**",
-  "logs/**",
-  "records/**",
-  ".devcontainer/**",
-  ".llm_router/**",
-  ".pre-commit-config.yaml",
-  "SETUP.md",
-  "TODO.md",
-  "configs/**",
-  "coverage.json",
+  "_copier_answers.yml",
   "docs/**",
-  "workbench/**",
-  "prompts/**",
+  "examples/**",
+  "plan/**",
   "scripts/**",
+  "SETUP.md",
   "tests/**",
   "typos.toml",
   "uv.lock",
+  "workbench/**",
 ]
 
 # ---------------- Deptry (dependency hygiene) ----------------
-
 [tool.deptry]
 extend_exclude = [
+  ".agents",
+  ".artifact-smoke*",
   ".venv",
+  "examples",
   "scripts",
   "tests",
+  "workbench",
 ]
 known_first_party = [ "llm_router" ]
 
-# ---------------- Pytest configuration ----------------
-
-[tool.pytest.ini_options]
-addopts = "--cov --cov-report=term-missing"
-asyncio_default_fixture_loop_scope = "function"
-filterwarnings = [
-  "ignore:builtin type .* has no __module__ attribute:DeprecationWarning",
-]
-markers = [
-  "e2e_contract: provider contract tests for end-to-end request/response flows",
-  "e2e_behavior: router behavior tests for retry, routing, and session mechanics",
-  "cap_async: tests async query execution paths",
-  "cap_file: tests file attachment handling",
-  "cap_image: tests image attachment handling",
-  "cap_resilience: tests retry and recovery behavior under failure",
-  "cap_routing: tests route selection, fallback, or key rotation behavior",
-  "cap_session: tests session persistence, resume, or branching behavior",
-  "cap_structured: tests structured-output parsing or response schemas",
-  "cap_tools: tests tool-calling execution paths",
-  "cap_video: tests video attachment handling",
-  "hermetic: marks tests that run fully offline using VCR cassettes",
-  "vcr: marks tests that use VCR.py for HTTP recording/replay",
-  "slow: marks tests that are slow and should be skipped in fast runs",
-]
-norecursedirs = [ "scripts" ]
-pythonpath = [ ".", "src" ] # Enable imports from project root and src/
-
-# ---------------- pytest coverage ----------------
-
-[tool.coverage.report]
-fail_under = 1
-
-[tool.coverage.run]
-source = [ "src" ]
+# ---------------- Bandit (security) ----------------
+[tool.bandit]
+exclude_dirs = [ ".agents", ".venv", "scripts", "tests" ]
 
 # ---------------- Pyright configuration ----------------
-
 [tool.pyright]
-# Exclude patterns
+pythonVersion = "3.13"
+venv = ".venv"
+venvPath = "."
+stubPath = "./.stubs"
+typeCheckingMode = "strict"
+# Exclude patterns.
 exclude = [
   "**/__pycache__",
-  ".clinerules",
+  "*.egg-info",
+  ".agents",
+  ".artifact-smoke*",
   ".devcontainer",
   ".git",
   ".github",
-  ".idea",
-  ".mypy_cache",
-  ".opencode",
-  ".artifact-smoke*",
   ".pytest_cache",
-  ".repomix",
-  ".llm_router",
   ".ruff_cache",
   ".venv",
   ".vscode",
-  # Config directories (no Python code)
-  "configs",
-  # Data/output directories (no Python code)
-  "data",
-  "logs",
-  "prompts",
-  "records",
-  "*.egg-info",
-  # Experimental/demo code, not production
+  # Utility and verification code are checked by Ruff/pytest instead.
   "scripts",
   "tests",
 ]
-# Environment setup
-executionEnvironments = [ { root = "." } ]
-pythonVersion = "3.13"
 # Relaxed: third-party stubs and dynamic runtime APIs can report false positives.
-reportArgumentType = false         # For tests: incorrect stubs for third-party libs
+reportArgumentType = false
 reportAttributeAccessIssue = false
+reportInconsistentOverload = false
 reportMissingTypeArgument = false
 reportMissingTypeStubs = false
+reportOptionalMemberAccess = false
+reportOverlappingOverload = false
+# Relaxed: tests may intentionally access private seams.
+reportPrivateUsage = false
 # Relaxed: dynamic library protocols can be stricter than runtime behavior.
 reportReturnType = false
 reportUnknownArgumentType = false
 reportUnknownLambdaType = false
-# Relaxed: these flood errors due to missing third-party stubs
+# Relaxed: missing third-party stubs can flood unknown-type reports.
 reportUnknownMemberType = false
 reportUnknownParameterType = false
 reportUnknownVariableType = false
-# Relaxed: tests often access private methods and assert on potentially None values
-reportPrivateUsage = false         # For tests: allow accessing private methods
-reportOptionalMemberAccess = false # For tests: allow asserting on potentially None values
-reportOverlappingOverload = false  # Allow overlapping overloads for decorators
-reportInconsistentOverload = false # Allow inconsistent overloads for decorators
-stubPath = "./.stubs"              # Custom stubs directory (if needed)
-typeCheckingMode = "strict"        # Strict mode with targeted relaxations
-venv = ".venv"
-venvPath = "."
-
-# ---------------- ty (Astral type checker) ----------------
-# ty is Astral's experimental Rust-based type checker (formerly Red Knot)
-# Configuration mirrors pyright strict settings with targeted relaxations
-
-[tool.py_lib_starter]
-primary_package = "llm_router"
-package_names = [ "llm_router" ]
-env_prefix = "LLM_ROUTER"
+# Environment setup.
+executionEnvironments = [ { root = "." } ]
 
 [tool.ty]
-
-[tool.ty.environment]
-python-version = "3.13"
-
-[tool.ty.src]
-# Exclude patterns matching pyright configuration
-exclude = [
+# Exclude patterns matching Pyright configuration.
+src.exclude = [
   "**/__pycache__/",
-  ".clinerules/",
+  "*.egg-info/",
+  ".agents/",
+  ".artifact-smoke*/",
   ".devcontainer/",
   ".git/",
   ".github/",
-  ".idea/",
-  ".mypy_cache/",
-  ".opencode/",
   ".pytest_cache/",
-  ".repomix/",
-  ".llm_router/",
   ".ruff_cache/",
   ".venv/",
   ".vscode/",
-  # Config directories (no Python code)
-  "configs/",
-  # Data/output directories (no Python code)
-  "data/",
-  "logs/",
-  "prompts/",
-  "records/",
-  "*.egg-info/",
-  # Experimental/demo code, not production
   "scripts/",
   "tests/",
 ]
+# ---------------- ty (Astral type checker) ----------------
+environment.python-version = "3.13"
+# Suppress rules that generate false positives or conflict with Pyright settings.
+rules.invalid-argument-type = "ignore"
+rules.invalid-assignment = "ignore"
+rules.invalid-return-type = "ignore"
+rules.possibly-missing-attribute = "ignore"
+rules.unknown-argument = "ignore"
+rules.unresolved-attribute = "ignore"
 
-[tool.ty.rules]
-# Suppress rules that generate false positives or conflict with pyright settings
-# These match pyright's targeted relaxations in strict mode
-
-# False positives with Pydantic validators (data: dict[str, Any] typed as Unknown)
-# Pyright: reportArgumentType = false
-invalid-argument-type = "ignore"
-
-# False positives with Pydantic model_validator assignments
-# Pyright: reportArgumentType = false (covers subscript assignments too)
-invalid-assignment = "ignore"
-
-# False positives with generic collection transforms and dynamic protocols
-# Pyright: reportReturnType = false
-invalid-return-type = "ignore"
-
-# False positives with dynamic attributes exposed by third-party objects
-# Pyright: reportAttributeAccessIssue = false
-unresolved-attribute = "ignore"
-
-# False positives with tenacity retry decorator parameters
-# Not directly relaxed in pyright but covered by reportArgumentType = false
-unknown-argument = "ignore"
-
-# False positives with complex union type narrowing
-# Pyright: reportOptionalMemberAccess = false
-possibly-missing-attribute = "ignore"
-
-# ---------------- Bandit (security) ----------------
-
-[tool.bandit]
-exclude_dirs = [ ".venv", "workbench/manual_checks", "scripts", "tests" ]
-
-# ---------------- Interrogate (docstring coverage) ----------------
-
-[tool.interrogate]
-color = true
-exclude = [ ".artifact-smoke*", "docs", "scripts", "tests" ]
-fail-under = 100                                             # Minimum docstring coverage percentage (maximum strictness)
-# Require docstrings in production code (aggressive settings)
-ignore-init-method = false         # Require __init__ docstrings
-ignore-init-module = false         # Require module-level docstrings
-ignore-magic = false               # Require docstrings for __str__, __repr__, etc.
-ignore-module = false
-ignore-nested-classes = false      # Require nested class docstrings
-ignore-nested-functions = false    # Require nested function docstrings
-ignore-overloaded-functions = true # Ignore @overload decorated functions
-ignore-private = false             # Require private method docstrings
-ignore-property-decorators = false # Require @property docstrings
-ignore-regex = [ "^wrapper$" ]     # Ignore decorator wrapper functions
-ignore-semiprivate = false
-ignore-setters = false             # Require setter docstrings
-omit-covered-files = true          # Don't show files with 100% coverage
-quiet = false
-verbose = 1                        # Show only files with missing docstrings
-
-[dependency-groups]
-dev = [
-  # Runtime type checking (test-only)
-  "beartype>=0.22.9",
-  # Enable HTTPX Brotli decoding (required to replay VCR cassettes with br responses)
-  "brotli>=1.2.0",
-  # Security auditing
-  "bandit>=1.9.4",        # Static security analyzer (eval, subprocess, etc.)
-  "check-manifest>=0.51", # Ensure sdist includes all necessary files
-  "commitizen>=4.13.10",  # Conventional commits + changelog automation
-  # Project hygiene
-  "deptry>=0.25.1",                       # Detect unused/missing dependencies
-  "flake8>=7.3.0",                        # Core flake8 for cognitive complexity (ruff handles other lints)
-  "flake8-class-attributes-order>=0.3.0", # Enforce consistent class member ordering
-  "flake8-cognitive-complexity>=0.1",     # Human-centric complexity metric
-  "hypothesis>=6.152.1",                  # Property-based testing for public invariants
-  # Docs consistency
-  "interrogate>=1.7", # Docstring coverage checker
-  "ipykernel>=7.2.0",
-  # For interactive development and notebooks
-  "ipython",
-  "ipywidgets>=8.1.8",
-  "jupyter>=1.1.1",
-  "nest-asyncio>=1.6",     # Enable nested event loops in Jupyter
-  "pip-audit>=2.10.0",     # Dependency vulnerability scanner (CVE database)
-  "pre-commit",            # For running checks automatically before git commits
-  "pygments>=2.20.0",
-  "pyright>=1.1.408",      # Microsoft's fast static type checker for Python
-  "pytest",                # The standard for testing in Python
-  "pytest-asyncio>=1.3.0", # Async test support
-  "pytest-cov",            # Coverage reporting for pytest
-  "pytest-xdist",          # Parallel test execution
-  "pytest-recording",      # VCR support for HTTP recording
-  # Code complexity & maintainability analysis
-  "pytest-randomly>=4.0.1",        # Randomize test order to catch inter-test dependencies
-  "radon>=6.0.1",                  # Cyclomatic complexity, maintainability index, raw metrics
-  "ruff>=0.15.10",                 # AST-aware code pattern matching for custom architectural rules
-  "syrupy>=5.1.0",                 # Pytest snapshot testing
-  "pymupdf",                       # Test-only (PDF parsing in e2e fixtures)
-  "types-pillow>=10.2.0.20240822", # Type stubs for Pillow (not imported at runtime)
-  "rich>=15.0.0",
-  "import-linter>=2.11",
+[tool.pytest]
+ini_options.pythonpath = [ ".", "src" ]  # Enable imports from project root and src/
+ini_options.asyncio_default_fixture_loop_scope = "function"
+ini_options.filterwarnings = ["ignore:builtin type .* has no __module__ attribute:DeprecationWarning"]
+ini_options.norecursedirs = [
+  "*.egg-info",
+  ".artifact-smoke*",
+  ".git",
+  ".hypothesis",
+  ".pytest_cache",
+  ".ruff_cache",
+  ".venv",
+  "build",
+  "dist",
+  "scripts",
 ]
+# ---------------- Pytest configuration ----------------
+ini_options.addopts = "--cov --cov-report=term-missing"
+ini_options.markers = ["e2e_behavior: end-to-end behavior tests", "e2e_contract: end-to-end public contract tests", "hermetic: marks tests that run fully offline", "slow: marks tests that are slow and should be skipped in fast runs", "vcr: marks tests that use VCR.py for HTTP recording/replay", "e2e_contract: provider contract tests for end-to-end request/response flows", "e2e_behavior: router behavior tests for retry, routing, and session mechanics", "cap_async: tests async query execution paths", "cap_file: tests file attachment handling", "cap_image: tests image attachment handling", "cap_resilience: tests retry and recovery behavior under failure", "cap_routing: tests route selection, fallback, or key rotation behavior", "cap_session: tests session persistence, resume, or branching behavior", "cap_structured: tests structured-output parsing or response schemas", "cap_tools: tests tool-calling execution paths", "cap_video: tests video attachment handling", "hermetic: marks tests that run fully offline using VCR cassettes"]
 
-# ---------------- Pip Audit (dependency vulnerability scanning) ----------------
-# NOTE: pip-audit does NOT read pyproject.toml - this section is documentation only!
-# The actual ignores are specified in .pre-commit-config.yaml's pip-audit-uv hook.
-# Keep these in sync manually.
-
-[tool.pip-audit]
-# Ignore vulnerabilities that are not applicable or have no fix yet
-# nbconvert GHSA-xm59-rqc7-hhvf: Windows-only, affects PDF conversion with SVG
-# py PYSEC-2022-42969: ReDoS in Subversion handling, low risk for this project
-ignore-vulns = [
-  "GHSA-xm59-rqc7-hhvf",
-  "PYSEC-2022-42969",
-  "CVE-2026-26007",
-  "CVE-2025-69872",
-  "CVE-2025-14009",
-]
+[tool.coverage]
+run.source = [ "src" ]
+# ---------------- pytest coverage ----------------
+report.fail_under = 1
 
 # ---------------- Commitizen (conventional commits + changelog) ----------------
-
 [tool.commitizen]
 # Version management
 name = "cz_conventional_commits"
+allowed_prefixes = [ "Merge", "Revert", "WIP" ]
 version_provider = "uv"
+# Commit message settings
+major_version_zero = true
 tag_format = "v$version"
-
+annotated_tag = true
 # Changelog configuration
 changelog_file = "CHANGELOG.md"
-update_changelog_on_bump = true
 changelog_incremental = true
+update_changelog_on_bump = true
 
-# Commit message settings
-major_version_zero = true # Allow breaking changes in 0.x.x
-annotated_tag = true      # Use annotated tags for releases
+# ---------------- Shared py-lib tooling manifest ----------------
+[tool.py_lib_starter]
+primary_package = "llm_router"
+package_names = [ "llm_router" ]
+library_lane = "standard-lib"
+env_prefix = "LLM_ROUTER"
 
-# Customize allowed commit types (standard + extras)
-# feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
-allowed_prefixes = [ "Merge", "Revert", "WIP" ]
+# ---------------- Pip Audit (dependency vulnerability scanning) ----------------
+[tool.pip-audit]
+# Ignore vulnerabilities that are not applicable or have no fix yet.
+ignore-vulns = []
 
+# ---------------- Import-linter architecture contracts ----------------
 [tool.importlinter]
 root_packages = [
+  "examples",
   "llm_router",
   "tests",
   "workbench",
@@ -514,8 +380,8 @@ root_packages = [
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
-name = "Root package must not be imported by the private core"
-id = "root-not-imported-by-private-core"
+name = "Root package must not be imported by the private implementation"
+id = "root-not-imported-by-private-implementation"
 type = "forbidden"
 source_modules = [ "llm_router._internal" ]
 forbidden_modules = [ "llm_router" ]
@@ -530,37 +396,16 @@ forbidden_modules = [ "llm_router" ]
 as_packages = false
 
 [[tool.importlinter.contracts]]
-name = "Private core must not depend on facade entrypoints"
-id = "private-core-not-dependent-on-facade-entrypoints"
+name = "Private implementation must not depend on public config facade"
+id = "private-implementation-not-dependent-on-config-facade"
 type = "forbidden"
 source_modules = [ "llm_router._internal" ]
-forbidden_modules = [
-  "llm_router._api.router",
-  "llm_router._api.session",
-  "llm_router._api.presets",
-]
+forbidden_modules = [ "llm_router._api.config" ]
 as_packages = false
 
 [[tool.importlinter.contracts]]
-name = "Private core must stay layered"
-id = "private-core-layering"
-type = "layers"
-containers = [ "llm_router._internal" ]
-layers = [
-  "runtime",
-  "providers|session",
-  "config:errors",
-]
-ignore_imports = [
-  # Installing config invalidates runtime objects built from the previous
-  # snapshot. Keep the exception scoped to config while allowing invalidation
-  # target modules to move without changing the layer map.
-  "llm_router._internal.config.** -> llm_router._internal.**",
-]
-
-[[tool.importlinter.contracts]]
-name = "Private core is only imported through product code and explicit private-core test layers"
-id = "private-core-approved-boundaries"
+name = "Private implementation is only imported through product code and explicit private-boundary test layers"
+id = "private-implementation-approved-boundaries"
 type = "protected"
 protected_modules = [ "llm_router._internal" ]
 allowed_importers = [
@@ -569,11 +414,10 @@ allowed_importers = [
   "tests.llm_router.integration",
   "tests.llm_router.property_based.internal",
   "tests.llm_router.unit",
-  "tests.support.setup",
 ]
 
 [[tool.importlinter.contracts]]
-name = "Facade layer must import private core only through the private root"
+name = "Facade layer must import private implementation only through the private root"
 id = "facade-private-imports-through-root"
 type = "forbidden"
 source_modules = [ "llm_router._api" ]
@@ -581,32 +425,39 @@ forbidden_modules = [ "llm_router._internal.**" ]
 allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]
-name = "Private support modules stay private"
-id = "private-support-approved-boundaries"
-type = "protected"
-protected_modules = [ "llm_router._support" ]
-allowed_importers = [
-  "llm_router._api",
-  "llm_router._internal",
-  "llm_router._support",
-  "tests.support.setup",
-]
-
-[[tool.importlinter.contracts]]
-name = "LLMRouter public-contract verification modules must not import private core"
-id = "llm-router-public-contract-private-core"
+name = "LLM Router public-contract verification modules must not import private implementation"
+id = "llm-router-public-contract-boundary"
 type = "forbidden"
 source_modules = [
   "tests.llm_router.e2e",
   "tests.llm_router.property_based.public_contract",
   "tests.llm_router.support",
-  "tests.support",
 ]
 forbidden_modules = [ "llm_router._internal", "src" ]
 allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]
-name = "LLMRouter workbench must not import shipped package"
+name = "LLM Router examples must use the public package API"
+id = "llm-router-examples-public-api"
+type = "forbidden"
+source_modules = [ "examples.llm_router" ]
+forbidden_modules = [
+  "llm_router._api",
+  "llm_router._internal",
+  "src",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "LLM Router shipped package must not import examples"
+id = "llm-router-shipped-package-examples-boundary"
+type = "forbidden"
+source_modules = [ "llm_router" ]
+forbidden_modules = [ "examples" ]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "LLM Router workbench must not import shipped package"
 id = "llm-router-workbench-boundary"
 type = "forbidden"
 source_modules = [ "workbench.llm_router" ]
@@ -614,9 +465,25 @@ forbidden_modules = [ "llm_router", "src" ]
 allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]
-name = "LLMRouter shipped package must not import workbench"
+name = "LLM Router shipped package must not import workbench"
 id = "llm-router-shipped-package-workbench-boundary"
 type = "forbidden"
 source_modules = [ "llm_router" ]
 forbidden_modules = [ "workbench" ]
 allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Private implementation must not depend on facade entrypoints"
+id = "private-core-not-dependent-on-facade-entrypoints"
+type = "forbidden"
+source_modules = ["llm_router._internal"]
+forbidden_modules = ["llm_router._api.router", "llm_router._api.session", "llm_router._api.presets"]
+as_packages = false
+
+[[tool.importlinter.contracts]]
+name = "Private implementation must stay layered"
+id = "private-core-layering"
+type = "layers"
+containers = ["llm_router._internal"]
+layers = ["runtime", "providers|session", "config:errors"]
+ignore_imports = ["llm_router._internal.config.** -> llm_router._internal.**"]
