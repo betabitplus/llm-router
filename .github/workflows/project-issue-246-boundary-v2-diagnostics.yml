@@ -1,4 +1,4 @@
-name: Issue 246 Apply Final Verified Boundary
+name: Issue 246 Validate No-op and Cleanup
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  apply:
+  cleanup:
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.ref == 'feature/issue-246-standard-onboarding'
@@ -44,28 +44,28 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Detect explicit apply commit
+      - name: Detect explicit cleanup request
         id: gate
         shell: bash
         run: |
-          if [ "$(git log -1 --pretty=%s)" = 'ci: commit before Issue 246 pre-push' ]; then
-            echo 'apply=true' >> "$GITHUB_OUTPUT"
+          if [ "$(git log -1 --pretty=%s)" = 'ci: validate no-op and clean Issue 246 workflows' ]; then
+            echo 'run=true' >> "$GITHUB_OUTPUT"
           else
-            echo 'apply=false' >> "$GITHUB_OUTPUT"
+            echo 'run=false' >> "$GITHUB_OUTPUT"
           fi
 
       - uses: actions/setup-python@v6
-        if: steps.gate.outputs.apply == 'true'
+        if: steps.gate.outputs.run == 'true'
         with:
           python-version: '3.13'
 
       - uses: astral-sh/setup-uv@v8.2.0
-        if: steps.gate.outputs.apply == 'true'
+        if: steps.gate.outputs.run == 'true'
         with:
           enable-cache: auto
 
-      - name: Install exact development environment and system tools
-        if: steps.gate.outputs.apply == 'true'
+      - name: Install exact environment and hook tools
+        if: steps.gate.outputs.run == 'true'
         env:
           SHARED_PACKAGE_TOKEN: ${{ steps.shared-token.outputs.token }}
         shell: bash
@@ -80,87 +80,46 @@ jobs:
             https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64
           sudo chmod +x /usr/local/bin/hadolint
           bash scripts/env/setup.sh
-
-      - name: Apply official Copier update to v0.29.4
-        if: steps.gate.outputs.apply == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          out="$RUNNER_TEMP/issue246-final-apply"
-          mkdir -p "$out"
-          uv run py-lib-template-update --vcs-ref v0.29.4 \
-            >"$out/template-update.log" 2>&1
-          grep -Eq '^_commit: v0\.29\.4$' _copier_answers.yml
-          grep -q 'py-lib-starter.git@v0.29.4#subdirectory=packages/py-lib-runtime' pyproject.toml
-          grep -q 'py-lib-starter.git@v0.29.4#subdirectory=packages/py-lib-tooling' pyproject.toml
           uv lock --check
 
-      - name: Apply verified canonical boundary transformation
-        if: steps.gate.outputs.apply == 'true'
+      - name: Prove same-version Copier update is a no-op
+        if: steps.gate.outputs.run == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          awk '
-            /^      - name: Apply original transformation and repair generated indentation$/ { step=1; next }
-            step && /^        run: \|$/ { capture=1; next }
-            capture && /^      - name:/ { exit }
-            capture { sub(/^          /, ""); print }
-          ' .github/workflows/project-issue-246-boundary-apply-v2.yml > /tmp/apply-v2.sh
-          test -s /tmp/apply-v2.sh
-          bash /tmp/apply-v2.sh
-          python - <<'PY'
-          from pathlib import Path
+          out="$RUNNER_TEMP/issue246-cleanup"
+          mkdir -p "$out"
+          git status --short >"$out/status-before-update.txt"
+          test ! -s "$out/status-before-update.txt"
+          uv run py-lib-template-update --vcs-ref v0.29.4 \
+            >"$out/same-version-update.log" 2>&1
+          git status --short >"$out/status-after-update.txt"
+          git diff --exit-code
+          test ! -s "$out/status-after-update.txt"
+          uv run py-lib-template-check >"$out/template-check-before-cleanup.log" 2>&1
 
-          replacements = {
-              Path("src/llm_router/_internal/config/validation.py"): (
-                  "from llm_router._internal.config.defaults import "
-                  "_PROVIDERS_REQUIRING_BASE_URL",
-                  "from llm_router._api.defaults import "
-                  "_PROVIDERS_REQUIRING_BASE_URL",
-              ),
-              Path("tests/llm_router/unit/test_internal_route_expansion.py"): (
-                  "from llm_router._internal.contracts.models import "
-                  "ProviderLimits, RouterProfile",
-                  "from llm_router._api.types import ProviderLimits, RouterProfile",
-              ),
-          }
-          for path, (old, new) in replacements.items():
-              text = path.read_text(encoding="utf-8")
-              if text.count(old) != 1:
-                  raise RuntimeError(f"expected one stale import in {path}")
-              path.write_text(text.replace(old, new), encoding="utf-8")
-          PY
-          mapfile -t changed < <(git diff --name-only --diff-filter=ACMR -- '*.py')
-          uv run ruff check --fix "${changed[@]}"
-          uv run ruff format "${changed[@]}"
-
-      - name: Align exhaustive private layer contract
-        if: steps.gate.outputs.apply == 'true'
+      - name: Remove every temporary Issue 246 workflow
+        if: steps.gate.outputs.run == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path("pyproject.toml")
-          text = path.read_text(encoding="utf-8")
-          old = '''layers = [ "runtime", "providers|session", "config:errors" ]
-          ignore_imports = [ "llm_router._internal.config.** -> llm_router._internal.**" ]'''
-          new = '''layers = [ "runtime:session", "providers", "config|capabilities" ]
-          ignore_imports = [ "llm_router._internal.config.state -> llm_router._internal.providers.registry" ]
-          exhaustive = true'''
-          if text.count(old) != 1:
-              raise RuntimeError("expected one legacy private-layer contract")
-          path.write_text(text.replace(old, new), encoding="utf-8")
-          PY
+          out="$RUNNER_TEMP/issue246-cleanup"
+          find .github/workflows -maxdepth 1 -type f \
+            -name 'project-issue-246-*.yml' -print | sort \
+            >"$out/deleted-workflows.txt"
+          test -s "$out/deleted-workflows.txt"
+          while IFS= read -r path; do
+            rm -f "$path"
+          done <"$out/deleted-workflows.txt"
+          test -z "$(find .github/workflows -maxdepth 1 -type f -name 'project-issue-246-*.yml' -print -quit)"
           git diff --check
 
       - name: Converge commit hooks
-        if: steps.gate.outputs.apply == 'true'
+        if: steps.gate.outputs.run == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          out="$RUNNER_TEMP/issue246-final-apply"
+          out="$RUNNER_TEMP/issue246-cleanup"
           converged=false
           for pass in 1 2 3 4 5; do
             before="$(git diff --binary | sha256sum | cut -d' ' -f1)"
@@ -181,24 +140,22 @@ jobs:
           done
           test "$converged" = true
 
-      - name: Create local verified commit
-        if: steps.gate.outputs.apply == 'true'
+      - name: Create local cleanup commit
+        if: steps.gate.outputs.run == 'true'
         shell: bash
         run: |
           set -euo pipefail
           git add -A
           git config user.name 'betabitplus-py-lib-automation[bot]'
           git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
-          git commit -m 'refactor: restore canonical public declarations and starter v0.29.4'
+          git commit -m 'chore: remove Issue 246 migration workflows'
 
-      - name: Run strict checks, tests, and pre-push hooks
-        if: steps.gate.outputs.apply == 'true'
+      - name: Validate committed cleanup tree
+        if: steps.gate.outputs.run == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          out="$RUNNER_TEMP/issue246-final-apply"
-          python -m compileall -q src tests
-          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          out="$RUNNER_TEMP/issue246-cleanup"
           uv run py-lib-template-check >"$out/template-check.log" 2>&1
           uv run py-lib-check-project-structure --strict-template >"$out/structure.log" 2>&1
           uv run py-lib-check-project-docs-structure >"$out/docs.log" 2>&1
@@ -207,21 +164,22 @@ jobs:
             -n auto -p randomly -m 'not slow' -q --no-cov >"$out/tests.log" 2>&1
           uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure \
             >"$out/pre-push.log" 2>&1
-          git diff --check
-          git status --short >"$out/git-status.txt"
-          git show --stat --oneline --decorate HEAD >"$out/commit-stat.txt"
+          git diff --exit-code
+          git status --short >"$out/final-status.txt"
+          test ! -s "$out/final-status.txt"
+          git show --stat --oneline HEAD >"$out/cleanup-commit.txt"
 
-      - name: Upload final apply evidence
-        if: steps.gate.outputs.apply == 'true' && always()
+      - name: Upload cleanup evidence
+        if: steps.gate.outputs.run == 'true' && always()
         uses: actions/upload-artifact@v4
         with:
-          name: issue-246-final-apply-${{ github.run_id }}
-          path: ${{ runner.temp }}/issue246-final-apply
+          name: issue-246-cleanup-${{ github.run_id }}
+          path: ${{ runner.temp }}/issue246-cleanup
           if-no-files-found: error
           retention-days: 14
 
-      - name: Push verified commit
-        if: steps.gate.outputs.apply == 'true'
+      - name: Push verified cleanup commit
+        if: steps.gate.outputs.run == 'true'
         env:
           TARGET_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
