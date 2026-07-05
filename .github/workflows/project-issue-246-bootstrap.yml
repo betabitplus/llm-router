@@ -33,6 +33,15 @@ jobs:
             echo "ready=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Report bootstrap start
+        if: steps.trigger.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/issues/2/comments" \
+            -f body="Issue #246 bootstrap started in run ${GITHUB_RUN_ID} at commit ${GITHUB_SHA}."
+
       - name: Verify released baseline and create safety tag
         if: steps.trigger.outputs.ready == 'true'
         shell: bash
