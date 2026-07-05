@@ -1,0 +1,95 @@
+name: Issue 246 Apply Verified Refactor V2
+
+on:
+  push:
+    branches:
+      - issue-246-standard-onboarding
+
+concurrency:
+  group: issue-246-apply-verified-refactor-v2
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  statuses: write
+
+jobs:
+  apply:
+    if: github.event.head_commit.message == 'ci: trigger observable Issue 246 refactor'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish running status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh api --method POST \
+            "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=pending \
+            -f context='issue-246/refactor' \
+            -f description="run ${GITHUB_RUN_ID}: running" \
+            -f target_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+      - name: Check out migration branch
+        uses: actions/checkout@v6
+        with:
+          ref: issue-246-standard-onboarding
+          fetch-depth: 0
+
+      - name: Assemble verified transparent refactor
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .issue246/refactor-part-*.py > "$RUNNER_TEMP/refactor_standard_structure.py"
+          printf '%s  %s\n' \
+            'ecbf362078424eda7f0d9e7c40302501724504d9c75db66adc4e0998859ac9b6' \
+            "$RUNNER_TEMP/refactor_standard_structure.py" \
+            | sha256sum --check
+
+      - name: Apply and verify product structure refactor
+        shell: bash
+        run: |
+          set -euo pipefail
+          python "$RUNNER_TEMP/refactor_standard_structure.py" .
+          python -m compileall -q src tests workbench examples
+          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          ! grep -R --line-number \
+            -E '^from llm_router\._api|^import llm_router\._api' \
+            src/llm_router/_internal
+          ! grep -R --line-number -E '^__all__\s*=' src/llm_router/_internal
+          test ! -e src/llm_router/_internal/errors.py
+          test ! -e src/llm_router/_internal/ids.py
+          test ! -e src/llm_router/_internal/output.py
+          git diff --check
+
+      - name: Commit and push product refactor
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .issue246/APPLY_REFACTOR .issue246/APPLY_REFACTOR_V2
+          rm -f .issue246/refactor-part-*.py
+          rmdir .issue246 2>/dev/null || true
+          git add src tests docs workbench .issue246
+          git config user.name 'betabitplus-py-lib-automation[bot]'
+          git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
+          git commit -m 'refactor: align private core with standard boundaries'
+          git push origin HEAD:issue-246-standard-onboarding
+
+      - name: Publish final status
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          case "$JOB_STATUS" in
+            success) state=success ;;
+            failure) state=failure ;;
+            *) state=error ;;
+          esac
+          gh api --method POST \
+            "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state="$state" \
+            -f context='issue-246/refactor' \
+            -f description="run ${GITHUB_RUN_ID}: ${JOB_STATUS}" \
+            -f target_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
