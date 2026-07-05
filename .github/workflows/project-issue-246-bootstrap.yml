@@ -11,7 +11,6 @@ concurrency:
 
 permissions:
   contents: write
-  issues: write
 
 jobs:
   apply-migration:
@@ -33,20 +32,12 @@ jobs:
             echo "ready=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Report bootstrap start
-        if: steps.trigger.outputs.ready == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          gh api "repos/${GITHUB_REPOSITORY}/issues/2/comments" \
-            -f body="Issue #246 bootstrap started in run ${GITHUB_RUN_ID} at commit ${GITHUB_SHA}."
-
-      - name: Verify released baseline and create safety tag
+      - name: Verify released baseline and record run
         if: steps.trigger.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
+          printf '%s\n' baseline > "$RUNNER_TEMP/issue246-stage"
           expected=c6a1d737b7874d7578e1ab127d336b2dd999d12a
           tag=pre-standard-onboarding-20260705
           git fetch origin \
@@ -66,6 +57,14 @@ jobs:
               -m 'Safety baseline before Issue #246 standard onboarding'
             git push origin "refs/tags/$tag"
           fi
+          cat > .issue246/RUN <<EOF
+          run_id=${GITHUB_RUN_ID}
+          source_sha=${GITHUB_SHA}
+          status=running
+          EOF
+          git add .issue246/RUN
+          git commit -m 'chore: record Issue 246 bootstrap run'
+          git push origin HEAD:issue-246-standard-onboarding
 
       - name: Set up uv
         if: steps.trigger.outputs.ready == 'true'
@@ -78,6 +77,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          printf '%s\n' canonical-reference > "$RUNNER_TEMP/issue246-stage"
           reference="$RUNNER_TEMP/llm-router-python-lib-standard-v0.29.1"
           rm -rf "$reference"
           uvx --from copier==9.16.0 copier copy \
@@ -97,6 +97,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          printf '%s\n' migration > "$RUNNER_TEMP/issue246-stage"
           reference="$(cat "$RUNNER_TEMP/issue246-reference-path")"
           python .issue246/migrate.py . "$reference"
           find . -type d -name __pycache__ -prune -exec rm -rf {} +
@@ -109,6 +110,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          printf '%s\n' lockfile > "$RUNNER_TEMP/issue246-stage"
           uv lock
           uv lock --check
           git add uv.lock
@@ -121,6 +123,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          printf '%s\n' integrity > "$RUNNER_TEMP/issue246-stage"
           python -m compileall -q src tests workbench examples
           test ! -e src/llm_router/_support
           test ! -e tests/support
@@ -136,6 +139,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          printf '%s\n' final-push > "$RUNNER_TEMP/issue246-stage"
           find . -type d -name __pycache__ -prune -exec rm -rf {} +
           rm -rf .issue246
           rm -f .github/workflows/project-issue-246-bootstrap.yml
@@ -143,20 +147,22 @@ jobs:
           git commit -m 'chore: remove Issue 246 migration bootstrap'
           git push origin HEAD:issue-246-standard-onboarding
 
-      - name: Report bootstrap failure
+      - name: Record bootstrap failure without partial migration
         if: failure() && steps.trigger.outputs.ready == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh api "repos/${GITHUB_REPOSITORY}/issues/2/comments" \
-            -f body="Issue #246 bootstrap failed in run ${GITHUB_RUN_ID} at commit ${GITHUB_SHA}."
-
-      - name: Report bootstrap success
-        if: success() && steps.trigger.outputs.ready == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          gh api "repos/${GITHUB_REPOSITORY}/issues/2/comments" \
-            -f body="Issue #246 bootstrap completed successfully in run ${GITHUB_RUN_ID}."
+          set -euo pipefail
+          stage=unknown
+          if [ -f "$RUNNER_TEMP/issue246-stage" ]; then
+            stage="$(cat "$RUNNER_TEMP/issue246-stage")"
+          fi
+          git fetch origin issue-246-standard-onboarding
+          git reset --hard origin/issue-246-standard-onboarding
+          cat > .issue246/FAILED <<EOF
+          run_id=${GITHUB_RUN_ID}
+          source_sha=${GITHUB_SHA}
+          stage=${stage}
+          EOF
+          git add .issue246/FAILED
+          git commit -m 'chore: record Issue 246 bootstrap failure'
+          git push origin HEAD:issue-246-standard-onboarding
