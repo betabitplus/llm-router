@@ -21,6 +21,18 @@ jobs:
       PYTHON_VERSION: "3.13"
       PYTEST_XDIST_AUTO_NUM_WORKERS: "2"
     steps:
+      - name: Create shared package token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            llm-router
+            py-lib-starter
+          permission-contents: read
+
       - name: Check out migration branch
         uses: actions/checkout@v6
         with:
@@ -38,14 +50,13 @@ jobs:
         with:
           enable-cache: auto
 
-      - name: Configure temporary private Git access
+      - name: Configure private Git access through the App
         env:
-          BOOTSTRAP_TOKEN: ${{ secrets.PAT_TOKEN }}
+          SHARED_PACKAGE_TOKEN: ${{ steps.app-token.outputs.token }}
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$BOOTSTRAP_TOKEN"
-          auth_header="$(printf 'x-access-token:%s' "$BOOTSTRAP_TOKEN" | base64 | tr -d '\n')"
+          auth_header="$(printf 'x-access-token:%s' "$SHARED_PACKAGE_TOKEN" | base64 | tr -d '\n')"
           printf '::add-mask::%s\n' "$auth_header"
           git config --global http.https://github.com/.extraheader \
             "AUTHORIZATION: basic ${auth_header}"
@@ -69,95 +80,86 @@ jobs:
           bash scripts/env/setup.sh
           uv lock --check
 
-      - name: Run strict platform checks
-        id: strict-checks
+      - name: Run complete migration validation matrix
+        id: matrix
         shell: bash
         run: |
           set -uo pipefail
-          mkdir -p .issue246-validation/strict
+          evidence=.issue246-validation
+          rm -rf "$evidence"
+          mkdir -p "$evidence/logs"
           overall=0
           run_check() {
             local name="$1"
             shift
             set +e
-            "$@" >".issue246-validation/strict/${name}.log" 2>&1
-            status=$?
+            "$@" >"$evidence/logs/${name}.log" 2>&1
+            local status=$?
             set -e
-            cat ".issue246-validation/strict/${name}.log"
-            printf '%s=%s\n' "$name" "$status" \
-              >> .issue246-validation/strict/statuses.txt
+            cat "$evidence/logs/${name}.log"
+            printf '%s=%s\n' "$name" "$status" >>"$evidence/statuses.txt"
             if [ "$status" -ne 0 ]; then
               overall=1
             fi
           }
+
           run_check template-check uv run py-lib-template-check
           run_check project-structure uv run py-lib-check-project-structure --strict-template
           run_check docs-structure uv run py-lib-check-project-docs-structure
           run_check public-contract uv run py-lib-check-public-contract-boundary
-          exit "$overall"
 
-      - name: Upload strict platform check evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-246-strict-checks-${{ github.run_id }}
-          path: .issue246-validation/strict
-          if-no-files-found: warn
-          retention-days: 14
+          export SKIP=check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout
+          run_check pre-commit uv run pre-commit run --all-files --show-diff-on-failure
+          run_check pre-push uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
+          unset SKIP
 
-      - name: Run commit-stage hooks
-        env:
-          SKIP: check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout
-        shell: bash
-        run: uv run pre-commit run --all-files --show-diff-on-failure
-
-      - name: Run pre-push hooks
-        env:
-          SKIP: check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout
-        shell: bash
-        run: uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
-
-      - name: Run unit integration and property suites
-        shell: bash
-        run: |
-          set -euo pipefail
-          uv run pytest \
+          run_check unit-integration-property uv run pytest \
             tests/llm_router/unit \
             tests/llm_router/integration \
             tests/llm_router/property_based \
             -q -rs
 
-      - name: Run all six E2E slices
-        shell: bash
-        run: |
-          set -euo pipefail
-          for path in \
-            tests/llm_router/e2e/public_output_and_errors \
-            tests/llm_router/e2e/provider_sdk_wrapping \
-            tests/llm_router/e2e/session_state_and_isolation \
-            tests/llm_router/e2e/provider_retries_and_output_repair \
-            tests/llm_router/e2e/route_fallback_and_attempt_policy \
-            tests/llm_router/e2e/settings_overrides_and_propagation
+          for entry in \
+            public-boundary:tests/llm_router/e2e/public_boundary \
+            public-output-and-errors:tests/llm_router/e2e/public_output_and_errors \
+            provider-sdk-wrapping:tests/llm_router/e2e/provider_sdk_wrapping \
+            session-state-and-isolation:tests/llm_router/e2e/session_state_and_isolation \
+            provider-retries-and-output-repair:tests/llm_router/e2e/provider_retries_and_output_repair \
+            route-fallback-and-attempt-policy:tests/llm_router/e2e/route_fallback_and_attempt_policy \
+            settings-overrides-and-propagation:tests/llm_router/e2e/settings_overrides_and_propagation
           do
-            uv run pytest "$path" -q -rs
+            name="${entry%%:*}"
+            path="${entry#*:}"
+            run_check "e2e-${name}" uv run pytest "$path" -q -rs
           done
 
-      - name: Build and smoke installed artifacts
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf dist .artifact-smoke-wheel .artifact-smoke-sdist
-          uv build
-          uv run py-lib-smoke-installed-artifact
-          uv run py-lib-smoke-public-api
+          run_check build uv build
+          run_check installed-artifact-smoke uv run py-lib-smoke-installed-artifact
+          run_check public-api-smoke uv run py-lib-smoke-public-api
+          run_check copier-same-version uv run py-lib-template-update --vcs-ref v0.29.3
+          run_check template-check-after-update uv run py-lib-template-check
+          run_check no-diff-after-update git diff --exit-code
 
-      - name: Verify immutable Copier same-version idempotence
+          git status --short >"$evidence/git-status.txt"
+          git diff >"$evidence/git-diff.patch"
+          printf 'overall=%s\n' "$overall" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload complete validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-246-validation-${{ github.run_id }}
+          path: .issue246-validation
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Assert complete validation success
+        if: always()
         shell: bash
         run: |
-          set -euo pipefail
-          uv run py-lib-template-update --vcs-ref v0.29.1
-          uv run py-lib-template-check
-          git diff --exit-code
+          cat .issue246-validation/statuses.txt
+          test '${{ steps.matrix.outputs.overall }}' = '0'
 
       - name: Publish validation commit status
         if: always()
