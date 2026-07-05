@@ -105,36 +105,6 @@ jobs:
           test ! -e src/llm_router/_internal/ids.py
           test ! -e src/llm_router/_internal/output.py
 
-      - name: Normalize generated trailing whitespace
-        if: steps.gate.outputs.apply == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-          import subprocess
-
-          changed = subprocess.check_output(
-              ["git", "diff", "--name-only", "--diff-filter=ACMR"],
-              text=True,
-          ).splitlines()
-          for name in changed:
-              path = Path(name)
-              if path.suffix not in {".py", ".md"} or not path.is_file():
-                  continue
-              text = path.read_text(encoding="utf-8")
-              lines = text.splitlines()
-              normalized = "\n".join(line.rstrip(" \t") for line in lines)
-              if text.endswith("\n"):
-                  normalized += "\n"
-              path.write_text(normalized, encoding="utf-8")
-          PY
-
-      - name: Verify refactor diff
-        if: steps.gate.outputs.apply == 'true'
-        shell: bash
-        run: git diff --check
-
       - name: Commit and push product refactor
         if: steps.gate.outputs.apply == 'true'
         shell: bash
