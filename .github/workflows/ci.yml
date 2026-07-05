@@ -151,3 +151,41 @@ jobs:
           uv run pytest tests/*/e2e \
             -m "${{ matrix.marker }}" \
             -q -rs
+
+  issue-246-export:
+    name: Issue 246 Baseline Export
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout complete repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Create recoverable baseline artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*' '+refs/tags/*:refs/tags/*' --force
+          expected=c6a1d737b7874d7578e1ab127d336b2dd999d12a
+          test "$(git rev-parse refs/remotes/origin/dev)" = "$expected"
+          test "$(git rev-parse refs/remotes/origin/main)" = "$expected"
+          test "$(git rev-parse refs/tags/v0.8.1^{commit})" = "$expected"
+          git bundle create llm-router-pre-standard-onboarding-20260705.bundle --all
+          tar --exclude=.git \
+            --exclude=llm-router-pre-standard-onboarding-20260705.bundle \
+            -czf llm-router-source-c6a1d737.tar.gz .
+          sha256sum llm-router-pre-standard-onboarding-20260705.bundle \
+            llm-router-source-c6a1d737.tar.gz > SHA256SUMS
+
+      - name: Upload baseline backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-246-baseline-backup
+          path: |
+            llm-router-pre-standard-onboarding-20260705.bundle
+            llm-router-source-c6a1d737.tar.gz
+            SHA256SUMS
+          if-no-files-found: error
+          retention-days: 90
