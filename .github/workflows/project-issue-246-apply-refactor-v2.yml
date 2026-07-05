@@ -1,4 +1,4 @@
-name: Issue 246 Apply Verified Refactor V2
+name: Issue 246 Export Current Branch
 
 on:
   pull_request:
@@ -9,112 +9,54 @@ on:
       - reopened
       - synchronize
 
-concurrency:
-  group: issue-246-apply-verified-refactor-v2
-  cancel-in-progress: false
-
 permissions:
   contents: read
 
 jobs:
-  apply:
+  export:
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.ref == 'issue-246-standard-onboarding'
     runs-on: ubuntu-latest
     steps:
-      - name: Create target-scoped write token
-        id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
-          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: llm-router
-          permission-contents: write
-
       - name: Check out migration branch
         uses: actions/checkout@v6
         with:
           ref: issue-246-standard-onboarding
           fetch-depth: 0
-          token: ${{ steps.app-token.outputs.token }}
 
-      - name: Detect pending verified refactor
+      - name: Detect explicit export commit
         id: gate
         shell: bash
         run: |
-          if [ -f .issue246/APPLY_REFACTOR_V2 ]; then
-            echo 'apply=true' >> "$GITHUB_OUTPUT"
+          subject="$(git log -1 --pretty=%s)"
+          if [ "$subject" = 'ci: export Issue 246 current branch' ]; then
+            echo 'export=true' >> "$GITHUB_OUTPUT"
           else
-            echo 'apply=false' >> "$GITHUB_OUTPUT"
+            echo 'export=false' >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Assemble verified transparent refactor
-        if: steps.gate.outputs.apply == 'true'
+      - name: Build current branch evidence
+        if: steps.gate.outputs.export == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          cat .issue246/refactor-part-*.py > "$RUNNER_TEMP/refactor_standard_structure.py"
-          printf '%s  %s\n' \
-            'ecbf362078424eda7f0d9e7c40302501724504d9c75db66adc4e0998859ac9b6' \
-            "$RUNNER_TEMP/refactor_standard_structure.py" \
-            | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/issue-246-current"
+          git bundle create "$RUNNER_TEMP/issue-246-current/llm-router-current.bundle" --all
+          tar --exclude=.git -czf \
+            "$RUNNER_TEMP/issue-246-current/llm-router-current-source.tar.gz" \
+            .
+          (
+            cd "$RUNNER_TEMP/issue-246-current"
+            sha256sum llm-router-current.bundle llm-router-current-source.tar.gz > SHA256SUMS
+            sha256sum --check SHA256SUMS
+          )
 
-      - name: Apply product structure refactor
-        if: steps.gate.outputs.apply == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python "$RUNNER_TEMP/refactor_standard_structure.py" .
-
-      - name: Compile refactored Python tree
-        if: steps.gate.outputs.apply == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m compileall -q src tests workbench examples
-          find . -type d -name __pycache__ -prune -exec rm -rf {} +
-
-      - name: Verify private imports do not depend on public facades
-        if: steps.gate.outputs.apply == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          if grep -R --line-number \
-            -E '^from llm_router\._api|^import llm_router\._api' \
-            src/llm_router/_internal; then
-            exit 1
-          fi
-
-      - name: Verify private modules do not declare public exports
-        if: steps.gate.outputs.apply == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          if grep -R --line-number -E '^__all__\s*=' src/llm_router/_internal; then
-            exit 1
-          fi
-
-      - name: Verify loose private modules were moved
-        if: steps.gate.outputs.apply == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          test ! -e src/llm_router/_internal/errors.py
-          test ! -e src/llm_router/_internal/ids.py
-          test ! -e src/llm_router/_internal/output.py
-
-      - name: Commit and push product refactor
-        if: steps.gate.outputs.apply == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -f .issue246/APPLY_REFACTOR .issue246/APPLY_REFACTOR_V2
-          rm -f .issue246/refactor-part-*.py
-          rmdir .issue246 2>/dev/null || true
-          git add src tests docs workbench .issue246
-          git config user.name 'betabitplus-py-lib-automation[bot]'
-          git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
-          git commit -m 'refactor: align private core with standard boundaries'
-          git push origin HEAD:issue-246-standard-onboarding
+      - name: Upload current branch evidence
+        if: steps.gate.outputs.export == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-246-current-${{ github.run_id }}
+          path: ${{ runner.temp }}/issue-246-current
+          if-no-files-found: error
+          retention-days: 7
