@@ -48,7 +48,7 @@ jobs:
         id: gate
         shell: bash
         run: |
-          if [ "$(git log -1 --pretty=%s)" = 'ci: narrow Issue 246 layer exception' ]; then
+          if [ "$(git log -1 --pretty=%s)" = 'ci: commit before Issue 246 pre-push' ]; then
             echo 'apply=true' >> "$GITHUB_OUTPUT"
           else
             echo 'apply=false' >> "$GITHUB_OUTPUT"
@@ -181,6 +181,16 @@ jobs:
           done
           test "$converged" = true
 
+      - name: Create local verified commit
+        if: steps.gate.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -A
+          git config user.name 'betabitplus-py-lib-automation[bot]'
+          git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
+          git commit -m 'refactor: restore canonical public declarations and starter v0.29.4'
+
       - name: Run strict checks, tests, and pre-push hooks
         if: steps.gate.outputs.apply == 'true'
         shell: bash
@@ -199,7 +209,7 @@ jobs:
             >"$out/pre-push.log" 2>&1
           git diff --check
           git status --short >"$out/git-status.txt"
-          git diff --stat >"$out/git-diff-stat.txt"
+          git show --stat --oneline --decorate HEAD >"$out/commit-stat.txt"
 
       - name: Upload final apply evidence
         if: steps.gate.outputs.apply == 'true' && always()
@@ -210,17 +220,13 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Commit and push verified boundary and stable update
+      - name: Push verified commit
         if: steps.gate.outputs.apply == 'true'
         env:
           TARGET_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
         run: |
           set -euo pipefail
-          git add -A
-          git config user.name 'betabitplus-py-lib-automation[bot]'
-          git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
-          git commit -m 'refactor: restore canonical public declarations and starter v0.29.4'
           git config --global --unset-all http.https://github.com/.extraheader || true
           write_header="$(printf 'x-access-token:%s' "$TARGET_TOKEN" | base64 | tr -d '\n')"
           printf '::add-mask::%s\n' "$write_header"
