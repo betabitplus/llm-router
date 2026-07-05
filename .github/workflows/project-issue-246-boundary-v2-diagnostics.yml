@@ -47,7 +47,7 @@ jobs:
         id: gate
         shell: bash
         run: |
-          if [ "$(git log -1 --pretty=%s)" = 'ci: apply canonical Issue 246 boundary from diagnostics' ]; then
+          if [ "$(git log -1 --pretty=%s)" = 'ci: repair final canonical Issue 246 test import' ]; then
             echo 'apply=true' >> "$GITHUB_OUTPUT"
           else
             echo 'apply=false' >> "$GITHUB_OUTPUT"
@@ -75,7 +75,7 @@ jobs:
           git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth_header}"
           bash scripts/env/setup.sh
 
-      - name: Apply exact V2 transformation and final import repair
+      - name: Apply exact V2 transformation and final import repairs
         if: steps.gate.outputs.apply == 'true'
         shell: bash
         run: |
@@ -91,16 +91,24 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          path = Path("src/llm_router/_internal/config/validation.py")
-          text = path.read_text(encoding="utf-8")
-          old = (
-              "from llm_router._internal.config.defaults import "
-              "_PROVIDERS_REQUIRING_BASE_URL"
-          )
-          new = "from llm_router._api.defaults import _PROVIDERS_REQUIRING_BASE_URL"
-          if text.count(old) != 1:
-              raise RuntimeError("expected one stale private-default import")
-          path.write_text(text.replace(old, new), encoding="utf-8")
+          replacements = {
+              Path("src/llm_router/_internal/config/validation.py"): (
+                  "from llm_router._internal.config.defaults import "
+                  "_PROVIDERS_REQUIRING_BASE_URL",
+                  "from llm_router._api.defaults import "
+                  "_PROVIDERS_REQUIRING_BASE_URL",
+              ),
+              Path("tests/llm_router/unit/test_internal_route_expansion.py"): (
+                  "from llm_router._internal.contracts.models import "
+                  "ProviderLimits, RouterProfile",
+                  "from llm_router._api.types import ProviderLimits, RouterProfile",
+              ),
+          }
+          for path, (old, new) in replacements.items():
+              text = path.read_text(encoding="utf-8")
+              if text.count(old) != 1:
+                  raise RuntimeError(f"expected one stale import in {path}")
+              path.write_text(text.replace(old, new), encoding="utf-8")
           PY
           mapfile -t changed < <(git diff --name-only --diff-filter=ACMR -- '*.py')
           uv run ruff check --fix "${changed[@]}"
