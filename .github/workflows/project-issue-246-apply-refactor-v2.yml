@@ -1,4 +1,4 @@
-name: Issue 246 Diagnose Stable Template Update
+name: Issue 246 Commit Stable Template Update
 
 on:
   pull_request:
@@ -13,12 +13,22 @@ permissions:
   contents: read
 
 jobs:
-  diagnose:
+  update:
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.ref == 'issue-246-standard-onboarding'
     runs-on: ubuntu-latest
     steps:
+      - name: Create target write token
+        id: target-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: llm-router
+          permission-contents: write
+
       - name: Create shared read token
         id: shared-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
@@ -36,33 +46,33 @@ jobs:
         with:
           ref: issue-246-standard-onboarding
           fetch-depth: 0
-          persist-credentials: false
+          token: ${{ steps.target-token.outputs.token }}
 
-      - name: Detect explicit diagnostic commit
+      - name: Detect explicit commit request
         id: gate
         shell: bash
         run: |
           subject="$(git log -1 --pretty=%s)"
-          if [ "$subject" = 'ci: diagnose Issue 246 template update' ]; then
-            echo 'run=true' >> "$GITHUB_OUTPUT"
+          if [ "$subject" = 'ci: commit Issue 246 template v0.29.3' ]; then
+            echo 'apply=true' >> "$GITHUB_OUTPUT"
           else
-            echo 'run=false' >> "$GITHUB_OUTPUT"
+            echo 'apply=false' >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set up Python
-        if: steps.gate.outputs.run == 'true'
+        if: steps.gate.outputs.apply == 'true'
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
       - name: Set up uv
-        if: steps.gate.outputs.run == 'true'
+        if: steps.gate.outputs.apply == 'true'
         uses: astral-sh/setup-uv@v8.2.0
         with:
           enable-cache: auto
 
       - name: Install current development environment
-        if: steps.gate.outputs.run == 'true'
+        if: steps.gate.outputs.apply == 'true'
         env:
           SHARED_PACKAGE_TOKEN: ${{ steps.shared-token.outputs.token }}
         shell: bash
@@ -75,46 +85,39 @@ jobs:
           GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth_header}" \
             uv sync --group dev --frozen --python "$(command -v python)"
 
-      - name: Run official updater and capture evidence
-        id: update_attempt
-        if: steps.gate.outputs.run == 'true'
-        continue-on-error: true
+      - name: Apply official Copier update to v0.29.3
+        if: steps.gate.outputs.apply == 'true'
         env:
           SHARED_PACKAGE_TOKEN: ${{ steps.shared-token.outputs.token }}
         shell: bash
         run: |
-          set -uo pipefail
-          evidence="$RUNNER_TEMP/issue-246-template-update"
-          mkdir -p "$evidence"
+          set -euo pipefail
           auth_header="$(printf 'x-access-token:%s' "$SHARED_PACKAGE_TOKEN" | base64 | tr -d '\n')"
           printf '::add-mask::%s\n' "$auth_header"
-          set +e
           GIT_CONFIG_COUNT=1 \
           GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
           GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth_header}" \
-            uv run py-lib-template-update --vcs-ref v0.29.3 \
-            >"$evidence/update.log" 2>&1
-          rc=$?
-          set -e
-          printf '%s\n' "$rc" > "$evidence/exit-code.txt"
-          git status --short > "$evidence/git-status.txt"
-          git diff --stat > "$evidence/git-diff-stat.txt"
-          git diff > "$evidence/git-diff.patch"
-          cp _copier_answers.yml "$evidence/copier-answers.yml"
-          cp pyproject.toml "$evidence/pyproject.toml"
-          cat "$evidence/update.log"
-          exit "$rc"
+            uv run py-lib-template-update --vcs-ref v0.29.3
 
-      - name: Upload updater evidence
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-246-template-update-${{ github.run_id }}
-          path: ${{ runner.temp }}/issue-246-template-update
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Preserve updater result
-        if: steps.gate.outputs.run == 'true' && steps.update_attempt.outcome == 'failure'
+      - name: Verify stable update result
+        if: steps.gate.outputs.apply == 'true'
         shell: bash
-        run: exit 1
+        run: |
+          set -euo pipefail
+          grep -Eq '^_commit: v0\.29\.3$' _copier_answers.yml
+          grep -q 'py-lib-starter.git@v0.29.3#subdirectory=packages/py-lib-runtime' pyproject.toml
+          grep -q 'py-lib-starter.git@v0.29.3#subdirectory=packages/py-lib-tooling' pyproject.toml
+          uv lock --check
+          git diff --check
+          test -n "$(git status --short)"
+
+      - name: Commit and push stable template update
+        if: steps.gate.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -A
+          git config user.name 'betabitplus-py-lib-automation[bot]'
+          git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
+          git commit -m 'chore: update managed shell to starter v0.29.3'
+          git push origin HEAD:issue-246-standard-onboarding
