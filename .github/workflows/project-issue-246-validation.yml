@@ -12,7 +12,7 @@ concurrency:
 
 permissions:
   contents: read
-  issues: write
+  statuses: write
 
 jobs:
   validate:
@@ -132,7 +132,7 @@ jobs:
           uv run py-lib-template-check
           git diff --exit-code
 
-      - name: Report validation run
+      - name: Publish validation commit status
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
@@ -140,5 +140,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh api "repos/${GITHUB_REPOSITORY}/issues/2/comments" \
-            -f body="Issue #246 migration validation run ${GITHUB_RUN_ID}: ${JOB_STATUS} at ${GITHUB_SHA}."
+          case "$JOB_STATUS" in
+            success) state=success ;;
+            failure) state=failure ;;
+            *) state=error ;;
+          esac
+          gh api --method POST \
+            "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state="$state" \
+            -f context='issue-246/validation' \
+            -f description="run ${GITHUB_RUN_ID}: ${JOB_STATUS}" \
+            -f target_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
