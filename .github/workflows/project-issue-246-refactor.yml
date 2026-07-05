@@ -1,0 +1,148 @@
+name: Issue 246 Standard Structure Refactor
+
+on:
+  push:
+    branches:
+      - issue-246-standard-onboarding
+
+concurrency:
+  group: issue-246-standard-structure-refactor
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  refactor:
+    if: contains(github.event.head_commit.message, 'stage standard structure refactor part 4')
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: "3.13"
+    steps:
+      - name: Check out migration branch with existing operator token
+        uses: actions/checkout@v6
+        with:
+          ref: issue-246-standard-onboarding
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: auto
+
+      - name: Configure private shared-package access
+        env:
+          BOOTSTRAP_TOKEN: ${{ secrets.PAT_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$BOOTSTRAP_TOKEN"
+          auth_header="$(printf 'x-access-token:%s' "$BOOTSTRAP_TOKEN" | base64 | tr -d '\n')"
+          printf '::add-mask::%s\n' "$auth_header"
+          git config --global http.https://github.com/.extraheader \
+            "AUTHORIZATION: basic ${auth_header}"
+
+      - name: Set up exact current development environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/env/setup.sh
+          uv lock --check
+
+      - name: Assemble and verify transparent refactor script
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .issue246/refactor-part-*.py > "$RUNNER_TEMP/refactor_standard_structure.py"
+          printf '%s  %s\n' \
+            'ecbf362078424eda7f0d9e7c40302501724504d9c75db66adc4e0998859ac9b6' \
+            "$RUNNER_TEMP/refactor_standard_structure.py" \
+            | sha256sum --check
+
+      - name: Refactor product code to standard boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python "$RUNNER_TEMP/refactor_standard_structure.py" .
+          python -m compileall -q src tests workbench examples
+          ! grep -R --line-number \
+            -E '^from llm_router\._api|^import llm_router\._api' \
+            src/llm_router/_internal
+          test ! -e src/llm_router/_internal/errors.py
+          test ! -e src/llm_router/_internal/ids.py
+          test ! -e src/llm_router/_internal/output.py
+          git diff --check
+
+      - name: Commit product structure migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          git add src tests docs workbench
+          git config user.name betabitplus
+          git config user.email 8123085+betabitplus@users.noreply.github.com
+          git commit -m 'refactor: align private core with standard boundaries'
+
+      - name: Update through Copier to immutable starter v0.29.3
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv run py-lib-template-update --vcs-ref v0.29.3
+          grep -Fx '_commit: v0.29.3' _copier_answers.yml
+          grep -F 'runtime_git_ref: v0.29.3' _copier_answers.yml
+          grep -F 'tooling_git_ref: v0.29.3' _copier_answers.yml
+          uv lock
+          uv lock --check
+
+      - name: Reconcile temporary validation with current immutable reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/project-issue-246-validation.yml')
+          text = path.read_text()
+          text = text.replace(
+              'tests/llm_router/e2e/public_output_and_errors \\\n',
+              'tests/llm_router/e2e/public_boundary \\\n            tests/llm_router/e2e/public_output_and_errors \\\n',
+          )
+          text = text.replace(
+              'py-lib-template-update --vcs-ref v0.29.1',
+              'py-lib-template-update --vcs-ref v0.29.3',
+          )
+          path.write_text(text)
+          PY
+          rm -f .github/workflows/project-issue-246-app-bootstrap.yml
+          rm -f .github/workflows/project-issue-246-refactor.yml
+          rm -f .issue246/refactor-part-*.py
+          rm -f .issue246/target-secret-public-key.json
+          rmdir .issue246 2>/dev/null || true
+          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          git diff --check
+
+      - name: Format and commit current template state
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv run ruff format src tests workbench examples
+          uv run ruff check --fix src tests workbench examples
+          git add -A
+          git commit -m 'chore: update managed shell to starter v0.29.3'
+
+      - name: Verify source integrity and push
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q src tests workbench examples
+          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          uv lock --check
+          git diff --check
+          git status --short
+          git log --oneline -8
+          git push origin HEAD:issue-246-standard-onboarding
