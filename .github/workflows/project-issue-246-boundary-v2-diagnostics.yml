@@ -48,7 +48,7 @@ jobs:
         id: gate
         shell: bash
         run: |
-          if [ "$(git log -1 --pretty=%s)" = 'ci: switch Issue 246 to compliant feature branch' ]; then
+          if [ "$(git log -1 --pretty=%s)" = 'ci: finalize canonical Issue 246 layer contract' ]; then
             echo 'apply=true' >> "$GITHUB_OUTPUT"
           else
             echo 'apply=false' >> "$GITHUB_OUTPUT"
@@ -133,6 +133,26 @@ jobs:
           mapfile -t changed < <(git diff --name-only --diff-filter=ACMR -- '*.py')
           uv run ruff check --fix "${changed[@]}"
           uv run ruff format "${changed[@]}"
+
+      - name: Align exhaustive private layer contract
+        if: steps.gate.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("pyproject.toml")
+          text = path.read_text(encoding="utf-8")
+          old = '''layers = [ "runtime", "providers|session", "config:errors" ]
+          ignore_imports = [ "llm_router._internal.config.** -> llm_router._internal.**" ]'''
+          new = '''layers = [ "runtime:session", "providers", "config|capabilities" ]
+          exhaustive = true'''
+          if text.count(old) != 1:
+              raise RuntimeError("expected one legacy private-layer contract")
+          path.write_text(text.replace(old, new), encoding="utf-8")
+          PY
+          git diff --check
 
       - name: Converge commit hooks
         if: steps.gate.outputs.apply == 'true'
