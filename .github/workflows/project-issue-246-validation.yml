@@ -1,0 +1,132 @@
+name: Issue 246 Migration Validation
+
+on:
+  push:
+    branches:
+      - issue-246-standard-onboarding
+  workflow_dispatch:
+
+concurrency:
+  group: issue-246-migration-validation
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: "3.13"
+      PYTEST_XDIST_AUTO_NUM_WORKERS: "2"
+    steps:
+      - name: Check out migration branch
+        uses: actions/checkout@v6
+        with:
+          ref: issue-246-standard-onboarding
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: auto
+
+      - name: Configure temporary private Git access
+        env:
+          BOOTSTRAP_TOKEN: ${{ secrets.PAT_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$BOOTSTRAP_TOKEN"
+          auth_header="$(printf 'x-access-token:%s' "$BOOTSTRAP_TOKEN" | base64 | tr -d '\n')"
+          printf '::add-mask::%s\n' "$auth_header"
+          git config --global http.https://github.com/.extraheader \
+            "AUTHORIZATION: basic ${auth_header}"
+
+      - name: Install system tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          version=v2.12.0
+          sudo curl -fsSL \
+            -o /usr/local/bin/hadolint \
+            "https://github.com/hadolint/hadolint/releases/download/${version}/hadolint-Linux-x86_64"
+          sudo chmod +x /usr/local/bin/hadolint
+
+      - name: Set up exact development environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/env/setup.sh
+          uv lock --check
+
+      - name: Run strict platform checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv run py-lib-template-check
+          uv run py-lib-check-project-structure --strict-template
+          uv run py-lib-check-project-docs-structure
+          uv run py-lib-check-public-contract-boundary
+
+      - name: Run commit-stage hooks
+        env:
+          SKIP: check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout
+        shell: bash
+        run: uv run pre-commit run --all-files --show-diff-on-failure
+
+      - name: Run pre-push hooks
+        env:
+          SKIP: check-branch-name,no-push-to-main,uv-sync-post-merge,uv-sync-post-checkout
+        shell: bash
+        run: uv run pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
+
+      - name: Run unit integration and property suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv run pytest \
+            tests/llm_router/unit \
+            tests/llm_router/integration \
+            tests/llm_router/property_based \
+            -q -rs
+
+      - name: Run all six E2E slices
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in \
+            tests/llm_router/e2e/public_output_and_errors \
+            tests/llm_router/e2e/provider_sdk_wrapping \
+            tests/llm_router/e2e/session_state_and_isolation \
+            tests/llm_router/e2e/provider_retries_and_output_repair \
+            tests/llm_router/e2e/route_fallback_and_attempt_policy \
+            tests/llm_router/e2e/settings_overrides_and_propagation
+          do
+            uv run pytest "$path" -q -rs
+          done
+
+      - name: Build and smoke installed artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist .artifact-smoke-wheel .artifact-smoke-sdist
+          uv build
+          uv run py-lib-smoke-installed-artifact
+          uv run py-lib-smoke-public-api
+
+      - name: Verify immutable Copier same-version idempotence
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv run py-lib-template-update --vcs-ref v0.29.1
+          uv run py-lib-template-check
+          git diff --exit-code
