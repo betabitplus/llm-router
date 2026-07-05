@@ -150,7 +150,13 @@ jobs:
           fi
           git status --short
           git log --oneline -6
-          git push origin HEAD:issue-246-generated-tree
+          set +e
+          git push origin HEAD:issue-246-generated-tree \
+            >"$RUNNER_TEMP/issue246-push-output" 2>&1
+          push_status=$?
+          set -e
+          cat "$RUNNER_TEMP/issue246-push-output"
+          exit "$push_status"
 
       - name: Record bootstrap failure without partial migration
         if: failure() && steps.trigger.outputs.ready == 'true'
@@ -163,11 +169,16 @@ jobs:
           fi
           git fetch origin issue-246-standard-onboarding
           git reset --hard origin/issue-246-standard-onboarding
-          cat > .issue246/FAILED <<EOF
-          run_id=${GITHUB_RUN_ID}
-          source_sha=${GITHUB_SHA}
-          stage=${stage}
-          EOF
+          {
+            printf 'run_id=%s\n' "$GITHUB_RUN_ID"
+            printf 'source_sha=%s\n' "$GITHUB_SHA"
+            printf 'stage=%s\n' "$stage"
+            if [ -f "$RUNNER_TEMP/issue246-push-output" ]; then
+              printf 'push_output_begin\n'
+              tail -n 40 "$RUNNER_TEMP/issue246-push-output"
+              printf 'push_output_end\n'
+            fi
+          } > .issue246/FAILED
           git add .issue246/FAILED
           git commit -m 'chore: record Issue 246 bootstrap failure'
           git push origin HEAD:issue-246-standard-onboarding
