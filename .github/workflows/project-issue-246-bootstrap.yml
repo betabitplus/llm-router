@@ -5,8 +5,13 @@ on:
     branches:
       - issue-246-standard-onboarding
 
+concurrency:
+  group: issue-246-standard-onboarding-bootstrap
+  cancel-in-progress: true
+
 permissions:
   contents: write
+  issues: write
 
 jobs:
   apply-migration:
@@ -128,3 +133,21 @@ jobs:
           git add -A
           git commit -m 'chore: remove Issue 246 migration bootstrap'
           git push origin HEAD:issue-246-standard-onboarding
+
+      - name: Report bootstrap failure
+        if: failure() && steps.trigger.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/issues/2/comments" \
+            -f body="Issue #246 bootstrap failed in run ${GITHUB_RUN_ID} at commit ${GITHUB_SHA}."
+
+      - name: Report bootstrap success
+        if: success() && steps.trigger.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/issues/2/comments" \
+            -f body="Issue #246 bootstrap completed successfully in run ${GITHUB_RUN_ID}."
