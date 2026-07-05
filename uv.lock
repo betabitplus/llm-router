@@ -1610,7 +1610,7 @@ requires-dist = [
     { name = "httpx" },
     { name = "openai" },
     { name = "pillow", specifier = ">=12.2" },
-    { name = "py-lib-runtime", git = "https://github.com/betabitplus/py-lib-starter.git?subdirectory=packages%2Fpy-lib-runtime&rev=v0.29.4" },
+    { name = "py-lib-runtime", git = "https://github.com/betabitplus/py-lib-starter.git?subdirectory=packages%2Fpy-lib-runtime&rev=v0.30.0" },
     { name = "pydantic" },
     { name = "tenacity", specifier = ">=9.1.4" },
 ]
@@ -1637,7 +1637,7 @@ dev = [
     { name = "pillow", specifier = ">=12.2" },
     { name = "pip-audit", specifier = ">=2.10.1" },
     { name = "pre-commit", specifier = ">=4.6.0" },
-    { name = "py-lib-tooling", git = "https://github.com/betabitplus/py-lib-starter.git?subdirectory=packages%2Fpy-lib-tooling&rev=v0.29.4" },
+    { name = "py-lib-tooling", git = "https://github.com/betabitplus/py-lib-starter.git?subdirectory=packages%2Fpy-lib-tooling&rev=v0.30.0" },
     { name = "pygments", specifier = ">=2.20.0" },
     { name = "pymupdf" },
     { name = "pyright", specifier = ">=1.1.410" },
@@ -2310,7 +2310,7 @@ wheels = [
 [[package]]
 name = "py-lib-runtime"
 version = "0.11.1"
-source = { git = "https://github.com/betabitplus/py-lib-starter.git?subdirectory=packages%2Fpy-lib-runtime&rev=v0.29.4#2563b0011caa1f452561916abee7147511cc8e93" }
+source = { git = "https://github.com/betabitplus/py-lib-starter.git?subdirectory=packages%2Fpy-lib-runtime&rev=v0.30.0#aed252d59956d0b79bc363bb57542b116a9b4be4" }
 dependencies = [
     { name = "structlog" },
 ]
@@ -2318,7 +2318,7 @@ dependencies = [
 [[package]]
 name = "py-lib-tooling"
 version = "0.27.0"
-source = { git = "https://github.com/betabitplus/py-lib-starter.git?subdirectory=packages%2Fpy-lib-tooling&rev=v0.29.4#2563b0011caa1f452561916abee7147511cc8e93" }
+source = { git = "https://github.com/betabitplus/py-lib-starter.git?subdirectory=packages%2Fpy-lib-tooling&rev=v0.30.0#aed252d59956d0b79bc363bb57542b116a9b4be4" }
 dependencies = [
     { name = "copier" },
     { name = "ipython" },
