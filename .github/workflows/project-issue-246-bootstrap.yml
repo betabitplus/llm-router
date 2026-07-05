@@ -1,4 +1,4 @@
-name: Issue 246 Bootstrap
+name: Issue 246 Promote Generated Tree
 
 on:
   push:
@@ -6,180 +6,38 @@ on:
       - issue-246-standard-onboarding
 
 concurrency:
-  group: issue-246-standard-onboarding-bootstrap
+  group: issue-246-standard-onboarding-promotion
   cancel-in-progress: true
 
 permissions:
   contents: write
 
 jobs:
-  apply-migration:
+  promote:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out migration branch
+      - name: Check out working branch
         uses: actions/checkout@v6
         with:
           ref: issue-246-standard-onboarding
           fetch-depth: 0
 
-      - name: Detect explicit migration trigger
-        id: trigger
-        shell: bash
-        run: |
-          if [ -f .issue246/READY ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Verify released baseline and record run
-        if: steps.trigger.outputs.ready == 'true'
+      - name: Cherry-pick verified generated commits
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s\n' baseline > "$RUNNER_TEMP/issue246-stage"
-          expected=c6a1d737b7874d7578e1ab127d336b2dd999d12a
-          tag=pre-standard-onboarding-20260705
           git fetch origin \
-            '+refs/heads/dev:refs/remotes/origin/dev' \
-            '+refs/heads/main:refs/remotes/origin/main' \
-            '+refs/tags/*:refs/tags/*' \
+            '+refs/heads/issue-246-standard-onboarding:refs/remotes/origin/issue-246-standard-onboarding' \
+            '+refs/heads/issue-246-generated-tree:refs/remotes/origin/issue-246-generated-tree' \
             --force
-          test "$(git rev-parse refs/remotes/origin/dev)" = "$expected"
-          test "$(git rev-parse refs/remotes/origin/main)" = "$expected"
-          test "$(git rev-parse refs/tags/v0.8.1^{commit})" = "$expected"
           git config user.name 'betabitplus-py-lib-automation[bot]'
           git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
-          if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
-            test "$(git rev-parse "refs/tags/$tag^{commit}")" = "$expected"
-          else
-            git tag -a "$tag" "$expected" \
-              -m 'Safety baseline before Issue #246 standard onboarding'
-            git push origin "refs/tags/$tag"
-          fi
-          rm -f .issue246/FAILED
-          cat > .issue246/RUN <<EOF
-          run_id=${GITHUB_RUN_ID}
-          source_sha=${GITHUB_SHA}
-          status=running
-          EOF
-          git add .issue246/RUN .issue246/FAILED
-          git commit -m 'chore: record Issue 246 bootstrap run'
-          git push origin HEAD:issue-246-standard-onboarding
-
-      - name: Set up uv
-        if: steps.trigger.outputs.ready == 'true'
-        uses: astral-sh/setup-uv@v8.2.0
-        with:
-          enable-cache: auto
-
-      - name: Generate immutable canonical standard reference
-        if: steps.trigger.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s\n' canonical-reference > "$RUNNER_TEMP/issue246-stage"
-          reference="$RUNNER_TEMP/llm-router-python-lib-standard-v0.29.1"
-          rm -rf "$reference"
-          uvx --from copier==9.16.0 copier copy \
-            https://github.com/betabitplus/py-lib-starter.git \
-            "$reference" \
-            --vcs-ref v0.29.1 \
-            --trust \
-            --defaults \
-            --data-file _copier_answers.yml
-          grep -Fx '_commit: v0.29.1' "$reference/_copier_answers.yml"
-          grep -Fx '_src_path: https://github.com/betabitplus/py-lib-starter.git' \
-            "$reference/_copier_answers.yml"
-          printf '%s\n' "$reference" > "$RUNNER_TEMP/issue246-reference-path"
-
-      - name: Apply standard shell and shared runtime migration
-        if: steps.trigger.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s\n' migration > "$RUNNER_TEMP/issue246-stage"
-          reference="$(cat "$RUNNER_TEMP/issue246-reference-path")"
-          python .issue246/migrate.py . "$reference"
-          rm -rf .github/workflows
-          git checkout origin/issue-246-standard-onboarding -- .github/workflows
-          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          mapfile -t commits < <(
+            git rev-list --reverse \
+              origin/issue-246-standard-onboarding..origin/issue-246-generated-tree
+          )
+          test "${#commits[@]}" -eq 3
+          git cherry-pick "${commits[@]}"
+          test ! -e .issue246
           git diff --check
-          git add -A
-          git commit -m 'chore: adopt standard repository shell and shared runtime'
-
-      - name: Refresh immutable dependency lock
-        if: steps.trigger.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s\n' lockfile > "$RUNNER_TEMP/issue246-stage"
-          uv lock
-          uv lock --check
-          git add uv.lock
-          if ! git diff --cached --quiet; then
-            git commit -m 'chore: refresh immutable dependency lock'
-          fi
-
-      - name: Verify basic migrated source integrity
-        if: steps.trigger.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s\n' integrity > "$RUNNER_TEMP/issue246-stage"
-          python -m compileall -q src tests workbench examples
-          test ! -e src/llm_router/_support
-          test ! -e tests/support
-          ! grep -R --line-number \
-            -E 'llm_router\._support|tests\.support|(^|[[:space:]])import structlog|from structlog' \
-            src tests workbench examples
-          grep -R --line-number 'from py_lib_runtime import' src/llm_router
-          grep -R --line-number 'from py_lib_tooling import' tests workbench
-          git diff --check
-
-      - name: Publish generated migration branch
-        if: steps.trigger.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s\n' generated-branch-push > "$RUNNER_TEMP/issue246-stage"
-          find . -type d -name __pycache__ -prune -exec rm -rf {} +
-          rm -rf .issue246
-          git add -A
-          if ! git diff --cached --quiet; then
-            git commit -m 'chore: remove Issue 246 migration bootstrap data'
-          fi
-          git status --short
-          git log --oneline -6
-          set +e
-          git push origin HEAD:issue-246-generated-tree \
-            >"$RUNNER_TEMP/issue246-push-output" 2>&1
-          push_status=$?
-          set -e
-          cat "$RUNNER_TEMP/issue246-push-output"
-          exit "$push_status"
-
-      - name: Record bootstrap failure without partial migration
-        if: failure() && steps.trigger.outputs.ready == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          stage=unknown
-          if [ -f "$RUNNER_TEMP/issue246-stage" ]; then
-            stage="$(cat "$RUNNER_TEMP/issue246-stage")"
-          fi
-          git fetch origin issue-246-standard-onboarding
-          git reset --hard origin/issue-246-standard-onboarding
-          {
-            printf 'run_id=%s\n' "$GITHUB_RUN_ID"
-            printf 'source_sha=%s\n' "$GITHUB_SHA"
-            printf 'stage=%s\n' "$stage"
-            if [ -f "$RUNNER_TEMP/issue246-push-output" ]; then
-              printf 'push_output_begin\n'
-              tail -n 40 "$RUNNER_TEMP/issue246-push-output"
-              printf 'push_output_end\n'
-            fi
-          } > .issue246/FAILED
-          git add .issue246/FAILED
-          git commit -m 'chore: record Issue 246 bootstrap failure'
           git push origin HEAD:issue-246-standard-onboarding
