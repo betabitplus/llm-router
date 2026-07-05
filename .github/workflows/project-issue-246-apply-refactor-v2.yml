@@ -1,4 +1,4 @@
-name: Issue 246 Diagnose Atomic Template Commit
+name: Issue 246 Apply Atomic Template Commit
 
 on:
   pull_request:
@@ -28,6 +28,7 @@ jobs:
           owner: ${{ github.repository_owner }}
           repositories: llm-router
           permission-contents: write
+          permission-workflows: write
 
       - name: Create shared read token
         id: shared-token
@@ -48,12 +49,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Detect explicit diagnostic request
+      - name: Detect explicit update request
         id: gate
         shell: bash
         run: |
           subject="$(git log -1 --pretty=%s)"
-          if [ "$subject" = 'ci: diagnose Issue 246 atomic template commit' ]; then
+          if [ "$subject" = 'ci: grant workflow permission for Issue 246 updater' ]; then
             echo 'apply=true' >> "$GITHUB_OUTPUT"
           else
             echo 'apply=false' >> "$GITHUB_OUTPUT"
@@ -128,7 +129,7 @@ jobs:
 
       - name: Create CI workflow blob
         if: steps.gate.outputs.apply == 'true'
-        id: ci-blob
+        id: ci_blob
         env:
           GH_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
@@ -138,7 +139,7 @@ jobs:
 
       - name: Create sync workflow blob
         if: steps.gate.outputs.apply == 'true'
-        id: sync-blob
+        id: sync_blob
         env:
           GH_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
@@ -148,7 +149,7 @@ jobs:
 
       - name: Create Copier answers blob
         if: steps.gate.outputs.apply == 'true'
-        id: answers-blob
+        id: answers_blob
         env:
           GH_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
@@ -158,7 +159,7 @@ jobs:
 
       - name: Create pyproject blob
         if: steps.gate.outputs.apply == 'true'
-        id: pyproject-blob
+        id: pyproject_blob
         env:
           GH_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
@@ -168,7 +169,7 @@ jobs:
 
       - name: Create lockfile blob
         if: steps.gate.outputs.apply == 'true'
-        id: lock-blob
+        id: lock_blob
         env:
           GH_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
@@ -178,18 +179,18 @@ jobs:
 
       - name: Create updater tree
         if: steps.gate.outputs.apply == 'true'
-        id: tree
+        id: updater_tree
         env:
           GH_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
         run: |
           sha="$(jq -n \
             --arg base_tree '${{ steps.base.outputs.tree }}' \
-            --arg ci_sha '${{ steps.ci-blob.outputs.sha }}' \
-            --arg sync_sha '${{ steps.sync-blob.outputs.sha }}' \
-            --arg answers_sha '${{ steps.answers-blob.outputs.sha }}' \
-            --arg pyproject_sha '${{ steps.pyproject-blob.outputs.sha }}' \
-            --arg lock_sha '${{ steps.lock-blob.outputs.sha }}' \
+            --arg ci_sha '${{ steps.ci_blob.outputs.sha }}' \
+            --arg sync_sha '${{ steps.sync_blob.outputs.sha }}' \
+            --arg answers_sha '${{ steps.answers_blob.outputs.sha }}' \
+            --arg pyproject_sha '${{ steps.pyproject_blob.outputs.sha }}' \
+            --arg lock_sha '${{ steps.lock_blob.outputs.sha }}' \
             '{base_tree: $base_tree, tree: [
               {path: ".github/workflows/ci.yml", mode: "100644", type: "blob", sha: $ci_sha},
               {path: ".github/workflows/sync-starter-template.yml", mode: "100644", type: "blob", sha: $sync_sha},
@@ -201,14 +202,14 @@ jobs:
 
       - name: Create updater commit
         if: steps.gate.outputs.apply == 'true'
-        id: commit
+        id: updater_commit
         env:
           GH_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
         run: |
           sha="$(jq -n \
             --arg message 'chore: update managed shell to starter v0.29.3' \
-            --arg tree '${{ steps.tree.outputs.sha }}' \
+            --arg tree '${{ steps.updater_tree.outputs.sha }}' \
             --arg parent '${{ steps.base.outputs.parent }}' \
             '{message: $message, tree: $tree, parents: [$parent]}' | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/commits" --input - --jq '.sha')"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
@@ -219,4 +220,4 @@ jobs:
           GH_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
         run: |
-          jq -n --arg sha '${{ steps.commit.outputs.sha }}' '{sha: $sha, force: false}' | gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/heads/issue-246-standard-onboarding" --input - >/dev/null
+          jq -n --arg sha '${{ steps.updater_commit.outputs.sha }}' '{sha: $sha, force: false}' | gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/heads/issue-246-standard-onboarding" --input - >/dev/null
