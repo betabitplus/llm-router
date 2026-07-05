@@ -21,9 +21,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from PIL import Image
+from py_lib_tooling import get_repo_root, get_test_data_path
 
 from llm_router import FileSchema, ImageSchema, VideoSchema, VideoUrlSchema
-from py_lib_tooling import get_repo_root, get_test_data_path
 
 _DEFAULT_VIDEO_URL = "https://www.youtube.com/shorts/QUxqvF0pyGw"
 

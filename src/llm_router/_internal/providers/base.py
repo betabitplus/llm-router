@@ -12,8 +12,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any, Protocol
 
-from llm_router._internal.contracts.models import ToolCall, UsageStats
-from llm_router._internal.contracts.types import Model, Provider
+from llm_router._api.types import Model, Provider, ToolCall, UsageStats
 from llm_router._internal.capabilities.content import NormalizedMessage
 from llm_router._internal.capabilities.schema import SchemaSpec
 from llm_router._internal.capabilities.tools import ToolChoice, ToolRegistry

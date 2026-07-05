@@ -41,6 +41,7 @@ import os
 import time
 
 import pytest
+from py_lib_tooling import console, require_vcr_cassette_or_record_mode, run_async
 
 from llm_router import (
     LLMRouter,
@@ -50,9 +51,6 @@ from llm_router import (
     ProviderLimits,
     RouterProfile,
 )
-from py_lib_tooling import console
-from py_lib_tooling import require_vcr_cassette_or_record_mode
-from py_lib_tooling import run_async
 
 pytestmark = [
     pytest.mark.e2e_behavior,

@@ -13,9 +13,8 @@ from secrets import SystemRandom
 from types import MappingProxyType
 from typing import Any, Protocol
 
-from llm_router._internal.contracts.models import RouterProfile
-from llm_router._internal.contracts.errors import ConfigurationError, ModelNotFoundError
-from llm_router._internal.contracts.types import KeyId, Model, Provider
+from llm_router._api.errors import ConfigurationError, ModelNotFoundError
+from llm_router._api.types import KeyId, Model, Provider, RouterProfile
 from llm_router._internal.config import LLMRouterConfig, get_config
 
 _POLICY_FIELDS = (

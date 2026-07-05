@@ -11,5 +11,4 @@ What does not belong here:
     Public facade signatures, provider SDK calls, or session serialization.
 """
 
-from llm_router._internal.runtime.router import RouterRuntime
-
+from llm_router._internal.runtime.router import RouterRuntime as RouterRuntime

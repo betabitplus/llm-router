@@ -31,8 +31,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from py_lib_tooling import console
-from py_lib_tooling import run_async
+from py_lib_tooling import console, run_async
+
 from workbench.llm_router.gemini_webapi._opera_cookie_client import managed_client
 from workbench.llm_router.gemini_webapi._structured_output import (
     ForcedToolChoiceResult,
@@ -88,8 +88,7 @@ async def run_pipeline() -> dict[str, Any]:
         )
         if first_call["tool_name"] != "add":
             msg = (
-                "The live response did not respect the named add choice: "
-                f"{first_call}"
+                f"The live response did not respect the named add choice: {first_call}"
             )
             raise RuntimeError(msg)
 

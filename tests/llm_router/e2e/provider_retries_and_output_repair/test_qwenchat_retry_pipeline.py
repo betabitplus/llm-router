@@ -44,6 +44,7 @@ Examples:
 from __future__ import annotations
 
 import pytest
+from py_lib_tooling import console
 
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
 from tests.llm_router.support.workers.retry import (
@@ -55,7 +56,6 @@ from tests.llm_router.support.workers.retry import (
     qwen_upload_success_response,
     run_retry_worker,
 )
-from py_lib_tooling import console
 
 pytestmark = [
     pytest.mark.e2e_behavior,

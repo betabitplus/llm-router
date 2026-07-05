@@ -31,9 +31,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from py_lib_tooling import console, run_async
+
 from tests.llm_router.support.media.pdf import extract_expected_pdf_facts
-from py_lib_tooling import console
-from py_lib_tooling import run_async
 from workbench.llm_router.gemini_webapi._opera_cookie_client import managed_client
 from workbench.llm_router.gemini_webapi._structured_output import (
     PDFDigest,

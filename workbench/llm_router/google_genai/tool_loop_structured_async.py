@@ -29,8 +29,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from py_lib_tooling import console
-from py_lib_tooling import run_async
+from py_lib_tooling import console, run_async
+
 from workbench.llm_router.google_genai._sdk_helpers import build_client
 from workbench.llm_router.google_genai._structured_output import (
     CalculationAudit,

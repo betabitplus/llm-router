@@ -11,10 +11,11 @@ from collections.abc import Callable, MutableMapping
 from threading import RLock
 from typing import Any
 
-from llm_router._internal.contracts.types import Provider
+from py_lib_runtime import get_logger
+
+from llm_router._api.types import Provider
 from llm_router._internal.config import LLMRouterConfig
 from llm_router._internal.providers.base import ProviderAdapter
-from py_lib_runtime import get_logger
 
 logger = get_logger(__name__)
 

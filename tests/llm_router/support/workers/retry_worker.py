@@ -18,12 +18,13 @@ import argparse
 import json
 from typing import Any
 
+from py_lib_tooling import get_test_data_path
+
 from tests.llm_router.support.workers._worker_process import ensure_worker_env
 from tests.llm_router.support.workers.worker_patches import (
     install_fast_worker_runtime_config,
     prepare_fault_case,
 )
-from py_lib_tooling import get_test_data_path
 
 VIDEO_PATH = get_test_data_path("llm_router") / "jumper.mp4"
 

@@ -16,7 +16,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from llm_router._internal.contracts.models import (
+from llm_router._api.types import (
     ChatMessage,
     ChatPart,
     FileSchema,

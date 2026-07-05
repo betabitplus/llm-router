@@ -11,12 +11,12 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from llm_router._internal.contracts.types import Model, Provider
+from llm_router._api.types import Model, Provider
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from llm_router._internal.contracts.models import ProviderLimits
+    from llm_router._api.types import ProviderLimits
 
 
 def _freeze_mapping[K, V](mapping: Mapping[K, V]) -> Mapping[K, V]:

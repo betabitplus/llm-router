@@ -26,11 +26,9 @@ Examples:
 from __future__ import annotations
 
 import pytest
+from py_lib_tooling import console, require_vcr_cassette_or_record_mode, run_async
 
 from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProfile
-from py_lib_tooling import console
-from py_lib_tooling import require_vcr_cassette_or_record_mode
-from py_lib_tooling import run_async
 
 pytestmark = [
     pytest.mark.e2e_contract,

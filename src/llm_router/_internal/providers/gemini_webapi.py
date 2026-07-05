@@ -21,8 +21,10 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any
 
-from llm_router._internal.contracts.errors import ProviderError
-from llm_router._internal.contracts.types import Provider
+from py_lib_runtime import get_logger, preview_exception_message
+
+from llm_router._api.errors import ProviderError
+from llm_router._api.types import Provider
 from llm_router._internal.capabilities.content import (
     NormalizedMessage,
     TextPart,
@@ -54,8 +56,6 @@ from llm_router._internal.providers.retry import (
     classify_exception,
     classify_status_code,
 )
-from py_lib_runtime import preview_exception_message
-from py_lib_runtime import get_logger
 
 logger = get_logger(__name__)
 

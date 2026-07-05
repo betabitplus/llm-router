@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from llm_router import Model, Provider, ToolCall, ToolStep, UsageStats
-from llm_router._internal.runtime.output import build_public_response
 from llm_router._internal.providers.base import ProviderResult
+from llm_router._internal.runtime.output import build_public_response
 
 
 @dataclass(frozen=True, slots=True)

@@ -43,6 +43,7 @@ Examples:
 from __future__ import annotations
 
 import pytest
+from py_lib_tooling import console
 
 from llm_router import ApiKeyNotFoundError, ConfigurationError, ProviderError
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -54,7 +55,6 @@ from tests.llm_router.support.workers.retry import (
     openai_chat_path,
     openai_error_response,
 )
-from py_lib_tooling import console
 
 pytestmark = [
     pytest.mark.e2e_contract,

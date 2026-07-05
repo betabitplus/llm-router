@@ -41,6 +41,7 @@ Examples:
 from __future__ import annotations
 
 import pytest
+from py_lib_tooling import console
 
 from llm_router import Model
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -56,7 +57,6 @@ from tests.llm_router.support.workers.tool_round_limit import (
     ToolRoundLimitWorkerResult,
     run_tool_round_limit_worker,
 )
-from py_lib_tooling import console
 
 pytestmark = [
     pytest.mark.e2e_behavior,

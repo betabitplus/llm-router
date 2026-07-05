@@ -11,7 +11,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal
 
-from llm_router._internal.contracts.models import ChatMessage, ChatPart, ChatRole
+from llm_router._api.types import ChatMessage, ChatPart, ChatRole
 from llm_router._internal.capabilities.media import (
     MediaDescriptor,
     describe_media,

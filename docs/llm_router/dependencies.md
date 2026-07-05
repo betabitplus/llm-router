@@ -40,12 +40,12 @@ flowchart TD
 These packages support the public runtime model, shared runtime behavior, or
 import-time package features.
 
-| Package     | Why it is in main dependencies                                                                                 | Status       |
-| ----------- | -------------------------------------------------------------------------------------------------------------- | ------------ |
-| `pydantic`  | Defines public data models, structured output schemas, routing primitives, and provider request/result models. | Foundational |
-| `pillow`    | Supports the public image contract and session/media persistence for image inputs.                             | Foundational |
+| Package          | Why it is in main dependencies                                                                                       | Status       |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `pydantic`       | Defines public data models, structured output schemas, routing primitives, and provider request/result models.       | Foundational |
+| `pillow`         | Supports the public image contract and session/media persistence for image inputs.                                   | Foundational |
 | `py-lib-runtime` | Supplies the authoritative logging, bounded preview, retry-event, and shared runtime primitives used by the package. | Foundational |
-| `tenacity`  | Powers the common retry model and retry-aware logging hooks for provider execution.                            | Foundational |
+| `tenacity`       | Powers the common retry model and retry-aware logging hooks for provider execution.                                  | Foundational |
 
 ### Provider Integrations
 

@@ -30,7 +30,7 @@ class RetryEvent:
 
 def build_retry_params(
     *,
-    retry: Any,  # noqa: ANN401
+    retry: Any,
     events: list[RetryEvent],
     max_attempts: int = 3,
     min_wait_seconds: float = 1.0,

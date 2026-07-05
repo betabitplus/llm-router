@@ -7,8 +7,8 @@ Why:
 
 from __future__ import annotations
 
-from llm_router._internal.config.defaults import _PROVIDERS_REQUIRING_BASE_URL
-from llm_router._internal.contracts.errors import ConfigurationError
+from llm_router._api.defaults import _PROVIDERS_REQUIRING_BASE_URL
+from llm_router._api.errors import ConfigurationError
 from llm_router._internal.config.models import LLMRouterConfig
 
 

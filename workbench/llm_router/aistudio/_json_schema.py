@@ -19,7 +19,7 @@ from typing import Any
 from pydantic import BaseModel
 
 
-def resolve_refs(schema: Any, defs: dict[str, Any] | None = None) -> Any:  # noqa: ANN401
+def resolve_refs(schema: Any, defs: dict[str, Any] | None = None) -> Any:
     """Recursively inline `$ref` values from a JSON schema."""
     if defs is None and isinstance(schema, dict):
         defs = schema.get("$defs", {})

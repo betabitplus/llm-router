@@ -31,8 +31,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from py_lib_tooling import console
-from py_lib_tooling import run_async
+from py_lib_tooling import console, run_async
+
 from workbench.llm_router.openai._sdk_helpers import (
     build_async_client,
     provider_api_key_env,

@@ -11,11 +11,11 @@ from collections.abc import Mapping, Sequence
 from dataclasses import asdict, is_dataclass
 from typing import cast
 
+from py_lib_runtime import preview_value
 from pydantic import BaseModel
 
-from llm_router._internal.contracts.models import LLMRouterResponse, ToolCall, ToolStep
+from llm_router._api.types import LLMRouterResponse, ToolCall, ToolStep
 from llm_router._internal.providers.base import ProviderResult
-from py_lib_runtime import preview_value
 
 
 class _PublicDataMapping(dict[str, object]):

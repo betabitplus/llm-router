@@ -19,8 +19,6 @@ import re
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-from vcr import matchers as vcr_matchers
-
 from py_lib_tooling import (
     compare_optional_json_bodies,
     compare_optional_multipart_single_file_content,
@@ -28,6 +26,7 @@ from py_lib_tooling import (
     normalize_json_body,
     to_bytes,
 )
+from vcr import matchers as vcr_matchers
 
 _QWEN_COMPLETION_HOST = "localhost"
 _QWEN_COMPLETION_PATH = "/api/chat/completions"

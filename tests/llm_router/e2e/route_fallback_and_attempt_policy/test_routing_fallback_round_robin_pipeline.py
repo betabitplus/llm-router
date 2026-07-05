@@ -37,6 +37,7 @@ Examples:
 from __future__ import annotations
 
 import pytest
+from py_lib_tooling import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     LLMRouter,
@@ -46,8 +47,6 @@ from llm_router import (
     ProviderLimits,
     RouterProfile,
 )
-from py_lib_tooling import console
-from py_lib_tooling import require_vcr_cassette_or_record_mode
 
 pytestmark = [
     pytest.mark.e2e_behavior,
