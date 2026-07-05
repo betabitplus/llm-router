@@ -1,4 +1,4 @@
-name: Issue 246 Apply Stable Template Update
+name: Issue 246 Diagnose Atomic Template Commit
 
 on:
   pull_request:
@@ -48,12 +48,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Detect explicit update request
+      - name: Detect explicit diagnostic request
         id: gate
         shell: bash
         run: |
           subject="$(git log -1 --pretty=%s)"
-          if [ "$subject" = 'ci: atomically apply Issue 246 template v0.29.3' ]; then
+          if [ "$subject" = 'ci: diagnose Issue 246 atomic template commit' ]; then
             echo 'apply=true' >> "$GITHUB_OUTPUT"
           else
             echo 'apply=false' >> "$GITHUB_OUTPUT"
@@ -118,52 +118,105 @@ jobs:
             'uv.lock' | sort)"
           test "$actual" = "$expected"
 
-      - name: Create one atomic Git commit through the App
+      - name: Capture base Git objects
         if: steps.gate.outputs.apply == 'true'
+        id: base
+        shell: bash
+        run: |
+          echo "parent=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "tree=$(git rev-parse HEAD^{tree})" >> "$GITHUB_OUTPUT"
+
+      - name: Create CI workflow blob
+        if: steps.gate.outputs.apply == 'true'
+        id: ci-blob
         env:
           GH_TOKEN: ${{ steps.target-token.outputs.token }}
         shell: bash
         run: |
-          set -euo pipefail
-          parent_sha="$(git rev-parse HEAD)"
-          base_tree="$(git rev-parse HEAD^{tree})"
-          create_blob() {
-            jq -Rs '{content: ., encoding: "utf-8"}' "$1" |
-              gh api --method POST \
-                "repos/${GITHUB_REPOSITORY}/git/blobs" \
-                --input - --jq '.sha'
-          }
-          ci_sha="$(create_blob .github/workflows/ci.yml)"
-          sync_sha="$(create_blob .github/workflows/sync-starter-template.yml)"
-          answers_sha="$(create_blob _copier_answers.yml)"
-          pyproject_sha="$(create_blob pyproject.toml)"
-          lock_sha="$(create_blob uv.lock)"
-          tree_sha="$(jq -n \
-            --arg base_tree "$base_tree" \
-            --arg ci_sha "$ci_sha" \
-            --arg sync_sha "$sync_sha" \
-            --arg answers_sha "$answers_sha" \
-            --arg pyproject_sha "$pyproject_sha" \
-            --arg lock_sha "$lock_sha" \
+          sha="$(jq -Rs '{content: ., encoding: "utf-8"}' .github/workflows/ci.yml | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq '.sha')"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Create sync workflow blob
+        if: steps.gate.outputs.apply == 'true'
+        id: sync-blob
+        env:
+          GH_TOKEN: ${{ steps.target-token.outputs.token }}
+        shell: bash
+        run: |
+          sha="$(jq -Rs '{content: ., encoding: "utf-8"}' .github/workflows/sync-starter-template.yml | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq '.sha')"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Create Copier answers blob
+        if: steps.gate.outputs.apply == 'true'
+        id: answers-blob
+        env:
+          GH_TOKEN: ${{ steps.target-token.outputs.token }}
+        shell: bash
+        run: |
+          sha="$(jq -Rs '{content: ., encoding: "utf-8"}' _copier_answers.yml | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq '.sha')"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Create pyproject blob
+        if: steps.gate.outputs.apply == 'true'
+        id: pyproject-blob
+        env:
+          GH_TOKEN: ${{ steps.target-token.outputs.token }}
+        shell: bash
+        run: |
+          sha="$(jq -Rs '{content: ., encoding: "utf-8"}' pyproject.toml | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq '.sha')"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Create lockfile blob
+        if: steps.gate.outputs.apply == 'true'
+        id: lock-blob
+        env:
+          GH_TOKEN: ${{ steps.target-token.outputs.token }}
+        shell: bash
+        run: |
+          sha="$(jq -Rs '{content: ., encoding: "utf-8"}' uv.lock | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq '.sha')"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Create updater tree
+        if: steps.gate.outputs.apply == 'true'
+        id: tree
+        env:
+          GH_TOKEN: ${{ steps.target-token.outputs.token }}
+        shell: bash
+        run: |
+          sha="$(jq -n \
+            --arg base_tree '${{ steps.base.outputs.tree }}' \
+            --arg ci_sha '${{ steps.ci-blob.outputs.sha }}' \
+            --arg sync_sha '${{ steps.sync-blob.outputs.sha }}' \
+            --arg answers_sha '${{ steps.answers-blob.outputs.sha }}' \
+            --arg pyproject_sha '${{ steps.pyproject-blob.outputs.sha }}' \
+            --arg lock_sha '${{ steps.lock-blob.outputs.sha }}' \
             '{base_tree: $base_tree, tree: [
               {path: ".github/workflows/ci.yml", mode: "100644", type: "blob", sha: $ci_sha},
               {path: ".github/workflows/sync-starter-template.yml", mode: "100644", type: "blob", sha: $sync_sha},
               {path: "_copier_answers.yml", mode: "100644", type: "blob", sha: $answers_sha},
               {path: "pyproject.toml", mode: "100644", type: "blob", sha: $pyproject_sha},
               {path: "uv.lock", mode: "100644", type: "blob", sha: $lock_sha}
-            ]}' |
-            gh api --method POST \
-              "repos/${GITHUB_REPOSITORY}/git/trees" \
-              --input - --jq '.sha')"
-          commit_sha="$(jq -n \
+            ]}' | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/trees" --input - --jq '.sha')"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Create updater commit
+        if: steps.gate.outputs.apply == 'true'
+        id: commit
+        env:
+          GH_TOKEN: ${{ steps.target-token.outputs.token }}
+        shell: bash
+        run: |
+          sha="$(jq -n \
             --arg message 'chore: update managed shell to starter v0.29.3' \
-            --arg tree "$tree_sha" \
-            --arg parent "$parent_sha" \
-            '{message: $message, tree: $tree, parents: [$parent]}' |
-            gh api --method POST \
-              "repos/${GITHUB_REPOSITORY}/git/commits" \
-              --input - --jq '.sha')"
-          jq -n --arg sha "$commit_sha" '{sha: $sha, force: false}' |
-            gh api --method PATCH \
-              "repos/${GITHUB_REPOSITORY}/git/refs/heads/issue-246-standard-onboarding" \
-              --input - >/dev/null
+            --arg tree '${{ steps.tree.outputs.sha }}' \
+            --arg parent '${{ steps.base.outputs.parent }}' \
+            '{message: $message, tree: $tree, parents: [$parent]}' | gh api --method POST "repos/${GITHUB_REPOSITORY}/git/commits" --input - --jq '.sha')"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Fast-forward migration branch
+        if: steps.gate.outputs.apply == 'true'
+        env:
+          GH_TOKEN: ${{ steps.target-token.outputs.token }}
+        shell: bash
+        run: |
+          jq -n --arg sha '${{ steps.commit.outputs.sha }}' '{sha: $sha, force: false}' | gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/heads/issue-246-standard-onboarding" --input - >/dev/null
