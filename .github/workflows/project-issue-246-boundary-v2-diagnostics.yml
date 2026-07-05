@@ -48,7 +48,7 @@ jobs:
         id: gate
         shell: bash
         run: |
-          if [ "$(git log -1 --pretty=%s)" = 'ci: finalize canonical Issue 246 layer contract' ]; then
+          if [ "$(git log -1 --pretty=%s)" = 'ci: narrow Issue 246 layer exception' ]; then
             echo 'apply=true' >> "$GITHUB_OUTPUT"
           else
             echo 'apply=false' >> "$GITHUB_OUTPUT"
@@ -147,6 +147,7 @@ jobs:
           old = '''layers = [ "runtime", "providers|session", "config:errors" ]
           ignore_imports = [ "llm_router._internal.config.** -> llm_router._internal.**" ]'''
           new = '''layers = [ "runtime:session", "providers", "config|capabilities" ]
+          ignore_imports = [ "llm_router._internal.config.state -> llm_router._internal.providers.registry" ]
           exhaustive = true'''
           if text.count(old) != 1:
               raise RuntimeError("expected one legacy private-layer contract")
