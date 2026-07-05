@@ -1,8 +1,0 @@
-run_id=28724530519
-source_sha=495a8dbdd6c877536503044ccb0fdfffff96983b
-stage=generated-branch-push
-push_output_begin
-To https://github.com/betabitplus/llm-router
- ! [remote rejected] HEAD -> issue-246-generated-tree (refusing to allow a GitHub App to create or update workflow `.github/workflows/python-lib-ci-baseline.yml` without `workflows` permission)
-error: failed to push some refs to 'https://github.com/betabitplus/llm-router'
-push_output_end
