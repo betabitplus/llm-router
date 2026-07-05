@@ -9,54 +9,82 @@ permissions:
   contents: write
 
 jobs:
-  export-baseline:
+  apply-migration:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out complete repository
-        uses: actions/checkout@v4
+      - name: Check out migration branch
+        uses: actions/checkout@v6
         with:
+          ref: issue-246-standard-onboarding
           fetch-depth: 0
 
-      - name: Verify protected baseline refs
+      - name: Detect complete transfer
+        id: transfer
         shell: bash
         run: |
-          set -euo pipefail
-          expected=c6a1d737b7874d7578e1ab127d336b2dd999d12a
-          git fetch origin dev main --tags --force
-          test "$(git rev-parse origin/dev)" = "$expected"
-          test "$(git rev-parse origin/main)" = "$expected"
-          test "$(git rev-parse refs/tags/v0.8.1^{commit})" = "$expected"
+          if [ -f .issue246-transfer/READY ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Create immutable safety tag
+      - name: Verify protected baseline refs and create safety tag
+        if: steps.transfer.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          tag=pre-standard-onboarding-20260705
           expected=c6a1d737b7874d7578e1ab127d336b2dd999d12a
+          tag=pre-standard-onboarding-20260705
+          git fetch origin '+refs/heads/dev:refs/remotes/origin/dev' '+refs/heads/main:refs/remotes/origin/main' '+refs/tags/*:refs/tags/*' --force
+          test "$(git rev-parse refs/remotes/origin/dev)" = "$expected"
+          test "$(git rev-parse refs/remotes/origin/main)" = "$expected"
+          test "$(git rev-parse refs/tags/v0.8.1^{commit})" = "$expected"
           if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
             test "$(git rev-parse "refs/tags/$tag^{commit}")" = "$expected"
           else
+            git config user.name betabitplus-py-lib-automation[bot]
+            git config user.email 297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com
             git tag -a "$tag" "$expected" -m "Safety baseline before Issue #246 standard onboarding"
             git push origin "refs/tags/$tag"
           fi
 
-      - name: Create recoverable source and Git bundle backups
+      - name: Apply reviewable migration commits
+        if: steps.transfer.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          git bundle create llm-router-pre-standard-onboarding-20260705.bundle --all
-          tar --exclude=.git --exclude=llm-router-pre-standard-onboarding-20260705.bundle \
-            -czf llm-router-source-c6a1d737.tar.gz .
-          sha256sum llm-router-pre-standard-onboarding-20260705.bundle \
-            llm-router-source-c6a1d737.tar.gz > SHA256SUMS
+          expected_archive_sha="$(cat .issue246-transfer/READY)"
+          cat .issue246-transfer/chunk-* | base64 --decode > "$RUNNER_TEMP/patches.tar.gz"
+          printf '%s  %s\n' "$expected_archive_sha" "$RUNNER_TEMP/patches.tar.gz" | sha256sum --check
+          mkdir "$RUNNER_TEMP/patches"
+          tar -xzf "$RUNNER_TEMP/patches.tar.gz" -C "$RUNNER_TEMP/patches"
+          git config user.name betabitplus
+          git config user.email 8123085+betabitplus@users.noreply.github.com
+          git am "$RUNNER_TEMP"/patches/patches/*.patch
 
-      - name: Upload baseline backup
-        uses: actions/upload-artifact@v4
+      - name: Set up Python and uv
+        if: steps.transfer.outputs.ready == 'true'
+        uses: astral-sh/setup-uv@v8.2.0
         with:
-          name: issue-246-baseline-backup
-          path: |
-            llm-router-pre-standard-onboarding-20260705.bundle
-            llm-router-source-c6a1d737.tar.gz
-            SHA256SUMS
-          if-no-files-found: error
-          retention-days: 90
+          enable-cache: auto
+
+      - name: Refresh immutable dependency lock
+        if: steps.transfer.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv lock
+          uv lock --check
+
+      - name: Remove transfer-only resources and push migration
+        if: steps.transfer.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .issue246-transfer
+          rm -f .github/workflows/project-issue-246-bootstrap.yml
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: refresh standard dependency lock"
+          fi
+          git push origin HEAD:issue-246-standard-onboarding
