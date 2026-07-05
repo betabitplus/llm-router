@@ -70,13 +70,40 @@ jobs:
           uv lock --check
 
       - name: Run strict platform checks
+        id: strict-checks
         shell: bash
         run: |
-          set -euo pipefail
-          uv run py-lib-template-check
-          uv run py-lib-check-project-structure --strict-template
-          uv run py-lib-check-project-docs-structure
-          uv run py-lib-check-public-contract-boundary
+          set -uo pipefail
+          mkdir -p .issue246-validation/strict
+          overall=0
+          run_check() {
+            local name="$1"
+            shift
+            set +e
+            "$@" >".issue246-validation/strict/${name}.log" 2>&1
+            status=$?
+            set -e
+            cat ".issue246-validation/strict/${name}.log"
+            printf '%s=%s\n' "$name" "$status" \
+              >> .issue246-validation/strict/statuses.txt
+            if [ "$status" -ne 0 ]; then
+              overall=1
+            fi
+          }
+          run_check template-check uv run py-lib-template-check
+          run_check project-structure uv run py-lib-check-project-structure --strict-template
+          run_check docs-structure uv run py-lib-check-project-docs-structure
+          run_check public-contract uv run py-lib-check-public-contract-boundary
+          exit "$overall"
+
+      - name: Upload strict platform check evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-246-strict-checks-${{ github.run_id }}
+          path: .issue246-validation/strict
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Run commit-stage hooks
         env:
