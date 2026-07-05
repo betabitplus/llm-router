@@ -1,3 +1,4 @@
+# %%
 """Gemini WebAPI workbench structured-output helpers.
 
 Why:

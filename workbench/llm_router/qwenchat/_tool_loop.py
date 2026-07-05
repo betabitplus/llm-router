@@ -1,3 +1,4 @@
+# %%
 """QwenChat workbench textual tool-loop helpers.
 
 Why:

@@ -12,7 +12,7 @@ from typing import Literal
 
 from PIL import Image
 
-from llm_router._api.contracts import FileSchema, VideoSchema, VideoUrlSchema
+from llm_router._api.types import FileSchema, VideoSchema, VideoUrlSchema
 
 
 @dataclass(frozen=True, slots=True)

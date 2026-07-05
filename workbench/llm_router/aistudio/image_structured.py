@@ -32,7 +32,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from tests.support.console import console
+from py_lib_tooling import console
+
 from workbench.llm_router.aistudio._json_schema import build_resolved_response_format
 from workbench.llm_router.aistudio._sdk_helpers import (
     build_client,

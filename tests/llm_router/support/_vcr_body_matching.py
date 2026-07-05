@@ -2,7 +2,7 @@
 
 Why:
     Keeps llm_router request-body normalization and provider-specific matching
-    logic out of the shared `tests.support` layer.
+    logic out of the shared `py_lib_tooling` package.
 
 When to use:
     Import from here only through `tests.llm_router.support.vcr_extensions`
@@ -19,15 +19,14 @@ import re
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-from vcr import matchers as vcr_matchers
-
-from tests.support._vcr_shared import (
+from py_lib_tooling import (
     compare_optional_json_bodies,
     compare_optional_multipart_single_file_content,
     get_header_value,
     normalize_json_body,
     to_bytes,
 )
+from vcr import matchers as vcr_matchers
 
 _QWEN_COMPLETION_HOST = "localhost"
 _QWEN_COMPLETION_PATH = "/api/chat/completions"

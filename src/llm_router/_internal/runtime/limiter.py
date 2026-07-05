@@ -12,11 +12,11 @@ from dataclasses import dataclass
 from threading import RLock
 from time import monotonic
 
-from llm_router._api.contracts import ProviderLimits
+from py_lib_runtime import get_logger
+
 from llm_router._api.errors import ApiKeyNotFoundError
-from llm_router._api.types import KeyId, Provider
+from llm_router._api.types import KeyId, Provider, ProviderLimits
 from llm_router._internal.config import LLMRouterConfig
-from llm_router._support.logging import get_logger
 
 logger = get_logger(__name__)
 

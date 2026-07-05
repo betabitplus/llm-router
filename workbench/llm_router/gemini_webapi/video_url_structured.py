@@ -29,8 +29,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from tests.support.console import console
-from tests.support.setup import run_async
+from py_lib_tooling import console, run_async
+
 from workbench.llm_router.gemini_webapi._opera_cookie_client import managed_client
 from workbench.llm_router.gemini_webapi._structured_output import (
     VideoObservation,

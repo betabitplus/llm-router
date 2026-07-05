@@ -48,6 +48,7 @@ import json
 from urllib.parse import unquote_plus
 
 import pytest
+from py_lib_tooling import console
 from pydantic import BaseModel, Field
 
 from tests.llm_router.support.assertions import parse_json_object
@@ -65,7 +66,6 @@ from tests.llm_router.support.workers.structured_recovery import (
     StructuredRecoveryWorkerResult,
     run_structured_recovery_worker,
 )
-from tests.support.console import console
 
 pytestmark = [
     pytest.mark.e2e_behavior,

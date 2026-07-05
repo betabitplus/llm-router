@@ -35,6 +35,7 @@ Examples:
 from pathlib import Path
 
 import pytest
+from py_lib_tooling import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     LLMRouter,
@@ -53,8 +54,6 @@ from tests.llm_router.support.media.gemini_webapi import (
     can_run_demo,
     require_runtime,
 )
-from tests.support.console import console
-from tests.support.e2e_vcr_guard import require_vcr_cassette_or_record_mode
 
 pytestmark = [
     pytest.mark.e2e_behavior,

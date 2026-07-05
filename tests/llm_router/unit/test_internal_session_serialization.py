@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from llm_router import FileSchema, VideoSchema
-from llm_router._internal.errors import SessionSerializationError
+from llm_router._internal.runtime.errors import SessionSerializationError
 from llm_router._internal.session import SessionStore
 
 

@@ -1,3 +1,4 @@
+# %%
 """QwenChat workbench structured-output helpers.
 
 Why:

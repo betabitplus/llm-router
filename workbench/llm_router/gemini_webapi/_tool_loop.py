@@ -1,3 +1,4 @@
+# %%
 """Gemini WebAPI workbench tool-loop helpers.
 
 Why:

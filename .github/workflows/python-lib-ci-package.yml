@@ -1,0 +1,138 @@
+# Reusable generated-library package verification.
+
+name: Python Library CI Package
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: Python version to install.
+        required: false
+        type: string
+        default: "3.13"
+
+env:
+  PYTEST_XDIST_AUTO_NUM_WORKERS: "2"
+
+jobs:
+  package:
+    name: Package Verification
+    runs-on: ${{ github.event.repository.private == true && fromJSON(vars.CI_RUNNER_LABELS_JSON || '["ubuntu-latest"]') || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: auto
+
+      - name: Install Linux runtime libraries
+        run: |
+          missing=()
+          dpkg-query -W libgl1 >/dev/null 2>&1 || missing+=(libgl1)
+          if ! dpkg-query -W libglib2.0-0 >/dev/null 2>&1 &&
+             ! dpkg-query -W libglib2.0-0t64 >/dev/null 2>&1; then
+            missing+=(libglib2.0-0)
+          fi
+          if [ "${#missing[@]}" -gt 0 ]; then
+            sudo apt-get update
+            sudo apt-get install -y "${missing[@]}"
+          fi
+
+      - name: Prepare shared package token scope
+        id: token-scope
+        run: |
+          set -euo pipefail
+          current_repository="${GITHUB_REPOSITORY#*/}"
+          python3 - "${current_repository}" <<'PY' >> "${GITHUB_OUTPUT}"
+          import sys
+
+          seen = set()
+          repositories = []
+          for repository in (sys.argv[1], "py-lib-starter"):
+              if repository not in seen:
+                  repositories.append(repository)
+                  seen.add(repository)
+          print("repositories<<EOF")
+          print("\n".join(repositories))
+          print("EOF")
+          PY
+
+      - name: Create shared package token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ steps.token-scope.outputs.repositories }}
+          permission-contents: read
+
+      - name: Verify shared py-lib Git access
+        env:
+          SHARED_PACKAGE_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "${SHARED_PACKAGE_TOKEN}" | base64 | tr -d '\n')"
+          printf '::add-mask::%s\n' "${auth_header}"
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
+          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth_header}"
+          read_shared_repository() {
+            local repository="$1"
+            git ls-remote "https://github.com/${repository}.git" HEAD >/dev/null 2>&1
+          }
+          for repository in "${GITHUB_REPOSITORY}" "betabitplus/py-lib-starter"; do
+            for attempt in 1 2 3 4 5; do
+              if read_shared_repository "${repository}"; then
+                continue 2
+              fi
+              if [ "${attempt}" -lt 5 ]; then
+                sleep 10
+              fi
+            done
+            echo "::error::The betabitplus-py-lib-automation GitHub App cannot read ${repository}. Install or re-authorize the App for that repository before dependency installation."
+            exit 1
+          done
+
+      - name: Install dependencies (dev)
+        env:
+          SHARED_PACKAGE_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "${SHARED_PACKAGE_TOKEN}" | base64 | tr -d '\n')"
+          printf '::add-mask::%s\n' "${auth_header}"
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
+          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth_header}"
+          python_path="$(command -v python)"
+          uv sync --group dev --frozen --python "${python_path}"
+
+      - name: Run non-e2e tests
+        run: |
+          package_name="$(uv run py-lib-project-info --field primary_package)"
+          uv run pytest \
+            "tests/${package_name}/unit" \
+            "tests/${package_name}/integration" \
+            "tests/${package_name}/property_based" \
+            -n auto -p randomly -m "not slow" -q --no-cov
+
+      - name: Build package artifacts
+        run: |
+          rm -rf dist
+          uv build
+
+      - name: Run installed-artifact smoke suite
+        run: uv run py-lib-smoke-built-artifacts --python ${{ inputs.python-version }}

@@ -1,3 +1,4 @@
+# %%
 """Internal OpenAI-compatible workbench SDK helpers.
 
 Why:

@@ -32,14 +32,13 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from py_lib_tooling import configure_pytest_process, multipart_signature_prefix
 
 from tests.llm_router.support.runtime import clear_test_caches
 from tests.llm_router.support.vcr_extensions import (
     FILTER_HEADERS,
     MATCH_ON,
 )
-from tests.support._vcr_shared import multipart_signature_prefix
-from tests.support.setup import configure_pytest_process
 
 configure_pytest_process()
 
@@ -131,7 +130,7 @@ def _vcr_scrub_request(request: Any) -> Any:
     # recorded request body with a stable semantic signature so replay still
     # matches while keeping cassettes under the repository size guard.
     try:
-        from tests.support._vcr_shared import (
+        from py_lib_tooling import (
             extract_boundary,
             extract_single_part_content,
             get_header_value,

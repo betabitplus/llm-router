@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from llm_router._api.contracts import UsageStats
+from llm_router._api.types import UsageStats
 
 _INPUT_KEYS = (
     "input_tokens",

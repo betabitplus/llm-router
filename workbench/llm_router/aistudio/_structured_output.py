@@ -1,3 +1,4 @@
+# %%
 """AI Studio workbench structured-output models and prompts.
 
 Why:

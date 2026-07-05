@@ -30,8 +30,8 @@ from datetime import UTC, datetime
 from typing import Any, cast
 
 import httpx
+from py_lib_tooling import console
 
-from tests.support.console import console
 from workbench.llm_router.aistudio._sdk_helpers import api_key_env_name, openai_base_url
 
 # =============================================================================
@@ -91,9 +91,13 @@ def _build_models_table(models: list[dict[str, Any]]) -> str:
 
     def _format_row(values: tuple[str, str, str]) -> str:
         """Pad one row into the fixed-width plain-text table layout."""
-        return "| " + " | ".join(
-            value.ljust(widths[index]) for index, value in enumerate(values)
-        ) + " |"
+        return (
+            "| "
+            + " | ".join(
+                value.ljust(widths[index]) for index, value in enumerate(values)
+            )
+            + " |"
+        )
 
     lines = ["Available AI Studio Models", _line("="), _format_row(headers), _line()]
     lines.extend(_format_row(row) for row in rows)

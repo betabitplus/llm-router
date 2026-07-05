@@ -30,8 +30,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from tests.support.console import console
-from tests.support.paths import get_test_data_path
+from py_lib_tooling import console, get_test_data_path
+
 from workbench.llm_router.qwenchat._runtime import build_sync_client, qwenchat_base_url
 from workbench.llm_router.qwenchat._structured_output import (
     PDFDigest,
