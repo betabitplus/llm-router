@@ -1,4 +1,4 @@
-name: Issue 246 Export Current Branch
+name: Issue 246 Apply Stable Template Update
 
 on:
   pull_request:
@@ -13,50 +13,110 @@ permissions:
   contents: read
 
 jobs:
-  export:
+  update:
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.ref == 'issue-246-standard-onboarding'
     runs-on: ubuntu-latest
     steps:
+      - name: Create target write token
+        id: target-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: llm-router
+          permission-contents: write
+
+      - name: Create shared read token
+        id: shared-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.PY_LIB_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.PY_LIB_AUTOMATION_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            llm-router
+            py-lib-starter
+          permission-contents: read
+
       - name: Check out migration branch
         uses: actions/checkout@v6
         with:
           ref: issue-246-standard-onboarding
           fetch-depth: 0
+          token: ${{ steps.target-token.outputs.token }}
 
-      - name: Detect explicit export commit
+      - name: Detect explicit stable update commit
         id: gate
         shell: bash
         run: |
           subject="$(git log -1 --pretty=%s)"
-          if [ "$subject" = 'ci: export Issue 246 current branch' ]; then
-            echo 'export=true' >> "$GITHUB_OUTPUT"
+          if [ "$subject" = 'ci: apply Issue 246 template v0.29.3' ]; then
+            echo 'apply=true' >> "$GITHUB_OUTPUT"
           else
-            echo 'export=false' >> "$GITHUB_OUTPUT"
+            echo 'apply=false' >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Build current branch evidence
-        if: steps.gate.outputs.export == 'true'
+      - name: Set up Python
+        if: steps.gate.outputs.apply == 'true'
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Set up uv
+        if: steps.gate.outputs.apply == 'true'
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: auto
+
+      - name: Install current development environment
+        if: steps.gate.outputs.apply == 'true'
+        env:
+          SHARED_PACKAGE_TOKEN: ${{ steps.shared-token.outputs.token }}
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/issue-246-current"
-          git bundle create "$RUNNER_TEMP/issue-246-current/llm-router-current.bundle" --all
-          tar --exclude=.git -czf \
-            "$RUNNER_TEMP/issue-246-current/llm-router-current-source.tar.gz" \
-            .
-          (
-            cd "$RUNNER_TEMP/issue-246-current"
-            sha256sum llm-router-current.bundle llm-router-current-source.tar.gz > SHA256SUMS
-            sha256sum --check SHA256SUMS
-          )
+          auth_header="$(printf 'x-access-token:%s' "$SHARED_PACKAGE_TOKEN" | base64 | tr -d '\n')"
+          printf '::add-mask::%s\n' "$auth_header"
+          GIT_CONFIG_COUNT=1 \
+          GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
+          GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth_header}" \
+            uv sync --group dev --frozen --python "$(command -v python)"
 
-      - name: Upload current branch evidence
-        if: steps.gate.outputs.export == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-246-current-${{ github.run_id }}
-          path: ${{ runner.temp }}/issue-246-current
-          if-no-files-found: error
-          retention-days: 7
+      - name: Apply official Copier update to v0.29.3
+        if: steps.gate.outputs.apply == 'true'
+        env:
+          SHARED_PACKAGE_TOKEN: ${{ steps.shared-token.outputs.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "$SHARED_PACKAGE_TOKEN" | base64 | tr -d '\n')"
+          printf '::add-mask::%s\n' "$auth_header"
+          GIT_CONFIG_COUNT=1 \
+          GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
+          GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth_header}" \
+            uv run py-lib-template-update --vcs-ref v0.29.3
+
+      - name: Verify stable refs and lock
+        if: steps.gate.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Eq '^_commit: v0\.29\.3$' _copier_answers.yml
+          grep -q 'py-lib-runtime.git@v0.29.3#subdirectory=packages/py-lib-runtime' pyproject.toml
+          grep -q 'py-lib-tooling.git@v0.29.3#subdirectory=packages/py-lib-tooling' pyproject.toml
+          uv lock --check
+          git diff --check
+
+      - name: Commit and push stable template update
+        if: steps.gate.outputs.apply == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -A
+          git config user.name 'betabitplus-py-lib-automation[bot]'
+          git config user.email '297150264+betabitplus-py-lib-automation[bot]@users.noreply.github.com'
+          git commit -m 'chore: update managed shell to starter v0.29.3'
+          git push origin HEAD:issue-246-standard-onboarding
