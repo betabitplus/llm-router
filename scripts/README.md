@@ -36,6 +36,8 @@ package_names = project_config.package_names
 - `env/`
   Local contributor environment setup and health checks. `project_config.sh`
   reads `[tool.py_lib_starter]` from `pyproject.toml`.
+  Repos that declare `[tool.py_lib_starter.secrets].env_files` load encrypted
+  dotenv secrets through `scripts/env/secrets.sh`.
 
 Use shared smoke commands directly:
 

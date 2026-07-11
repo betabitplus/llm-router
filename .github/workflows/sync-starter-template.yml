@@ -104,6 +104,26 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           shared-package-token: ${{ steps.app-token.outputs.token }}
 
+      - name: Resolve template profile
+        id: profile
+        run: |
+          set -euo pipefail
+          template_profile="$(uv run py-lib-template-answer \
+            --answers-file "${COPIER_ANSWERS_FILE}" \
+            template_profile)"
+          case "${template_profile}" in
+            python-lib-standard|python-starter-platform) ;;
+            *)
+              echo "::error::Unsupported template_profile ${template_profile:-<missing>} in ${COPIER_ANSWERS_FILE}."
+              exit 1
+              ;;
+          esac
+          echo "template_profile=${template_profile}" >> "${GITHUB_OUTPUT}"
+
+      - name: Install system validation tools
+        if: steps.profile.outputs.template_profile == 'python-starter-platform'
+        run: bash .github/scripts/install-sync-validation-tools.sh
+
       - name: Configure Git as the automation App
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -126,6 +146,7 @@ jobs:
           RUNTIME_VERSION: ${{ github.event.client_payload.runtime_version }}
           TOOLING_BUMPED: ${{ github.event.client_payload.tooling_bumped }}
           TOOLING_VERSION: ${{ github.event.client_payload.tooling_version }}
+          TEMPLATE_PROFILE: ${{ steps.profile.outputs.template_profile }}
         run: |
           set -euo pipefail
 
@@ -141,24 +162,10 @@ jobs:
           echo "starter_ref=${starter_ref:-latest}" >> "$GITHUB_OUTPUT"
           echo "sync_label=${sync_label}" >> "$GITHUB_OUTPUT"
 
-          read_answers_value() {
-            local answers_file="$1"
-            local key="$2"
-
-            uv run py-lib-template-answer --answers-file "${answers_file}" "${key}"
-          }
-
-          template_profile="$(read_answers_value "${COPIER_ANSWERS_FILE}" "template_profile")"
-          case "${template_profile}" in
-            python-lib-standard|python-starter-platform) ;;
-            *)
-              echo "::error::Unsupported template_profile ${template_profile:-<missing>} in ${COPIER_ANSWERS_FILE}."
-              exit 1
-              ;;
-          esac
+          template_profile="${TEMPLATE_PROFILE}"
           echo "template_profile=${template_profile}" >> "$GITHUB_OUTPUT"
 
-          tooling_source="py-lib-tooling @ git+https://github.com/betabitplus/py-lib-starter.git@${starter_ref:-v0.31.0}#subdirectory=packages/py-lib-tooling"
+          tooling_source="py-lib-tooling @ git+https://github.com/betabitplus/py-lib-starter.git@${starter_ref:-v0.32.2}#subdirectory=packages/py-lib-tooling"
 
           run_tooling_command() {
             local command_name="$1"
@@ -173,9 +180,12 @@ jobs:
           }
 
           run_pre_commit_stage() {
+            git add -A
             if ! uv run pre-commit run --all-files "$@"; then
+              git add -A
               uv run pre-commit run --all-files "$@"
             fi
+            git add -A
           }
 
           if [ "${GITHUB_EVENT_NAME}" = "repository_dispatch" ] && [ "${ROOT_BUMPED:-false}" != "true" ]; then
@@ -194,7 +204,8 @@ jobs:
               # Bootstrap guard after pyproject.toml moves to the new starter tag.
               run_tooling_command py-lib-refresh-shared-lock
               uv lock
-              run_tooling_command py-lib-template-check                 --answers-file "${COPIER_ANSWERS_FILE}"
+              run_tooling_command py-lib-template-check \
+                --answers-file "${COPIER_ANSWERS_FILE}"
               uv lock --check
               validation_result="Template update, lock refresh, and validation completed successfully."
               ;;
@@ -276,30 +287,17 @@ jobs:
           pr_body_file="$(mktemp)"
 
           {
-            printf '%s
-
-' 'Automated profile-aware sync with py-lib-starter.'
-            printf '%s
-' '## Baseline'
-            printf -- '- Profile: `%s`
-' "${template_profile}"
-            printf -- '- Answers file: `%s`
-' "${COPIER_ANSWERS_FILE}"
-            printf -- '- Previous starter ref: `%s`
-' "${old_starter_ref:-unknown}"
-            printf -- '- New starter ref: `%s`
-' "${new_starter_ref:-${{ steps.sync.outputs.starter_ref }}}"
-            printf -- '- Runtime ref: `%s`
-' "${runtime_ref:-not declared}"
-            printf -- '- Tooling ref: `%s`
-' "${tooling_ref:-not declared}"
-            printf -- '- Release notes: %s
-
-' "${release_url}"
-            printf '%s
-' '## Validation'
-            printf -- '- %s.
-' "${validation_result}"
+            printf '%s\n\n' 'Automated profile-aware sync with py-lib-starter.'
+            printf '%s\n' '## Baseline'
+            printf -- '- Profile: `%s`\n' "${template_profile}"
+            printf -- '- Answers file: `%s`\n' "${COPIER_ANSWERS_FILE}"
+            printf -- '- Previous starter ref: `%s`\n' "${old_starter_ref:-unknown}"
+            printf -- '- New starter ref: `%s`\n' "${new_starter_ref:-${{ steps.sync.outputs.starter_ref }}}"
+            printf -- '- Runtime ref: `%s`\n' "${runtime_ref:-not declared}"
+            printf -- '- Tooling ref: `%s`\n' "${tooling_ref:-not declared}"
+            printf -- '- Release notes: %s\n\n' "${release_url}"
+            printf '%s\n' '## Validation'
+            printf -- '- %s.\n' "${validation_result}"
           } > "${pr_body_file}"
 
           open_pull_request="${OPEN_PULL_REQUEST_INPUT:-true}"
