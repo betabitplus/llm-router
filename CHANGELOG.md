@@ -1,3 +1,9 @@
+## v0.9.0 (2026-07-12)
+
+### Feat
+
+- **env**: configure shared LLM secrets (#6)
+
 ## v0.8.1 (2026-07-04)
 
 ### Fix
