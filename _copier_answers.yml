@@ -1,4 +1,4 @@
-_commit: v0.32.3
+_commit: v0.32.4
 _src_path: https://github.com/betabitplus/py-lib-starter.git
 author_email: 8123085+betabitplus@users.noreply.github.com
 author_name: betabitplus
@@ -39,11 +39,11 @@ project_title: LLM Router
 project_title_lower: llm router
 renovate_uv_ignored_updates: []
 repository_name: llm-router
-runtime_git_ref: v0.32.3
+runtime_git_ref: v0.32.4
 runtime_git_subdirectory: packages/py-lib-runtime
 runtime_git_url: https://github.com/betabitplus/py-lib-starter.git
 template_profile: python-lib-standard
-tooling_git_ref: v0.32.3
+tooling_git_ref: v0.32.4
 tooling_git_subdirectory: packages/py-lib-tooling
 tooling_git_url: https://github.com/betabitplus/py-lib-starter.git
 workspace_python_paths:
