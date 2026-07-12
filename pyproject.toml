@@ -32,7 +32,7 @@ dependencies = [
   "httpx",
   "openai",
   "pillow>=12.2",
-  "py-lib-runtime @ git+https://github.com/betabitplus/py-lib-starter.git@v0.29.4#subdirectory=packages/py-lib-runtime",
+  "py-lib-runtime @ git+https://github.com/betabitplus/py-lib-starter.git@v0.32.2#subdirectory=packages/py-lib-runtime",
   "pydantic",
   "tenacity>=9.1.4",
 ]
@@ -69,7 +69,7 @@ dev = [
   "pip-audit>=2.10.1",
   "pre-commit>=4.6.0",
   # Shared repo tooling and test support
-  "py-lib-tooling @ git+https://github.com/betabitplus/py-lib-starter.git@v0.29.4#subdirectory=packages/py-lib-tooling",
+  "py-lib-tooling @ git+https://github.com/betabitplus/py-lib-starter.git@v0.32.2#subdirectory=packages/py-lib-tooling",
   "pygments>=2.20.0",
   "pymupdf",
   "pyright>=1.1.410",
