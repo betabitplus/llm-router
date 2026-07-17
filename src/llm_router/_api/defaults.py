@@ -149,7 +149,6 @@ DEFAULT_MODEL_REGISTRY: dict[Model, dict[Provider, str]] = {
         Provider.QWENCHAT: "qwen2.5-vl-32b-instruct",
     },
     Model.MISTRAL_LARGE: {Provider.MISTRAL: "mistral-large-latest"},
-    Model.PIXTRAL_LARGE: {Provider.MISTRAL: "pixtral-large-latest"},
     Model.LLAMA_MAVERICK: {
         Provider.NVIDIA: "meta/llama-4-maverick-17b-128e-instruct",
     },

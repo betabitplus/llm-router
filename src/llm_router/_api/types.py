@@ -128,7 +128,6 @@ class Model(StrEnum):
 
     # Mistral models
     MISTRAL_LARGE = "mistral-large-latest"
-    PIXTRAL_LARGE = "pixtral-large-latest"
 
     # NVIDIA models
     LLAMA_MAVERICK = "llama-4-maverick"
