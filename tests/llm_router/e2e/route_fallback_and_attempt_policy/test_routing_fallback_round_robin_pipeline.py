@@ -80,8 +80,8 @@ def build_router() -> LLMRouter:
     """Build the router under test."""
     return LLMRouter(
         [
-            RouterProfile(provider="not-a-provider", model=Model.LLAMA_MAVERICK),
-            RouterProfile(provider=Provider.NVIDIA, model=Model.LLAMA_MAVERICK),
+            RouterProfile(provider="not-a-provider", model=Model.DEEPSEEK_V4_FLASH),
+            RouterProfile(provider=Provider.NVIDIA, model=Model.DEEPSEEK_V4_FLASH),
         ],
         limits_by_provider={
             Provider.NVIDIA: ProviderLimits(
@@ -128,7 +128,7 @@ def assert_pipeline_responses(
     # NVIDIA route after the invalid route fails.
     assert first_response.output_text.strip() == "OK"
     assert first_response.provider == Provider.NVIDIA.value
-    assert first_response.model == Model.LLAMA_MAVERICK.value
+    assert first_response.model == Model.DEEPSEEK_V4_FLASH.value
 
     # The first routing trace must explicitly show the failed invalid provider
     # followed by the successful real provider.
@@ -142,7 +142,7 @@ def assert_pipeline_responses(
     # round-robin starting point after the previous successful fallback.
     assert second_response.output_text.strip() == "12345"
     assert second_response.provider == Provider.NVIDIA.value
-    assert second_response.model == Model.LLAMA_MAVERICK.value
+    assert second_response.model == Model.DEEPSEEK_V4_FLASH.value
     assert len(second_response.routing_trace) == 1
     assert second_response.routing_trace[0].route_index == 1
 

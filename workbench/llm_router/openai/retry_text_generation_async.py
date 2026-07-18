@@ -58,7 +58,7 @@ from workbench.llm_router.openai._sdk_helpers import (
 # retry policy around the plain async text path rather than model differences.
 _BASE_URL = "https://integrate.api.nvidia.com/v1"
 _API_KEY_ENV = provider_api_key_env("NVIDIA")
-_MODEL = "meta/llama-4-maverick-17b-128e-instruct"
+_MODEL = "deepseek-ai/deepseek-v4-flash"
 _PROMPT = "Reply with only OK."
 _TEMPERATURE = 0.0
 _SEED = 42

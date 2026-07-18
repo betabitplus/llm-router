@@ -4,7 +4,7 @@ interactions:
       with only what is asked."},{"role":"user","content":"You have tools add(a, b)
       and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and b=2,
       then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
-      ONLY valid JSON. No markdown."}],"model":"meta/llama-4-maverick-17b-128e-instruct","response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
+      ONLY valid JSON. No markdown."}],"model":"deepseek-ai/deepseek-v4-flash","response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
       result for the forced-tool-choice scenario.","properties":{"tool_name":{"title":"Tool
       Name","type":"string"},"final_result":{"title":"Final Result","type":"integer"},"explanation":{"title":"Explanation","type":"string"}},"required":["tool_name","final_result","explanation"],"title":"ToolResult","type":"object"},"strict":true}},"seed":42,"temperature":0.0,"tool_choice":{"type":"function","function":{"name":"add"}},"tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
       a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
@@ -46,7 +46,7 @@ interactions:
     uri: https://integrate.api.nvidia.com/v1/chat/completions
   response:
     body:
-      string: '{"id":"chatcmpl-bd1938a9b32822c6","object":"chat.completion","created":1773581688,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[{"id":"chatcmpl-tool-89cb57fe281506f2","type":"function","function":{"name":"add","arguments":"{\"a\":
+      string: '{"id":"chatcmpl-bd1938a9b32822c6","object":"chat.completion","created":1773581688,"model":"deepseek-ai/deepseek-v4-flash","choices":[{"index":0,"message":{"role":"assistant","content":"","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[{"id":"chatcmpl-tool-89cb57fe281506f2","type":"function","function":{"name":"add","arguments":"{\"a\":
         40, \"b\": 2}"}}],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":384,"total_tokens":397,"completion_tokens":13,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
     headers:
       Access-Control-Expose-Headers:
@@ -76,7 +76,7 @@ interactions:
       and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and b=2,
       then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
       ONLY valid JSON. No markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"chatcmpl-tool-89cb57fe281506f2","type":"function","function":{"name":"add","arguments":"{\"a\":
-      40, \"b\": 2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"chatcmpl-tool-89cb57fe281506f2"}],"model":"meta/llama-4-maverick-17b-128e-instruct","response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
+      40, \"b\": 2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"chatcmpl-tool-89cb57fe281506f2"}],"model":"deepseek-ai/deepseek-v4-flash","response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
       result for the forced-tool-choice scenario.","properties":{"tool_name":{"title":"Tool
       Name","type":"string"},"final_result":{"title":"Final Result","type":"integer"},"explanation":{"title":"Explanation","type":"string"}},"required":["tool_name","final_result","explanation"],"title":"ToolResult","type":"object"},"strict":true}},"seed":42,"temperature":0.0,"tool_choice":"auto","tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
       a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
@@ -118,7 +118,7 @@ interactions:
     uri: https://integrate.api.nvidia.com/v1/chat/completions
   response:
     body:
-      string: '{"id":"chatcmpl-839831d871f7831c","object":"chat.completion","created":1773581688,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"{\"tool_name\":
+      string: '{"id":"chatcmpl-839831d871f7831c","object":"chat.completion","created":1773581688,"model":"deepseek-ai/deepseek-v4-flash","choices":[{"index":0,"message":{"role":"assistant","content":"{\"tool_name\":
         \"add\", \"final_result\": 42, \"explanation\": \"Used the add function with
         a=40 and b=2\"}","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":433,"total_tokens":466,"completion_tokens":33,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
     headers:
@@ -138,6 +138,110 @@ interactions:
       - fulfilled
       Server:
       - uvicorn
+      Vary:
+      - Origin
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"model":"meta/llama-3.1-8b-instruct","messages":[{"role":"user","content":"Follow
+      instructions exactly. Reply with only what is asked."},{"role":"user","content":"You
+      have tools add(a, b) and multiply(a, b), each returning {result}.\nUse ONLY
+      add with a=40 and b=2, then return JSON with:\n- tool_name\n- final_result\n-
+      explanation\n\nReturn ONLY valid JSON. No markdown."}],"temperature":0.0,"seed":42,"response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
+      result for the forced-tool-choice scenario.","properties":{"tool_name":{"title":"Tool
+      Name","type":"string"},"final_result":{"title":"Final Result","type":"integer"},"explanation":{"title":"Explanation","type":"string"}},"required":["tool_name","final_result","explanation"],"title":"ToolResult","type":"object"},"strict":true}},"tools":[{"type":"function","function":{"name":"add","description":"Return
+      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
+      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":{"type":"function","function":{"name":"add"}}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1399'
+      Content-Type:
+      - application/json
+      Host:
+      - integrate.api.nvidia.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://integrate.api.nvidia.com/v1/chat/completions
+  response:
+    body:
+      string: '{"id":"chatcmpl-13768f6b-cdf1-452a-b8f6-0659b6875892","choices":[{"index":0,"message":{"tool_calls":[{"id":"call-08e71b60-38e3-4552-a769-62e8925400de","type":"function","function":{"name":"add","arguments":"{\"a\":
+        40, \"b\": 2}"}}],"role":"assistant","reasoning_content":null},"finish_reason":"tool_calls"}],"created":1784388469,"model":"meta/llama-3.1-8b-instruct","object":"chat.completion","usage":{"prompt_tokens":464,"completion_tokens":13,"total_tokens":477},"nvext":{"worker_id":{"prefill_worker_id":7587896227968170255,"prefill_dp_rank":0,"decode_worker_id":7587896227968170255,"decode_dp_rank":0},"timing":{"request_received_ms":1784388469882,"prefill_wait_time_ms":1.531137,"prefill_time_ms":37.16312,"ttft_ms":38.694257,"total_time_ms":120.905884,"kv_hit_rate":0.3103448275862069,"router_queue_depth":0}}}'
+    headers:
+      Access-Control-Expose-Headers:
+      - nvcf-reqid
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '817'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 18 Jul 2026 15:27:50 GMT
+      Nvcf-Reqid:
+      - 2339d2e4-852e-4c5c-9160-a4b6ad84fb6c
+      Nvcf-Status:
+      - fulfilled
+      Vary:
+      - Origin
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"model":"meta/llama-3.1-8b-instruct","messages":[{"role":"user","content":"Follow
+      instructions exactly. Reply with only what is asked."},{"role":"user","content":"You
+      have tools add(a, b) and multiply(a, b), each returning {result}.\nUse ONLY
+      add with a=40 and b=2, then return JSON with:\n- tool_name\n- final_result\n-
+      explanation\n\nReturn ONLY valid JSON. No markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"call-08e71b60-38e3-4552-a769-62e8925400de","type":"function","function":{"name":"add","arguments":"{\"a\":
+      40, \"b\": 2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call-08e71b60-38e3-4552-a769-62e8925400de"}],"temperature":0.0,"seed":42,"response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
+      result for the forced-tool-choice scenario.","properties":{"tool_name":{"title":"Tool
+      Name","type":"string"},"final_result":{"title":"Final Result","type":"integer"},"explanation":{"title":"Explanation","type":"string"}},"required":["tool_name","final_result","explanation"],"title":"ToolResult","type":"object"},"strict":true}},"tools":[{"type":"function","function":{"name":"add","description":"Return
+      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
+      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":"auto"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1643'
+      Content-Type:
+      - application/json
+      Host:
+      - integrate.api.nvidia.com
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://integrate.api.nvidia.com/v1/chat/completions
+  response:
+    body:
+      string: '{"id":"chatcmpl-6ae53370-ed82-4ce6-a2ca-5ac1ec5bcc4f","choices":[{"index":0,"message":{"content":"{\"tool_name\":
+        \"add\", \"final_result\": 42, \"explanation\": \"The result of adding 40
+        and 2 is 42.\"}","role":"assistant","reasoning_content":null},"finish_reason":"stop"}],"created":1784388470,"model":"meta/llama-3.1-8b-instruct","object":"chat.completion","usage":{"prompt_tokens":502,"completion_tokens":34,"total_tokens":536},"nvext":{"worker_id":{"prefill_worker_id":7587896227968170255,"prefill_dp_rank":0,"decode_worker_id":7587896227968170255,"decode_dp_rank":0},"timing":{"request_received_ms":1784388470486,"prefill_wait_time_ms":1.404131,"prefill_time_ms":49.221866000000006,"ttft_ms":50.625997,"total_time_ms":278.922848,"kv_hit_rate":0.90625,"router_queue_depth":0}}}'
+    headers:
+      Access-Control-Expose-Headers:
+      - nvcf-reqid
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '782'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 18 Jul 2026 15:27:50 GMT
+      Nvcf-Reqid:
+      - 5b37a531-6fdc-470a-9bdc-e65c033cbd3c
+      Nvcf-Status:
+      - fulfilled
       Vary:
       - Origin
     status:

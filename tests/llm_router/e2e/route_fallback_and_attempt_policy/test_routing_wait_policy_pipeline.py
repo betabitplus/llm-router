@@ -104,7 +104,7 @@ def build_router(
     return LLMRouter(
         RouterProfile(
             provider=Provider.NVIDIA,
-            model=Model.LLAMA_MAVERICK,
+            model=Model.DEEPSEEK_V4_FLASH,
             key_id=1,
         ),
         wait_for_cooldown_if_all_blocked=wait_for_cooldown_if_all_blocked,

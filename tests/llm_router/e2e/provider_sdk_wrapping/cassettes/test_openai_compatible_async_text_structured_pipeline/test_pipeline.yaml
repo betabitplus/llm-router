@@ -7,7 +7,7 @@ interactions:
       AI Corp alleges that John Doe, a former employee, stole proprietary\nalgorithms
       and shared them with Hackers United Ltd. The plaintiff claims\nbreach of contract
       and trade secret misappropriation.\nThey are seeking $10 million in damages
-      and a permanent injunction\npreventing further use of the algorithms."}],"model":"meta/llama-4-maverick-17b-128e-instruct","response_format":{"type":"json_schema","json_schema":{"name":"LegalCase","schema":{"$defs":{"Party":{"description":"Structured
+      and a permanent injunction\npreventing further use of the algorithms."}],"model":"deepseek-ai/deepseek-v4-flash","response_format":{"type":"json_schema","json_schema":{"name":"LegalCase","schema":{"$defs":{"Party":{"description":"Structured
       party entry.","properties":{"name":{"title":"Name","type":"string"},"type":{"$ref":"#/$defs/PartyType"},"role":{"title":"Role","type":"string"}},"required":["name","type","role"],"title":"Party","type":"object"},"PartyType":{"description":"Party
       type labels used in the structured legal-case schema.","enum":["individual","corporation","government"],"title":"PartyType","type":"string"}},"description":"Structured
       legal-case output used by OpenAI-compatible text tests.","properties":{"case_name":{"title":"Case
@@ -50,7 +50,7 @@ interactions:
     uri: https://integrate.api.nvidia.com/v1/chat/completions
   response:
     body:
-      string: '{"id":"chatcmpl-b642825f5c7c5b75","object":"chat.completion","created":1773771577,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"{
+      string: '{"id":"chatcmpl-b642825f5c7c5b75","object":"chat.completion","created":1773771577,"model":"deepseek-ai/deepseek-v4-flash","choices":[{"index":0,"message":{"role":"assistant","content":"{
         \n\"case_name\": \"Global AI Corp v. John Doe and Hackers United Ltd.\",\n\"court\":
         \"High Court of Techville\",\n\"plaintiffs\": [\n{\n\"name\": \"Global AI
         Corp\",\n\"type\": \"corporation\",\n\"role\": \"Plaintiff\"\n}\n],\n\"defendants\":

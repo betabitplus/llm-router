@@ -165,7 +165,8 @@ def _parse_pydantic_model(model: type[BaseModel], value: object) -> BaseModel:
     if isinstance(value, model):
         return value
     if isinstance(value, str):
-        return model.model_validate_json(value)
+        payload = _extract_json_payload(value)
+        return model.model_validate_json(payload)
     return model.model_validate(value)
 
 
@@ -179,7 +180,7 @@ def _parse_mapping_schema(schema: Mapping[str, Any], value: object) -> dict[str,
 def _parse_json_object(value: object) -> dict[str, Any]:
     """Parse a structured-output candidate into a JSON object mapping."""
     if isinstance(value, str):
-        value = _strip_json_fence(value)
+        value = _extract_json_payload(value)
         try:
             decoded = json.loads(value)
         except json.JSONDecodeError as exc:
@@ -255,6 +256,22 @@ def _validate_json_type(
 
     msg = f"Field '{field_name}' does not match expected type {expected!r}."
     raise ValueError(msg)
+
+
+def _extract_json_payload(value: str) -> str:
+    """Extract JSON object or array text, trimming markdown fences and prefix/suffix chatter."""
+    stripped = _strip_json_fence(value).strip()
+    first_obj = stripped.find("{")
+    last_obj = stripped.rfind("}")
+    if first_obj != -1 and last_obj != -1 and last_obj > first_obj:
+        return stripped[first_obj : last_obj + 1]
+
+    first_arr = stripped.find("[")
+    last_arr = stripped.rfind("]")
+    if first_arr != -1 and last_arr != -1 and last_arr > first_arr:
+        return stripped[first_arr : last_arr + 1]
+
+    return stripped
 
 
 def _strip_json_fence(value: str) -> str:

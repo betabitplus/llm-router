@@ -177,12 +177,12 @@ def test_unknown_model_string_fails_as_configuration_error() -> None:
 def test_model_removed_from_config_fails_even_with_unknown_provider() -> None:
     config = build_default_config()
     models = dict(config.models)
-    models.pop(Model.LLAMA_MAVERICK)
+    models.pop(Model.DEEPSEEK_V4_FLASH)
     custom_config = replace(config, catalog=replace(config.catalog, models=models))
 
     with pytest.raises(ConfigurationError, match="Unknown model"):
         expand_route_plan(
-            RouterProfile(model=Model.LLAMA_MAVERICK, provider="not-a-provider"),
+            RouterProfile(model=Model.DEEPSEEK_V4_FLASH, provider="not-a-provider"),
             config=custom_config,
         )
 
@@ -205,7 +205,7 @@ def test_unknown_provider_string_remains_a_fallback_candidate() -> None:
 
     plan = expand_route_plan(
         RouterProfile(
-            model=Model.LLAMA_MAVERICK,
+            model=Model.DEEPSEEK_V4_FLASH,
             provider="not-a-provider",
         ),
         config=config,
@@ -213,4 +213,4 @@ def test_unknown_provider_string_remains_a_fallback_candidate() -> None:
 
     assert len(plan.routes) == 1
     assert plan.routes[0].provider == "not-a-provider"
-    assert plan.routes[0].provider_model == Model.LLAMA_MAVERICK.value
+    assert plan.routes[0].provider_model == Model.DEEPSEEK_V4_FLASH.value

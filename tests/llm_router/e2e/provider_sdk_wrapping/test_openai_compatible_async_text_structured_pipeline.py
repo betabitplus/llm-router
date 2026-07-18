@@ -81,7 +81,7 @@ def build_prompt() -> str:
 def build_router() -> LLMRouter:
     """Build the router under test."""
     return LLMRouter(
-        RouterProfile(model=Model.LLAMA_MAVERICK, provider=Provider.NVIDIA)
+        RouterProfile(model=Model.DEEPSEEK_V4_FLASH, provider=Provider.NVIDIA)
     )
 
 

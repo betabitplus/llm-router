@@ -54,7 +54,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 # OpenAI-compatible image-plus-schema request shape.
 _BASE_URL = "https://integrate.api.nvidia.com/v1"
 _API_KEY_ENV = provider_api_key_env("NVIDIA")
-_MODEL = "meta/llama-4-maverick-17b-128e-instruct"
+_MODEL = "deepseek-ai/deepseek-v4-flash"
 _IMAGE_PATH = _REPO_ROOT / "tests/llm_router/data/test_image.png"
 # The shared traffic image makes it easy to tell whether the response stayed
 # grounded in the uploaded content.

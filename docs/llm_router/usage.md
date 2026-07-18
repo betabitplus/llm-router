@@ -252,8 +252,8 @@ The caller wants one public entry point with multiple routes behind it.
 ```python
 router = LLMRouter(
     [
-        RouterProfile(provider="not-a-provider", model=Model.LLAMA_MAVERICK),
-        RouterProfile(provider=Provider.NVIDIA, model=Model.LLAMA_MAVERICK),
+        RouterProfile(provider="not-a-provider", model=Model.DEEPSEEK_V4_FLASH),
+        RouterProfile(provider=Provider.NVIDIA, model=Model.DEEPSEEK_V4_FLASH),
     ]
 )
 first = router.query(["Follow instructions exactly.", "Reply only with OK."])
@@ -269,7 +269,7 @@ The caller wants one route to draw from multiple real keys.
 router = LLMRouter(
     RouterProfile(
         provider=Provider.NVIDIA,
-        model=Model.LLAMA_MAVERICK,
+        model=Model.DEEPSEEK_V4_FLASH,
         key_id="auto",
     ),
     limits_by_provider={
