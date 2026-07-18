@@ -259,7 +259,7 @@ def _validate_json_type(
 
 
 def _extract_json_payload(value: str) -> str:
-    """Extract JSON object or array text, trimming markdown fences and prefix/suffix chatter."""
+    """Extract JSON object or array text, trimming fences and chatter."""
     stripped = _strip_json_fence(value).strip()
     first_obj = stripped.find("{")
     last_obj = stripped.rfind("}")

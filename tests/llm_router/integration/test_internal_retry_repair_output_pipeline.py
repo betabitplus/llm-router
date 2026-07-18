@@ -191,7 +191,13 @@ def test_route_fallback_remains_separate_from_same_provider_retry(
     monkeypatch.setenv("NVIDIA_API_KEY_1", "nvidia-key")
     first = ScriptedAdapter([_permanent_error(Provider.GROQ, Model.LLAMA_SCOUT)])
     second = ScriptedAdapter(
-        [_result("fallback-ok", provider=Provider.NVIDIA, model=Model.DEEPSEEK_V4_FLASH)]
+        [
+            _result(
+                "fallback-ok",
+                provider=Provider.NVIDIA,
+                model=Model.DEEPSEEK_V4_FLASH,
+            )
+        ]
     )
 
     def adapter_getter(provider: Provider, _config: object) -> ScriptedAdapter:
