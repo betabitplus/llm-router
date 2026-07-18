@@ -1,3 +1,9 @@
+## v0.9.1 (2026-07-18)
+
+### Refactor
+
+- **models**: replace llama-maverick with deepseek-v4-flash and llama-8b (#7)
+
 ## v0.9.0 (2026-07-12)
 
 ### Feat
