@@ -247,7 +247,7 @@ def test_route_fallback_skip_and_wait_events_are_emitted(
     RouterRuntime(
         spec=[
             RouterProfile(provider=Provider.GROQ, model=Model.LLAMA_SCOUT),
-            RouterProfile(provider=Provider.NVIDIA, model=Model.LLAMA_MAVERICK),
+            RouterProfile(provider=Provider.NVIDIA, model=Model.DEEPSEEK_V4_FLASH),
         ],
         _executor=ScriptedRouteExecutor([RuntimeError("first failed")]),
         round_robin_start=False,
@@ -258,12 +258,12 @@ def test_route_fallback_skip_and_wait_events_are_emitted(
         spec=[
             RouterProfile(
                 provider=Provider.NVIDIA,
-                model=Model.LLAMA_MAVERICK,
+                model=Model.DEEPSEEK_V4_FLASH,
                 key_id=1,
             ),
             RouterProfile(
                 provider=Provider.NVIDIA,
-                model=Model.LLAMA_MAVERICK,
+                model=Model.DEEPSEEK_V4_FLASH,
                 key_id=2,
             ),
         ],
@@ -285,7 +285,7 @@ def test_route_fallback_skip_and_wait_events_are_emitted(
     waiting = RouterRuntime(
         spec=RouterProfile(
             provider=Provider.NVIDIA,
-            model=Model.LLAMA_MAVERICK,
+            model=Model.DEEPSEEK_V4_FLASH,
             key_id=1,
         ),
         _executor=ScriptedRouteExecutor(),

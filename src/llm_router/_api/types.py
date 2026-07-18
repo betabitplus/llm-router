@@ -128,10 +128,10 @@ class Model(StrEnum):
 
     # Mistral models
     MISTRAL_LARGE = "mistral-large-latest"
-    PIXTRAL_LARGE = "pixtral-large-latest"
 
     # NVIDIA models
-    LLAMA_MAVERICK = "llama-4-maverick"
+    DEEPSEEK_V4_FLASH = "deepseek-v4-flash"
+    LLAMA_8B = "llama-3.1-8b-instruct"
 
     # Groq models
     LLAMA_SCOUT = "llama-4-scout"

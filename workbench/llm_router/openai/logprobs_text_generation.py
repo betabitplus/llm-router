@@ -55,7 +55,7 @@ if TYPE_CHECKING:
 # path where we currently care about verifying token logprobs support.
 _BASE_URL = "https://integrate.api.nvidia.com/v1"
 _API_KEY_ENV = provider_api_key_env("NVIDIA")
-_MODEL = "meta/llama-4-maverick-17b-128e-instruct"
+_MODEL = "deepseek-ai/deepseek-v4-flash"
 _PROMPT = "What is the meaning of life? Explain in one sentence."
 _MAX_TOKENS = 50
 _TOP_LOGPROBS = 5
@@ -230,7 +230,7 @@ if __name__ == "__main__":
 EXPECTED_OUTPUT = """
 Real run on 2026-04-04:
 {
-  "model": "meta/llama-4-maverick-17b-128e-instruct",
+  "model": "deepseek-ai/deepseek-v4-flash",
   "text": "The meaning of life is a subjective and personal interpretation...",
   "token_count": 47,
   "top_logprobs": 5,

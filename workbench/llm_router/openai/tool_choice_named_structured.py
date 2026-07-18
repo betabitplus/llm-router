@@ -49,7 +49,7 @@ from workbench.llm_router.openai._tool_loop import (
 # live path here for forced named-tool choice plus final structured output.
 _BASE_URL = "https://integrate.api.nvidia.com/v1"
 _API_KEY_ENV = provider_api_key_env("NVIDIA")
-_MODEL = "meta/llama-4-maverick-17b-128e-instruct"
+_MODEL = "deepseek-ai/deepseek-v4-flash"
 # Keep the prompt narrow so the first tool choice is the main thing a manual
 # reader needs to confirm.
 _PROMPT = (

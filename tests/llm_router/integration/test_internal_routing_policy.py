@@ -65,8 +65,8 @@ def test_sync_fallback_records_invalid_provider_then_success(
     executor = ScriptedExecutor()
     runtime = RouterRuntime(
         spec=[
-            RouterProfile(provider="not-a-provider", model=Model.LLAMA_MAVERICK),
-            RouterProfile(provider=Provider.NVIDIA, model=Model.LLAMA_MAVERICK),
+            RouterProfile(provider="not-a-provider", model=Model.DEEPSEEK_V4_FLASH),
+            RouterProfile(provider=Provider.NVIDIA, model=Model.DEEPSEEK_V4_FLASH),
         ],
         _executor=executor,
         shuffle_fallbacks=False,
@@ -93,7 +93,7 @@ async def test_async_fallback_records_failed_attempt_then_success(
     runtime = RouterRuntime(
         spec=[
             RouterProfile(provider=Provider.GROQ, model=Model.LLAMA_SCOUT),
-            RouterProfile(provider=Provider.NVIDIA, model=Model.LLAMA_MAVERICK),
+            RouterProfile(provider=Provider.NVIDIA, model=Model.DEEPSEEK_V4_FLASH),
         ],
         _executor=executor,
         shuffle_fallbacks=False,
@@ -116,7 +116,7 @@ def test_sync_attempt_timeout_falls_back_without_waiting_for_slow_thread(
     runtime = RouterRuntime(
         spec=[
             RouterProfile(provider=Provider.GROQ, model=Model.LLAMA_SCOUT),
-            RouterProfile(provider=Provider.NVIDIA, model=Model.LLAMA_MAVERICK),
+            RouterProfile(provider=Provider.NVIDIA, model=Model.DEEPSEEK_V4_FLASH),
         ],
         _executor=executor,
         attempt_timeout_seconds=0.02,
@@ -144,12 +144,12 @@ def test_blocked_route_is_skipped_when_later_route_is_available(
         spec=[
             RouterProfile(
                 provider=Provider.NVIDIA,
-                model=Model.LLAMA_MAVERICK,
+                model=Model.DEEPSEEK_V4_FLASH,
                 key_id=1,
             ),
             RouterProfile(
                 provider=Provider.NVIDIA,
-                model=Model.LLAMA_MAVERICK,
+                model=Model.DEEPSEEK_V4_FLASH,
                 key_id=2,
             ),
         ],
@@ -183,7 +183,7 @@ def test_all_blocked_routes_fail_fast_when_waiting_is_disabled(
     runtime = RouterRuntime(
         spec=RouterProfile(
             provider=Provider.NVIDIA,
-            model=Model.LLAMA_MAVERICK,
+            model=Model.DEEPSEEK_V4_FLASH,
             key_id=1,
         ),
         _executor=executor,
@@ -215,7 +215,7 @@ def test_all_blocked_routes_wait_then_execute_when_waiting_is_enabled(
     runtime = RouterRuntime(
         spec=RouterProfile(
             provider=Provider.NVIDIA,
-            model=Model.LLAMA_MAVERICK,
+            model=Model.DEEPSEEK_V4_FLASH,
             key_id=1,
         ),
         _executor=executor,
@@ -251,7 +251,7 @@ async def test_async_all_blocked_route_waits_then_executes(
     runtime = RouterRuntime(
         spec=RouterProfile(
             provider=Provider.NVIDIA,
-            model=Model.LLAMA_MAVERICK,
+            model=Model.DEEPSEEK_V4_FLASH,
             key_id=1,
         ),
         _executor=executor,

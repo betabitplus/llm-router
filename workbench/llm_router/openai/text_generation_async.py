@@ -47,7 +47,7 @@ from workbench.llm_router.openai._sdk_helpers import (
 # path this probe is meant to verify.
 _BASE_URL = "https://integrate.api.nvidia.com/v1"
 _API_KEY_ENV = provider_api_key_env("NVIDIA")
-_MODEL = "meta/llama-4-maverick-17b-128e-instruct"
+_MODEL = "deepseek-ai/deepseek-v4-flash"
 _PROMPT = "Reply with only OK."
 _TEMPERATURE = 0.0
 _SEED = 42
@@ -130,7 +130,7 @@ if __name__ == "__main__":
 EXPECTED_OUTPUT = """
 Real run on 2026-04-03:
 {
-  "model": "meta/llama-4-maverick-17b-128e-instruct",
+  "model": "deepseek-ai/deepseek-v4-flash",
   "text": "OK",
   "usage": {
     "input_tokens": 15,

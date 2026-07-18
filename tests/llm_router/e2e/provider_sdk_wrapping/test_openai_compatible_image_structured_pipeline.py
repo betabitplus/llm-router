@@ -95,7 +95,7 @@ def build_prompt() -> str:
 def build_router() -> LLMRouter:
     """Build the router under test."""
     return LLMRouter(
-        RouterProfile(model=Model.PIXTRAL_LARGE, provider=Provider.MISTRAL),
+        RouterProfile(model=Model.MISTRAL_LARGE, provider=Provider.MISTRAL),
         temperature=0.0,
     )
 

@@ -104,7 +104,7 @@ def build_router() -> LLMRouter:
     return LLMRouter(
         RouterProfile(
             provider=Provider.NVIDIA,
-            model=Model.LLAMA_MAVERICK,
+            model=Model.DEEPSEEK_V4_FLASH,
             key_id="auto",
         ),
         limits_by_provider={

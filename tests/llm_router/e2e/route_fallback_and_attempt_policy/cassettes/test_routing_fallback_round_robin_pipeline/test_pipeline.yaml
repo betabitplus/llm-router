@@ -1,7 +1,7 @@
 interactions:
 - request:
     body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"Reply ONLY with OK."}],"model":"meta/llama-4-maverick-17b-128e-instruct","seed":42,"temperature":0.0}'
+      with only what is asked."},{"role":"user","content":"Reply ONLY with OK."}],"model":"deepseek-ai/deepseek-v4-flash","seed":42,"temperature":0.0}'
     headers:
       Accept:
       - application/json
@@ -39,7 +39,7 @@ interactions:
     uri: https://integrate.api.nvidia.com/v1/chat/completions
   response:
     body:
-      string: '{"id":"chatcmpl-ab0b9e900f10c076","object":"chat.completion","created":1773581757,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"OK","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":31,"total_tokens":33,"completion_tokens":2,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
+      string: '{"id":"chatcmpl-ab0b9e900f10c076","object":"chat.completion","created":1773581757,"model":"deepseek-ai/deepseek-v4-flash","choices":[{"index":0,"message":{"role":"assistant","content":"OK","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":31,"total_tokens":33,"completion_tokens":2,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
     headers:
       Access-Control-Expose-Headers:
       - nvcf-reqid
@@ -64,7 +64,7 @@ interactions:
       message: OK
 - request:
     body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"Reply ONLY with 12345."}],"model":"meta/llama-4-maverick-17b-128e-instruct","seed":42,"temperature":0.0}'
+      with only what is asked."},{"role":"user","content":"Reply ONLY with 12345."}],"model":"deepseek-ai/deepseek-v4-flash","seed":42,"temperature":0.0}'
     headers:
       Accept:
       - application/json
@@ -102,7 +102,7 @@ interactions:
     uri: https://integrate.api.nvidia.com/v1/chat/completions
   response:
     body:
-      string: '{"id":"chatcmpl-95706b059d7f5a92","object":"chat.completion","created":1773581757,"model":"meta/llama-4-maverick-17b-128e-instruct","choices":[{"index":0,"message":{"role":"assistant","content":"12345","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":33,"total_tokens":36,"completion_tokens":3,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
+      string: '{"id":"chatcmpl-95706b059d7f5a92","object":"chat.completion","created":1773581757,"model":"deepseek-ai/deepseek-v4-flash","choices":[{"index":0,"message":{"role":"assistant","content":"12345","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null,"reasoning_content":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":33,"total_tokens":36,"completion_tokens":3,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}'
     headers:
       Access-Control-Expose-Headers:
       - nvcf-reqid
