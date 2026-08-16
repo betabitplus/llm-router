@@ -34,7 +34,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from py_lib_tooling import console, run_async
+from py_lib_testkit import console, run_async
 
 from workbench.llm_router.qwenchat._runtime import build_async_client, qwenchat_base_url
 from workbench.llm_router.qwenchat._structured_output import (

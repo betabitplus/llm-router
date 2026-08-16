@@ -2,6 +2,7 @@
 include pyproject.toml
 include .editorconfig
 include .envrc
+include .flake8
 include *.md
 include *.json5
 include LICENSE

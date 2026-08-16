@@ -14,7 +14,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from py_lib_tooling import configure_direct_module_process
+from py_lib_testkit import configure_direct_module_process
 
 _PACKAGE_ROOT = Path(__file__).resolve().parent
 

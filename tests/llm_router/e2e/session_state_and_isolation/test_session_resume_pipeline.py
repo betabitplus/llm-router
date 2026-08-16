@@ -35,7 +35,7 @@ Examples:
 from pathlib import Path
 
 import pytest
-from py_lib_tooling import console, require_vcr_cassette_or_record_mode
+from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     LLMRouter,

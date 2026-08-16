@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from py_lib_tooling import console, get_test_data_path
+from py_lib_testkit import console, get_test_data_path
 
 from workbench.llm_router.qwenchat._runtime import build_sync_client, qwenchat_base_url
 from workbench.llm_router.qwenchat._structured_output import (

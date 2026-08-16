@@ -51,7 +51,7 @@ Use only these top-level section titles:
 - Hermetic replay for external API calls.
 - Import product behavior only from the product's public top-level package in
   e2e tests. Shared test infrastructure may come from top-level
-  `py_lib_tooling`.
+  `py_lib_testkit`.
 - Do not patch or monkeypatch library internals in e2e tests.
 - Test-only helpers and setup must live under `tests/`, never under `src/`.
 - Tests should validate public behavior, not internal implementation details.
@@ -70,8 +70,8 @@ Use only these top-level section titles:
 - recording or forced replay is enabled explicitly.
 - Runnable e2e scripts must also work in already-running loop environments.
 - Async test entrypoints must use the top-level
-  `py_lib_tooling.run_async(...)` helper instead of calling
-  `asyncio.run(...)` directly in starter-shaped py-lib repos.
+  `py_lib_testkit.run_async(...)` helper instead of calling
+  `asyncio.run(...)` directly in Ternforge-managed Python libraries.
 
 ## Rules
 
@@ -191,7 +191,7 @@ import pytest
 from IPython.display import Image, display
 from pydantic import BaseModel, Field
 
-from py_lib_tooling import console, require_vcr_cassette_or_record_mode
+from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 from your_package import analyze_image
 
 pytestmark = [

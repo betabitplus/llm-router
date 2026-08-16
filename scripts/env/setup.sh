@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
-echo "Setting up development environment..."
-
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$repo_root"
-
-# Install dev dependencies (creates/updates .venv)
-uv sync --group dev
-
-# Install every hook stage declared by default_install_hook_types
+printf '%s
+' "Setting up development environment..."
+if [ ! -f uv.lock ]; then
+  printf '%s
+' "Creating the initial uv.lock..."
+  uv lock
+fi
+uv sync --locked --all-groups
 uv run pre-commit install
-
-echo "Setup complete! All pre-commit hooks installed."
+printf '%s
+' "Setup complete. Locked dependencies and configured hook stages are installed."

@@ -32,10 +32,6 @@ package.
 
 Use this layout for the whole `tests/` tree:
 
-- `tests/support/`
-  Legacy cross-project test infrastructure. In starter-shaped py-lib repos,
-  prefer top-level `py_lib_tooling` helpers instead of creating or mirroring
-  this folder.
 - `tests/<project>/support/`
   Project-specific helpers for one package or service
 - `tests/<project>/e2e/`
@@ -50,7 +46,7 @@ Use this layout for the whole `tests/` tree:
 Use these placement rules:
 
 - import generic setup, replay, console, path, and image helpers from the
-  supported top-level `py_lib_tooling` package
+  supported top-level `py_lib_testkit` package
 - put builders, assertions, fixture-specific helpers, and integration checks in
   `tests/<project>/support/`
 - keep `tests/<project>/e2e/` focused on scenario groups, not shared helpers
@@ -70,8 +66,8 @@ Use these placement rules:
 
 Use these import rules:
 
-- import shared support directly from top-level `py_lib_tooling` in
-  starter-shaped py-lib repos
+- import shared support directly from top-level `py_lib_testkit` in
+  Ternforge-managed Python libraries
 - import project support directly from `tests.<project>.support...`
 - keep `tests/<project>/e2e/`, `tests/<project>/support/`, and
   `tests/<project>/property_based/public_contract/` on the supported public

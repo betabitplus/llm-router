@@ -51,7 +51,7 @@ from __future__ import annotations
 import json
 
 import pytest
-from py_lib_tooling import console
+from py_lib_testkit import console
 from pydantic import BaseModel
 
 from llm_router import Model

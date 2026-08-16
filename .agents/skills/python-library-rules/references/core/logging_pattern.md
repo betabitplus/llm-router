@@ -18,7 +18,7 @@ names, and a small consistent event shape.
 
 - Library code must not configure global logging on import.
 - Logs should be structured, stable, and machine-readable. Use `structlog`.
-- Use one shared logging boundary. In starter-shaped py-lib repos, that
+- Use one shared logging boundary. In Ternforge-managed Python libraries, that
   boundary is `py_lib_runtime.logging`.
 - Library modules must obtain loggers through that boundary instead of
   importing and configuring `structlog` directly throughout the codebase.
@@ -39,7 +39,7 @@ names, and a small consistent event shape.
 
 ### Structlog Pattern
 
-Standard helper location for starter-shaped py-lib repos:
+Standard helper location for Ternforge-managed Python libraries:
 
 - `py_lib_runtime.logging`
 
@@ -176,7 +176,7 @@ Library modules should only call `get_logger(__name__)`. Configure handlers and
 local log levels only at explicit process boundaries such as demos, workbench
 scripts, e2e direct-module setup, or applications.
 
-Starter-shaped py-lib repos can let shared test/direct-run setup read
+Generated Ternforge Python repos can let shared test/direct-run setup read
 repo-local logging policy from `pyproject.toml`:
 
 ```toml

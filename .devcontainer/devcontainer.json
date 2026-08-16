@@ -3,9 +3,6 @@
   "build": {
     "dockerfile": "Dockerfile",
     "context": "..",
-    "args": {
-      "VARIANT": "3.13"
-    }
   },
   "runArgs": [
     "--init"
@@ -21,14 +18,14 @@
   },
   "mounts": [
     "source=${env:HOME}/.cache/uv,target=/home/vscode/.cache/uv,type=bind",
+    "source=${localEnv:HOME}/.config/sops/age,target=/home/vscode/.config/sops/age,type=bind,readonly",
     "source=llm-router-devcontainer-venv,target=${containerWorkspaceFolder}/.venv,type=volume"
   ],
   // Use an in-container virtual environment to avoid contaminating the host `.venv`
   // with Linux binaries. This prevents local macOS runs from breaking after a
   // container build/rebuild. We provision a Linux-specific `.venv` inside the
   // workspace (backed by a named volume).
-  "postCreateCommand": "bash -lc 'sudo chown -R vscode:vscode .venv && (rm -f /home/vscode/.vscode-server/data/User/globalStorage/ms-python.python/pythonLocator/*.json 2>/dev/null || true) && uv venv --python 3.13 --clear .venv && source .venv/bin/activate && uv sync --group dev --active && python -m ensurepip --upgrade --default-pip'",
-  "postStartCommand": "bash -lc '(rm -f /home/vscode/.vscode-server/data/User/globalStorage/ms-python.python/pythonLocator/*.json 2>/dev/null || true)'",
+  "postCreateCommand": "bash -lc 'sudo mkdir -p /home/vscode/.cache/pre-commit && sudo chown vscode:vscode /home/vscode/.cache/pre-commit && sudo chown -R vscode:vscode .venv && uv venv --python 3.13 --clear .venv && source .venv/bin/activate && bash scripts/env/setup.sh && python -m ensurepip --upgrade --default-pip'",
   "customizations": {
     "vscode": {
       "settings": {
@@ -56,6 +53,7 @@
       },
       "extensions": [
         "ms-python.python",
+        "mkhl.direnv",
         "ms-python.vscode-pylance",
         "ms-toolsai.jupyter",
         "ms-toolsai.jupyter-keymap",

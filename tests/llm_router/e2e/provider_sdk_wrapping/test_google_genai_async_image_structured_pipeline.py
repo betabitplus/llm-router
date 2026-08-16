@@ -38,7 +38,7 @@ Examples:
 from __future__ import annotations
 
 import pytest
-from py_lib_tooling import console, require_vcr_cassette_or_record_mode, run_async
+from py_lib_testkit import console, require_vcr_cassette_or_record_mode, run_async
 
 from llm_router import (
     ImageSchema,

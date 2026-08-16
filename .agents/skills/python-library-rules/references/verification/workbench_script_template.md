@@ -48,11 +48,11 @@ Use only these top-level section titles:
 - Keep workbench scripts independent from `src/`; do not reference project internal modules or implementation paths from workbench code.
 - Shared package-level direct-run setup should live in `workbench/__init__.py`, not repeated in each script.
 - Workbench scripts must run directly with `uv run python -m path.to.script`.
-  In starter-shaped py-lib repos, every workbench script must also work under
-  `uv run py-lib-reproduce-running-loop path.to.script`.
+  In Ternforge-managed Python libraries, every workbench script must also work under
+  `uv run python scripts/reproduce_running_loop.py path.to.script`.
 - Async workbench entrypoints must use the top-level
-  `py_lib_tooling.run_async(...)` helper instead of calling
-  `asyncio.run(...)` directly in starter-shaped py-lib repos.
+  `py_lib_testkit.run_async(...)` helper instead of calling
+  `asyncio.run(...)` directly in Ternforge-managed Python libraries.
 - Organize workbench files in project-appropriate subfolders; prefer related scripts together instead of one large flat directory.
 - Keep workbench subfolders narrow: group one provider, seam, or hypothesis family together, and avoid cross-folder helper sharing that couples unrelated probes.
 - Keep workbench scripts live-first.
@@ -121,7 +121,7 @@ Checks:
 Examples:
     Run manually:
         uv run python -m workbench.group.example_script
-        uv run py-lib-reproduce-running-loop workbench.group.example_script
+        uv run python scripts/reproduce_running_loop.py workbench.group.example_script
 """
 
 from __future__ import annotations
@@ -129,7 +129,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from py_lib_tooling import console
+from py_lib_testkit import console
 
 
 # =============================================================================

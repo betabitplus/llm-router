@@ -2,7 +2,7 @@
 
 Why:
     Keeps llm_router request-body normalization and provider-specific matching
-    logic out of the shared `py_lib_tooling` package.
+    logic out of the shared `py_lib_testkit` package.
 
 When to use:
     Import from here only through `tests.llm_router.support.vcr_extensions`
@@ -19,7 +19,7 @@ import re
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-from py_lib_tooling import (
+from py_lib_testkit import (
     compare_optional_json_bodies,
     compare_optional_multipart_single_file_content,
     get_header_value,
