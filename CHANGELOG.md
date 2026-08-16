@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.9.3](https://github.com/betabitplus/llm-router/compare/v0.9.2...v0.9.3) (2026-08-16)
+
+
+### Bug Fixes
+
+* align Release Please baseline ([#13](https://github.com/betabitplus/llm-router/issues/13)) ([452ace1](https://github.com/betabitplus/llm-router/commit/452ace1c9522ed1aca1aa9e5fc1e6b088a1e9aaa))
+
 ## v0.9.1 (2026-07-18)
 
 ### Refactor
