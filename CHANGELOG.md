@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.9.4](https://github.com/betabitplus/llm-router/compare/v0.9.3...v0.9.4) (2026-08-16)
+
+
+### Bug Fixes
+
+* **deps:** update gemini-webapi to v1.21.0 ([336c649](https://github.com/betabitplus/llm-router/commit/336c649c629a02e5f236da988309fd7c634ca2e5))
+
 ## [0.9.3](https://github.com/betabitplus/llm-router/compare/v0.9.2...v0.9.3) (2026-08-16)
 
 
