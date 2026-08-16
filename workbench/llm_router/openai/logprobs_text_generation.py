@@ -24,7 +24,7 @@ Checks:
 Examples:
     Run manually:
         uv run python -m workbench.llm_router.openai.logprobs_text_generation
-        uv run python scripts/runtime/reproduce_running_loop.py \
+        uv run python scripts/reproduce_running_loop.py \
             workbench.llm_router.openai.logprobs_text_generation
 """
 

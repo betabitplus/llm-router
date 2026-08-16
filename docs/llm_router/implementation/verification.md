@@ -77,7 +77,7 @@ for path in sorted(Path("tests/llm_router/e2e").rglob("test_*.py")):
             "uv",
             "run",
             "python",
-            "scripts/runtime/reproduce_running_loop.py",
+            "scripts/reproduce_running_loop.py",
             module,
         ],
         check=True,
