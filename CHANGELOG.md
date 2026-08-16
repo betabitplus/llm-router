@@ -1,3 +1,9 @@
+## v0.9.2 (2026-08-16)
+
+### Fix
+
+- **deps**: update vulnerable runtime dependencies (#9) (#10)
+
 ## v0.9.1 (2026-07-18)
 
 ### Refactor
