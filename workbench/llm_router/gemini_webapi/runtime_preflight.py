@@ -92,8 +92,10 @@ def main() -> None:
             f"has_secure_1psid: {result['has_secure_1psid']}",
             f"has_secure_1psidts: {result['has_secure_1psidts']}",
             f"has_nid: {result['has_nid']}",
-            "This is enough to trust that the next live script can reach a "
-            "real session.",
+            (
+                "This is enough to trust that the next live script can reach a "
+                "real session."
+            ),
         ),
     )
     console.print_json(result)

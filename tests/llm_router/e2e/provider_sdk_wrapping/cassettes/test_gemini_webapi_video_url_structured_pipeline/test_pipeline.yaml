@@ -13,7 +13,7 @@ interactions:
       User-Agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://www.google.com/
+    uri: https://www.google.com
   response:
     body:
       string: "<!doctype html><html itemscope=\"\" itemtype=\"http://schema.org/WebPage\"
@@ -664,7 +664,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: ''
     headers:
@@ -3419,7 +3419,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
@@ -3504,7 +3504,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5Bnull%2C%22%5B%5B%5C%22You+are+a+JSON+API.+Output+MUST+be+valid+JSON+and+MUST+conform+to+this+JSON+Schema.%5C%5Cn%5C%5CnReturn+ONLY+the+JSON+%28no+markdown%2C+no+code+fences%2C+no+extra+text%29.%5C%5Cn%5C%5CnJSON+Schema%3A%5C%5Cn%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Minimal+structured+summary+for+a+short+video+clip.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22action%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+4%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Action%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22location%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+4%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Location%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Evidence%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22action%5C%5C%5C%22%2C+%5C%5C%5C%22location%5C%5C%5C%22%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22VideoObservation%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%5C%5Cn%5C%5CnFollow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnYou+are+given+a+short+video+clip.%5C%5Cn%5C%5CnReturn+JSON+with+exactly+three+keys%3A%5C%5Cn-+action%3A+the+main+activity+as+a+short+lowercase+word+or+phrase%5C%5Cn-+location%3A+a+short+phrase+describing+where+it+happens%5C%5Cn%5C%5Cn-+evidence%3A+exactly+2+short+strings+describing+visible+motion+or+scene+cues%5C%5Cn%5C%5CnIf+the+clip+happens+indoors+in+a+gym%2C+dance+studio%2C+or+training+room%2C+mention+that+in+location.%5C%5CnIn+evidence%2C+mention+movement%2C+posture%2C+or+indoor+scene+details.%5C%5Cn%5C%5CnReturn+ONLY+valid+JSON.+No+markdown.%5C%5Cn%5C%5Cnhttps%3A%2F%2Fwww.youtube.com%2Fshorts%2FQUxqvF0pyGw%5C%22%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2C0%5D%2C%5B%5C%22en%5C%22%5D%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2C%5B0%5D%2C1%2Cnull%2Cnull%2C1%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B0%5D%5D%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2C%5B4%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B1%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%220bda11d3-ad88-45aa-9563-12d027eccdae%5C%22%2Cnull%2C%5B%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%5D%22%5D
     headers:
@@ -3720,5 +3720,5 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 version: 1

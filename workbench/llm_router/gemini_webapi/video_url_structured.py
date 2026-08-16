@@ -87,8 +87,10 @@ def main() -> None:
         details=(
             f"Model: {_MODEL}",
             f"Video URL: {_VIDEO_URL}",
-            "Why this matters: the web client does not accept remote video URLs "
-            "as uploaded files, so the URL must stay in prompt text.",
+            (
+                "Why this matters: the web client does not accept remote video URLs "
+                "as uploaded files, so the URL must stay in prompt text."
+            ),
         ),
     )
 

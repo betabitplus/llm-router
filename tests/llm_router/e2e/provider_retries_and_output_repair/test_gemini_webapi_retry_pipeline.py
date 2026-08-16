@@ -295,8 +295,10 @@ def main() -> None:
             "What Happened On The Fail-Fast Path",
             "A non-retryable backend error was surfaced to the caller immediately.",
             details=[
-                "Public error: "
-                f"{non_retryable.error_type}: {non_retryable.error_message}",
+                (
+                    "Public error: "
+                    f"{non_retryable.error_type}: {non_retryable.error_message}"
+                ),
                 f"Batch hits: {server.request_count('POST', _BATCH_PATH)}",
                 f"Generate hits: {server.request_count('POST', _GENERATE_PATH)}",
             ],

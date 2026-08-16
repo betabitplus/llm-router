@@ -13,7 +13,7 @@ interactions:
       User-Agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://www.google.com/
+    uri: https://www.google.com
   response:
     body:
       string: "<!doctype html><html itemscope=\"\" itemtype=\"http://schema.org/WebPage\"
@@ -657,7 +657,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: ''
     headers:
@@ -3412,7 +3412,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
@@ -3497,7 +3497,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5Bnull%2C%22%5B%5B%5C%22You+can+use+local+tools.%5C%5Cn%5C%5CnAvailable+tools%3A%5C%5Cn-+add%28a%2C+b%29%3A+Return+a%2Bb+as+JSON.%5C%5Cn-+multiply%28a%2C+b%29%3A+Return+a%2Ab+as+JSON.%5C%5Cn%5C%5CnWhen+a+tool+is+needed%2C+reply+with+exactly+one+function+call+and+nothing+else.%5C%5CnUse+the+format+tool_name%28arg%3Dvalue%29+or+tool_name%28value1%2C+value2%29.%5C%5CnYou+MUST+use+tools+before+giving+the+final+answer.%5C%5CnDo+not+solve+tool+work+yourself.%5C%5CnIf+all+required+tool+work+is+complete%2C+return+ONLY+valid+JSON.%5C%5Cn%5C%5CnYou+are+a+JSON+API.+Output+MUST+be+valid+JSON+and+MUST+conform+to+this+JSON+Schema.%5C%5Cn%5C%5CnReturn+ONLY+the+JSON+%28no+markdown%2C+no+code+fences%2C+no+extra+text%29.%5C%5Cn%5C%5CnJSON+Schema%3A%5C%5Cn%7B%5C%5C%5C%22%24defs%5C%5C%5C%22%3A+%7B%5C%5C%5C%22CalculationStep%5C%5C%5C%22%3A+%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+tool-step+summary.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22tool_name%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Tool+Name%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22result%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Result%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22integer%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22tool_name%5C%5C%5C%22%2C+%5C%5C%5C%22result%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22CalculationStep%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+result+for+the+Gemini+WebAPI+tools+scenario.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22steps%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22%24ref%5C%5C%5C%22%3A+%5C%5C%5C%22%23%2F%24defs%2FCalculationStep%5C%5C%5C%22%7D%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Steps%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%2C+%5C%5C%5C%22final_result%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Final+Result%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22integer%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22steps%5C%5C%5C%22%2C+%5C%5C%5C%22final_result%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22CalculationAudit%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%5C%5Cn%5C%5CnOriginal+task%3A%5C%5CnFollow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnYou+have+tools+add%28a%2C+b%29+and+multiply%28a%2C+b%29%2C+each+returning+%7Bresult%7D.%5C%5CnStep+1%3A+use+add+with+a%3D40+and+b%3D2.%5C%5CnStep+2%3A+multiply+the+step-1+result+by+2.%5C%5CnReturn+JSON+with%3A%5C%5Cn-+steps%3A+a+list+of+tool+call+summaries+with+%60tool_name%60+and+%60result%60%5C%5Cn-+final_result%5C%5Cn%5C%5CnReturn+ONLY+valid+JSON.+No+markdown.%5C%22%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2C0%5D%2C%5B%5C%22en%5C%22%5D%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2C%5B0%5D%2C1%2Cnull%2Cnull%2C1%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B0%5D%5D%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2C%5B4%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B1%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%227381f1f0-8ff5-4416-b10a-353da61c6662%5C%22%2Cnull%2C%5B%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%5D%22%5D
     headers:
@@ -3590,7 +3590,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
@@ -3675,7 +3675,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5Bnull%2C%22%5B%5B%5C%22Original+task%3A%5C%5CnFollow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnYou+have+tools+add%28a%2C+b%29+and+multiply%28a%2C+b%29%2C+each+returning+%7Bresult%7D.%5C%5CnStep+1%3A+use+add+with+a%3D40+and+b%3D2.%5C%5CnStep+2%3A+multiply+the+step-1+result+by+2.%5C%5CnReturn+JSON+with%3A%5C%5Cn-+steps%3A+a+list+of+tool+call+summaries+with+%60tool_name%60+and+%60result%60%5C%5Cn-+final_result%5C%5Cn%5C%5CnReturn+ONLY+valid+JSON.+No+markdown.%5C%5Cn%5C%5CnCompleted+tool+steps+so+far%3A%5C%5Cn%5B%7B%5C%5C%5C%22args%5C%5C%5C%22%3A%7B%5C%5C%5C%22a%5C%5C%5C%22%3A40%2C%5C%5C%5C%22b%5C%5C%5C%22%3A2%7D%2C%5C%5C%5C%22call_id%5C%5C%5C%22%3Anull%2C%5C%5C%5C%22result%5C%5C%5C%22%3A%7B%5C%5C%5C%22result%5C%5C%5C%22%3A42%7D%2C%5C%5C%5C%22tool_name%5C%5C%5C%22%3A%5C%5C%5C%22add%5C%5C%5C%22%7D%5D%5C%5Cn%5C%5CnTool+add+returned+%7B%5C%5C%5C%22result%5C%5C%5C%22%3A42%7D.%5C%5CnIf+another+tool+is+needed%2C+reply+with+exactly+one+function+call+and+nothing+else.%5C%5CnIf+all+required+tool+work+is+complete%2C+return+ONLY+valid+JSON.%5C%5Cn%5C%5CnYou+are+a+JSON+API.+Output+MUST+be+valid+JSON+and+MUST+conform+to+this+JSON+Schema.%5C%5Cn%5C%5CnReturn+ONLY+the+JSON+%28no+markdown%2C+no+code+fences%2C+no+extra+text%29.%5C%5Cn%5C%5CnJSON+Schema%3A%5C%5Cn%7B%5C%5C%5C%22%24defs%5C%5C%5C%22%3A+%7B%5C%5C%5C%22CalculationStep%5C%5C%5C%22%3A+%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+tool-step+summary.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22tool_name%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Tool+Name%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22result%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Result%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22integer%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22tool_name%5C%5C%5C%22%2C+%5C%5C%5C%22result%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22CalculationStep%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+result+for+the+Gemini+WebAPI+tools+scenario.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22steps%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22%24ref%5C%5C%5C%22%3A+%5C%5C%5C%22%23%2F%24defs%2FCalculationStep%5C%5C%5C%22%7D%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Steps%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%2C+%5C%5C%5C%22final_result%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Final+Result%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22integer%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22steps%5C%5C%5C%22%2C+%5C%5C%5C%22final_result%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22CalculationAudit%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%5C%22%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2C0%5D%2C%5B%5C%22en%5C%22%5D%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2C%5B0%5D%2C1%2Cnull%2Cnull%2C1%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B0%5D%5D%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2C%5B4%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B1%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%2223da3e00-a180-46dc-9c56-85ec004d2861%5C%22%2Cnull%2C%5B%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%5D%22%5D
     headers:
@@ -3768,7 +3768,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
@@ -3853,7 +3853,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5Bnull%2C%22%5B%5B%5C%22Original+task%3A%5C%5CnFollow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnYou+have+tools+add%28a%2C+b%29+and+multiply%28a%2C+b%29%2C+each+returning+%7Bresult%7D.%5C%5CnStep+1%3A+use+add+with+a%3D40+and+b%3D2.%5C%5CnStep+2%3A+multiply+the+step-1+result+by+2.%5C%5CnReturn+JSON+with%3A%5C%5Cn-+steps%3A+a+list+of+tool+call+summaries+with+%60tool_name%60+and+%60result%60%5C%5Cn-+final_result%5C%5Cn%5C%5CnReturn+ONLY+valid+JSON.+No+markdown.%5C%5Cn%5C%5CnCompleted+tool+steps+so+far%3A%5C%5Cn%5B%7B%5C%5C%5C%22args%5C%5C%5C%22%3A%7B%5C%5C%5C%22a%5C%5C%5C%22%3A40%2C%5C%5C%5C%22b%5C%5C%5C%22%3A2%7D%2C%5C%5C%5C%22call_id%5C%5C%5C%22%3Anull%2C%5C%5C%5C%22result%5C%5C%5C%22%3A%7B%5C%5C%5C%22result%5C%5C%5C%22%3A42%7D%2C%5C%5C%5C%22tool_name%5C%5C%5C%22%3A%5C%5C%5C%22add%5C%5C%5C%22%7D%2C%7B%5C%5C%5C%22args%5C%5C%5C%22%3A%7B%5C%5C%5C%22a%5C%5C%5C%22%3A42%2C%5C%5C%5C%22b%5C%5C%5C%22%3A2%7D%2C%5C%5C%5C%22call_id%5C%5C%5C%22%3Anull%2C%5C%5C%5C%22result%5C%5C%5C%22%3A%7B%5C%5C%5C%22result%5C%5C%5C%22%3A84%7D%2C%5C%5C%5C%22tool_name%5C%5C%5C%22%3A%5C%5C%5C%22multiply%5C%5C%5C%22%7D%5D%5C%5Cn%5C%5CnTool+multiply+returned+%7B%5C%5C%5C%22result%5C%5C%5C%22%3A84%7D.%5C%5CnIf+another+tool+is+needed%2C+reply+with+exactly+one+function+call+and+nothing+else.%5C%5CnIf+all+required+tool+work+is+complete%2C+return+ONLY+valid+JSON.%5C%5Cn%5C%5CnYou+are+a+JSON+API.+Output+MUST+be+valid+JSON+and+MUST+conform+to+this+JSON+Schema.%5C%5Cn%5C%5CnReturn+ONLY+the+JSON+%28no+markdown%2C+no+code+fences%2C+no+extra+text%29.%5C%5Cn%5C%5CnJSON+Schema%3A%5C%5Cn%7B%5C%5C%5C%22%24defs%5C%5C%5C%22%3A+%7B%5C%5C%5C%22CalculationStep%5C%5C%5C%22%3A+%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+tool-step+summary.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22tool_name%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Tool+Name%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22result%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Result%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22integer%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22tool_name%5C%5C%5C%22%2C+%5C%5C%5C%22result%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22CalculationStep%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+result+for+the+Gemini+WebAPI+tools+scenario.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22steps%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22%24ref%5C%5C%5C%22%3A+%5C%5C%5C%22%23%2F%24defs%2FCalculationStep%5C%5C%5C%22%7D%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Steps%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%2C+%5C%5C%5C%22final_result%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Final+Result%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22integer%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22steps%5C%5C%5C%22%2C+%5C%5C%5C%22final_result%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22CalculationAudit%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%5C%22%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2C0%5D%2C%5B%5C%22en%5C%22%5D%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2C%5B0%5D%2C1%2Cnull%2Cnull%2C1%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B0%5D%5D%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2C%5B4%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B1%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%229bc77a35-5d34-411d-beaa-ce9bd071f3d6%5C%22%2Cnull%2C%5B%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%5D%22%5D
     headers:
@@ -3984,5 +3984,5 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 version: 1

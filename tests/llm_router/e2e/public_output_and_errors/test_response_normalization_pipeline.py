@@ -293,24 +293,32 @@ def main() -> None:
         "Two different client families produced the same public-shaped "
         "response for the same kind of successful request.",
         details=[
-            "OpenAI-compatible: "
-            f"provider={openai_result.provider}, "
-            f"model={openai_result.model}, "
-            f"output={openai_result.output_text}, "
-            f"usage={openai_result.usage}",
-            "Google GenAI: "
-            f"provider={google_result.provider}, "
-            f"model={google_result.model}, "
-            f"output={google_result.output_text}, "
-            f"usage={google_result.usage}",
-            "OpenAI-compatible routing/tool fields: "
-            f"{openai_result.routing_trace}, "
-            f"{openai_result.tool_trace}, "
-            f"{openai_result.tool_calls}",
-            "Google routing/tool fields: "
-            f"{google_result.routing_trace}, "
-            f"{google_result.tool_trace}, "
-            f"{google_result.tool_calls}",
+            (
+                "OpenAI-compatible: "
+                f"provider={openai_result.provider}, "
+                f"model={openai_result.model}, "
+                f"output={openai_result.output_text}, "
+                f"usage={openai_result.usage}"
+            ),
+            (
+                "Google GenAI: "
+                f"provider={google_result.provider}, "
+                f"model={google_result.model}, "
+                f"output={google_result.output_text}, "
+                f"usage={google_result.usage}"
+            ),
+            (
+                "OpenAI-compatible routing/tool fields: "
+                f"{openai_result.routing_trace}, "
+                f"{openai_result.tool_trace}, "
+                f"{openai_result.tool_calls}"
+            ),
+            (
+                "Google routing/tool fields: "
+                f"{google_result.routing_trace}, "
+                f"{google_result.tool_trace}, "
+                f"{google_result.tool_calls}"
+            ),
         ],
     )
     console.demo_outcome(

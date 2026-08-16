@@ -116,8 +116,10 @@ def main() -> None:
         details=(
             f"Model: {_MODEL}",
             f"Image: {_IMAGE_PATH.name}",
-            "Why this setup: it proves the AI Studio non-video image path on "
-            "its own, separate from the generic workbench suite.",
+            (
+                "Why this setup: it proves the AI Studio non-video image path on "
+                "its own, separate from the generic workbench suite."
+            ),
         ),
     )
     console.display_image_if_available(_IMAGE_PATH)

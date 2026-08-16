@@ -505,8 +505,10 @@ def main() -> None:
             "A non-retryable upload error stopped the flow before the "
             "completion request was even attempted.",
             details=[
-                "Public error: "
-                f"{upload_error.error_type}: {upload_error.error_message}",
+                (
+                    "Public error: "
+                    f"{upload_error.error_type}: {upload_error.error_message}"
+                ),
                 f"Upload hits: {server.request_count('POST', _UPLOAD_PATH)}",
                 f"Chat hits: {server.request_count('POST', _PATH)}",
             ],

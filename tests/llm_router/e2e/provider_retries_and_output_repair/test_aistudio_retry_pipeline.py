@@ -516,8 +516,10 @@ def main() -> None:
             "What Happened On The Non-Video Fail-Fast Path",
             "A non-retryable non-video error stopped immediately instead of looping.",
             details=[
-                "Public error: "
-                f"{non_video_error.error_type}: {non_video_error.error_message}",
+                (
+                    "Public error: "
+                    f"{non_video_error.error_type}: {non_video_error.error_message}"
+                ),
                 f"Non-video hits: {server.request_count('POST', _NON_VIDEO_PATH)}",
             ],
         )

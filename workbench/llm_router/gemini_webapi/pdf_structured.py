@@ -109,8 +109,10 @@ def main() -> None:
         details=(
             f"Model: {_MODEL}",
             f"File: {_PDF_PATH.name}",
-            "Why this fixture: page-one title and entities are easy to compare "
-            "manually.",
+            (
+                "Why this fixture: page-one title and entities are easy to compare "
+                "manually."
+            ),
         ),
     )
 

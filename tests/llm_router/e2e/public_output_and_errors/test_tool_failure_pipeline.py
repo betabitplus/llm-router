@@ -191,8 +191,10 @@ def main() -> None:
             "The tool raised a local failure, and the flow stopped "
             "immediately with a public tool error.",
             details=[
-                "Public error: "
-                f"{openai_result.error_type}: {openai_result.error_message}",
+                (
+                    "Public error: "
+                    f"{openai_result.error_type}: {openai_result.error_message}"
+                ),
                 f"Server hits: {server.request_count('POST', _OPENAI_PATH)}",
             ],
         )
@@ -209,8 +211,10 @@ def main() -> None:
             "The same failing tool produced the same public error contract "
             "on the Google implementation.",
             details=[
-                "Public error: "
-                f"{google_result.error_type}: {google_result.error_message}",
+                (
+                    "Public error: "
+                    f"{google_result.error_type}: {google_result.error_message}"
+                ),
                 f"Server hits: {server.request_count('POST', _GOOGLE_PATH)}",
             ],
         )

@@ -79,8 +79,10 @@ def main() -> None:
         details=(
             f"Model: {_MODEL}",
             f"Prompt: {_PROMPT}",
-            "Why this prompt: any short reply is enough to prove the live "
-            "async session worked.",
+            (
+                "Why this prompt: any short reply is enough to prove the live "
+                "async session worked."
+            ),
         ),
     )
 
@@ -90,8 +92,10 @@ def main() -> None:
         "The live web-session-backed client returned plain text from the async prompt.",
         details=(
             f"text: {result['text']}",
-            "This is the visible consequence of successful async session init "
-            "and prompt execution.",
+            (
+                "This is the visible consequence of successful async session init "
+                "and prompt execution."
+            ),
         ),
     )
     console.print_json(result)

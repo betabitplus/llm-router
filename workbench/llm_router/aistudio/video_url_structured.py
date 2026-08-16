@@ -103,8 +103,10 @@ def main() -> None:
         details=(
             f"Model: {_MODEL}",
             f"Video URL: {_VIDEO_URL}",
-            "Why this matters: remote video URLs use the same native path as "
-            "local video files, but a different part shape.",
+            (
+                "Why this matters: remote video URLs use the same native path as "
+                "local video files, but a different part shape."
+            ),
         ),
     )
 

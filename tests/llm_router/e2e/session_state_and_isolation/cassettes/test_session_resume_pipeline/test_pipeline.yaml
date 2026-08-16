@@ -13,7 +13,7 @@ interactions:
       User-Agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://www.google.com/
+    uri: https://www.google.com
   response:
     body:
       string: "<!doctype html><html itemscope=\"\" itemtype=\"http://schema.org/WebPage\"
@@ -227,7 +227,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: ''
     headers:
@@ -2593,7 +2593,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
@@ -2678,7 +2678,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5Bnull%2C%22%5B%5B%5C%22Follow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnUser%3A+Secret+code+for+this+chat%3A+81723.+Reply+only+OK.%5C%22%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2C0%5D%2C%5B%5C%22en%5C%22%5D%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2C%5B0%5D%2C1%2Cnull%2Cnull%2C1%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B0%5D%5D%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2C%5B4%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B1%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%224188d316-cad2-4b30-adfb-cbf4f9a77aef%5C%22%2Cnull%2C%5B%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%5D%22%5D
     headers:
@@ -2762,7 +2762,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
@@ -2847,7 +2847,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5Bnull%2C%22%5B%5B%5C%22Follow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnUser%3A+Secret+code+for+this+chat%3A+81723.+Reply+only+OK.%5C%5Cn%5C%5CnAssistant%3A+OK%5C%5Cn%5C%5CnUser%3A+What+is+the+secret+code%3F+Reply+only+digits%2C+no+punctuation+or+words.%5C%22%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2C0%5D%2C%5B%5C%22en%5C%22%5D%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2C%5B0%5D%2C1%2Cnull%2Cnull%2C1%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B0%5D%5D%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2C%5B4%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B1%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22d8d0f576-4cbe-4a48-9444-418a383dd5a0%5C%22%2Cnull%2C%5B%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%5D%22%5D
     headers:
@@ -2934,5 +2934,5 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 version: 1

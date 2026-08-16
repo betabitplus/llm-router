@@ -211,8 +211,10 @@ def main() -> None:
         "The library stopped early with a key-related public error "
         "instead of attempting a provider call.",
         details=[
-            "Public error: "
-            f"{missing_key_result.error_type}: {missing_key_result.error_message}"
+            (
+                "Public error: "
+                f"{missing_key_result.error_type}: {missing_key_result.error_message}"
+            )
         ],
     )
 
@@ -229,8 +231,11 @@ def main() -> None:
         "The library rejected an invalid model configuration as a "
         "configuration problem, not as a provider problem.",
         details=[
-            "Public error: "
-            f"{invalid_model_result.error_type}: {invalid_model_result.error_message}"
+            (
+                "Public error: "
+                f"{invalid_model_result.error_type}: "
+                f"{invalid_model_result.error_message}"
+            )
         ],
     )
 
@@ -248,8 +253,10 @@ def main() -> None:
             "A provider-side HTTP failure crossed the boundary as a provider "
             "error, which keeps it distinct from configuration issues.",
             details=[
-                "Public error: "
-                f"{provider_result.error_type}: {provider_result.error_message}",
+                (
+                    "Public error: "
+                    f"{provider_result.error_type}: {provider_result.error_message}"
+                ),
                 f"Server hits: {server.request_count('POST', _OPENAI_PATH)}",
             ],
         )

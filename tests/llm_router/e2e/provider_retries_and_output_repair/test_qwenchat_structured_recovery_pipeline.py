@@ -274,8 +274,10 @@ def main() -> None:
             "When every answer stayed invalid, the flow stopped with a clear "
             "public error.",
             details=[
-                "Public error: "
-                f"{exhausted_result.error_type}: {exhausted_result.error_message}",
+                (
+                    "Public error: "
+                    f"{exhausted_result.error_type}: {exhausted_result.error_message}"
+                ),
                 f"Server hits: {server.request_count('POST', _PATH)}",
             ],
         )

@@ -13,7 +13,7 @@ interactions:
       User-Agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://www.google.com/
+    uri: https://www.google.com
   response:
     body:
       string: "<!doctype html><html itemscope=\"\" itemtype=\"http://schema.org/WebPage\"
@@ -227,7 +227,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: ''
     headers:
@@ -2593,7 +2593,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
@@ -2678,7 +2678,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: !!binary |
       LS01OTgwNTczNGFiYjY3N2VhMzk0OGRiOTdkYzYxNjQ1ZA0KQ29udGVudC1EaXNwb3NpdGlvbjog
@@ -39796,7 +39796,7 @@ interactions:
       - AGQBYWxBvVG9zZMl6gaK2U0ey4ropBE8y8m1GvjMkenIGqvUcOROPZY1IpqNT0nnSNFu6TZK
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
@@ -39881,7 +39881,7 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 - request:
     body: f.req=%5Bnull%2C%22%5B%5B%5C%22You+are+a+JSON+API.+Output+MUST+be+valid+JSON+and+MUST+conform+to+this+JSON+Schema.%5C%5Cn%5C%5CnReturn+ONLY+the+JSON+%28no+markdown%2C+no+code+fences%2C+no+extra+text%29.%5C%5Cn%5C%5CnJSON+Schema%3A%5C%5Cn%7B%5C%5C%5C%22%24defs%5C%5C%5C%22%3A+%7B%5C%5C%5C%22EvidenceSnippet%5C%5C%5C%22%3A+%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Short+grounded+evidence+copied+from+page+one.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22text%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+8%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Text%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22source%5C%5C%5C%22%3A+%7B%5C%5C%5C%22enum%5C%5C%5C%22%3A+%5B%5C%5C%5C%22title%5C%5C%5C%22%2C+%5C%5C%5C%22abstract%5C%5C%5C%22%2C+%5C%5C%5C%22introduction%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Source%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22text%5C%5C%5C%22%2C+%5C%5C%5C%22source%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22EvidenceSnippet%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%2C+%5C%5C%5C%22PaperMetadata%5C%5C%5C%22%3A+%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+title+metadata+for+the+shared+PDF+fixture.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Title%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22title_words%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Title+Words%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22title%5C%5C%5C%22%2C+%5C%5C%5C%22title_words%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22PaperMetadata%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+digest+extracted+from+the+shared+PDF+fixture.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22metadata%5C%5C%5C%22%3A+%7B%5C%5C%5C%22%24ref%5C%5C%5C%22%3A+%5C%5C%5C%22%23%2F%24defs%2FPaperMetadata%5C%5C%5C%22%7D%2C+%5C%5C%5C%22abstract_one_sentence%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+20%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Abstract+One+Sentence%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22contributions%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Contributions%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22%24ref%5C%5C%5C%22%3A+%5C%5C%5C%22%23%2F%24defs%2FEvidenceSnippet%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Evidence%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%2C+%5C%5C%5C%22key_entities%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+4%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+4%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Key+Entities%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22metadata%5C%5C%5C%22%2C+%5C%5C%5C%22abstract_one_sentence%5C%5C%5C%22%2C+%5C%5C%5C%22contributions%5C%5C%5C%22%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%2C+%5C%5C%5C%22key_entities%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22PDFDigest%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%5C%5Cn%5C%5CnFollow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnYou+are+given+a+PDF+file+attachment.%5C%5Cn%5C%5CnExtract+content+from+the+PDF+%28focus+on+the+paper+itself%2C+not+file+metadata%29.%5C%5CnReturn+JSON+with%3A%5C%5Cn-+metadata.title%3A+exact+paper+title+from+page+1%2C+as+a+single+line%5C%5Cn-+metadata.title_words%3A+exactly+3+distinct+words+taken+from+the+title%2C+preserving+case%5C%5Cn-+abstract_one_sentence%3A+one+sentence+summarizing+the+Abstract+%28%3C%3D+25+words%29%5C%5Cn-+contributions%3A+exactly+3+short+bullet+points+%28%3C%3D+12+words+each%29%5C%5Cn-+evidence%3A+exactly+2+verbatim+snippets+copied+from+page+1+%288%2B+chars%29.+Choose+snippets+that+are+not+broken+by+hyphenation+across+lines.%5C%5Cn++-+source+must+be+one+of%3A+title%2C+abstract%2C+introduction%5C%5Cn-+key_entities%3A+exactly+4+proper+nouns+or+model+names+that+appear+on+page+1+%28preserve+case%29%5C%5Cn%5C%5CnReturn+ONLY+valid+JSON.+No+markdown.%5C%22%2C0%2Cnull%2C%5B%5B%5B%5C%22%2Fcontrib_service%2Fttl_1d%2Fusjl6m5mty3d5ioviuehmpbagfzus31773581813%5C%22%5D%2C%5C%22variative.pdf%5C%22%5D%5D%2Cnull%2Cnull%2C0%5D%2C%5B%5C%22en%5C%22%5D%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2C%5B0%5D%2C1%2Cnull%2Cnull%2C1%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B0%5D%5D%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2C%5B4%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B1%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22100c8d59-b3c1-411e-9417-6ea87cde2053%5C%22%2Cnull%2C%5B%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%5D%22%5D
     headers:
@@ -40224,5 +40224,5 @@ interactions:
       - '0'
     status:
       code: 200
-      message: null
+      message: OK
 version: 1

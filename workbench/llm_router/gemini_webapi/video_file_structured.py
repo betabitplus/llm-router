@@ -106,8 +106,10 @@ def main() -> None:
         details=(
             f"action: {result['action']}",
             f"location: {result['location']}",
-            "This is enough to trust that the upload and structured response "
-            "both worked.",
+            (
+                "This is enough to trust that the upload and structured response "
+                "both worked."
+            ),
         ),
     )
     console.print_json(result)
