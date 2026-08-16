@@ -26,7 +26,7 @@ Checks:
 Examples:
     Run manually:
         uv run python -m workbench.llm_router.qwenchat.message_parts_mixed
-        uv run python scripts/runtime/reproduce_running_loop.py \
+        uv run python scripts/reproduce_running_loop.py \
             workbench.llm_router.qwenchat.message_parts_mixed
 """
 

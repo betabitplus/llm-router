@@ -23,7 +23,7 @@ Checks:
 Examples:
     Run manually:
         uv run python -m workbench.llm_router.gemini_webapi.tool_choice_named_structured
-        uv run python scripts/runtime/reproduce_running_loop.py \
+        uv run python scripts/reproduce_running_loop.py \
             workbench.llm_router.gemini_webapi.tool_choice_named_structured
 """
 
