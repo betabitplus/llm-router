@@ -221,16 +221,6 @@ interactions:
       - default="//www.google.com/httpservice/retry/jserror?ei=xrW2aYXjNeCP7NYP-PTfsAI&cad=crash&error=Page%20Crash&jsel=1&bver=2397&dpf=wMQXCGM91zrsBBgKsGeyPVzcFwjZpz6XdB68N8bZqBY"
       server:
       - gws
-      set-cookie:
-      - __Secure-STRP=AEEP7gIx5i0AktSVqSFddvGZ8WWYRl0CYghPqrkzoLRA6BTEhwtOtFmvFYJv0YIm9PQNifNMnOWnLC-GLPKcuHcQbK4XbAGYDg;
-        expires=Sun, 15-Mar-2026 13:41:07 GMT; path=/; domain=.google.com; Secure;
-        SameSite=strict
-      - AEC=AaJma5sgdnQ4M2VqkpZgBn7Rk9yUAbuh3vy0EEH3ySJXhBYnJkpTvacixQ; expires=Fri,
-        11-Sep-2026 13:36:07 GMT; path=/; domain=.google.com; Secure; HttpOnly; SameSite=lax
-      - NID=529=nYa4J0mSDP5J9qc-ak7oUU03ex3S7mby3fUgSb0Xky4QwFoADMoiIi6jrXHD0cgS9kW55ZmR4dVpt7CsCf_4-kxomfFRyzNRWXW3y2_o7KvX2biY9ETC37hj8aFEj-D-Lu228S4p1iUOc9OI_m1EPUQyr3rQ4wT2NuhgrDg9w2BeBrXWIsmax20n3QMAZ3zERpUXe0_1zYK8JezqIfq2ihslBh4bRilo3k0;
-        expires=Mon, 14-Sep-2026 13:36:06 GMT; path=/; domain=.google.com; HttpOnly
-      - __Secure-BUCKET=CIsH; expires=Fri, 11-Sep-2026 13:36:06 GMT; path=/; domain=.google.com;
-        Secure; HttpOnly
       x-frame-options:
       - SAMEORIGIN
       x-xss-protection:
@@ -249,11 +239,6 @@ interactions:
       - keep-alive
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gIx5i0AktSVqSFddvGZ8WWYRl0CYghPqrkzoLRA6BTEhwtOtFmvFYJv0YIm9PQNifNMnOWnLC-GLPKcuHcQbK4XbAGYDg;
-        AEC=AaJma5sgdnQ4M2VqkpZgBn7Rk9yUAbuh3vy0EEH3ySJXhBYnJkpTvacixQ; NID=529=FiE2Om78g9pyA3Yfcpg9XKxeaa-uhLewD-WUiel_Kl39gOy2jaYB8cHwpdMiXxMyjGSX3IhHnT054bx-xZt0oDJaGRtdrlJZ6HccL6yh19SmQkTaOnNy88XAWM88336P4Izhy9ROd7dpniLwyFHxMQL6kDyKmHQNattFtkAezGKiawN-YYR_5oygFQC7dhQa6MSBRcOUBRdSrQH04fwAOIMUMUUs;
-        __Secure-BUCKET=CIsH; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA
       Host:
       - gemini.google.com
       Origin:
@@ -2596,22 +2581,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=105
-      set-cookie:
-      - __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        Domain=.google.com; Expires=Tue, 14-Mar-2028 13:36:07 GMT; Path=/; Secure;
-        HttpOnly; Priority=HIGH; SameSite=none
-      - NID=529=ZKc6OZpUgv2XGPFRBnpZ-slxEA30_B_Y7Ru430nyUVqY2i2WUuq9IMbASyTfDPYbpfGyMWK8eTvNwMXWAUqJtmnq6X8kAPd69f-LJEcJcIUVmM_wr57h-zySeS5C-skxYvuHGt7LQKzQHzn8yx1HUQgMJU8zwjuWmYIkR7WDIOiEZ2y6xP4rByGAvWzlL7ujKu0dG7qfnRCOteQBiCCdP3Kcuoe6BWYXAbLPjqKlmOqENsOCgRU2v-3lQKx62KD_GSU;
-        expires=Mon, 14-Sep-2026 13:36:07 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; SameSite=none
-      - __Secure-1PSIDCC=AKEyXzVmBCQRVKY007agixPRihxfNau6CWzKazSV6I5pI0JAto-CRbA47WDkQmEt5_UJK3BwCQ;
-        expires=Mon, 15-Mar-2027 13:36:07 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzXmB2c2CslNfNpAcMWZXS16qwAVUcu77_-ZJ88VLCOOc5x036j3w8ZJb9REh278kz5t;
-        expires=Mon, 15-Mar-2027 13:36:07 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
-      - __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076;
-        Domain=.google.com; Expires=Tue, 14-Mar-2028 13:36:07 GMT; Path=/; Secure;
-        HttpOnly; Priority=HIGH; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:
@@ -2626,7 +2595,7 @@ interactions:
       code: 200
       message: null
 - request:
-    body: at=AJvLN6PPdYrEsv7CM8GGksGqjkqv%3A1773581767490&f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
+    body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
       Accept:
       - '*/*'
@@ -2638,15 +2607,6 @@ interactions:
       - '166'
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gIx5i0AktSVqSFddvGZ8WWYRl0CYghPqrkzoLRA6BTEhwtOtFmvFYJv0YIm9PQNifNMnOWnLC-GLPKcuHcQbK4XbAGYDg;
-        AEC=AaJma5sgdnQ4M2VqkpZgBn7Rk9yUAbuh3vy0EEH3ySJXhBYnJkpTvacixQ; NID=529=ZKc6OZpUgv2XGPFRBnpZ-slxEA30_B_Y7Ru430nyUVqY2i2WUuq9IMbASyTfDPYbpfGyMWK8eTvNwMXWAUqJtmnq6X8kAPd69f-LJEcJcIUVmM_wr57h-zySeS5C-skxYvuHGt7LQKzQHzn8yx1HUQgMJU8zwjuWmYIkR7WDIOiEZ2y6xP4rByGAvWzlL7ujKu0dG7qfnRCOteQBiCCdP3Kcuoe6BWYXAbLPjqKlmOqENsOCgRU2v-3lQKx62KD_GSU;
-        __Secure-BUCKET=CIsH; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-1PSIDCC=AKEyXzVmBCQRVKY007agixPRihxfNau6CWzKazSV6I5pI0JAto-CRbA47WDkQmEt5_UJK3BwCQ;
-        __Secure-3PSIDCC=AKEyXzXmB2c2CslNfNpAcMWZXS16qwAVUcu77_-ZJ88VLCOOc5x036j3w8ZJb9REh278kz5t;
-        __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076
       Host:
       - gemini.google.com
       Origin:
@@ -2708,13 +2668,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=87
-      set-cookie:
-      - __Secure-1PSIDCC=AKEyXzX-18JzbfHHpueoz78oUhOzKfXTQ4Au3yJ6PSJY3yA0BFWNLgE5oUedK-rPK5h6_CerbA;
-        expires=Mon, 15-Mar-2027 13:36:07 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzUYiBtNti_2uNeXx49shsy5KubxQpt-mMdU2F7IsfMms3bdo3xs3W19fmZyACTYnWsc;
-        expires=Mon, 15-Mar-2027 13:36:07 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:
@@ -2727,7 +2680,7 @@ interactions:
       code: 200
       message: null
 - request:
-    body: at=AJvLN6PPdYrEsv7CM8GGksGqjkqv%3A1773581767490&f.req=%5Bnull%2C%22%5B%5B%5C%22Follow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnUser%3A+Secret+code+for+this+chat%3A+81723.+Reply+only+OK.%5C%22%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2C0%5D%2Cnull%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%5D%22%5D
+    body: f.req=%5Bnull%2C%22%5B%5B%5C%22Follow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnUser%3A+Secret+code+for+this+chat%3A+81723.+Reply+only+OK.%5C%22%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2C0%5D%2C%5B%5C%22en%5C%22%5D%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2C%5B0%5D%2C1%2Cnull%2Cnull%2C1%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B0%5D%5D%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2C%5B4%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B1%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%224188d316-cad2-4b30-adfb-cbf4f9a77aef%5C%22%2Cnull%2C%5B%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%5D%22%5D
     headers:
       Accept:
       - '*/*'
@@ -2739,15 +2692,6 @@ interactions:
       - '838'
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gIx5i0AktSVqSFddvGZ8WWYRl0CYghPqrkzoLRA6BTEhwtOtFmvFYJv0YIm9PQNifNMnOWnLC-GLPKcuHcQbK4XbAGYDg;
-        AEC=AaJma5sgdnQ4M2VqkpZgBn7Rk9yUAbuh3vy0EEH3ySJXhBYnJkpTvacixQ; NID=529=ZKc6OZpUgv2XGPFRBnpZ-slxEA30_B_Y7Ru430nyUVqY2i2WUuq9IMbASyTfDPYbpfGyMWK8eTvNwMXWAUqJtmnq6X8kAPd69f-LJEcJcIUVmM_wr57h-zySeS5C-skxYvuHGt7LQKzQHzn8yx1HUQgMJU8zwjuWmYIkR7WDIOiEZ2y6xP4rByGAvWzlL7ujKu0dG7qfnRCOteQBiCCdP3Kcuoe6BWYXAbLPjqKlmOqENsOCgRU2v-3lQKx62KD_GSU;
-        __Secure-BUCKET=CIsH; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-1PSIDCC=AKEyXzX-18JzbfHHpueoz78oUhOzKfXTQ4Au3yJ6PSJY3yA0BFWNLgE5oUedK-rPK5h6_CerbA;
-        __Secure-3PSIDCC=AKEyXzUYiBtNti_2uNeXx49shsy5KubxQpt-mMdU2F7IsfMms3bdo3xs3W19fmZyACTYnWsc;
-        __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076
       Host:
       - gemini.google.com
       Origin:
@@ -2808,13 +2752,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=1618
-      set-cookie:
-      - __Secure-1PSIDCC=AKEyXzXXuw-cwaTWXJ22kphhqI9x2F2CEL3OGtVXzPBrrG9UrLr6VXcyBQvl_8FZwZTcyvn9-g;
-        expires=Mon, 15-Mar-2027 13:36:09 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzXfIPgFImqNk93hDJOpzEtdr9t5mOKixuiGdUbxMydND1NmdcdDvCfR3sun4Fg1w6Gb;
-        expires=Mon, 15-Mar-2027 13:36:09 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:
@@ -2827,7 +2764,7 @@ interactions:
       code: 200
       message: null
 - request:
-    body: at=AJvLN6PPdYrEsv7CM8GGksGqjkqv%3A1773581767490&f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
+    body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
       Accept:
       - '*/*'
@@ -2839,15 +2776,6 @@ interactions:
       - '166'
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gIx5i0AktSVqSFddvGZ8WWYRl0CYghPqrkzoLRA6BTEhwtOtFmvFYJv0YIm9PQNifNMnOWnLC-GLPKcuHcQbK4XbAGYDg;
-        AEC=AaJma5sgdnQ4M2VqkpZgBn7Rk9yUAbuh3vy0EEH3ySJXhBYnJkpTvacixQ; NID=529=ZKc6OZpUgv2XGPFRBnpZ-slxEA30_B_Y7Ru430nyUVqY2i2WUuq9IMbASyTfDPYbpfGyMWK8eTvNwMXWAUqJtmnq6X8kAPd69f-LJEcJcIUVmM_wr57h-zySeS5C-skxYvuHGt7LQKzQHzn8yx1HUQgMJU8zwjuWmYIkR7WDIOiEZ2y6xP4rByGAvWzlL7ujKu0dG7qfnRCOteQBiCCdP3Kcuoe6BWYXAbLPjqKlmOqENsOCgRU2v-3lQKx62KD_GSU;
-        __Secure-BUCKET=CIsH; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-1PSIDCC=AKEyXzXXuw-cwaTWXJ22kphhqI9x2F2CEL3OGtVXzPBrrG9UrLr6VXcyBQvl_8FZwZTcyvn9-g;
-        __Secure-3PSIDCC=AKEyXzXfIPgFImqNk93hDJOpzEtdr9t5mOKixuiGdUbxMydND1NmdcdDvCfR3sun4Fg1w6Gb;
-        __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076
       Host:
       - gemini.google.com
       Origin:
@@ -2909,13 +2837,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=81
-      set-cookie:
-      - __Secure-1PSIDCC=AKEyXzXBsF1_kdzRZjnWREUN0rv71egfnpwiYMDR2_HaqI4jl0P8cozp15Qh_o_5MP75eZgghg;
-        expires=Mon, 15-Mar-2027 13:36:09 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzVAkeRGIPoJxO3tJEFg84Jm3fu41BC7UFrm61h9i9QltX86Wi-rp-rpPlSgwuXQkJsJ;
-        expires=Mon, 15-Mar-2027 13:36:09 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:
@@ -2928,7 +2849,7 @@ interactions:
       code: 200
       message: null
 - request:
-    body: at=AJvLN6PPdYrEsv7CM8GGksGqjkqv%3A1773581767490&f.req=%5Bnull%2C%22%5B%5B%5C%22Follow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnUser%3A+Secret+code+for+this+chat%3A+81723.+Reply+only+OK.%5C%5Cn%5C%5CnAssistant%3A+OK%5C%5Cn%5C%5CnUser%3A+What+is+the+secret+code%3F+Reply+only+digits%2C+no+punctuation+or+words.%5C%22%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2C0%5D%2Cnull%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%5D%22%5D
+    body: f.req=%5Bnull%2C%22%5B%5B%5C%22Follow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnUser%3A+Secret+code+for+this+chat%3A+81723.+Reply+only+OK.%5C%5Cn%5C%5CnAssistant%3A+OK%5C%5Cn%5C%5CnUser%3A+What+is+the+secret+code%3F+Reply+only+digits%2C+no+punctuation+or+words.%5C%22%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2C0%5D%2C%5B%5C%22en%5C%22%5D%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2C%5B0%5D%2C1%2Cnull%2Cnull%2C1%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B0%5D%5D%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2C%5B4%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B1%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22d8d0f576-4cbe-4a48-9444-418a383dd5a0%5C%22%2Cnull%2C%5B%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%5D%22%5D
     headers:
       Accept:
       - '*/*'
@@ -2940,15 +2861,6 @@ interactions:
       - '961'
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gIx5i0AktSVqSFddvGZ8WWYRl0CYghPqrkzoLRA6BTEhwtOtFmvFYJv0YIm9PQNifNMnOWnLC-GLPKcuHcQbK4XbAGYDg;
-        AEC=AaJma5sgdnQ4M2VqkpZgBn7Rk9yUAbuh3vy0EEH3ySJXhBYnJkpTvacixQ; NID=529=ZKc6OZpUgv2XGPFRBnpZ-slxEA30_B_Y7Ru430nyUVqY2i2WUuq9IMbASyTfDPYbpfGyMWK8eTvNwMXWAUqJtmnq6X8kAPd69f-LJEcJcIUVmM_wr57h-zySeS5C-skxYvuHGt7LQKzQHzn8yx1HUQgMJU8zwjuWmYIkR7WDIOiEZ2y6xP4rByGAvWzlL7ujKu0dG7qfnRCOteQBiCCdP3Kcuoe6BWYXAbLPjqKlmOqENsOCgRU2v-3lQKx62KD_GSU;
-        __Secure-BUCKET=CIsH; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-1PSIDCC=AKEyXzXBsF1_kdzRZjnWREUN0rv71egfnpwiYMDR2_HaqI4jl0P8cozp15Qh_o_5MP75eZgghg;
-        __Secure-3PSIDCC=AKEyXzVAkeRGIPoJxO3tJEFg84Jm3fu41BC7UFrm61h9i9QltX86Wi-rp-rpPlSgwuXQkJsJ;
-        __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076
       Host:
       - gemini.google.com
       Origin:
@@ -3012,13 +2924,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=1400
-      set-cookie:
-      - __Secure-1PSIDCC=AKEyXzXfhQEkJwXvsPPdDQ9Se5ZGVWKe8xIe9dpEw0Kkv-jNtPmCk8uuUn7BfGKUQUydMNkL5Q;
-        expires=Mon, 15-Mar-2027 13:36:11 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzVOAQlwiOeqpLoK-hF39TC5uvc0dEaBUBAE3xuZR552aVGD9TIycgh5soTTQQ4oNAU3;
-        expires=Mon, 15-Mar-2027 13:36:11 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:

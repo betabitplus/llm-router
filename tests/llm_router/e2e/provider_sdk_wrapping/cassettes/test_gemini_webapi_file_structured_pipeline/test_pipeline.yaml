@@ -221,16 +221,6 @@ interactions:
       - default="//www.google.com/httpservice/retry/jserror?ei=9LW2aeuJGte-xc8P0KuHoAU&cad=crash&error=Page%20Crash&jsel=1&bver=2397&dpf=wMQXCGM91zrsBBgKsGeyPVzcFwjZpz6XdB68N8bZqBY"
       server:
       - gws
-      set-cookie:
-      - __Secure-STRP=AEEP7gJbLmtr4itEnO1XhHjSgQ_QSECw1_7Ll6FUxEuNZthtW_whqS7pcFJi_iDYYyeySWoA72mjwtufKrIW8AWU1LmrgqoPtrNu;
-        expires=Sun, 15-Mar-2026 13:41:52 GMT; path=/; domain=.google.com; Secure;
-        SameSite=strict
-      - AEC=AaJma5t3aqGmwxVkPHw8to1f_CNrlqxJcMjRGi0W1JrpNX-tpscLG7c8aQs; expires=Fri,
-        11-Sep-2026 13:36:52 GMT; path=/; domain=.google.com; Secure; HttpOnly; SameSite=lax
-      - NID=529=2JbhDnDSFFjF0g9KO8btXCoWckoXhjrH6A9HgxeJ-H-XIdNPUDhGDSxMGVlTQPIFIRnRpe8pgMRc0aadTa1sZhV2KPWOqUU_kyQ_eivr9gp8iwOTtVZ3aopGabZ88KxM2xTiNUAsZNMk0fqIOro0fp4qejHb2itnlb6G1eKAOYMy_Gfdeuv3RAP3pr00KgI68B90JNF-V0egwzvw0c_oBXZItHDnE5TrQw;
-        expires=Mon, 14-Sep-2026 13:36:52 GMT; path=/; domain=.google.com; HttpOnly
-      - __Secure-BUCKET=CMcC; expires=Fri, 11-Sep-2026 13:36:52 GMT; path=/; domain=.google.com;
-        Secure; HttpOnly
       x-frame-options:
       - SAMEORIGIN
       x-xss-protection:
@@ -249,11 +239,6 @@ interactions:
       - keep-alive
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gJbLmtr4itEnO1XhHjSgQ_QSECw1_7Ll6FUxEuNZthtW_whqS7pcFJi_iDYYyeySWoA72mjwtufKrIW8AWU1LmrgqoPtrNu;
-        AEC=AaJma5t3aqGmwxVkPHw8to1f_CNrlqxJcMjRGi0W1JrpNX-tpscLG7c8aQs; NID=529=FiE2Om78g9pyA3Yfcpg9XKxeaa-uhLewD-WUiel_Kl39gOy2jaYB8cHwpdMiXxMyjGSX3IhHnT054bx-xZt0oDJaGRtdrlJZ6HccL6yh19SmQkTaOnNy88XAWM88336P4Izhy9ROd7dpniLwyFHxMQL6kDyKmHQNattFtkAezGKiawN-YYR_5oygFQC7dhQa6MSBRcOUBRdSrQH04fwAOIMUMUUs;
-        __Secure-BUCKET=CMcC; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA
       Host:
       - gemini.google.com
       Origin:
@@ -2596,22 +2581,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=131
-      set-cookie:
-      - __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        Domain=.google.com; Expires=Tue, 14-Mar-2028 13:36:52 GMT; Path=/; Secure;
-        HttpOnly; Priority=HIGH; SameSite=none
-      - NID=529=LYkVyxuEqkMLY6yliEdvW_5_QLiVvamiNZNzvazrSXRTh8g1ITaPbs-_88S747P77N8OpcN094fD8EuIbMreG1eHykW_jH_jjVSzKKaDQ4HyY0zpq4dvgVNT8GQrt_QHa8IlIiO-J7GHV0vNp8N0AVIwzWwYJrycJRTrjMiA8Bbp5HkGWJF_meYb_ktgV13NgYErUaswe9HoSdQ07nixbfyluQX6GLLaXnrg8-1as77xYOtKHERd-co71unUcY8emhE;
-        expires=Mon, 14-Sep-2026 13:36:52 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; SameSite=none
-      - __Secure-1PSIDCC=AKEyXzVbjoatLd_GmEKXNcH9m77kqXYpBsGYwQYCo-kZhSCJyV1JjXLVBKWzAiQY1afMSdw4BA;
-        expires=Mon, 15-Mar-2027 13:36:52 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzX5AwgkxoVFAnhPHCr2ljt0CnmiDEDsUxTexNfGhXTPwqjq7QfhayCA_S6e7qzzGAjXng;
-        expires=Mon, 15-Mar-2027 13:36:52 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
-      - __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076;
-        Domain=.google.com; Expires=Tue, 14-Mar-2028 13:36:52 GMT; Path=/; Secure;
-        HttpOnly; Priority=HIGH; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:
@@ -2626,7 +2595,7 @@ interactions:
       code: 200
       message: null
 - request:
-    body: at=AJvLN6MFOxOPcN_7tuqd3Q4kQjxW%3A1773581812923&f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
+    body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
       Accept:
       - '*/*'
@@ -2638,15 +2607,6 @@ interactions:
       - '166'
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gJbLmtr4itEnO1XhHjSgQ_QSECw1_7Ll6FUxEuNZthtW_whqS7pcFJi_iDYYyeySWoA72mjwtufKrIW8AWU1LmrgqoPtrNu;
-        AEC=AaJma5t3aqGmwxVkPHw8to1f_CNrlqxJcMjRGi0W1JrpNX-tpscLG7c8aQs; NID=529=LYkVyxuEqkMLY6yliEdvW_5_QLiVvamiNZNzvazrSXRTh8g1ITaPbs-_88S747P77N8OpcN094fD8EuIbMreG1eHykW_jH_jjVSzKKaDQ4HyY0zpq4dvgVNT8GQrt_QHa8IlIiO-J7GHV0vNp8N0AVIwzWwYJrycJRTrjMiA8Bbp5HkGWJF_meYb_ktgV13NgYErUaswe9HoSdQ07nixbfyluQX6GLLaXnrg8-1as77xYOtKHERd-co71unUcY8emhE;
-        __Secure-BUCKET=CMcC; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-1PSIDCC=AKEyXzVbjoatLd_GmEKXNcH9m77kqXYpBsGYwQYCo-kZhSCJyV1JjXLVBKWzAiQY1afMSdw4BA;
-        __Secure-3PSIDCC=AKEyXzX5AwgkxoVFAnhPHCr2ljt0CnmiDEDsUxTexNfGhXTPwqjq7QfhayCA_S6e7qzzGAjXng;
-        __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076
       Host:
       - gemini.google.com
       Origin:
@@ -2708,13 +2668,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=72
-      set-cookie:
-      - __Secure-1PSIDCC=AKEyXzWu92zhIarogBkh3ij8gP_npWFizb7PoDh53S5Eai1sLo8l4uppyrrRxvg5c-j9BcSLtw;
-        expires=Mon, 15-Mar-2027 13:36:53 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzXQa4gHdW8pNyYeSquAqb5Q6yExRVZXPkqFixhx4EuU4WEKi906jNKeISItrutO3WnhLA;
-        expires=Mon, 15-Mar-2027 13:36:53 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:
@@ -39845,7 +39798,7 @@ interactions:
       code: 200
       message: null
 - request:
-    body: at=AJvLN6MFOxOPcN_7tuqd3Q4kQjxW%3A1773581812923&f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
+    body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
       Accept:
       - '*/*'
@@ -39857,15 +39810,6 @@ interactions:
       - '166'
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gJbLmtr4itEnO1XhHjSgQ_QSECw1_7Ll6FUxEuNZthtW_whqS7pcFJi_iDYYyeySWoA72mjwtufKrIW8AWU1LmrgqoPtrNu;
-        AEC=AaJma5t3aqGmwxVkPHw8to1f_CNrlqxJcMjRGi0W1JrpNX-tpscLG7c8aQs; NID=529=LYkVyxuEqkMLY6yliEdvW_5_QLiVvamiNZNzvazrSXRTh8g1ITaPbs-_88S747P77N8OpcN094fD8EuIbMreG1eHykW_jH_jjVSzKKaDQ4HyY0zpq4dvgVNT8GQrt_QHa8IlIiO-J7GHV0vNp8N0AVIwzWwYJrycJRTrjMiA8Bbp5HkGWJF_meYb_ktgV13NgYErUaswe9HoSdQ07nixbfyluQX6GLLaXnrg8-1as77xYOtKHERd-co71unUcY8emhE;
-        __Secure-BUCKET=CMcC; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-1PSIDCC=AKEyXzWu92zhIarogBkh3ij8gP_npWFizb7PoDh53S5Eai1sLo8l4uppyrrRxvg5c-j9BcSLtw;
-        __Secure-3PSIDCC=AKEyXzXQa4gHdW8pNyYeSquAqb5Q6yExRVZXPkqFixhx4EuU4WEKi906jNKeISItrutO3WnhLA;
-        __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076
       Host:
       - gemini.google.com
       Origin:
@@ -39927,13 +39871,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=75
-      set-cookie:
-      - __Secure-1PSIDCC=AKEyXzWuUknobM23T1cXSu461mcgFqAh4FCHExgsyPR1T5-pRs1bzP2ZsakTf6TE16X5CfFJ2w;
-        expires=Mon, 15-Mar-2027 13:36:54 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzXnEMk1FsjmPRDVxvOGNeMlF5Z2BZlk3KYEESplRtyjLZyazUcotSdr2D80_OFEUp4A-A;
-        expires=Mon, 15-Mar-2027 13:36:54 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:
@@ -39946,7 +39883,7 @@ interactions:
       code: 200
       message: null
 - request:
-    body: at=AJvLN6MFOxOPcN_7tuqd3Q4kQjxW%3A1773581812923&f.req=%5Bnull%2C%22%5B%5B%5C%22You+are+a+JSON+API.+Output+MUST+be+valid+JSON+and+MUST+conform+to+this+JSON+Schema.%5C%5Cn%5C%5CnReturn+ONLY+the+JSON+%28no+markdown%2C+no+code+fences%2C+no+extra+text%29.%5C%5Cn%5C%5CnJSON+Schema%3A%5C%5Cn%7B%5C%5C%5C%22%24defs%5C%5C%5C%22%3A+%7B%5C%5C%5C%22EvidenceSnippet%5C%5C%5C%22%3A+%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Short+grounded+evidence+copied+from+page+one.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22text%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+8%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Text%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22source%5C%5C%5C%22%3A+%7B%5C%5C%5C%22enum%5C%5C%5C%22%3A+%5B%5C%5C%5C%22title%5C%5C%5C%22%2C+%5C%5C%5C%22abstract%5C%5C%5C%22%2C+%5C%5C%5C%22introduction%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Source%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22text%5C%5C%5C%22%2C+%5C%5C%5C%22source%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22EvidenceSnippet%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%2C+%5C%5C%5C%22PaperMetadata%5C%5C%5C%22%3A+%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+title+metadata+for+the+shared+PDF+fixture.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Title%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22title_words%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Title+Words%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22title%5C%5C%5C%22%2C+%5C%5C%5C%22title_words%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22PaperMetadata%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+digest+extracted+from+the+shared+PDF+fixture.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22metadata%5C%5C%5C%22%3A+%7B%5C%5C%5C%22%24ref%5C%5C%5C%22%3A+%5C%5C%5C%22%23%2F%24defs%2FPaperMetadata%5C%5C%5C%22%7D%2C+%5C%5C%5C%22abstract_one_sentence%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+20%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Abstract+One+Sentence%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22contributions%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Contributions%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22%24ref%5C%5C%5C%22%3A+%5C%5C%5C%22%23%2F%24defs%2FEvidenceSnippet%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Evidence%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%2C+%5C%5C%5C%22key_entities%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+4%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+4%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Key+Entities%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22metadata%5C%5C%5C%22%2C+%5C%5C%5C%22abstract_one_sentence%5C%5C%5C%22%2C+%5C%5C%5C%22contributions%5C%5C%5C%22%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%2C+%5C%5C%5C%22key_entities%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22PDFDigest%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%5C%5Cn%5C%5CnFollow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnYou+are+given+a+PDF+file+attachment.%5C%5Cn%5C%5CnExtract+content+from+the+PDF+%28focus+on+the+paper+itself%2C+not+file+metadata%29.%5C%5CnReturn+JSON+with%3A%5C%5Cn-+metadata.title%3A+exact+paper+title+from+page+1%2C+as+a+single+line%5C%5Cn-+metadata.title_words%3A+exactly+3+distinct+words+taken+from+the+title%2C+preserving+case%5C%5Cn-+abstract_one_sentence%3A+one+sentence+summarizing+the+Abstract+%28%3C%3D+25+words%29%5C%5Cn-+contributions%3A+exactly+3+short+bullet+points+%28%3C%3D+12+words+each%29%5C%5Cn-+evidence%3A+exactly+2+verbatim+snippets+copied+from+page+1+%288%2B+chars%29.+Choose+snippets+that+are+not+broken+by+hyphenation+across+lines.%5C%5Cn++-+source+must+be+one+of%3A+title%2C+abstract%2C+introduction%5C%5Cn-+key_entities%3A+exactly+4+proper+nouns+or+model+names+that+appear+on+page+1+%28preserve+case%29%5C%5Cn%5C%5CnReturn+ONLY+valid+JSON.+No+markdown.%5C%22%2C0%2Cnull%2C%5B%5B%5B%5C%22%2Fcontrib_service%2Fttl_1d%2Fusjl6m5mty3d5ioviuehmpbagfzus31773581813%5C%22%5D%2C%5C%22variative.pdf%5C%22%5D%5D%2Cnull%2Cnull%2C0%5D%2Cnull%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%5D%22%5D
+    body: f.req=%5Bnull%2C%22%5B%5B%5C%22You+are+a+JSON+API.+Output+MUST+be+valid+JSON+and+MUST+conform+to+this+JSON+Schema.%5C%5Cn%5C%5CnReturn+ONLY+the+JSON+%28no+markdown%2C+no+code+fences%2C+no+extra+text%29.%5C%5Cn%5C%5CnJSON+Schema%3A%5C%5Cn%7B%5C%5C%5C%22%24defs%5C%5C%5C%22%3A+%7B%5C%5C%5C%22EvidenceSnippet%5C%5C%5C%22%3A+%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Short+grounded+evidence+copied+from+page+one.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22text%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+8%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Text%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22source%5C%5C%5C%22%3A+%7B%5C%5C%5C%22enum%5C%5C%5C%22%3A+%5B%5C%5C%5C%22title%5C%5C%5C%22%2C+%5C%5C%5C%22abstract%5C%5C%5C%22%2C+%5C%5C%5C%22introduction%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Source%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22text%5C%5C%5C%22%2C+%5C%5C%5C%22source%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22EvidenceSnippet%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%2C+%5C%5C%5C%22PaperMetadata%5C%5C%5C%22%3A+%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+title+metadata+for+the+shared+PDF+fixture.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%7B%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Title%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22title_words%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Title+Words%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22title%5C%5C%5C%22%2C+%5C%5C%5C%22title_words%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22PaperMetadata%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+digest+extracted+from+the+shared+PDF+fixture.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22metadata%5C%5C%5C%22%3A+%7B%5C%5C%5C%22%24ref%5C%5C%5C%22%3A+%5C%5C%5C%22%23%2F%24defs%2FPaperMetadata%5C%5C%5C%22%7D%2C+%5C%5C%5C%22abstract_one_sentence%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+20%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Abstract+One+Sentence%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22contributions%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Contributions%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22%24ref%5C%5C%5C%22%3A+%5C%5C%5C%22%23%2F%24defs%2FEvidenceSnippet%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Evidence%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%2C+%5C%5C%5C%22key_entities%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22maxItems%5C%5C%5C%22%3A+4%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+4%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Key+Entities%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22metadata%5C%5C%5C%22%2C+%5C%5C%5C%22abstract_one_sentence%5C%5C%5C%22%2C+%5C%5C%5C%22contributions%5C%5C%5C%22%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%2C+%5C%5C%5C%22key_entities%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22PDFDigest%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%5C%5Cn%5C%5CnFollow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnYou+are+given+a+PDF+file+attachment.%5C%5Cn%5C%5CnExtract+content+from+the+PDF+%28focus+on+the+paper+itself%2C+not+file+metadata%29.%5C%5CnReturn+JSON+with%3A%5C%5Cn-+metadata.title%3A+exact+paper+title+from+page+1%2C+as+a+single+line%5C%5Cn-+metadata.title_words%3A+exactly+3+distinct+words+taken+from+the+title%2C+preserving+case%5C%5Cn-+abstract_one_sentence%3A+one+sentence+summarizing+the+Abstract+%28%3C%3D+25+words%29%5C%5Cn-+contributions%3A+exactly+3+short+bullet+points+%28%3C%3D+12+words+each%29%5C%5Cn-+evidence%3A+exactly+2+verbatim+snippets+copied+from+page+1+%288%2B+chars%29.+Choose+snippets+that+are+not+broken+by+hyphenation+across+lines.%5C%5Cn++-+source+must+be+one+of%3A+title%2C+abstract%2C+introduction%5C%5Cn-+key_entities%3A+exactly+4+proper+nouns+or+model+names+that+appear+on+page+1+%28preserve+case%29%5C%5Cn%5C%5CnReturn+ONLY+valid+JSON.+No+markdown.%5C%22%2C0%2Cnull%2C%5B%5B%5B%5C%22%2Fcontrib_service%2Fttl_1d%2Fusjl6m5mty3d5ioviuehmpbagfzus31773581813%5C%22%5D%2C%5C%22variative.pdf%5C%22%5D%5D%2Cnull%2Cnull%2C0%5D%2C%5B%5C%22en%5C%22%5D%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2C%5B0%5D%2C1%2Cnull%2Cnull%2C1%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B0%5D%5D%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2C%5B4%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B1%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22100c8d59-b3c1-411e-9417-6ea87cde2053%5C%22%2Cnull%2C%5B%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%5D%22%5D
     headers:
       Accept:
       - '*/*'
@@ -39958,15 +39895,6 @@ interactions:
       - '6097'
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gJbLmtr4itEnO1XhHjSgQ_QSECw1_7Ll6FUxEuNZthtW_whqS7pcFJi_iDYYyeySWoA72mjwtufKrIW8AWU1LmrgqoPtrNu;
-        AEC=AaJma5t3aqGmwxVkPHw8to1f_CNrlqxJcMjRGi0W1JrpNX-tpscLG7c8aQs; NID=529=LYkVyxuEqkMLY6yliEdvW_5_QLiVvamiNZNzvazrSXRTh8g1ITaPbs-_88S747P77N8OpcN094fD8EuIbMreG1eHykW_jH_jjVSzKKaDQ4HyY0zpq4dvgVNT8GQrt_QHa8IlIiO-J7GHV0vNp8N0AVIwzWwYJrycJRTrjMiA8Bbp5HkGWJF_meYb_ktgV13NgYErUaswe9HoSdQ07nixbfyluQX6GLLaXnrg8-1as77xYOtKHERd-co71unUcY8emhE;
-        __Secure-BUCKET=CMcC; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-1PSIDCC=AKEyXzWuUknobM23T1cXSu461mcgFqAh4FCHExgsyPR1T5-pRs1bzP2ZsakTf6TE16X5CfFJ2w;
-        __Secure-3PSIDCC=AKEyXzXnEMk1FsjmPRDVxvOGNeMlF5Z2BZlk3KYEESplRtyjLZyazUcotSdr2D80_OFEUp4A-A;
-        __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076
       Host:
       - gemini.google.com
       Origin:
@@ -40286,13 +40214,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=6189
-      set-cookie:
-      - __Secure-1PSIDCC=AKEyXzXNKre6--kVOKbW3Dt7Ez3a5SknMHiDkeuzzAP9XAGEJkavSZ-tkYZZ_xjwFnAZXJ_ADw;
-        expires=Mon, 15-Mar-2027 13:37:00 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzULl7AOPNjPafFLuqPJngR5bT190hMOHcT5fByEAlU6E-kmr6htnfjR_5wb2CrYE0ES3Q;
-        expires=Mon, 15-Mar-2027 13:37:00 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:
