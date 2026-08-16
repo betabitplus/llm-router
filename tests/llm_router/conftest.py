@@ -25,6 +25,7 @@ else:
     beartype_this_package()
 
 import os
+import re
 import tempfile
 import types
 from collections.abc import MutableMapping
@@ -91,6 +92,48 @@ _install_fast_fake_browser_cookie3()
 # =============================================================================
 
 
+_GOOGLE_API_KEY_RE = re.compile(r"AIza[0-9A-Za-z_-]{35}")
+_EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+_GOOGLE_ACCOUNT_CARD_RE = re.compile(
+    r'(<div class="gb_g">)[^<]*(</div><div>)[^<]*(</div>)'
+)
+_GOOGLE_ACCOUNT_ARIA_RE = re.compile(
+    r'aria-label="[^"]*(?=" href="https://accounts\.google\.com/SignOutOptions)'
+)
+_GOOGLE_PROFILE_IMAGE_RE = re.compile(r'https://lh3\.google\.com/u/0/ogw/[^"]+')
+_GOOGLE_ACCOUNT_ID_RE = re.compile(r"\b[0-9]{21}\b")
+
+
+def _vcr_scrub_recorded_text(value: Any) -> Any:
+    """Remove credential-shaped and account PII from recorded HTTP text."""
+    was_bytes = isinstance(value, bytes)
+    if was_bytes:
+        try:
+            text = value.decode("utf-8")
+        except UnicodeDecodeError:
+            return value
+    elif isinstance(value, str):
+        text = value
+    else:
+        return value
+
+    text = _GOOGLE_API_KEY_RE.sub("DUMMY_GOOGLE_API_KEY", text)
+    if "accounts.google.com/SignOutOptions" in text:
+        text = _EMAIL_RE.sub("redacted@example.invalid", text)
+        text = _GOOGLE_ACCOUNT_CARD_RE.sub(
+            r"\1REDACTED_ACCOUNT\2redacted@example.invalid\3",
+            text,
+        )
+        text = _GOOGLE_ACCOUNT_ARIA_RE.sub('aria-label="REDACTED_ACCOUNT', text)
+        text = _GOOGLE_PROFILE_IMAGE_RE.sub(
+            "https://lh3.google.com/redacted-profile",
+            text,
+        )
+        text = _GOOGLE_ACCOUNT_ID_RE.sub("000000000000000000000", text)
+
+    return text.encode("utf-8") if was_bytes else text
+
+
 def pytest_recording_configure(config: pytest.Config, vcr: Any) -> None:  # noqa: ARG001
     """Configure pytest-recording's VCR instance for LLMRouter tests."""
     from tests.llm_router.support.vcr_extensions import register_vcr_extensions
@@ -126,6 +169,9 @@ def _vcr_scrub_request(request: Any) -> Any:
     if isinstance(headers, MutableMapping):
         headers.pop("Cookie", None)
         headers.pop("cookie", None)
+
+    request.uri = _vcr_scrub_recorded_text(getattr(request, "uri", None))
+    request.body = _vcr_scrub_recorded_text(getattr(request, "body", None))
 
     # Keep recording artifacts small: multipart uploads and JSON payloads with
     # embedded base64 media can produce multi-megabyte cassettes. Replace the
@@ -203,6 +249,10 @@ def _vcr_scrub_response(response: Any) -> Any:
         if isinstance(headers, MutableMapping):
             headers.pop("Set-Cookie", None)
             headers.pop("set-cookie", None)
+
+        body = response.get("body")
+        if isinstance(body, MutableMapping) and "string" in body:
+            body["string"] = _vcr_scrub_recorded_text(body["string"])
     return response
 
 

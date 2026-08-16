@@ -21,7 +21,17 @@ def test_vcr_gemini_auth_state_is_removed_from_recordings() -> None:
         ),
         body="at=sensitive-token&f.req=payload",
     )
-    response = {"headers": HeadersDict({"Set-Cookie": "secret", "X-Test": "keep"})}
+    response = {
+        "headers": HeadersDict({"Set-Cookie": "secret", "X-Test": "keep"}),
+        "body": {
+            "string": (
+                '<a aria-label="Google Account: Person (person@example.com)" '
+                'href="https://accounts.google.com/SignOutOptions?x=1">'
+                '<img src="https://lh3.google.com/u/0/ogw/profile-placeholder">'
+                '</a><div class="gb_g">Person</div><div>person@example.com</div>'
+            )
+        },
+    }
 
     scrubbed_request = _vcr_scrub_request(request)
     scrubbed_response = _vcr_scrub_response(response)
@@ -31,3 +41,10 @@ def test_vcr_gemini_auth_state_is_removed_from_recordings() -> None:
     assert scrubbed_request.body == "f.req=payload"
     assert "Set-Cookie" not in scrubbed_response["headers"]
     assert scrubbed_response["headers"]["X-Test"] == "keep"
+
+    scrubbed_body = scrubbed_response["body"]["string"]
+    assert "person@example.com" not in scrubbed_body
+    assert "Person" not in scrubbed_body
+    assert "profile-placeholder" not in scrubbed_body
+    assert "redacted@example.invalid" in scrubbed_body
+    assert "REDACTED_ACCOUNT" in scrubbed_body
