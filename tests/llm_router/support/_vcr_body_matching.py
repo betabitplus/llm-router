@@ -15,6 +15,7 @@ How:
 
 from __future__ import annotations
 
+import json
 import re
 from typing import Any
 from urllib.parse import parse_qs, urlparse
@@ -34,6 +35,10 @@ _QWEN_COMPLETION_PORT = 3264
 _QWEN_UPLOAD_HOST = "qwen-webui-prod.oss-accelerate.aliyuncs.com"
 _GEMINI_FORM_HOST = "gemini.google.com"
 _GEMINI_FORM_CONTENT_TYPE = "application/x-www-form-urlencoded"
+_GEMINI_REQUEST_UUID_INDEX = 59
+_UUID4_RE = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+)
 
 
 # ================================================================================
@@ -189,9 +194,35 @@ def _normalized_gemini_form_params(body: bytes) -> dict[str, list[str]] | None:
 def _normalize_gemini_form_value(key: str, value: str) -> str:
     if key != "f.req":
         return value
+    value = _normalize_gemini_request_uuid(value)
     value = re.sub(
         r"/contrib_service/ttl_1d/[A-Za-z0-9]+",
         "/contrib_service/ttl_1d/<upload>",
         value,
     )
     return re.sub(r"image_[0-9a-f]+\.png", "image_<temp>.png", value)
+
+
+def _normalize_gemini_request_uuid(value: str) -> str:
+    """Normalize Gemini WebAPI's browser-parity per-request UUID slot."""
+    try:
+        outer = json.loads(value)
+    except json.JSONDecodeError:
+        return value
+    if not isinstance(outer, list) or len(outer) <= 1 or not isinstance(outer[1], str):
+        return value
+    try:
+        inner = json.loads(outer[1])
+    except json.JSONDecodeError:
+        return value
+
+    if not isinstance(inner, list) or len(inner) <= _GEMINI_REQUEST_UUID_INDEX:
+        return value
+
+    request_uuid = inner[_GEMINI_REQUEST_UUID_INDEX]
+    if not isinstance(request_uuid, str) or _UUID4_RE.fullmatch(request_uuid) is None:
+        return value
+
+    inner[_GEMINI_REQUEST_UUID_INDEX] = "<request-uuid>"
+    outer[1] = json.dumps(inner, separators=(",", ":"))
+    return json.dumps(outer, separators=(",", ":"))

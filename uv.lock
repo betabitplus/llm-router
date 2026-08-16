@@ -816,7 +816,7 @@ wheels = [
 
 [[package]]
 name = "gemini-webapi"
-version = "1.19.2"
+version = "1.21.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx", extra = ["http2"] },
@@ -824,9 +824,9 @@ dependencies = [
     { name = "orjson" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d4/d3/b4ff659bfb0fff378b16f934429d53b7f78451ac184406ab2f9ddda9357e/gemini_webapi-1.19.2.tar.gz", hash = "sha256:f6e96e28f3f1e78be6176fbb8b2eca25ad509aec6cfacf99c415559f27691b71", size = 266805, upload-time = "2026-02-14T05:26:04.103Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b3/1e/ec164b7af828b2561a6d0d6235d895e2997698d16fcbbcc652b20ca0ba49/gemini_webapi-1.21.0.tar.gz", hash = "sha256:0b75c29b5380b109f663b35c8df76f5244dae819b12a472bd25df9016a46b76c", size = 272612, upload-time = "2026-03-06T23:15:05.005Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2d/e7/a676f721980e3daa43e05abe94884a84648efdc6203889e7a0f5c8ca2e98/gemini_webapi-1.19.2-py3-none-any.whl", hash = "sha256:fdc088ca35361301f40ea807a58c4bec18886b17a54164a1a8f3d639eadc6a66", size = 63524, upload-time = "2026-02-14T05:26:02.173Z" },
+    { url = "https://files.pythonhosted.org/packages/a8/c7/1e94cbfdf7c6add59f61897d0069e83ca099eafb0affeac7a56881c4298e/gemini_webapi-1.21.0-py3-none-any.whl", hash = "sha256:04fbaef555537892c2c824ea127796770d210dbe65df4f178723897dd969b72e", size = 69739, upload-time = "2026-03-06T23:15:03.54Z" },
 ]
 
 [[package]]
@@ -1667,7 +1667,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "browser-cookie3" },
-    { name = "gemini-webapi", specifier = ">=1.19.2,<1.20" },
+    { name = "gemini-webapi", specifier = ">=1.21,<1.22" },
     { name = "google-genai", specifier = ">=1.73.1" },
     { name = "httpx" },
     { name = "openai" },

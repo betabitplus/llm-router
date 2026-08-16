@@ -657,16 +657,6 @@ interactions:
       - default="//www.google.com/httpservice/retry/jserror?ei=3LW2aa-2IPrdxc8P-ZrVkQk&cad=crash&error=Page%20Crash&jsel=1&bver=2397&dpf=wMQXCGM91zrsBBgKsGeyPVzcFwjZpz6XdB68N8bZqBY"
       server:
       - gws
-      set-cookie:
-      - __Secure-STRP=AEEP7gI2UUEENi3mygj1g_GekqiUntaQVVOs1UJC0vz5zuJxd-D2-Rh21RzfQ-mm9DBUkutUtolRt2UHqdFpwirRkQMGfHLH1vdJ;
-        expires=Sun, 15-Mar-2026 13:41:28 GMT; path=/; domain=.google.com; Secure;
-        SameSite=strict
-      - AEC=AaJma5tlC3W0jG03yeZSoalXxGBUV2bJQnwc4tKaB5_VeTW_Lm7wnBC21A; expires=Fri,
-        11-Sep-2026 13:36:28 GMT; path=/; domain=.google.com; Secure; HttpOnly; SameSite=lax
-      - NID=529=SHQR5jha22hf_TJIRQvoTUYWtgegu2W_LFdn0amYbfzQMebh5o-QKrEFk9R3sMZWFc45doQsuKIjmJ7rWOUi5IuIW5CyowmapEm3HL6B5Pl3KnIbpEW1gjCMyBQl_tsew7WAbVruRJKoV01IHpEvRybBwPLmS8rGnGOPfrQyt05SuZYyQWoS66hK5C86HYL_23c-MfQOUxdG8FdZONZG6ikmabHpJ83hqg;
-        expires=Mon, 14-Sep-2026 13:36:28 GMT; path=/; domain=.google.com; HttpOnly
-      - __Secure-BUCKET=CPgG; expires=Fri, 11-Sep-2026 13:36:28 GMT; path=/; domain=.google.com;
-        Secure; HttpOnly
       x-frame-options:
       - SAMEORIGIN
       x-xss-protection:
@@ -685,11 +675,6 @@ interactions:
       - keep-alive
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gI2UUEENi3mygj1g_GekqiUntaQVVOs1UJC0vz5zuJxd-D2-Rh21RzfQ-mm9DBUkutUtolRt2UHqdFpwirRkQMGfHLH1vdJ;
-        AEC=AaJma5tlC3W0jG03yeZSoalXxGBUV2bJQnwc4tKaB5_VeTW_Lm7wnBC21A; NID=529=FiE2Om78g9pyA3Yfcpg9XKxeaa-uhLewD-WUiel_Kl39gOy2jaYB8cHwpdMiXxMyjGSX3IhHnT054bx-xZt0oDJaGRtdrlJZ6HccL6yh19SmQkTaOnNy88XAWM88336P4Izhy9ROd7dpniLwyFHxMQL6kDyKmHQNattFtkAezGKiawN-YYR_5oygFQC7dhQa6MSBRcOUBRdSrQH04fwAOIMUMUUs;
-        __Secure-BUCKET=CPgG; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA
       Host:
       - gemini.google.com
       Origin:
@@ -3032,22 +3017,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=124
-      set-cookie:
-      - __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        Domain=.google.com; Expires=Tue, 14-Mar-2028 13:36:28 GMT; Path=/; Secure;
-        HttpOnly; Priority=HIGH; SameSite=none
-      - NID=529=yZjsDM46Lww_4PH_JRuL76vPTzkf29b5mayOLEmuMUzgryrW-hGYjiCZ4oqwVt4zgBb27CQ_XvyY_4-qXuOKknKe4IoJvKtp0ac8SKdfqYiaAkcGgt6aIcfny4JqXc8G45c71j6ix6OxJ7r_M446k4Yoem_TzIdgdWJ_vId0vX0KItXSFSE2IPVPWYQ4xP_F6BptLDi0LOeqZ5-GSY5ZCUfKKNwnNNZ-6C8qDyWn04EsVAdqFKW2FD0Pw6dH4fGTfz0;
-        expires=Mon, 14-Sep-2026 13:36:28 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; SameSite=none
-      - __Secure-1PSIDCC=AKEyXzVIMMsHqv-9aXI_NF7n5bq4Lz4LCIvV_yswaLA2IlT0xe7zm6ssp9KyMPKPG6MSyT6G_A;
-        expires=Mon, 15-Mar-2027 13:36:29 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzVQsIqEK0JirQdWVXwqia8IkHSvLVvbmmnfsc1SYv49eGiGnX7c5VB9R_BlyxnJiFIcSQ;
-        expires=Mon, 15-Mar-2027 13:36:29 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
-      - __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076;
-        Domain=.google.com; Expires=Tue, 14-Mar-2028 13:36:28 GMT; Path=/; Secure;
-        HttpOnly; Priority=HIGH; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:
@@ -3062,7 +3031,7 @@ interactions:
       code: 200
       message: null
 - request:
-    body: at=AJvLN6NDQMHEXBb8XBjNLNAdql6T%3A1773581789037&f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
+    body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
       Accept:
       - '*/*'
@@ -3074,15 +3043,6 @@ interactions:
       - '166'
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gI2UUEENi3mygj1g_GekqiUntaQVVOs1UJC0vz5zuJxd-D2-Rh21RzfQ-mm9DBUkutUtolRt2UHqdFpwirRkQMGfHLH1vdJ;
-        AEC=AaJma5tlC3W0jG03yeZSoalXxGBUV2bJQnwc4tKaB5_VeTW_Lm7wnBC21A; NID=529=yZjsDM46Lww_4PH_JRuL76vPTzkf29b5mayOLEmuMUzgryrW-hGYjiCZ4oqwVt4zgBb27CQ_XvyY_4-qXuOKknKe4IoJvKtp0ac8SKdfqYiaAkcGgt6aIcfny4JqXc8G45c71j6ix6OxJ7r_M446k4Yoem_TzIdgdWJ_vId0vX0KItXSFSE2IPVPWYQ4xP_F6BptLDi0LOeqZ5-GSY5ZCUfKKNwnNNZ-6C8qDyWn04EsVAdqFKW2FD0Pw6dH4fGTfz0;
-        __Secure-BUCKET=CPgG; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-1PSIDCC=AKEyXzVIMMsHqv-9aXI_NF7n5bq4Lz4LCIvV_yswaLA2IlT0xe7zm6ssp9KyMPKPG6MSyT6G_A;
-        __Secure-3PSIDCC=AKEyXzVQsIqEK0JirQdWVXwqia8IkHSvLVvbmmnfsc1SYv49eGiGnX7c5VB9R_BlyxnJiFIcSQ;
-        __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076
       Host:
       - gemini.google.com
       Origin:
@@ -3144,13 +3104,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=80
-      set-cookie:
-      - __Secure-1PSIDCC=AKEyXzWSUpQhJUjkkYHaVcjR2EVGiS_sUvcEm3gslDntZsU7il3suU-AU19SvFWpjgNfm5421w;
-        expires=Mon, 15-Mar-2027 13:36:29 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzVOw1yQyOghpe_RbcC29rRv8j4FCEFCT3qifIJnKBGVVxZMJpBcVD7zCFtGhR6d6u2zaA;
-        expires=Mon, 15-Mar-2027 13:36:29 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:
@@ -8005,7 +7958,7 @@ interactions:
       code: 200
       message: null
 - request:
-    body: at=AJvLN6NDQMHEXBb8XBjNLNAdql6T%3A1773581789037&f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
+    body: f.req=%5B%5B%5B%22ESY5D%22%2C%22%5B%5B%5B%5C%22bard_activity_enabled%5C%22%5D%5D%5D%22%2Cnull%2C%22generic%22%5D%5D%5D
     headers:
       Accept:
       - '*/*'
@@ -8017,15 +7970,6 @@ interactions:
       - '166'
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gI2UUEENi3mygj1g_GekqiUntaQVVOs1UJC0vz5zuJxd-D2-Rh21RzfQ-mm9DBUkutUtolRt2UHqdFpwirRkQMGfHLH1vdJ;
-        AEC=AaJma5tlC3W0jG03yeZSoalXxGBUV2bJQnwc4tKaB5_VeTW_Lm7wnBC21A; NID=529=yZjsDM46Lww_4PH_JRuL76vPTzkf29b5mayOLEmuMUzgryrW-hGYjiCZ4oqwVt4zgBb27CQ_XvyY_4-qXuOKknKe4IoJvKtp0ac8SKdfqYiaAkcGgt6aIcfny4JqXc8G45c71j6ix6OxJ7r_M446k4Yoem_TzIdgdWJ_vId0vX0KItXSFSE2IPVPWYQ4xP_F6BptLDi0LOeqZ5-GSY5ZCUfKKNwnNNZ-6C8qDyWn04EsVAdqFKW2FD0Pw6dH4fGTfz0;
-        __Secure-BUCKET=CPgG; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-1PSIDCC=AKEyXzWSUpQhJUjkkYHaVcjR2EVGiS_sUvcEm3gslDntZsU7il3suU-AU19SvFWpjgNfm5421w;
-        __Secure-3PSIDCC=AKEyXzVOw1yQyOghpe_RbcC29rRv8j4FCEFCT3qifIJnKBGVVxZMJpBcVD7zCFtGhR6d6u2zaA;
-        __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076
       Host:
       - gemini.google.com
       Origin:
@@ -8087,13 +8031,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=73
-      set-cookie:
-      - __Secure-1PSIDCC=AKEyXzV7zTMtwlZoPKI7nYxTqUKZZWfJ6c_nLOgW10B_zRpmJmZjD5ibm4I5k9KSGGEhhr5ocA;
-        expires=Mon, 15-Mar-2027 13:36:30 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzXrsyDOYq-DsjpwePaZ2MDtSfXqTp90IzFnO0Z-4aTp6vCkMYdLz-zuiouaK5ELoGlF7Q;
-        expires=Mon, 15-Mar-2027 13:36:30 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:
@@ -8106,7 +8043,7 @@ interactions:
       code: 200
       message: null
 - request:
-    body: at=AJvLN6NDQMHEXBb8XBjNLNAdql6T%3A1773581789037&f.req=%5Bnull%2C%22%5B%5B%5C%22You+are+a+JSON+API.+Output+MUST+be+valid+JSON+and+MUST+conform+to+this+JSON+Schema.%5C%5Cn%5C%5CnReturn+ONLY+the+JSON+%28no+markdown%2C+no+code+fences%2C+no+extra+text%29.%5C%5Cn%5C%5CnJSON+Schema%3A%5C%5Cn%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+summary+for+the+shared+road-traffic+image+fixture.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22primary_subject%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Primary+Subject%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22setting%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Setting%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22visible_objects%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Visible+Objects%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Evidence%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22primary_subject%5C%5C%5C%22%2C+%5C%5C%5C%22setting%5C%5C%5C%22%2C+%5C%5C%5C%22visible_objects%5C%5C%5C%22%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22SceneSummary%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%5C%5Cn%5C%5CnFollow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnDescribe+the+attached+image+and+return+JSON.%5C%5Cn%5C%5CnReturn+exactly+these+keys%3A%5C%5Cn-+primary_subject%3A+a+short+phrase+naming+the+main+thing+shown%5C%5Cn-+setting%3A+a+short+phrase+describing+the+setting%5C%5Cn-+visible_objects%3A+at+least+3+short+object+names%5C%5Cn-+evidence%3A+at+least+2+short+phrases+grounding+the+answer+in+the+image%5C%5Cn%5C%5CnIf+the+scene+is+a+road%2C+highway%2C+or+traffic+setting%2C+mention+that+clearly.%5C%5CnReturn+ONLY+valid+JSON.+No+markdown.%5C%22%2C0%2Cnull%2C%5B%5B%5B%5C%22%2Fcontrib_service%2Fttl_1d%2Fwmb3zw7q2zmbjpefxr4tscjplhn6641773581789%5C%22%5D%2C%5C%22image_c5621d6ca64de6f4.png%5C%22%5D%5D%2Cnull%2Cnull%2C0%5D%2Cnull%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%5D%22%5D
+    body: f.req=%5Bnull%2C%22%5B%5B%5C%22You+are+a+JSON+API.+Output+MUST+be+valid+JSON+and+MUST+conform+to+this+JSON+Schema.%5C%5Cn%5C%5CnReturn+ONLY+the+JSON+%28no+markdown%2C+no+code+fences%2C+no+extra+text%29.%5C%5Cn%5C%5CnJSON+Schema%3A%5C%5Cn%7B%5C%5C%5C%22description%5C%5C%5C%22%3A+%5C%5C%5C%22Structured+summary+for+the+shared+road-traffic+image+fixture.%5C%5C%5C%22%2C+%5C%5C%5C%22properties%5C%5C%5C%22%3A+%7B%5C%5C%5C%22primary_subject%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Primary+Subject%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22setting%5C%5C%5C%22%3A+%7B%5C%5C%5C%22minLength%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Setting%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22visible_objects%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+3%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Visible+Objects%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%3A+%7B%5C%5C%5C%22items%5C%5C%5C%22%3A+%7B%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22string%5C%5C%5C%22%7D%2C+%5C%5C%5C%22minItems%5C%5C%5C%22%3A+2%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22Evidence%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22array%5C%5C%5C%22%7D%7D%2C+%5C%5C%5C%22required%5C%5C%5C%22%3A+%5B%5C%5C%5C%22primary_subject%5C%5C%5C%22%2C+%5C%5C%5C%22setting%5C%5C%5C%22%2C+%5C%5C%5C%22visible_objects%5C%5C%5C%22%2C+%5C%5C%5C%22evidence%5C%5C%5C%22%5D%2C+%5C%5C%5C%22title%5C%5C%5C%22%3A+%5C%5C%5C%22SceneSummary%5C%5C%5C%22%2C+%5C%5C%5C%22type%5C%5C%5C%22%3A+%5C%5C%5C%22object%5C%5C%5C%22%7D%5C%5Cn%5C%5CnFollow+instructions+exactly.+Reply+with+only+what+is+asked.%5C%5Cn%5C%5CnDescribe+the+attached+image+and+return+JSON.%5C%5Cn%5C%5CnReturn+exactly+these+keys%3A%5C%5Cn-+primary_subject%3A+a+short+phrase+naming+the+main+thing+shown%5C%5Cn-+setting%3A+a+short+phrase+describing+the+setting%5C%5Cn-+visible_objects%3A+at+least+3+short+object+names%5C%5Cn-+evidence%3A+at+least+2+short+phrases+grounding+the+answer+in+the+image%5C%5Cn%5C%5CnIf+the+scene+is+a+road%2C+highway%2C+or+traffic+setting%2C+mention+that+clearly.%5C%5CnReturn+ONLY+valid+JSON.+No+markdown.%5C%22%2C0%2Cnull%2C%5B%5B%5B%5C%22%2Fcontrib_service%2Fttl_1d%2Fwmb3zw7q2zmbjpefxr4tscjplhn6641773581789%5C%22%5D%2C%5C%22image_ef4f61afb7d1bcf1.png%5C%22%5D%5D%2Cnull%2Cnull%2C0%5D%2C%5B%5C%22en%5C%22%5D%2C%5B%5C%22%5C%22%2C%5C%22%5C%22%2C%5C%22%5C%22%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22%5C%22%5D%2Cnull%2Cnull%2Cnull%2C%5B0%5D%2C1%2Cnull%2Cnull%2C1%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B0%5D%5D%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%2Cnull%2Cnull%2C%5B4%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B1%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C0%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5C%22c0dad988-142b-4a7c-a3d3-2d842aa935f6%5C%22%2Cnull%2C%5B%5D%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C1%5D%22%5D
     headers:
       Accept:
       - '*/*'
@@ -8118,15 +8055,6 @@ interactions:
       - '3243'
       Content-Type:
       - application/x-www-form-urlencoded;charset=utf-8
-      Cookie:
-      - __Secure-STRP=AEEP7gI2UUEENi3mygj1g_GekqiUntaQVVOs1UJC0vz5zuJxd-D2-Rh21RzfQ-mm9DBUkutUtolRt2UHqdFpwirRkQMGfHLH1vdJ;
-        AEC=AaJma5tlC3W0jG03yeZSoalXxGBUV2bJQnwc4tKaB5_VeTW_Lm7wnBC21A; NID=529=yZjsDM46Lww_4PH_JRuL76vPTzkf29b5mayOLEmuMUzgryrW-hGYjiCZ4oqwVt4zgBb27CQ_XvyY_4-qXuOKknKe4IoJvKtp0ac8SKdfqYiaAkcGgt6aIcfny4JqXc8G45c71j6ix6OxJ7r_M446k4Yoem_TzIdgdWJ_vId0vX0KItXSFSE2IPVPWYQ4xP_F6BptLDi0LOeqZ5-GSY5ZCUfKKNwnNNZ-6C8qDyWn04EsVAdqFKW2FD0Pw6dH4fGTfz0;
-        __Secure-BUCKET=CPgG; __Secure-1PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXYEKETjmla8Vg3CLlPTsEoAACgYKAQoSARISFQHGX2MiN5sRhUi8SF3P3I4DfeYHwhoVAUF8yKoHJeTbd3jCq9toqGM_0aJL0076;
-        __Secure-1PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-3PSIDTS=sidts-CjEBBj1CYhZEITjOyo1TjToa7ZO77IOZRSGaDqlsoTsajnxZMsQEHP686BNpZIujhqDZEAA;
-        __Secure-1PSIDCC=AKEyXzV7zTMtwlZoPKI7nYxTqUKZZWfJ6c_nLOgW10B_zRpmJmZjD5ibm4I5k9KSGGEhhr5ocA;
-        __Secure-3PSIDCC=AKEyXzXrsyDOYq-DsjpwePaZ2MDtSfXqTp90IzFnO0Z-4aTp6vCkMYdLz-zuiouaK5ELoGlF7Q;
-        __Secure-3PSID=g.a0007QgdXBzWmymvagLImxGqYpjfK1a_XmqKx5BcLiZZ3PHNNewXQzhJ_2fsXILCz4aNGqhqgQACgYKAY8SARISFQHGX2Mi2ocIxKhtt6QZlbgmOQtqphoVAUF8yKqWdnnWt-KHPHkvAJo8WaAU0076
       Host:
       - gemini.google.com
       Origin:
@@ -8338,13 +8266,6 @@ interactions:
       - ESF
       server-timing:
       - gfet4t7; dur=2906
-      set-cookie:
-      - __Secure-1PSIDCC=AKEyXzVVVIqaB9dWeFKKdTvos4ZzQd4IOX-GUHy1lGVoI9ATlStkUQEWFoa3SOMu9wdz72sF5Q;
-        expires=Mon, 15-Mar-2027 13:36:33 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high
-      - __Secure-3PSIDCC=AKEyXzWpZHzbV9nCCK44RQa-qiWTn8BPuGCocicxemSuDgstA_p9o8umJGBdfKXGFuB9od_3iA;
-        expires=Mon, 15-Mar-2027 13:36:33 GMT; path=/; domain=.google.com; Secure;
-        HttpOnly; priority=high; SameSite=none
       vary:
       - Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site
       x-content-type-options:

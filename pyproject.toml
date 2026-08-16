@@ -27,7 +27,7 @@ classifiers = [
 # --- Main Dependencies ---
 dependencies = [
   "browser-cookie3",
-  "gemini-webapi>=1.19.2,<1.20",
+  "gemini-webapi>=1.21,<1.22",
   "google-genai>=1.73.1",
   "httpx",
   "openai",

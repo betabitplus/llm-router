@@ -27,9 +27,11 @@ else:
 import os
 import tempfile
 import types
+from collections.abc import MutableMapping
 from contextlib import suppress
 from types import SimpleNamespace
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlparse
 
 import pytest
 from py_lib_testkit import configure_pytest_process, multipart_signature_prefix
@@ -121,7 +123,7 @@ def _vcr_scrub_request(request: Any) -> Any:
     import json
 
     headers = getattr(request, "headers", None)
-    if isinstance(headers, dict):
+    if isinstance(headers, MutableMapping):
         headers.pop("Cookie", None)
         headers.pop("cookie", None)
 
@@ -141,6 +143,25 @@ def _vcr_scrub_request(request: Any) -> Any:
         )
 
         content_type = get_header_value(request, "content-type")
+        parsed_uri = urlparse(str(getattr(request, "uri", "")))
+        if (
+            parsed_uri.hostname == "gemini.google.com"
+            and "application/x-www-form-urlencoded" in content_type.lower()
+        ):
+            original_body = getattr(request, "body", None)
+            body_text = to_bytes(original_body).decode("utf-8", errors="strict")
+            form_pairs = [
+                (key, value)
+                for key, value in parse_qsl(body_text, keep_blank_values=True)
+                if key != "at"
+            ]
+            scrubbed_body = urlencode(form_pairs)
+            request.body = (
+                scrubbed_body.encode("utf-8")
+                if isinstance(original_body, bytes)
+                else scrubbed_body
+            )
+
         boundary = extract_boundary(content_type)
         if boundary:
             raw_body = to_bytes(getattr(request, "body", None))
@@ -179,7 +200,7 @@ def _vcr_scrub_request(request: Any) -> Any:
 def _vcr_scrub_response(response: Any) -> Any:
     if isinstance(response, dict):
         headers = response.get("headers")
-        if isinstance(headers, dict):
+        if isinstance(headers, MutableMapping):
             headers.pop("Set-Cookie", None)
             headers.pop("set-cookie", None)
     return response
