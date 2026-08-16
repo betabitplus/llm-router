@@ -503,8 +503,10 @@ def main() -> None:
             "Passing `None` cleared the router defaults instead of behaving "
             "like omission.",
             details=[
-                "Temperature present in payload: "
-                f"{'temperature' in cleared_defaults_payload}",
+                (
+                    "Temperature present in payload: "
+                    f"{'temperature' in cleared_defaults_payload}"
+                ),
                 f"Seed present in payload: {'seed' in cleared_defaults_payload}",
                 f"Routing trace: {cleared_defaults_result.routing_trace}",
             ],
@@ -530,8 +532,10 @@ def main() -> None:
             "When the call omitted `response_schema`, the route-level schema "
             "was sent automatically.",
             details=[
-                "Schema name: "
-                f"{route_schema_payload['response_format']['json_schema']['name']}",
+                (
+                    "Schema name: "
+                    f"{route_schema_payload['response_format']['json_schema']['name']}"
+                ),
                 f"Output text: {route_schema_result.output_text}",
             ],
         )
@@ -550,13 +554,14 @@ def main() -> None:
             request_payload=first_request_payload(server),
         )
         override_schema_payload = first_request_payload(server)
+        override_json_schema = override_schema_payload["response_format"]["json_schema"]
+        override_schema_name = override_json_schema["name"]
 
         console.demo_step(
             "What Happened With A Per-Call Schema Override",
             "The call-level schema replaced the route default for this one request.",
             details=[
-                "Schema name: "
-                f"{override_schema_payload['response_format']['json_schema']['name']}",
+                f"Schema name: {override_schema_name}",
                 f"Output text: {override_schema_result.output_text}",
             ],
         )
@@ -581,8 +586,10 @@ def main() -> None:
             "Passing `response_schema=None` removed the route default schema "
             "from the outbound request.",
             details=[
-                "response_format present in payload: "
-                f"{'response_format' in cleared_schema_payload}",
+                (
+                    "response_format present in payload: "
+                    f"{'response_format' in cleared_schema_payload}"
+                ),
                 f"Output text: {cleared_schema_result.output_text}",
             ],
         )

@@ -95,8 +95,10 @@ def main() -> None:
         details=(
             f"Model: {_MODEL}",
             f"Image: {_IMAGE_PATH.name}",
-            "Why this prompt: it keeps the result grounded and easy to inspect "
-            "manually.",
+            (
+                "Why this prompt: it keeps the result grounded and easy to inspect "
+                "manually."
+            ),
         ),
     )
     console.display_image_if_available(_IMAGE_PATH)
@@ -108,8 +110,10 @@ def main() -> None:
         details=(
             f"primary_subject: {result['primary_subject']}",
             f"setting: {result['setting']}",
-            "This is enough to trust that the model followed both the image "
-            "and the requested JSON shape.",
+            (
+                "This is enough to trust that the model followed both the image "
+                "and the requested JSON shape."
+            ),
         ),
     )
     console.print_json(result)

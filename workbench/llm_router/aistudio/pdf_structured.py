@@ -111,8 +111,10 @@ def main() -> None:
         details=(
             f"Model: {_MODEL}",
             f"File: {_PDF_PATH.name}",
-            "Why this matters: it proves native file analysis beyond the "
-            "OpenAI-compatible non-video path.",
+            (
+                "Why this matters: it proves native file analysis beyond the "
+                "OpenAI-compatible non-video path."
+            ),
         ),
     )
 

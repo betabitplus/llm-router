@@ -230,15 +230,15 @@ class LLMRouter:
         self,
         content: str | MessageContent,
         *,
-        temperature: float | None | _CallUnset = CALL_UNSET,
-        seed: int | None | _CallUnset = CALL_UNSET,
+        temperature: float | _CallUnset | None = CALL_UNSET,
+        seed: int | _CallUnset | None = CALL_UNSET,
         response_schema: (
-            type[BaseModel] | dict[str, Any] | None | _CallUnset
+            type[BaseModel] | dict[str, Any] | _CallUnset | None
         ) = CALL_UNSET,
         tools: (
-            Sequence[Callable[..., Any] | dict[str, Any]] | None | _CallUnset
+            Sequence[Callable[..., Any] | dict[str, Any]] | _CallUnset | None
         ) = CALL_UNSET,
-        tool_choice: str | dict[str, Any] | None | _CallUnset = CALL_UNSET,
+        tool_choice: str | dict[str, Any] | _CallUnset | None = CALL_UNSET,
         max_tool_rounds: int | _CallUnset = CALL_UNSET,
         **kwargs: object,
     ) -> LLMRouterResponse:
@@ -269,15 +269,15 @@ class LLMRouter:
         self,
         content: str | MessageContent,
         *,
-        temperature: float | None | _CallUnset = CALL_UNSET,
-        seed: int | None | _CallUnset = CALL_UNSET,
+        temperature: float | _CallUnset | None = CALL_UNSET,
+        seed: int | _CallUnset | None = CALL_UNSET,
         response_schema: (
-            type[BaseModel] | dict[str, Any] | None | _CallUnset
+            type[BaseModel] | dict[str, Any] | _CallUnset | None
         ) = CALL_UNSET,
         tools: (
-            Sequence[Callable[..., Any] | dict[str, Any]] | None | _CallUnset
+            Sequence[Callable[..., Any] | dict[str, Any]] | _CallUnset | None
         ) = CALL_UNSET,
-        tool_choice: str | dict[str, Any] | None | _CallUnset = CALL_UNSET,
+        tool_choice: str | dict[str, Any] | _CallUnset | None = CALL_UNSET,
         max_tool_rounds: int | _CallUnset = CALL_UNSET,
         **kwargs: object,
     ) -> LLMRouterResponse:

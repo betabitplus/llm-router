@@ -261,8 +261,10 @@ def main() -> None:
             "When no backup route existed, the timeout surfaced "
             "publicly instead of silently succeeding.",
             details=[
-                "Public error: "
-                f"{terminal_result.error_type}: {terminal_result.error_message}",
+                (
+                    "Public error: "
+                    f"{terminal_result.error_type}: {terminal_result.error_message}"
+                ),
                 f"Server hits: {server.request_count('POST', _PATH)}",
             ],
         )

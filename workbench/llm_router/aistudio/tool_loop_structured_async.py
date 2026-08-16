@@ -104,8 +104,10 @@ async def main() -> None:
         details=(
             f"Model: {_MODEL}",
             "Tools: add(a, b), multiply(a, b)",
-            "Why this matters: it matches the AI Studio-specific async "
-            "workaround in src.",
+            (
+                "Why this matters: it matches the AI Studio-specific async "
+                "workaround in src."
+            ),
         ),
     )
 
