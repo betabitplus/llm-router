@@ -52,7 +52,7 @@ docstrings.
 - Normalize and validate config at construction boundaries, then run against a
   validated snapshot.
 - Use the standard structured logging boundary and one stable event vocabulary.
-  In starter-shaped py-lib repos, import `py_lib_runtime.logging` directly
+  In Ternforge-managed Python libraries, import `py_lib_runtime.logging` directly
   instead of carrying local logging wrappers.
 - Keep one small exception taxonomy and translate lower-level failures at
   explicit boundaries.
@@ -110,3 +110,5 @@ docstrings.
 - If a task touches multiple concerns, read
   the matching focused files from `Baseline Map` plus one focused pattern or
   template per concern.
+
+<!-- component update v0.2.0 -->

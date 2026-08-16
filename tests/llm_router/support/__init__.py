@@ -10,5 +10,5 @@ What belongs here:
     subpackages for larger support subsystems.
 
 What does not belong here:
-    Cross-project infrastructure that is provided by `py_lib_tooling`.
+    Cross-project infrastructure that is provided by `py_lib_testkit`.
 """

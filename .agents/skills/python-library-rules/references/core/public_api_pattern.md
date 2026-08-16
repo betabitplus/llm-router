@@ -30,7 +30,7 @@ implementation.
 - Use `_support` only for package-specific private cross-cutting helpers and
   infrastructure that cannot cleanly live in `_internal` or an installed shared
   runtime package.
-- In starter-shaped py-lib repos, prefer direct `py_lib_runtime` imports for
+- In Ternforge-managed Python libraries, prefer direct `py_lib_runtime` imports for
   shared runtime helpers instead of local `_support` wrappers.
 - If `_api` imports `_internal`, prefer one private-root import such as
   `from package._internal import Runtime` over deep `_internal.foo.bar` imports.

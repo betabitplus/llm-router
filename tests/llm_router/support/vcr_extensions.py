@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from py_lib_tooling import method_case_insensitive
+from py_lib_testkit import method_case_insensitive
 
 from tests.llm_router.support._vcr_body_matching import body_llmrouter
 

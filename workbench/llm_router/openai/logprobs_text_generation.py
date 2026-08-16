@@ -33,7 +33,7 @@ from __future__ import annotations
 from math import exp
 from typing import TYPE_CHECKING, Any, cast
 
-from py_lib_tooling import console
+from py_lib_testkit import console
 
 from workbench.llm_router.openai._sdk_helpers import (
     build_client,

@@ -44,7 +44,7 @@ Examples:
 from __future__ import annotations
 
 import pytest
-from py_lib_tooling import console
+from py_lib_testkit import console
 
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
 from tests.llm_router.support.workers.retry import (

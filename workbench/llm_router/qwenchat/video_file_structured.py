@@ -33,7 +33,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from py_lib_tooling import console
+from py_lib_testkit import console
 
 from tests.llm_router.support.builders import get_llm_router_test_data_path
 from workbench.llm_router.qwenchat._runtime import build_sync_client, qwenchat_base_url

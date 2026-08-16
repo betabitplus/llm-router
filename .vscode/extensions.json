@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "ms-python.python",
+        "mkhl.direnv",
         "ms-python.vscode-pylance",
         "ms-toolsai.jupyter",
         "ms-toolsai.jupyter-keymap",

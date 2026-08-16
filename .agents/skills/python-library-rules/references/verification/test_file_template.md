@@ -57,7 +57,7 @@ Use only these top-level section titles when they are needed:
 
 - Use only the sections the file genuinely needs.
 - Keep shared fixtures and builders out of the file when they belong in
-  top-level `py_lib_tooling` helpers or `tests/<project>/support/`.
+  top-level `py_lib_testkit` helpers or `tests/<project>/support/`.
 - Keep `Assertions` readable as a short walkthrough of the public rule being
   protected.
 - Keep `Properties` before `Tests` when the file mixes generated checks with
@@ -73,8 +73,8 @@ Prefer it for property-based files. Keep the generated domain meaningful and
 small enough to shrink well.
 
 `Fixtures` holds local pytest fixtures that are specific to the file. Shared
-cross-project fixtures and helpers should come from top-level `py_lib_tooling`
-in starter-shaped py-lib repos; package-specific builders should live under
+cross-project fixtures and helpers should come from top-level `py_lib_testkit`
+in Ternforge-managed Python libraries; package-specific builders should live under
 `tests/<project>/support/` instead.
 
 `Helpers` holds small builders, formatters, comparison helpers, and local

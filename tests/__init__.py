@@ -4,7 +4,7 @@ Why:
     Documents how the test tree is organized.
 
 What belongs here:
-    `py_lib_tooling` for reusable infrastructure.
+    `py_lib_testkit` for reusable infrastructure.
     `tests/<project>/support/` for project-specific helpers.
     `tests/<project>/e2e/` for scenario scripts and replay artifacts.
 

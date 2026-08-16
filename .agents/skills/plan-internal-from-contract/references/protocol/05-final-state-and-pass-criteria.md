@@ -20,8 +20,8 @@ Most important rules:
 - `lint-imports` passes after any package-boundary or config-lifecycle change.
 - All project rules and architectural requirements are satisfied.
 - Every relevant e2e or workbench script successfully runs in module mode and,
-  for starter-shaped py-lib repos, via
-  `uv run py-lib-reproduce-running-loop <module>` when already-running-loop
+  for Ternforge-managed Python libraries, via
+  `uv run python scripts/reproduce_running_loop.py <module>` when already-running-loop
   behavior matters.
 
 ## Final State Rules

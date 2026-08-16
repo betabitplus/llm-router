@@ -27,6 +27,4 @@ Describe the change in a few sentences.
 
 ## Notes
 
-- Target branch is `dev` for normal development.
-- If targeting `main` instead of `dev`, explain why.
-- Mention actual validation outcome plus any follow-up work, caveats, or skipped validation here.
+Mention actual validation outcome plus any follow-up work, caveats, or skipped validation here.

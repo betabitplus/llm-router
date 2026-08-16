@@ -47,8 +47,3 @@ The files are short on purpose. Do not stop after reading only one of them.
 - `06-implementation-boundaries.md`
   Exact allowed edit paths and the strict contract-following rules for the
   future implementing agent.
-
-## Compatibility Note
-
-`references/planning-protocol.md` still exists as a compatibility index. It now
-points here instead of carrying the full protocol in one mega file.

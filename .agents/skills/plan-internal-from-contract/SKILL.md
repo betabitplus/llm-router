@@ -19,8 +19,6 @@ implementing `_internal` unless the user explicitly asks for code changes.
 - Read the full split protocol before writing or revising plan files.
 - `references/protocol/05-final-state-and-pass-criteria.md` defines the exact
   pass criteria and success criteria for the future implementing agent.
-- `references/planning-protocol.md` is compatibility-only. The canonical first
-  read is `references/protocol/README.md`.
 
 ## Protocol Read Order
 
@@ -130,9 +128,6 @@ split so required rules do not get lost in one large document.
   criteria.
 - `references/protocol/06-implementation-boundaries.md`
   Read for the strict allowed-edit paths and implementation boundaries.
-- `references/planning-protocol.md`
-  Compatibility index for the split protocol files.
-  Use it only when a prior instruction still points at the old path.
 - `references/plan_root_readme_template.md`
   Read when creating `plan/README.md` for the future implementing agent.
 - `references/implementation_notes_template.md`

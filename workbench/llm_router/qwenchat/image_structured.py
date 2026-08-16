@@ -29,7 +29,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from py_lib_tooling import console
+from py_lib_testkit import console
 
 from tests.llm_router.support.builders import get_llm_router_test_data_path
 from workbench.llm_router.qwenchat._runtime import build_sync_client, qwenchat_base_url

@@ -18,7 +18,7 @@ import argparse
 import json
 from typing import Any
 
-from py_lib_tooling import get_test_data_path
+from py_lib_testkit import get_test_data_path
 
 from tests.llm_router.support.workers._worker_process import ensure_worker_env
 from tests.llm_router.support.workers.worker_patches import (

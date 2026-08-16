@@ -101,7 +101,7 @@ the target repository.
 ## Logging
 
 - Library code must not configure global logging on import.
-- Use the standard logging boundary. In starter-shaped py-lib repos, feature
+- Use the standard logging boundary. In Ternforge-managed Python libraries, feature
   modules should import `get_logger()` from `py_lib_runtime.logging`, not call
   `structlog.get_logger(...)` directly and not carry a local
   `_support/logging.py` wrapper.

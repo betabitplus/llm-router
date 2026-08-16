@@ -2,7 +2,7 @@
 
 Why:
     Product tests need to reset installed runtime state between scenarios, but
-    shared `py_lib_tooling` support must not depend on LLMRouter APIs.
+    shared `py_lib_testkit` support must not depend on LLMRouter APIs.
 """
 
 from __future__ import annotations

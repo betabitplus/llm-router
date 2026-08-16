@@ -10,23 +10,19 @@ docs, [tests/README.md](tests/README.md) for test-tree layout, and
 for verification guidance.
 
 Repository-wide package and reusable-zone checks read metadata from
-`[tool.py_lib_starter]` in `pyproject.toml`. When repo-local scripts or shared
+`[tool.ternforge]` in `pyproject.toml`. When repo-local scripts or shared
 test support need package names or env-var prefixes, use
-`py_lib_tooling.get_project_tooling_config` instead of hardcoding them.
+`py_lib_testkit.get_project_tooling_config` instead of hardcoding them.
 
-`py-lib-runtime` is consumed as a runtime dependency and `py-lib-tooling` is
-consumed as a dev dependency from the shared py starter repository through
-one shared version tag. Keep this repo thin: import shared runtime helpers, call
+`py-lib-runtime` is consumed as a runtime dependency, while `py-lib-policy`
+and `py-lib-testkit` are independent development dependencies. Each package is
+owned and released separately by Ternforge and pinned immutably by this repo. Keep this repo thin: import shared runtime helpers, call
 shared console commands, and import shared test helpers instead of copying
 reusable implementation files locally.
 
 ## Branch And Target Flow
 
-- Normal development lands on `dev`.
-- Direct pushes to `main` are blocked by a pre-push hook.
-- Branch names must match the enforced local convention: `feature/`, `fix/`,
-  `chore/`, `hotfix/`, `release/`, `codex/`, or the long-lived `dev` / `main`
-  branches.
+Use a topic branch and land changes through a pull request to `main`.
 
 ## Local Validation
 
@@ -44,23 +40,21 @@ uv run pre-commit run --all-files --hook-stage pre-push
 
 ## Template And Tooling Updates
 
-Check whether this repo is behind the shared starter template:
+Check whether this repo is behind the released Ternforge template:
 
 ```bash
-uv run py-lib-template-check
+uvx --from copier==9.17.1 copier check-update
 ```
 
-Apply the latest starter template release, normalize shared package refs to one
-version tag, and refresh shared package lock entries:
+Apply the latest released Ternforge template:
 
 ```bash
-uv run py-lib-template-update
+uvx --from copier==9.17.1 copier update
 ```
 
 The update command leaves product-owned `src/`, `tests/`, `docs/`,
 `examples/`, and `workbench/` files alone by default. Review the resulting
-diff, run validation, then land the update through the normal `dev` to `main`
-PR flow.
+diff, run validation, then land the update through the normal pull request to `main`.
 
 ## Running Tests
 
@@ -121,25 +115,23 @@ direnv exec . uv run python -m workbench.llm_router.<module>
 Reproduce the same probe inside an already-running event loop:
 
 ```bash
-direnv exec . uv run py-lib-reproduce-running-loop \
+direnv exec . uv run python scripts/reproduce_running_loop.py \
     workbench.llm_router.<module>
 ```
 
 ## Commit And Release Conventions
 
-This project uses [Commitizen](https://commitizen-tools.github.io/commitizen/)
-for version management and changelog generation. Commit messages and pull
+Commitizen validates local commit messages. Release Please owns project version,
+changelog, release tags, and release pull requests. Commit messages and pull
 request titles must follow [Conventional Commits](https://www.conventionalcommits.org/)
 format, for example `feat: add retry policy`, `fix(cache): preserve metadata`,
 or `chore(ci): update workflows`. Use GitHub's draft state instead of a `WIP`
 title prefix.
 
-For an aggregated `dev` to `main` pull request, choose the title according to
+For every pull request to `main`, choose the title according to
 the highest release impact it contains: breaking change first, then `feat`,
 then `fix`, otherwise an appropriate non-release type such as `docs` or
 `chore`. CI validates the format, while the maintainer remains responsible for
 choosing the correct semantic type.
 
-Full CI runs on `dev` pushes and on pull requests targeting `dev` or
-`main`. Pull requests targeting `main` must come from the same repository's
-`dev` branch. `main` pushes run Release only.
+Full CI runs on every pull request targeting `main`. Merges to `main` run the release workflow.

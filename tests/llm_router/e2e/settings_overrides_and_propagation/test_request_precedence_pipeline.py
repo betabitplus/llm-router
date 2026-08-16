@@ -50,7 +50,7 @@ import json
 from dataclasses import dataclass
 
 import pytest
-from py_lib_tooling import console
+from py_lib_testkit import console
 from pydantic import BaseModel
 
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse

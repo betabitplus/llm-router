@@ -19,7 +19,6 @@ venv/
 # Tool caches
 .pytest_cache/
 .ruff_cache/
-.mypy_cache/
 .pyright/
 .coverage
 coverage.xml
@@ -38,4 +37,3 @@ data/
 tests/.outputs/
 workbench/.outputs/
 records/
-.artifact-smoke*/
