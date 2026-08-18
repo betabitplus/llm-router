@@ -92,7 +92,7 @@ pdf = FileSchema(
     path="tests/llm_router/data/variative.pdf",
     mime_type="application/pdf",
 )
-router = LLMRouter(RouterProfile(model=Model.GEMINI_3_FLASH, provider=Provider.GOOGLE))
+router = LLMRouter(RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GOOGLE))
 response = router.query(
     [
         "Follow instructions exactly.",
@@ -173,10 +173,10 @@ remote_video = VideoUrlSchema(
     fps=1,
 )
 google_router = LLMRouter(
-    RouterProfile(model=Model.GEMINI_3_FLASH, provider=Provider.GOOGLE)
+    RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GOOGLE)
 )
 aistudio_router = LLMRouter(
-    RouterProfile(model=Model.GEMINI_3_FLASH, provider=Provider.AISTUDIO)
+    RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO)
 )
 
 local_response = google_router.query(

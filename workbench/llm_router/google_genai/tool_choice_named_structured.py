@@ -46,7 +46,7 @@ from workbench.llm_router.google_genai._tool_loop import (
 
 # Keep the prompt narrow and deterministic so the named tool choice and final
 # structured result are the only meaningful moving parts in a manual run.
-_MODEL = "gemini-2.5-flash-lite"
+_MODEL = "gemini-3.5-flash-lite"
 _PROMPT = build_named_tool_choice_prompt()
 
 

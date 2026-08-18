@@ -51,7 +51,7 @@ from workbench.llm_router.google_genai._structured_output import (
 
 # Keep the same preview model and one fixed public video URL so the remote
 # file-data request shape is the main thing under inspection.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _PROMPT = build_indoor_video_prompt()
 _VIDEO_URL = "https://www.youtube.com/shorts/QUxqvF0pyGw"
 

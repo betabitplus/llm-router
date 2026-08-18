@@ -49,7 +49,7 @@ from workbench.llm_router.aistudio._structured_output import (
 
 # Keep one fixed public clip URL so this script stays about the native remote
 # video part shape instead of a changing input source.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _VIDEO_URL = "https://www.youtube.com/shorts/QUxqvF0pyGw"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _PROMPT = build_indoor_video_prompt()

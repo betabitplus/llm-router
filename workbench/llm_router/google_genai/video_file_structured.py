@@ -52,7 +52,7 @@ from workbench.llm_router.google_genai._structured_output import (
 
 # Keep the shared jumper clip fixed so the manual result is about the inline
 # video-plus-metadata request shape, not a changing fixture.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _VIDEO_PATH = _REPO_ROOT / "tests/llm_router/data/jumper.mp4"
 _PROMPT = build_rooftop_video_prompt()

@@ -44,7 +44,7 @@ from workbench.llm_router.aistudio._sdk_helpers import (
 
 # Keep the baseline flash model fixed so this script stays about the plain
 # async non-video AI Studio path rather than schema or tool quirks.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _PROMPT = "Reply with only OK."
 
 

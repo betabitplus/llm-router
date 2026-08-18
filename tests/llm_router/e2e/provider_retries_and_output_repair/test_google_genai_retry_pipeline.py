@@ -61,7 +61,7 @@ pytestmark = [
 # =============================================================================
 
 _PORT = 0
-_MODEL = Model.GEMINI_3_FLASH
+_MODEL = Model.GEMINI_FLASH
 _PATH = google_generate_path(model=_MODEL)
 _RETRY_TEXT = "google-genai retry ok on server-attempt-2"
 _NON_RETRYABLE_MESSAGE = "google-genai bad request"

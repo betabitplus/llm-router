@@ -47,7 +47,7 @@ from workbench.llm_router.aistudio._tool_loop import (
 # Scenario
 # =============================================================================
 
-_MODEL = "gemini-2.5-flash-lite"
+_MODEL = "gemini-3.5-flash-lite"
 _PROMPT = build_tools_structured_prompt()
 _TOOLS = build_demo_math_tools()
 

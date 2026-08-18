@@ -44,7 +44,7 @@ from workbench.llm_router.google_genai._tool_loop import run_async_tool_loop
 
 # Keep the lightweight flash-lite model fixed so the async tool loop stays fast
 # and the async tool protocol itself is the main thing under inspection.
-_MODEL = "gemini-2.5-flash-lite"
+_MODEL = "gemini-3.5-flash-lite"
 _PROMPT = build_tool_audit_prompt()
 
 

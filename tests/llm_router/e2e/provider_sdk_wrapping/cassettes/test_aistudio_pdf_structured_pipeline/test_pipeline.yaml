@@ -19,73 +19,38 @@ interactions:
       for the shared PDF fixture.","properties":{"title":{"title":"Title","type":"STRING"},"title_words":{"items":{"type":"STRING"},"max_items":3,"min_items":3,"title":"Title
       Words","type":"ARRAY"}},"property_ordering":["title","title_words"],"required":["title","title_words"],"title":"PaperMetadata","type":"OBJECT"}},"property_ordering":["metadata","abstract_one_sentence","contributions","evidence","key_entities"],"required":["metadata","abstract_one_sentence","contributions","evidence","key_entities"],"title":"PDFDigest","type":"OBJECT"},"temperature":0.0}}'
     headers:
-      Accept:
+      accept:
       - '*/*'
-      Accept-Encoding:
+      accept-encoding:
       - gzip, deflate, br
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
+      content-length:
       - '2819738'
-      Content-Type:
+      content-type:
       - application/json
-      Host:
+      host:
       - localhost:7860
-      User-Agent:
+      user-agent:
       - python-httpx/0.28.1
     method: POST
-    uri: http://localhost:7860/v1beta/models/gemini-2.5-flash:streamGenerateContent
+    uri: http://localhost:7860/v1beta/models/gemini-3.6-flash:generateContent
   response:
     body:
-      string: "data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"{\\\"metadata\\\
-        \": {\\\"title\\\": \\\"AI\"}],\"role\":\"model\"},\"index\":0}],\"usageMetadata\"\
-        :{\"promptTokenCount\":4581,\"candidatesTokenCount\":8,\"totalTokenCount\"\
-        :5823,\"promptTokensDetails\":[{\"modality\":\"TEXT\",\"tokenCount\":195},{\"\
-        modality\":\"DOCUMENT\",\"tokenCount\":4386}],\"thoughtsTokenCount\":1234},\"\
-        modelVersion\":\"gemini-2.5-flash\",\"responseId\":\"kgXVaf-KD_OhkdUP54DOqQo\"\
-        ,\"turnToken\":\"v1_ChdrZ1hWYWUzQkRMdm43TThQb19PY29BNBIXa2dYVmFmLUtEX09oa2RVUDU0RE9xUW8\"\
-        }\r\n\r\ndata: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"-assisted\
-        \ Automated Short Answer Grading of Handwritten University Level Mathematics\
-        \ Exams\\\", \\\"title_words\\\": [\\\"AI-assisted\\\", \\\"Mathematics\\\"\
-        , \\\"Exams\\\"]}, \\\"abstract_one_sentence\\\": \\\"This study evaluates\
-        \ GPT-4\\u0027s effectiveness in\"}],\"role\":\"model\"},\"index\":0}],\"\
-        usageMetadata\":{\"promptTokenCount\":4581,\"candidatesTokenCount\":56,\"\
-        totalTokenCount\":5871,\"promptTokensDetails\":[{\"modality\":\"TEXT\",\"\
-        tokenCount\":195},{\"modality\":\"DOCUMENT\",\"tokenCount\":4386}],\"thoughtsTokenCount\"\
-        :1234},\"modelVersion\":\"gemini-2.5-flash\",\"responseId\":\"kgXVaf-KD_OhkdUP54DOqQo\"\
-        ,\"turnToken\":\"v1_ChdrZ1hWYWUzQkRMdm43TThQb19PY29BNBIXa2dYVmFmLUtEX09oa2RVUDU0RE9xUW8\"\
-        }\r\n\r\ndata: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\" grading\
-        \ semi-open handwritten mathematics exam responses, finding it provides reliable\
-        \ initial grading subject to human verification.\\\", \\\"contributions\\\"\
-        : [\\\"Evaluates GPT-4 for grading handwritten university mathematics exams.\\\
-        \", \\\"GPT-4 offers reliable and cost-effective initial\"}],\"role\":\"model\"\
-        },\"index\":0}],\"usageMetadata\":{\"promptTokenCount\":4581,\"candidatesTokenCount\"\
-        :104,\"totalTokenCount\":5919,\"promptTokensDetails\":[{\"modality\":\"TEXT\"\
-        ,\"tokenCount\":195},{\"modality\":\"DOCUMENT\",\"tokenCount\":4386}],\"thoughtsTokenCount\"\
-        :1234},\"modelVersion\":\"gemini-2.5-flash\",\"responseId\":\"kgXVaf-KD_OhkdUP54DOqQo\"\
-        ,\"turnToken\":\"v1_ChdrZ1hWYWUzQkRMdm43TThQb19PY29BNBIXa2dYVmFmLUtEX09oa2RVUDU0RE9xUW8\"\
-        }\r\n\r\ndata: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\" grading.\\\
-        \", \\\"Highlights need for refining grading rules and improving handwritten\
-        \ response extraction.\\\"], \\\"evidence\\\": [{\\\"text\\\": \\\"AI-assisted\
-        \ Automated Short Answer Grading\\\", \\\"source\\\": \\\"title\\\"}, {\\\"\
-        text\\\": \\\"Effective and timely feedback in educational assessments is\"\
-        }],\"role\":\"model\"},\"index\":0}],\"usageMetadata\":{\"promptTokenCount\"\
-        :4581,\"candidatesTokenCount\":152,\"totalTokenCount\":5967,\"promptTokensDetails\"\
-        :[{\"modality\":\"TEXT\",\"tokenCount\":195},{\"modality\":\"DOCUMENT\",\"\
-        tokenCount\":4386}],\"thoughtsTokenCount\":1234},\"modelVersion\":\"gemini-2.5-flash\"\
-        ,\"responseId\":\"kgXVaf-KD_OhkdUP54DOqQo\",\"turnToken\":\"v1_ChdrZ1hWYWUzQkRMdm43TThQb19PY29BNBIXa2dYVmFmLUtEX09oa2RVUDU0RE9xUW8\"\
-        }\r\n\r\ndata: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\" essential\\\
-        \", \\\"source\\\": \\\"abstract\\\"}], \\\"key_entities\\\": [\\\"GPT-4\\\
-        \", \\\"ETH Zurich\\\", \\\"Springer Nature\\\", \\\"Thomas Willwacher\\\"\
-        ]}\"}],\"role\":\"model\"},\"finishReason\":\"STOP\",\"index\":0}],\"usageMetadata\"\
-        :{\"promptTokenCount\":4581,\"candidatesTokenCount\":185,\"totalTokenCount\"\
-        :6000,\"promptTokensDetails\":[{\"modality\":\"TEXT\",\"tokenCount\":195},{\"\
-        modality\":\"DOCUMENT\",\"tokenCount\":4386}],\"thoughtsTokenCount\":1234},\"\
-        modelVersion\":\"gemini-2.5-flash\",\"responseId\":\"kgXVaf-KD_OhkdUP54DOqQo\"\
-        ,\"turnToken\":\"v1_ChdrZ1hWYWUzQkRMdm43TThQb19PY29BNBIXa2dYVmFmLUtEX09oa2RVUDU0RE9xUW8\"\
-        }\r\n\r\n"
+      string: '{"candidates":[{"content":{"parts":[{"text":"{\"metadata\":{\"title\":\"AI-assisted
+        Automated Short Answer Grading of Handwritten University Level Mathematics
+        Exams\",\"title_words\":[\"Automated\",\"Handwritten\",\"Mathematics\"]},\"abstract_one_sentence\":\"This
+        study evaluates GPT-4 for grading semi-open handwritten responses in university
+        mathematics exams, finding it provides reliable initial grading.\",\"contributions\":[\"Evaluated
+        GPT-4 for grading semi-open handwritten mathematics exam responses.\",\"Demonstrated
+        that GPT-4 provides reliable and cost-effective initial grading.\",\"Identified
+        key challenges in OCR and answer extraction from handwritten scripts.\"],\"evidence\":[{\"text\":\"Effective
+        and timely feedback in educational assessments is essential but labor-intensive\",\"source\":\"abstract\"},{\"text\":\"In
+        the realm of university-level mathematics education, providing effective feedback
+        through assessment is crucial\",\"source\":\"introduction\"}],\"key_entities\":[\"GPT-4\",\"ETH
+        Zurich\",\"Tianyi Liu\",\"Michigan State University\"]}","thoughtSignature":"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"}],"role":"model"},"finishReason":"STOP","index":0,"detailedFinishReason":{"recipeRunnerFinishReason":"GRANULAR_FINISH_REASON_NATURAL_STOP"}}],"usageMetadata":{"promptTokenCount":9375,"candidatesTokenCount":179,"totalTokenCount":11704,"cachedContentTokenCount":5959,"promptTokensDetails":[{"modality":"IMAGE","tokenCount":9180},{"modality":"TEXT","tokenCount":195}],"cacheTokensDetails":[{"modality":"TEXT","tokenCount":123},{"modality":"IMAGE","tokenCount":5836}],"thoughtsTokenCount":2150,"serviceTier":"SERVICE_TIER_STANDARD","modelInvocationTokenCounts":[{"promptTokensDetails":[{"modality":"TEXT","tokenCount":16588},{"modality":"IMAGE","tokenCount":9180}],"cacheTokensDetails":[{"modality":"IMAGE","tokenCount":5836},{"modality":"TEXT","tokenCount":10548}],"candidatesTokensDetails":[{"modality":"TEXT","tokenCount":196}],"thoughtsTokensDetails":[{"modality":"TEXT","tokenCount":2150}]}],"rawPromptTokenCount":25768,"nonGroundingModelInvocationTokenCounts":[{"promptTokensDetails":[{"modality":"TEXT","tokenCount":16588},{"modality":"IMAGE","tokenCount":9180}],"cacheTokensDetails":[{"modality":"IMAGE","tokenCount":5836},{"modality":"TEXT","tokenCount":10548}],"candidatesTokensDetails":[{"modality":"TEXT","tokenCount":196}],"thoughtsTokensDetails":[{"modality":"TEXT","tokenCount":2150}]}]},"modelVersion":"gemini-3.6-flash","responseId":"ZEeEavTtBO_pnsEPjJWHyAY","turnToken":"v1_ChRaRWVFYXVjOWpabVIxUV9VcnQ5SRIXWkVlRWF2VHRCT19wbnNFUGpKV0h5QVk"}'
     headers:
-      Access-Control-Allow-Headers:
+      access-control-allow-headers:
       - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
         x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
         openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
@@ -95,28 +60,30 @@ interactions:
         x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
         x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
         x-goog-upload-status
-      Access-Control-Allow-Methods:
+      access-control-allow-methods:
       - GET, POST, PUT, DELETE, PATCH, OPTIONS
-      Access-Control-Allow-Origin:
+      access-control-allow-origin:
       - '*'
-      Access-Control-Allow-Private-Network:
+      access-control-allow-private-network:
       - 'true'
-      Access-Control-Expose-Headers:
+      access-control-expose-headers:
       - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
         x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
         x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
         content-type, content-length, location
-      Connection:
+      connection:
       - keep-alive
-      Content-Type:
-      - text/event-stream; charset=utf-8
-      Date:
-      - Tue, 07 Apr 2026 13:24:43 GMT
-      Keep-Alive:
+      content-length:
+      - '14285'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Tue, 18 Aug 2026 11:52:15 GMT
+      etag:
+      - W/"37cd-K4UE4PAxG5n/3xThYGKnRTY4mdU"
+      keep-alive:
       - timeout=120
-      Transfer-Encoding:
-      - chunked
-      X-Powered-By:
+      x-powered-by:
       - Express
     status:
       code: 200

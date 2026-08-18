@@ -49,7 +49,7 @@ from workbench.llm_router.aistudio._tool_loop import (
 
 # Keep the lightweight flash-lite model fixed so this script isolates AI
 # Studio's forced-tool path rather than model variability.
-_MODEL = "gemini-2.5-flash-lite"
+_MODEL = "gemini-3.5-flash-lite"
 _PROMPT = build_tool_choice_prompt()
 _TOOLS = build_demo_math_tools()
 

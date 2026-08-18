@@ -133,9 +133,10 @@ def test_tools_and_named_choice_translate_to_proxy_payload() -> None:
 
     payload = QwenChatAdapter(base_url="http://proxy.test/api").build_payload(request)
 
-    assert payload["messages"][0]["role"] == "user"
-    assert "You can use local tools." in payload["messages"][0]["content"]
-    assert "add(a, b)" in payload["messages"][0]["content"]
+    assert payload["messages"] == [{"role": "user", "content": "hello"}]
     assert payload["tools"][0]["function"]["name"] == "add"
-    assert "tool_choice" not in payload
+    assert payload["tool_choice"] == {
+        "type": "function",
+        "function": {"name": "add"},
+    }
     json.dumps(payload)

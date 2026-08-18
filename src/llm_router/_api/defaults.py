@@ -117,29 +117,19 @@ DEFAULT_PROVIDER_BASE_URLS: dict[Provider, str] = {
 # providers, or to multiple providers at once.
 DEFAULT_MODEL_REGISTRY: dict[Model, dict[Provider, str]] = {
     Model.GEMINI_FLASH_LITE: {
-        Provider.GOOGLE: "gemini-2.5-flash-lite",
-        Provider.AISTUDIO: "gemini-2.5-flash-lite",
+        Provider.GOOGLE: "gemini-3.5-flash-lite",
+        Provider.AISTUDIO: "gemini-3.5-flash-lite",
         Provider.GEMINI_WEBAPI: "gemini-3.0-flash",
     },
     Model.GEMINI_FLASH: {
-        Provider.GOOGLE: "gemini-2.5-flash",
-        Provider.AISTUDIO: "gemini-2.5-flash",
-        Provider.GEMINI_WEBAPI: "gemini-3.0-flash",
-    },
-    Model.GEMINI_FLASH_2_0: {
-        Provider.GOOGLE: "gemini-2.0-flash",
-        Provider.AISTUDIO: "gemini-2.0-flash",
+        Provider.GOOGLE: "gemini-3.6-flash",
+        Provider.AISTUDIO: "gemini-3.6-flash",
         Provider.GEMINI_WEBAPI: "gemini-3.0-flash",
     },
     Model.GEMINI_PRO: {
-        Provider.GOOGLE: "gemini-2.5-pro",
-        Provider.AISTUDIO: "gemini-2.5-pro",
-        Provider.GEMINI_WEBAPI: "gemini-3.0-pro",
-    },
-    Model.GEMINI_3_FLASH: {
-        Provider.GOOGLE: "gemini-3-flash-preview",
-        Provider.AISTUDIO: "gemini-3-flash-preview",
-        Provider.GEMINI_WEBAPI: "gemini-3.0-flash",
+        Provider.GOOGLE: "gemini-3.1-pro-preview",
+        Provider.AISTUDIO: "gemini-3.1-pro-preview",
+        Provider.GEMINI_WEBAPI: "gemini-3.1-pro",
     },
     Model.DEEPSEEK_V3: {
         Provider.OPENROUTER: "deepseek/deepseek-chat-v3-0324:free",
@@ -150,7 +140,7 @@ DEFAULT_MODEL_REGISTRY: dict[Model, dict[Provider, str]] = {
     },
     Model.MISTRAL_LARGE: {Provider.MISTRAL: "mistral-large-latest"},
     Model.DEEPSEEK_V4_FLASH: {
-        Provider.NVIDIA: "deepseek-ai/deepseek-v4-flash",
+        Provider.NVIDIA: "deepseek-ai/deepseek-v4-flash-0731",
     },
     Model.LLAMA_8B: {
         Provider.NVIDIA: "meta/llama-3.1-8b-instruct",

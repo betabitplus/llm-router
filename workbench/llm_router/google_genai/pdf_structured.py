@@ -52,7 +52,7 @@ from workbench.llm_router.google_genai._structured_output import (
 
 # Keep the shared PDF fixture fixed so this script stays about the inline blob
 # request shape rather than document variability.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _PDF_PATH = _REPO_ROOT / "tests/llm_router/data/variative.pdf"
 _PROMPT = build_pdf_digest_prompt()

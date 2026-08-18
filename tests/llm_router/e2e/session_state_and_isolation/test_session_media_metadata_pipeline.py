@@ -83,7 +83,7 @@ _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 def build_router(*, session: Session) -> LLMRouter:
     """Build the router under test."""
     return LLMRouter(
-        RouterProfile(provider=Provider.AISTUDIO, model=Model.GEMINI_3_FLASH),
+        RouterProfile(provider=Provider.AISTUDIO, model=Model.GEMINI_FLASH),
         session=session,
         temperature=0.0,
         seed=42,

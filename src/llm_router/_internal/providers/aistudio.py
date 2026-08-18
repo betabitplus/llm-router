@@ -440,10 +440,10 @@ def _error_message(text: str) -> str | None:
 
 
 def _native_endpoint(*, base_url: str, model: str) -> str:
-    """Build the Gemini-native stream endpoint from an OpenAI-style base URL."""
+    """Build the Gemini-native non-stream endpoint from an OpenAI-style base URL."""
     root = _native_root(base_url)
     api_model = model if model.startswith("models/") else f"models/{model}"
-    return f"{root}/v1beta/{api_model}:streamGenerateContent"
+    return f"{root}/v1beta/{api_model}:generateContent"
 
 
 def _native_root(base_url: str) -> str:

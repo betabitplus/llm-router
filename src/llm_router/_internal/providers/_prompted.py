@@ -141,16 +141,6 @@ def textual_tool_call_from_text(
     )
 
 
-def qwenchat_uses_textual_tool_prompt(request: ProviderRequest) -> bool:
-    """Return whether this Qwen request should prompt for textual tool calls."""
-    return bool(
-        request.tool_registry is not None
-        and request.tool_registry.tools
-        and request.tool_choice is not None
-        and request.tool_choice.kind != "none"
-    )
-
-
 def qwenchat_tool_choice_payload(request: ProviderRequest) -> object:
     """Translate normalized tool choice to a QwenChat/OpenAI-like shape."""
     choice = request.tool_choice
@@ -172,13 +162,28 @@ def qwenchat_message_payload(
     uploader: QwenChatMediaUploader | None,
     include_schema: bool,
 ) -> dict[str, object]:
-    """Translate one normalized message into a QwenChat message."""
+    """Translate one normalized message into a QwenChat/OpenAI proxy message."""
     content = _qwenchat_message_content(
         request=request,
         message=message,
         uploader=uploader,
         include_schema=include_schema,
     )
+    if message.meta.get("openai_tool_calls") is not None:
+        return {
+            "role": "assistant",
+            "content": content,
+            "tool_calls": list(message.meta["openai_tool_calls"]),
+        }
+    if message.meta.get("openai_tool_call_id") is not None:
+        payload: dict[str, object] = {
+            "role": "tool",
+            "content": content,
+            "tool_call_id": str(message.meta["openai_tool_call_id"]),
+        }
+        if isinstance(message.meta.get("openai_tool_name"), str):
+            payload["name"] = message.meta["openai_tool_name"]
+        return payload
     return {"role": message.role, "content": content}
 
 
@@ -189,13 +194,28 @@ async def qwenchat_amessage_payload(
     uploader: QwenChatMediaUploader | None,
     include_schema: bool,
 ) -> dict[str, object]:
-    """Translate one normalized message into an async QwenChat message."""
+    """Translate one normalized message into an async QwenChat/OpenAI proxy message."""
     content = await _qwenchat_amessage_content(
         request=request,
         message=message,
         uploader=uploader,
         include_schema=include_schema,
     )
+    if message.meta.get("openai_tool_calls") is not None:
+        return {
+            "role": "assistant",
+            "content": content,
+            "tool_calls": list(message.meta["openai_tool_calls"]),
+        }
+    if message.meta.get("openai_tool_call_id") is not None:
+        payload: dict[str, object] = {
+            "role": "tool",
+            "content": content,
+            "tool_call_id": str(message.meta["openai_tool_call_id"]),
+        }
+        if isinstance(message.meta.get("openai_tool_name"), str):
+            payload["name"] = message.meta["openai_tool_name"]
+        return payload
     return {"role": message.role, "content": content}
 
 
@@ -216,41 +236,19 @@ def qwenchat_combined_initial_message(
     request: ProviderRequest,
     messages: Sequence[NormalizedMessage],
 ) -> NormalizedMessage:
-    """Combine initial task turns behind prompt-led Qwen instructions."""
-    lead = _qwenchat_initial_instruction_text(request=request, messages=messages)
+    """Combine initial task turns behind prompt-led Qwen schema instructions."""
+    lead = _qwenchat_initial_instruction_text(request=request)
     parts = [TextPart(kind="text", text=lead)] if lead else []
     for message in messages:
         parts.extend(message.parts)
     return NormalizedMessage(role="user", parts=tuple(parts), meta={})
 
 
-def _qwenchat_initial_instruction_text(
-    *,
-    request: ProviderRequest,
-    messages: Sequence[NormalizedMessage],
-) -> str:
-    """Return schema/tool instructions prepended to the first Qwen message."""
-    sections: list[str] = []
-    if qwenchat_uses_textual_tool_prompt(request):
-        sections.append(
-            build_tool_instruction(
-                registry=request.tool_registry,
-                choice=request.tool_choice,
-            )
-        )
-    if request.schema is not None:
-        sections.append(build_json_instruction(request.schema))
-    if qwenchat_uses_textual_tool_prompt(request):
-        sections.append(f"Original task:\n{_qwenchat_message_text(messages)}")
-    return "\n\n".join(section for section in sections if section)
-
-
-def _qwenchat_message_text(messages: Sequence[NormalizedMessage]) -> str:
-    """Return joined text from provider-neutral messages."""
-    chunks: list[str] = []
-    for message in messages:
-        chunks.extend(part.text for part in message.parts if isinstance(part, TextPart))
-    return "\n\n".join(chunks)
+def _qwenchat_initial_instruction_text(*, request: ProviderRequest) -> str:
+    """Return schema instructions prepended to the first Qwen message."""
+    if request.schema is None:
+        return ""
+    return build_json_instruction(request.schema)
 
 
 def _qwenchat_message_content(

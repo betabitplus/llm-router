@@ -91,7 +91,7 @@ class Profile:
 
     GEMINI_3_VISUAL: ClassVar[list[RouterProfile]] = [
         RouterProfile(
-            Model.GEMINI_3_FLASH,
+            Model.GEMINI_FLASH,
             provider=Provider.GOOGLE,
             kwargs={
                 "config": {

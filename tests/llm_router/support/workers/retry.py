@@ -184,8 +184,7 @@ def qwen_upload_path() -> str:
 def google_generate_path(*, model: Model) -> str:
     """Return the native Google GenerateContent path for a public model."""
     model_map = {
-        Model.GEMINI_FLASH: "gemini-2.5-flash",
-        Model.GEMINI_3_FLASH: "gemini-3-flash-preview",
+        Model.GEMINI_FLASH: "gemini-3.6-flash",
     }
     api_model = model_map[model]
     return f"/v1beta/models/{api_model}:generateContent"
@@ -194,11 +193,10 @@ def google_generate_path(*, model: Model) -> str:
 def aistudio_video_path(*, model: Model) -> str:
     """Return the AI Studio native video path for a public model."""
     model_map = {
-        Model.GEMINI_FLASH: "gemini-2.5-flash",
-        Model.GEMINI_3_FLASH: "gemini-3-flash-preview",
+        Model.GEMINI_FLASH: "gemini-3.6-flash",
     }
     api_model = model_map[model]
-    return f"/v1beta/models/{api_model}:streamGenerateContent"
+    return f"/v1beta/models/{api_model}:generateContent"
 
 
 def gemini_webapi_google_path() -> str:

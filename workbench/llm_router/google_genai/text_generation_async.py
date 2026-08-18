@@ -45,7 +45,7 @@ from workbench.llm_router.google_genai._sdk_helpers import (
 
 # Keep the same flash model as the sync probe so this script isolates async
 # execution rather than model differences.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _PROMPT = "Reply with only OK."
 _TEMPERATURE = 0.0
 _SEED = 42

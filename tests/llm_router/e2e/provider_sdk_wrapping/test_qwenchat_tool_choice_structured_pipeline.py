@@ -2,7 +2,7 @@
 """LLM Router e2e: QwenChat tool choice + structured output.
 
 Why:
-    Verifies that QwenChat supports the new textual named-tool flow with a
+    Verifies that QwenChat supports the OpenAI-compatible named-tool flow with a
     final structured answer.
 
 Covers:
@@ -52,7 +52,7 @@ pytestmark = [
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 # The setup is intentionally small so the only real question is whether the
-# named textual tool flow is obeyed.
+# named OpenAI-compatible tool flow is obeyed.
 
 
 # =============================================================================

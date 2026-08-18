@@ -54,7 +54,7 @@ from workbench.llm_router.google_genai._sdk_helpers import (
 
 # Keep the baseline flash model fixed so this script isolates the retry policy
 # itself, not model behavior differences.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _PROMPT = "Reply with only OK."
 _TEMPERATURE = 0.0
 _SEED = 42
