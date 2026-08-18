@@ -17,12 +17,13 @@ import httpx
 from py_lib_runtime import get_logger, preview_exception_message
 
 from llm_router._api.errors import ProviderError
-from llm_router._api.types import Provider
+from llm_router._api.types import Provider, ToolCall
 from llm_router._internal.capabilities.media import (
     FileMedia,
     ImageMedia,
     VideoFileMedia,
 )
+from llm_router._internal.capabilities.tools import parse_tool_call
 from llm_router._internal.capabilities.usage import normalize_usage
 from llm_router._internal.config.models import LLMRouterConfig
 from llm_router._internal.providers._prompted import (
@@ -34,7 +35,6 @@ from llm_router._internal.providers._prompted import (
     qwenchat_initial_user_prefix,
     qwenchat_message_payload,
     qwenchat_tool_choice_payload as tool_choice_payload,
-    qwenchat_uses_textual_tool_prompt as uses_textual_tool_prompt,
     textual_tool_call_from_text,
 )
 from llm_router._internal.providers.base import (
@@ -94,7 +94,7 @@ class QwenChatAdapter:
                 dict(definition.descriptor)
                 for definition in request.tool_registry.tools.values()
             ]
-        if request.tool_choice is not None and not uses_textual_tool_prompt(request):
+        if request.tool_choice is not None:
             payload["tool_choice"] = tool_choice_payload(request)
         payload.update(dict(request.kwargs))
         return payload
@@ -121,7 +121,7 @@ class QwenChatAdapter:
                 dict(definition.descriptor)
                 for definition in request.tool_registry.tools.values()
             ]
-        if request.tool_choice is not None and not uses_textual_tool_prompt(request):
+        if request.tool_choice is not None:
             payload["tool_choice"] = tool_choice_payload(request)
         payload.update(dict(request.kwargs))
         return payload
@@ -231,7 +231,7 @@ def message_payloads(
     """Build QwenChat messages, folding initial user instructions when needed."""
     prefix, rest = qwenchat_initial_user_prefix(request.messages)
     messages: list[dict[str, object]] = []
-    if prefix and (request.schema is not None or uses_textual_tool_prompt(request)):
+    if prefix and request.schema is not None:
         messages.append(
             qwenchat_message_payload(
                 request=request,
@@ -265,7 +265,7 @@ async def amessage_payloads(
     """Build async QwenChat messages with the same folding rules."""
     prefix, rest = qwenchat_initial_user_prefix(request.messages)
     messages: list[dict[str, object]] = []
-    if prefix and (request.schema is not None or uses_textual_tool_prompt(request)):
+    if prefix and request.schema is not None:
         messages.append(
             await qwenchat_amessage_payload(
                 request=request,
@@ -352,9 +352,13 @@ def parse_qwenchat_response(
         parsed_value = json_safe_value(parsed)
         result_data["parsed"] = parsed_value
         normalized_output_text = json.dumps(parsed_value, ensure_ascii=False)
-    tool_call = textual_tool_call_from_text(
+    native_tool_calls = _response_tool_calls(data)
+    textual_tool_call = textual_tool_call_from_text(
         text=output_text,
         registry=request.tool_registry,
+    )
+    tool_calls = native_tool_calls or (
+        () if textual_tool_call is None else (textual_tool_call,)
     )
     result = ProviderResult(
         data=result_data,
@@ -363,7 +367,7 @@ def parse_qwenchat_response(
         provider_model=request.provider_model,
         output_text=normalized_output_text,
         usage=normalize_usage(data.get("usage")),
-        tool_calls=() if tool_call is None else (tool_call,),
+        tool_calls=tool_calls,
     )
     logger.info(
         "Provider request completed",
@@ -633,6 +637,23 @@ def _response_text(data: dict[str, Any]) -> str:
         return ""
     content = message.get("content")
     return content.strip() if isinstance(content, str) else ""
+
+
+def _response_tool_calls(data: dict[str, Any]) -> tuple[ToolCall, ...]:
+    """Extract OpenAI-compatible tool calls emitted by the local proxy."""
+    choices = data.get("choices")
+    if not isinstance(choices, list) or not choices:
+        return ()
+    first = choices[0]
+    if not isinstance(first, dict):
+        return ()
+    message = first.get("message")
+    if not isinstance(message, dict):
+        return ()
+    tool_calls = message.get("tool_calls")
+    if not isinstance(tool_calls, list):
+        return ()
+    return tuple(parse_tool_call(call) for call in tool_calls if isinstance(call, dict))
 
 
 def _upload_url(*, base_url: str) -> str:

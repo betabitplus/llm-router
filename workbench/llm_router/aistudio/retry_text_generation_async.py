@@ -57,7 +57,7 @@ from workbench.llm_router.aistudio._sdk_helpers import (
 # Keep the baseline non-video flash model fixed so this script isolates the
 # retry wrapper around AI Studio's OpenAI-compatible text path.
 _BASE_URL = openai_base_url()
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _PROMPT = "Reply with only OK."
 _MAX_ATTEMPTS = 3
 _MIN_WAIT_SECONDS = 1.0

@@ -17,65 +17,137 @@ interactions:
       ["action", "location", "evidence"], "required": ["action", "location", "evidence"],
       "title": "VideoObservation", "type": "OBJECT"}}}'
     headers:
-      Accept:
+      accept:
       - '*/*'
-      Accept-Encoding:
+      accept-encoding:
       - gzip, deflate, br
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
+      content-length:
       - '1296'
-      Content-Type:
+      content-type:
       - application/json
-      Host:
+      host:
       - generativelanguage.googleapis.com
       user-agent:
-      - google-genai-sdk/1.62.0 gl-python/3.13.7
+      - google-genai-sdk/2.18.1 gl-python/3.13.7
       x-goog-api-client:
-      - google-genai-sdk/1.62.0 gl-python/3.13.7
+      - google-genai-sdk/2.18.1 gl-python/3.13.7
     method: POST
-    uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent
+    uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent
   response:
     body:
-      string: "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\":
-        [\n          {\n            \"text\": \"{\\n  \\\"action\\\": \\\"performing
-        a partner squat stunt\\\",\\n  \\\"location\\\": \\\"indoor gym and fitness
-        studio\\\",\\n  \\\"evidence\\\": [\\n    \\\"lifting a person onto shoulders\\\",\\n
-        \   \\\"gym mirrors and exercise equipment\\\"\\n  ]\\n}\",\n            \"thoughtSignature\":
-        \"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\"\n
-        \         }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\":
-        \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\":
-        1306,\n    \"candidatesTokenCount\": 54,\n    \"totalTokenCount\": 2039,\n
-        \   \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n
-        \       \"tokenCount\": 113\n      },\n      {\n        \"modality\": \"VIDEO\",\n
-        \       \"tokenCount\": 1193\n      }\n    ],\n    \"thoughtsTokenCount\":
-        679\n  },\n  \"modelVersion\": \"gemini-3-flash-preview\",\n  \"responseId\":
-        \"d7W2aZGPNaChxN8PgbuP2Q0\"\n}\n"
+      string: "{\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model
+        is currently experiencing high demand. Spikes in demand are usually temporary.
+        Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n"
     headers:
-      Alt-Svc:
+      alt-svc:
       - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
-      Content-Type:
+      content-length:
+      - '198'
+      content-type:
       - application/json; charset=UTF-8
-      Date:
-      - Sun, 15 Mar 2026 13:34:47 GMT
-      Server:
+      date:
+      - Tue, 18 Aug 2026 11:53:55 GMT
+      server:
       - scaffolding on HTTPServer2
-      Server-Timing:
-      - gfet4t7; dur=5337
-      Transfer-Encoding:
+      server-timing:
+      - gfet4t7; dur=27307
+      transfer-encoding:
       - chunked
-      Vary:
+      vary:
       - Origin
       - X-Origin
       - Referer
-      X-Content-Type-Options:
+      x-content-type-options:
       - nosniff
-      X-Frame-Options:
+      x-frame-options:
       - SAMEORIGIN
-      X-XSS-Protection:
+      x-gemini-service-tier:
+      - standard
+      x-xss-protection:
       - '0'
+    status:
+      code: 503
+      message: Service Unavailable
+- request:
+    body: '{"contents": [{"parts": [{"text": "Follow instructions exactly. Reply with
+      only what is asked."}, {"text": "You are given a short video clip.\n\nReturn
+      JSON with exactly three keys:\n- action: the main activity as a short lowercase
+      word or phrase\n- location: a short phrase describing where it happens\n\n-
+      evidence: exactly 2 short strings describing visible motion or scene cues\n\nIf
+      the clip happens indoors in a gym, dance studio, or training room, mention that
+      in location.\nIn evidence, mention movement, posture, or indoor scene details.\n\nReturn
+      ONLY valid JSON. No markdown."}, {"fileData": {"fileUri": "https://www.youtube.com/shorts/QUxqvF0pyGw"},
+      "videoMetadata": {"fps": 1.0}}], "role": "user"}], "generationConfig": {"temperature":
+      0.0, "seed": 42, "responseMimeType": "application/json", "responseSchema": {"description":
+      "Minimal structured summary for a short video clip.", "properties": {"action":
+      {"min_length": 4, "title": "Action", "type": "STRING"}, "location": {"min_length":
+      4, "title": "Location", "type": "STRING"}, "evidence": {"items": {"type": "STRING"},
+      "min_items": 2, "title": "Evidence", "type": "ARRAY"}}, "property_ordering":
+      ["action", "location", "evidence"], "required": ["action", "location", "evidence"],
+      "title": "VideoObservation", "type": "OBJECT"}}}'
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate, br
+      connection:
+      - keep-alive
       content-length:
-      - '4674'
+      - '1296'
+      content-type:
+      - application/json
+      host:
+      - generativelanguage.googleapis.com
+      user-agent:
+      - google-genai-sdk/2.18.1 gl-python/3.13.7
+      x-goog-api-client:
+      - google-genai-sdk/2.18.1 gl-python/3.13.7
+    method: POST
+    uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent
+  response:
+    body:
+      string: "{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\":
+        [\n          {\n            \"text\": \"{\\\"action\\\":\\\"partner squatting
+        challenge\\\",\\\"location\\\":\\\"indoors in a gym and fitness studio\\\",\\\"evidence\\\":[\\\"one
+        woman lifts her friend across her back and squats\\\",\\\"treadmills and mirrors
+        visible in the background\\\"]}\",\n            \"thoughtSignature\": \"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\"\n
+        \         }\n        ],\n        \"role\": \"model\"\n      },\n      \"finishReason\":
+        \"STOP\",\n      \"index\": 0\n    }\n  ],\n  \"usageMetadata\": {\n    \"promptTokenCount\":
+        1309,\n    \"candidatesTokenCount\": 42,\n    \"totalTokenCount\": 2025,\n
+        \   \"promptTokensDetails\": [\n      {\n        \"modality\": \"TEXT\",\n
+        \       \"tokenCount\": 113\n      },\n      {\n        \"modality\": \"VIDEO\",\n
+        \       \"tokenCount\": 1196\n      }\n    ],\n    \"thoughtsTokenCount\":
+        674,\n    \"serviceTier\": \"standard\"\n  },\n  \"modelVersion\": \"gemini-3.6-flash\",\n
+        \ \"responseId\": \"1UeEapWsJtuZvdIP_4q0sQE\"\n}\n"
+    headers:
+      alt-svc:
+      - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+      content-length:
+      - '4455'
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Tue, 18 Aug 2026 11:54:02 GMT
+      server:
+      - scaffolding on HTTPServer2
+      server-timing:
+      - gfet4t7; dur=5022
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - X-Origin
+      - Referer
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - SAMEORIGIN
+      x-gemini-service-tier:
+      - standard
+      x-xss-protection:
+      - '0'
     status:
       code: 200
       message: OK

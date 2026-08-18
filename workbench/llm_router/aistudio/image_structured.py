@@ -53,7 +53,7 @@ from workbench.llm_router.aistudio._structured_output import (
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 # Keep the preview model and shared traffic image fixed so the manual result
 # focuses on the AI Studio non-video image path.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _IMAGE_PATH = _REPO_ROOT / "tests/llm_router/data/test_image.png"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _PROMPT = build_scene_summary_prompt()

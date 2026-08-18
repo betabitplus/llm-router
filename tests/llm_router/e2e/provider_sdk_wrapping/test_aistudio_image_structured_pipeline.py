@@ -94,7 +94,7 @@ def build_prompt() -> str:
 def build_router() -> LLMRouter:
     """Build the router under test."""
     return LLMRouter(
-        RouterProfile(model=Model.GEMINI_3_FLASH, provider=Provider.AISTUDIO),
+        RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO),
         temperature=0.0,
         seed=42,
     )

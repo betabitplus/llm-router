@@ -79,7 +79,7 @@ pytestmark = [
 
 _PORT = 0
 _NON_VIDEO_PATH = openai_chat_path()
-_VIDEO_PATH = aistudio_video_path(model=Model.GEMINI_3_FLASH)
+_VIDEO_PATH = aistudio_video_path(model=Model.GEMINI_FLASH)
 _NON_VIDEO_RETRY_TEXT = "aistudio non-video retry ok on server-attempt-2"
 _VIDEO_RETRY_JSON = {"status": "retry-ok", "server_attempts": 2}
 _NON_VIDEO_NON_RETRYABLE_MESSAGE = "aistudio non-video bad request"

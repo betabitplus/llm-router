@@ -52,7 +52,7 @@ from workbench.llm_router.aistudio._structured_output import (
 
 # Keep one nested candidate-packet schema fixed so this script isolates the
 # `$defs` and `$ref` inlining workaround.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _PROMPT = build_candidate_packet_prompt()
 
 

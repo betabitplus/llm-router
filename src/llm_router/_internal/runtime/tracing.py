@@ -8,7 +8,7 @@ Why:
 from __future__ import annotations
 
 import json
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 from py_lib_runtime import preview_value
 
@@ -77,7 +77,11 @@ def append_tool_result_message(
     if request.provider is Provider.GOOGLE:
         return (
             *messages,
-            *_google_tool_messages(tool_calls=result.tool_calls, steps=steps),
+            *_google_tool_messages(
+                tool_calls=result.tool_calls,
+                tool_call_metadata=result.tool_call_metadata,
+                steps=steps,
+            ),
         )
     if _uses_prompted_tool_messages(request.provider):
         return (
@@ -151,12 +155,13 @@ def _uses_openai_tool_messages(provider: Provider) -> bool:
         Provider.NVIDIA,
         Provider.GROQ,
         Provider.ALIBABA,
+        Provider.QWENCHAT,
     }
 
 
 def _uses_prompted_tool_messages(provider: Provider) -> bool:
     """Return whether tool turns should stay as textual provider prompts."""
-    return provider in {Provider.GEMINI_WEBAPI, Provider.QWENCHAT}
+    return provider is Provider.GEMINI_WEBAPI
 
 
 def _openai_tool_call_message(tool_calls: Sequence[ToolCall]) -> NormalizedMessage:
@@ -210,21 +215,25 @@ def _openai_tool_result_messages(
 def _google_tool_messages(
     *,
     tool_calls: Sequence[ToolCall],
+    tool_call_metadata: Sequence[Mapping[str, object]],
     steps: Sequence[ToolStep],
 ) -> tuple[NormalizedMessage, ...]:
     """Return Gemini-native function call/response transcript messages."""
     messages: list[NormalizedMessage] = []
-    for call, step in zip(tool_calls, steps, strict=False):
+    for index, (call, step) in enumerate(zip(tool_calls, steps, strict=False)):
+        call_meta: dict[str, object] = {
+            "name": call.name,
+            "args": dict(call.args),
+        }
+        if index < len(tool_call_metadata):
+            thought_signature = tool_call_metadata[index].get("thought_signature")
+            if thought_signature is not None:
+                call_meta["thought_signature"] = thought_signature
         messages.append(
             NormalizedMessage(
                 role="model",
                 parts=(),
-                meta={
-                    "google_function_call": {
-                        "name": call.name,
-                        "args": dict(call.args),
-                    }
-                },
+                meta={"google_function_call": call_meta},
             )
         )
         messages.append(

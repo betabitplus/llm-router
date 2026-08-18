@@ -66,7 +66,7 @@ pytestmark = [
 
 _PORT = 0
 _OPENAI_PATH = openai_chat_path()
-_GOOGLE_PATH = google_generate_path(model=Model.GEMINI_3_FLASH)
+_GOOGLE_PATH = google_generate_path(model=Model.GEMINI_FLASH)
 
 
 # =============================================================================

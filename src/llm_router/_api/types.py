@@ -116,11 +116,9 @@ class Model(StrEnum):
     """
 
     # Gemini models
-    GEMINI_FLASH_LITE = "gemini-2.5-flash-lite"
-    GEMINI_FLASH = "gemini-2.5-flash"
-    GEMINI_FLASH_2_0 = "gemini-2.0-flash"
-    GEMINI_PRO = "gemini-2.5-pro"
-    GEMINI_3_FLASH = "gemini-3-flash"
+    GEMINI_FLASH_LITE = "gemini-3.5-flash-lite"
+    GEMINI_FLASH = "gemini-3.6-flash"
+    GEMINI_PRO = "gemini-3.1-pro-preview"
 
     # OpenRouter models
     DEEPSEEK_V3 = "deepseek-chat-v3"

@@ -51,7 +51,7 @@ from workbench.llm_router.aistudio._structured_output import (
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 # Keep the shared jumper clip fixed so this script stays about the native AI
 # Studio video path rather than changing media content.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _VIDEO_PATH = _REPO_ROOT / "tests/llm_router/data/jumper.mp4"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _PROMPT = build_rooftop_video_prompt()

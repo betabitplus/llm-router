@@ -1,51 +1,33 @@
 interactions:
 - request:
-    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
-      and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and b=2,
-      then reply with ONLY the number."}],"model":"gemini-2.5-flash-lite","seed":42,"temperature":0.0,"tool_choice":{"type":"function","function":{"name":"add"}},"tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
-      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
-      a*b as JSON."}}]}'
+    body: '{"model":"gemini-3.5-flash-lite","messages":[{"role":"user","content":"Follow
+      instructions exactly. Reply with only what is asked."},{"role":"user","content":"You
+      have tools add(a, b) and multiply(a, b), each returning {result}.\nUse ONLY
+      add with a=40 and b=2, then reply with ONLY the number."}],"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
+      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
+      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":{"type":"function","function":{"name":"add"}}}'
     headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
+      accept:
+      - '*/*'
+      accept-encoding:
       - gzip, deflate, br
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
+      content-length:
       - '880'
-      Content-Type:
+      content-type:
       - application/json
-      Host:
+      host:
       - localhost:7860
-      User-Agent:
-      - OpenAI/Python 2.20.0
-      X-Stainless-Arch:
-      - arm64
-      X-Stainless-Async:
-      - 'false'
-      X-Stainless-Lang:
-      - python
-      X-Stainless-OS:
-      - MacOS
-      X-Stainless-Package-Version:
-      - 2.20.0
-      X-Stainless-Runtime:
-      - CPython
-      X-Stainless-Runtime-Version:
-      - 3.13.7
-      x-stainless-read-timeout:
-      - '600'
-      x-stainless-retry-count:
-      - '0'
+      user-agent:
+      - python-httpx/0.28.1
     method: POST
     uri: http://localhost:7860/v1/chat/completions
   response:
     body:
-      string: '{"choices":[{"finish_reason":"tool_calls","index":0,"message":{"content":"","role":"assistant","tool_calls":[{"function":{"arguments":"{\"a\":40,\"b\":2}","name":"add"},"id":"call_1773581844056_wvahy8llor","index":0,"type":"function"}]}}],"created":1773581844,"id":"chatcmpl-1773581844056_8bf64f66obe","model":"gemini-2.5-flash-lite","object":"chat.completion","usage":{"completion_tokens":19,"completion_tokens_details":{"image_tokens":0,"output_text_tokens":19,"reasoning_tokens":0},"prompt_tokens":151,"prompt_tokens_details":{"text_tokens":151,"tool_tokens":0},"total_tokens":170}}'
+      string: '{"choices":[{"finish_reason":"tool_calls","index":0,"message":{"content":"","role":"assistant","tool_calls":[{"function":{"arguments":"{\"b\":2,\"a\":40}","name":"add"},"id":"call_1787053905597_o0y8ihhc20d","index":0,"type":"function"}]}}],"created":1787053905,"id":"chatcmpl-1787053905598_379bjmiew87","model":"gemini-3.5-flash-lite","object":"chat.completion","usage":{"completion_tokens":17,"completion_tokens_details":{"image_tokens":0,"output_text_tokens":17,"reasoning_tokens":0},"prompt_tokens":201,"prompt_tokens_details":{"text_tokens":201,"tool_tokens":0},"total_tokens":218}}'
     headers:
-      Access-Control-Allow-Headers:
+      access-control-allow-headers:
       - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
         x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
         openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
@@ -55,81 +37,63 @@ interactions:
         x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
         x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
         x-goog-upload-status
-      Access-Control-Allow-Methods:
+      access-control-allow-methods:
       - GET, POST, PUT, DELETE, PATCH, OPTIONS
-      Access-Control-Allow-Origin:
+      access-control-allow-origin:
       - '*'
-      Access-Control-Allow-Private-Network:
+      access-control-allow-private-network:
       - 'true'
-      Access-Control-Expose-Headers:
+      access-control-expose-headers:
       - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
         x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
         x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
         content-type, content-length, location
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
-      - '585'
-      Content-Type:
+      content-length:
+      - '586'
+      content-type:
       - application/json; charset=utf-8
-      Date:
-      - Sun, 15 Mar 2026 13:37:24 GMT
-      ETag:
-      - W/"249-Jxa5HDPrfDunN5uHcYjfoqfVoJ0"
-      Keep-Alive:
+      date:
+      - Tue, 18 Aug 2026 11:51:45 GMT
+      etag:
+      - W/"24a-rJ1kfeWCzWIdd2tQOk4Z/R94HPw"
+      keep-alive:
       - timeout=120
-      X-Powered-By:
+      x-powered-by:
       - Express
     status:
       code: 200
       message: OK
 - request:
-    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
-      and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and b=2,
-      then reply with ONLY the number."},{"role":"assistant","content":"","tool_calls":[{"id":"call_1773581844056_wvahy8llor","type":"function","function":{"name":"add","arguments":"{\"a\":40,\"b\":2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_1773581844056_wvahy8llor","name":"add"}],"model":"gemini-2.5-flash-lite","seed":42,"temperature":0.0,"tool_choice":"auto","tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
-      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
-      a*b as JSON."}}]}'
+    body: '{"model":"gemini-3.5-flash-lite","messages":[{"role":"user","content":"Follow
+      instructions exactly. Reply with only what is asked."},{"role":"user","content":"You
+      have tools add(a, b) and multiply(a, b), each returning {result}.\nUse ONLY
+      add with a=40 and b=2, then reply with ONLY the number."},{"role":"assistant","content":"","tool_calls":[{"id":"call_1787053905597_o0y8ihhc20d","type":"function","function":{"name":"add","arguments":"{\"b\":2,\"a\":40}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_1787053905597_o0y8ihhc20d","name":"add"}],"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
+      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
+      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":"auto"}'
     headers:
-      Accept:
-      - application/json
-      Accept-Encoding:
+      accept:
+      - '*/*'
+      accept-encoding:
       - gzip, deflate, br
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
-      - '1110'
-      Content-Type:
+      content-length:
+      - '1112'
+      content-type:
       - application/json
-      Host:
+      host:
       - localhost:7860
-      User-Agent:
-      - OpenAI/Python 2.20.0
-      X-Stainless-Arch:
-      - arm64
-      X-Stainless-Async:
-      - 'false'
-      X-Stainless-Lang:
-      - python
-      X-Stainless-OS:
-      - MacOS
-      X-Stainless-Package-Version:
-      - 2.20.0
-      X-Stainless-Runtime:
-      - CPython
-      X-Stainless-Runtime-Version:
-      - 3.13.7
-      x-stainless-read-timeout:
-      - '600'
-      x-stainless-retry-count:
-      - '0'
+      user-agent:
+      - python-httpx/0.28.1
     method: POST
     uri: http://localhost:7860/v1/chat/completions
   response:
     body:
-      string: '{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"42\n","role":"assistant"}}],"created":1773581844,"id":"chatcmpl-1773581844809_i55k1h0wmaf","model":"gemini-2.5-flash-lite","object":"chat.completion","usage":{"completion_tokens":2,"completion_tokens_details":{"image_tokens":0,"output_text_tokens":2,"reasoning_tokens":0},"prompt_tokens":184,"prompt_tokens_details":{"text_tokens":184,"tool_tokens":0},"total_tokens":186}}'
+      string: '{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"42","role":"assistant"}}],"created":1787053906,"id":"chatcmpl-1787053906097_6begjv3xn8b","model":"gemini-3.5-flash-lite","object":"chat.completion","usage":{"completion_tokens":2,"completion_tokens_details":{"image_tokens":0,"output_text_tokens":2,"reasoning_tokens":0},"prompt_tokens":229,"prompt_tokens_details":{"text_tokens":229,"tool_tokens":0},"total_tokens":231}}'
     headers:
-      Access-Control-Allow-Headers:
+      access-control-allow-headers:
       - Content-Type, Authorization, x-requested-with, x-api-key, x-goog-api-key,
         x-goog-api-client, x-user-agent, origin, accept, baggage, sentry-trace, openai-organization,
         openai-project, openai-beta, x-stainless-lang, x-stainless-package-version,
@@ -139,30 +103,30 @@ interactions:
         x-goog-upload-protocol, x-goog-upload-command, x-goog-upload-header-content-length,
         x-goog-upload-header-content-type, x-goog-upload-url, x-goog-upload-offset,
         x-goog-upload-status
-      Access-Control-Allow-Methods:
+      access-control-allow-methods:
       - GET, POST, PUT, DELETE, PATCH, OPTIONS
-      Access-Control-Allow-Origin:
+      access-control-allow-origin:
       - '*'
-      Access-Control-Allow-Private-Network:
+      access-control-allow-private-network:
       - 'true'
-      Access-Control-Expose-Headers:
+      access-control-expose-headers:
       - x-goog-upload-url, x-goog-upload-status, x-goog-upload-chunk-granularity,
         x-goog-upload-control-url, x-goog-upload-command, x-goog-upload-content-type,
         x-goog-upload-protocol, x-goog-upload-file-name, x-goog-upload-offset, date,
         content-type, content-length, location
-      Connection:
+      connection:
       - keep-alive
-      Content-Length:
-      - '440'
-      Content-Type:
+      content-length:
+      - '438'
+      content-type:
       - application/json; charset=utf-8
-      Date:
-      - Sun, 15 Mar 2026 13:37:24 GMT
-      ETag:
-      - W/"1b8-J2MT6ycH53ruqJAogR0Dew4wOvw"
-      Keep-Alive:
+      date:
+      - Tue, 18 Aug 2026 11:51:46 GMT
+      etag:
+      - W/"1b6-QBRPkZg8CC2AduCGZDdh0QejUWA"
+      keep-alive:
       - timeout=120
-      X-Powered-By:
+      x-powered-by:
       - Express
     status:
       code: 200

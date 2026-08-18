@@ -22,7 +22,7 @@ def _request(**overrides: object) -> ProviderRequest:
         "request_id": "req-1",
         "provider": Provider.AISTUDIO,
         "model": Model.GEMINI_FLASH,
-        "provider_model": "gemini-2.5-flash",
+        "provider_model": "gemini-3.6-flash",
         "credential": ProviderCredential(
             key_id=1,
             env_var="AISTUDIO_API_KEY_1",

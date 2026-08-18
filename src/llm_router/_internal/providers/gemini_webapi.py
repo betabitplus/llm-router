@@ -70,6 +70,9 @@ _HTTP_STATUS_MIN = 100
 _HTTP_STATUS_MAX = 599
 _NON_RETRYABLE_GEMINI_WEBAPI_CODES = frozenset({1060})
 _STATUS_TEXT_RE = re.compile(r"\bstatus(?:\s+code)?\s*:\s*(\d{3})\b", re.IGNORECASE)
+_SYNC_LOOP_STATE: dict[str, asyncio.AbstractEventLoop | None] = {"loop": None}
+_SYNC_LOOP_LOCK = threading.Lock()
+_SYNC_LOOP_READY = threading.Event()
 
 
 class GeminiWebAPIAdapter:
@@ -411,7 +414,15 @@ def _tool_prompt_and_files(
             latest_user,
             temp_dir=temp_dir,
         )
-        return rendered_text or "", files
+        prompt_parts = [
+            build_tool_instruction(
+                registry=request.tool_registry,
+                choice=request.tool_choice,
+            )
+        ]
+        if rendered_text:
+            prompt_parts.append(rendered_text)
+        return "\n\n".join(prompt_parts), files
 
     prompt_parts = [
         build_tool_instruction(
@@ -568,30 +579,41 @@ async def _maybe_await(value: object) -> object:
 
 
 def _run_coro_sync(coro: object) -> object:
-    """Run one coroutine from sync code, including inside an active event loop."""
+    """Run one coroutine from sync code on the persistent provider event loop."""
     if not inspect.isawaitable(coro):
         return coro
-    try:
-        asyncio.get_running_loop()
-    except RuntimeError:
-        return asyncio.run(coro)
+    loop = _sync_loop()
+    return asyncio.run_coroutine_threadsafe(coro, loop).result()
 
-    result: dict[str, object] = {}
-    error: dict[str, BaseException] = {}
 
-    def runner() -> None:
-        """Run the coroutine in a helper thread and capture its outcome."""
-        try:
-            result["value"] = asyncio.run(coro)
-        except BaseException as exc:  # pragma: no cover - passthrough guard
-            error["value"] = exc
+def _sync_loop() -> asyncio.AbstractEventLoop:
+    """Return the persistent event loop used by synchronous SDK calls."""
+    with _SYNC_LOOP_LOCK:
+        current = _SYNC_LOOP_STATE["loop"]
+        if current is not None and current.is_running():
+            return current
 
-    thread = threading.Thread(target=runner, name="gemini-webapi-sync", daemon=True)
-    thread.start()
-    thread.join()
-    if error:
-        raise error["value"]
-    return result.get("value")
+        _SYNC_LOOP_READY.clear()
+
+        def runner() -> None:
+            """Own the provider event loop for the process lifetime."""
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            _SYNC_LOOP_STATE["loop"] = loop
+            _SYNC_LOOP_READY.set()
+            loop.run_forever()
+
+        threading.Thread(
+            target=runner,
+            name="gemini-webapi-sync",
+            daemon=True,
+        ).start()
+        _SYNC_LOOP_READY.wait()
+        current = _SYNC_LOOP_STATE["loop"]
+        if current is None:
+            msg = "Gemini WebAPI sync event loop failed to start."
+            raise RuntimeError(msg)
+        return current
 
 
 def _log_provider_start(request: ProviderRequest) -> None:

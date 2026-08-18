@@ -85,11 +85,17 @@ class ProviderResult:
     output_text: str
     usage: UsageStats | None = None
     tool_calls: tuple[ToolCall, ...] = ()
+    tool_call_metadata: tuple[Mapping[str, Any], ...] = ()
 
     def __post_init__(self) -> None:
         """Copy mutable provider result data after construction."""
         object.__setattr__(self, "data", MappingProxyType(dict(self.data)))
         object.__setattr__(self, "tool_calls", tuple(self.tool_calls))
+        object.__setattr__(
+            self,
+            "tool_call_metadata",
+            tuple(MappingProxyType(dict(item)) for item in self.tool_call_metadata),
+        )
 
 
 @dataclass(frozen=True, slots=True)

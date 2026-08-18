@@ -41,7 +41,7 @@ def _build_router(*, case: str) -> Any:
 
     if case == "google":
         return LLMRouter(
-            RouterProfile(model=Model.GEMINI_3_FLASH, provider=Provider.GOOGLE),
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GOOGLE),
             temperature=0.0,
             seed=1,
         )

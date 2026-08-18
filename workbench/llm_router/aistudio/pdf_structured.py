@@ -52,7 +52,7 @@ from workbench.llm_router.aistudio._native_media import (
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 # Keep the shared PDF fixture fixed so this script stays about the native AI
 # Studio file path rather than changing source content.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _PDF_PATH = _REPO_ROOT / "tests/llm_router/data/variative.pdf"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _PROMPT = build_pdf_digest_prompt()

@@ -78,7 +78,7 @@ pytestmark = [
 _OPENAI_PORT = 0
 _GOOGLE_PORT = 0
 _OPENAI_PATH = openai_chat_path()
-_GOOGLE_PATH = google_generate_path(model=Model.GEMINI_3_FLASH)
+_GOOGLE_PATH = google_generate_path(model=Model.GEMINI_FLASH)
 _EXPECTED_TEXT = "parity-ok"
 _EXPECTED_USAGE = {
     "input_tokens": 12,
@@ -254,7 +254,7 @@ def test_representative_clients_normalize_to_the_same_public_shape() -> None:
     assert_individual_result(
         google_result,
         expected_provider="google",
-        expected_model="gemini-3-flash",
+        expected_model="gemini-3.6-flash",
     )
     # Finally, prove both public responses converge to the same contract.
     assert_parity(openai_result, google_result)
@@ -284,7 +284,7 @@ def main() -> None:
     assert_individual_result(
         google_result,
         expected_provider="google",
-        expected_model="gemini-3-flash",
+        expected_model="gemini-3.6-flash",
     )
     assert_parity(openai_result, google_result)
 

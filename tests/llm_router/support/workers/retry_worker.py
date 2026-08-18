@@ -45,7 +45,7 @@ def _build_router(case: str) -> Any:
 
     if case == "google":
         return LLMRouter(
-            RouterProfile(model=Model.GEMINI_3_FLASH, provider=Provider.GOOGLE),
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GOOGLE),
             temperature=0.0,
             seed=1,
         )
@@ -59,7 +59,7 @@ def _build_router(case: str) -> Any:
 
     if case == "aistudio_nonvideo":
         return LLMRouter(
-            RouterProfile(model=Model.GEMINI_3_FLASH, provider=Provider.AISTUDIO),
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO),
             temperature=0.0,
             seed=1,
         )
@@ -67,7 +67,7 @@ def _build_router(case: str) -> Any:
     if case == "aistudio_video":
         _ = VideoSchema
         return LLMRouter(
-            RouterProfile(model=Model.GEMINI_3_FLASH, provider=Provider.AISTUDIO),
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO),
             temperature=0.0,
             seed=1,
         )

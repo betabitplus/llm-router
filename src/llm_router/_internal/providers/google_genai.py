@@ -177,6 +177,7 @@ def parse_google_genai_response(
         output_text=_response_text(response, data=data),
         usage=normalize_usage(_response_usage(response)),
         tool_calls=_response_tool_calls(response),
+        tool_call_metadata=_response_tool_call_metadata(response),
     )
     logger.info(
         "Provider request completed",
@@ -264,7 +265,8 @@ def _content_payload(message: NormalizedMessage) -> types.Content:
                     function_call=types.FunctionCall(
                         name=str(function_call.get("name") or ""),
                         args=args,
-                    )
+                    ),
+                    thought_signature=function_call.get("thought_signature"),
                 )
             ],
         )
@@ -386,6 +388,21 @@ def _response_tool_calls(response: object) -> tuple[ToolCall, ...]:
             )
         )
     return tuple(calls)
+
+
+def _response_tool_call_metadata(response: object) -> tuple[Mapping[str, Any], ...]:
+    """Preserve provider-native metadata required for subsequent tool turns."""
+    metadata: list[Mapping[str, Any]] = []
+    for part in _candidate_parts(response):
+        if getattr(part, "function_call", None) is None:
+            continue
+        thought_signature = getattr(part, "thought_signature", None)
+        metadata.append(
+            {}
+            if thought_signature is None
+            else {"thought_signature": thought_signature}
+        )
+    return tuple(metadata)
 
 
 def _candidate_parts(response: object) -> list[object]:

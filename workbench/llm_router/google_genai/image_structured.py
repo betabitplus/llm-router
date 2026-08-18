@@ -51,7 +51,7 @@ from workbench.llm_router.google_genai._structured_output import (
 
 # Keep the same preview model and shared image fixture the adapter path expects
 # so the direct-image SDK seam stays easy to inspect.
-_MODEL = "gemini-2.5-flash"
+_MODEL = "gemini-3.6-flash"
 _IMAGE_FILENAME = "test_image.png"
 _PROMPT = build_scene_summary_prompt()
 

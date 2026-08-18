@@ -78,7 +78,7 @@ def _request() -> ProviderRequest:
         request_id="req-1",
         provider=Provider.GOOGLE,
         model=Model.GEMINI_FLASH,
-        provider_model="gemini-2.5-flash",
+        provider_model="gemini-3.6-flash",
         credential=ProviderCredential(
             key_id=1,
             env_var="GOOGLE_API_KEY_1",
@@ -97,7 +97,7 @@ def test_sync_google_adapter_uses_fake_client_and_normalizes_result() -> None:
 
     assert result.output_text == "ok"
     assert result.usage.total_tokens == 5
-    assert client.models.calls[0]["model"] == "gemini-2.5-flash"
+    assert client.models.calls[0]["model"] == "gemini-3.6-flash"
     config = client.models.calls[0]["config"]
     assert config.temperature == 0.0
     assert config.seed == 7
@@ -110,7 +110,7 @@ async def test_async_google_adapter_uses_fake_client() -> None:
     result = await GoogleGenAIAdapter(client=client).aexecute(_request())
 
     assert result.output_text == "async ok"
-    assert client.aio.models.calls[0]["model"] == "gemini-2.5-flash"
+    assert client.aio.models.calls[0]["model"] == "gemini-3.6-flash"
 
 
 @pytest.mark.parametrize(
