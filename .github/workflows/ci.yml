@@ -13,10 +13,11 @@ permissions:
 jobs:
   ci:
     name: ci
-    uses: betabitplus/ternforge-infra-ci/.github/workflows/python-library.yml@30b0a34aeb46555ddedc9b11d3c685f24d65203c # v5.1.10
+    uses: betabitplus/ternforge-infra-ci/.github/workflows/python-library.yml@bf5d127900edaa9bd9d7e490de11b034fe2554a4 # v5.2.0
     with:
       python-version: "3.13"
       runtime-audit-exclude-package: "py-lib-runtime"
+      runtime-audit-ignore-vulnerabilities: ""
       playwright-browsers: ""
     secrets:
       app-private-key: ${{ secrets.TERNFORGE_SOURCE_READ_PRIVATE_KEY }}
