@@ -43,13 +43,13 @@ uv run pre-commit run --all-files --hook-stage pre-push
 Check whether this repo is behind the released Ternforge template:
 
 ```bash
-uvx --from copier==9.17.1 copier check-update
+uvx --from copier==9.17.2 copier check-update
 ```
 
 Apply the latest released Ternforge template:
 
 ```bash
-uvx --from copier==9.17.1 copier update
+uvx --from copier==9.17.2 copier update
 ```
 
 The update command leaves product-owned `src/`, `tests/`, `docs/`,
