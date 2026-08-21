@@ -18,7 +18,7 @@ normalization, provider payload construction, retry classification, output
 normalization, error translation, logging events, and adapter cache clearing.
 
 ```bash
-direnv exec . rtk proxy uv run pytest tests/llm_router/unit
+direnv exec . uv run pytest tests/llm_router/unit
 ```
 
 Integration tests prove private subsystems working together with fake
@@ -26,7 +26,7 @@ providers, fake servers, routing policy, retry and repair orchestration,
 concurrency isolation, and logging observability.
 
 ```bash
-direnv exec . rtk proxy uv run pytest tests/llm_router/integration
+direnv exec . uv run pytest tests/llm_router/integration
 ```
 
 ## Property Proofs
@@ -38,8 +38,8 @@ precedence, fallback policy, provider wrapping, and session behavior remain
 unchanged.
 
 ```bash
-direnv exec . rtk proxy uv run pytest tests/llm_router/property_based/internal
-direnv exec . rtk proxy uv run pytest tests/llm_router/property_based/public_contract
+direnv exec . uv run pytest tests/llm_router/property_based/internal
+direnv exec . uv run pytest tests/llm_router/property_based/public_contract
 ```
 
 ## E2E Proofs
@@ -50,14 +50,14 @@ output and errors, route fallback and wait policy, session isolation, and
 settings propagation.
 
 ```bash
-direnv exec . rtk proxy uv run pytest tests/llm_router/e2e
+direnv exec . uv run pytest tests/llm_router/e2e
 ```
 
 Phase-local e2e checks for the observability and concurrency phase are:
 
 ```bash
-direnv exec . rtk proxy uv run pytest tests/llm_router/e2e/session_state_and_isolation
-direnv exec . rtk proxy uv run pytest tests/llm_router/e2e/settings_overrides_and_propagation
+direnv exec . uv run pytest tests/llm_router/e2e/session_state_and_isolation
+direnv exec . uv run pytest tests/llm_router/e2e/settings_overrides_and_propagation
 ```
 
 ## Running-Loop Proofs
@@ -66,7 +66,7 @@ Every e2e module must also run through the nested-event-loop reproduction
 script. Regenerate the module list from the filesystem before running it.
 
 ```bash
-direnv exec . rtk proxy uv run python - <<'PY'
+direnv exec . uv run python - <<'PY'
 from pathlib import Path
 import subprocess
 
@@ -91,9 +91,9 @@ The final quality loop covers lint, formatting, spelling, normal pre-commit
 hooks, and pre-push hooks.
 
 ```bash
-direnv exec . rtk proxy uv run ruff check .
-direnv exec . rtk proxy uv run ruff format --check .
-direnv exec . rtk proxy uv run typos
-direnv exec . rtk proxy uv run pre-commit run --all-files
-direnv exec . rtk proxy uv run pre-commit run --hook-stage pre-push --all-files
+direnv exec . uv run ruff check .
+direnv exec . uv run ruff format --check .
+direnv exec . uv run typos
+direnv exec . uv run pre-commit run --all-files
+direnv exec . uv run pre-commit run --hook-stage pre-push --all-files
 ```
