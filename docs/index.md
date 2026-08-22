@@ -2,11 +2,11 @@
 
 `llm-router` provides one public routing API across multiple LLM provider families.
 
-- [Package documentation](llm_router/README)
-- [Live executable examples](auto_examples/index)
-- [API reference](api)
-- [Architecture](llm_router/architecture/README)
-- [Verification](llm_router/verification/README)
+- {doc}`Package documentation <llm_router/README>`
+- {doc}`Live executable examples <auto_examples/index>`
+- {doc}`API reference <api>`
+- {doc}`Architecture <llm_router/architecture/README>`
+- {doc}`Verification <llm_router/verification/README>`
 
 ```{toctree}
 :hidden:

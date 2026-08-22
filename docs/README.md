@@ -21,8 +21,8 @@ approach, and generated live-example gallery.
 ## Live Examples
 
 The source of truth for runnable user workflows is the repository
-`examples/llm_router/` tree. Sphinx-Gallery publishes the same source in the
-[generated examples](auto_examples/index).
+`examples/llm_router/` tree. [index.md](index.md) defines the generated Sphinx
+site that publishes the same source as the live-example gallery.
 
 Build without executing live examples:
 
@@ -37,12 +37,3 @@ uv run sphinx-build -W --keep-going -b html docs docs/_build/html
 ```
 
 Open `docs/_build/html/index.html` in a browser to inspect the generated site.
-
-```{toctree}
-:hidden:
-:glob:
-:maxdepth: 3
-
-llm_router/**
-auto_examples/index
-```
