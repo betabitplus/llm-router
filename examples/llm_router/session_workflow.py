@@ -3,6 +3,8 @@
 
 Persist a real conversation, restore it, fork it, and let the two branches diverge.
 """
+# sphinx_gallery_tags = ["sessions", "persistence", "routing"]
+# sphinx_gallery_thumbnail_path = "_static/gallery/sessions.svg"
 # %%
 
 from __future__ import annotations

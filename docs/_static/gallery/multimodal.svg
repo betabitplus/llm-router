@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="280" viewBox="0 0 400 280" role="img" aria-labelledby="title desc">
+  <title id="title">Multimodal inputs</title>
+  <desc id="desc">Image, document, and video inputs converging on one model.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="1" stop-color="#25433d"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="280" rx="28" fill="url(#bg)"/>
+  <rect x="55" y="72" width="78" height="64" rx="10" fill="none" stroke="#86efac" stroke-width="6"/>
+  <circle cx="78" cy="94" r="8" fill="#86efac"/>
+  <path d="M63 125l19-18 16 15 14-11 13 14" fill="none" stroke="#86efac" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M165 66h62v88h-62zM178 88h36M178 108h36M178 128h26" fill="none" stroke="#93c5fd" stroke-width="5" stroke-linecap="round"/>
+  <rect x="258" y="73" width="86" height="60" rx="10" fill="none" stroke="#f9a8d4" stroke-width="6"/>
+  <path d="M292 89l24 14-24 14z" fill="#f9a8d4"/>
+  <path d="M94 156c30 22 64 31 106 31s78-9 106-31" fill="none" stroke="#f8fafc" stroke-width="5" stroke-linecap="round" opacity=".75"/>
+  <circle cx="200" cy="188" r="17" fill="#f8fafc"/>
+  <text x="200" y="242" text-anchor="middle" fill="#ffffff" font-size="25" font-family="system-ui, sans-serif" font-weight="700">Multimodal</text>
+</svg>

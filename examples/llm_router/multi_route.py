@@ -4,6 +4,8 @@
 Give one router multiple real provider routes and inspect which route completed
 the request.
 """
+# sphinx_gallery_tags = ["routing", "fallback", "providers"]
+# sphinx_gallery_thumbnail_path = "_static/gallery/multi-route.svg"
 # %%
 
 from __future__ import annotations

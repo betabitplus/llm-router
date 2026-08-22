@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="280" viewBox="0 0 400 280" role="img" aria-labelledby="title desc">
+  <title id="title">Structured output</title>
+  <desc id="desc">A structured document flowing from a model response.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101827"/>
+      <stop offset="1" stop-color="#203a5f"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="280" rx="28" fill="url(#bg)"/>
+  <rect x="78" y="60" width="110" height="144" rx="14" fill="none" stroke="#8fd3ff" stroke-width="6"/>
+  <path d="M103 96h60M103 126h60M103 156h42" stroke="#8fd3ff" stroke-width="6" stroke-linecap="round"/>
+  <path d="M224 97h72l28 43-28 43h-72l-28-43z" fill="none" stroke="#f0c76e" stroke-width="6"/>
+  <path d="M246 140h52" stroke="#f0c76e" stroke-width="6" stroke-linecap="round"/>
+  <text x="200" y="242" text-anchor="middle" fill="#ffffff" font-size="25" font-family="system-ui, sans-serif" font-weight="700">Structured output</text>
+</svg>
