@@ -3,6 +3,8 @@
 
 Run a real model request and validate the result against a public Pydantic DTO.
 """
+# sphinx_gallery_tags = ["structured-output", "routing", "pydantic"]
+# sphinx_gallery_thumbnail_path = "_static/gallery/structured-output.svg"
 # %%
 
 from __future__ import annotations

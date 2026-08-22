@@ -219,9 +219,10 @@ lint.ignore = [
   "UP047",   # Keep TypeVar-style generics for current type checkers
 ]
 lint.per-file-ignores."examples/*" = [
-  "D205", # Sphinx-Gallery title underline follows the first docstring line.
-  "D415", # Gallery titles are headings, not prose sentences.
-  "T20",  # Examples may print their public API output.
+  "D205",   # Sphinx-Gallery title underline follows the first docstring line.
+  "D415",   # Gallery titles are headings, not prose sentences.
+  "ERA001", # Sphinx-Gallery uses code-like configuration comments.
+  "T20",    # Examples may print their public API output.
 ]
 # Scripts are utility code; keep them readable without production strictness.
 lint.per-file-ignores."scripts/*" = [

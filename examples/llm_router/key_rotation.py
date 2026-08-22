@@ -4,6 +4,8 @@
 Use ``key_id="auto"`` for repeated real requests and inspect key selection and
 wait information.
 """
+# sphinx_gallery_tags = ["routing", "keys", "limits"]
+# sphinx_gallery_thumbnail_path = "_static/gallery/key-rotation.svg"
 # %%
 
 from __future__ import annotations

@@ -4,6 +4,8 @@
 Let a real model call a local Python tool and return the final answer through a
 typed response schema.
 """
+# sphinx_gallery_tags = ["tools", "structured-output", "routing"]
+# sphinx_gallery_thumbnail_path = "_static/gallery/tool-calling.svg"
 # %%
 
 from __future__ import annotations

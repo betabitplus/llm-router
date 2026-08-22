@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="280" viewBox="0 0 400 280" role="img" aria-labelledby="title desc">
+  <title id="title">Persistent sessions</title>
+  <desc id="desc">A conversation splitting into persistent session branches.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="1" stop-color="#234056"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="280" rx="28" fill="url(#bg)"/>
+  <rect x="78" y="82" width="98" height="64" rx="16" fill="none" stroke="#93c5fd" stroke-width="6"/>
+  <path d="M104 104h46M104 124h30" stroke="#93c5fd" stroke-width="5" stroke-linecap="round"/>
+  <path d="M176 114h48M224 114c28 0 23-38 58-38h34M224 114c28 0 23 38 58 38h34" fill="none" stroke="#c4b5fd" stroke-width="6" stroke-linecap="round"/>
+  <rect x="306" y="54" width="34" height="44" rx="8" fill="none" stroke="#86efac" stroke-width="5"/>
+  <rect x="306" y="130" width="34" height="44" rx="8" fill="none" stroke="#f9a8d4" stroke-width="5"/>
+  <path d="M196 175v24M178 199h36" stroke="#f8fafc" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+  <text x="200" y="242" text-anchor="middle" fill="#ffffff" font-size="25" font-family="system-ui, sans-serif" font-weight="700">Sessions</text>
+</svg>

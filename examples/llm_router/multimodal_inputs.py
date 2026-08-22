@@ -4,6 +4,8 @@
 Use the public file, image, local-video, and remote-video input shapes against
 real providers.
 """
+# sphinx_gallery_tags = ["multimodal", "files", "video", "routing"]
+# sphinx_gallery_thumbnail_path = "_static/gallery/multimodal.svg"
 # %%
 
 from __future__ import annotations
