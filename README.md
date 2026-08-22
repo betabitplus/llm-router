@@ -26,8 +26,8 @@ A provider-agnostic LLM routing and orchestration library.
 
 Runtime requests need provider credentials and, in non-trivial setups,
 installed router configuration. For local repo setup and environment loading,
-use [SETUP.md](SETUP.md). For package usage patterns and public API shapes, use
-[docs/llm_router/usage.md](docs/llm_router/usage.md).
+use [SETUP.md](SETUP.md). For complete runnable public API workflows, use
+[examples/llm_router/](examples/llm_router/).
 
 ## Quick Start
 
@@ -42,7 +42,8 @@ print(response.output_text)
 ## Project Docs
 
 - Import from the top-level package only: `from llm_router import LLMRouter`
-- Package architecture and usage docs: [docs/llm_router/README.md](docs/llm_router/README.md)
+- Package architecture docs: [docs/llm_router/README.md](docs/llm_router/README.md)
+- Live runnable examples: [examples/llm_router/](examples/llm_router/)
 - Repository documentation index: [docs/README.md](docs/README.md)
 - Test suite layout and execution notes: [tests/README.md](tests/README.md)
 - Local setup: [SETUP.md](SETUP.md)

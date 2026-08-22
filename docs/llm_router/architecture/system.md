@@ -44,7 +44,7 @@ The caller interacts with one stable public router model rather than choosing
 between separate provider SDK APIs. Direct model entry, pinned-route entry,
 and multi-route entry all lead into the same runtime model, and both
 `query(...)` and `aquery(...)` should preserve the same request meaning. See
-[../usage.md](../usage.md) for representative caller patterns.
+{doc}`the live examples <../../auto_examples/index>` for representative caller patterns.
 
 Request content, route intent, response schema, tools, and media all enter
 through one library-owned boundary. Images, files, PDFs, local video, remote

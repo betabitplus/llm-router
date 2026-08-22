@@ -28,11 +28,11 @@ flowchart TD
 
 ## Provider Suites
 
-- [openai](../../../workbench/llm_router/openai/README.md)
-- [aistudio](../../../workbench/llm_router/aistudio/README.md)
-- [google_genai](../../../workbench/llm_router/google_genai/README.md)
-- [gemini_webapi](../../../workbench/llm_router/gemini_webapi/README.md)
-- [qwenchat](../../../workbench/llm_router/qwenchat/README.md)
+- `workbench/llm_router/openai/README.md`
+- `workbench/llm_router/aistudio/README.md`
+- `workbench/llm_router/google_genai/README.md`
+- `workbench/llm_router/gemini_webapi/README.md`
+- `workbench/llm_router/qwenchat/README.md`
 
 ## Proof Areas
 
