@@ -27,8 +27,8 @@ questions that cut across the whole package.
 
 Common useful top-level docs are:
 
-- `usage.md`
-  caller-facing usage and entry shapes
+- `examples/`
+  complete runnable public API workflows
 - `dependencies.md`
   runtime dependency justification
 - `architecture/`

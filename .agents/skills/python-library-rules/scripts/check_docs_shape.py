@@ -14,7 +14,6 @@ from docs.dependencies_doc_template import SPECS as DEPENDENCIES_DOC_SPECS
 from docs.index_doc_template import SPECS as INDEX_DOC_SPECS
 from docs.principles_doc_template import SPECS as PRINCIPLES_DOC_SPECS
 from docs.system_doc_template import SPECS as SYSTEM_DOC_SPECS
-from docs.usage_doc_template import SPECS as USAGE_DOC_SPECS
 from docs.vertical_slice_doc_template import SPECS as VERTICAL_SLICE_DOC_SPECS
 from verification.e2e_test_template import SPECS as E2E_TEST_TEMPLATE_SPECS
 from verification.property_based_testing_doc_template import (
@@ -31,7 +30,6 @@ ALL_SPECS: tuple[CheckSpec, ...] = (
     *SYSTEM_DOC_SPECS,
     *VERTICAL_SLICE_DOC_SPECS,
     *PRINCIPLES_DOC_SPECS,
-    *USAGE_DOC_SPECS,
     *DEPENDENCIES_DOC_SPECS,
     *PROPERTY_BASED_TESTING_DOC_SPECS,
     *VERIFICATION_DOC_SPECS,

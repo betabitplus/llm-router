@@ -39,6 +39,3 @@ matching rules file or template.
 - [vertical_slice_doc_template.md](vertical_slice_doc_template.md)
   Defines the template for one focused architecture slice.
   Use it to explain one concept or one flow without expanding into a whole-system story.
-- [usage_doc_template.md](usage_doc_template.md)
-  Defines the template for caller-facing usage docs.
-  Use it to show representative public entry shapes and caller workflows.

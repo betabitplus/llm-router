@@ -100,6 +100,14 @@ dev = [
   "validate-pyproject>=0.25",
   "wheel>=0.47.0",
 ]
+docs = [
+  "matplotlib>=3.11.1",
+  "myst-parser>=4.0.1",
+  "pydata-sphinx-theme>=0.20.0",
+  "sphinx>=8.2.3",
+  "sphinx-gallery>=0.21.0",
+  "sphinxcontrib-mermaid>=2.1.0",
+]
 
 [tool.setuptools]
 # Package discovery is scoped to `src/`; keep non-package code outside `src/`.
@@ -211,7 +219,9 @@ lint.ignore = [
   "UP047",   # Keep TypeVar-style generics for current type checkers
 ]
 lint.per-file-ignores."examples/*" = [
-  "T20", # Examples may print their public API output.
+  "D205", # Sphinx-Gallery title underline follows the first docstring line.
+  "D415", # Gallery titles are headings, not prose sentences.
+  "T20",  # Examples may print their public API output.
 ]
 # Scripts are utility code; keep them readable without production strictness.
 lint.per-file-ignores."scripts/*" = [
@@ -337,6 +347,9 @@ exclude = [
   ".ruff_cache",
   ".venv",
   ".vscode",
+  "docs/_build",
+  "docs/auto_examples",
+  "docs/generated",
   # Utility and verification code are checked by Ruff/pytest instead.
   "scripts",
   "tests",
@@ -375,6 +388,9 @@ src.exclude = [
   ".ruff_cache/",
   ".venv/",
   ".vscode/",
+  "docs/_build/",
+  "docs/auto_examples/",
+  "docs/generated/",
   "scripts/",
   "tests/",
 ]
@@ -399,6 +415,9 @@ ini_options.norecursedirs = [
   ".venv",
   "build",
   "dist",
+  "docs/_build",
+  "docs/auto_examples",
+  "docs/generated",
   "scripts",
 ]
 # ---------------- Pytest configuration ----------------
