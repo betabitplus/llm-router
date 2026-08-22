@@ -141,15 +141,6 @@ def require_overview_start(
             errors,
         )
         return
-    if path.name == "usage.md":
-        expect(
-            context,
-            path,
-            first_line.startswith("This document shows "),
-            "overview should start with `This document shows`",
-            errors,
-        )
-        return
     if "/architecture/principles/" in display_path:
         expect(
             context,
