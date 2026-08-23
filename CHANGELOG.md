@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.10.2](https://github.com/betabitplus/llm-router/compare/v0.10.1...v0.10.2) (2026-08-23)
+
+
+### Miscellaneous Chores
+
+* release 0.10.2 ([#48](https://github.com/betabitplus/llm-router/issues/48)) ([d0e2e2e](https://github.com/betabitplus/llm-router/commit/d0e2e2e8a74edec080600b7b600322e320670a33))
+
 ## [0.10.1](https://github.com/betabitplus/llm-router/compare/v0.10.0...v0.10.1) (2026-08-23)
 
 
