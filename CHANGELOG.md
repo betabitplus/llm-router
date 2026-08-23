@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.10.1](https://github.com/betabitplus/llm-router/compare/v0.10.0...v0.10.1) (2026-08-23)
+
+
+### Bug Fixes
+
+* add gallery thumbnail fallback ([#43](https://github.com/betabitplus/llm-router/issues/43)) ([cde9998](https://github.com/betabitplus/llm-router/commit/cde99983d87c5fc3cda2358e6aa084c3e35a3b23))
+
 ## [0.10.0](https://github.com/betabitplus/llm-router/compare/v0.9.5...v0.10.0) (2026-08-22)
 
 
