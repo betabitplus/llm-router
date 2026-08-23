@@ -1,48 +1,52 @@
-"""Structured output
-=================
+"""Extract typed data
+==================
 
-Run a real model request and validate the result against a public Pydantic DTO.
+Pass a Pydantic model as ``response_schema`` and turn free-form source text into a
+validated Python object in one request.
 """
 # sphinx_gallery_tags = ["structured-output", "routing", "pydantic"]
 # sphinx_gallery_thumbnail_path = "_static/gallery/structured-output.svg"
-# %%
 
 from __future__ import annotations
+
+from typing import Literal
 
 from pydantic import BaseModel
 
 from llm_router import LLMRouter, Model
 
 
-class LegalCase(BaseModel):
-    """Small public response shape for the example."""
+# %%
+# Define the result shape
+# -----------------------
+# The schema is ordinary Pydantic: use the smallest shape that expresses the result
+# your application actually needs.
+class Incident(BaseModel):
+    """Typed incident extracted from unstructured text."""
 
-    case_name: str
-    court: str
-    plaintiffs: list[str]
-    defendants: list[str]
-
-
-def main() -> None:
-    """Run the live structured-output example."""
-    case_text = (
-        "In Smith v. Acme Corp., filed in the United States District Court for "
-        "the Northern District of California, plaintiffs Alice Smith and Bob Smith "
-        "sued defendants Acme Corp. and Jane Doe for breach of contract."
-    )
-    router = LLMRouter(Model.GEMINI_FLASH, temperature=0.0, seed=42)
-    response = router.query(
-        [
-            "Extract the legal case details. Return only the requested structure.",
-            case_text,
-        ],
-        response_schema=LegalCase,
-    )
-    parsed = LegalCase.model_validate_json(response.output_text)
-    print(parsed.model_dump_json(indent=2))
-    print(f"usage={response.usage}")
+    incident_id: str
+    service: str
+    region: str
+    status_code: int
+    severity: Literal["low", "medium", "high"]
 
 
 # %%
+# Define the input and request the schema
+# ---------------------------------------
+# The important part is ``response_schema=Incident``. The router asks the provider
+# for structured output; ``model_validate_json`` then gives you a normal typed
+# object rather than an unvalidated string.
 if __name__ == "__main__":
-    main()
+    source = (
+        "Incident INC-204: Checkout API in eu-west-1 is returning HTTP 503. "
+        "Severity is high."
+    )
+    router = LLMRouter(Model.GEMINI_FLASH, temperature=0.0, seed=42)
+    response = router.query(
+        ["Extract the incident details from this report.", source],
+        response_schema=Incident,
+    )
+    incident = Incident.model_validate_json(response.output_text)
+
+    print(incident.model_dump_json(indent=2))
