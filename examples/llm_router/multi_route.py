@@ -1,21 +1,25 @@
-"""Multi-route execution
-=====================
+"""Route one request across providers
+==================================
 
-Give one router multiple real provider routes and inspect which route completed
-the request.
+Give one router an ordered provider list, make one normal ``query()``, and inspect
+``routing_trace`` to see exactly which routes were attempted.
 """
 # sphinx_gallery_tags = ["routing", "fallback", "providers"]
 # sphinx_gallery_thumbnail_path = "_static/gallery/multi-route.svg"
-# %%
 
 from __future__ import annotations
 
 from llm_router import LLMRouter, Model, Provider, RouterProfile
 
 
-def main() -> None:
-    """Run a live multi-route request."""
-    router = LLMRouter(
+# %%
+# Configure the route order
+# -------------------------
+# The route list is the only routing-specific setup. The first successful route
+# returns the response; any failed attempts remain visible in ``routing_trace``.
+def build_router() -> LLMRouter:
+    """Create a router with an ordered provider fallback list."""
+    return LLMRouter(
         [
             RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO),
             RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GOOGLE),
@@ -23,15 +27,23 @@ def main() -> None:
         temperature=0.0,
         seed=42,
     )
-    response = router.query(
-        "Explain in two sentences why provider fallback is useful in an LLM router."
-    )
-    print(response.output_text)
-    print("\nROUTING TRACE:")
-    for attempt in response.routing_trace:
-        print(attempt)
 
 
 # %%
+# Run one request and inspect the route
+# -------------------------------------
+# ``query()`` is the core action. The small summary below shows the user-facing
+# answer separately from the routing evidence that produced it.
 if __name__ == "__main__":
-    main()
+    router = build_router()
+    response = router.query("Reply exactly: route-ok")
+
+    print(f"answer: {response.output_text.strip()}")
+    print("routes:")
+    for number, attempt in enumerate(response.routing_trace, start=1):
+        outcome = attempt.error_type or "success"
+        print(f"  {number}. {attempt.provider}/{attempt.model}: {outcome}")
+
+# %%
+# Here the first route succeeded, so only one attempt appears. If it had failed,
+# later route attempts would appear below it in the same trace.
