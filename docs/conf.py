@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 project = "llm-router"
 
@@ -40,6 +41,9 @@ sphinx_gallery_conf = {
     "doc_module": ("llm_router",),
     "reference_url": {"llm_router": None},
     "copyfile_regex": r".*\.(?:png|pdf|mp4)$",
+    "default_thumb_file": str(
+        Path(__file__).parent / "_static" / "gallery-default.svg"
+    ),
     "junit": "../test-results/sphinx-gallery/junit.xml",
     "remove_config_comments": True,
     "recommender": {
