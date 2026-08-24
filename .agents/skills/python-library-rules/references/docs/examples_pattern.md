@@ -31,6 +31,9 @@ policy requirement.
 
 Sphinx-Gallery renders the same Python source into HTML, captured output, downloadable Python,
 and Jupyter notebooks. Do not duplicate complete walkthrough code in a parallel `usage.md`.
+Prefer a real generated figure for the thumbnail. For non-visual examples that need a curated
+thumbnail, use a committed per-example `sphinx_gallery_thumbnail_path`; do not add a global
+custom fallback only to fill empty gallery cards.
 
 Required CI may lint, type-check, import, and build the gallery with live execution disabled.
 Full live execution stays explicit and uses the developer's configured environment.
