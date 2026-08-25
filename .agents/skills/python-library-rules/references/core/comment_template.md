@@ -28,7 +28,7 @@ This file covers these comment types:
 - section banners
 - inline comments
 
-It does not define file-level module, package, e2e, or workbench docstrings.
+It does not define file-level module, package, test, or workbench docstrings.
 Use `references/core/docstring_template.md` for those.
 
 ## Core Rules (Code Style)

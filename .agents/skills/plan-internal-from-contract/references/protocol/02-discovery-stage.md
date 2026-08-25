@@ -9,8 +9,10 @@ Most important rules:
 
 - Create `plan/internal-discovery/`.
 - Use only the current tree as input.
-- Treat `_api`, present package-specific `_support`, architecture docs,
-  workbench, e2e tests, and public-contract property tests as the contract.
+- Treat `_api`, executable specifications under `features/` when present,
+  architecture docs, and public-contract tests as the preserved contract.
+  Treat workbench probes and technical E2E tests as supporting evidence, not a
+  second behavioral source of truth.
 - Record facts and planned boundaries, not brainstorming.
 
 ## Discovery Folder
@@ -47,8 +49,10 @@ Most important rules:
   `_api/defaults.py`, what `_api/config.py` should re-export, and what private
   config names must be available through `_internal/__init__.py`.
 - `03-preserved-functionality.md`:
-  inspect current e2e and property-based tests and list all required behavior
-  that must be preserved. Treat this as the non-regression checklist.
+  inspect current Living Specifications, public API tests, property-based public
+  contracts, and relevant technical E2E coverage. List required behavior once,
+  using specifications as the behavioral source of truth when they exist. Treat
+  this as the non-regression checklist.
 - `04-target-internal-architecture.md`:
   plan the future `_internal` architecture in advance, including module and
   submodule boundaries, orchestration files, helper files, dependency

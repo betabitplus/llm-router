@@ -44,6 +44,8 @@ urls.Repository = "https://github.com/betabitplus/llm-router"
 
 [dependency-groups]
 dev = [
+  # Test runner and plugins
+  "allure-pytest-bdd>=2.16,<3",
   # Security auditing
   "bandit>=1.9.4",
   "beartype>=0.22.9",
@@ -62,6 +64,7 @@ dev = [
   "interrogate>=1.7",
   # Interactive development
   "ipykernel>=7.3.0",
+  "ipytest>=0.14.2,<0.15",
   "ipython>=9.14.1",
   "ipywidgets>=8.1.8",
   "jupyter>=1.1.1",
@@ -77,17 +80,14 @@ dev = [
   "pre-commit>=4.6.0",
   # Shared repo tooling and test support
   "py-lib-policy",
-  "py-lib-testkit",
   "pygments>=2.20.0",
   "pymupdf",
   "pyproject-fmt>=2.23.0",
   "pyright>=1.1.410",
   # Test runner and plugins
-  "pytest>=9.1.0",
   "pytest-asyncio>=1.3.0",
   "pytest-cov>=7.1.0",
   "pytest-randomly>=4.1.0",
-  "pytest-recording>=0.13.4",
   "pytest-xdist>=3.8.0",
   # Code quality and formatting
   "radon>=6.0.1",
@@ -99,6 +99,7 @@ dev = [
   "types-pillow>=10.2.0.20240822",
   "validate-pyproject>=0.25",
   "wheel>=0.47.0",
+  { include-group = "specifications" },
 ]
 docs = [
   "matplotlib>=3.11.1",
@@ -107,6 +108,13 @@ docs = [
   "sphinx>=8.2.3",
   "sphinx-gallery>=0.21.0",
   "sphinxcontrib-mermaid>=2.1.0",
+]
+specifications = [
+  "allure-pytest-bdd>=2.16,<3",
+  "py-lib-testkit",
+  "pytest>=9.1.0",
+  "pytest-bdd>=8.1,<9",
+  "pytest-recording>=0.13.4",
 ]
 
 [tool.setuptools]
@@ -120,9 +128,9 @@ package-dir."" = "src"
 
 [tool.uv]
 required-version = "==0.12.5"
-sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v1.2.0" }
+sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v1.2.1" }
 sources.py-lib-runtime = { git = "https://github.com/betabitplus/ternforge-tooling-py-runtime.git", tag = "v1.1.6" }
-sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git", tag = "v2.0.2" }
+sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git", tag = "v2.1.0" }
 
 # ---------------- Ruff configuration ----------------
 [tool.ruff]
@@ -243,7 +251,7 @@ lint.per-file-ignores."tests/*" = [
   "PLR2004", # Allow magic values in assertions
   "PT012",   # Allow multi-statement pytest.raises blocks
   "S101",    # Allow assert statements
-  "T20",     # Allow print statements in direct-runnable e2e modules
+  "T20",     # Allow print statements in test diagnostics
   "TRY003",  # Allow long exception messages
 ]
 lint.per-file-ignores."workbench/*" = [
@@ -288,6 +296,7 @@ ignore = [
   ".agents/**",
   ".copier-answers.yml",
   ".devcontainer/**",
+  ".gherkin-lintrc",
   ".git/**",
   ".github/**",
   ".gitleaks.toml",
@@ -303,6 +312,7 @@ ignore = [
   "__pycache__/**",
   "docs/**",
   "examples/**",
+  "features/**",
   "plan/**",
   "release-please-config.json",
   "scripts/**",
@@ -422,7 +432,7 @@ ini_options.norecursedirs = [
   "scripts",
 ]
 # ---------------- Pytest configuration ----------------
-ini_options.addopts = "--cov --cov-report=term-missing"
+ini_options.addopts = "--cov --cov-report=term-missing --strict-markers"
 ini_options.markers = [
   "cap_async: tests async query execution paths",
   "cap_file: tests file attachment handling",
@@ -433,17 +443,18 @@ ini_options.markers = [
   "cap_structured: tests structured-output parsing or response schemas",
   "cap_tools: tests tool-calling execution paths",
   "cap_video: tests video attachment handling",
-  "e2e_behavior: end-to-end behavior tests",
-  "e2e_behavior: router behavior tests for retry, routing, and session mechanics",
-  "e2e_contract: end-to-end public contract tests",
-  "e2e_contract: provider contract tests for end-to-end request/response flows",
-  "hermetic: marks tests that run fully offline",
+  "e2e_behavior: legacy router behavior tests pending specification migration",
+  "e2e_contract: legacy provider contract tests pending specification migration",
   "hermetic: marks tests that run fully offline using VCR cassettes",
   "slow: marks tests that are slow and should be skipped in fast runs",
+  "specification: executable living specifications",
   "vcr: marks tests that use VCR.py for HTTP recording/replay",
 ]
-ini_options.filterwarnings = [ "ignore:builtin type .* has no __module__ attribute:DeprecationWarning" ]
+ini_options.filterwarnings = [
+  "ignore:builtin type .* has no __module__ attribute:DeprecationWarning",
+]
 ini_options.asyncio_default_fixture_loop_scope = "function"
+ini_options.bdd_features_base_dir = "features"
 
 [tool.coverage]
 run.source = [ "src" ]
@@ -522,7 +533,6 @@ name = "LLM Router public-contract verification modules must not import private 
 id = "llm-router-public-contract-boundary"
 type = "forbidden"
 source_modules = [
-  "tests.llm_router.e2e",
   "tests.llm_router.property_based.public_contract",
   "tests.llm_router.support",
 ]

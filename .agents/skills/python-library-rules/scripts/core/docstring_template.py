@@ -52,28 +52,6 @@ def _check_package_module(
     require_docstring_label_order(context, path, docstring, _PACKAGE_LABELS, errors)
 
 
-def _select_e2e_docstrings(context: ProjectContext) -> list[Path]:
-    return context.tests_glob("**/e2e/**/test_*.py")
-
-
-def _check_e2e_docstring(
-    context: ProjectContext,
-    path: Path,
-    errors: ErrorSink,
-) -> None:
-    docstring = require_module_docstring(context, path, context.read_text(path), errors)
-    if docstring is None:
-        return
-    require_docstring_labels(
-        context,
-        path,
-        docstring,
-        ["Why", "Covers", "Checks", "Examples"],
-        errors,
-    )
-    require_docstring_label_order(context, path, docstring, _SCENARIO_LABELS, errors)
-
-
 def _select_workbench_docstrings(context: ProjectContext) -> list[Path]:
     return context.workbench_glob(
         "**/*.py",
@@ -110,11 +88,6 @@ SPECS = (
         "core.docstring_template.package",
         _select_package_modules,
         _check_package_module,
-    ),
-    CheckSpec(
-        "core.docstring_template.e2e",
-        _select_e2e_docstrings,
-        _check_e2e_docstring,
     ),
     CheckSpec(
         "core.docstring_template.workbench",

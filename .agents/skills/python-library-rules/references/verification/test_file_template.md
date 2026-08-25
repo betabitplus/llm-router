@@ -1,32 +1,23 @@
 ---
 name: test-file-template
-description: Template for ordinary pytest verification files. Use when you need one reusable file shape for unit, integration, or property-based tests under tests/.
+description: Template for pytest verification files. Use when you need one reusable file shape for unit, integration, property-based, or optional technical end-to-end tests under tests/.
 ---
 
 # Test File Template
 
 ## Overview
 
-Use this template for non-e2e pytest files under `tests/`.
+Use this template for pytest files under `tests/`, including optional technical E2E tests.
 
-This is the shared file-shape reference for:
-
-- unit tests
-- integration tests
-- property-based tests
-
-Use the e2e-specific template only for replay-backed scenario scripts under
-`tests/.../e2e/`.
+This is the shared file-shape reference for unit, integration, property-based, and genuine broad-stack pytest modules. Living Specifications use Gherkin under `features/` with thin pytest-bdd bindings rather than a special E2E file template.
 
 Use the Python docstring pattern from `references/core/docstring_template.md`.
 
 ## When To Use
 
-Use this template when the file is a normal pytest module rather than an
-executable e2e scenario or a live workbench script.
+Use this template when the file is technical pytest verification. Live workbench scripts use their separate workbench shape.
 
-Use this template when you want one consistent shape for fast deterministic
-tests, controlled integration checks, or invariant-driven generated tests.
+Use this template when you want one consistent shape for fast deterministic tests, controlled integration checks, invariant-driven generated tests, or rare broad-stack E2E checks.
 
 ## File Shape
 

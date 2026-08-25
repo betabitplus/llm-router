@@ -46,6 +46,29 @@ repos:
         exclude: ^sandbox/
 
   # =============================================================================
+  # Gherkin - Living Specifications formatting and linting
+  # =============================================================================
+  - repo: local
+    hooks:
+      - id: gherkin-format
+        name: gherkin (format)
+        entry: gherkin-utils format
+        language: node
+        additional_dependencies:
+          - "@cucumber/gherkin-utils@12.0.2"
+        files: \.feature$
+        stages: [pre-commit]
+
+      - id: gherkin-lint
+        name: gherkin (lint)
+        entry: gherkin-lint -c .gherkin-lintrc
+        language: node
+        additional_dependencies:
+          - "@onitofu/gherkin-lint@5.0.0"
+        files: \.feature$
+        stages: [pre-commit]
+
+  # =============================================================================
   # Local hooks - Baseline repo verification and maintenance
   # =============================================================================
   - repo: local
@@ -352,7 +375,7 @@ repos:
       # Remove trailing whitespace
       - id: trailing-whitespace
         stages: [pre-commit]
-        exclude: ^(logs/|data/|records/)
+        exclude: ^(logs/|data/|records/)|\.feature$
 
       # Check for merge conflict markers
       - id: check-merge-conflict

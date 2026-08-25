@@ -1,80 +1,35 @@
 ---
 name: tests-routing-pattern
-description: Reusable test-tree routing patterns for Python projects. Use when you need consistent placement rules for helpers, support modules, and end-to-end tests under tests/.
+description: Reusable test-tree routing patterns for Python projects. Use when you need consistent placement rules for unit, integration, property-based, optional end-to-end, and specification-support code.
 ---
 
 # Tests Routing
 
 ## Overview
 
-Use this guide for reusable test-tree routing patterns.
+Treat test depth and specification role as independent axes.
 
-## When To Use
+- `unit/`, `integration/`, and optional `e2e/` describe how much of the technical stack executes.
+- Living Specifications describe human-readable behavioral contracts. Their source belongs under `features/`, with pytest-bdd bindings under `tests/<project>/bdd/`.
 
-Use this guide when deciding where new package-specific helpers, support
-modules, or e2e files should live under `tests/`.
+Do not use `e2e/` as a synonym for behavioral documentation.
 
-Use this guide when the test tree needs a stable routing rule instead of
-project-specific placement guesses.
+## Tree Pattern
 
-If the package docs already use `architecture/concepts/` as the primary
-vertical-slice taxonomy, use the same grouping under `tests/<project>/e2e/`
-when the scenarios prove those same slices.
+- `tests/<project>/unit/` — focused seams.
+- `tests/<project>/integration/` — collaboration and controlled local boundaries.
+- `tests/<project>/property_based/public_contract/` — generated public invariants.
+- `tests/<project>/property_based/internal/` — generated private invariants.
+- `tests/<project>/bdd/` — Python bindings and replay artifacts behind executable specifications.
+- `tests/<project>/support/` — project-specific shared builders, assertions, fixtures, and media helpers.
+- `tests/<project>/e2e/` — optional broad-stack/deployed-system checks only when that depth adds value.
 
-If the project uses property-based testing for both public-contract invariants
-and private implementation invariants, keep those as explicit sibling groups
-under `tests/<project>/property_based/` instead of mixing them in one flat
-package.
+## Routing Rules
 
-## Core Patterns
-
-### Tree Pattern
-
-Use this layout for the whole `tests/` tree:
-
-- `tests/<project>/support/`
-  Project-specific helpers for one package or service
-- `tests/<project>/e2e/`
-  End-to-end scenario groups
-- `tests/<project>/e2e/<group>/`
-  Scenario scripts for one testing group
-- `tests/<project>/e2e/<group>/cassettes/`
-  Replay artifacts for that testing group when replay-backed tests exist
-
-### Routing Pattern
-
-Use these placement rules:
-
-- import generic setup, replay, console, path, and image helpers from the
-  supported top-level `py_lib_testkit` package
-- put builders, assertions, fixture-specific helpers, and integration checks in
-  `tests/<project>/support/`
-- keep `tests/<project>/e2e/` focused on scenario groups, not shared helpers
-- when architecture concept docs define the stable slice grouping, mirror that
-  grouping in `tests/<project>/e2e/` instead of inventing separate proof buckets
-- keep `tests/<project>/property_based/public_contract/` for generated checks
-  that protect only the supported package surface
-- keep `tests/<project>/property_based/internal/` for generated checks that
-  intentionally target private implementation invariants
-- test public config behavior through the top-level package, including
-  install/read behavior and `TypeError` for non-config install inputs
-- when one public-contract property file cleanly protects one architecture
-  concept slice, mirror that concept in the filename
-- keep each e2e group folder focused on scenarios, not project-wide helpers
-
-### Import Pattern
-
-Use these import rules:
-
-- import shared support directly from top-level `py_lib_testkit` in
-  Ternforge-managed Python libraries
-- import project support directly from `tests.<project>.support...`
-- keep `tests/<project>/e2e/`, `tests/<project>/support/`, and
-  `tests/<project>/property_based/public_contract/` on the supported public
-  package boundary
-- allow `tests/<project>/unit/`, `tests/<project>/integration/`, and
-  `tests/<project>/property_based/internal/` to import private modules
-  directly when those files intentionally verify private implementation seams
-- use package-level setup in `tests.<project>.e2e` instead of local group
-  setup modules
-- do not add other local redirection modules in e2e group folders
+- Keep human-readable behavior in `features/`; do not duplicate it in handwritten E2E prose.
+- Use `Scenario Outline`/Examples when variants matter to the human contract instead of hiding meaningful cases in Python parametrization.
+- Keep exhaustive technical matrices in unit/integration/property-based tests rather than multiplying Gherkin scenarios.
+- Reuse `py_lib_testkit` for generic replay/evidence helpers and `tests/<project>/support/` for product-specific support.
+- Keep BDD bindings thin: execution, assertions, and typed evidence only. Do not create a local scenario framework or runner.
+- Technical E2E files are ordinary pytest files; they do not require a special direct-run file shape or `# %%` policy.
+- Tests that intentionally verify private implementation seams may import private modules. Public-contract specifications and public-boundary tests should exercise supported public APIs.

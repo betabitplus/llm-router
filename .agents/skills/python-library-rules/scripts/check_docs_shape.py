@@ -15,7 +15,6 @@ from docs.index_doc_template import SPECS as INDEX_DOC_SPECS
 from docs.principles_doc_template import SPECS as PRINCIPLES_DOC_SPECS
 from docs.system_doc_template import SPECS as SYSTEM_DOC_SPECS
 from docs.vertical_slice_doc_template import SPECS as VERTICAL_SLICE_DOC_SPECS
-from verification.e2e_test_template import SPECS as E2E_TEST_TEMPLATE_SPECS
 from verification.property_based_testing_doc_template import (
     SPECS as PROPERTY_BASED_TESTING_DOC_SPECS,
 )
@@ -35,7 +34,6 @@ ALL_SPECS: tuple[CheckSpec, ...] = (
     *VERIFICATION_DOC_SPECS,
     *DOCSTRING_TEMPLATE_SPECS,
     *TEST_FILE_TEMPLATE_SPECS,
-    *E2E_TEST_TEMPLATE_SPECS,
     *WORKBENCH_SCRIPT_TEMPLATE_SPECS,
 )
 
@@ -110,7 +108,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument(
         "--tests-root",
-        help="Optional tests root for pytest and e2e template checks.",
+        help="Optional tests root for pytest template checks.",
     )
     parser.add_argument(
         "--workbench-root",

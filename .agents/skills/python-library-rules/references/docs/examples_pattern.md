@@ -14,8 +14,9 @@ Keep examples live: when a workflow depends on providers, credentials, files, or
 services, direct execution uses the real dependency. Do not replace live behavior with
 mocks, recordings, replay fixtures, canned responses, or example-only stubs.
 
-Put exhaustive provider permutations, failure paths, retries, and behavioral matrices in
-tests/e2e rather than multiplying user examples.
+Put exhaustive provider permutations, failure paths, retries, and technical matrices in
+unit/integration/property-based tests. Keep Living Specifications representative of the
+durable human-readable contract rather than multiplying user examples.
 
 ## Execution Boundary
 

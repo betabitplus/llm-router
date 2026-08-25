@@ -33,8 +33,8 @@ Use for the main library design and runtime references:
 
 Use for references that shape how behavior is proved or explored:
 
-- test placement
-- e2e file structure
+- test and executable-specification placement
+- optional technical E2E depth
 - workbench script structure
 
 ### `docs/`
@@ -76,7 +76,7 @@ follow or copy.
 Examples:
 
 - `core/docstring_template.md`
-- `verification/e2e_test_template.md`
+- `verification/test_file_template.md`
 - `docs/system_doc_template.md`
 
 ## Naming Rules

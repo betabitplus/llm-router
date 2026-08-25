@@ -25,7 +25,7 @@ _ALLOWED_SECTIONS = {
 
 def _select_paths(context: ProjectContext) -> list[Path]:
     return [
-        path for path in context.tests_glob("**/test_*.py") if "e2e" not in path.parts
+        path for path in context.tests_glob("**/test_*.py") if "bdd" not in path.parts
     ]
 
 
