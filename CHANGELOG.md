@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.11.0](https://github.com/betabitplus/llm-router/compare/v0.10.3...v0.11.0) (2026-08-25)
+
+
+### Features
+
+* add living specifications pilot ([#56](https://github.com/betabitplus/llm-router/issues/56)) ([3d0bc46](https://github.com/betabitplus/llm-router/commit/3d0bc46f01041921cc7bea4454eaae3418595cbd))
+
 ## [0.10.3](https://github.com/betabitplus/llm-router/compare/v0.10.2...v0.10.3) (2026-08-24)
 
 
