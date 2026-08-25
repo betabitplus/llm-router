@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 from typing import Literal
 
-import fitz
+import pymupdf
 from py_lib_testkit import evidence
 from pydantic import BaseModel, Field
 from pytest_bdd import given, scenarios, then, when
@@ -61,7 +61,7 @@ def _normalize_text(text: str) -> str:
 
 
 def _expected_pdf_facts(pdf_path: Path) -> tuple[str, str, str]:
-    document = fitz.open(str(pdf_path))
+    document = pymupdf.open(str(pdf_path))
     page_text = document.load_page(0).get_text("text") or ""
     document_text = "\n".join(
         document.load_page(index).get_text("text") or ""
