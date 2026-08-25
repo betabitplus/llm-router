@@ -6,7 +6,7 @@ description: Transitional map of the provider SDK wrapping scenarios that still 
 
 # Provider SDK Wrapping
 
-Behavior already migrated to Living Specifications is defined in [`features/`](../../../../features/) and published as `/specifications/`. Do not duplicate those guarantees here.
+Behavior already migrated to Living Specifications is defined under `features/` and published as `/specifications/`. Do not duplicate those guarantees here.
 
 This page exists only while the remaining provider-specific scenarios still use the legacy `tests/llm_router/e2e/provider_sdk_wrapping/` layout.
 
