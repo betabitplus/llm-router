@@ -44,6 +44,8 @@ urls.Repository = "https://github.com/betabitplus/llm-router"
 
 [dependency-groups]
 dev = [
+  # Test runner and plugins
+  "allure-pytest-bdd>=2.16,<3",
   # Security auditing
   "bandit>=1.9.4",
   "beartype>=0.22.9",
@@ -82,9 +84,9 @@ dev = [
   "pymupdf",
   "pyproject-fmt>=2.23.0",
   "pyright>=1.1.410",
-  # Test runner and plugins
   "pytest>=9.1.0",
   "pytest-asyncio>=1.3.0",
+  "pytest-bdd>=8.1,<9",
   "pytest-cov>=7.1.0",
   "pytest-randomly>=4.1.0",
   "pytest-recording>=0.13.4",

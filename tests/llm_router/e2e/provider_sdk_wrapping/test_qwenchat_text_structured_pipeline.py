@@ -1,40 +1,16 @@
 # %%
-"""LLM Router e2e: QwenChat text + structured output.
-
-Why:
-    Verifies that repair-based structured output works on plain QwenChat text
-    input.
-
-Covers:
-    Area: QwenChat provider
-    Behavior: structured output
-    Interface: `LLMRouter(RouterProfile(...))`, `query(...)`
-
-Checks:
-    If the structured text request succeeds, then the response data is populated and
-    parseable as `IncidentReport`.
-    If the fixed identifier is preserved, then `incident_id` is `INC-1042`.
-    If the service list shape is preserved, then `affected_services` contains exactly 2
-    items.
-    If the timeline shape is preserved, then `timeline` contains exactly 4 items.
-    If the remediation shape is preserved, then `remediation_items` contains exactly 3
-    items.
-
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_qwenchat_text_structured_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_qwenchat_text_structured_pipeline.py
-"""
+"""QwenChat structured-output E2E scenario."""
 
 from __future__ import annotations
 
+import json
+
+import allure
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
+from IPython import get_ipython
+from IPython.display import JSON, display
 from pydantic import BaseModel, Field
+from pytest_bdd import scenario, then, when
 
 from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProfile
 from tests.llm_router.support.assertions import parse_json_object
@@ -44,19 +20,22 @@ pytestmark = [
     pytest.mark.cap_structured,
 ]
 
-
-# =============================================================================
-# Scenario
-# =============================================================================
-
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
-# The scenario is intentionally constraint-heavy so success is easy to judge
-# without reading provider internals.
+_TEST_NODE = (
+    "tests/llm_router/e2e/provider_sdk_wrapping/"
+    "test_qwenchat_text_structured_pipeline.py::test_pipeline"
+)
+_PROMPT = """Create an incident report for a simulated outage.
 
-
-# =============================================================================
-# Helpers
-# =============================================================================
+Constraints:
+- Use incident_id: INC-1042
+- Severity: SEV2
+- Environment for services: prod
+- affected_services: exactly 2 items
+- timeline: exactly 4 events
+- remediation_items: exactly 3 items
+- Keep all strings short and professional.
+"""
 
 
 class Service(BaseModel):
@@ -98,112 +77,116 @@ class IncidentReport(BaseModel):
     remediation_items: list[RemediationItem]
 
 
-# =============================================================================
-# Pipeline
-# =============================================================================
+def _parse_report(response: LLMRouterResponse) -> IncidentReport:
+    return IncidentReport.model_validate(parse_json_object(response.output_text))
 
 
-def build_prompt() -> str:
-    """Build the incident-report prompt."""
-    return (
-        "Create an incident report for a simulated outage.\n\n"
-        "Constraints:\n"
-        "- Use incident_id: INC-1042\n"
-        "- Severity: SEV2\n"
-        "- Environment for services: prod\n"
-        "- affected_services: exactly 2 items\n"
-        "- timeline: exactly 4 events\n"
-        "- remediation_items: exactly 3 items\n"
-        "- Keep all strings short and professional.\n"
+def _result_payload(response: LLMRouterResponse) -> dict[str, object]:
+    report = _parse_report(response)
+    return {
+        "provider": response.provider,
+        "model": response.model,
+        "usage": (
+            response.usage.model_dump(mode="json")
+            if response.usage is not None
+            else None
+        ),
+        "result": report.model_dump(mode="json"),
+    }
+
+
+def _publish_response(response: LLMRouterResponse) -> None:
+    """Publish the same useful result to IPython and the persisted test report."""
+    payload = _result_payload(response)
+    if get_ipython() is not None:
+        display(JSON(payload, expanded=True))
+    allure.attach(
+        _PROMPT,
+        name="Request",
+        attachment_type="text/plain",
+        extension="txt",
     )
-
-
-def build_router() -> LLMRouter:
-    """Build the router under test."""
-    return LLMRouter(
-        RouterProfile(model=Model.QWEN_MAX_LATEST, provider=Provider.QWENCHAT),
-        temperature=0.0,
-        seed=42,
+    allure.attach(
+        json.dumps(payload, indent=2, ensure_ascii=False),
+        name="Result",
+        attachment_type="application/json",
+        extension="json",
     )
-
-
-def run_pipeline() -> LLMRouterResponse:
-    """Run the QwenChat structured-output pipeline."""
-    # Keep the real public flow tiny: one prompt plus one response schema.
-    router = build_router()
-    return router.query(
-        f"{_SYSTEM_PROMPT}\n\n{build_prompt()}",
-        response_schema=IncidentReport,
-    )
-
-
-# =============================================================================
-# Assertions
-# =============================================================================
-
-
-def assert_pipeline_response(response: LLMRouterResponse) -> None:
-    """Assert the structured-output response."""
-    # First prove the public response is populated.
-    assert response.data is not None
-    parsed = IncidentReport.model_validate(parse_json_object(response.output_text))
-    # Then check the exact fixed fields and list sizes this scenario promised.
-    assert parsed.incident_id == "INC-1042"
-    assert len(parsed.affected_services) == 2
-    assert len(parsed.timeline) == 4
-    assert len(parsed.remediation_items) == 3
-
-
-# =============================================================================
-# Tests
-# =============================================================================
 
 
 @pytest.mark.hermetic
 @pytest.mark.vcr
+@scenario(
+    "qwenchat_text_structured.feature",
+    "Convert a plain-text request into an incident report",
+    features_base_dir="tests/llm_router/e2e/provider_sdk_wrapping",
+)
 def test_pipeline() -> None:
-    """Verify the pipeline runs successfully and returns valid JSON."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
-    # First run the public structured-output flow once.
-    response = run_pipeline()
-    # Then validate the fixed contract fields and counts.
-    assert_pipeline_response(response)
+    pass
 
 
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We ask QwenChat to build a structured incident report from "
-        "a plain text prompt.",
-        details=[f"Prompt: {build_prompt()}"],
+@pytest.fixture
+def response() -> LLMRouterResponse:
+    router = LLMRouter(
+        RouterProfile(model=Model.QWEN_MAX_LATEST, provider=Provider.QWENCHAT),
+        temperature=0.0,
+        seed=42,
     )
-
-    # Run the same plain-text-to-JSON path the test asserts.
-    response = run_pipeline()
-    assert_pipeline_response(response)
-    parsed = IncidentReport.model_validate(parse_json_object(response.output_text))
-
-    console.demo_step(
-        "What Happened",
-        "The model returned a valid incident report with the expected "
-        "structure and counts.",
-        details=[f"Usage: {response.usage}"],
-    )
-    console.print_json(parsed.model_dump(mode="json"))
-    console.demo_outcome(
-        "This passed because the final report preserved the required "
-        "incident ID and list sizes the scenario uses as its success "
-        "criteria."
+    return router.query(
+        f"{_SYSTEM_PROMPT}\n\n{_PROMPT}",
+        response_schema=IncidentReport,
     )
 
 
-if __name__ == "__main__":
-    main()
+@pytest.fixture
+def report(response: LLMRouterResponse) -> IncidentReport:
+    return _parse_report(response)
+
+
+@when("QwenChat is asked for a deterministic incident report")
+def request_incident_report(response: LLMRouterResponse) -> None:
+    _publish_response(response)
+
+
+@then("a structured incident report is returned")
+def structured_incident_report_is_returned(
+    response: LLMRouterResponse,
+    report: IncidentReport,
+) -> None:
+    assert response.data is not None
+    assert isinstance(report, IncidentReport)
+
+
+@then("the incident id is INC-1042")
+def incident_id_is_preserved(report: IncidentReport) -> None:
+    assert report.incident_id == "INC-1042"
+
+
+@then("it contains 2 affected services")
+def affected_services_are_preserved(report: IncidentReport) -> None:
+    assert len(report.affected_services) == 2
+
+
+@then("it contains 4 timeline events")
+def timeline_is_preserved(report: IncidentReport) -> None:
+    assert len(report.timeline) == 4
+
+
+@then("it contains 3 remediation items")
+def remediation_items_are_preserved(report: IncidentReport) -> None:
+    assert len(report.remediation_items) == 3
+
+
+# %% Run this cell in VS Code's Interactive Window for the real live provider.
+if __name__ == "__main__" and get_ipython() is not None:
+    pytest.main(
+        [
+            "-q",
+            "-s",
+            "--disable-recording",
+            "--no-cov",
+            _TEST_NODE,
+        ]
+    )
+
 # %%
