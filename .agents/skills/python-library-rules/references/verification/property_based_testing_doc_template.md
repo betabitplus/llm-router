@@ -37,7 +37,7 @@ framework mechanics or strategy-by-strategy implementation detail.
 - State explicitly that public-contract property tests should import only from
   the supported public API, never from `_internal` modules.
 - Keep the layer distinct from named example tests, broader integration
-  collaborations, replay-backed e2e, and live validation.
+  collaborations, executable specifications, optional technical E2E, and live validation.
 - Start the `Overview` with `This document describes ...`.
 - Keep the `Overview` to one or two short paragraphs.
 - Name each numbered area `## N. Area: <Title>`.

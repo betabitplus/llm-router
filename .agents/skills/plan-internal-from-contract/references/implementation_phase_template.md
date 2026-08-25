@@ -47,8 +47,9 @@ those files need a different shape.
   files narrow.
 - Use the same vertical-slice, concept, or feature vocabulary across docs and
   tests, and keep names aligned when they cover the same slice.
-- When an existing public-contract or e2e proof depends on a later phase, name
-  it and mark it as later proof rather than the immediate gate.
+- When an existing Living Specification, public-contract test, or technical E2E
+  check depends on a later phase, name it and mark it as later proof rather than
+  the immediate gate.
 - Add inline links back to discovery docs only when a current item is directly
   driven by that discovery fact, proof, or boundary rule.
 
@@ -98,7 +99,7 @@ those files need a different shape.
 - [ ] For config phases, include public-root tests for install/read behavior,
   non-config `TypeError`, and cache invalidation when runtime objects capture
   config snapshots.
-- [ ] List existing public-contract or e2e proof files to keep green.
+- [ ] List existing Living Specifications, public-contract tests, and relevant technical E2E checks to keep green.
 - [ ] Mark any existing proof that depends on a later phase as later proof, not the immediate blocking gate.
 
 ## Implementation Docs

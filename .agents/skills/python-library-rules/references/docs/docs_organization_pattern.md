@@ -98,9 +98,9 @@ means: public nouns, configuration resolution, routing semantics, continuity,
 or provider abstraction.
 
 If the library or app is best understood through stable vertical slices, let
-`concepts/` define that primary slice taxonomy. When `verification/e2e/` docs
-and `tests/<project>/e2e/` scenarios prove those same slices, mirror the
-`concepts/` grouping instead of inventing a second taxonomy for proof artifacts.
+`concepts/` define that primary architecture taxonomy. When those slices are
+behavioral contracts, use the same vocabulary in Living Specifications under
+`features/` rather than mirroring them into handwritten verification/E2E docs.
 
 Do not create `principles/` for generic software design notes that are not
 specific to the product's own design, domain, and boundary vocabulary.
@@ -129,31 +129,20 @@ architecture/
 
 ### Verification Pattern
 
-For verification docs, a common useful shape is:
+Keep handwritten verification docs for technical verification strategy and
+operator/developer guidance that is not already expressed by executable
+behavioral specifications.
+
+A compact shape is usually enough:
 
 ```text
 verification/
 ├── README.md
 ├── property-based-testing.md
-├── e2e/
-│   ├── README.md
-│   ├── recovery-guarantees.md
-│   ├── state-and-isolation.md
-│   ├── boundary-guarantees.md
-│   └── workflow-coverage.md
 └── workbench.md
 ```
 
-Use this when the repo has multiple clearly different verification surfaces:
-
-- property-based strategy
-- replay-backed proof docs
-- live executable probes
-
-Inside `e2e/`, prefer focused proof-area docs over an extra taxonomy split
-such as `behavior/` and `capabilities/` unless each subgroup has enough pages
-to justify another navigation layer.
-
-If `architecture/concepts/` already defines the stable vertical slices for the
-library or app, let `verification/e2e/` mirror those concept names and use the
-same filenames where that stays natural.
+When `features/` exists, Living Specifications are the human-readable source of
+truth for durable behavior and are published from that source. Do not create a
+parallel handwritten E2E taxonomy that repeats scenarios, evidence, or
+behavioral guarantees already present in specifications.

@@ -98,7 +98,7 @@ needs private modules, move that investigation to `workbench/` or convert it
 into a test.
 
 Every committed example should have a matching link from the package usage docs.
-The e2e examples smoke test discovers and runs committed example scripts so
+The examples smoke test discovers and runs committed example scripts so
 docs examples do not drift silently.
 
 ## Live Workbench Scripts

@@ -37,11 +37,14 @@ the target repository.
   refactor rules for private boundaries.
 - `docs/<package_name>/architecture/flows/` defines the main end-to-end runtime
   flows across those boundaries.
-- `workbench/` holds live probes and executable documentation. Use it to prove
-  isolated features and real provider behavior before or alongside `src/`
-  support. It is a separate concern and must not import from `src/`.
-- `tests/<package_name>/e2e/` proves public behavior end to end across multiple
-  boundaries.
+- `workbench/` holds manual live probes. Use it to explore isolated features and
+  real provider behavior before or alongside `src/` support; it is separate from
+  automated behavioral contracts.
+- `features/` holds Living Specifications when durable human-readable behavior
+  needs an executable contract; pytest-bdd bindings live under
+  `tests/<package_name>/bdd/`.
+- `tests/<package_name>/e2e/` is optional and reserved for genuine broad-stack or
+  deployed-system execution depth, not behavioral documentation.
 - `tests/<package_name>/property_based/public_contract/` proves deterministic
   public invariants across many generated inputs.
 

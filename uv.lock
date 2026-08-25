@@ -2155,7 +2155,7 @@ dev = [
     { name = "pillow", specifier = ">=12.2" },
     { name = "pip-audit", specifier = ">=2.10.1" },
     { name = "pre-commit", specifier = ">=4.6.0" },
-    { name = "py-lib-policy", git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git?tag=v1.2.0" },
+    { name = "py-lib-policy", git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git?tag=v1.2.1" },
     { name = "py-lib-testkit", git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.1.0" },
     { name = "pygments", specifier = ">=2.20.0" },
     { name = "pymupdf" },
@@ -3134,11 +3134,8 @@ wheels = [
 
 [[package]]
 name = "py-lib-policy"
-version = "1.2.0"
-source = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git?tag=v1.2.0#2f83082b5d0c26a062c6820fb7507495baf0bb5a" }
-dependencies = [
-    { name = "pyyaml" },
-]
+version = "1.2.1"
+source = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git?tag=v1.2.1#efa96d2870fb7279dfc3f496cc3ecbab98d34784" }
 
 [[package]]
 name = "py-lib-runtime"

@@ -128,7 +128,7 @@ package-dir."" = "src"
 
 [tool.uv]
 required-version = "==0.12.5"
-sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v1.2.0" }
+sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v1.2.1" }
 sources.py-lib-runtime = { git = "https://github.com/betabitplus/ternforge-tooling-py-runtime.git", tag = "v1.1.6" }
 sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git", tag = "v2.1.0" }
 
@@ -251,7 +251,7 @@ lint.per-file-ignores."tests/*" = [
   "PLR2004", # Allow magic values in assertions
   "PT012",   # Allow multi-statement pytest.raises blocks
   "S101",    # Allow assert statements
-  "T20",     # Allow print statements in direct-runnable e2e modules
+  "T20",     # Allow print statements in test diagnostics
   "TRY003",  # Allow long exception messages
 ]
 lint.per-file-ignores."workbench/*" = [
@@ -443,8 +443,8 @@ ini_options.markers = [
   "cap_structured: tests structured-output parsing or response schemas",
   "cap_tools: tests tool-calling execution paths",
   "cap_video: tests video attachment handling",
-  "e2e_behavior: router behavior tests for retry, routing, and session mechanics",
-  "e2e_contract: provider contract tests for end-to-end request/response flows",
+  "e2e_behavior: legacy router behavior tests pending specification migration",
+  "e2e_contract: legacy provider contract tests pending specification migration",
   "hermetic: marks tests that run fully offline using VCR cassettes",
   "slow: marks tests that are slow and should be skipped in fast runs",
   "specification: executable living specifications",
@@ -533,7 +533,6 @@ name = "LLM Router public-contract verification modules must not import private 
 id = "llm-router-public-contract-boundary"
 type = "forbidden"
 source_modules = [
-  "tests.llm_router.e2e",
   "tests.llm_router.property_based.public_contract",
   "tests.llm_router.support",
 ]

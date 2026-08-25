@@ -1,6 +1,6 @@
 ---
 name: docstring-template
-description: Template guidance for Python file docstrings. Use when you need short, purposeful file-level docstrings for modules, package boundaries, end-to-end tests, or workbench scripts.
+description: Template guidance for Python file docstrings. Use when you need short, purposeful file-level docstrings for modules, package boundaries, tests, or workbench scripts.
 ---
 
 # Python File Docstring Template
@@ -12,7 +12,7 @@ Use this template for Python file docstrings.
 ## When To Use
 
 Use this template when writing Python file docstrings for regular modules,
-package boundaries, e2e scripts, or workbench scripts.
+package boundaries, tests, or workbench scripts.
 
 ## Coverage
 
@@ -20,7 +20,7 @@ This file covers these Python file types:
 
 - regular modules such as `module.py`
 - package files such as `package/__init__.py`
-- e2e scripts under `tests/.../e2e/`
+- technical pytest modules under `tests/...`
 - workbench scripts under `workbench/...`
 
 It does not define one single template for every Python comment.
@@ -157,122 +157,27 @@ What does not belong here:
 """
 ```
 
-## E2E And Workbench Script Docstrings
+## Workbench Script Docstrings
 
-Do not reuse the regular-module template for e2e scripts or workbench scripts.
+Workbench probes are manual exploratory tools, not the source of truth for
+durable behavioral contracts. Keep their docstrings focused on why the probe
+exists, what it exercises, and what successful manual observation means.
 
-These file docstrings should document scenario coverage, not generic module
-usage. They should also capture the highest-signal success criteria, because an
-e2e or workbench script may later become the main source of truth for that
-scenario.
-
-### Sections
-
-Use these sections for e2e and workbench scripts:
+Use these sections when they add signal:
 
 1. `Why`
 2. `Covers`
 3. `Checks`
-4. `Notes` (only when needed)
+4. `Notes`
 5. `Examples`
 
-Workbench scripts use this same pattern.
-The difference is file structure, not docstring shape.
-
-### What `Covers` Should Include
-
-`Covers` should stay short and use neutral labels such as:
-
-- `Area`: feature, workflow, subsystem, or integration boundary
-- `Behavior`: the user-visible behavior under test
-- `Interface`: public entry point, command, endpoint, UI flow, or API surface
-
-Use only the lines that add signal.
-
-### What `Checks` Should Include
-
-`Checks` should mirror what the scenario actually proves.
-
-- keep it as short as the proof surface allows
-- for e2e files, cover every meaningful assertion or assertion cluster from the
-  `Assertions` section
-- for workbench files, cover every meaningful validated field, derived flag,
-  or observed success condition the script uses as manual proof
-- if several adjacent `assert` lines prove one indivisible contract point, they
-  may share one `Checks` line
-- do not omit a proved outcome just because it feels low-level if the file
-  explicitly asserts it
-- prefer contract wording over raw implementation wording, while still staying
-  specific enough to match the assertions
-- write each line as explicit `If <condition>, then <consequence>.`
-- keep one meaningful condition-to-consequence statement per line
-- use as many lines as needed to cover the asserted contract clearly
-
-### Template
-
-```python
-"""<Project or workbench> scenario: <short description>.
-
-Why:
-    <what user-visible behavior this scenario proves>
-
-Covers:
-    Area: <feature, workflow, or subsystem>
-    Behavior: <behavior under test>
-    Interface: <public boundary exercised>
-
-Checks:
-    If <condition>, then <highest-signal expected outcome 1>.
-    If <condition>, then <highest-signal expected outcome 2>.
-
-Notes:
-    <only if runtime prerequisites or replay caveats matter>
-
-Examples:
-    Run manually:
-        python path/to/test_file.py
-
-    Run as test:
-        pytest path/to/test_file.py
-"""
-```
-
-### Example
-
-```python
-"""CSV import workflow scenario.
-
-Why:
-    Verifies that a CSV import completes and produces normalized records.
-
-Covers:
-    Area: import workflow
-    Behavior: file upload, validation, persisted output
-    Interface: CLI entry point and saved output file
-
-Checks:
-    If rows are accepted, then they are normalized into the expected record
-    shape.
-    If rows are invalid, then they are reported without aborting the whole
-    import.
-    If the import succeeds, then the saved output contains the expected number
-    of accepted records.
-
-Notes:
-    Live manual runs require the sample CSV fixture.
-
-Examples:
-    Run manually:
-        python path/to/test_file.py
-
-    Run as test:
-        pytest path/to/test_file.py
-"""
-```
+For automated pytest files, including optional technical E2E tests, use the
+ordinary test-file guidance. For durable human-readable behavior, use Gherkin
+Living Specifications instead of encoding scenario documentation in Python
+module docstrings.
 
 ## Quick Choice
 
 - use `Standard Modules` for ordinary `.py` files
 - use `Package __init__.py` for package boundary files
-- use `E2E And Workbench Script Docstrings` for executable e2e and workbench
-  scripts
+- use `Workbench Script Docstrings` for manual workbench probes

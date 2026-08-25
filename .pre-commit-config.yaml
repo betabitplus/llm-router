@@ -375,7 +375,7 @@ repos:
       # Remove trailing whitespace
       - id: trailing-whitespace
         stages: [pre-commit]
-        exclude: ^(logs/|data/|records/)
+        exclude: ^(logs/|data/|records/)|\.feature$
 
       # Check for merge conflict markers
       - id: check-merge-conflict

@@ -19,10 +19,11 @@ Most important rules:
 - All pre-commit and pre-push hooks pass.
 - `lint-imports` passes after any package-boundary or config-lifecycle change.
 - All project rules and architectural requirements are satisfied.
-- Every relevant e2e or workbench script successfully runs in module mode and,
-  for Ternforge-managed Python libraries, via
-  `uv run python scripts/reproduce_running_loop.py <module>` when already-running-loop
-  behavior matters.
+- Living Specifications replay successfully and, where a real external path is
+  part of the contract, the same bound scenario can be exercised explicitly in
+  live mode.
+- Relevant workbench probes run through their supported interactive path.
+- Genuine technical E2E checks, when present, pass as ordinary pytest coverage.
 
 ## Final State Rules
 

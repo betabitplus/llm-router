@@ -52,8 +52,8 @@ split so required rules do not get lost in one large document.
 3. Treat the current tree as the only source of truth. Do not inspect git
    history or prior implementations.
 4. Inspect `_api`, package-specific `_support` if present, architecture docs,
-   workbench, e2e tests, and property-based public-contract tests before
-   prescribing a target shape.
+   Living Specifications under `features/` when present, public-contract tests,
+   and relevant workbench/E2E evidence before prescribing a target shape.
 5. Create `plan/README.md` as the root execution task for the future
    implementing agent. Use
    `references/plan_root_readme_template.md`, and include the exact

@@ -1,6 +1,6 @@
 ---
 name: python-library-rules
-description: Reusable engineering rules for designing, reviewing, and refactoring Python libraries or services with a stable public API over a private core. Use when Codex needs to shape package boundaries, defaults and config layering, structured logging, exception taxonomy, e2e and workbench patterns, test tree routing, or Python code comments and docstrings in a repo-agnostic way.
+description: Reusable engineering rules for designing, reviewing, and refactoring Python libraries or services with a stable public API over a private core. Use when Codex needs to shape package boundaries, defaults and config layering, structured logging, exception taxonomy, test and specification routing, workbench patterns, or Python code comments and docstrings in a repo-agnostic way.
 ---
 
 # Python Library Rules
@@ -18,8 +18,8 @@ Use this skill when designing, reviewing, or refactoring a Python library or
 service that needs a stable public API over a private core.
 
 Use this skill when the task touches package boundaries, defaults and config
-layering, structured logging, exception taxonomy, test-tree placement,
-end-to-end test shape, workbench script shape, or Python code comments and
+layering, structured logging, exception taxonomy, test/specification placement,
+optional end-to-end depth, workbench script shape, or Python code comments and
 docstrings.
 
 ## Workflow
@@ -86,9 +86,7 @@ docstrings.
 - `references/verification/README.md`
   Load for the verification and workbench reference map.
 - `references/verification/tests_routing_pattern.md`
-  Load for test-tree placement and import-routing rules.
-- `references/verification/e2e_test_template.md`
-  Load for executable e2e file shape and the former testing baseline.
+  Load for test-tree placement, optional E2E depth, and Living Specifications routing rules.
 - `references/verification/workbench_script_template.md`
   Load for live workbench file shape and the former workbench baseline.
 - `references/README.md`

@@ -15,7 +15,7 @@ Use this template when one doc should explain what a verification set proves,
 not how the system is implemented.
 
 Use this template for one focused proof-area document as well as for broader
-proof docs such as e2e or workbench overviews.
+technical verification docs or workbench overviews.
 
 ## File Shape
 

@@ -9,7 +9,7 @@ description: Template for manual workbench scripts under workbench/<group>/. Use
 
 Use this template for new files under `workbench/<group>/`.
 
-Use the e2e-style scenario docstring pattern from
+Use the workbench docstring pattern from
 `references/core/docstring_template.md`.
 
 ## When To Use
@@ -44,7 +44,7 @@ Use only these top-level section titles:
 
 - One script file should answer one concrete question, test one hypothesis, or isolate one feature behavior.
 - If logic becomes large, reused, or shared across multiple scripts, move it into an internal helper module with a leading underscore and a specific name.
-- `workbench/` is for live executable documentation and isolated feature development before logic graduates into `src/` and `tests/`.
+- `workbench/` is for manual live probes and isolated feature development before logic graduates into `src/`, tests, or executable specifications.
 - Keep workbench scripts independent from `src/`; do not reference project internal modules or implementation paths from workbench code.
 - Shared package-level direct-run setup should live in `workbench/__init__.py`, not repeated in each script.
 - Workbench scripts must run directly with `uv run python -m path.to.script`.
@@ -68,7 +68,7 @@ Use only these top-level section titles:
 - Make docstring `Checks` cover every meaningful validated field, derived flag,
   or observed success condition the script uses as manual proof.
 - Start each executable workbench script with a top-of-file `# %%` marker so
-  the file works cleanly in IDE cell-based execution, matching the e2e layout.
+  the file works cleanly in IDE cell-based execution.
 - If a script keeps the `Helpers` section for layout consistency but has no
   local helpers, use `# No local helpers for this scenario.`
 - Group-specific helpers can live alongside related scripts when that keeps the
