@@ -1460,6 +1460,20 @@ wheels = [
 ]
 
 [[package]]
+name = "ipytest"
+version = "0.14.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ipython" },
+    { name = "packaging" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c2/2e/f54f63c0423c025c81874d4e83220f357bd6408cf985beb59151dc6bf81b/ipytest-0.14.2.tar.gz", hash = "sha256:936ab65044e1f9365a8be3f0f1f4b4c086bad44da65844934ea99701413f17d6", size = 19383, upload-time = "2024-04-21T15:58:17.825Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2b/f3/d86f2aaf3c5187a323be202c71b3856d9cc9587a6f44d432159ae1b25988/ipytest-0.14.2-py3-none-any.whl", hash = "sha256:236b2d41ad0943310f5a9b7a7d03a627e6abd3ceb481b13fcd03d17292fd69b2", size = 18327, upload-time = "2024-04-21T15:57:55.16Z" },
+]
+
+[[package]]
 name = "ipython"
 version = "9.16.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2044,6 +2058,7 @@ dev = [
     { name = "import-linter" },
     { name = "interrogate" },
     { name = "ipykernel" },
+    { name = "ipytest" },
     { name = "ipython" },
     { name = "ipywidgets" },
     { name = "jupyter" },
@@ -2088,6 +2103,13 @@ docs = [
     { name = "sphinx-gallery" },
     { name = "sphinxcontrib-mermaid" },
 ]
+specifications = [
+    { name = "allure-pytest-bdd" },
+    { name = "py-lib-testkit" },
+    { name = "pytest" },
+    { name = "pytest-bdd" },
+    { name = "pytest-recording" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -2119,6 +2141,7 @@ dev = [
     { name = "import-linter", specifier = ">=2.11" },
     { name = "interrogate", specifier = ">=1.7" },
     { name = "ipykernel", specifier = ">=7.3.0" },
+    { name = "ipytest", specifier = ">=0.14.2,<0.15" },
     { name = "ipython", specifier = ">=9.14.1" },
     { name = "ipywidgets", specifier = ">=8.1.8" },
     { name = "jupyter", specifier = ">=1.1.1" },
@@ -2133,7 +2156,7 @@ dev = [
     { name = "pip-audit", specifier = ">=2.10.1" },
     { name = "pre-commit", specifier = ">=4.6.0" },
     { name = "py-lib-policy", git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git?tag=v1.2.0" },
-    { name = "py-lib-testkit", git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.0.2" },
+    { name = "py-lib-testkit", git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.1.0" },
     { name = "pygments", specifier = ">=2.20.0" },
     { name = "pymupdf" },
     { name = "pyproject-fmt", specifier = ">=2.23.0" },
@@ -2162,6 +2185,13 @@ docs = [
     { name = "sphinx", specifier = ">=8.2.3" },
     { name = "sphinx-gallery", specifier = ">=0.21.0" },
     { name = "sphinxcontrib-mermaid", specifier = ">=2.1.0" },
+]
+specifications = [
+    { name = "allure-pytest-bdd", specifier = ">=2.16,<3" },
+    { name = "py-lib-testkit", git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.1.0" },
+    { name = "pytest", specifier = ">=9.1.0" },
+    { name = "pytest-bdd", specifier = ">=8.1,<9" },
+    { name = "pytest-recording", specifier = ">=0.13.4" },
 ]
 
 [[package]]
@@ -3120,8 +3150,8 @@ dependencies = [
 
 [[package]]
 name = "py-lib-testkit"
-version = "2.0.2"
-source = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.0.2#657ffa1360c47f560f98f29c1d50bf135bb7f8c5" }
+version = "2.1.0"
+source = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.1.0#ca1e9b23d8515b1da9139efeb5405854ad8c706c" }
 dependencies = [
     { name = "ipython" },
     { name = "nest-asyncio" },
