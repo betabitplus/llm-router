@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.11.2](https://github.com/betabitplus/llm-router/compare/v0.11.1...v0.11.2) (2026-08-25)
+
+
+### Bug Fixes
+
+* use canonical pymupdf import in document spec ([#60](https://github.com/betabitplus/llm-router/issues/60)) ([13bb1a7](https://github.com/betabitplus/llm-router/commit/13bb1a7b4e9b7b0a6959b224073edc3460d79398))
+
 ## [0.11.1](https://github.com/betabitplus/llm-router/compare/v0.11.0...v0.11.1) (2026-08-25)
 
 
