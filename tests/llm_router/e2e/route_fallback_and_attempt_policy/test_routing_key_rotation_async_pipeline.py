@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: key rotation + per-key waiting.
 
 Why:
@@ -25,14 +24,6 @@ Notes:
     configured, this scenario mirrors it into `NVIDIA_API_KEY_2` so the router
     can still exercise distinct key IDs.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.route_fallback_and_attempt_policy.test_routing_key_rotation_async_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/route_fallback_and_attempt_policy/test_routing_key_rotation_async_pipeline.py
 """
 
 from __future__ import annotations
@@ -41,7 +32,6 @@ import os
 import time
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode, run_async
 
 from llm_router import (
     LLMRouter,
@@ -53,7 +43,6 @@ from llm_router import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_async,
     pytest.mark.cap_routing,
 ]
@@ -205,41 +194,7 @@ def assert_pipeline_responses(
 @pytest.mark.asyncio
 async def test_pipeline() -> None:
     """Verify key rotation and per-key limiting behavior."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     # Run the three-call async routing flow once.
     responses = await run_pipeline()
     # Then validate rotation first and waiting second.
     assert_pipeline_responses(*responses)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-async def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-
-    # Run the same three-call flow the test asserts.
-    first_response, second_response, _, waited_seconds = await run_pipeline()
-
-    console.demo_step(
-        "What Happened",
-        "The async routing flow rotated across keys and then waited "
-        "when the limit required a pause.",
-        details=[
-            f"Call 1 key: {first_response.routing_trace[0].key_id}",
-            f"Call 2 key: {second_response.routing_trace[0].key_id}",
-            f"Wait before the next allowed call: {waited_seconds:.3f}s",
-        ],
-    )
-    console.demo_outcome(
-        "This passed because the router respected key rotation and "
-        "wait policy instead of overusing one key."
-    )
-
-
-if __name__ == "__main__":
-    run_async(main())
-# %%

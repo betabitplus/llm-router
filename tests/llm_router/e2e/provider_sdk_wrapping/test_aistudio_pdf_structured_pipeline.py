@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: AI Studio PDF file + structured output.
 
 Why:
@@ -24,20 +23,11 @@ Checks:
     If entity extraction is correct, then at least the required key-entity matches map
     back to page-one text.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_aistudio_pdf_structured_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_aistudio_pdf_structured_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     FileSchema,
@@ -59,7 +49,6 @@ from tests.llm_router.support.media.pdf import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_file,
     pytest.mark.cap_structured,
 ]
@@ -143,7 +132,6 @@ def assert_pipeline_response(
 @pytest.mark.vcr
 def test_pipeline() -> None:
     """Verify the pipeline runs successfully."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     # Extract deterministic grounding facts first so the assertion stays source-based.
     expected_page_text, expected_title = extract_expected_pdf_facts(
         get_llm_router_test_data_path(_PDF_FILENAME)
@@ -156,49 +144,3 @@ def test_pipeline() -> None:
         expected_page_text=expected_page_text,
         expected_title=expected_title,
     )
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We upload the shared PDF fixture to AI Studio and ask for a "
-        "structured digest of the paper.",
-        details=[f"File: {_PDF_FILENAME}", f"Prompt: {build_prompt()}"],
-    )
-
-    expected_page_text, expected_title = extract_expected_pdf_facts(
-        get_llm_router_test_data_path(_PDF_FILENAME)
-    )
-    # Run the same native file path the test asserts.
-    response = run_pipeline(file=build_test_pdf_file(_PDF_FILENAME))
-
-    # Validate first so the printed output reflects the actual checked contract.
-    parsed = assert_pdf_digest_response(
-        response,
-        expected_page_text=expected_page_text,
-        expected_title=expected_title,
-        allow_compact_snippet_match=True,
-        min_entity_matches=2,
-    )
-    console.demo_step(
-        "What Happened",
-        "AI Studio returned a structured digest grounded in the uploaded PDF.",
-        details=[f"Usage: {response.usage}"],
-    )
-    console.print_json(parsed.model_dump(mode="json"))
-    console.demo_outcome(
-        "This passed because the extracted structure preserved the page-one "
-        "title and evidence from the source document."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

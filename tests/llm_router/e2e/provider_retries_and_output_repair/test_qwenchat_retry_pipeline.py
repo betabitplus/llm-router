@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: QwenChat retry behavior.
 
 Why:
@@ -31,20 +30,11 @@ Notes:
     This scenario is hermetic by construction because it talks only to a local
     scripted HTTP server.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_retries_and_output_repair.test_qwenchat_retry_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_retries_and_output_repair/test_qwenchat_retry_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console
 
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
 from tests.llm_router.support.workers.retry import (
@@ -58,7 +48,6 @@ from tests.llm_router.support.workers.retry import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_resilience,
     pytest.mark.hermetic,
 ]
@@ -439,87 +428,3 @@ def test_non_retryable_upload_failure_does_not_retry() -> None:
     with ScriptedHTTPServer(port=_PORT, routes=non_retryable_upload_routes()) as server:
         result = run_non_retryable_upload_pipeline(server_base_url=server.base_url)
         assert_non_retryable_upload_error(result, server=server)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the retry demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    with ScriptedHTTPServer(port=_PORT, routes=retryable_routes()) as server:
-        response = run_retry_pipeline(server_base_url=server.base_url)
-        assert_retry_response(response, server=server)
-
-        console.demo_step(
-            "What Happened On The Completion Recovery Path",
-            "The completion request retried once and then succeeded.",
-            details=[
-                f"Final output: {response.output_text}",
-                f"Chat hits: {server.request_count('POST', _PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(port=_PORT, routes=non_retryable_routes()) as server:
-        result = run_non_retryable_pipeline(server_base_url=server.base_url)
-        assert_non_retryable_error(
-            result,
-            server=server,
-            expected_message=_NON_RETRYABLE_MESSAGE,
-        )
-
-        console.demo_step(
-            "What Happened On The Completion Fail-Fast Path",
-            "A non-retryable completion error was surfaced immediately.",
-            details=[
-                f"Public error: {result.error_type}: {result.error_message}",
-                f"Chat hits: {server.request_count('POST', _PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(port=_PORT, routes=retryable_upload_routes()) as server:
-        upload_response = run_retryable_upload_pipeline(server_base_url=server.base_url)
-        assert_retryable_upload_response(upload_response, server=server)
-
-        console.demo_step(
-            "What Happened On The Upload Recovery Path",
-            "The upload recovered first, and only then did the final "
-            "completion run successfully.",
-            details=[
-                f"Final output: {upload_response.output_text}",
-                f"Upload hits: {server.request_count('POST', _UPLOAD_PATH)}",
-                f"Chat hits: {server.request_count('POST', _PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(port=_PORT, routes=non_retryable_upload_routes()) as server:
-        upload_error = run_non_retryable_upload_pipeline(
-            server_base_url=server.base_url
-        )
-        assert_non_retryable_upload_error(upload_error, server=server)
-
-        console.demo_step(
-            "What Happened On The Upload Fail-Fast Path",
-            "A non-retryable upload error stopped the flow before the "
-            "completion request was even attempted.",
-            details=[
-                (
-                    "Public error: "
-                    f"{upload_error.error_type}: {upload_error.error_message}"
-                ),
-                f"Upload hits: {server.request_count('POST', _UPLOAD_PATH)}",
-                f"Chat hits: {server.request_count('POST', _PATH)}",
-            ],
-        )
-    console.demo_outcome(
-        "This passed because both the upload phase and the completion "
-        "phase obeyed the same retry contract instead of behaving "
-        "inconsistently."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

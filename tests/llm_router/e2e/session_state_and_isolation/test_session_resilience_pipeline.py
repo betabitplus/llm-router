@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: session persistence after resilience behavior.
 
 Why:
@@ -32,14 +31,6 @@ Notes:
     This scenario is hermetic by construction because it talks only to a local
     scripted HTTP server.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.session_state_and_isolation.test_session_resilience_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/session_state_and_isolation/test_session_resilience_pipeline.py
 """
 
 from __future__ import annotations
@@ -47,7 +38,6 @@ from __future__ import annotations
 import json
 
 import pytest
-from py_lib_testkit import console
 
 from llm_router import Model, Provider
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -61,7 +51,6 @@ from tests.llm_router.support.workers.session_resilience import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_session,
     pytest.mark.cap_resilience,
     pytest.mark.hermetic,
@@ -209,51 +198,3 @@ def test_session_resume_preserves_timeout_fallback_metadata() -> None:
         result = run_pipeline(server_base_url=server.base_url)
         # Then prove the saved assistant metadata preserved both fallback traces.
         assert_pipeline_result(result, server=server)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the session-resilience demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    with ScriptedHTTPServer(port=_PORT, routes=session_resilience_routes()) as server:
-        # Run the same resilience flow the test validates.
-        result = run_pipeline(server_base_url=server.base_url)
-        assert_pipeline_result(result, server=server)
-
-    console.demo_step(
-        "What Happened",
-        "The session survived timeout-driven fallback, was saved, and "
-        "still resumed with the right routing history.",
-        details=[
-            f"Final output: {result.output_text}",
-            f"Saved history length: {result.saved_history_length}",
-        ],
-    )
-    first_trace = result.first_assistant_meta["routing_trace"]
-    second_trace = result.second_assistant_meta["routing_trace"]
-    openrouter_hits = server.request_count("POST", _OPENROUTER_PATH)
-    groq_hits = server.request_count("POST", _GROQ_PATH)
-    console.demo_step(
-        "Routing Evidence",
-        "Both assistant turns show the same timeout-then-fallback "
-        "pattern, which proves the saved session preserved the right "
-        "metadata.",
-        details=[
-            f"First routing trace: {first_trace}",
-            f"Second routing trace: {second_trace}",
-            f"Server hits: openrouter={openrouter_hits}, groq={groq_hits}",
-        ],
-    )
-    console.demo_outcome(
-        "This passed because resilience behavior did not get lost "
-        "when the session was saved and resumed later."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

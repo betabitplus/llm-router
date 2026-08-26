@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: response normalization parity.
 
 Why:
@@ -34,14 +33,6 @@ Notes:
     This scenario is hermetic by construction because it talks only to local
     scripted HTTP servers.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.public_output_and_errors.test_response_normalization_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/public_output_and_errors/test_response_normalization_pipeline.py
 """
 
 from __future__ import annotations
@@ -49,7 +40,6 @@ from __future__ import annotations
 import json
 
 import pytest
-from py_lib_testkit import console
 
 from llm_router import Model
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -65,7 +55,6 @@ from tests.llm_router.support.workers.retry import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_resilience,
     pytest.mark.hermetic,
 ]
@@ -258,76 +247,3 @@ def test_representative_clients_normalize_to_the_same_public_shape() -> None:
     )
     # Finally, prove both public responses converge to the same contract.
     assert_parity(openai_result, google_result)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the response-normalization demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    with ScriptedHTTPServer(port=_OPENAI_PORT, routes=openai_routes()) as openai_server:
-        # Run the first representative client.
-        openai_result = run_openai_pipeline(server_base_url=openai_server.base_url)
-
-    with ScriptedHTTPServer(port=_GOOGLE_PORT, routes=google_routes()) as google_server:
-        # Then run the second representative client.
-        google_result = run_google_pipeline(server_base_url=google_server.base_url)
-
-    assert_individual_result(
-        openai_result,
-        expected_provider="openrouter",
-        expected_model="deepseek-chat-v3",
-    )
-    assert_individual_result(
-        google_result,
-        expected_provider="google",
-        expected_model="gemini-3.6-flash",
-    )
-    assert_parity(openai_result, google_result)
-
-    console.demo_step(
-        "What Happened",
-        "Two different client families produced the same public-shaped "
-        "response for the same kind of successful request.",
-        details=[
-            (
-                "OpenAI-compatible: "
-                f"provider={openai_result.provider}, "
-                f"model={openai_result.model}, "
-                f"output={openai_result.output_text}, "
-                f"usage={openai_result.usage}"
-            ),
-            (
-                "Google GenAI: "
-                f"provider={google_result.provider}, "
-                f"model={google_result.model}, "
-                f"output={google_result.output_text}, "
-                f"usage={google_result.usage}"
-            ),
-            (
-                "OpenAI-compatible routing/tool fields: "
-                f"{openai_result.routing_trace}, "
-                f"{openai_result.tool_trace}, "
-                f"{openai_result.tool_calls}"
-            ),
-            (
-                "Google routing/tool fields: "
-                f"{google_result.routing_trace}, "
-                f"{google_result.tool_trace}, "
-                f"{google_result.tool_calls}"
-            ),
-        ],
-    )
-    console.demo_outcome(
-        "This passed because the library normalized both providers "
-        "into the same public contract instead of leaking "
-        "backend-specific differences."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

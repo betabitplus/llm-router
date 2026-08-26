@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: attempt-timeout routing.
 
 Why:
@@ -27,20 +26,11 @@ Notes:
     This scenario is hermetic by construction because it talks only to a local
     scripted HTTP server.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.route_fallback_and_attempt_policy.test_attempt_timeout_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/route_fallback_and_attempt_policy/test_attempt_timeout_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console
 
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
 from tests.llm_router.support.workers.retry import (
@@ -53,7 +43,6 @@ from tests.llm_router.support.workers.timeout import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_routing,
     pytest.mark.cap_resilience,
     pytest.mark.hermetic,
@@ -220,61 +209,3 @@ def test_terminal_attempt_timeout_raises() -> None:
 
         # The helper now proves that the timeout surfaced publicly.
         assert_terminal_timeout_error(result, server=server)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the attempt-timeout demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    with ScriptedHTTPServer(
-        port=_PORT,
-        routes=fallback_after_timeout_routes(),
-    ) as server:
-        # Show the recovery branch first so the reader sees the optimistic path.
-        fallback_result = run_fallback_after_timeout_pipeline(
-            server_base_url=server.base_url
-        )
-        assert_fallback_after_timeout_response(fallback_result, server=server)
-
-        console.demo_step(
-            "What Happened On The Recovery Path",
-            "The first attempt timed out, and the router recovered by "
-            "moving to the fallback route.",
-            details=[
-                f"Final output: {fallback_result.output_text}",
-                f"Routing trace: {fallback_result.routing_trace}",
-                f"Server hits: {server.request_count('POST', _PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(port=_PORT, routes=terminal_timeout_routes()) as server:
-        # Then show the same logic when recovery is impossible.
-        terminal_result = run_terminal_timeout_pipeline(server_base_url=server.base_url)
-        assert_terminal_timeout_error(terminal_result, server=server)
-
-        console.demo_step(
-            "What Happened Without A Fallback",
-            "When no backup route existed, the timeout surfaced "
-            "publicly instead of silently succeeding.",
-            details=[
-                (
-                    "Public error: "
-                    f"{terminal_result.error_type}: {terminal_result.error_message}"
-                ),
-                f"Server hits: {server.request_count('POST', _PATH)}",
-            ],
-        )
-    console.demo_outcome(
-        "This passed because the router behaved safely in both "
-        "directions: it recovered when a fallback was available and "
-        "failed clearly when it was not."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

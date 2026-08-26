@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: session fork and divergent history.
 
 Why:
@@ -18,22 +17,11 @@ Checks:
     If later writes stay isolated to the original branch, then the original user history
     contains the update prompt and the forked history does not.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.session_state_and_isolation.test_session_fork_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/session_state_and_isolation/test_session_fork_pipeline.py
 """
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     LLMRouter,
@@ -43,10 +31,8 @@ from llm_router import (
     RouterProfile,
     Session,
 )
-from tests.llm_router.support.builders import build_output_path
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_session,
 ]
 
@@ -55,27 +41,12 @@ pytestmark = [
 # Scenario
 # =============================================================================
 
-_BRANCH_OUTPUT_FILENAME = "_chat_session_fork_qwenchat_branch.json"
-_ORIGINAL_OUTPUT_FILENAME = "_chat_session_fork_qwenchat_original.json"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _ASK_REMEMBER = "Remember this secret code exactly: 81723. Reply only OK."
 _ASK_UPDATE = "Update the secret code to 12345. Reply only OK."
 _ASK_RECALL = "What is the secret code? Reply only digits, no punctuation or words."
 # The prompts are deliberately tiny so the interesting part is branch divergence,
 # not generation quality.
-
-
-# =============================================================================
-# Helpers
-# =============================================================================
-
-
-def build_output_paths() -> tuple[Path, Path]:
-    """Build the demo output paths."""
-    return (
-        build_output_path(_ORIGINAL_OUTPUT_FILENAME),
-        build_output_path(_BRANCH_OUTPUT_FILENAME),
-    )
 
 
 # =============================================================================
@@ -183,55 +154,7 @@ def assert_pipeline_response(
 @pytest.mark.vcr
 def test_pipeline() -> None:
     """Verify session forking preserves branch-local state."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     # First run the fork-and-diverge conversation.
     session, forked_session, original_text, branched_text = run_pipeline()
     # Then prove the two branches remember different values.
     assert_pipeline_response(session, forked_session, original_text, branched_text)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-
-    # Run the same fork-and-diverge flow the test asserts.
-    session, forked_session, original_text, branched_text = run_pipeline()
-
-    console.demo_step(
-        "What Happened",
-        "We forked one conversation into a branch, and both sessions "
-        "then continued independently.",
-        details=[
-            f"Original answer: {original_text} (history={len(session.history)})",
-            f"Fork answer: {branched_text} (history={len(forked_session.history)})",
-        ],
-    )
-
-    # Persist both branches so the divergence is visible on disk too.
-    original_path, branch_path = build_output_paths()
-    session.save(original_path)
-    forked_session.save(branch_path)
-
-    console.demo_step(
-        "Saved Session Evidence",
-        "Both session snapshots were saved so you can see that the "
-        "histories diverged cleanly after the fork.",
-        details=[
-            f"Original session JSON: {original_path.read_text(encoding='utf-8')}",
-            f"Branch session JSON: {branch_path.read_text(encoding='utf-8')}",
-        ],
-    )
-    console.demo_outcome(
-        "This passed because the branch kept its own timeline instead "
-        "of overwriting or contaminating the original session."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: Google GenAI remote video URL + structured output.
 
 Why:
@@ -19,20 +18,11 @@ Checks:
     If evidence extraction is grounded correctly, then the combined evidence mentions
     activity cues or indoor-scene cues.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_google_genai_video_url_structured_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_google_genai_video_url_structured_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     LLMRouter,
@@ -50,7 +40,6 @@ from tests.llm_router.support.media.video import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_video,
     pytest.mark.cap_structured,
 ]
@@ -122,45 +111,7 @@ def assert_pipeline_response(response: LLMRouterResponse) -> None:
 @pytest.mark.vcr
 def test_pipeline() -> None:
     """Verify the pipeline runs successfully."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     # First run the exact remote-video path.
     response = run_pipeline(video=build_test_video_url())
     # Then validate the action/location contract shared across providers.
     assert_pipeline_response(response)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We give the native Google path a remote video URL and ask "
-        "for a structured summary.",
-        details=[f"Prompt: {build_prompt()}"],
-    )
-
-    # Run the same URL-based workflow the test uses.
-    response = run_pipeline(video=build_test_video_url())
-
-    # Validate before printing so the demo is backed by the same contract.
-    parsed = assert_indoor_video_response(response)
-    console.demo_step(
-        "What Happened",
-        "The model returned the expected structured report for the remote video.",
-        details=[f"Usage: {response.usage}"],
-    )
-    console.print_json(parsed.model_dump(mode="json"))
-    console.demo_outcome(
-        "This passed because the remote-video path produced the same quality "
-        "of structured result we expect from a real user workflow."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

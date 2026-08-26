@@ -11,14 +11,8 @@ Use these references to keep technical test depth, executable behavioral specifi
 
 ## Files
 
-- [test_file_template.md](test_file_template.md)
-  Shared pytest file shape for unit, integration, property-based, and optional technical E2E tests.
 - [tests_routing_pattern.md](tests_routing_pattern.md)
   Placement rules, including the separate `features/` + `tests/<project>/bdd/` Living Specifications axis.
-- [property_based_testing_doc_template.md](property_based_testing_doc_template.md)
-  Strategy guidance for invariant-driven generated checks.
-- [verification_doc_template.md](verification_doc_template.md)
-  Guidance for handwritten technical verification docs that are not behavioral specifications.
 - [workbench_script_template.md](workbench_script_template.md)
   Manual live workbench script shape.
 

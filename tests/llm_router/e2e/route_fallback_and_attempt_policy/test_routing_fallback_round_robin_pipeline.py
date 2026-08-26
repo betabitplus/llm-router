@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: fallback + round-robin routing.
 
 Why:
@@ -24,20 +23,11 @@ Checks:
     If the second call starts from the previously successful route, then its routing
     trace has exactly 1 entry at route index `1`.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.route_fallback_and_attempt_policy.test_routing_fallback_round_robin_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/route_fallback_and_attempt_policy/test_routing_fallback_round_robin_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     LLMRouter,
@@ -49,7 +39,6 @@ from llm_router import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_routing,
 ]
 
@@ -156,42 +145,7 @@ def assert_pipeline_responses(
 @pytest.mark.vcr
 def test_pipeline() -> None:
     """Verify sync fallback and round-robin behavior."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     # First run the two-call routing flow exactly once.
     first_response, second_response = run_pipeline()
     # Then explain the routing decisions through the trace assertions.
     assert_pipeline_responses(first_response, second_response)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-
-    # Run the same two-call flow the test validates.
-    first_response, second_response = run_pipeline()
-
-    console.demo_step(
-        "What Happened",
-        "Two consecutive calls used the routing profile, and the traces "
-        "showed the fallback and round-robin decisions.",
-        details=[
-            f"Call 1 output: {first_response.output_text.strip()}",
-            f"Call 1 trace: {first_response.routing_trace}",
-            f"Call 2 output: {second_response.output_text.strip()}",
-            f"Call 2 trace: {second_response.routing_trace}",
-        ],
-    )
-    console.demo_outcome(
-        "This passed because routing decisions changed in the expected order "
-        "instead of repeatedly picking the same route blindly."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

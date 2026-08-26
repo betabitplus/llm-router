@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: Gemini WebAPI tools + structured output.
 
 Why:
@@ -25,28 +24,18 @@ Checks:
 Notes:
     Live manual runs require local browser cookies for Gemini WebAPI access.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_gemini_webapi_tools_structured_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_gemini_webapi_tools_structured_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 from pydantic import BaseModel, Field
 
 from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProfile
 from tests.llm_router.support.assertions import parse_json_object
-from tests.llm_router.support.media.gemini_webapi import can_run_demo, require_runtime
+from tests.llm_router.support.media.gemini_webapi import require_runtime
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_tools,
     pytest.mark.cap_structured,
 ]
@@ -159,53 +148,8 @@ def assert_pipeline_response(response: LLMRouterResponse) -> None:
 @pytest.mark.vcr
 def test_pipeline() -> None:
     """Verify the pipeline runs successfully."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     require_runtime()
     # First run the tool-driven workflow end to end.
     response = run_pipeline()
     # Then check that the structured answer and trace still line up.
     assert_pipeline_response(response)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    can_run, reason = can_run_demo()
-    if not can_run:
-        console.print(f"[warning]{reason}[/]")
-        raise SystemExit(0)
-
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We ask Gemini WebAPI for a structured answer that requires two tool steps.",
-        details=[f"Prompt: {build_prompt()}"],
-    )
-
-    # Run the same end-to-end tool flow the test asserts.
-    response = run_pipeline()
-    assert_pipeline_response(response)
-
-    console.demo_step(
-        "What Happened",
-        "The browser-backed route completed the tool loop and returned the "
-        "expected final JSON.",
-        details=[
-            f"Answer: {response.output_text.strip()}",
-            f"Tool trace: {response.tool_trace}",
-            f"Usage: {response.usage}",
-        ],
-    )
-    console.demo_outcome(
-        "This passed because tool execution and the final structured answer "
-        "remained aligned across the whole flow."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

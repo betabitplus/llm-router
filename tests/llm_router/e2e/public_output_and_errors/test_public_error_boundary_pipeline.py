@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: public error boundary behavior.
 
 Why:
@@ -30,20 +29,11 @@ Notes:
     This scenario is hermetic by construction because it uses no network or a
     local scripted HTTP server only.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.public_output_and_errors.test_public_error_boundary_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/public_output_and_errors/test_public_error_boundary_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console
 
 from llm_router import ApiKeyNotFoundError, ConfigurationError, ProviderError
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -57,7 +47,6 @@ from tests.llm_router.support.workers.retry import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_resilience,
     pytest.mark.hermetic,
 ]
@@ -187,85 +176,3 @@ def test_provider_http_failure_raises_public_provider_error() -> None:
             message_fragment="local bad request",
         )
         assert server.request_count("POST", _OPENAI_PATH) == 1
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the public-error-boundary demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    # Show the configuration-side failures first so the reader sees that the
-    # library can stop early before any provider call.
-    missing_key_result = run_missing_api_key_pipeline()
-    assert_error_result(
-        missing_key_result,
-        error_type=ApiKeyNotFoundError.__name__,
-        message_fragment="OPENROUTER_API_KEY_1",
-    )
-
-    console.demo_step(
-        "What Happened With Missing Credentials",
-        "The library stopped early with a key-related public error "
-        "instead of attempting a provider call.",
-        details=[
-            (
-                "Public error: "
-                f"{missing_key_result.error_type}: {missing_key_result.error_message}"
-            )
-        ],
-    )
-
-    # Then show a different configuration failure with a different public type.
-    invalid_model_result = run_invalid_model_pipeline()
-    assert_error_result(
-        invalid_model_result,
-        error_type=ConfigurationError.__name__,
-        message_fragment="Unknown model",
-    )
-
-    console.demo_step(
-        "What Happened With Invalid Configuration",
-        "The library rejected an invalid model configuration as a "
-        "configuration problem, not as a provider problem.",
-        details=[
-            (
-                "Public error: "
-                f"{invalid_model_result.error_type}: "
-                f"{invalid_model_result.error_message}"
-            )
-        ],
-    )
-
-    with ScriptedHTTPServer(port=_PORT, routes=provider_error_routes()) as server:
-        # Finally, contrast those early failures with a genuine provider-side failure.
-        provider_result = run_provider_error_pipeline(server_base_url=server.base_url)
-        assert_error_result(
-            provider_result,
-            error_type=ProviderError.__name__,
-            message_fragment="local bad request",
-        )
-
-        console.demo_step(
-            "What Happened With A Real Provider Failure",
-            "A provider-side HTTP failure crossed the boundary as a provider "
-            "error, which keeps it distinct from configuration issues.",
-            details=[
-                (
-                    "Public error: "
-                    f"{provider_result.error_type}: {provider_result.error_message}"
-                ),
-                f"Server hits: {server.request_count('POST', _OPENAI_PATH)}",
-            ],
-        )
-    console.demo_outcome(
-        "This passed because the public API kept the three failure "
-        "categories separate, which is exactly what downstream callers need."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: Google GenAI retry behavior.
 
 Why:
@@ -24,20 +23,11 @@ Notes:
     This scenario is hermetic by construction because it talks only to a local
     scripted HTTP server.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_retries_and_output_repair.test_google_genai_retry_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_retries_and_output_repair/test_google_genai_retry_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console
 
 from llm_router import Model
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -50,7 +40,6 @@ from tests.llm_router.support.workers.retry import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_resilience,
     pytest.mark.hermetic,
 ]
@@ -271,53 +260,3 @@ def test_non_retryable_permission_failure_does_not_retry() -> None:
             server=server,
             expected_message=_PERMISSION_MESSAGE,
         )
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the retry demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    with ScriptedHTTPServer(port=_PORT, routes=retryable_routes()) as server:
-        # Show the recoverable path first.
-        response = run_retry_pipeline(server_base_url=server.base_url)
-        assert_retry_response(response, server=server)
-
-        console.demo_step(
-            "What Happened On The Recovery Path",
-            "The native Google route retried once and then succeeded.",
-            details=[
-                f"Final output: {response.output_text}",
-                f"Server hits: {server.request_count('POST', _PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(port=_PORT, routes=non_retryable_routes()) as server:
-        # Then contrast it with the path that should fail immediately.
-        result = run_non_retryable_pipeline(server_base_url=server.base_url)
-        assert_non_retryable_error(
-            result,
-            server=server,
-            expected_message=_NON_RETRYABLE_MESSAGE,
-        )
-
-        console.demo_step(
-            "What Happened On The Fail-Fast Path",
-            "A non-retryable Google error was surfaced immediately.",
-            details=[
-                f"Public error: {result.error_type}: {result.error_message}",
-                f"Server hits: {server.request_count('POST', _PATH)}",
-            ],
-        )
-    console.demo_outcome(
-        "This passed because the native Google path cleanly separates "
-        "retryable failures from failures that should stop at once."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

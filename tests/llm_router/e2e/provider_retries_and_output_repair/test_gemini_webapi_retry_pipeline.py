@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: Gemini WebAPI retry behavior.
 
 Why:
@@ -24,20 +23,11 @@ Notes:
     scripted HTTP server and patches only external SDK modules in an isolated
     subprocess rather than changing library code.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_retries_and_output_repair.test_gemini_webapi_retry_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_retries_and_output_repair/test_gemini_webapi_retry_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console
 
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
 from tests.llm_router.support.workers.retry import (
@@ -54,7 +44,6 @@ from tests.llm_router.support.workers.retry import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_resilience,
     pytest.mark.hermetic,
 ]
@@ -243,73 +232,3 @@ def test_retryable_api_error_retries_then_succeeds() -> None:
         # Repeat the recovery proof for a backend API error instead of a timeout.
         response = run_retryable_api_error_pipeline(server_base_url=server.base_url)
         assert_retry_response(response, server=server)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the retry demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    with ScriptedHTTPServer(port=_PORT, routes=retryable_routes()) as server:
-        # Show timeout recovery first.
-        timeout_response = run_retry_pipeline(server_base_url=server.base_url)
-        assert_retry_response(timeout_response, server=server)
-
-        console.demo_step(
-            "What Happened On The Timeout Recovery Path",
-            "The web-backed path recovered after a timeout and then "
-            "completed successfully.",
-            details=[
-                f"Final output: {timeout_response.output_text}",
-                f"Batch hits: {server.request_count('POST', _BATCH_PATH)}",
-                f"Generate hits: {server.request_count('POST', _GENERATE_PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(port=_PORT, routes=retryable_api_error_routes()) as server:
-        # Then show that API-error recovery follows the same rule.
-        api_error_response = run_retryable_api_error_pipeline(
-            server_base_url=server.base_url
-        )
-        assert_retry_response(api_error_response, server=server)
-
-        console.demo_step(
-            "What Happened On The API-Error Recovery Path",
-            "A retryable backend error also recovered on the next attempt.",
-            details=[
-                f"Final output: {api_error_response.output_text}",
-                f"Batch hits: {server.request_count('POST', _BATCH_PATH)}",
-                f"Generate hits: {server.request_count('POST', _GENERATE_PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(port=_PORT, routes=non_retryable_routes()) as server:
-        # Finally, contrast recovery with the fail-fast branch.
-        non_retryable = run_non_retryable_pipeline(server_base_url=server.base_url)
-        assert_non_retryable_error(non_retryable, server=server)
-
-        console.demo_step(
-            "What Happened On The Fail-Fast Path",
-            "A non-retryable backend error was surfaced to the caller immediately.",
-            details=[
-                (
-                    "Public error: "
-                    f"{non_retryable.error_type}: {non_retryable.error_message}"
-                ),
-                f"Batch hits: {server.request_count('POST', _BATCH_PATH)}",
-                f"Generate hits: {server.request_count('POST', _GENERATE_PATH)}",
-            ],
-        )
-    console.demo_outcome(
-        "This passed because the browser-backed route behaved "
-        "predictably across recovery and fail-fast cases instead of "
-        "hiding what happened."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

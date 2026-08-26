@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: Google GenAI local video + structured output.
 
 Why:
@@ -19,20 +18,11 @@ Checks:
     If evidence extraction is grounded correctly, then the combined evidence mentions
     motion, jump, air, landing, roof, or building cues.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_google_genai_video_file_structured_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_google_genai_video_file_structured_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     LLMRouter,
@@ -50,7 +40,6 @@ from tests.llm_router.support.media.video import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_video,
     pytest.mark.cap_structured,
 ]
@@ -121,45 +110,7 @@ def assert_pipeline_response(response: LLMRouterResponse) -> None:
 @pytest.mark.vcr
 def test_pipeline() -> None:
     """Verify the pipeline runs successfully."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     # First exercise the public local-video workflow.
     response = run_pipeline(video=build_test_video_file())
     # Then validate that the structured answer matches the shared rooftop contract.
     assert_pipeline_response(response)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We upload a local video file to the native Google path and ask "
-        "for a structured summary.",
-        details=[f"Prompt: {build_prompt()}"],
-    )
-
-    # Run the same local-video flow the test documents.
-    response = run_pipeline(video=build_test_video_file())
-
-    # Validate before printing so the manual walkthrough stays grounded.
-    parsed = assert_rooftop_video_response(response)
-    console.demo_step(
-        "What Happened",
-        "The model returned a structured description of the local video.",
-        details=[f"Usage: {response.usage}"],
-    )
-    console.print_json(parsed.model_dump(mode="json"))
-    console.demo_outcome(
-        "This passed because the local video workflow produced the structured "
-        "facts and evidence the scenario expects."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

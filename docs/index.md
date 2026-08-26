@@ -6,7 +6,6 @@
 - {doc}`Live executable examples <auto_examples/index>`
 - {doc}`API reference <api>`
 - {doc}`Architecture <llm_router/architecture/README>`
-- {doc}`Verification <llm_router/verification/README>`
 
 ```{toctree}
 :hidden:
