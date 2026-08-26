@@ -19,7 +19,7 @@ Checks:
     activity cues or indoor-scene cues.
 
 Notes:
-    Live manual runs require local browser cookies for Gemini WebAPI access.
+    Live execution requires local browser cookies for Gemini WebAPI access.
 
 """
 

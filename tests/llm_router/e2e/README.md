@@ -13,14 +13,14 @@ architecture docs.
 - `public_output_and_errors/`
 
 These package names mirror the architecture concept slices with Python-safe
-snake_case so the scenarios still run in module mode via
-`python -m tests.llm_router.e2e.<group>.test_file`.
+snake_case. E2E checks are ordinary pytest modules; run them through pytest rather
+than a parallel module-mode execution path.
 
 ## Layout Rule
 
 Each group folder may contain:
 
-- the scenario scripts for that testing group
+- the pytest modules for that testing group
 - a local `cassettes/` folder when that group uses replay-backed tests
 
 Shared helpers still belong in:

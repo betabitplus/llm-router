@@ -14,7 +14,7 @@ Checks:
     If the smoke prompt is honored, then the normalized reply is `pong`.
 
 Notes:
-    Live manual runs require local browser cookies for Gemini WebAPI access.
+    Live execution requires local browser cookies for Gemini WebAPI access.
 
 """
 

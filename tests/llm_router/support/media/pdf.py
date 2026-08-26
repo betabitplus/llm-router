@@ -2,7 +2,7 @@
 
 Why:
     Keeps the shared PDF extraction schema, prompt, and page-one assertions in
-    one place so file e2e scripts compare the same contract across providers.
+    one place so file e2e tests compare the same contract across providers.
 
 When to use:
     Import from here when a scenario validates structured extraction from the

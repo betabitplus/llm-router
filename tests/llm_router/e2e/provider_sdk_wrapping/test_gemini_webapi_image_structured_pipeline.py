@@ -25,7 +25,7 @@ Checks:
     mention a cue such as a van, guardrail, barrier, road sign, or dashed marking.
 
 Notes:
-    Live manual runs require local browser cookies for Gemini WebAPI access.
+    Live execution requires local browser cookies for Gemini WebAPI access.
 
 """
 

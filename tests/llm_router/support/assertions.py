@@ -1,7 +1,7 @@
 """llm_router-specific response and session assertions.
 
 Why:
-    Keeps repeated llm_router assertions in one place so e2e scripts stay
+    Keeps repeated llm_router assertions in one place so e2e tests stay
     focused on scenario setup and flow.
 
 When to use:
