@@ -76,7 +76,7 @@ follow or copy.
 Examples:
 
 - `core/docstring_template.md`
-- `verification/test_file_template.md`
+- `verification/workbench_script_template.md`
 - `docs/system_doc_template.md`
 
 ## Naming Rules

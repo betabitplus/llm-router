@@ -15,11 +15,6 @@ from docs.index_doc_template import SPECS as INDEX_DOC_SPECS
 from docs.principles_doc_template import SPECS as PRINCIPLES_DOC_SPECS
 from docs.system_doc_template import SPECS as SYSTEM_DOC_SPECS
 from docs.vertical_slice_doc_template import SPECS as VERTICAL_SLICE_DOC_SPECS
-from verification.property_based_testing_doc_template import (
-    SPECS as PROPERTY_BASED_TESTING_DOC_SPECS,
-)
-from verification.test_file_template import SPECS as TEST_FILE_TEMPLATE_SPECS
-from verification.verification_doc_template import SPECS as VERIFICATION_DOC_SPECS
 from verification.workbench_script_template import (
     SPECS as WORKBENCH_SCRIPT_TEMPLATE_SPECS,
 )
@@ -30,10 +25,7 @@ ALL_SPECS: tuple[CheckSpec, ...] = (
     *VERTICAL_SLICE_DOC_SPECS,
     *PRINCIPLES_DOC_SPECS,
     *DEPENDENCIES_DOC_SPECS,
-    *PROPERTY_BASED_TESTING_DOC_SPECS,
-    *VERIFICATION_DOC_SPECS,
     *DOCSTRING_TEMPLATE_SPECS,
-    *TEST_FILE_TEMPLATE_SPECS,
     *WORKBENCH_SCRIPT_TEMPLATE_SPECS,
 )
 
@@ -83,7 +75,7 @@ def _resolve_selected_paths(
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Run python-library-rules template checks for docs, tests, src, "
+            "Run python-library-rules template checks for docs, src, "
             "and workbench trees."
         )
     )
@@ -105,10 +97,6 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--src-root",
         help="Optional src root for docstring-template checks.",
-    )
-    parser.add_argument(
-        "--tests-root",
-        help="Optional tests root for pytest template checks.",
     )
     parser.add_argument(
         "--workbench-root",
@@ -143,25 +131,23 @@ def main(argv: list[str] | None = None) -> int:
     raw_docs_root = args.docs_root_flag or args.docs_root
     docs_root = _resolve_path(raw_docs_root, repo_root)
     src_root = _resolve_path(args.src_root, repo_root)
-    tests_root = _resolve_path(args.tests_root, repo_root)
     workbench_root = _resolve_path(args.workbench_root, repo_root)
     selected_paths = _resolve_selected_paths(
         args.paths,
         repo_root,
-        (docs_root, src_root, tests_root, workbench_root),
+        (docs_root, src_root, workbench_root),
     )
 
-    if all(root is None for root in (docs_root, src_root, tests_root, workbench_root)):
+    if all(root is None for root in (docs_root, src_root, workbench_root)):
         _write_stderr(
             "Nothing to check. Provide at least one of docs_root/--docs-root, "
-            "--src-root, --tests-root, or --workbench-root.",
+            "--src-root, or --workbench-root.",
         )
         return 2
 
     for label, root in (
         ("docs root", docs_root),
         ("src root", src_root),
-        ("tests root", tests_root),
         ("workbench root", workbench_root),
     ):
         if root is not None and not root.exists():
@@ -174,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.paths and selected_paths == frozenset():
         _write_stdout(
             "Nothing to check. None of the selected paths are under the "
-            "configured docs/src/tests/workbench roots."
+            "configured docs/src/workbench roots."
         )
         return 0
 
@@ -182,7 +168,7 @@ def main(argv: list[str] | None = None) -> int:
         repo_root=repo_root,
         docs_root=docs_root,
         src_root=src_root,
-        tests_root=tests_root,
+        tests_root=None,
         workbench_root=workbench_root,
         selected_paths=selected_paths,
     )
