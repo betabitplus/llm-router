@@ -18,7 +18,7 @@ Checks:
     history length is `4`.
 
 Notes:
-    Live manual runs require a local browser-cookie setup for Gemini
+    Live execution requires a local browser-cookie setup for Gemini
     WebAPI access.
 
 """

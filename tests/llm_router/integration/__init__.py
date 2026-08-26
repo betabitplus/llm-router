@@ -9,6 +9,6 @@ What belongs here:
     expanding into full end-to-end provider scenarios.
 
 What does not belong here:
-    Tiny local unit tests, replay-backed e2e scenarios, or generated
+    Tiny local unit tests, broad-stack e2e checks, or generated
     property-based invariants.
 """

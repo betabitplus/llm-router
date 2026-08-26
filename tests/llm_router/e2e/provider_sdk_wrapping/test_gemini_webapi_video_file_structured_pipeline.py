@@ -18,7 +18,7 @@ Checks:
     motion, jump, air, landing, roof, or building cues.
 
 Notes:
-    Live manual runs require local browser cookies for Gemini WebAPI access.
+    Live execution requires local browser cookies for Gemini WebAPI access.
 
 """
 

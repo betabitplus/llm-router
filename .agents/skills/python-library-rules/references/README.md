@@ -19,7 +19,7 @@ indexed below, not one umbrella file.
   Indexes the core library design, code-comment system, runtime boundary, and baseline engineering references.
   Use it to choose the right reference for package boundaries, runtime design, and code comments.
 - [verification/README.md](verification/README.md)
-  Indexes the verification references for test placement, e2e file shape, and workbench scripts.
+  Indexes verification references for test/specification placement and workbench scripts.
   Use it to find the guidance for proving behavior in tests, docs, and live probes.
 - [docs/README.md](docs/README.md)
   Indexes the project documentation references.

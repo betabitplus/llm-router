@@ -5,7 +5,7 @@ local environment feels off, run `bash scripts/env/doctor.sh` before debugging
 deeper.
 
 Use [docs/llm_router/README.md](docs/llm_router/README.md) for package
-docs and [tests/README.md](tests/README.md) for test-tree layout.
+docs.
 
 Repository-wide package and reusable-zone checks read metadata from
 `[tool.ternforge]` in `pyproject.toml`. When repo-local scripts or shared

@@ -1,12 +1,11 @@
-"""llm_router-specific test data and output builders.
+"""llm_router-specific test data builders.
 
 Why:
-    Centralizes llm_router-owned media fixtures and manual-run output paths so
-    e2e scripts reuse the same files and conventions.
+    Centralizes llm_router-owned media fixtures so tests reuse the same files
+    and conventions.
 
 When to use:
-    Import from here when a test needs shared llm_router input assets or a
-    repo-local output location for manual execution.
+    Import from here when a test needs shared llm_router input assets.
 
 How:
     Keep reusable project fixtures here and return typed values that match the
@@ -21,18 +20,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from PIL import Image
-from py_lib_testkit import get_repo_root, get_test_data_path
+from py_lib_testkit import get_test_data_path
 
 from llm_router import FileSchema, ImageSchema, VideoSchema, VideoUrlSchema
 
 _DEFAULT_VIDEO_URL = "https://www.youtube.com/shorts/QUxqvF0pyGw"
-
-
-def build_output_path(filename: str) -> Path:
-    """Build a repo-local output path for manual e2e runs."""
-    out_dir = get_repo_root() / "tests" / "llm_router" / "output"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    return out_dir / filename
 
 
 def get_llm_router_test_data_path(filename: str) -> Path:

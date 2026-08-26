@@ -20,7 +20,7 @@ Checks:
     If only the forced tool is used, then the tool trace contains only `add`.
 
 Notes:
-    Live manual runs require local browser cookies for Gemini WebAPI access.
+    Live execution requires local browser cookies for Gemini WebAPI access.
 
 """
 

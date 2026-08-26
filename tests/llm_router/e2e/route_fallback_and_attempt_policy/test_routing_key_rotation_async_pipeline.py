@@ -20,7 +20,7 @@ Checks:
     the traced wait allowance.
 
 Notes:
-    Live manual runs require `NVIDIA_API_KEY_1`. When only one NVIDIA secret is
+    Live execution requires `NVIDIA_API_KEY_1`. When only one NVIDIA secret is
     configured, this scenario mirrors it into `NVIDIA_API_KEY_2` so the router
     can still exercise distinct key IDs.
 
