@@ -42,5 +42,3 @@ deep runtime helpers stay private to `_internal` subpackages.
 - `request-lifecycle.md`: runtime ordering from public call to session update.
 - `observability-and-errors.md`: retry logs, error translation, and public
   output safety.
-- `verification.md`: local commands and proof areas for unit, integration,
-  property, e2e, hook, and running-loop checks.

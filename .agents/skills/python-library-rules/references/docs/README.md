@@ -23,6 +23,9 @@ matching rules file or template.
 - [docs_organization_pattern.md](docs_organization_pattern.md)
   Defines the common project docs and architecture-doc folder organization patterns.
   Use it to decide how to group docs into folders and top-level narratives.
+- [examples_pattern.md](examples_pattern.md)
+  Defines the live public-example and generated-gallery contract.
+  Use it when adding or changing caller-facing executable examples.
 - [index_doc_template.md](index_doc_template.md)
   Defines the template for folder indexes and `README.md` files.
   Use it to write short navigational indexes with `WHAT` then `WHY` file entries.
