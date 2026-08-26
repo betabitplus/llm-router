@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: AI Studio retry behavior.
 
 Why:
@@ -36,14 +35,6 @@ Notes:
     This scenario is hermetic by construction because it talks only to a local
     scripted HTTP server.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_retries_and_output_repair.test_aistudio_retry_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_retries_and_output_repair/test_aistudio_retry_pipeline.py
 """
 
 from __future__ import annotations
@@ -51,7 +42,6 @@ from __future__ import annotations
 import json
 
 import pytest
-from py_lib_testkit import console
 from pydantic import BaseModel
 
 from llm_router import Model
@@ -67,7 +57,6 @@ from tests.llm_router.support.workers.retry import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_resilience,
     pytest.mark.hermetic,
 ]
@@ -472,96 +461,3 @@ def test_video_auth_failure_does_not_retry() -> None:
             server=server,
             expected_message=_VIDEO_AUTH_MESSAGE,
         )
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the retry demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    with ScriptedHTTPServer(port=_PORT, routes=non_video_retryable_routes()) as server:
-        # Show the recoverable non-video branch first.
-        non_video_response = run_non_video_retry_pipeline(
-            server_base_url=server.base_url
-        )
-        assert_non_video_retry_response(non_video_response, server=server)
-
-        console.demo_step(
-            "What Happened On The Non-Video Success Path",
-            "The regular text/media route retried once and then recovered.",
-            details=[
-                f"Final output: {non_video_response.output_text}",
-                f"Non-video hits: {server.request_count('POST', _NON_VIDEO_PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(
-        port=_PORT,
-        routes=non_video_non_retryable_routes(),
-    ) as server:
-        # Then contrast it with the permanent non-video failure.
-        non_video_error = run_non_video_non_retryable_pipeline(
-            server_base_url=server.base_url
-        )
-        assert_non_video_non_retryable_error(
-            non_video_error,
-            server=server,
-            expected_message=_NON_VIDEO_NON_RETRYABLE_MESSAGE,
-        )
-
-        console.demo_step(
-            "What Happened On The Non-Video Fail-Fast Path",
-            "A non-retryable non-video error stopped immediately instead of looping.",
-            details=[
-                (
-                    "Public error: "
-                    f"{non_video_error.error_type}: {non_video_error.error_message}"
-                ),
-                f"Non-video hits: {server.request_count('POST', _NON_VIDEO_PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(port=_PORT, routes=video_retryable_routes()) as server:
-        # Repeat the same recovery story on the native video path.
-        video_response = run_video_retry_pipeline(server_base_url=server.base_url)
-        assert_video_retry_response(video_response, server=server)
-
-        console.demo_step(
-            "What Happened On The Video Success Path",
-            "The native video route also retried once and then succeeded.",
-            details=[
-                f"Final output: {video_response.output_text}",
-                f"Video hits: {server.request_count('POST', _VIDEO_PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(port=_PORT, routes=video_non_retryable_routes()) as server:
-        # Finally, show that permanent native video errors still fail fast.
-        video_error = run_video_non_retryable_pipeline(server_base_url=server.base_url)
-        assert_video_non_retryable_error(
-            video_error,
-            server=server,
-            expected_message=_VIDEO_NON_RETRYABLE_MESSAGE,
-        )
-
-        console.demo_step(
-            "What Happened On The Video Fail-Fast Path",
-            "A non-retryable video error was surfaced immediately as a public failure.",
-            details=[
-                f"Public error: {video_error.error_type}: {video_error.error_message}",
-                f"Video hits: {server.request_count('POST', _VIDEO_PATH)}",
-            ],
-        )
-    console.demo_outcome(
-        "This passed because both AI Studio execution paths behaved "
-        "consistently: retryable failures recovered once, and "
-        "non-retryable failures stopped clearly."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

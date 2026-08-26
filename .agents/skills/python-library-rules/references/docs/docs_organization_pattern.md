@@ -33,8 +33,6 @@ Common useful top-level docs are:
   runtime dependency justification
 - `architecture/`
   product architecture structure
-- `verification/`
-  proof and validation surfaces
 
 ### Semantic Grouping Pattern
 
@@ -49,8 +47,6 @@ Good group names are familiar and low-friction:
   durable architecture ideas and boundaries
 - `flows/`
   end-to-end runtime behavior
-- `verification/`
-  what tests or probes prove
 
 ### Scale Pattern
 
@@ -100,7 +96,7 @@ or provider abstraction.
 If the library or app is best understood through stable vertical slices, let
 `concepts/` define that primary architecture taxonomy. When those slices are
 behavioral contracts, use the same vocabulary in Living Specifications under
-`features/` rather than mirroring them into handwritten verification/E2E docs.
+`features/`.
 
 Do not create `principles/` for generic software design notes that are not
 specific to the product's own design, domain, and boundary vocabulary.
@@ -126,23 +122,3 @@ architecture/
 │   ├── request-flow.md
 │   └── state-flow.md
 ```
-
-### Verification Pattern
-
-Keep handwritten verification docs for technical verification strategy and
-operator/developer guidance that is not already expressed by executable
-behavioral specifications.
-
-A compact shape is usually enough:
-
-```text
-verification/
-├── README.md
-├── property-based-testing.md
-└── workbench.md
-```
-
-When `features/` exists, Living Specifications are the human-readable source of
-truth for durable behavior and are published from that source. Do not create a
-parallel handwritten E2E taxonomy that repeats scenarios, evidence, or
-behavioral guarantees already present in specifications.

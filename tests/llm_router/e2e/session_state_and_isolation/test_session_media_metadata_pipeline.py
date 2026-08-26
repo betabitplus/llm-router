@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: session media persistence and assistant metadata.
 
 Why:
@@ -25,14 +24,6 @@ Checks:
     If routing metadata is preserved, then the saved trace has one `aistudio` entry at
     route index `0`.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.session_state_and_isolation.test_session_media_metadata_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/session_state_and_isolation/test_session_media_metadata_pipeline.py
 """
 
 from __future__ import annotations
@@ -40,7 +31,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     LLMRouter,
@@ -52,10 +42,9 @@ from llm_router import (
     VideoSchema,
 )
 from tests.llm_router.support.assertions import assert_output_text_not_empty
-from tests.llm_router.support.builders import build_output_path, build_test_video_file
+from tests.llm_router.support.builders import build_test_video_file
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_session,
     pytest.mark.cap_video,
 ]
@@ -65,7 +54,6 @@ pytestmark = [
 # Scenario
 # =============================================================================
 
-_OUTPUT_FILENAME = "_chat_session_media_metadata.json"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 
 
@@ -158,42 +146,8 @@ def assert_pipeline_response(
 @pytest.mark.vcr
 def test_pipeline(tmp_path: Path) -> None:
     """Verify media parts and assistant metadata survive session save/load."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     session_path = tmp_path / "chat_session_media_metadata.json"
     # First run the one-turn media workflow and persist it.
     response = run_pipeline(session_path=session_path)
     # Then inspect the reloaded session for media and metadata preservation.
     assert_pipeline_response(response, session_path=session_path)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    out_path = build_output_path(_OUTPUT_FILENAME)
-
-    # Run the same save-and-reload path the test validates.
-    response = run_pipeline(session_path=out_path)
-
-    console.demo_step(
-        "What Happened",
-        "The assistant replied successfully, and the session file "
-        "preserved the media and metadata around that turn.",
-        details=[
-            f"Assistant reply: {response.output_text}",
-            f"Saved session JSON: {out_path.read_text(encoding='utf-8')}",
-        ],
-    )
-    console.demo_outcome(
-        "This passed because the saved session still contains the "
-        "metadata a resumed workflow would need later."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: session save, load, and resume.
 
 Why:
@@ -22,20 +21,11 @@ Notes:
     Live manual runs require a local browser-cookie setup for Gemini
     WebAPI access.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.session_state_and_isolation.test_session_resume_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/session_state_and_isolation/test_session_resume_pipeline.py
 """
 
 from pathlib import Path
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     LLMRouter,
@@ -49,14 +39,11 @@ from tests.llm_router.support.assertions import (
     assert_output_text_not_empty,
     assert_session_history_length,
 )
-from tests.llm_router.support.builders import build_output_path
 from tests.llm_router.support.media.gemini_webapi import (
-    can_run_demo,
     require_runtime,
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_session,
 ]
 
@@ -65,7 +52,6 @@ pytestmark = [
 # Scenario
 # =============================================================================
 
-_OUTPUT_FILENAME = "_chat_session_resume_gemini_webapi.json"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _ASK_REMEMBER = "Secret code for this chat: 81723. Reply only OK."
 _ASK_RECALL = "What is the secret code? Reply only digits, no punctuation or words."
@@ -142,7 +128,6 @@ def assert_pipeline_response(
 @pytest.mark.vcr
 def test_pipeline(tmp_path: Path) -> None:
     """Verify session resume works for Gemini WebAPI."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     require_runtime()
 
     session_path = tmp_path / "chat_session_resume_gemini_webapi.json"
@@ -150,44 +135,3 @@ def test_pipeline(tmp_path: Path) -> None:
     response = run_pipeline(session_path=session_path)
     # Then prove the resumed session still remembers the original turn.
     assert_pipeline_response(response, session_path=session_path)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    can_run, reason = can_run_demo()
-    if not can_run:
-        console.print(f"[warning]{reason}[/]")
-        raise SystemExit(0)
-
-    console.demo_intro(__doc__)
-    out_path = build_output_path(_OUTPUT_FILENAME)
-
-    # Run the same resume flow the test validates.
-    response = run_pipeline(session_path=out_path)
-
-    # Reload again so the demo can show the persisted state directly.
-    loaded = Session.load(out_path)
-    console.demo_step(
-        "What Happened",
-        "The session was saved, loaded back, and still contained the "
-        "remembered conversation state.",
-        details=[
-            f"Loaded messages: {len(loaded.history)}",
-            f"Last assistant reply: {response.output_text.strip()}",
-            f"Saved session JSON: {out_path.read_text(encoding='utf-8')}",
-        ],
-    )
-    console.demo_outcome(
-        "This passed because the saved session remained usable after "
-        "reload instead of losing the conversation history."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

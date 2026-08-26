@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: AI Studio explicit tool choice.
 
 Why:
@@ -15,25 +14,15 @@ Checks:
     If the tool path really runs, then the response records a non-empty tool trace.
     If only the forced tool is used, then the tool trace contains only `add`.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_aistudio_tool_choice_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_aistudio_tool_choice_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProfile
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_tools,
 ]
 
@@ -125,46 +114,7 @@ def assert_pipeline_response(response: LLMRouterResponse) -> None:
 @pytest.mark.vcr
 def test_pipeline() -> None:
     """Verify the pipeline runs successfully."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     # First execute the user-facing tool-choice flow.
     response = run_pipeline()
     # Then prove the answer and tool trace tell the same story.
     assert_pipeline_response(response)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We ask AI Studio a question that should force a specific tool choice.",
-        details=[f"Prompt: {build_prompt()}"],
-    )
-
-    # Run the exact same tool-choice path as the test.
-    response = run_pipeline()
-
-    # Reuse the assertion helper so the demo cannot drift from the test contract.
-    assert_pipeline_response(response)
-    console.demo_step(
-        "What Happened",
-        "The model answered through the expected tool-calling path.",
-        details=[
-            f"Answer: {response.output_text.strip()}",
-            f"Tool trace: {response.tool_trace}",
-        ],
-    )
-    console.demo_outcome(
-        "This passed because the model did not just answer directly; "
-        "it used the tool path the scenario is meant to validate."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

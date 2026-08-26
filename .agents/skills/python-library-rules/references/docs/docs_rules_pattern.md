@@ -96,7 +96,6 @@ in current implementation.
   `sequenceDiagram` for lifecycle or flow docs,
   `stateDiagram-v2` for stateful or continuity docs,
   `classDiagram` for public model docs,
-  `flowchart TD` for verification docs,
   and no diagram by default for principles or index docs.
 
 ### Table Rules
@@ -115,8 +114,8 @@ in current implementation.
 
 ## Validation
 
-- Use the bundled CLI checker when a docs tree follows this architecture,
-  verification, and usage shape:
+- Use the bundled CLI checker when a docs tree follows this architecture and
+  usage shape:
   `scripts/check_docs_shape.py <docs-root> [--repo-root <repo-root>]`.
 - Use the checker for repeatable section-order, heading-grammar, and
   file-description validation rather than re-reviewing those mechanics by eye.

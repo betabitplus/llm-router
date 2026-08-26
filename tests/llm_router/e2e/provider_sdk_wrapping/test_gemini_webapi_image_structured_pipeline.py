@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: Gemini WebAPI image + structured output.
 
 Why:
@@ -28,20 +27,11 @@ Checks:
 Notes:
     Live manual runs require local browser cookies for Gemini WebAPI access.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_gemini_webapi_image_structured_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_gemini_webapi_image_structured_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     ImageSchema,
@@ -53,9 +43,8 @@ from llm_router import (
 )
 from tests.llm_router.support.builders import (
     build_test_image,
-    get_llm_router_test_data_path,
 )
-from tests.llm_router.support.media.gemini_webapi import can_run_demo, require_runtime
+from tests.llm_router.support.media.gemini_webapi import require_runtime
 from tests.llm_router.support.media.scene import (
     SceneSummary,
     assert_traffic_scene_response,
@@ -63,7 +52,6 @@ from tests.llm_router.support.media.scene import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_image,
     pytest.mark.cap_structured,
 ]
@@ -133,54 +121,8 @@ def assert_pipeline_response(response: LLMRouterResponse) -> None:
 @pytest.mark.vcr
 def test_pipeline() -> None:
     """Verify the pipeline runs successfully."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     require_runtime()
     # First run the exact public image workflow.
     response = run_pipeline(image=build_test_image(_IMAGE_FILENAME))
     # Then validate it against the shared traffic-scene contract.
     assert_pipeline_response(response)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    can_run, reason = can_run_demo()
-    if not can_run:
-        console.print(f"[warning]{reason}[/]")
-        raise SystemExit(0)
-
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We send one test image through Gemini WebAPI and ask for a "
-        "structured scene report.",
-        details=[
-            f"Image: {get_llm_router_test_data_path(_IMAGE_FILENAME).name}",
-            f"Prompt: {build_prompt()}",
-        ],
-    )
-
-    # Run the same browser-backed image flow the test asserts.
-    response = run_pipeline(image=build_test_image(_IMAGE_FILENAME))
-
-    # Validate before printing so the demo output is backed by assertions.
-    parsed = assert_traffic_scene_response(response)
-    console.demo_step(
-        "What Happened",
-        "The model produced the expected structured scene description from the image.",
-        details=[],
-    )
-    console.print_json(parsed.model_dump(mode="json"))
-    console.demo_outcome(
-        "This passed because the image understanding path returned "
-        "the fields and evidence the scenario asked for."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

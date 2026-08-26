@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: AI Studio async text + structured output.
 
 Why:
@@ -19,20 +18,11 @@ Checks:
     If cast extraction is complete, then the record contains at least 3 cast entries.
     If review extraction is complete, then the record contains at least 2 reviews.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_aistudio_async_text_structured_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_aistudio_async_text_structured_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode, run_async
 
 from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProfile
 from tests.llm_router.support.media.movie import (
@@ -42,7 +32,6 @@ from tests.llm_router.support.media.movie import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_async,
     pytest.mark.cap_structured,
 ]
@@ -116,44 +105,7 @@ def assert_pipeline_response(response: LLMRouterResponse) -> None:
 @pytest.mark.asyncio
 async def test_pipeline() -> None:
     """Verify the pipeline runs successfully."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     # First run the exact public async flow the file is documenting.
     response = await run_pipeline()
     # Then explain success through the shared structured-output helper.
     assert_pipeline_response(response)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-async def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We ask AI Studio to turn a plain text prompt into a structured movie record.",
-        details=[f"Prompt: {build_prompt()}"],
-    )
-
-    # Run the same async path as the test so manual output mirrors pytest.
-    response = await run_pipeline()
-
-    # Validate first, then print the parsed record the assertions already trust.
-    parsed = assert_movie_record_response(response)
-    console.demo_step(
-        "What Happened",
-        f"The model returned a valid structured record for '{parsed.movie_title}'.",
-        details=[f"Usage: {response.usage}"],
-    )
-    console.print_json(parsed.model_dump(mode="json"))
-    console.demo_outcome(
-        "This passed because the response was structured, readable, "
-        "and matched the movie schema expected by the scenario."
-    )
-
-
-if __name__ == "__main__":
-    run_async(main())
-# %%

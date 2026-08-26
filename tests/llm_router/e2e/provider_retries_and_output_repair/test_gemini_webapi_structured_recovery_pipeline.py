@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: Gemini WebAPI structured-output recovery.
 
 Why:
@@ -32,14 +31,6 @@ Notes:
     scripted HTTP server and patches only external SDK modules in an isolated
     subprocess rather than changing library code.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_retries_and_output_repair.test_gemini_webapi_structured_recovery_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_retries_and_output_repair/test_gemini_webapi_structured_recovery_pipeline.py
 """
 
 from __future__ import annotations
@@ -48,7 +39,6 @@ import json
 from urllib.parse import unquote_plus
 
 import pytest
-from py_lib_testkit import console
 from pydantic import BaseModel, Field
 
 from tests.llm_router.support.assertions import parse_json_object
@@ -68,7 +58,6 @@ from tests.llm_router.support.workers.structured_recovery import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_structured,
     pytest.mark.cap_resilience,
     pytest.mark.hermetic,
@@ -259,63 +248,3 @@ def test_repeated_invalid_responses_fail_cleanly() -> None:
         result = run_exhausted_pipeline(server_base_url=server.base_url)
         # Then prove the public failure stayed explicit.
         assert_exhausted_error(result, server=server)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the structured recovery demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    with ScriptedHTTPServer(port=_PORT, routes=recovery_routes()) as server:
-        # Show the recoverable branch first.
-        recovery_result = run_recovery_pipeline(server_base_url=server.base_url)
-        assert_recovery_response(recovery_result, server=server)
-        parsed = TicketSummary.model_validate(
-            parse_json_object(recovery_result.output_text)
-        )
-        second_request_text = _second_request_text(server)
-        has_guidance = (
-            "Previous response" in second_request_text
-            and "INC-2048" in second_request_text
-        )
-
-        console.demo_step(
-            "What Happened On The Recovery Path",
-            "The first invalid structured answer was corrected on the next attempt.",
-            details=[
-                f"Generate hits: {server.request_count('POST', _GENERATE_PATH)}",
-                f"Repair prompt included guidance: {has_guidance}",
-            ],
-        )
-        console.print_json(parsed.model_dump(mode="json"))
-
-    with ScriptedHTTPServer(port=_PORT, routes=exhausted_routes()) as server:
-        # Then contrast it with the branch where repair runs out of chances.
-        exhausted_result = run_exhausted_pipeline(server_base_url=server.base_url)
-        assert_exhausted_error(exhausted_result, server=server)
-
-        console.demo_step(
-            "What Happened When Recovery Was Exhausted",
-            "When every answer stayed invalid, the flow stopped with a "
-            "clear public error.",
-            details=[
-                (
-                    "Public error: "
-                    f"{exhausted_result.error_type}: {exhausted_result.error_message}"
-                ),
-                f"Generate hits: {server.request_count('POST', _GENERATE_PATH)}",
-            ],
-        )
-    console.demo_outcome(
-        "This passed because the structured-output path both repairs "
-        "recoverable mistakes and fails clearly when repair is no "
-        "longer possible."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

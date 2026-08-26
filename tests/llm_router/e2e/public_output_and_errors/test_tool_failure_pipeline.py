@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: tool failure behavior.
 
 Why:
@@ -24,20 +23,11 @@ Notes:
     This scenario is hermetic by construction because it talks only to a local
     scripted HTTP server.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.public_output_and_errors.test_tool_failure_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/public_output_and_errors/test_tool_failure_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console
 
 from llm_router import Model, ToolExecutionError
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -53,7 +43,6 @@ from tests.llm_router.support.workers.tool_failure import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_tools,
     pytest.mark.cap_resilience,
     pytest.mark.hermetic,
@@ -169,61 +158,3 @@ def test_google_tool_failure_raises_public_error() -> None:
         # Repeat the same proof on the Google implementation.
         result = run_google_tool_failure_pipeline(server_base_url=server.base_url)
         assert_tool_failure_result(result, server=server, path=_GOOGLE_PATH)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the tool-failure demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    with ScriptedHTTPServer(port=_PORT, routes=openai_tool_failure_routes()) as server:
-        # Show the OpenAI-compatible failure shape first.
-        openai_result = run_openai_tool_failure_pipeline(
-            server_base_url=server.base_url
-        )
-        assert_tool_failure_result(openai_result, server=server, path=_OPENAI_PATH)
-
-        console.demo_step(
-            "What Happened On The OpenAI-Compatible Tool Loop",
-            "The tool raised a local failure, and the flow stopped "
-            "immediately with a public tool error.",
-            details=[
-                (
-                    "Public error: "
-                    f"{openai_result.error_type}: {openai_result.error_message}"
-                ),
-                f"Server hits: {server.request_count('POST', _OPENAI_PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(port=_PORT, routes=google_tool_failure_routes()) as server:
-        # Then show the same public contract on the Google implementation.
-        google_result = run_google_tool_failure_pipeline(
-            server_base_url=server.base_url
-        )
-        assert_tool_failure_result(google_result, server=server, path=_GOOGLE_PATH)
-
-        console.demo_step(
-            "What Happened On The Google Tool Loop",
-            "The same failing tool produced the same public error contract "
-            "on the Google implementation.",
-            details=[
-                (
-                    "Public error: "
-                    f"{google_result.error_type}: {google_result.error_message}"
-                ),
-                f"Server hits: {server.request_count('POST', _GOOGLE_PATH)}",
-            ],
-        )
-    console.demo_outcome(
-        "This passed because both tool-calling implementations reported "
-        "the same kind of public failure instead of diverging."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

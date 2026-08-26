@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: Google GenAI async image + structured output.
 
 Why:
@@ -25,20 +24,11 @@ Checks:
     If fixture-specific grounding is correct, then the combined objects and evidence
     mention a cue such as a van, guardrail, barrier, road sign, or dashed marking.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_google_genai_async_image_structured_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_google_genai_async_image_structured_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode, run_async
 
 from llm_router import (
     ImageSchema,
@@ -50,7 +40,6 @@ from llm_router import (
 )
 from tests.llm_router.support.builders import (
     build_test_image,
-    get_llm_router_test_data_path,
 )
 from tests.llm_router.support.media.scene import (
     SceneSummary,
@@ -59,7 +48,6 @@ from tests.llm_router.support.media.scene import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_async,
     pytest.mark.cap_image,
     pytest.mark.cap_structured,
@@ -132,48 +120,7 @@ def assert_pipeline_response(response: LLMRouterResponse) -> None:
 @pytest.mark.asyncio
 async def test_pipeline() -> None:
     """Verify the pipeline runs successfully."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     # First exercise the public async image path once.
     response = await run_pipeline(image=build_test_image(_IMAGE_FILENAME))
     # Then validate that the returned structure matches the common scene contract.
     assert_pipeline_response(response)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-async def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We send one image into the native Google async path and ask "
-        "for structured scene data.",
-        details=[
-            f"Image: {get_llm_router_test_data_path(_IMAGE_FILENAME).name}",
-            f"Prompt: {build_prompt()}",
-        ],
-    )
-
-    # Run the exact same async path the test uses.
-    response = await run_pipeline(image=build_test_image(_IMAGE_FILENAME))
-
-    # Validate before printing so the walkthrough stays aligned with pytest.
-    parsed = assert_traffic_scene_response(response)
-    console.demo_step(
-        "What Happened",
-        "The async Google path returned a valid structured scene summary.",
-        details=[f"Usage: {response.usage}"],
-    )
-    console.print_json(parsed.model_dump(mode="json"))
-    console.demo_outcome(
-        "This passed because the public async image path produced a "
-        "complete structured result rather than just free text."
-    )
-
-
-if __name__ == "__main__":
-    run_async(main())
-# %%

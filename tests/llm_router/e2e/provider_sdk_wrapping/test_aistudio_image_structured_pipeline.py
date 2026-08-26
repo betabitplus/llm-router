@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: AI Studio image + structured output.
 
 Why:
@@ -24,20 +23,11 @@ Checks:
     If fixture-specific grounding is correct, then the combined objects and evidence
     mention a cue such as a van, guardrail, barrier, road sign, or dashed marking.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_aistudio_image_structured_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_aistudio_image_structured_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     ImageSchema,
@@ -49,7 +39,6 @@ from llm_router import (
 )
 from tests.llm_router.support.builders import (
     build_test_image,
-    get_llm_router_test_data_path,
 )
 from tests.llm_router.support.media.scene import (
     SceneSummary,
@@ -58,7 +47,6 @@ from tests.llm_router.support.media.scene import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_image,
     pytest.mark.cap_structured,
 ]
@@ -129,48 +117,7 @@ def assert_pipeline_response(response: LLMRouterResponse) -> None:
 @pytest.mark.vcr
 def test_pipeline() -> None:
     """Verify the pipeline runs successfully."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     # First run the exact public image flow.
     response = run_pipeline(image=build_test_image(_IMAGE_FILENAME))
     # Then prove the returned structure matches the shared traffic-scene contract.
     assert_pipeline_response(response)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We give AI Studio one test image and ask it to describe the "
-        "scene in structured form.",
-        details=[
-            f"Image: {get_llm_router_test_data_path(_IMAGE_FILENAME).name}",
-            f"Prompt: {build_prompt()}",
-        ],
-    )
-
-    # Run the same flow the test asserts so the demo remains trustworthy.
-    response = run_pipeline(image=build_test_image(_IMAGE_FILENAME))
-
-    # Validate the response before showing the structured JSON to the reader.
-    parsed = assert_traffic_scene_response(response)
-    console.demo_step(
-        "What Happened",
-        "The model returned a valid scene summary with the expected structured fields.",
-        details=[f"Usage: {response.usage}"],
-    )
-    console.print_json(parsed.model_dump(mode="json"))
-    console.demo_outcome(
-        "This passed because the image was understood and converted "
-        "into the structured scene format the test expects."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

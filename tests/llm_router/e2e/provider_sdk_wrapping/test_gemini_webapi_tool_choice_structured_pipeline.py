@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: Gemini WebAPI tool choice + structured output.
 
 Why:
@@ -23,28 +22,18 @@ Checks:
 Notes:
     Live manual runs require local browser cookies for Gemini WebAPI access.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_gemini_webapi_tool_choice_structured_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_gemini_webapi_tool_choice_structured_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 from pydantic import BaseModel
 
 from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProfile
 from tests.llm_router.support.assertions import parse_json_object
-from tests.llm_router.support.media.gemini_webapi import can_run_demo, require_runtime
+from tests.llm_router.support.media.gemini_webapi import require_runtime
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_tools,
     pytest.mark.cap_structured,
 ]
@@ -147,54 +136,8 @@ def assert_pipeline_response(response: LLMRouterResponse) -> None:
 @pytest.mark.vcr
 def test_pipeline() -> None:
     """Verify the pipeline runs successfully."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     require_runtime()
     # First execute the user-facing forced-tool workflow.
     response = run_pipeline()
     # Then prove the final JSON and runtime trace agree.
     assert_pipeline_response(response)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    can_run, reason = can_run_demo()
-    if not can_run:
-        console.print(f"[warning]{reason}[/]")
-        raise SystemExit(0)
-
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We ask Gemini WebAPI to use one specific tool and then return a "
-        "structured answer.",
-        details=[f"Prompt: {build_prompt()}"],
-    )
-
-    # Run the same forced-tool path the test validates.
-    response = run_pipeline()
-    assert_pipeline_response(response)
-
-    console.demo_step(
-        "What Happened",
-        "The browser-backed route respected the forced tool choice and "
-        "returned the expected final structure.",
-        details=[
-            f"Answer: {response.output_text.strip()}",
-            f"Tool trace: {response.tool_trace}",
-            f"Usage: {response.usage}",
-        ],
-    )
-    console.demo_outcome(
-        "This passed because the named-tool contract and the final structured "
-        "answer told the same story."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

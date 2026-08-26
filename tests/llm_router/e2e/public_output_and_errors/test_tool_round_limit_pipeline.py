@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: tool-round limit behavior.
 
 Why:
@@ -28,20 +27,11 @@ Notes:
     This scenario is hermetic by construction because it talks only to a local
     scripted HTTP server.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.public_output_and_errors.test_tool_round_limit_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/public_output_and_errors/test_tool_round_limit_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console
 
 from llm_router import Model
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -59,7 +49,6 @@ from tests.llm_router.support.workers.tool_round_limit import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_tools,
     pytest.mark.cap_resilience,
     pytest.mark.hermetic,
@@ -188,60 +177,3 @@ def test_google_tool_round_limit_returns_last_tool_call() -> None:
         # Repeat the same proof on the Google implementation.
         result = run_google_tool_round_limit_pipeline(server_base_url=server.base_url)
         assert_tool_round_limit_result(result, server=server, path=_GOOGLE_PATH)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the tool-round-limit demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    with ScriptedHTTPServer(port=_PORT, routes=openai_tool_round_routes()) as server:
-        # Show one representative tool loop first.
-        openai_result = run_openai_tool_round_limit_pipeline(
-            server_base_url=server.base_url
-        )
-        assert_tool_round_limit_result(openai_result, server=server, path=_OPENAI_PATH)
-
-        console.demo_step(
-            "What Happened On The OpenAI-Compatible Tool Loop",
-            "The model kept asking for tools until the configured "
-            "round limit stopped the flow.",
-            details=[
-                f"Final output text: {openai_result.output_text!r}",
-                f"Tool trace: {openai_result.tool_trace}",
-                f"Last tool calls: {openai_result.tool_calls}",
-                f"Server hits: {server.request_count('POST', _OPENAI_PATH)}",
-            ],
-        )
-
-    with ScriptedHTTPServer(port=_PORT, routes=google_tool_round_routes()) as server:
-        # Then show the same limit behavior on the second implementation.
-        google_result = run_google_tool_round_limit_pipeline(
-            server_base_url=server.base_url
-        )
-        assert_tool_round_limit_result(google_result, server=server, path=_GOOGLE_PATH)
-
-        console.demo_step(
-            "What Happened On The Google Tool Loop",
-            "The Google implementation stopped at the same round limit "
-            "and exposed the last tool state.",
-            details=[
-                f"Final output text: {google_result.output_text!r}",
-                f"Tool trace: {google_result.tool_trace}",
-                f"Last tool calls: {google_result.tool_calls}",
-                f"Server hits: {server.request_count('POST', _GOOGLE_PATH)}",
-            ],
-        )
-    console.demo_outcome(
-        "This passed because both tool implementations respected the "
-        "configured limit and returned the remaining tool state in a "
-        "consistent way."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

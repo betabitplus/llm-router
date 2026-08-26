@@ -128,7 +128,7 @@ package-dir."" = "src"
 
 [tool.uv]
 required-version = "==0.12.5"
-sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v1.2.1" }
+sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v1.2.2" }
 sources.py-lib-runtime = { git = "https://github.com/betabitplus/ternforge-tooling-py-runtime.git", tag = "v1.1.6" }
 sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git", tag = "v2.1.0" }
 
@@ -443,8 +443,6 @@ ini_options.markers = [
   "cap_structured: tests structured-output parsing or response schemas",
   "cap_tools: tests tool-calling execution paths",
   "cap_video: tests video attachment handling",
-  "e2e_behavior: legacy router behavior tests pending specification migration",
-  "e2e_contract: legacy provider contract tests pending specification migration",
   "hermetic: marks tests that run fully offline using VCR cassettes",
   "slow: marks tests that are slow and should be skipped in fast runs",
   "specification: executable living specifications",

@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: AI Studio tools + structured output.
 
 Why:
@@ -22,27 +21,17 @@ Checks:
     If the structured answer and runtime trace agree, then traced tool names cover the
     structured tool names.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.provider_sdk_wrapping.test_aistudio_tools_structured_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/provider_sdk_wrapping/test_aistudio_tools_structured_pipeline.py
 """
 
 from __future__ import annotations
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 from pydantic import BaseModel, Field
 
 from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProfile
 from tests.llm_router.support.assertions import parse_json_object
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_tools,
     pytest.mark.cap_structured,
 ]
@@ -156,47 +145,7 @@ def assert_pipeline_response(response: LLMRouterResponse) -> None:
 @pytest.mark.vcr
 def test_pipeline() -> None:
     """Verify the pipeline runs successfully."""
-    require_vcr_cassette_or_record_mode(test_file=__file__, test_name="test_pipeline")
     # First run the tool-driven workflow end to end.
     response = run_pipeline()
     # Then check that the answer and the trace still line up.
     assert_pipeline_response(response)
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-    console.demo_step(
-        "How We Set The Scenario Up",
-        "We ask AI Studio for a structured answer that requires local tool usage.",
-        details=[f"Prompt: {build_prompt()}"],
-    )
-
-    # Run the same end-to-end tool workflow used by the test.
-    response = run_pipeline()
-
-    # Assert first so the printed output is backed by the same contract.
-    assert_pipeline_response(response)
-    console.demo_step(
-        "What Happened",
-        "The model used the tool flow and returned the expected "
-        "structured-style answer.",
-        details=[
-            f"Answer: {response.output_text.strip()}",
-            f"Tool trace: {response.tool_trace}",
-        ],
-    )
-    console.demo_outcome(
-        "This passed because the scenario proved that tool "
-        "orchestration and the final answer stayed aligned."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

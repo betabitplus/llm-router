@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: public request precedence and schema defaults.
 
 Why:
@@ -34,14 +33,6 @@ Notes:
     scripted HTTP server through a worker helper that temporarily patches SDK
     entry points in-process.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.settings_overrides_and_propagation.test_request_precedence_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/settings_overrides_and_propagation/test_request_precedence_pipeline.py
 """
 
 from __future__ import annotations
@@ -50,7 +41,6 @@ import json
 from dataclasses import dataclass
 
 import pytest
-from py_lib_testkit import console
 from pydantic import BaseModel
 
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -64,7 +54,6 @@ from tests.llm_router.support.workers.retry import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_contract,
     pytest.mark.cap_structured,
     pytest.mark.hermetic,
 ]
@@ -421,184 +410,3 @@ def test_explicit_none_clears_route_default_schema(
             "call_schema_none_clears_default"
         ],
     )
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the request-precedence demo flow for manual execution."""
-    console.demo_intro(__doc__)
-
-    with ScriptedHTTPServer(
-        port=_PORT,
-        routes=success_routes(text=_DEFAULT_TEXT),
-    ) as server:
-        # Show the baseline: omitted call values inherit the router defaults.
-        defaults_result = run_pipeline(
-            scenario="router_defaults",
-            server_base_url=server.base_url,
-        )
-        assert_router_defaults_apply(
-            defaults_result,
-            request_payload=first_request_payload(server),
-        )
-        defaults_payload = first_request_payload(server)
-
-        console.demo_step(
-            "What Happened With Router Defaults",
-            "When the call omitted temperature and seed, the router defaults "
-            "were sent to the provider.",
-            details=[
-                f"Outbound temperature: {defaults_payload['temperature']}",
-                f"Outbound seed: {defaults_payload['seed']}",
-                f"Routing trace: {defaults_result.routing_trace}",
-            ],
-        )
-
-    with ScriptedHTTPServer(
-        port=_PORT,
-        routes=success_routes(text=_DEFAULT_TEXT),
-    ) as server:
-        # Then show the per-call override branch.
-        override_result = run_pipeline(
-            scenario="call_overrides",
-            server_base_url=server.base_url,
-        )
-        assert_call_overrides_apply(
-            override_result,
-            request_payload=first_request_payload(server),
-        )
-        override_payload = first_request_payload(server)
-
-        console.demo_step(
-            "What Happened With Per-Call Overrides",
-            "The per-call temperature and seed replaced the router defaults.",
-            details=[
-                f"Outbound temperature: {override_payload['temperature']}",
-                f"Outbound seed: {override_payload['seed']}",
-                f"Routing trace: {override_result.routing_trace}",
-            ],
-        )
-
-    with ScriptedHTTPServer(
-        port=_PORT,
-        routes=success_routes(text=_DEFAULT_TEXT),
-    ) as server:
-        # Finally show the explicit-None clearing branch for generation defaults.
-        cleared_defaults_result = run_pipeline(
-            scenario="call_none_clears_defaults",
-            server_base_url=server.base_url,
-        )
-        assert_explicit_none_clears_defaults(
-            cleared_defaults_result,
-            request_payload=first_request_payload(server),
-        )
-        cleared_defaults_payload = first_request_payload(server)
-
-        console.demo_step(
-            "What Happened With Explicit None",
-            "Passing `None` cleared the router defaults instead of behaving "
-            "like omission.",
-            details=[
-                (
-                    "Temperature present in payload: "
-                    f"{'temperature' in cleared_defaults_payload}"
-                ),
-                f"Seed present in payload: {'seed' in cleared_defaults_payload}",
-                f"Routing trace: {cleared_defaults_result.routing_trace}",
-            ],
-        )
-
-    with ScriptedHTTPServer(
-        port=_PORT,
-        routes=success_routes(text=_ROUTE_SCHEMA_TEXT),
-    ) as server:
-        # Start the schema side with the route-level default.
-        route_schema_result = run_pipeline(
-            scenario="route_schema_default",
-            server_base_url=server.base_url,
-        )
-        assert_route_schema_default_applies(
-            route_schema_result,
-            request_payload=first_request_payload(server),
-        )
-        route_schema_payload = first_request_payload(server)
-
-        console.demo_step(
-            "What Happened With A Route Default Schema",
-            "When the call omitted `response_schema`, the route-level schema "
-            "was sent automatically.",
-            details=[
-                (
-                    "Schema name: "
-                    f"{route_schema_payload['response_format']['json_schema']['name']}"
-                ),
-                f"Output text: {route_schema_result.output_text}",
-            ],
-        )
-
-    with ScriptedHTTPServer(
-        port=_PORT,
-        routes=success_routes(text=_OVERRIDE_SCHEMA_TEXT),
-    ) as server:
-        # Then show the call-level schema override.
-        override_schema_result = run_pipeline(
-            scenario="call_schema_override",
-            server_base_url=server.base_url,
-        )
-        assert_call_schema_override_applies(
-            override_schema_result,
-            request_payload=first_request_payload(server),
-        )
-        override_schema_payload = first_request_payload(server)
-        override_json_schema = override_schema_payload["response_format"]["json_schema"]
-        override_schema_name = override_json_schema["name"]
-
-        console.demo_step(
-            "What Happened With A Per-Call Schema Override",
-            "The call-level schema replaced the route default for this one request.",
-            details=[
-                f"Schema name: {override_schema_name}",
-                f"Output text: {override_schema_result.output_text}",
-            ],
-        )
-
-    with ScriptedHTTPServer(
-        port=_PORT,
-        routes=success_routes(text=_SCHEMA_CLEARED_TEXT),
-    ) as server:
-        # Finally show the schema-clearing branch.
-        cleared_schema_result = run_pipeline(
-            scenario="call_schema_none_clears_default",
-            server_base_url=server.base_url,
-        )
-        assert_explicit_none_clears_route_schema(
-            cleared_schema_result,
-            request_payload=first_request_payload(server),
-        )
-        cleared_schema_payload = first_request_payload(server)
-
-        console.demo_step(
-            "What Happened When The Call Cleared The Schema",
-            "Passing `response_schema=None` removed the route default schema "
-            "from the outbound request.",
-            details=[
-                (
-                    "response_format present in payload: "
-                    f"{'response_format' in cleared_schema_payload}"
-                ),
-                f"Output text: {cleared_schema_result.output_text}",
-            ],
-        )
-    console.demo_outcome(
-        "This passed because the outbound provider payload changed exactly the "
-        "way the public precedence contract says it should."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%

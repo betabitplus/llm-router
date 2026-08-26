@@ -1,4 +1,3 @@
-# %%
 """LLM Router e2e: wait policy when routes are blocked by rate limits.
 
 Why:
@@ -23,14 +22,6 @@ Checks:
     If waiting-based recovery uses the original route, then the second routing trace
     stays on provider `nvidia` with key id `1`.
 
-Examples:
-    Run manually:
-        uv run python -m \
-            tests.llm_router.e2e.route_fallback_and_attempt_policy.test_routing_wait_policy_pipeline
-
-    Run as test:
-        pytest \
-            tests/llm_router/e2e/route_fallback_and_attempt_policy/test_routing_wait_policy_pipeline.py
 """
 
 from __future__ import annotations
@@ -39,7 +30,6 @@ import os
 import time
 
 import pytest
-from py_lib_testkit import console, require_vcr_cassette_or_record_mode
 
 from llm_router import (
     LLMRouter,
@@ -51,7 +41,6 @@ from llm_router import (
 )
 
 pytestmark = [
-    pytest.mark.e2e_behavior,
     pytest.mark.cap_resilience,
     pytest.mark.cap_routing,
 ]
@@ -208,10 +197,6 @@ def assert_wait_probe(
 @pytest.mark.vcr
 def test_blocked_route_raises_without_waiting() -> None:
     """Verify blocked routes fail fast when waiting is disabled."""
-    require_vcr_cassette_or_record_mode(
-        test_file=__file__,
-        test_name="test_blocked_route_raises_without_waiting",
-    )
     require_nvidia_key_1()
     # Run the fail-fast variant first.
     first_response, error, waited_seconds = run_no_wait_probe()
@@ -223,10 +208,6 @@ def test_blocked_route_raises_without_waiting() -> None:
 @pytest.mark.vcr
 def test_blocked_route_waits_then_recovers() -> None:
     """Verify blocked routes wait for the rate-limit interval and recover."""
-    require_vcr_cassette_or_record_mode(
-        test_file=__file__,
-        test_name="test_blocked_route_waits_then_recovers",
-    )
     require_nvidia_key_1()
     # Run the wait-enabled variant.
     first_response, second_response, second_call_seconds, total_elapsed_seconds = (
@@ -239,42 +220,3 @@ def test_blocked_route_waits_then_recovers() -> None:
         second_call_seconds,
         total_elapsed_seconds,
     )
-
-
-# =============================================================================
-# Demo (Manual Execution)
-# =============================================================================
-
-
-def main() -> None:
-    """Run the demo flow for manual execution."""
-    console.demo_intro(__doc__)
-
-    (
-        first_response,
-        second_response,
-        second_call_seconds,
-        total_elapsed_seconds,
-    ) = run_wait_probe()
-
-    console.demo_step(
-        "What Happened",
-        "The first call succeeded immediately, and the next blocked "
-        "call waited long enough to recover instead of failing instantly.",
-        details=[
-            f"Call 1 output: {first_response.output_text.strip()}",
-            f"Call 2 output: {second_response.output_text.strip()}",
-            f"Call 2 duration: {second_call_seconds:.3f}s",
-            f"Total elapsed time: {total_elapsed_seconds:.3f}s",
-        ],
-    )
-    console.demo_outcome(
-        "This passed because the cooldown wait policy behaved like a "
-        "user would expect: wait when recovery is reasonable, rather "
-        "than fail too early."
-    )
-
-
-if __name__ == "__main__":
-    main()
-# %%
