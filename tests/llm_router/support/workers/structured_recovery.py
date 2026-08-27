@@ -1,11 +1,11 @@
-"""Project-specific helpers for structured-recovery llm_router e2e tests.
+"""Project-specific helpers for structured-recovery llm_router behavioral tests.
 
 Why:
-    Keeps structured-recovery e2e scenarios focused on public outcomes instead
+    Keeps structured-recovery behavioral scenarios focused on public outcomes instead
     of repeating subprocess orchestration and JSON result parsing.
 
 When to use:
-    Use from llm_router structured-recovery e2e tests that drive real provider
+    Use from llm_router structured-recovery behavioral tests that drive real provider
     paths through a local scripted fault server.
 
 How:

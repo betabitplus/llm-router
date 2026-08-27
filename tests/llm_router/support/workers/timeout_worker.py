@@ -1,4 +1,4 @@
-"""Subprocess worker for attempt-timeout llm_router e2e tests.
+"""Subprocess worker for attempt-timeout llm_router behavioral tests.
 
 Why:
     Keeps external SDK patching out of the main pytest process so attempt

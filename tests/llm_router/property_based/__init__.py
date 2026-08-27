@@ -9,6 +9,6 @@ What belongs here:
     concept or private mechanism.
 
 What does not belong here:
-    Replay-backed e2e scenarios or one mixed file that bundles many unrelated
-    concepts together.
+    Replay-backed behavioral specifications or one mixed file that bundles many
+    unrelated concepts together.
 """

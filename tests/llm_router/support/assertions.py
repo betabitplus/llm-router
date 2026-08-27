@@ -1,7 +1,7 @@
 """llm_router-specific response and session assertions.
 
 Why:
-    Keeps repeated llm_router assertions in one place so e2e tests stay
+    Keeps repeated llm_router assertions in one place so behavioral tests stay
     focused on scenario setup and flow.
 
 When to use:
@@ -9,7 +9,7 @@ When to use:
     fields, parsed JSON output, or saved `Session` state.
 
 How:
-    Use these assertions from `tests.llm_router.e2e` modules instead of
+    Use these assertions from `tests.llm_router.bdd` modules instead of
     repeating response-shape checks inline.
 
 Examples:

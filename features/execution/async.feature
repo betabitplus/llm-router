@@ -12,6 +12,14 @@ Feature: Async public execution
         """
       Then the normalized reply is "pong"
 
+    Scenario: Gemini WebAPI returns a short text reply asynchronously
+      Given the Gemini WebAPI async route
+      When the async route receives:
+        """
+        Reply with only: pong
+        """
+      Then the normalized reply is "pong"
+
     @cap_structured
     Scenario: An OpenAI-compatible route extracts a legal case asynchronously
       Given the OpenAI-compatible async route
@@ -32,3 +40,15 @@ Feature: Async public execution
         preventing further use of the algorithms.
         """
       Then the structured case preserves its parties and legal issues
+
+    @cap_structured
+    Scenario: AI Studio returns structured movie data asynchronously
+      Given the AI Studio async route
+      When the async route requests the example movie record
+      Then the structured movie record is grounded in Inception
+
+    @cap_image @cap_structured
+    Scenario: Google GenAI analyzes an image asynchronously
+      Given the Google GenAI async image route
+      When the async route analyzes the example traffic image
+      Then the async image result is a grounded traffic scene

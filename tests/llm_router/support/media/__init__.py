@@ -6,7 +6,7 @@ Why:
 
 What belongs here:
     Shared media schemas, prompts, assertions, and runtime guards used by
-    llm_router e2e capability scenarios.
+    llm_router behavioral capability scenarios.
 
 What does not belong here:
     General test infrastructure, VCR support, or subprocess worker helpers.

@@ -3,10 +3,12 @@
 
 from __future__ import annotations
 
+import pytest
 from py_lib_testkit import evidence
 from pytest_bdd import given, parsers, scenarios, then, when
 
 from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProfile
+from tests.llm_router.bdd._support import prepare_gemini_webapi_runtime
 from tests.llm_router.support.builders import (
     build_test_image,
     get_llm_router_test_data_path,
@@ -30,8 +32,11 @@ def _usage_payload(response: LLMRouterResponse) -> object:
 
 
 @given(parsers.parse('the "{route}" image route'), target_fixture="image_route")
-def provider_image_route(route: str) -> tuple[str, LLMRouter]:
-    """Build the provider route named by the specification example."""
+def provider_image_route(
+    route: str,
+    monkeypatch: pytest.MonkeyPatch,
+    request: pytest.FixtureRequest,
+) -> tuple[str, LLMRouter]:
     if route == "QwenChat":
         router = LLMRouter(
             RouterProfile(model=Model.QWEN3_VL_PLUS, provider=Provider.QWENCHAT),
@@ -43,6 +48,19 @@ def provider_image_route(route: str) -> tuple[str, LLMRouter]:
             RouterProfile(model=Model.MISTRAL_LARGE, provider=Provider.MISTRAL),
             temperature=0.0,
         )
+    elif route == "AI Studio":
+        router = LLMRouter(
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO),
+            temperature=0.0,
+            seed=42,
+        )
+    elif route == "Gemini WebAPI":
+        prepare_gemini_webapi_runtime(monkeypatch, request)
+        router = LLMRouter(
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GEMINI_WEBAPI),
+            temperature=0.0,
+            seed=42,
+        )
     else:  # pragma: no cover - the Gherkin Examples table owns the valid values.
         raise ValueError(route)
     return route, router
@@ -53,7 +71,6 @@ def analyze_traffic_image(
     image_route: tuple[str, LLMRouter],
     docstring: str,
 ) -> LLMRouterResponse:
-    """Send the shared image through the provider route using the Gherkin prompt."""
     route, router = image_route
     image_path = get_llm_router_test_data_path(_IMAGE_FILENAME)
     evidence.file("Input image", image_path, media_type="image/png")
@@ -67,7 +84,6 @@ def analyze_traffic_image(
 
 @then("the result is a grounded traffic scene")
 def traffic_scene_is_grounded(response: LLMRouterResponse) -> None:
-    """Validate and publish the grounded traffic-scene result."""
     scene = assert_traffic_scene_response(response)
     evidence.json(
         "Result",
@@ -80,7 +96,7 @@ def traffic_scene_is_grounded(response: LLMRouterResponse) -> None:
     )
 
 
-# %% QwenChat live: run this cell in VS Code's Interactive Window.
+# %% Run this cell for image scenarios against live providers.
 if __name__ == "__main__":
     import ipytest
 
@@ -89,23 +105,6 @@ if __name__ == "__main__":
         "-s",
         "--disable-recording",
         "--no-cov",
-        "-k",
-        "QwenChat",
-        _TEST_MODULE,
-        defopts=False,
-        raise_on_error=True,
-    )
-# %% OpenAI-compatible live: run this cell separately when desired.
-if __name__ == "__main__":
-    import ipytest
-
-    ipytest.run(
-        "-q",
-        "-s",
-        "--disable-recording",
-        "--no-cov",
-        "-k",
-        "OpenAI-compatible",
         _TEST_MODULE,
         defopts=False,
         raise_on_error=True,

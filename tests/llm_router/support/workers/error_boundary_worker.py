@@ -1,4 +1,4 @@
-"""Subprocess worker for public-error-boundary llm_router e2e tests.
+"""Subprocess worker for public-error-boundary llm_router behavioral tests.
 
 Why:
     Keeps env shaping and external SDK patching out of the main pytest process

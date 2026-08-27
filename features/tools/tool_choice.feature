@@ -22,3 +22,9 @@ Feature: Explicit tool choice
         | route             |
         | QwenChat          |
         | OpenAI-compatible |
+        | Gemini WebAPI     |
+
+    Scenario: AI Studio honors an explicit add tool choice
+      Given the AI Studio numeric tool-choice route
+      When the route is forced to add 40 and 2
+      Then the reply is 42 and the runtime trace shows only add

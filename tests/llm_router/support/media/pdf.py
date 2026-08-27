@@ -2,7 +2,7 @@
 
 Why:
     Keeps the shared PDF extraction schema, prompt, and page-one assertions in
-    one place so file e2e tests compare the same contract across providers.
+    one place so file behavioral tests compare the same contract across providers.
 
 When to use:
     Import from here when a scenario validates structured extraction from the
@@ -11,7 +11,7 @@ When to use:
 How:
     Use `PDFDigest`, `build_pdf_digest_prompt()`, `extract_expected_pdf_facts()`,
     and `assert_pdf_digest_response(...)` instead of duplicating file-specific
-    parsing logic inside each e2e script.
+    parsing logic inside each behavioral script.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ import re
 from pathlib import Path
 from typing import Literal
 
-import fitz
+import pymupdf
 from pydantic import BaseModel, Field
 
 from llm_router import LLMRouterResponse
@@ -89,7 +89,7 @@ def _compact_text_for_match(text: str) -> str:
 
 def extract_expected_pdf_facts(pdf_path: Path) -> tuple[str, str]:
     """Extract deterministic page-one facts used by the shared assertions."""
-    doc = fitz.open(str(pdf_path))
+    doc = pymupdf.open(str(pdf_path))
     page = doc.load_page(0)
     text = page.get_text("text") or ""
     lines = [line.strip() for line in text.splitlines() if line.strip()]
@@ -101,6 +101,17 @@ def extract_expected_pdf_facts(pdf_path: Path) -> tuple[str, str]:
     return normalize_text_for_match(text), title
 
 
+def extract_pdf_document_text(pdf_path: Path) -> str:
+    """Return normalized text from every page for document-level grounding checks."""
+    doc = pymupdf.open(str(pdf_path))
+    return normalize_text_for_match(
+        "\n".join(
+            doc.load_page(index).get_text("text") or ""
+            for index in range(doc.page_count)
+        )
+    )
+
+
 def assert_pdf_digest_response(
     response: LLMRouterResponse,
     *,
@@ -108,6 +119,7 @@ def assert_pdf_digest_response(
     expected_title: str,
     allow_compact_snippet_match: bool = False,
     min_entity_matches: int | None = None,
+    expected_entity_text: str | None = None,
 ) -> PDFDigest:
     """Assert that a PDF digest matches deterministic page-one facts."""
     assert_response_has_data(response)
@@ -118,6 +130,11 @@ def assert_pdf_digest_response(
     normalized_expected_title = normalize_text_for_match(expected_title)
     normalized_expected_page = normalize_text_for_match(expected_page_text)
     compact_expected_page = _compact_text_for_match(expected_page_text)
+    entity_text = (
+        expected_page_text if expected_entity_text is None else expected_entity_text
+    )
+    normalized_expected_entities = normalize_text_for_match(entity_text)
+    compact_expected_entities = _compact_text_for_match(entity_text)
 
     assert normalized_title == normalized_expected_title
     for word in parsed.metadata.title_words:
@@ -146,11 +163,12 @@ def assert_pdf_digest_response(
         normalized_entity = normalize_text_for_match(entity)
         if allow_compact_snippet_match:
             matched = (
-                normalized_entity in normalized_expected_page
-                or _compact_text_for_match(normalized_entity) in compact_expected_page
+                normalized_entity in normalized_expected_entities
+                or _compact_text_for_match(normalized_entity)
+                in compact_expected_entities
             )
         else:
-            matched = normalized_entity in normalized_expected_page
+            matched = normalized_entity in normalized_expected_entities
         matched_entities += int(matched)
 
     required_entity_matches = (

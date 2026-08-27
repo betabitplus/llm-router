@@ -1,0 +1,143 @@
+interactions:
+- request:
+    body: LLM_ROUTER_MULTIPART_SIGNATURE:{"kind":"bytes_sha256","sha256":"f58863f804f28e06adeae577b98d74bee19564fb8a8dc949bebb00f5c110f7cd","size":2112983}
+    headers:
+      accept:
+      - application/json
+      accept-encoding:
+      - gzip, deflate, br
+      connection:
+      - keep-alive
+      content-length:
+      - '2113151'
+      content-type:
+      - multipart/form-data; boundary=llm-router-qwenchat-upload
+      host:
+      - localhost:3264
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/files/upload
+  response:
+    body:
+      string: '{"success":true,"file":{"name":"1787834972636-1720accf9f84fe77-variative.pdf","url":"https://qwen-webui-prod.oss-accelerate.aliyuncs.com/1d377366-2716-4fb2-bf98-6982701697d7/d182c2e5-ea28-4256-8e11-30873307d559_1787834972636-1720accf9f84fe77-variative.pdf?x-oss-security-token=CAIS0AJ1q6Ft5B2yfSjIr5rGA4vbm%2BhA9om8anXf0XU0XsRD17bFkjz2IHhMf3RvBeAbs%2Fs1lWBZ7vwflrN6SJtIXleCZtF94plR7QKoZ73Zocur7LAJksUildpe50KpsvXJasDVEfn%2FGJ70GX2m%2BwZ3xbzlD0bAO3WuLZyOj7N%2Bc90TRXPWRDFaBdBQVGAAwY1gQhm3D%2Fu2NQPwiWf9FVdhvhEG6Vly8qOi2MaRmHG85R%2FYsrZN%2BNmgecP%2FNpE3bMwiCYyPsbYoJvab4kl58ANX8ap6tqtA9Arcs8uVa1sruE3eaLeLro0ycVAjN%2FhrQ%2FQZtpn1lvl1ofeWkJznAJW0o2rsz001LaPXI6uscIvBXr5R%2FqZstNNRrKvG4DWfBomw24j%2FiK%2FAAe8KayYWJ1VFYVrBEYys81vhCQzAQJPO28xYnOQzoRyGktTir7OK6OrxuU4agAFjUpvhK5a190C2T2XBbk2NEd64VXOSIFDIbGpkJi%2BS1RueAOUr9%2FwiFW90PWqzoJZgARwxvoWmIoZK3ulZhWwmx4TPN7ecdRBxxF%2F5vEZNI5%2FryMs1smzjakf5tXYlkrNJa5YnnPn6M7V3PULw8poc0L2gH8WKxC%2Fa8nZuXz4m4iAA&x-oss-date=20260827T124939Z&x-oss-expires=300&x-oss-signature-version=OSS4-HMAC-SHA256&x-oss-credential=STS.NYsH1ov7aAKWhSn5uaRKo8snp%2F20260827%2Fap-southeast-1%2Foss%2Faliyun_v4_request&x-oss-signature=a7aa943a4f216bb01e49b68f958f484aed5da3d141668fadbf68e16251730764","size":2112983,"type":"application/pdf"}}'
+    headers:
+      access-control-allow-headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      access-control-allow-methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      access-control-allow-origin:
+      - '*'
+      connection:
+      - keep-alive
+      content-length:
+      - '1259'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 27 Aug 2026 12:49:44 GMT
+      etag:
+      - W/"4eb-K7sEPO5xFPFGm9QjG+QPTcFHBwU"
+      keep-alive:
+      - timeout=5
+      x-powered-by:
+      - Express
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"model":"qwen2.5-vl-32b-instruct","messages":[{"role":"user","content":[{"type":"text","text":"You
+      are a JSON API. Output MUST be valid JSON and MUST conform to this JSON Schema.\n\nReturn
+      ONLY the JSON (no markdown, no code fences, no extra text).\n\nJSON Schema:\n{\"$defs\":
+      {\"EvidenceSnippet\": {\"description\": \"Short grounded evidence copied from
+      page one.\", \"properties\": {\"text\": {\"minLength\": 8, \"title\": \"Text\",
+      \"type\": \"string\"}, \"source\": {\"enum\": [\"title\", \"abstract\", \"introduction\"],
+      \"title\": \"Source\", \"type\": \"string\"}}, \"required\": [\"text\", \"source\"],
+      \"title\": \"EvidenceSnippet\", \"type\": \"object\"}, \"PaperMetadata\": {\"description\":
+      \"Structured title metadata for the shared PDF fixture.\", \"properties\": {\"title\":
+      {\"title\": \"Title\", \"type\": \"string\"}, \"title_words\": {\"items\": {\"type\":
+      \"string\"}, \"maxItems\": 3, \"minItems\": 3, \"title\": \"Title Words\", \"type\":
+      \"array\"}}, \"required\": [\"title\", \"title_words\"], \"title\": \"PaperMetadata\",
+      \"type\": \"object\"}}, \"description\": \"Structured digest extracted from
+      the shared PDF fixture.\", \"properties\": {\"metadata\": {\"$ref\": \"#/$defs/PaperMetadata\"},
+      \"abstract_one_sentence\": {\"minLength\": 20, \"title\": \"Abstract One Sentence\",
+      \"type\": \"string\"}, \"contributions\": {\"items\": {\"type\": \"string\"},
+      \"maxItems\": 3, \"minItems\": 3, \"title\": \"Contributions\", \"type\": \"array\"},
+      \"evidence\": {\"items\": {\"$ref\": \"#/$defs/EvidenceSnippet\"}, \"maxItems\":
+      2, \"minItems\": 2, \"title\": \"Evidence\", \"type\": \"array\"}, \"key_entities\":
+      {\"items\": {\"type\": \"string\"}, \"maxItems\": 4, \"minItems\": 4, \"title\":
+      \"Key Entities\", \"type\": \"array\"}}, \"required\": [\"metadata\", \"abstract_one_sentence\",
+      \"contributions\", \"evidence\", \"key_entities\"], \"title\": \"PDFDigest\",
+      \"type\": \"object\"}\n\nFollow instructions exactly. Reply with only what is
+      asked.\n\nYou are given a PDF file attachment.\n\nExtract content from the PDF
+      (focus on the paper itself, not file metadata).\nReturn JSON with:\n- metadata.title:
+      exact paper title from page 1, as a single line\n- metadata.title_words: exactly
+      3 distinct words taken from the title, preserving case\n- abstract_one_sentence:
+      one sentence summarizing the Abstract (<= 25 words)\n- contributions: exactly
+      3 short bullet points (<= 12 words each)\n- evidence: exactly 2 verbatim snippets
+      copied from page 1 (8+ chars). Choose snippets that are not broken by hyphenation
+      across lines.\n  - source must be one of: title, abstract, introduction\n- key_entities:
+      exactly 4 proper nouns or model names that appear on page 1 (preserve case)\n\nReturn
+      ONLY valid JSON. No markdown."},{"type":"file","file":"https://qwen-webui-prod.oss-accelerate.aliyuncs.com/1d377366-2716-4fb2-bf98-6982701697d7/d182c2e5-ea28-4256-8e11-30873307d559_1787834972636-1720accf9f84fe77-variative.pdf?x-oss-security-token=CAIS0AJ1q6Ft5B2yfSjIr5rGA4vbm%2BhA9om8anXf0XU0XsRD17bFkjz2IHhMf3RvBeAbs%2Fs1lWBZ7vwflrN6SJtIXleCZtF94plR7QKoZ73Zocur7LAJksUildpe50KpsvXJasDVEfn%2FGJ70GX2m%2BwZ3xbzlD0bAO3WuLZyOj7N%2Bc90TRXPWRDFaBdBQVGAAwY1gQhm3D%2Fu2NQPwiWf9FVdhvhEG6Vly8qOi2MaRmHG85R%2FYsrZN%2BNmgecP%2FNpE3bMwiCYyPsbYoJvab4kl58ANX8ap6tqtA9Arcs8uVa1sruE3eaLeLro0ycVAjN%2FhrQ%2FQZtpn1lvl1ofeWkJznAJW0o2rsz001LaPXI6uscIvBXr5R%2FqZstNNRrKvG4DWfBomw24j%2FiK%2FAAe8KayYWJ1VFYVrBEYys81vhCQzAQJPO28xYnOQzoRyGktTir7OK6OrxuU4agAFjUpvhK5a190C2T2XBbk2NEd64VXOSIFDIbGpkJi%2BS1RueAOUr9%2FwiFW90PWqzoJZgARwxvoWmIoZK3ulZhWwmx4TPN7ecdRBxxF%2F5vEZNI5%2FryMs1smzjakf5tXYlkrNJa5YnnPn6M7V3PULw8poc0L2gH8WKxC%2Fa8nZuXz4m4iAA&x-oss-date=20260827T124939Z&x-oss-expires=300&x-oss-signature-version=OSS4-HMAC-SHA256&x-oss-credential=STS.NYsH1ov7aAKWhSn5uaRKo8snp%2F20260827%2Fap-southeast-1%2Foss%2Faliyun_v4_request&x-oss-signature=a7aa943a4f216bb01e49b68f958f484aed5da3d141668fadbf68e16251730764"}]}],"stream":false,"temperature":0.0,"seed":42}'
+    headers:
+      accept:
+      - application/json
+      accept-encoding:
+      - gzip, deflate, br
+      connection:
+      - keep-alive
+      content-length:
+      - '3951'
+      content-type:
+      - application/json
+      host:
+      - localhost:3264
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://localhost:3264/api/chat/completions
+  response:
+    body:
+      string: '{"id":"71276471-e3dd-40ae-bb11-1c76cc05f5fd","object":"chat.completion","created":1787835004,"model":"qwen3-vl-plus","choices":[{"index":0,"message":{"role":"assistant","content":"{\n  \"metadata\":
+        {\n    \"title\": \"AI-assisted Automated Short Answer Grading of Handwritten
+        University Level Mathematics Exams\",\n    \"title_words\": [\"AI-assisted\",
+        \"Automated\", \"Short\"]\n  },\n  \"abstract_one_sentence\": \"This study
+        evaluates the effectiveness of a pre-trained GPT-4 model in grading semi-open
+        handwritten responses in a university-level mathematics exam, finding it provides
+        reliable and cost-effective initial grading subject to human verification.\",\n  \"contributions\":
+        [\n    \"Demonstrates GPT-4 can reliably grade semi-open handwritten math
+        answers with minimal customization\",\n    \"Compares OCR methods (Mathpix
+        vs. GPT-4V) for extracting handwritten responses\",\n    \"Proposes a probabilistic
+        confidence measure to identify grades needing human review\"\n  ],\n  \"evidence\":
+        [\n    {\n      \"text\": \"The emergence of pre-trained Large Language Models,
+        such as GPT-4, offers promising new opportunities for efficiently processing
+        diverse response types with minimal customization.\",\n      \"source\": \"abstract\"\n    },\n    {\n      \"text\":
+        \"Our findings indicate that GPT-4 provides surprisingly reliable and cost-effective
+        initial grading, subject to subsequent human verification.\",\n      \"source\":
+        \"abstract\"\n    }\n  ],\n  \"key_entities\": [\n    \"GPT-4\",\n    \"Mathpix\",\n    \"ETH
+        Zurich\",\n    \"STACK\"\n  ]\n}"},"finish_reason":"stop"}],"usage":{"input_tokens":14868,"output_tokens":286,"characters":0,"total_tokens":15154,"input_tokens_details":{"text_tokens":14868},"output_tokens_details":{"text_tokens":286},"cached_tokens":0},"chatId":"b07c189d-159b-4b53-9651-50c10a4e6794","parentId":"71276471-e3dd-40ae-bb11-1c76cc05f5fd"}'
+    headers:
+      access-control-allow-headers:
+      - Origin, X-Requested-With, Content-Type, Accept, Authorization
+      access-control-allow-methods:
+      - GET, POST, PUT, DELETE, OPTIONS
+      access-control-allow-origin:
+      - '*'
+      connection:
+      - keep-alive
+      content-length:
+      - '1894'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 27 Aug 2026 12:50:04 GMT
+      etag:
+      - W/"766-txubTfwUOoR7VAfypqt2c0N4Lu0"
+      keep-alive:
+      - timeout=5
+      x-powered-by:
+      - Express
+    status:
+      code: 200
+      message: OK
+version: 1

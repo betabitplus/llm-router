@@ -9,7 +9,7 @@ What belongs here:
     boundary-level rules that do not need multi-boundary collaboration.
 
 What does not belong here:
-    Replay-backed e2e scenarios, generated property tests, or broader
+    Replay-backed behavioral specifications, generated property tests, or broader
     integration flows that depend on several runtime boundaries working
     together.
 """

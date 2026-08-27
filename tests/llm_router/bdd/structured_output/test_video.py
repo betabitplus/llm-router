@@ -3,16 +3,20 @@
 
 from __future__ import annotations
 
+import pytest
 from py_lib_testkit import evidence
-from pytest_bdd import given, scenarios, then, when
+from pytest_bdd import given, parsers, scenarios, then, when
 
 from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProfile
+from tests.llm_router.bdd._support import prepare_gemini_webapi_runtime
 from tests.llm_router.support.builders import (
     build_test_video_file,
+    build_test_video_url,
     get_llm_router_test_data_path,
 )
 from tests.llm_router.support.media.video import (
     VideoObservation,
+    assert_indoor_video_response,
     assert_rooftop_video_response,
 )
 
@@ -29,19 +33,63 @@ def _usage_payload(response: LLMRouterResponse) -> object:
     )
 
 
-@given("the QwenChat video route", target_fixture="router")
-def qwenchat_video_route() -> LLMRouter:
-    """Build the QwenChat route used by the local-video example."""
-    return LLMRouter(
-        RouterProfile(model=Model.QWEN_VL_32B, provider=Provider.QWENCHAT),
-        temperature=0.0,
-        seed=42,
-    )
+def _video_router(
+    route: str,
+    monkeypatch: pytest.MonkeyPatch,
+    request: pytest.FixtureRequest,
+) -> LLMRouter:
+    if route == "QwenChat":
+        return LLMRouter(
+            RouterProfile(model=Model.QWEN_VL_32B, provider=Provider.QWENCHAT),
+            temperature=0.0,
+            seed=42,
+        )
+    if route == "AI Studio":
+        return LLMRouter(
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO),
+            temperature=0.0,
+            seed=42,
+        )
+    if route == "Gemini WebAPI":
+        prepare_gemini_webapi_runtime(monkeypatch, request)
+        return LLMRouter(
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GEMINI_WEBAPI),
+            temperature=0.0,
+            seed=42,
+        )
+    if route == "Google GenAI":
+        return LLMRouter(
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GOOGLE),
+            temperature=0.0,
+            seed=42,
+        )
+    raise ValueError(route)  # pragma: no cover - Examples owns the valid values.
 
 
-@when("the route analyzes the example video:", target_fixture="response")
-def analyze_example_video(router: LLMRouter, docstring: str) -> LLMRouterResponse:
-    """Send the shared clip through the public video path using the Gherkin prompt."""
+@given(parsers.parse('the "{route}" local video route'), target_fixture="video_route")
+def local_video_route(
+    route: str,
+    monkeypatch: pytest.MonkeyPatch,
+    request: pytest.FixtureRequest,
+) -> tuple[str, LLMRouter]:
+    return route, _video_router(route, monkeypatch, request)
+
+
+@given(parsers.parse('the "{route}" remote video route'), target_fixture="video_route")
+def remote_video_route(
+    route: str,
+    monkeypatch: pytest.MonkeyPatch,
+    request: pytest.FixtureRequest,
+) -> tuple[str, LLMRouter]:
+    return route, _video_router(route, monkeypatch, request)
+
+
+@when("the route analyzes the example rooftop video:", target_fixture="response")
+def analyze_example_rooftop_video(
+    video_route: tuple[str, LLMRouter],
+    docstring: str,
+) -> LLMRouterResponse:
+    _, router = video_route
     video_path = get_llm_router_test_data_path(_VIDEO_FILENAME)
     evidence.file("Input video", video_path, media_type="video/mp4")
     return router.query(
@@ -52,7 +100,6 @@ def analyze_example_video(router: LLMRouter, docstring: str) -> LLMRouterRespons
 
 @then("the observation is grounded in a rooftop jump")
 def rooftop_observation_is_grounded(response: LLMRouterResponse) -> None:
-    """Validate and publish the structured video observation."""
     observation = assert_rooftop_video_response(response)
     evidence.json(
         "Result",
@@ -65,7 +112,34 @@ def rooftop_observation_is_grounded(response: LLMRouterResponse) -> None:
     )
 
 
-# %% Run this cell in VS Code's Interactive Window for a real provider call.
+@when("the route analyzes the example remote video", target_fixture="response")
+def analyze_example_remote_video(
+    video_route: tuple[str, LLMRouter],
+) -> LLMRouterResponse:
+    from tests.llm_router.support.media.video import build_indoor_video_prompt
+
+    _, router = video_route
+    return router.query(
+        [_SYSTEM_PROMPT, build_indoor_video_prompt(), build_test_video_url()],
+        response_schema=VideoObservation,
+    )
+
+
+@then("the observation is grounded in the indoor activity")
+def indoor_observation_is_grounded(response: LLMRouterResponse) -> None:
+    observation = assert_indoor_video_response(response)
+    evidence.json(
+        "Result",
+        {
+            "provider": str(response.provider),
+            "model": str(response.model),
+            "usage": _usage_payload(response),
+            "observation": observation.model_dump(mode="json"),
+        },
+    )
+
+
+# %% Run this cell for video scenarios against live providers.
 if __name__ == "__main__":
     import ipytest
 

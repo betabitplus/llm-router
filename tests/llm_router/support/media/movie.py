@@ -2,7 +2,7 @@
 
 Why:
     Reuses one structured movie-record contract across sync and async AI Studio
-    tests so those e2e files stay small and comparable.
+    tests so those behavioral files stay small and comparable.
 
 When to use:
     Import from here when a scenario requests structured movie metadata for the

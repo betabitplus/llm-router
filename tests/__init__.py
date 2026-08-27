@@ -6,7 +6,7 @@ Why:
 What belongs here:
     `py_lib_testkit` for reusable infrastructure.
     `tests/<project>/support/` for project-specific helpers.
-    `tests/<project>/e2e/` for scenario scripts and replay artifacts.
+    `tests/<project>/bdd/` for executable living specifications and replay artifacts.
 
 What does not belong here:
     Do not mix project-specific helpers into shared tooling support.

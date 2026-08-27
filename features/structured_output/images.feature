@@ -25,3 +25,5 @@ Feature: Structured image understanding
         | route             |
         | QwenChat          |
         | OpenAI-compatible |
+        | AI Studio         |
+        | Gemini WebAPI     |

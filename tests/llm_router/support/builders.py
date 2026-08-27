@@ -37,23 +37,23 @@ def get_llm_router_test_data_path(filename: str) -> Path:
 
 
 def build_test_pdf_file(filename: str = "variative.pdf") -> FileSchema:
-    """Build a shared PDF file attachment for e2e tests."""
+    """Build a shared PDF file attachment for behavioral tests."""
     pdf_path = get_llm_router_test_data_path(filename)
     return FileSchema(path=str(pdf_path), mime_type="application/pdf")
 
 
 def build_test_image(filename: str = "test_image.png") -> ImageSchema:
-    """Build a shared image attachment for e2e tests."""
+    """Build a shared image attachment for behavioral tests."""
     image_path = get_llm_router_test_data_path(filename)
     return Image.open(image_path)
 
 
 def build_test_video_file(filename: str = "jumper.mp4") -> VideoSchema:
-    """Build a shared local video attachment for e2e tests."""
+    """Build a shared local video attachment for behavioral tests."""
     video_path = get_llm_router_test_data_path(filename)
     return VideoSchema(path=str(video_path), fps=1)
 
 
 def build_test_video_url(url: str = _DEFAULT_VIDEO_URL) -> VideoUrlSchema:
-    """Build a shared remote video attachment for e2e tests."""
+    """Build a shared remote video attachment for behavioral tests."""
     return VideoUrlSchema(url=url, fps=1)

@@ -95,7 +95,7 @@ bodies are not logged.
 `google.genai.Client` path for `Provider.GOOGLE`.
 
 The adapter imports `google.genai.types` for request DTO construction, but it
-constructs clients through `genai.Client(...)` at call time so test and e2e
+constructs clients through `genai.Client(...)` at call time so test and specification
 patches can still replace the SDK client. Tests may inject a small fake client
 with `models.generate_content(...)` and `aio.models.generate_content(...)`.
 
@@ -172,7 +172,7 @@ Preflight failures become non-retryable `ProviderError` values with a
 `runtime_preflight_failed` retry reason. Request logs include safe presence
 flags for optional cookies, not cookie contents.
 
-Client construction stays lazy so tests and e2e patchers can inject fake SDK
+Client construction stays lazy so tests and specifications patchers can inject fake SDK
 clients. The live adapter builds `GeminiClient(psid, psidts, proxy=None)`,
 sets `NID` when available, then initializes with `auto_close=False`,
 `auto_refresh=True`, and bounded timeout settings. The initialized client is

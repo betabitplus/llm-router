@@ -1,4 +1,4 @@
-"""Subprocess worker for contract-focused llm_router e2e tests.
+"""Subprocess worker for contract-focused llm_router behavioral tests.
 
 Why:
     Keeps provider SDK patching out of the main pytest process so request
@@ -51,6 +51,17 @@ def _build_router(*, scenario: str) -> Any:
             seed=11,
         )
 
+    if scenario == "layered_generation_overrides":
+        return LLMRouter(
+            RouterProfile(
+                model=Model.DEEPSEEK_V3,
+                provider=Provider.OPENROUTER,
+                temperature=0.2,
+                seed=7,
+            ),
+            temperature=0.7,
+        )
+
     if scenario in {
         "route_schema_default",
         "call_schema_override",
@@ -94,6 +105,11 @@ def _run_case(*, scenario: str) -> dict[str, Any]:
                 "Reply with precedence-ok only.",
                 temperature=None,
                 seed=None,
+            )
+        elif scenario == "layered_generation_overrides":
+            response = router.query(
+                "Reply with precedence-ok only.",
+                temperature=0.0,
             )
         elif scenario == "route_schema_default":
             response = router.query("Return JSON with only the status field.")

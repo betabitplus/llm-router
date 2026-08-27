@@ -2,7 +2,7 @@
 
 Why:
     Keeps repeated subprocess invocation, repo-root env shaping, and JSON
-    result parsing in one place for llm_router e2e support modules.
+    result parsing in one place for llm_router behavioral support modules.
 
 When to use:
     Import from here when a llm_router support module runs a worker via

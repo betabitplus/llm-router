@@ -1,11 +1,11 @@
-"""Project-specific helpers for public-error-boundary llm_router e2e tests.
+"""Project-specific helpers for public-error-boundary llm_router behavioral tests.
 
 Why:
-    Keeps error-boundary e2e scenarios focused on public outcomes instead of
+    Keeps error-boundary behavioral scenarios focused on public outcomes instead of
     repeating subprocess orchestration in every file.
 
 When to use:
-    Use from llm_router error-boundary e2e tests that need isolated process
+    Use from llm_router error-boundary behavioral tests that need isolated process
     setup before importing `llm_router`.
 
 How:

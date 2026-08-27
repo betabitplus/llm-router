@@ -2,7 +2,7 @@
 
 Why:
     Reuses the shared video schema, prompts, and grounded assertions across
-    llm_router video e2e scenarios.
+    llm_router video behavioral scenarios.
 
 When to use:
     Import from here when a video scenario should validate the same public
@@ -10,7 +10,7 @@ When to use:
 
 How:
     Use `VideoObservation`, the shared prompt builders, and the assertion
-    helpers instead of duplicating video-specific schemas in each e2e script.
+    helpers instead of duplicating video-specific schemas in each behavioral script.
 
 Examples:
     parsed = assert_rooftop_video_response(response)

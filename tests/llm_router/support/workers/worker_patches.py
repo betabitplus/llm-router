@@ -1,4 +1,4 @@
-"""Shared SDK patching for hermetic fault-injected llm_router e2e workers.
+"""Shared SDK patching for hermetic fault-injected llm_router behavioral workers.
 
 Why:
     Keeps provider SDK redirection in one place so fault-injected subprocess
@@ -61,7 +61,7 @@ def patch_openai(*, forced_base_url: str | None, disable_sdk_retries: bool) -> N
 def patched_openai_sdk(*, forced_base_url: str | None, disable_sdk_retries: bool):
     """Temporarily patch the OpenAI SDK client classes.
 
-    This is useful for in-process e2e tests that want hermetic SDK redirection
+    This is useful for in-process behavioral tests that want hermetic SDK redirection
     without leaving global module state mutated for subsequent tests.
     """
     import openai
@@ -167,7 +167,7 @@ def patched_gemini_webapi_sdk(*, server_base_url: str):
 
     This mirrors the subprocess-only `patch_gemini_webapi(...)` setup, but
     restores module globals and environment variables on exit so hermetic
-    e2e tests can run in-process without leaking state.
+    behavioral tests can run in-process without leaking state.
     """
 
     previous_browser_cookie3 = sys.modules.get("browser_cookie3")

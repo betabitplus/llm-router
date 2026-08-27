@@ -1,11 +1,11 @@
-"""Project-specific helpers for response-normalization llm_router e2e tests.
+"""Project-specific helpers for response-normalization llm_router behavioral tests.
 
 Why:
-    Keeps response-normalization e2e scenarios focused on public outcomes
+    Keeps response-normalization behavioral scenarios focused on public outcomes
     instead of repeating subprocess orchestration and JSON result parsing.
 
 When to use:
-    Use from llm_router response-normalization e2e tests that drive distinct
+    Use from llm_router response-normalization behavioral tests that drive distinct
     provider families through local scripted servers.
 
 How:
@@ -20,7 +20,6 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
-from tests.llm_router.support.workers._worker_process import run_worker_module
 from tests.llm_router.support.workers.worker_patches import (
     patched_google_genai_sdk,
     patched_openai_sdk,
@@ -44,41 +43,6 @@ class ResponseNormalizationWorkerResult:
     returncode: int
     stdout: str
     stderr: str
-
-
-def run_response_normalization_worker(
-    *,
-    case: str,
-    server_base_url: str,
-) -> ResponseNormalizationWorkerResult:
-    """Run one response-normalization scenario in an isolated subprocess."""
-    completed, payload = run_worker_module(
-        module="tests.llm_router.support.workers.response_normalization_worker",
-        args=[
-            "--case",
-            case,
-            "--server-base-url",
-            server_base_url,
-        ],
-        missing_output_message=(
-            "Response normalization worker did not produce any JSON output."
-        ),
-    )
-    return ResponseNormalizationWorkerResult(
-        ok=bool(payload["ok"]),
-        output_text=str(payload.get("output_text", "")),
-        provider=str(payload.get("provider", "")),
-        model=str(payload.get("model", "")),
-        usage=payload.get("usage"),
-        routing_trace=list(payload.get("routing_trace", [])),
-        tool_trace=list(payload.get("tool_trace", [])),
-        tool_calls=list(payload.get("tool_calls", [])),
-        error_type=payload.get("error_type"),
-        error_message=payload.get("error_message"),
-        returncode=completed.returncode,
-        stdout=completed.stdout,
-        stderr=completed.stderr,
-    )
 
 
 def run_response_normalization_dual_worker(

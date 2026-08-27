@@ -21,7 +21,6 @@ Notes:
 
 from py_lib_runtime import (
     preview_exception_message,
-    preview_mapping,
     preview_text,
 )
 
@@ -104,11 +103,7 @@ class ToolExecutionError(LLMRouterError):
         self.tool_name = tool_name
         self.args = args
         self.cause = cause
-        args_preview = preview_mapping(args)
-        super().__init__(
-            f"Tool '{tool_name}' failed with args {args_preview}. "
-            f"Original error: {preview_exception_message(cause)}"
-        )
+        super().__init__(f"Tool '{tool_name}' failed with {type(cause).__name__}.")
 
 
 # ================================================================================

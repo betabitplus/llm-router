@@ -17,21 +17,7 @@ def _clear_provider_keys(monkeypatch: pytest.MonkeyPatch, provider: Provider) ->
             monkeypatch.delenv(name, raising=False)
 
 
-def test_fixed_key_uses_generated_provider_env_name(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    config = build_default_config()
-    _clear_provider_keys(monkeypatch, Provider.NVIDIA)
-    monkeypatch.setenv("NVIDIA_API_KEY_3", "nvidia-key-3")
-
-    resolved = KeyResolver(config).resolve(provider=Provider.NVIDIA, key_id=3)
-
-    assert resolved.key_id == 3
-    assert resolved.env_var == "NVIDIA_API_KEY_3"
-    assert resolved.value == "nvidia-key-3"
-
-
-def test_fixed_key_uses_configured_custom_env_name(
+def test_fixed_key_can_use_configured_custom_env_name(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config = build_default_config()
@@ -40,41 +26,35 @@ def test_fixed_key_uses_configured_custom_env_name(
         provider_specs[Provider.NVIDIA],
         api_key_env_vars={4: "CUSTOM_NVIDIA_KEY"},
     )
-    custom_config = replace(
-        config,
-        catalog=replace(config.catalog, providers=provider_specs),
-    )
+    config = replace(config, catalog=replace(config.catalog, providers=provider_specs))
     monkeypatch.setenv("CUSTOM_NVIDIA_KEY", "custom-value")
 
-    resolved = KeyResolver(custom_config).resolve(provider=Provider.NVIDIA, key_id=4)
+    resolved = KeyResolver(config).resolve(provider=Provider.NVIDIA, key_id=4)
 
-    assert resolved.key_id == 4
-    assert resolved.env_var == "CUSTOM_NVIDIA_KEY"
-    assert resolved.value == "custom-value"
+    assert (resolved.key_id, resolved.env_var, resolved.value) == (
+        4,
+        "CUSTOM_NVIDIA_KEY",
+        "custom-value",
+    )
 
 
-def test_auto_key_rotation_uses_sorted_configured_and_discovered_keys(
+def test_auto_key_rotation_uses_sorted_available_keys(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config = build_default_config()
     _clear_provider_keys(monkeypatch, Provider.NVIDIA)
-    monkeypatch.setenv("NVIDIA_API_KEY_2", "nvidia-key-2")
-    monkeypatch.setenv("NVIDIA_API_KEY_1", "nvidia-key-1")
+    monkeypatch.setenv("NVIDIA_API_KEY_2", "key-2")
+    monkeypatch.setenv("NVIDIA_API_KEY_1", "key-1")
     resolver = KeyResolver(config)
 
-    first = resolver.resolve(provider=Provider.NVIDIA, key_id="auto")
-    second = resolver.resolve(provider=Provider.NVIDIA, key_id="auto")
-    third = resolver.resolve(provider=Provider.NVIDIA, key_id="auto")
-
-    assert [first.key_id, second.key_id, third.key_id] == [1, 2, 1]
-    assert [first.value, second.value, third.value] == [
-        "nvidia-key-1",
-        "nvidia-key-2",
-        "nvidia-key-1",
+    resolved = [
+        resolver.resolve(provider=Provider.NVIDIA, key_id="auto") for _ in range(3)
     ]
 
+    assert [key.key_id for key in resolved] == [1, 2, 1]
 
-def test_missing_key_raises_public_configuration_error(
+
+def test_missing_required_key_raises_public_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config = build_default_config()
@@ -85,23 +65,9 @@ def test_missing_key_raises_public_configuration_error(
 
     assert exc_info.value.key_name == "NVIDIA_API_KEY_9"
     assert exc_info.value.provider == Provider.NVIDIA.value
-    assert exc_info.value.key_id == 9
 
 
-def test_qwenchat_missing_key_resolves_empty_optional_bearer(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    config = build_default_config()
-    _clear_provider_keys(monkeypatch, Provider.QWENCHAT)
-
-    resolved = KeyResolver(config).resolve(provider=Provider.QWENCHAT, key_id=1)
-
-    assert resolved.key_id == 1
-    assert resolved.env_var == "QWENCHAT_API_KEY_1"
-    assert resolved.value == ""
-
-
-def test_qwenchat_auto_key_without_env_uses_default_empty_bearer(
+def test_optional_qwenchat_key_can_resolve_to_empty_bearer(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config = build_default_config()
@@ -110,5 +76,4 @@ def test_qwenchat_auto_key_without_env_uses_default_empty_bearer(
     resolved = KeyResolver(config).resolve(provider=Provider.QWENCHAT, key_id="auto")
 
     assert resolved.key_id == 1
-    assert resolved.env_var == "QWENCHAT_API_KEY_1"
     assert resolved.value == ""

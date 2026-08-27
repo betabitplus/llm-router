@@ -1,11 +1,11 @@
-"""Project-specific helpers for contract-focused llm_router e2e tests.
+"""Project-specific helpers for contract-focused llm_router behavioral tests.
 
 Why:
-    Keeps contract e2e scenarios focused on public outcomes instead of
+    Keeps contract behavioral scenarios focused on public outcomes instead of
     repeating subprocess orchestration and JSON worker parsing in every file.
 
 When to use:
-    Use from llm_router contract e2e tests that need isolated process setup
+    Use from llm_router contract behavioral tests that need isolated process setup
     before importing `llm_router`.
 
 How:
