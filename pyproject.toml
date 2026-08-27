@@ -44,12 +44,11 @@ urls.Repository = "https://github.com/betabitplus/llm-router"
 
 [dependency-groups]
 dev = [
-  # Test runner and plugins
   "allure-pytest-bdd>=2.16,<3",
   # Security auditing
   "bandit>=1.9.4",
   "beartype>=0.22.9",
-  "brotli>=1.2.0",
+  "brotli>=1.2",
   "check-manifest>=0.51",
   "check-wheel-contents>=0.6.1",
   "commitizen>=4.16.3",
@@ -63,54 +62,53 @@ dev = [
   # Docs consistency
   "interrogate>=1.7",
   # Interactive development
-  "ipykernel>=7.3.0",
+  "ipykernel>=7.3",
   "ipytest>=0.14.2,<0.15",
   "ipython>=9.14.1",
   "ipywidgets>=8.1.8",
   "jupyter>=1.1.1",
   "mdformat>=0.7.22",
-  "mdformat-beautysh>=1.0.0",
+  "mdformat-beautysh>=1",
   "mdformat-frontmatter>=2.1.2",
-  "mdformat-gfm>=1.0.0",
+  "mdformat-gfm>=1",
   "mdformat-ruff>=0.1.3",
-  "mdformat-tables>=1.0.0",
+  "mdformat-tables>=1",
   "nest-asyncio>=1.6",
   "pillow>=12.2",
   "pip-audit>=2.10.1",
-  "pre-commit>=4.6.0",
+  "pre-commit>=4.6",
   # Shared repo tooling and test support
   "py-lib-policy",
-  # Test runner and plugins
   "py-lib-testkit",
-  "pygments>=2.20.0",
+  "pygments>=2.20",
   "pymupdf",
-  "pyproject-fmt>=2.23.0",
+  "pyproject-fmt>=2.23",
   "pyright>=1.1.410",
-  "pytest>=9.1.0",
-  "pytest-asyncio>=1.3.0",
+  "pytest>=9.1",
+  "pytest-asyncio>=1.3",
   "pytest-bdd>=8.1,<9",
-  "pytest-cov>=7.1.0",
-  "pytest-randomly>=4.1.0",
+  "pytest-cov>=7.1",
+  "pytest-randomly>=4.1",
   "pytest-recording>=0.13.4",
-  "pytest-xdist>=3.8.0",
+  "pytest-xdist>=3.8",
   # Code quality and formatting
   "radon>=6.0.1",
   "rich>=15",
   "ruff>=0.15.17",
   "syrupy>=5.3.2",
-  "twine>=6.2.0",
+  "twine>=6.2",
   "ty>=0.0.50",
   "types-pillow>=10.2.0.20240822",
   "validate-pyproject>=0.25",
-  "wheel>=0.47.0",
+  "wheel>=0.47",
 ]
 docs = [
   "matplotlib>=3.11.1",
   "myst-parser>=4.0.1",
-  "pydata-sphinx-theme>=0.20.0",
+  "pydata-sphinx-theme>=0.20",
   "sphinx>=8.2.3",
-  "sphinx-gallery>=0.21.0",
-  "sphinxcontrib-mermaid>=2.1.0",
+  "sphinx-gallery>=0.21",
+  "sphinxcontrib-mermaid>=2.1",
 ]
 
 [tool.setuptools]
