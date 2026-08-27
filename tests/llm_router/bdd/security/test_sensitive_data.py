@@ -1,4 +1,4 @@
-"""Bindings for sensitive-data protection living specifications."""
+"""Bindings for sensitive-data protection BDD scenarios."""
 
 from __future__ import annotations
 

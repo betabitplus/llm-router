@@ -1,4 +1,4 @@
-"""Bindings for route fallback living specifications."""
+"""Bindings for route fallback BDD scenarios."""
 
 from __future__ import annotations
 

@@ -4,9 +4,6 @@ Start with [SETUP.md](SETUP.md) to provision the local environment. If your
 local environment feels off, run `bash scripts/env/doctor.sh` before debugging
 deeper.
 
-Use [docs/llm_router/README.md](docs/llm_router/README.md) for package
-docs.
-
 Repository-wide package and reusable-zone checks read metadata from
 `[tool.ternforge]` in `pyproject.toml`. When repo-local scripts or shared
 test support need package names or env-var prefixes, use
@@ -95,9 +92,8 @@ Keep examples focused on imports from `llm_router`. If an example
 needs private modules, move that investigation to `workbench/` or convert it
 into a test.
 
-Every committed example should have a matching link from the package usage docs.
-The examples smoke test discovers and runs committed example scripts so
-docs examples do not drift silently.
+Sphinx-Gallery discovers committed examples from `examples/llm_router/`, and the
+examples smoke test keeps those scripts executable.
 
 ## Live Workbench Scripts
 

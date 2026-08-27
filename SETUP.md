@@ -35,7 +35,7 @@ If a shell has not loaded `.envrc`, run repo commands through `direnv exec .`:
 
 ```bash
 direnv exec . uv run pytest tests/llm_router -m hermetic -q
-direnv exec . uv run pytest tests/llm_router/integration/test_config_lifecycle.py -q --no-cov
+direnv exec . uv run pytest tests/llm_router/bdd/configuration/test_overrides.py -q --no-cov --record-mode=none --block-network
 ```
 
 ## Devcontainer

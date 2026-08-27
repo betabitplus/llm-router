@@ -1,5 +1,5 @@
 # %%
-"""Bindings for the structured video living specification."""
+"""Bindings for the structured video BDD scenario."""
 
 from __future__ import annotations
 

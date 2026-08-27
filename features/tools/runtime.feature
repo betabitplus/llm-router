@@ -1,4 +1,4 @@
-@specification @hermetic @cap_tools @cap_resilience
+@hermetic
 Feature: Tool execution
   Tool workflows should either complete predictably or fail through the public API.
 

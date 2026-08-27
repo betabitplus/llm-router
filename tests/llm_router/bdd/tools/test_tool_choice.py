@@ -1,5 +1,5 @@
 # %%
-"""Bindings for the explicit tool-choice living specification."""
+"""Bindings for the explicit tool-choice BDD scenario."""
 
 from __future__ import annotations
 

@@ -46,7 +46,7 @@ repos:
         exclude: ^sandbox/
 
   # =============================================================================
-  # Gherkin - Living Specifications formatting and linting
+  # Gherkin formatting and linting
   # =============================================================================
   - repo: local
     hooks:

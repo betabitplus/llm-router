@@ -1,4 +1,4 @@
-@specification @hermetic @vcr @cap_image @cap_structured
+@hermetic @vcr
 Feature: Structured image understanding
   The same image contract should remain valid across supported provider routes.
 

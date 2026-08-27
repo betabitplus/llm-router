@@ -1,4 +1,4 @@
-@specification @hermetic @cap_resilience
+@hermetic
 Feature: Public response contract
   Provider-specific implementations should expose the same stable public response model.
 

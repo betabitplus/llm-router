@@ -1,4 +1,4 @@
-"""Bindings for the public response-contract living specification."""
+"""Bindings for the public response-contract BDD scenario."""
 
 from __future__ import annotations
 

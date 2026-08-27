@@ -1,4 +1,4 @@
-@specification @hermetic @vcr @cap_structured
+@hermetic @vcr
 Feature: Structured text output
   Plain text requests should be convertible into validated structured records.
 

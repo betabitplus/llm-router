@@ -1,4 +1,4 @@
-@specification @hermetic @vcr @cap_tools @cap_structured
+@hermetic @vcr
 Feature: Multi-round tool execution
   Tool-driven workflows should preserve their intermediate steps in the final result.
 
