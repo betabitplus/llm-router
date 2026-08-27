@@ -1,5 +1,5 @@
 # %%
-"""Bindings for the async public execution living specification."""
+"""Bindings for the async public execution BDD scenario."""
 
 from __future__ import annotations
 
@@ -189,7 +189,7 @@ def async_image_is_grounded(response: LLMRouterResponse) -> None:
     )
 
 
-# %% Run this cell for the selected async specification scenarios.
+# %% Run this cell for the selected async BDD scenarios.
 # They execute against live providers.
 if __name__ == "__main__":
     import ipytest

@@ -1,4 +1,4 @@
-@specification @hermetic @vcr @cap_video @cap_structured
+@hermetic @vcr
 Feature: Structured video understanding
   Video input should produce structured observations grounded in visible action.
 

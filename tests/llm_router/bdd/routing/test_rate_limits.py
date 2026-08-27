@@ -1,4 +1,4 @@
-"""Bindings for route availability living specifications."""
+"""Bindings for route availability BDD scenarios."""
 
 from __future__ import annotations
 

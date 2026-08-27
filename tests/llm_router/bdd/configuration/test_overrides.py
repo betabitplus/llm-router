@@ -1,4 +1,4 @@
-"""Bindings for configuration override living specifications."""
+"""Bindings for configuration override BDD scenarios."""
 
 from __future__ import annotations
 

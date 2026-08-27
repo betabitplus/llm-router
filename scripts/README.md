@@ -42,7 +42,7 @@ Use shared smoke commands directly:
 
 ```bash
 uv build
-uv run pytest -m specification --record-mode=none -q --no-cov
+uv run pytest
 ```
 
 Check and apply released Ternforge template updates with Copier:

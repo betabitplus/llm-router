@@ -1,4 +1,4 @@
-@specification @hermetic @cap_resilience
+@hermetic
 Feature: Provider recovery
   Temporary provider failures and invalid structured responses can be recovered when policy allows it.
 

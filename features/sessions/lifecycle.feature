@@ -1,4 +1,4 @@
-@specification @hermetic @cap_session
+@hermetic
 Feature: Session lifecycle
   Sessions preserve conversation state and can be safely reset, persisted, and branched.
 

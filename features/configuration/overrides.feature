@@ -1,4 +1,4 @@
-@specification @hermetic
+@hermetic
 Feature: Configuration overrides
   Requests can override router and route defaults without changing unrelated settings.
 

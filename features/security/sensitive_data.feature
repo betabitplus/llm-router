@@ -1,4 +1,4 @@
-@specification @hermetic
+@hermetic
 Feature: Sensitive data protection
   Diagnostic output and recorded provider traffic must not expose secrets or user content.
 

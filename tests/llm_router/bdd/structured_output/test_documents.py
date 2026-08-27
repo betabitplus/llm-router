@@ -1,5 +1,5 @@
 # %%
-"""Bindings for the structured document living specification."""
+"""Bindings for the structured document BDD scenario."""
 
 from __future__ import annotations
 

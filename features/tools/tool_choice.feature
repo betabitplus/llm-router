@@ -1,4 +1,4 @@
-@specification @hermetic @vcr @cap_tools @cap_structured
+@hermetic @vcr
 Feature: Explicit tool choice
   A named tool choice should be honored before the final structured answer is returned.
 

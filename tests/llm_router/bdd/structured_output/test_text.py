@@ -1,5 +1,5 @@
 # %%
-"""Bindings for the structured text living specification."""
+"""Bindings for the structured text BDD scenario."""
 
 from __future__ import annotations
 
@@ -63,7 +63,7 @@ def _usage_payload(response: LLMRouterResponse) -> object:
 
 @given("the QwenChat structured text route", target_fixture="router")
 def qwenchat_structured_text_route() -> LLMRouter:
-    """Build the public QwenChat route used by the specification."""
+    """Build the public QwenChat route used by the BDD scenario."""
     return LLMRouter(
         RouterProfile(model=Model.QWEN_MAX_LATEST, provider=Provider.QWENCHAT),
         temperature=0.0,

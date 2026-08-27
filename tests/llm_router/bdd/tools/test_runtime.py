@@ -1,4 +1,4 @@
-"""Bindings for tool execution living specifications."""
+"""Bindings for tool execution BDD scenarios."""
 
 from __future__ import annotations
 

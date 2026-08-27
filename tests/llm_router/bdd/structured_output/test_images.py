@@ -1,5 +1,5 @@
 # %%
-"""Bindings for the structured image living specification."""
+"""Bindings for the structured image BDD scenario."""
 
 from __future__ import annotations
 

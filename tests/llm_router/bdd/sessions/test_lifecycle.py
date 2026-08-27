@@ -1,4 +1,4 @@
-"""Bindings for session lifecycle living specifications."""
+"""Bindings for session lifecycle BDD scenarios."""
 
 from __future__ import annotations
 

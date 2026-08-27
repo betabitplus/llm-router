@@ -1,4 +1,4 @@
-@specification @hermetic @cap_routing
+@hermetic
 Feature: Route fallback
   A router can try alternative routes when the preferred route cannot complete the request.
 

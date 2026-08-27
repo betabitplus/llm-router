@@ -1,4 +1,4 @@
-@specification @hermetic @vcr @cap_file @cap_structured
+@hermetic @vcr
 Feature: Structured document extraction
   Attached documents should produce structured facts grounded in their source text.
 

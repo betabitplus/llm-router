@@ -1,4 +1,4 @@
-"""Small deterministic fakes shared by hermetic living specifications."""
+"""Small deterministic fakes shared by hermetic BDD scenarios."""
 
 from __future__ import annotations
 

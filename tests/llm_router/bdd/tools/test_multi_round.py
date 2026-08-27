@@ -1,5 +1,5 @@
 # %%
-"""Bindings for the multi-round tool execution living specification."""
+"""Bindings for the multi-round tool execution BDD scenario."""
 
 from __future__ import annotations
 

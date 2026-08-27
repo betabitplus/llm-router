@@ -148,7 +148,7 @@ def vcr_config() -> dict[str, Any]:
     return {
         "filter_headers": FILTER_HEADERS,
         # CI blocks all network during replay. Permit only the deterministic local
-        # fault server used by hermetic public-boundary specifications.
+        # fault server used by hermetic public-boundary BDD scenarios.
         "allowed_hosts": [r"^127\.0\.0\.1$"],
         # Match on body to ensure different requests get different cassettes
         "match_on": MATCH_ON,

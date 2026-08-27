@@ -1,4 +1,4 @@
-"""Bindings for provider recovery living specifications."""
+"""Bindings for provider recovery BDD scenarios."""
 
 from __future__ import annotations
 

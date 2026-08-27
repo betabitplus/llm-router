@@ -1,4 +1,4 @@
-@specification @hermetic @cap_routing
+@hermetic
 Feature: Route availability
   Temporarily unavailable routes should not prevent useful alternatives from running.
 
@@ -26,7 +26,7 @@ Feature: Route availability
 
   Rule: Automatic key selection uses available capacity before waiting
 
-    @vcr @cap_async
+    @vcr
     Scenario: Requests rotate across available keys before waiting for reuse
       Given a provider route uses automatic key selection with two keys
       When three asynchronous requests are made in sequence

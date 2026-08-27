@@ -2103,15 +2103,6 @@ docs = [
     { name = "sphinx-gallery" },
     { name = "sphinxcontrib-mermaid" },
 ]
-specifications = [
-    { name = "allure-pytest-bdd" },
-    { name = "py-lib-testkit" },
-    { name = "pymupdf" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-bdd" },
-    { name = "pytest-recording" },
-]
 
 [package.metadata]
 requires-dist = [
@@ -2157,7 +2148,7 @@ dev = [
     { name = "pillow", specifier = ">=12.2" },
     { name = "pip-audit", specifier = ">=2.10.1" },
     { name = "pre-commit", specifier = ">=4.6.0" },
-    { name = "py-lib-policy", git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git?tag=v1.2.4" },
+    { name = "py-lib-policy", git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git?tag=v1.2.5" },
     { name = "py-lib-testkit", git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.1.2" },
     { name = "pygments", specifier = ">=2.20.0" },
     { name = "pymupdf" },
@@ -2187,15 +2178,6 @@ docs = [
     { name = "sphinx", specifier = ">=8.2.3" },
     { name = "sphinx-gallery", specifier = ">=0.21.0" },
     { name = "sphinxcontrib-mermaid", specifier = ">=2.1.0" },
-]
-specifications = [
-    { name = "allure-pytest-bdd", specifier = ">=2.16,<3" },
-    { name = "py-lib-testkit", git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.1.2" },
-    { name = "pymupdf" },
-    { name = "pytest", specifier = ">=9.1.0" },
-    { name = "pytest-asyncio", specifier = ">=1.3.0" },
-    { name = "pytest-bdd", specifier = ">=8.1,<9" },
-    { name = "pytest-recording", specifier = ">=0.13.4" },
 ]
 
 [[package]]
@@ -3138,8 +3120,8 @@ wheels = [
 
 [[package]]
 name = "py-lib-policy"
-version = "1.2.4"
-source = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git?tag=v1.2.4#5e5ece0595325ffa177dbdfb4f3999ac76c67f79" }
+version = "1.2.5"
+source = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git?tag=v1.2.5#43f0f85c124f9024bf081f1c037582c6a9d39d40" }
 
 [[package]]
 name = "py-lib-runtime"
