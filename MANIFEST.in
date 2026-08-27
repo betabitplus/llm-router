@@ -1,5 +1,6 @@
 # Minimal sdist inputs for the Python library package.
 include pyproject.toml
+include ubproject.toml
 include .editorconfig
 include .envrc
 include .flake8

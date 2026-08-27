@@ -8,6 +8,9 @@ project = "llm-router"
 
 extensions = [
     "myst_parser",
+    "sphinx_needs",
+    "sphinx_codelinks",
+    "sphinxcontrib.test_reports",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
@@ -16,6 +19,12 @@ extensions = [
 ]
 
 root_doc = "index"
+needs_from_toml = "../ubproject.toml"
+src_trace_config_from_toml = "../ubproject.toml"
+tr_extra_options = ["verification_kind", "gherkin_feature", "gherkin_scenario"]
+tr_property_link_types = {"verifies": "verifies"}
+tr_suite_id_length = 8
+tr_case_id_length = 8
 exclude_patterns = ["_build", "README.md"]
 myst_fence_as_directive = {"mermaid"}
 html_theme = "pydata_sphinx_theme"

@@ -4,6 +4,7 @@ Feature: Route fallback
 
   Rule: Routes are attempted according to routing policy
 
+    @REQ_SYNC_ROUTE_FALLBACK[revision==1]
     Scenario: A failed route falls back to the next route
       Given the router has two available routes
       And the first route fails
