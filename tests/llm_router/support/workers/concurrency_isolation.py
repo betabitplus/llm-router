@@ -1,11 +1,11 @@
-"""Project-specific helpers for concurrency-isolation llm_router e2e tests.
+"""Project-specific helpers for concurrency-isolation llm_router behavioral tests.
 
 Why:
-    Keeps concurrency-isolation e2e scenarios focused on public outcomes
+    Keeps concurrency-isolation behavioral scenarios focused on public outcomes
     instead of repeating subprocess orchestration and JSON result parsing.
 
 When to use:
-    Use from llm_router concurrency-isolation e2e tests that exercise shared
+    Use from llm_router concurrency-isolation behavioral tests that exercise shared
     async client state inside one process.
 
 How:

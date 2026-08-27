@@ -1,11 +1,11 @@
-"""Project-specific helpers for tool-round-limit llm_router e2e tests.
+"""Project-specific helpers for tool-round-limit llm_router behavioral tests.
 
 Why:
-    Keeps tool-round-limit e2e scenarios focused on public outcomes instead of
+    Keeps tool-round-limit behavioral scenarios focused on public outcomes instead of
     repeating subprocess orchestration and JSON result parsing.
 
 When to use:
-    Use from llm_router tool-round-limit e2e tests that drive real tool-capable
+    Use from llm_router tool-round-limit behavioral tests that drive real tool-capable
     paths through a local scripted server.
 
 How:

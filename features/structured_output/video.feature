@@ -1,12 +1,12 @@
 @specification @hermetic @vcr @cap_video @cap_structured
 Feature: Structured video understanding
-  Local video input should produce structured observations grounded in visible action.
+  Video input should produce structured observations grounded in visible action.
 
-  Rule: The example clip produces grounded action and location evidence
+  Rule: A local clip produces grounded action and location evidence
 
-    Scenario: QwenChat describes the example rooftop video
-      Given the QwenChat video route
-      When the route analyzes the example video:
+    Scenario Outline: A provider route describes the example rooftop video
+      Given the "<route>" local video route
+      When the route analyzes the example rooftop video:
         """
         You are given a short video clip.
         
@@ -23,3 +23,23 @@ Feature: Structured video understanding
         Return ONLY valid JSON. No markdown.
         """
       Then the observation is grounded in a rooftop jump
+
+      Examples:
+        | route         |
+        | QwenChat      |
+        | AI Studio     |
+        | Gemini WebAPI |
+        | Google GenAI  |
+
+  Rule: A remote video URL can be analyzed without changing the public result contract
+
+    Scenario Outline: A provider route describes the example remote video
+      Given the "<route>" remote video route
+      When the route analyzes the example remote video
+      Then the observation is grounded in the indoor activity
+
+      Examples:
+        | route         |
+        | AI Studio     |
+        | Gemini WebAPI |
+        | Google GenAI  |

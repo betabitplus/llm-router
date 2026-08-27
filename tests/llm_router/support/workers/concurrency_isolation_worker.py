@@ -1,4 +1,4 @@
-"""Subprocess worker for concurrency-isolation llm_router e2e tests.
+"""Subprocess worker for concurrency-isolation llm_router behavioral tests.
 
 Why:
     Keeps shared async-client concurrency behavior out of the main pytest

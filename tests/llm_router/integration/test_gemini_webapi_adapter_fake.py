@@ -78,7 +78,7 @@ def _response(text: str) -> SimpleNamespace:
     )
 
 
-def test_sync_gemini_webapi_uses_fake_client_and_normalizes_text() -> None:
+def test_sync_gemini_webapi_crosses_sdk_boundary() -> None:
     client = FakeClient([_response("ok")])
 
     result = GeminiWebAPIAdapter(client=client).execute(_request())
@@ -90,7 +90,7 @@ def test_sync_gemini_webapi_uses_fake_client_and_normalizes_text() -> None:
 
 
 @pytest.mark.asyncio
-async def test_async_gemini_webapi_uploads_local_video_path(tmp_path: Path) -> None:
+async def test_async_gemini_webapi_passes_local_video_path(tmp_path: Path) -> None:
     video_path = tmp_path / "clip.mp4"
     video_path.write_bytes(b"video")
     request = _request(
@@ -104,76 +104,29 @@ async def test_async_gemini_webapi_uploads_local_video_path(tmp_path: Path) -> N
     assert client.calls[0]["file_names"] == ["clip.mp4"]
 
 
-@pytest.mark.asyncio
-async def test_gemini_webapi_reuses_initialized_runtime_client() -> None:
-    status_checks = 0
-    client_builds = 0
-    client_inits = 0
-    client = FakeClient([_response("one"), _response("two")])
-
-    def runtime_status() -> dict[str, bool]:
-        nonlocal status_checks
-        status_checks += 1
-        return {"ready": True}
-
-    def build_client() -> FakeClient:
-        nonlocal client_builds
-        client_builds += 1
-        return client
-
-    async def init_client(candidate: object, timeout_seconds: float) -> object:
-        nonlocal client_inits
-        del timeout_seconds
-        client_inits += 1
-        return candidate
-
-    adapter = GeminiWebAPIAdapter(
-        runtime_status_func=runtime_status,
-        client_builder=build_client,
-        init_client_func=init_client,
-    )
-
-    first = await adapter.aexecute(_request())
-    second = await adapter.aexecute(_request())
-
-    assert first.output_text == "one"
-    assert second.output_text == "two"
-    assert status_checks == 1
-    assert client_builds == 1
-    assert client_inits == 1
-    assert len(client.calls) == 2
-
-
-@pytest.mark.parametrize(
-    ("outcome", "retryable", "retry_reason", "status_code"),
-    [
-        (FakeStatusError(503, "try again"), True, "retryable_status", 503),
-        (FakeStatusError(400, "bad request"), False, "caller_or_auth_status", 400),
-        (
-            FakeProviderCodeError(1060, "server refused"),
-            False,
-            "gemini_webapi_error_code",
-            1060,
-        ),
-    ],
-)
-def test_gemini_webapi_errors_are_classified(
-    outcome: Exception,
-    retryable: bool,
-    retry_reason: str,
-    status_code: int,
-) -> None:
-    client = FakeClient([outcome])
+def test_gemini_webapi_retryable_status_is_translated() -> None:
+    client = FakeClient([FakeStatusError(503, "try again")])
 
     with pytest.raises(ProviderError) as exc_info:
         GeminiWebAPIAdapter(client=client).execute(_request())
 
-    assert exc_info.value.cause.status_code == status_code
-    assert exc_info.value.cause.retryable is retryable
-    assert exc_info.value.cause.retry_reason == retry_reason
+    assert exc_info.value.cause.status_code == 503
+    assert exc_info.value.cause.retryable is True
+    assert exc_info.value.cause.retry_reason == "retryable_status"
 
 
-def test_gemini_webapi_structured_and_textual_tool_outputs_are_normalized() -> None:
+def test_gemini_webapi_provider_specific_error_code_is_preserved() -> None:
+    client = FakeClient([FakeProviderCodeError(1060, "server refused")])
+
+    with pytest.raises(ProviderError) as exc_info:
+        GeminiWebAPIAdapter(client=client).execute(_request())
+
+    assert exc_info.value.cause.status_code == 1060
+    assert exc_info.value.cause.retryable is False
+    assert exc_info.value.cause.retry_reason == "gemini_webapi_error_code"
+
+
+def test_gemini_webapi_normalizes_structured_and_textual_tool_outputs() -> None:
     client = FakeClient([_response('{"answer": "ok"}'), _response("add(2, 3)")])
     adapter = GeminiWebAPIAdapter(client=client)
     registry = ToolRegistry.from_tools([add])

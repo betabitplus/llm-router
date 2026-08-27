@@ -1,11 +1,11 @@
 """Project-specific helpers for retry-focused llm_router tests.
 
 Why:
-    Keeps retry e2e scenarios focused on public outcomes instead of repeating
+    Keeps retry behavioral scenarios focused on public outcomes instead of repeating
     subprocess orchestration and provider-shaped payload builders in every file.
 
 When to use:
-    Use from llm_router retry e2e tests that drive real HTTP clients through a
+    Use from llm_router retry behavioral tests that drive real HTTP clients through a
     local scripted fault server.
 
 How:

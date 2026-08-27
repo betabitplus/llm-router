@@ -1,4 +1,4 @@
-"""Subprocess worker for tool-failure llm_router e2e tests.
+"""Subprocess worker for tool-failure llm_router behavioral tests.
 
 Why:
     Keeps external SDK patching out of the main pytest process so tool-failure
@@ -26,7 +26,7 @@ from tests.llm_router.support.workers.worker_patches import prepare_fault_case
 
 
 def explode(*, value: int) -> dict[str, int]:
-    """Raise a deterministic tool failure for e2e testing."""
+    """Raise a deterministic tool failure for behavioral testing."""
     msg = f"tool exploded with value={value}"
     raise RuntimeError(msg)
 

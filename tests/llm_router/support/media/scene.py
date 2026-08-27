@@ -2,7 +2,7 @@
 
 Why:
     Reuses one structured image-analysis contract across providers so image
-    e2e tests stay comparable.
+    behavioral tests stay comparable.
 
 When to use:
     Import from here when a scenario validates structured output for the shared

@@ -1,11 +1,11 @@
-"""Project-specific helpers for tool-failure llm_router e2e tests.
+"""Project-specific helpers for tool-failure llm_router behavioral tests.
 
 Why:
-    Keeps tool-failure e2e scenarios focused on public outcomes instead of
+    Keeps tool-failure behavioral scenarios focused on public outcomes instead of
     repeating subprocess orchestration and provider-shaped payload builders.
 
 When to use:
-    Use from llm_router tool-failure e2e tests that drive real tool-capable
+    Use from llm_router tool-failure behavioral tests that drive real tool-capable
     client paths through a local scripted fault server.
 
 How:

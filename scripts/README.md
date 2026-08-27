@@ -42,7 +42,7 @@ Use shared smoke commands directly:
 
 ```bash
 uv build
-uv run pytest tests/llm_router/e2e/public_boundary -q --no-cov
+uv run pytest -m specification --record-mode=none -q --no-cov
 ```
 
 Check and apply released Ternforge template updates with Copier:

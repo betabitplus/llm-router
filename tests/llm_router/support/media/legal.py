@@ -11,7 +11,7 @@ When to use:
 How:
     Use `LegalCase`, `build_legal_case_prompt()`, and
     `assert_legal_case_response(...)` rather than redefining the same schema in
-    multiple e2e files.
+    multiple behavioral files.
 """
 
 from __future__ import annotations

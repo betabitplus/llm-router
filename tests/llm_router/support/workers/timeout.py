@@ -1,11 +1,11 @@
-"""Project-specific helpers for attempt-timeout llm_router e2e tests.
+"""Project-specific helpers for attempt-timeout llm_router behavioral tests.
 
 Why:
-    Keeps attempt-timeout e2e scenarios focused on public outcomes instead of
+    Keeps attempt-timeout behavioral scenarios focused on public outcomes instead of
     repeating subprocess orchestration and JSON result parsing.
 
 When to use:
-    Use from llm_router timeout e2e tests that drive real SDK traffic through a
+    Use from llm_router timeout behavioral tests that drive real SDK traffic through a
     local scripted fault server.
 
 How:

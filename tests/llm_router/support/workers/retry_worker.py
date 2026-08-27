@@ -1,4 +1,4 @@
-"""Subprocess worker for retry-focused llm_router e2e tests.
+"""Subprocess worker for retry-focused llm_router behavioral tests.
 
 Why:
     Keeps provider SDK patching out of the main pytest process so retry tests

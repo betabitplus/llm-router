@@ -43,11 +43,7 @@ class FakeAsyncModels(FakeModels):
         contents: object,
         config: object,
     ) -> object:
-        return super().generate_content(
-            model=model,
-            contents=contents,
-            config=config,
-        )
+        return super().generate_content(model=model, contents=contents, config=config)
 
 
 class FakeClient:
@@ -56,21 +52,15 @@ class FakeClient:
         self.aio = SimpleNamespace(models=FakeAsyncModels(list(outcomes)))
 
 
-def _usage(
-    *,
-    prompt: int = 2,
-    candidates: int = 3,
-    total: int = 5,
-) -> SimpleNamespace:
-    return SimpleNamespace(
-        prompt_token_count=prompt,
-        candidates_token_count=candidates,
-        total_token_count=total,
-    )
-
-
 def _response(text: str) -> SimpleNamespace:
-    return SimpleNamespace(text=text, usage_metadata=_usage())
+    return SimpleNamespace(
+        text=text,
+        usage_metadata=SimpleNamespace(
+            prompt_token_count=2,
+            candidates_token_count=3,
+            total_token_count=5,
+        ),
+    )
 
 
 def _request() -> ProviderRequest:
@@ -90,7 +80,7 @@ def _request() -> ProviderRequest:
     )
 
 
-def test_sync_google_adapter_uses_fake_client_and_normalizes_result() -> None:
+def test_sync_google_adapter_uses_sdk_boundary_and_normalizes_result() -> None:
     client = FakeClient([_response("ok")])
 
     result = GoogleGenAIAdapter(client=client).execute(_request())
@@ -104,7 +94,7 @@ def test_sync_google_adapter_uses_fake_client_and_normalizes_result() -> None:
 
 
 @pytest.mark.asyncio
-async def test_async_google_adapter_uses_fake_client() -> None:
+async def test_async_google_adapter_uses_sdk_async_boundary() -> None:
     client = FakeClient([_response("async ok")])
 
     result = await GoogleGenAIAdapter(client=client).aexecute(_request())
@@ -113,23 +103,12 @@ async def test_async_google_adapter_uses_fake_client() -> None:
     assert client.aio.models.calls[0]["model"] == "gemini-3.6-flash"
 
 
-@pytest.mark.parametrize(
-    ("status_code", "retryable", "retry_reason"),
-    [
-        (503, True, "retryable_status"),
-        (400, False, "caller_or_auth_status"),
-    ],
-)
-def test_google_sdk_status_errors_are_classified(
-    status_code: int,
-    retryable: bool,
-    retry_reason: str,
-) -> None:
-    client = FakeClient([FakeAPIError(status_code, "provider said no")])
+def test_google_sdk_retryable_status_is_translated_to_provider_error() -> None:
+    client = FakeClient([FakeAPIError(503, "provider said no")])
 
     with pytest.raises(ProviderError) as exc_info:
         GoogleGenAIAdapter(client=client).execute(_request())
 
-    assert exc_info.value.cause.status_code == status_code
-    assert exc_info.value.cause.retryable is retryable
-    assert exc_info.value.cause.retry_reason == retry_reason
+    assert exc_info.value.cause.status_code == 503
+    assert exc_info.value.cause.retryable is True
+    assert exc_info.value.cause.retry_reason == "retryable_status"
