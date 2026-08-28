@@ -4,6 +4,8 @@
 
 - {doc}`Live executable examples <auto_examples/index>`
 - {doc}`API reference <api>`
+- {doc}`Routing requirements <requirements/routing>`
+- {doc}`Requirements traceability <traceability>`
 
 ```{toctree}
 :hidden:
@@ -11,4 +13,6 @@
 
 api
 auto_examples/index
+requirements/routing
+traceability
 ```

@@ -24,7 +24,7 @@ jobs:
   docs:
     name: docs
     if: ${{ vars.TERNFORGE_DOCS_MODE != '' }}
-    uses: betabitplus/ternforge-infra-ci/.github/workflows/python-library-docs.yml@083a8cadb58c33ef31db2e875a010a48c2da12bd # v5.5.2
+    uses: betabitplus/ternforge-infra-ci/.github/workflows/python-library-docs.yml@9e94e7b6fec77b98cf89b3f886772d58e8747a2f # v5.6.2
     with:
       python-version: "3.13"
       package-name: "llm_router"

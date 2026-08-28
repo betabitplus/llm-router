@@ -1,0 +1,106 @@
+"$schema" = "https://ubcode.useblocks.com/ubproject.schema.json"
+
+[needs]
+id_required = true
+build_json = true
+schema_definitions_from_json = "docs/_traceability/schemas.json"
+
+[needs.fields.revision]
+description = "Human-managed semantic revision used by conditional trace links."
+schema.type = "integer"
+schema.minimum = 1
+
+[needs.fields.needs_artifacts]
+description = "Minimal implementation and verification evidence required by this requirement."
+schema.type = "array"
+schema.items.type = "string"
+schema.items.enum = ["impl", "bdd", "unit", "property", "integration", "e2e"]
+schema.uniqueItems = true
+
+[needs.fields.verification_kind]
+description = "Verification evidence kind emitted by the pytest traceability transport."
+schema.type = "string"
+schema.enum = ["bdd", "unit", "property", "integration", "e2e"]
+
+[needs.fields.gherkin_feature]
+description = "Repository-relative Gherkin feature source for BDD evidence."
+schema.type = "string"
+
+[needs.fields.gherkin_scenario]
+description = "Gherkin scenario name for BDD evidence."
+schema.type = "string"
+
+[codelinks]
+set_local_url = true
+local_url_field = "source_url"
+
+[codelinks.projects.python.source_discover]
+src_dir = "src"
+include = ["**/*.py"]
+comment_type = "python"
+
+[codelinks.projects.python.analyse.oneline_comment_style]
+start_sequence = "@impl"
+end_sequence = "\n"
+field_split_char = ","
+
+[[codelinks.projects.python.analyse.oneline_comment_style.needs_fields]]
+name = "title"
+
+[[codelinks.projects.python.analyse.oneline_comment_style.needs_fields]]
+name = "id"
+
+[[codelinks.projects.python.analyse.oneline_comment_style.needs_fields]]
+name = "implements"
+type = "list[str]"
+
+[[codelinks.projects.python.analyse.oneline_comment_style.needs_fields]]
+name = "type"
+default = "impl"
+
+[needs.links.derives]
+outgoing = "derives from"
+incoming = "derived by"
+
+[needs.links.implements]
+outgoing = "implements"
+incoming = "implemented by"
+
+[needs.links.verifies]
+outgoing = "verifies"
+incoming = "verified by"
+
+[[needs.types]]
+directive = "goal"
+title = "Goal"
+prefix = "GOAL_"
+color = ""
+style = "node"
+
+[[needs.types]]
+directive = "feature"
+title = "Feature"
+prefix = "FEAT_"
+color = ""
+style = "node"
+
+[[needs.types]]
+directive = "req"
+title = "Requirement"
+prefix = "REQ_"
+color = ""
+style = "node"
+
+[[needs.types]]
+directive = "treq"
+title = "Technical Requirement"
+prefix = "TREQ_"
+color = ""
+style = "node"
+
+[[needs.types]]
+directive = "impl"
+title = "Implementation"
+prefix = "IMPL_"
+color = ""
+style = "artifact"
