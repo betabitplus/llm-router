@@ -139,6 +139,9 @@ DEFAULT_MODEL_REGISTRY: dict[Model, dict[Provider, str]] = {
         Provider.QWENCHAT: "qwen2.5-vl-32b-instruct",
     },
     Model.MISTRAL_LARGE: {Provider.MISTRAL: "mistral-large-latest"},
+    Model.LLAMA_11B_VISION: {
+        Provider.NVIDIA: "meta/llama-3.2-11b-vision-instruct",
+    },
     Model.DEEPSEEK_V4_FLASH: {
         Provider.NVIDIA: "deepseek-ai/deepseek-v4-flash-0731",
     },

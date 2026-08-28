@@ -23,7 +23,7 @@ if __name__ == "__main__":
     router = LLMRouter(
         RouterProfile(
             provider=Provider.NVIDIA,
-            model=Model.LLAMA_8B,
+            model=Model.LLAMA_11B_VISION,
             key_id="auto",
         ),
         limits_by_provider={
