@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.13.1](https://github.com/betabitplus/llm-router/compare/v0.13.0...v0.13.1) (2026-08-28)
+
+
+### Bug Fixes
+
+* use active NVIDIA model in key rotation example ([#74](https://github.com/betabitplus/llm-router/issues/74)) ([5b8604a](https://github.com/betabitplus/llm-router/commit/5b8604a780d916b65504c46cb8aeb04ee804911d))
+
 ## [0.13.0](https://github.com/betabitplus/llm-router/compare/v0.12.0...v0.13.0) (2026-08-28)
 
 
