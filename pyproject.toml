@@ -109,7 +109,9 @@ docs = [
   "sphinx>=8.2.3",
   "sphinx-codelinks>=1.4,<2",
   "sphinx-gallery>=0.21",
+  "sphinx-llm>=1,<2",
   "sphinx-needs>=8.3.1,<9",
+  "sphinx-simplepdf>=1.7,<2",
   "sphinx-test-reports>=1.4,<2",
   "sphinxcontrib-mermaid>=2.1"
 ]

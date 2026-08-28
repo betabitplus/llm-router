@@ -24,7 +24,7 @@ jobs:
   docs:
     name: docs
     if: ${{ vars.TERNFORGE_DOCS_MODE != '' }}
-    uses: betabitplus/ternforge-infra-ci/.github/workflows/python-library-docs.yml@9e94e7b6fec77b98cf89b3f886772d58e8747a2f # v5.6.2
+    uses: betabitplus/ternforge-infra-ci/.github/workflows/python-library-docs.yml@1c7108f14ff2013e188227dc2fea02146fed6e8d # v5.7.0
     with:
       python-version: "3.13"
       package-name: "llm_router"
@@ -32,6 +32,7 @@ jobs:
       docs-runner: ${{ vars.TERNFORGE_DOCS_RUNNER || 'ubuntu-24.04' }}
       playwright-browsers: ""
       local-environment: ${{ vars.TERNFORGE_DOCS_LOCAL_ENVIRONMENT == 'true' }}
+      release-dossier: true
       target-ref: ${{ github.event.release.tag_name || inputs.ref || '' }}
       force: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
     secrets:
