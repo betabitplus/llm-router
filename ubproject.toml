@@ -1,5 +1,8 @@
 "$schema" = "https://ubcode.useblocks.com/ubproject.schema.json"
 
+[server]
+index_on_save = true
+
 [needs]
 id_required = true
 build_json = true
@@ -29,6 +32,12 @@ schema.type = "string"
 [needs.fields.gherkin_scenario]
 description = "Gherkin scenario name for BDD evidence."
 schema.type = "string"
+
+[needs.fields.issue]
+description = "GitHub issue numbers tracking this requirement; Sphinx-Needs remains authoritative."
+schema.type = "array"
+schema.items.type = "integer"
+schema.uniqueItems = true
 
 [codelinks]
 set_local_url = true
@@ -104,3 +113,10 @@ title = "Implementation"
 prefix = "IMPL_"
 color = ""
 style = "artifact"
+
+[ubconnect.to_github_issues]
+repo = "betabitplus/llm-router"
+
+[ubconnect.validate_github_issues]
+repo = "betabitplus/llm-router"
+needsjson_path = "docs/_build/html/needs.json"
