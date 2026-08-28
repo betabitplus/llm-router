@@ -128,6 +128,7 @@ class Model(StrEnum):
     MISTRAL_LARGE = "mistral-large-latest"
 
     # NVIDIA models
+    LLAMA_11B_VISION = "llama-3.2-11b-vision-instruct"
     DEEPSEEK_V4_FLASH = "deepseek-v4-flash"
     LLAMA_8B = "llama-3.1-8b-instruct"
 
