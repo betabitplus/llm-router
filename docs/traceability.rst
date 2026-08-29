@@ -35,6 +35,9 @@ is ``passed``; skipped and expected-failure results remain visible evidence but 
 not satisfy the requirement obligation. Revision bumps invalidate stale
 ``verifies`` links until the verification has been reviewed and repinned.
 
+For normal human review, :doc:`verification` groups the same imported testcase
+Needs by BDD, unit, integration, property, and end-to-end verification kind.
+
 Evidence matrices
 -----------------
 
