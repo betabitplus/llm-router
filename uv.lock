@@ -2177,7 +2177,7 @@ wheels = [
 
 [[package]]
 name = "llm-router"
-version = "0.13.2"
+version = "0.14.0"
 source = { editable = "." }
 dependencies = [
     { name = "browser-cookie3" },
