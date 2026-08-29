@@ -6,6 +6,7 @@
 - {doc}`API reference <api>`
 - {doc}`Engineering requirements <requirements/index>`
 - {doc}`Requirements traceability <traceability>`
+- {doc}`Verification evidence <verification>`
 
 ```{toctree}
 :hidden:
@@ -15,4 +16,5 @@ api
 auto_examples/index
 requirements/index
 traceability
+verification
 ```
