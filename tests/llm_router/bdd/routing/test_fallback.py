@@ -2,21 +2,27 @@
 
 from __future__ import annotations
 
-import time
 from typing import Any
 
 import pytest
 from pytest_bdd import given, scenarios, then, when
 
-from llm_router import LLMRouter, Model, Provider, ProviderLimits, RouterProfile
-from llm_router._internal.runtime.router import RouterRuntime
-from tests.llm_router.bdd._support import ScriptedRouteExecutor
+from llm_router import (
+    LLMRouter,
+    Model,
+    Provider,
+    ProviderError,
+    ProviderLimits,
+    RouterProfile,
+)
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
 from tests.llm_router.support.workers.retry import (
     openai_chat_path,
+    openai_error_response,
     openai_success_response,
 )
 from tests.llm_router.support.workers.timeout import run_timeout_inprocess
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
 
 scenarios("routing/fallback.feature")
 
@@ -25,29 +31,37 @@ _TIMEOUT_TEXT = "timeout fallback ok"
 _TIMEOUT_DELAY_SECONDS = 2.0
 
 
-def _profiles() -> list[RouterProfile]:
-    return [
-        RouterProfile(provider=Provider.GROQ, model=Model.LLAMA_SCOUT),
-        RouterProfile(provider=Provider.NVIDIA, model=Model.DEEPSEEK_V4_FLASH),
-        RouterProfile(provider=Provider.OPENROUTER, model=Model.DEEPSEEK_V3),
-    ]
-
-
-def _keys(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("GROQ_API_KEY_1", "groq-key")
-    monkeypatch.setenv("NVIDIA_API_KEY_1", "nvidia-key")
-    monkeypatch.setenv("OPENROUTER_API_KEY_1", "openrouter-key")
+def _openrouter_keys(monkeypatch: pytest.MonkeyPatch, *, count: int) -> None:
+    for key_id in range(1, count + 1):
+        monkeypatch.setenv(f"OPENROUTER_API_KEY_{key_id}", f"openrouter-key-{key_id}")
 
 
 @given("the router has two available routes", target_fixture="case")
 def two_routes(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
-    _keys(monkeypatch)
-    return {"routes": _profiles()[:2]}
+    _openrouter_keys(monkeypatch, count=2)
+    return {
+        "router": LLMRouter(
+            [
+                RouterProfile(
+                    provider=Provider.OPENROUTER,
+                    model=Model.DEEPSEEK_V3,
+                    key_id=1,
+                ),
+                RouterProfile(
+                    provider=Provider.OPENROUTER,
+                    model=Model.DEEPSEEK_V3,
+                    key_id=2,
+                ),
+            ],
+            shuffle_fallbacks=False,
+            round_robin_start=False,
+        )
+    }
 
 
 @given("the first route fails")
 def first_route_fails(case: dict[str, Any]) -> None:
-    case["executor"] = ScriptedRouteExecutor([RuntimeError("first failed")])
+    case["first_route_status"] = 400
 
 
 @when("a request is made")
@@ -61,21 +75,38 @@ def request_is_made(case: dict[str, Any]) -> None:
             case["request_count"] = server.request_count("POST", _TIMEOUT_PATH)
         return
 
-    runtime = RouterRuntime(
-        spec=case["routes"],
-        _executor=case["executor"],
-        attempt_timeout_seconds=case.get("timeout"),
-        shuffle_fallbacks=False,
-        round_robin_start=False,
-    )
-    started = time.monotonic()
-    case["response"] = runtime.query("hello")
-    case["elapsed"] = time.monotonic() - started
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", _TIMEOUT_PATH): [
+                ScriptedResponse(
+                    status_code=case["first_route_status"],
+                    headers={"Content-Type": "application/json"},
+                    body=openai_error_response(
+                        status_code=case["first_route_status"],
+                        message="first route failed",
+                    ),
+                ),
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text="route-1"),
+                ),
+            ]
+        },
+    ) as server:
+        with patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ):
+            case["response"] = case["router"].query("hello")
+        case["request_count"] = server.request_count("POST", _TIMEOUT_PATH)
 
 
 @then("the second route is used")
 def second_route_is_used(case: dict[str, Any]) -> None:
     assert case["response"].output_text == "route-1"
+    assert case["request_count"] == 2
 
 
 @then("the routing trace contains both attempts")
@@ -160,35 +191,62 @@ def terminal_timeout_is_public(terminal_case: dict[str, Any]) -> None:
     target_fixture="case",
 )
 def limited_attempts(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
-    _keys(monkeypatch)
+    _openrouter_keys(monkeypatch, count=3)
     return {
-        "routes": _profiles(),
-        "executor": ScriptedRouteExecutor(
+        "router": LLMRouter(
             [
-                RuntimeError("first failed"),
-                RuntimeError("second failed"),
-                RuntimeError("third failed"),
-            ]
-        ),
+                RouterProfile(
+                    provider=Provider.OPENROUTER,
+                    model=Model.DEEPSEEK_V3,
+                    key_id=key_id,
+                )
+                for key_id in (1, 2, 3)
+            ],
+            max_attempts=2,
+            shuffle_fallbacks=False,
+            round_robin_start=False,
+        )
     }
 
 
 @when("all attempted routes fail")
 def all_attempted_routes_fail(case: dict[str, Any]) -> None:
-    runtime = RouterRuntime(
-        spec=case["routes"],
-        _executor=case["executor"],
-        max_attempts=2,
-        shuffle_fallbacks=False,
-        round_robin_start=False,
-    )
-    with pytest.raises(RuntimeError, match="second failed"):
-        runtime.query("hello")
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", _TIMEOUT_PATH): [
+                ScriptedResponse(
+                    status_code=400,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_error_response(status_code=400, message="route failed"),
+                ),
+                ScriptedResponse(
+                    status_code=400,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_error_response(status_code=400, message="route failed"),
+                ),
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text="third route should not run"),
+                ),
+            ]
+        },
+    ) as server:
+        with (
+            patched_openai_sdk(
+                forced_base_url=f"{server.base_url}/v1",
+                disable_sdk_retries=True,
+            ),
+            pytest.raises(ProviderError, match="route failed"),
+        ):
+            case["router"].query("hello")
+        case["request_count"] = server.request_count("POST", _TIMEOUT_PATH)
 
 
 @then("no additional routes are attempted")
 def attempt_limit_is_respected(case: dict[str, Any]) -> None:
-    assert len(case["executor"].requests) == 2
+    assert case["request_count"] == 2
 
 
 @given("a public router whose preferred route fails", target_fixture="public_case")

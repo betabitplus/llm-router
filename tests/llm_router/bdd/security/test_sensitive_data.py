@@ -10,29 +10,20 @@ import pytest
 from pytest_bdd import given, scenarios, then, when
 from vcr.request import HeadersDict
 
-from llm_router import Model, Provider, RouterProfile, ToolCall, ToolExecutionError
-from llm_router._internal.runtime.router import RouterRuntime
-from tests.llm_router.bdd._support import (
-    ScriptedAdapter,
-    provider_executor,
-    provider_result,
-)
+from llm_router import LLMRouter, Model, Provider, RouterProfile, ToolExecutionError
 from tests.llm_router.conftest import _vcr_scrub_request, _vcr_scrub_response
+from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.workers.retry import openai_chat_path
+from tests.llm_router.support.workers.tool_failure import openai_tool_call_response
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
 
 scenarios("security/sensitive_data.feature")
+
+_OPENAI_PATH = openai_chat_path()
 
 
 def explode(*, secret: str) -> None:
     raise RuntimeError(f"tool failed for {len(secret)} characters")
-
-
-def _runtime(adapter: ScriptedAdapter) -> RouterRuntime:
-    return RouterRuntime(
-        spec=RouterProfile(model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER),
-        _executor=provider_executor(adapter),
-        shuffle_fallbacks=False,
-        round_robin_start=False,
-    )
 
 
 @given("a provider request contains authentication data", target_fixture="case")
@@ -101,16 +92,7 @@ def request_with_sensitive_values(
     tool_arg = "PRIVATE_TOOL_ARGUMENT_77341"
     monkeypatch.setenv("OPENROUTER_API_KEY_1", credential)
     caplog.set_level(logging.INFO, logger="llm_router")
-    adapter = ScriptedAdapter(
-        [
-            provider_result(
-                "",
-                tool_calls=(ToolCall(name="explode", args={"secret": tool_arg}),),
-            )
-        ]
-    )
     return {
-        "runtime": _runtime(adapter),
         "prompt": prompt,
         "credential": credential,
         "tool_arg": tool_arg,
@@ -120,17 +102,45 @@ def request_with_sensitive_values(
 
 @when("the request is processed")
 def process_sensitive_request(case: dict[str, Any]) -> None:
-    with pytest.raises(ToolExecutionError):
-        case["runtime"].query(
-            case["prompt"],
-            tools=[explode],
-            tool_choice="required",
-        )
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", _OPENAI_PATH): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_tool_call_response(
+                        tool_name="explode",
+                        args={"secret": case["tool_arg"]},
+                    ),
+                )
+            ]
+        },
+    ) as server:
+        with (
+            patched_openai_sdk(
+                forced_base_url=f"{server.base_url}/v1",
+                disable_sdk_retries=True,
+            ),
+            pytest.raises(ToolExecutionError),
+        ):
+            LLMRouter(
+                RouterProfile(
+                    model=Model.DEEPSEEK_V3,
+                    provider=Provider.OPENROUTER,
+                )
+            ).query(
+                case["prompt"],
+                tools=[explode],
+                tool_choice="required",
+            )
+        case["request_count"] = server.request_count("POST", _OPENAI_PATH)
 
 
 @then("those values do not appear in runtime logs")
 def sensitive_values_are_not_logged(case: dict[str, Any]) -> None:
     rendered = "\n".join(record.getMessage() for record in case["caplog"].records)
+    assert case["request_count"] == 1
     assert case["prompt"] not in rendered
     assert case["credential"] not in rendered
     assert case["tool_arg"] not in rendered

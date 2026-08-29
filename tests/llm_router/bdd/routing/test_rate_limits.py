@@ -5,20 +5,26 @@ from __future__ import annotations
 import asyncio
 import os
 import time
+from collections.abc import Iterator
 from typing import Any
 
 import pytest
 from pytest_bdd import given, scenarios, then, when
 
 from llm_router import LLMRouter, Model, Provider, ProviderLimits, RouterProfile
-from llm_router._internal.runtime.router import RouterRuntime
-from tests.llm_router.bdd._support import ScriptedRouteExecutor
+from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+)
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
 
 scenarios("routing/rate_limits.feature")
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _NO_WAIT_MIN_WAIT_SECONDS = 5.0
 _WAIT_MIN_WAIT_SECONDS = 1.0
+_OPENAI_PATH = openai_chat_path()
 
 
 def _keys(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -26,9 +32,41 @@ def _keys(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("NVIDIA_API_KEY_2", "nvidia-key-2")
 
 
-def _limits(*, rps: float) -> dict[Provider, ProviderLimits]:
+@pytest.fixture
+def local_openrouter_server(
+    monkeypatch: pytest.MonkeyPatch,
+) -> Iterator[ScriptedHTTPServer]:
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", "openrouter-key-1")
+    monkeypatch.setenv("OPENROUTER_API_KEY_2", "openrouter-key-2")
+    with (
+        ScriptedHTTPServer(
+            port=0,
+            routes={
+                ("POST", _OPENAI_PATH): [
+                    ScriptedResponse(
+                        status_code=200,
+                        headers={"Content-Type": "application/json"},
+                        body=openai_success_response(text="first"),
+                    ),
+                    ScriptedResponse(
+                        status_code=200,
+                        headers={"Content-Type": "application/json"},
+                        body=openai_success_response(text="second"),
+                    ),
+                ]
+            },
+        ) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ),
+    ):
+        yield server
+
+
+def _openrouter_limits(*, rps: float) -> dict[Provider, ProviderLimits]:
     return {
-        Provider.NVIDIA: ProviderLimits(
+        Provider.OPENROUTER: ProviderLimits(
             rps=rps,
             rpm=1_000_000.0,
             cooldown_seconds=0.0,
@@ -38,29 +76,33 @@ def _limits(*, rps: float) -> dict[Provider, ProviderLimits]:
 
 
 @given("the preferred route is temporarily blocked", target_fixture="case")
-def preferred_route_is_blocked(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
-    _keys(monkeypatch)
-    executor = ScriptedRouteExecutor()
-    runtime = RouterRuntime(
-        spec=[
+def preferred_route_is_blocked(
+    local_openrouter_server: ScriptedHTTPServer,
+) -> dict[str, Any]:
+    router = LLMRouter(
+        [
             RouterProfile(
-                provider=Provider.NVIDIA,
-                model=Model.DEEPSEEK_V4_FLASH,
+                provider=Provider.OPENROUTER,
+                model=Model.DEEPSEEK_V3,
                 key_id=1,
             ),
             RouterProfile(
-                provider=Provider.NVIDIA,
-                model=Model.DEEPSEEK_V4_FLASH,
+                provider=Provider.OPENROUTER,
+                model=Model.DEEPSEEK_V3,
                 key_id=2,
             ),
         ],
-        _executor=executor,
         round_robin_start=False,
         shuffle_fallbacks=False,
-        limits_by_provider=_limits(rps=20.0),
+        limits_by_provider=_openrouter_limits(rps=20.0),
     )
-    runtime.query("first")
-    return {"runtime": runtime, "executor": executor, "route_count": 2}
+    first_response = router.query("first")
+    return {
+        "router": router,
+        "first_response": first_response,
+        "server": local_openrouter_server,
+        "route_count": 2,
+    }
 
 
 @given("another route is available")
@@ -76,16 +118,18 @@ def request_is_made(case: dict[str, Any]) -> None:
             case["router"].query([_SYSTEM_PROMPT, "Reply ONLY with B."])
         case["elapsed"] = time.monotonic() - started
         return
-    case["response"] = case["runtime"].query("second")
+    case["response"] = case["router"].query("second")
 
 
 @then("the available route is used")
 def available_route_is_used(case: dict[str, Any]) -> None:
-    assert [request.key.key_id for request in case["executor"].requests] == [1, 2]
+    assert case["first_response"].routing_trace[0].key_id == 1
+    assert [attempt.key_id for attempt in case["response"].routing_trace] == [1, 2]
     assert [attempt.error_type for attempt in case["response"].routing_trace] == [
         "RouteBlockedError",
         None,
     ]
+    assert case["server"].request_count("POST", _OPENAI_PATH) == 2
 
 
 @given("every route is temporarily blocked", target_fixture="case")
