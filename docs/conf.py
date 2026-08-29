@@ -3,9 +3,15 @@
 from __future__ import annotations
 
 import os
+import tomllib
 from pathlib import Path
 
 project = "llm-router"
+_repo_root = Path(__file__).resolve().parent.parent
+with (_repo_root / "pyproject.toml").open("rb") as _pyproject_file:
+    release = tomllib.load(_pyproject_file)["project"]["version"]
+_source_ref = f"v{release}"
+_source_base = "https://github.com/betabitplus/llm-router/blob"
 
 extensions = [
     "myst_parser",
@@ -31,7 +37,30 @@ tr_case_id_length = 8
 exclude_patterns = ["_build", "README.md"]
 myst_fence_as_directive = {"mermaid"}
 html_theme = "pydata_sphinx_theme"
+html_static_path = ["_static"]
+html_css_files = ["traceability.css"]
 simplepdf_file_name = "release-dossier.pdf"
+
+needs_render_context = {
+    "source_base": _source_base,
+    "source_ref": _source_ref,
+}
+needs_string_links = {
+    "gherkin_feature_source": {
+        "regex": r"(?P<path>features/.+\.feature)$",
+        "link_url": "{{ source_base }}/{{ source_ref }}/{{ path }}",
+        "link_name": "{{ path }}",
+        "options": ["gherkin_feature"],
+    },
+    "pytest_module_source": {
+        "regex": r"(?P<module>tests(?:\.[A-Za-z0-9_]+)+)$",
+        "link_url": (
+            "{{ source_base }}/{{ source_ref }}/{{ module | replace('.', '/') }}.py"
+        ),
+        "link_name": "{{ module | replace('.', '/') }}.py",
+        "options": ["classname"],
+    },
+}
 
 local_pytest_junit = Path(__file__).parent / "_traceability" / "local-pytest.xml"
 if not local_pytest_junit.is_file():
