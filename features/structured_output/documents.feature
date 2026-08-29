@@ -1,4 +1,4 @@
-@hermetic @vcr
+@hermetic @vcr @REQ_DOCUMENT_INPUT[revision==1]
 Feature: Structured document extraction
   Attached documents should produce structured facts grounded in their source text.
 

@@ -8,6 +8,11 @@ from llm_router import FileSchema, VideoSchema
 from llm_router._internal.runtime.errors import SessionSerializationError
 from llm_router._internal.session import SessionStore
 
+pytestmark = [
+    pytest.mark.verifies("TREQ_SESSION_SERIALIZATION[revision==1]"),
+    pytest.mark.verification_kind("unit"),
+]
+
 
 def test_save_load_preserves_embedded_media_bytes(tmp_path: Path) -> None:
     file_path = tmp_path / "input.bin"

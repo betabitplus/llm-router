@@ -65,6 +65,12 @@ def _native_error_response(*, status_code: int, message: str) -> bytes:
     )
 
 
+pytestmark = [
+    pytest.mark.verifies("TREQ_AISTUDIO_ADAPTER_BOUNDARY[revision==1]"),
+    pytest.mark.verification_kind("integration"),
+]
+
+
 def test_aistudio_text_uses_openai_compatible_transport() -> None:
     path = openai_chat_path()
     with ScriptedHTTPServer(

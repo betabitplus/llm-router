@@ -1,4 +1,4 @@
-@hermetic
+@hermetic @REQ_RATE_LIMIT_ROUTING[revision==1]
 Feature: Route availability
   Temporarily unavailable routes should not prevent useful alternatives from running.
 

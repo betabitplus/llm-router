@@ -76,6 +76,7 @@ from llm_router._internal.providers.openai_compatible import (  # noqa: E402
     adapter_from_config,
 )
 
+# @impl Compatible adapter registration, IMPL_OPENAI_ADAPTER_BOUNDARY, [TREQ_OPENAI_ADAPTER_BOUNDARY[revision==1]]
 for _provider in OPENAI_COMPATIBLE_PROVIDERS:
     register_adapter_factory(_provider, adapter_from_config)
 
@@ -93,7 +94,10 @@ from llm_router._internal.providers.qwenchat import (  # noqa: E402
     adapter_from_config as qwenchat_adapter_from_config,
 )
 
+# @impl AI Studio adapter registration, IMPL_AISTUDIO_ADAPTER_BOUNDARY, [TREQ_AISTUDIO_ADAPTER_BOUNDARY[revision==1]]
 register_adapter_factory(Provider.AISTUDIO, aistudio_adapter_from_config)
+# @impl Gemini WebAPI adapter registration, IMPL_GEMINI_WEBAPI_ADAPTER_BOUNDARY, [TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY[revision==1]]
 register_adapter_factory(Provider.GEMINI_WEBAPI, gemini_webapi_adapter_from_config)
+# @impl Google GenAI adapter registration, IMPL_GOOGLE_GENAI_ADAPTER_BOUNDARY, [TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY[revision==1]]
 register_adapter_factory(Provider.GOOGLE, google_adapter_from_config)
 register_adapter_factory(Provider.QWENCHAT, qwenchat_adapter_from_config)

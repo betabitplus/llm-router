@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import pytest
+
 from llm_router._internal.providers.retry import (
     classify_exception,
     classify_status_code,
 )
+
+pytestmark = [
+    pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]"),
+    pytest.mark.verification_kind("unit"),
+]
 
 
 def test_status_classification_distinguishes_retryable_from_permanent_failures() -> (

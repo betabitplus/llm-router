@@ -61,6 +61,7 @@ class ProviderRequest:
         object.__setattr__(self, "messages", tuple(self.messages))
         object.__setattr__(self, "kwargs", MappingProxyType(dict(self.kwargs)))
 
+    # @impl Safe provider log metadata, IMPL_RUNTIME_LOG_SAFETY, [TREQ_RUNTIME_LOG_SAFETY[revision==1]]
     def log_context(self) -> dict[str, object]:
         """Return common safe fields for provider and capability logs."""
         context: dict[str, object] = {
@@ -114,6 +115,7 @@ class ProviderFailure(Exception):  # noqa: N818
         return self.message
 
 
+# @impl Provider adapter contract, IMPL_PROVIDER_ADAPTER_INTEROPERABILITY, [REQ_PROVIDER_ADAPTER_INTEROPERABILITY[revision==1]]
 class ProviderAdapter(Protocol):
     """Protocol implemented by concrete provider adapters."""
 

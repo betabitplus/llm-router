@@ -55,6 +55,12 @@ def _adapter(server: ScriptedHTTPServer) -> QwenChatAdapter:
     return QwenChatAdapter(base_url=f"{server.base_url}/api")
 
 
+pytestmark = [
+    pytest.mark.verifies("TREQ_QWENCHAT_ADAPTER_BOUNDARY[revision==1]"),
+    pytest.mark.verification_kind("integration"),
+]
+
+
 def test_qwenchat_text_crosses_proxy_http_boundary() -> None:
     path = qwen_chat_path()
     with ScriptedHTTPServer(

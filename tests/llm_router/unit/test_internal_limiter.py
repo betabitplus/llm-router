@@ -2,8 +2,15 @@ from __future__ import annotations
 
 from math import isclose
 
+import pytest
+
 from llm_router import Provider, ProviderLimits
 from llm_router._internal.runtime.limiter import LimiterState
+
+pytestmark = [
+    pytest.mark.verifies("TREQ_RATE_LIMIT_STATE[revision==1]"),
+    pytest.mark.verification_kind("unit"),
+]
 
 
 def test_success_uses_the_more_conservative_rps_or_rpm_interval() -> None:

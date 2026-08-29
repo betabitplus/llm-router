@@ -56,6 +56,7 @@ _UPLOAD_BOUNDARY = "llm-router-qwenchat-upload"
 logger = get_logger(__name__)
 
 
+# @impl QwenChat adapter boundary, IMPL_QWENCHAT_ADAPTER_BOUNDARY, [TREQ_QWENCHAT_ADAPTER_BOUNDARY[revision==1]]
 class QwenChatAdapter:
     """HTTP adapter for the local QwenChat proxy."""
 

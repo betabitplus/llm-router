@@ -80,6 +80,12 @@ def _request() -> ProviderRequest:
     )
 
 
+pytestmark = [
+    pytest.mark.verifies("TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY[revision==1]"),
+    pytest.mark.verification_kind("integration"),
+]
+
+
 def test_sync_google_adapter_uses_sdk_boundary_and_normalizes_result() -> None:
     client = FakeClient([_response("ok")])
 

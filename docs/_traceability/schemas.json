@@ -100,7 +100,7 @@
     },
     {
       "id": "traced-testcase-contract",
-      "message": "Traced verification evidence must verify at least one requirement.",
+      "message": "Traced verification evidence must pass and verify at least one requirement.",
       "select": {
         "properties": {
           "type": {"const": "testcase"},
@@ -109,6 +109,10 @@
         "required": ["verification_kind"]
       },
       "validate": {
+        "local": {
+          "properties": {"result": {"const": "passed"}},
+          "required": ["result"]
+        },
         "network": {
           "verifies": {
             "contains": {"local": {"$ref": "#/$defs/requirement-like"}},

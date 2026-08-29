@@ -72,6 +72,7 @@ class ToolLoopState:
 
 
 @dataclass(frozen=True, slots=True)
+# @impl Tool registry contract, IMPL_TOOL_REGISTRY, [TREQ_TOOL_REGISTRY[revision==1]]
 class ToolRegistry:
     """Lookup and execution registry for normalized tools."""
 
@@ -137,6 +138,7 @@ def normalize_tool(tool: object) -> ToolDefinition:
     raise TypeError(msg)
 
 
+# @impl Explicit tool selection, IMPL_TOOL_CHOICE, [REQ_TOOL_CHOICE[revision==1]]
 def normalize_tool_choice(
     choice: object,
     *,

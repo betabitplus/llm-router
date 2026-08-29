@@ -13,7 +13,6 @@ from tests.llm_router.support.assertions import parse_json_object
 scenarios("structured_output/text.feature")
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
-_TEST_MODULE = "tests/llm_router/bdd/structured_output/test_text.py"
 
 
 class Service(BaseModel):
@@ -98,19 +97,3 @@ def incident_report_is_preserved(response: LLMRouterResponse) -> None:
             "incident_report": report.model_dump(mode="json"),
         },
     )
-
-
-# %% Run this cell in VS Code's Interactive Window for a real provider call.
-if __name__ == "__main__":
-    import ipytest
-
-    ipytest.run(
-        "-q",
-        "-s",
-        "--disable-recording",
-        "--no-cov",
-        _TEST_MODULE,
-        defopts=False,
-        raise_on_error=True,
-    )
-# %%

@@ -7,6 +7,11 @@ import pytest
 from llm_router import ConfigurationError, Provider
 from llm_router._internal.config import build_default_config, validate_config
 
+pytestmark = [
+    pytest.mark.verifies("REQ_INVALID_CONFIGURATION_ERRORS[revision==1]"),
+    pytest.mark.verification_kind("unit"),
+]
+
 
 def test_validation_rejects_invalid_retry_policy() -> None:
     config = build_default_config()

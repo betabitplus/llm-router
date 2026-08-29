@@ -82,6 +82,7 @@ class RouterRuntime:
         """Execute one asynchronous request."""
         return await self._run_async(content=content, call_overrides=runtime_kwargs)
 
+    # @impl Rotating route start, IMPL_ROUTE_STICKY_START, [REQ_ROUTE_STICKY_START[revision==1]]
     def _next_attempt_order(
         self, *, settings: EffectiveSettings
     ) -> tuple[ExpandedRoute, ...]:
@@ -101,7 +102,7 @@ class RouterRuntime:
             ),
         )
 
-    # @impl Sync fallback, IMPL_SYNC_ROUTE_FALLBACK, [REQ_SYNC_ROUTE_FALLBACK]
+    # @impl Sync fallback, IMPL_SYNC_ROUTE_FALLBACK, [REQ_SYNC_ROUTE_FALLBACK[revision==1]]
     def _run_sync(
         self,
         *,
@@ -200,6 +201,7 @@ class RouterRuntime:
         self._log_request_failed(request_id=request_id, error=last_error)
         raise last_error
 
+    # @impl Async route execution, IMPL_ASYNC_PROVIDER_EXECUTION, [REQ_ASYNC_PROVIDER_EXECUTION[revision==1]]
     async def _run_async(
         self,
         *,
@@ -324,6 +326,7 @@ class RouterRuntime:
             call_overrides=call_overrides,
         )
 
+    # @impl Rate-limit-aware request preparation, IMPL_RATE_LIMIT_ROUTING, [REQ_RATE_LIMIT_ROUTING[revision==1]]
     def _prepare_request(
         self,
         *,
@@ -364,6 +367,7 @@ class RouterRuntime:
             wait_seconds,
         )
 
+    # @impl Route attempt timeout, IMPL_ROUTE_TIMEOUT_FALLBACK, [REQ_ROUTE_TIMEOUT_FALLBACK[revision==1]]
     def _call_sync_with_timeout(
         self,
         request: ResolvedRequest,

@@ -78,6 +78,12 @@ def _response(text: str) -> SimpleNamespace:
     )
 
 
+pytestmark = [
+    pytest.mark.verifies("TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY[revision==1]"),
+    pytest.mark.verification_kind("integration"),
+]
+
+
 def test_sync_gemini_webapi_crosses_sdk_boundary() -> None:
     client = FakeClient([_response("ok")])
 

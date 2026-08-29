@@ -24,7 +24,6 @@ scenarios("structured_output/video.feature")
 
 _VIDEO_FILENAME = "jumper.mp4"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
-_TEST_MODULE = "tests/llm_router/bdd/structured_output/test_video.py"
 
 
 def _usage_payload(response: LLMRouterResponse) -> object:
@@ -137,19 +136,3 @@ def indoor_observation_is_grounded(response: LLMRouterResponse) -> None:
             "observation": observation.model_dump(mode="json"),
         },
     )
-
-
-# %% Run this cell for video scenarios against live providers.
-if __name__ == "__main__":
-    import ipytest
-
-    ipytest.run(
-        "-q",
-        "-s",
-        "--disable-recording",
-        "--no-cov",
-        _TEST_MODULE,
-        defopts=False,
-        raise_on_error=True,
-    )
-# %%

@@ -1,4 +1,4 @@
-@hermetic @vcr
+@hermetic @vcr @REQ_ASYNC_PROVIDER_EXECUTION[revision==1]
 Feature: Async public execution
   Async calls should preserve the same useful result contracts as synchronous calls.
 
