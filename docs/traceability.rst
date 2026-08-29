@@ -7,14 +7,9 @@ evidence are linked into the same Sphinx-Needs graph.
 Requirement hierarchy
 ---------------------
 
-.. needflow:: Goal-to-requirement hierarchy
-   :engine: graphviz
+.. needtable::
+   :columns: id;title;type;derives;derives_back
    :filter: type in ["goal", "feature", "req", "treq"]
-   :link_types: derives
-   :direction: down
-   :show_link_names: type
-   :show_legend:
-   :max_items: 100
 
 Implementation evidence
 -----------------------
