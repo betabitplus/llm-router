@@ -104,6 +104,7 @@ def split_router_defaults(values: Mapping[str, object]) -> RouterDefaults:
     return RouterDefaults(values=settings, kwargs=provider_kwargs)
 
 
+# @impl Request override precedence, IMPL_REQUEST_OVERRIDE_PRECEDENCE, [REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]]
 def resolve_effective_settings(
     *,
     config: LLMRouterConfig,

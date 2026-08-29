@@ -2,8 +2,15 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+import pytest
+
 from llm_router import UsageStats
 from llm_router._internal.capabilities.usage import normalize_usage
+
+pytestmark = [
+    pytest.mark.verifies("TREQ_USAGE_NORMALIZATION[revision==1]"),
+    pytest.mark.verification_kind("unit"),
+]
 
 
 def test_openai_usage_mapping_normalizes() -> None:

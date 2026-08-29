@@ -24,7 +24,6 @@ scenarios("structured_output/documents.feature")
 
 _PDF_FILENAME = "variative.pdf"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
-_TEST_MODULE = "tests/llm_router/bdd/structured_output/test_documents.py"
 
 
 def _usage_payload(response: LLMRouterResponse) -> object:
@@ -111,19 +110,3 @@ def pdf_digest_is_grounded(
             "digest": digest.model_dump(mode="json"),
         },
     )
-
-
-# %% Run this cell for document scenarios against live providers.
-if __name__ == "__main__":
-    import ipytest
-
-    ipytest.run(
-        "-q",
-        "-s",
-        "--disable-recording",
-        "--no-cov",
-        _TEST_MODULE,
-        defopts=False,
-        raise_on_error=True,
-    )
-# %%

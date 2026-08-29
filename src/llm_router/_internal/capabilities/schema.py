@@ -80,6 +80,8 @@ def advance_repair_attempt(state: SchemaRepairState) -> SchemaRepairState:
     )
 
 
+# @impl Structured schema contract, IMPL_STRUCTURED_SCHEMA_CONTRACT, [REQ_STRUCTURED_SCHEMA_CONTRACT[revision==1]]
+# @impl Structured text output, IMPL_STRUCTURED_TEXT_OUTPUT, [REQ_STRUCTURED_TEXT_OUTPUT[revision==1]]
 def normalize_schema(schema: object) -> SchemaSpec:
     """Convert a public schema input into a provider-neutral schema spec."""
     if isinstance(schema, type) and issubclass(schema, BaseModel):
@@ -112,6 +114,7 @@ def validate_schema_output(
     return SchemaValidationResult(valid=True, value=parsed)
 
 
+# @impl Bounded repair prompt, IMPL_REPAIR_PROMPT_BOUNDS, [TREQ_REPAIR_PROMPT_BOUNDS[revision==1]]
 def build_repair_prompt(
     *,
     spec: SchemaSpec,

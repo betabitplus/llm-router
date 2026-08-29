@@ -15,7 +15,6 @@ from tests.llm_router.support.assertions import parse_json_object
 scenarios("tools/multi_round.feature")
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
-_TEST_MODULE = "tests/llm_router/bdd/tools/test_multi_round.py"
 _PROFILE_TOOL_PROMPT = (
     "You have a tool named multiply(a, b) that returns {result}.\n"
     "Compute 17*19 using the tool.\n"
@@ -210,19 +209,3 @@ def profile_tool_workflow_is_preserved(response: LLMRouterResponse) -> None:
             "calculation": audit.model_dump(mode="json"),
         },
     )
-
-
-# %% Run this cell for multi-round tool scenarios against live providers.
-if __name__ == "__main__":
-    import ipytest
-
-    ipytest.run(
-        "-q",
-        "-s",
-        "--disable-recording",
-        "--no-cov",
-        _TEST_MODULE,
-        defopts=False,
-        raise_on_error=True,
-    )
-# %%

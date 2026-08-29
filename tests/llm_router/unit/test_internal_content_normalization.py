@@ -12,6 +12,11 @@ from llm_router._internal.capabilities.content import (
     normalize_content,
 )
 
+pytestmark = [
+    pytest.mark.verifies("REQ_MULTIMODAL_CONTENT_NORMALIZATION[revision==1]"),
+    pytest.mark.verification_kind("unit"),
+]
+
 
 def test_normalize_content_preserves_text_and_media_order(tmp_path: Path) -> None:
     file_path = tmp_path / "doc.txt"

@@ -33,6 +33,7 @@ _SESSION_VERSION = 1
 # =============================================================================
 
 
+# @impl Session serialization, IMPL_SESSION_SERIALIZATION, [TREQ_SESSION_SERIALIZATION[revision==1]]
 def encode_session(*, system: str | None, history: tuple[ChatMessage, ...]) -> str:
     """Return a JSON session artifact containing only public semantics."""
     payload = {

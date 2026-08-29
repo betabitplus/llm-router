@@ -17,6 +17,12 @@ def _clear_provider_keys(monkeypatch: pytest.MonkeyPatch, provider: Provider) ->
             monkeypatch.delenv(name, raising=False)
 
 
+pytestmark = [
+    pytest.mark.verifies("REQ_CREDENTIAL_RESOLUTION[revision==1]"),
+    pytest.mark.verification_kind("unit"),
+]
+
+
 def test_fixed_key_can_use_configured_custom_env_name(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

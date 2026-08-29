@@ -22,7 +22,6 @@ scenarios("structured_output/images.feature")
 
 _IMAGE_FILENAME = "test_image.png"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
-_TEST_MODULE = "tests/llm_router/bdd/structured_output/test_images.py"
 
 
 def _usage_payload(response: LLMRouterResponse) -> object:
@@ -94,19 +93,3 @@ def traffic_scene_is_grounded(response: LLMRouterResponse) -> None:
             "scene": scene.model_dump(mode="json"),
         },
     )
-
-
-# %% Run this cell for image scenarios against live providers.
-if __name__ == "__main__":
-    import ipytest
-
-    ipytest.run(
-        "-q",
-        "-s",
-        "--disable-recording",
-        "--no-cov",
-        _TEST_MODULE,
-        defopts=False,
-        raise_on_error=True,
-    )
-# %%

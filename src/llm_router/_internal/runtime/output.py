@@ -29,6 +29,7 @@ class _PublicDataMapping(dict[str, object]):
             raise AttributeError(name) from exc
 
 
+# @impl Public response normalization, IMPL_RESPONSE_NORMALIZATION, [REQ_RESPONSE_NORMALIZATION[revision==1]]
 def build_public_response(
     result: ProviderResult,
     *,

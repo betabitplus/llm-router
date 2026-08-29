@@ -12,17 +12,20 @@ Feature: Route fallback
       Then the second route is used
       And the routing trace contains both attempts
 
+    @REQ_ROUTE_TIMEOUT_FALLBACK[revision==1]
     Scenario: A timed-out route falls back without waiting for it indefinitely
       Given the first route exceeds its attempt timeout
       And another route is available
       When a request is made
       Then the request continues with the next route
 
+    @REQ_ROUTE_TIMEOUT_FALLBACK[revision==1]
     Scenario: A terminal route timeout is exposed when no fallback remains
       Given the only route exceeds its attempt timeout
       When the timed-out request is executed
       Then the request fails with a timeout error
 
+    @REQ_ROUTE_ATTEMPT_LIMIT[revision==1]
     Scenario: The router does not exceed the configured number of route attempts
       Given more routes are available than the allowed attempt count
       When all attempted routes fail
@@ -30,7 +33,7 @@ Feature: Route fallback
 
   Rule: Successful fallback advances the next starting route
 
-    @vcr
+    @vcr @REQ_ROUTE_STICKY_START[revision==1]
     Scenario: The next request starts from the route that previously succeeded
       Given a public router whose preferred route fails
       When two requests are made through the same router

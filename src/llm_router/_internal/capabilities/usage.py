@@ -26,6 +26,7 @@ _TOTAL_KEYS = ("total_tokens", "total_token_count", "totalTokenCount")
 _NESTED_USAGE_KEYS = ("usage", "usage_metadata", "usageMetadata")
 
 
+# @impl Usage normalization, IMPL_USAGE_NORMALIZATION, [TREQ_USAGE_NORMALIZATION[revision==1]]
 def normalize_usage(value: object) -> UsageStats | None:
     """Normalize common provider usage payloads into public usage stats."""
     if value is None:

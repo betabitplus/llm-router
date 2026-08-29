@@ -18,6 +18,7 @@ def _require(*, condition: bool, message: str) -> None:
         raise ConfigurationError(message)
 
 
+# @impl Configuration validation, IMPL_INVALID_CONFIGURATION_ERRORS, [REQ_INVALID_CONFIGURATION_ERRORS[revision==1]]
 def validate_config(config: LLMRouterConfig) -> None:
     """Validate one runtime config snapshot."""
     retry = config.retry_policy

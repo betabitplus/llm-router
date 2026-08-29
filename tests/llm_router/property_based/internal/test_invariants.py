@@ -5,6 +5,7 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
+import pytest
 from hypothesis import given, settings, strategies as st
 
 from llm_router._internal.capabilities.schema import (
@@ -36,6 +37,8 @@ _META = st.dictionaries(
 _TURN = st.tuples(_TEXT, _TEXT, _META)
 
 
+@pytest.mark.verifies("REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]")
+@pytest.mark.verification_kind("property")
 @given(
     route_temperature=_OPTIONAL_TEMPERATURE,
     router_temperature=_OPTIONAL_TEMPERATURE,
@@ -68,6 +71,8 @@ def test_generation_precedence_preserves_omission_vs_explicit_none(
     assert settings.temperature == expected
 
 
+@pytest.mark.verifies("TREQ_REPAIR_PROMPT_BOUNDS[revision==1]")
+@pytest.mark.verification_kind("property")
 @given(
     invalid_output=st.text(min_size=0, max_size=2_000),
     error_message=st.text(min_size=0, max_size=2_000),
@@ -85,6 +90,8 @@ def test_repair_prompt_remains_bounded(
     assert len(prompt) <= 1_200
 
 
+@pytest.mark.verifies("REQ_SESSION_PERSISTENCE[revision==1]")
+@pytest.mark.verification_kind("property")
 @given(turns=st.lists(_TURN, max_size=5))
 @settings(deadline=None)
 def test_session_save_load_round_trips_generated_text(

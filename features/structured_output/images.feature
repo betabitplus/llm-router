@@ -1,4 +1,4 @@
-@hermetic @vcr
+@hermetic @vcr @REQ_IMAGE_INPUT[revision==1]
 Feature: Structured image understanding
   The same image contract should remain valid across supported provider routes.
 

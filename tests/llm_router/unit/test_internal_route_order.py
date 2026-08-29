@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from llm_router import Model, Provider
 from llm_router._internal.runtime.routes import (
     ExpandedRoute,
@@ -8,6 +10,11 @@ from llm_router._internal.runtime.routes import (
     RoutePlan,
     ordered_routes,
 )
+
+pytestmark = [
+    pytest.mark.verifies("TREQ_ROUTE_ORDER[revision==1]"),
+    pytest.mark.verification_kind("unit"),
+]
 
 
 class ReverseShuffler:

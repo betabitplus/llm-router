@@ -24,6 +24,7 @@ from llm_router._internal.session.serialization import (
 logger = get_logger(__name__)
 
 
+# @impl Session lifecycle state, IMPL_SESSION_LIFECYCLE, [REQ_SESSION_LIFECYCLE[revision==1]]
 class SessionStore:
     """Private provider-neutral session state."""
 
@@ -43,6 +44,7 @@ class SessionStore:
         return self._history
 
     @classmethod
+    # @impl Session persistence, IMPL_SESSION_PERSISTENCE, [REQ_SESSION_PERSISTENCE[revision==1]]
     def load(cls, path: str | Path) -> SessionStore:
         """Load a session artifact."""
         session_path = Path(path)

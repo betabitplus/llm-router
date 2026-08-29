@@ -10,6 +10,12 @@ def add(a: int, b: int = 1) -> int:
     return a + b
 
 
+pytestmark = [
+    pytest.mark.verifies("TREQ_TOOL_REGISTRY[revision==1]"),
+    pytest.mark.verification_kind("unit"),
+]
+
+
 def test_callable_tool_schema_and_execution_match_python_signature() -> None:
     registry = ToolRegistry.from_tools([add])
     definition = registry.get("add")

@@ -1,4 +1,4 @@
-@hermetic
+@hermetic @REQ_SESSION_LIFECYCLE[revision==1]
 Feature: Session lifecycle
   Sessions preserve conversation state and can be safely reset, persisted, and branched.
 
@@ -21,6 +21,7 @@ Feature: Session lifecycle
       When the session is forked and the fork receives another turn
       Then the original session remains unchanged
 
+    @REQ_SESSION_PERSISTENCE[revision==1]
     Scenario: Saving and loading preserves the session
       Given a session contains conversation history
       When it is saved and loaded

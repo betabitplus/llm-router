@@ -118,6 +118,8 @@ def expand_route_plan(
     return RoutePlan(routes=tuple(routes), policy_defaults=policy_defaults)
 
 
+# @impl Route attempt cap, IMPL_ROUTE_ATTEMPT_LIMIT, [REQ_ROUTE_ATTEMPT_LIMIT[revision==1]]
+# @impl Stable route ordering, IMPL_ROUTE_ORDER, [TREQ_ROUTE_ORDER[revision==1]]
 def ordered_routes(
     plan: RoutePlan,
     *,

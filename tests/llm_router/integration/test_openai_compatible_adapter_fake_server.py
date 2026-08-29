@@ -44,6 +44,12 @@ def _adapter(server: ScriptedHTTPServer) -> OpenAICompatibleAdapter:
     return OpenAICompatibleAdapter(base_url=f"{server.base_url}/v1")
 
 
+pytestmark = [
+    pytest.mark.verifies("TREQ_OPENAI_ADAPTER_BOUNDARY[revision==1]"),
+    pytest.mark.verification_kind("integration"),
+]
+
+
 def test_sync_success_crosses_openai_http_boundary() -> None:
     path = openai_chat_path()
     with ScriptedHTTPServer(

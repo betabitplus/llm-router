@@ -1,4 +1,4 @@
-@hermetic
+@hermetic @REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]
 Feature: Configuration overrides
   Requests can override router and route defaults without changing unrelated settings.
 

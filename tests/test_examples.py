@@ -20,6 +20,8 @@ def _example_modules() -> list[str]:
 
 
 @pytest.mark.hermetic
+@pytest.mark.verifies("REQ_EXAMPLE_IMPORT_SAFETY[revision==1]")
+@pytest.mark.verification_kind("unit")
 def test_examples_import_without_network(monkeypatch: pytest.MonkeyPatch) -> None:
     """Examples remain importable without starting live workflows."""
 

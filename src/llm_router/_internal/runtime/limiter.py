@@ -39,6 +39,7 @@ class LimiterBucket:
     failure_count: int = 0
 
 
+# @impl Credential resolution, IMPL_CREDENTIAL_RESOLUTION, [REQ_CREDENTIAL_RESOLUTION[revision==1]]
 class KeyResolver:
     """Resolve fixed and auto-rotated provider key ids."""
 
@@ -117,6 +118,7 @@ def _allows_missing_key(provider: Provider) -> bool:
     return provider in {Provider.GEMINI_WEBAPI, Provider.QWENCHAT}
 
 
+# @impl Isolated limiter state, IMPL_RATE_LIMIT_STATE, [TREQ_RATE_LIMIT_STATE[revision==1]]
 class LimiterState:
     """Owns limiter buckets for one router runtime."""
 

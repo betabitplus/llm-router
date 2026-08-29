@@ -145,6 +145,8 @@ class ProviderRouteExecutor:
                 return step.response
             state = step.state
 
+    # @impl Same-route provider retry, IMPL_PROVIDER_RETRY, [REQ_PROVIDER_RETRY[revision==1]]
+    # @impl Retry decision boundary, IMPL_PROVIDER_RETRY_CLASSIFICATION, [TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]]
     def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:
         """Run one provider call with same-route retry."""
         adapter = self._adapter_for(request)
@@ -381,6 +383,7 @@ def _advance_after_result(
     )
 
 
+# @impl Multi-round tool execution, IMPL_MULTI_ROUND_TOOL_EXECUTION, [REQ_MULTI_ROUND_TOOL_EXECUTION[revision==1]]
 def _advance_tool_result(
     *,
     provider_request: ProviderRequest,
@@ -436,6 +439,7 @@ def _advance_tool_result(
     )
 
 
+# @impl Structured output repair loop, IMPL_STRUCTURED_OUTPUT_REPAIR, [REQ_STRUCTURED_OUTPUT_REPAIR[revision==1]]
 def _advance_structured_result(
     *,
     config: LLMRouterConfig,
@@ -529,6 +533,7 @@ def _validate_structured_result(
     )
 
 
+# @impl Tool runtime safety boundary, IMPL_TOOL_RUNTIME_SAFETY, [REQ_TOOL_RUNTIME_SAFETY[revision==1]]
 def _run_logged_tool_round(
     *,
     request: ProviderRequest,
@@ -554,6 +559,7 @@ def _run_logged_tool_round(
     return next_state
 
 
+# @impl Public provider error boundary, IMPL_PROVIDER_ERROR_BOUNDARY, [REQ_PROVIDER_ERROR_BOUNDARY[revision==1]]
 def _provider_boundary_error(
     exc: Exception,
     *,

@@ -33,7 +33,6 @@ _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _LEGAL_SYSTEM_PROMPT = "You are a legal assistant. Extract case details."
 _MOVIE_SYSTEM_PROMPT = "You are a movie database API."
 _IMAGE_FILENAME = "test_image.png"
-_TEST_MODULE = "tests/llm_router/bdd/execution/test_async.py"
 
 
 def _usage_payload(response: LLMRouterResponse) -> object:
@@ -187,21 +186,3 @@ def async_image_is_grounded(response: LLMRouterResponse) -> None:
             "scene": scene.model_dump(mode="json"),
         },
     )
-
-
-# %% Run this cell for the selected async BDD scenarios.
-# They execute against live providers.
-if __name__ == "__main__":
-    import ipytest
-
-    ipytest.run(
-        "-q",
-        "-s",
-        "--disable-recording",
-        "--no-cov",
-        _TEST_MODULE,
-        defopts=False,
-        raise_on_error=True,
-        run_in_thread=True,
-    )
-# %%

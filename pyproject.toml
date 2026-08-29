@@ -129,7 +129,7 @@ package-dir."" = "src"
 required-version = "==0.12.5"
 sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v1.2.5" }
 sources.py-lib-runtime = { git = "https://github.com/betabitplus/ternforge-tooling-py-runtime.git", tag = "v1.1.7" }
-sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git", tag = "v2.2.1" }
+sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git", tag = "v2.2.2" }
 
 # ---------------- Ruff configuration ----------------
 [tool.ruff]
@@ -214,7 +214,6 @@ lint.select = [
   "W",
   "YTT",
 ]
-# Ignore rules that are too noisy or conflict with formatter/project style.
 lint.ignore = [
   "COM812",  # Trailing comma (conflicts with formatter)
   "ISC001",  # Implicit string concatenation (conflicts with formatter)
@@ -260,9 +259,12 @@ lint.per-file-ignores."workbench/*" = [
   "S101",    # Allow assert statements
   "T20",     # Allow print statements
 ]
+# Ignore rules that are too noisy or conflict with formatter/project style.
+lint.task-tags = [ "@impl", "FIXME", "TODO", "XXX" ]
 lint.flake8-tidy-imports.ban-relative-imports = "all"
 lint.isort.combine-as-imports = true
 lint.isort.known-first-party = [ "llm_router" ]
+lint.pycodestyle.ignore-overlong-task-comments = true
 # Choose docstring convention: "google", "numpy", or "pep257".
 lint.pydocstyle.convention = "google"
 
@@ -442,6 +444,7 @@ ini_options.filterwarnings = [
 ]
 ini_options.asyncio_default_fixture_loop_scope = "function"
 ini_options.bdd_features_base_dir = "features"
+ini_options.ternforge_traceability = true
 
 [tool.coverage]
 run.source = [ "src" ]

@@ -46,6 +46,10 @@ class NormalizedMessage:
     meta: dict[str, object]
 
 
+# @impl Multimodal content normalization, IMPL_MULTIMODAL_CONTENT_NORMALIZATION, [REQ_MULTIMODAL_CONTENT_NORMALIZATION[revision==1]]
+# @impl Document input normalization, IMPL_DOCUMENT_INPUT, [REQ_DOCUMENT_INPUT[revision==1]]
+# @impl Image input normalization, IMPL_IMAGE_INPUT, [REQ_IMAGE_INPUT[revision==1]]
+# @impl Video input normalization, IMPL_VIDEO_INPUT, [REQ_VIDEO_INPUT[revision==1]]
 def normalize_content(content: object, *, role: ChatRole = "user") -> NormalizedMessage:
     """Normalize role-less public content into one provider-neutral message."""
     return NormalizedMessage(

@@ -4,7 +4,7 @@
 
 - {doc}`Live executable examples <auto_examples/index>`
 - {doc}`API reference <api>`
-- {doc}`Routing requirements <requirements/routing>`
+- {doc}`Engineering requirements <requirements/index>`
 - {doc}`Requirements traceability <traceability>`
 
 ```{toctree}
@@ -13,6 +13,6 @@
 
 api
 auto_examples/index
-requirements/routing
+requirements/index
 traceability
 ```

@@ -1,4 +1,4 @@
-@hermetic
+@hermetic @REQ_TOOL_RUNTIME_SAFETY[revision==1]
 Feature: Tool execution
   Tool workflows should either complete predictably or fail through the public API.
 

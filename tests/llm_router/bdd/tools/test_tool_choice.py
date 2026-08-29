@@ -15,7 +15,6 @@ from tests.llm_router.support.assertions import parse_json_object
 scenarios("tools/tool_choice.feature")
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
-_TEST_MODULE = "tests/llm_router/bdd/tools/test_tool_choice.py"
 
 
 class ToolResult(BaseModel):
@@ -143,19 +142,3 @@ def aistudio_add_choice_is_preserved(response: LLMRouterResponse) -> None:
             "reply": response.output_text,
         },
     )
-
-
-# %% Run this cell for tool-choice scenarios against live providers.
-if __name__ == "__main__":
-    import ipytest
-
-    ipytest.run(
-        "-q",
-        "-s",
-        "--disable-recording",
-        "--no-cov",
-        _TEST_MODULE,
-        defopts=False,
-        raise_on_error=True,
-    )
-# %%

@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import pytest
 from pydantic import BaseModel
 
 from llm_router._internal.capabilities.schema import (
     normalize_schema,
     validate_schema_output,
 )
+
+pytestmark = [
+    pytest.mark.verifies("REQ_STRUCTURED_SCHEMA_CONTRACT[revision==1]"),
+    pytest.mark.verification_kind("unit"),
+]
 
 
 class Answer(BaseModel):

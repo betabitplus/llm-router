@@ -1,4 +1,4 @@
-@hermetic @vcr
+@hermetic @vcr @REQ_MULTI_ROUND_TOOL_EXECUTION[revision==1]
 Feature: Multi-round tool execution
   Tool-driven workflows should preserve their intermediate steps in the final result.
 
