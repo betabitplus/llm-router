@@ -54,7 +54,9 @@ needs_string_links = {
     },
     "pytest_module_source": {
         "regex": r"(?P<module>tests(?:\.[A-Za-z0-9_]+)+)$",
-        "link_url": "{{ source_base }}/{{ source_ref }}/{{ module | replace('.', '/') }}.py",
+        "link_url": (
+            "{{ source_base }}/{{ source_ref }}/{{ module | replace('.', '/') }}.py"
+        ),
         "link_name": "{{ module | replace('.', '/') }}.py",
         "options": ["classname"],
     },
