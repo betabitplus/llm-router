@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.14.2](https://github.com/betabitplus/llm-router/compare/v0.14.1...v0.14.2) (2026-08-29)
+
+
+### Bug Fixes
+
+* **docs:** make verification evidence inspectable ([#83](https://github.com/betabitplus/llm-router/issues/83)) ([a7afc09](https://github.com/betabitplus/llm-router/commit/a7afc09322c1d7f61796a8f816ee4faa3a49f98a))
+
 ## [0.14.1](https://github.com/betabitplus/llm-router/compare/v0.14.0...v0.14.1) (2026-08-29)
 
 
