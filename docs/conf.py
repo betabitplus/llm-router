@@ -15,6 +15,7 @@ _source_base = "https://github.com/betabitplus/llm-router/blob"
 
 extensions = [
     "myst_parser",
+    "sphinx_design",
     "sphinx_needs",
     "sphinx_codelinks",
     "sphinxcontrib.test_reports",
@@ -22,6 +23,7 @@ extensions = [
     "sphinx_simplepdf",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.graphviz",
     "sphinx.ext.intersphinx",
     "sphinx_gallery.gen_gallery",
     "sphinxcontrib.mermaid",
@@ -35,11 +37,27 @@ tr_property_link_types = {"verifies": "verifies"}
 tr_suite_id_length = 8
 tr_case_id_length = 8
 exclude_patterns = ["_build", "README.md"]
+myst_enable_extensions = ["colon_fence"]
 myst_fence_as_directive = {"mermaid"}
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
-html_css_files = ["traceability.css"]
+html_favicon = "_static/gallery/multi-route.svg"
+html_css_files = ["traceability.css", "portal.css"]
 simplepdf_file_name = "release-dossier.pdf"
+graphviz_output_format = "svg"
+needs_flow_engine = "graphviz"
+needs_flow_direction = "left"
+needs_role_need_max_title_length = -1
+needs_card_layouts = {
+    "portal": {
+        "extends": "clean",
+        "meta": {
+            "fields": "stored",
+            "exclude": ["layout", "style"],
+        },
+    },
+}
+needs_default_layout = "portal"
 
 needs_render_context = {
     "source_base": _source_base,

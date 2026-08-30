@@ -15,27 +15,42 @@ A session owns conversation history and exposes explicit lifecycle operations wi
 
 ```{req} Session history remains explicit and isolated
 :id: REQ_SESSION_LIFECYCLE
+:status: accepted
 :revision: 1
-:needs_artifacts: impl;bdd
+:required_evidence: impl;bdd
 :derives: FEAT_SESSION_LIFECYCLE
 
-Remembered turns must be available to later requests, history may be ignored for one request, forks must diverge independently, clearing must leave the session reusable, and concurrent requests must not mix session state.
+**Statement.** Remembered turns shall be available to later requests; a caller shall be able to ignore history for one request; forks shall diverge independently; clearing shall leave the session reusable; and concurrent requests shall not mix session state.
+
+**Rationale.** Conversation history is useful only when its inclusion and lifecycle remain explicit; accidental sharing or irreversible mutation would make session behavior unsafe and difficult to reason about.
+
+**Verification intent.** Exercise the public session API across remembering, one-shot history suppression, forking, clearing, reuse, and concurrent requests, and verify the observable histories remain independent where required.
 ```
 
 ```{req} Session persistence round-trips state
 :id: REQ_SESSION_PERSISTENCE
+:status: accepted
 :revision: 1
-:needs_artifacts: impl;bdd;property
+:required_evidence: impl;bdd;property
 :derives: FEAT_SESSION_LIFECYCLE
 
-Saving and loading a session must preserve its system prompt, history, generated text, metadata, and supported embedded media across the serialized representation.
+**Statement.** Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.
+
+**Rationale.** Persisted sessions are useful only if restoring them preserves the conversation semantics needed for subsequent requests.
+
+**Verification intent.** Save and restore representative sessions through the public lifecycle and use property-based coverage to verify supported state round-trips across varied content and metadata.
 ```
 
 ```{treq} Session serialization rejects incompatible data
 :id: TREQ_SESSION_SERIALIZATION
+:status: accepted
 :revision: 1
-:needs_artifacts: impl;unit
+:required_evidence: impl;unit
 :derives: REQ_SESSION_PERSISTENCE
 
-Session serialization must preserve supported embedded media bytes and reject unsupported serialization versions rather than loading incompatible state.
+**Constraint.** Session serialization shall preserve supported embedded media bytes and reject unsupported serialization versions rather than loading incompatible state.
+
+**Rationale.** Binary media and versioned serialized data are low-level compatibility boundaries where silent coercion or best-effort loading could corrupt restored session state.
+
+**Verification intent.** Directly verify supported media serialization and explicit rejection of unsupported serialized versions.
 ```

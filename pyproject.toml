@@ -44,7 +44,7 @@ urls.Repository = "https://github.com/betabitplus/llm-router"
 
 [dependency-groups]
 dev = [
-  "allure-pytest-bdd>=2.16,<3",
+  "allure-pytest>=2.16,<3",
   # Security auditing
   "bandit>=1.9.4",
   "beartype>=0.22.9",
@@ -108,12 +108,13 @@ docs = [
   "pydata-sphinx-theme>=0.20",
   "sphinx>=8.2.3",
   "sphinx-codelinks>=1.4,<2",
+  "sphinx-design>=0.6,<1",
   "sphinx-gallery>=0.21",
   "sphinx-llm>=1,<2",
   "sphinx-needs>=8.3.1,<9",
   "sphinx-simplepdf>=1.7,<2",
   "sphinx-test-reports>=1.4,<2",
-  "sphinxcontrib-mermaid>=2.1"
+  "sphinxcontrib-mermaid>=2.1",
 ]
 
 [tool.setuptools]

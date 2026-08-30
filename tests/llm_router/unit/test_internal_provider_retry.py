@@ -8,7 +8,7 @@ from llm_router._internal.providers.retry import (
 )
 
 pytestmark = [
-    pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]"),
+    pytest.mark.verifies("REQ_PROVIDER_RETRY[revision==1]"),
     pytest.mark.verification_kind("unit"),
 ]
 

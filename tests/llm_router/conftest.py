@@ -34,6 +34,7 @@ from types import SimpleNamespace
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlparse
 
+import allure
 import pytest
 from py_lib_testkit import configure_pytest_process, multipart_signature_prefix
 
@@ -312,3 +313,77 @@ def reset_installed_llm_router_config() -> None:
 def _clear_cached_client_factories() -> None:
     """Clear cached singleton client factories used by router instances."""
     clear_test_caches()
+
+
+# =============================================================================
+# Human-facing Allure presentation
+# =============================================================================
+
+
+_ALLURE_BDD_STEPS: dict[str, Any] = {}
+
+
+def _bdd_title(request: pytest.FixtureRequest, scenario: Any) -> str:
+    callspec = getattr(request.node, "callspec", None)
+    if callspec is not None and callspec.id:
+        return f"{scenario.name} — {callspec.id}"
+    return scenario.name
+
+
+def pytest_bdd_before_scenario(
+    request: pytest.FixtureRequest,
+    feature: Any,
+    scenario: Any,
+) -> None:
+    """Expose the executable specification hierarchy in the generic Allure result."""
+    domain = feature.rel_filename.split("/", 1)[0].replace("_", " ").title()
+    rule_name = scenario.rule.name if scenario.rule is not None else "Scenarios"
+    allure.dynamic.epic(domain)
+    allure.dynamic.feature(feature.name)
+    allure.dynamic.label("rule", rule_name)
+    allure.dynamic.story(scenario.name)
+    allure.dynamic.title(_bdd_title(request, scenario))
+
+    description_parts = [feature.description.strip()]
+    if scenario.rule is not None and scenario.rule.description.strip():
+        description_parts.append(scenario.rule.description.strip())
+    if scenario.description and scenario.description.strip():
+        description_parts.append(scenario.description.strip())
+    description_parts.append(
+        f"Specification: {feature.rel_filename}:{scenario.line_number}"
+    )
+    allure.dynamic.description("\n\n".join(part for part in description_parts if part))
+
+
+def pytest_bdd_before_step(
+    request: pytest.FixtureRequest,
+    step: Any,
+) -> None:
+    """Start a real Allure step around each executable Given/When/Then call."""
+    context = allure.step(f"{step.keyword} {step.name}")
+    context.__enter__()
+    _ALLURE_BDD_STEPS[request.node.nodeid] = context
+    if step.docstring:
+        allure.attach(step.docstring, name="Doc string", attachment_type="text/plain")
+    if step.datatable:
+        rows = [[cell.value for cell in row.cells] for row in step.datatable.rows]
+        allure.attach(
+            "\n".join(" | ".join(row) for row in rows),
+            name="Data table",
+            attachment_type="text/plain",
+        )
+
+
+def pytest_bdd_after_step(request: pytest.FixtureRequest) -> None:
+    """Close a successful executable-specification step."""
+    context = _ALLURE_BDD_STEPS.pop(request.node.nodeid)
+    context.__exit__(None, None, None)
+
+
+def pytest_bdd_step_error(
+    request: pytest.FixtureRequest,
+    exception: BaseException,
+) -> None:
+    """Close a failed executable-specification step with the real exception."""
+    context = _ALLURE_BDD_STEPS.pop(request.node.nodeid)
+    context.__exit__(type(exception), exception, exception.__traceback__)

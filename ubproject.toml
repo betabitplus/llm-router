@@ -8,12 +8,16 @@ id_required = true
 build_json = true
 schema_definitions_from_json = "docs/_traceability/schemas.json"
 
+[needs.fields.status]
+description = "Lifecycle state for authoritative requirements and engineering constraints."
+schema.enum = ["draft", "accepted", "deprecated"]
+
 [needs.fields.revision]
 description = "Human-managed semantic revision used by conditional trace links."
 schema.type = "integer"
 schema.minimum = 1
 
-[needs.fields.needs_artifacts]
+[needs.fields.required_evidence]
 description = "Minimal implementation and verification evidence required by this requirement."
 schema.type = "array"
 schema.items.type = "string"
@@ -102,7 +106,7 @@ style = "node"
 
 [[needs.types]]
 directive = "treq"
-title = "Technical Requirement"
+title = "Engineering Constraint"
 prefix = "TREQ_"
 color = ""
 style = "node"

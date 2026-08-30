@@ -15,20 +15,16 @@ Provider failures are classified before retry policy is applied.
 
 ```{req} Retry only temporary provider failures
 :id: REQ_PROVIDER_RETRY
+:status: accepted
 :revision: 1
-:needs_artifacts: impl;bdd
+:required_evidence: impl;bdd;unit
 :derives: FEAT_PROVIDER_RETRY
 
-Temporary provider failures must be eligible for retry, while permanent failures must not be retried as if they were transient.
-```
+**Statement.** Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient. Classification shall use explicit status and exception semantics rather than message substrings.
 
-```{treq} Retry classification uses explicit failure semantics
-:id: TREQ_PROVIDER_RETRY_CLASSIFICATION
-:revision: 1
-:needs_artifacts: impl;unit
-:derives: REQ_PROVIDER_RETRY
+**Rationale.** Retrying transient failures improves availability, but retrying permanent failures adds latency and cost while brittle message matching can misclassify unrelated exceptions.
 
-Retry classification must distinguish retryable status and transport failures from permanent failures using explicit status and exception types rather than message substrings.
+**Verification intent.** Exercise retryable and permanent failures through public provider execution and directly verify the status/exception classification boundary across representative cases.
 ```
 
 ```{feature} Structured-output recovery
@@ -40,18 +36,14 @@ Invalid structured output can be repaired without allowing unbounded repair atte
 
 ```{req} Structured output repair is bounded
 :id: REQ_STRUCTURED_OUTPUT_REPAIR
+:status: accepted
 :revision: 1
-:needs_artifacts: impl;bdd
+:required_evidence: impl;bdd;property
 :derives: FEAT_STRUCTURED_RECOVERY
 
-Invalid structured output may be repaired, but repair attempts must stop at the configured finite limit.
-```
+**Statement.** Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit. Repair prompts shall bound incorporated invalid output and validation details for arbitrary generated input.
 
-```{treq} Repair prompts remain bounded
-:id: TREQ_REPAIR_PROMPT_BOUNDS
-:revision: 1
-:needs_artifacts: impl;property
-:derives: REQ_STRUCTURED_OUTPUT_REPAIR
+**Rationale.** Repair improves robustness only while its work and prompt growth remain predictable; unbounded retries or echoed invalid content can turn a malformed response into runaway execution.
 
-Repair-prompt construction must cap incorporated invalid output and validation details so prompt size remains bounded for arbitrary generated input.
+**Verification intent.** Exercise successful and exhausted repair through public structured-output behavior and use property-based inputs to verify prompt and attempt bounds over arbitrary invalid output and validation details.
 ```

@@ -1,7 +1,7 @@
 Engineering work starts from the requirements graph, not from tests or code in isolation.
 
-- Author goals, features, requirements, and optional technical requirements in the docs graph.
-- Declare the minimum required evidence with `needs_artifacts`.
+- Author goals, features, product requirements, and optional engineering constraints in the docs graph.
+- Declare the minimum required evidence with `required_evidence`.
 - Link pytest evidence with a revision-pinned `verifies` reference (`REQ_ID[revision==N]`) and an explicit `verification_kind`.
 - Link implementation evidence in source with a revision-pinned target: `# @impl Title, IMPL_ID, [REQ_ID[revision==N]]`.
 - Use ubCode/`ubc` for fast graph navigation, queries, references, and impact analysis when available; Sphinx-Needs remains the authoritative graph.

@@ -2,13 +2,16 @@ Requirements traceability
 =========================
 
 Requirements are the engineering source of truth. Verification and implementation
-evidence are linked into the same Sphinx-Needs graph.
+evidence are linked into the same Sphinx-Needs graph. Product requirements and
+engineering constraints carry an explicit ``draft`` / ``accepted`` / ``deprecated``
+lifecycle state; semantic changes advance ``revision`` so existing evidence must
+be reviewed against the new contract.
 
 Requirement hierarchy
 ---------------------
 
 .. needtable::
-   :columns: id;title;type;derives;derives_back
+   :columns: id;title;type;status;derives;derives_back
    :filter: type in ["goal", "feature", "req", "treq"]
 
 Implementation evidence
@@ -44,7 +47,7 @@ Evidence matrices
 Requirement evidence coverage:
 
 .. needtable::
-   :columns: id;title;needs_artifacts;implements_back;verifies_back
+   :columns: id;title;status;revision;required_evidence;implements_back;verifies_back
    :filter: type in ["req", "treq"]
 
 Non-passing verification evidence (empty on a healthy build):
@@ -60,8 +63,10 @@ Required CI publishes one ``python-test-evidence-<sha>`` artifact containing the
 pytest JUnit report, the context-enabled ``.coverage`` database,
 ``coverage.json`` with per-test contexts, and raw ``allure-results``. JUnit is
 the authoritative verification input imported into Sphinx-Needs. Coverage
-contexts and Allure remain auxiliary execution evidence; they are intentionally
-not converted into a second TEST-to-CODE graph or a separately hosted report.
+contexts and Allure remain auxiliary execution evidence. Allure is rendered as
+the human-facing :doc:`test portal <tests>` so images, JSON, logs, PDFs, and
+videos can be inspected directly, but it does not define trace links or satisfy
+requirement obligations; JUnit and Sphinx-Needs remain authoritative.
 
 The built documentation already exposes the authoritative graph as
 ``needs.json`` and provides derived agent-readable page Markdown plus
@@ -72,5 +77,5 @@ Graph inventory
 ---------------
 
 .. needtable::
-   :columns: id;title;type;needs_artifacts
+   :columns: id;title;type;required_evidence
    :filter: type in ["goal", "feature", "req", "treq", "impl", "testcase"]

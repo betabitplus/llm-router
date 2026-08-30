@@ -1,0 +1,85 @@
+/* Human-facing engineering portal refinements. */
+.portal-intro {
+  font-size: 1.08rem;
+  max-width: 74ch;
+}
+
+.sd-card.portal-card {
+  height: 100%;
+}
+
+.sd-card.portal-card .sd-card-title {
+  font-size: 1.05rem;
+}
+
+.portal-metric {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.portal-muted {
+  color: var(--pst-color-text-muted);
+}
+
+.portal-actions .sd-btn {
+  margin: 0.2rem 0.35rem 0.2rem 0;
+}
+
+.graphviz,
+.needflow {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.graphviz svg {
+  min-width: 48rem;
+  max-width: none;
+  height: auto;
+}
+
+.portal-result-pass {
+  color: var(--pst-color-success);
+  font-weight: 700;
+}
+
+.portal-result-fail {
+  color: var(--pst-color-danger);
+  font-weight: 700;
+}
+
+.portal-source-path {
+  font-family: var(--pst-font-family-monospace);
+  font-size: 0.9rem;
+}
+
+html[data-theme="dark"] .sd-card {
+  background: var(--pst-color-surface);
+  border-color: var(--pst-color-border);
+}
+
+.test-portal-frame {
+  width: 100%;
+  min-height: 82vh;
+  border: 1px solid var(--pst-color-border);
+  border-radius: 0.5rem;
+  background: var(--pst-color-background);
+}
+
+.verification-matrix-frame {
+  width: 100%;
+  min-height: 74vh;
+  border: 1px solid var(--pst-color-border);
+  border-radius: 0.5rem;
+  background: var(--pst-color-background);
+}
+
+@media (max-width: 575.98px) {
+  .bd-header button.primary-toggle {
+    margin-right: 0;
+  }
+
+  .bd-header button.secondary-toggle {
+    margin-left: 0;
+  }
+}

@@ -114,7 +114,7 @@ def validate_schema_output(
     return SchemaValidationResult(valid=True, value=parsed)
 
 
-# @impl Bounded repair prompt, IMPL_REPAIR_PROMPT_BOUNDS, [TREQ_REPAIR_PROMPT_BOUNDS[revision==1]]
+# @impl Bounded repair prompt, IMPL_REPAIR_PROMPT_BOUNDS, [REQ_STRUCTURED_OUTPUT_REPAIR[revision==1]]
 def build_repair_prompt(
     *,
     spec: SchemaSpec,

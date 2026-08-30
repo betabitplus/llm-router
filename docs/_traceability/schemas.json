@@ -35,15 +35,17 @@
     },
     {
       "id": "req-contract",
-      "message": "A requirement must have a REQ_ ID, revision, requested artifacts, and exactly one feature parent.",
+      "message": "A requirement must have a REQ_ ID, lifecycle status, revision, required evidence, and exactly one feature parent.",
       "select": {"$ref": "#/$defs/type-req"},
       "validate": {
         "local": {
           "properties": {
             "id": {"pattern": "^REQ_[A-Z0-9_]+$"},
-            "needs_artifacts": {"items": {}, "minItems": 1}
+            "status": {},
+            "revision": {},
+            "required_evidence": {"items": {}, "minItems": 1}
           },
-          "required": ["revision", "needs_artifacts"]
+          "required": ["status", "revision", "required_evidence"]
         },
         "network": {
           "derives": {
@@ -57,15 +59,17 @@
     },
     {
       "id": "treq-contract",
-      "message": "A technical requirement must have a TREQ_ ID, revision, requested artifacts, and exactly one requirement parent.",
+      "message": "An engineering constraint must have a TREQ_ ID, lifecycle status, revision, required evidence, and exactly one requirement parent.",
       "select": {"$ref": "#/$defs/type-treq"},
       "validate": {
         "local": {
           "properties": {
             "id": {"pattern": "^TREQ_[A-Z0-9_]+$"},
-            "needs_artifacts": {"items": {}, "minItems": 1}
+            "status": {},
+            "revision": {},
+            "required_evidence": {"items": {}, "minItems": 1}
           },
-          "required": ["revision", "needs_artifacts"]
+          "required": ["status", "revision", "required_evidence"]
         },
         "network": {
           "derives": {
@@ -128,9 +132,9 @@
       "select": {
         "properties": {
           "type": {"enum": ["req", "treq"]},
-          "needs_artifacts": {"items": {}, "contains": {"const": "impl"}}
+          "required_evidence": {"items": {}, "contains": {"const": "impl"}}
         },
-        "required": ["needs_artifacts"]
+        "required": ["required_evidence"]
       },
       "validate": {
         "network_back": {
@@ -148,7 +152,7 @@
       "validate": {
         "network": {
           "implements": {
-            "items": {"local": {"properties": {"needs_artifacts": {"items": {}, "contains": {"const": "impl"}}}}}
+            "items": {"local": {"properties": {"required_evidence": {"items": {}, "contains": {"const": "impl"}}}}}
           }
         }
       }
@@ -156,62 +160,62 @@
     {
       "id": "requested-bdd",
       "message": "A requirement requesting BDD evidence must have BDD coverage.",
-      "select": {"properties": {"type": {"enum": ["req", "treq"]}, "needs_artifacts": {"items": {}, "contains": {"const": "bdd"}}}, "required": ["needs_artifacts"]},
+      "select": {"properties": {"type": {"enum": ["req", "treq"]}, "required_evidence": {"items": {}, "contains": {"const": "bdd"}}}, "required": ["required_evidence"]},
       "validate": {"network_back": {"verifies": {"contains": {"local": {"properties": {"type": {"const": "testcase"}, "verification_kind": {"const": "bdd"}}, "required": ["verification_kind"]}}, "minContains": 1}}}
     },
     {
       "id": "requested-unit",
       "message": "A requirement requesting unit evidence must have unit coverage.",
-      "select": {"properties": {"type": {"enum": ["req", "treq"]}, "needs_artifacts": {"items": {}, "contains": {"const": "unit"}}}, "required": ["needs_artifacts"]},
+      "select": {"properties": {"type": {"enum": ["req", "treq"]}, "required_evidence": {"items": {}, "contains": {"const": "unit"}}}, "required": ["required_evidence"]},
       "validate": {"network_back": {"verifies": {"contains": {"local": {"properties": {"type": {"const": "testcase"}, "verification_kind": {"const": "unit"}}, "required": ["verification_kind"]}}, "minContains": 1}}}
     },
     {
       "id": "requested-property",
       "message": "A requirement requesting property evidence must have property coverage.",
-      "select": {"properties": {"type": {"enum": ["req", "treq"]}, "needs_artifacts": {"items": {}, "contains": {"const": "property"}}}, "required": ["needs_artifacts"]},
+      "select": {"properties": {"type": {"enum": ["req", "treq"]}, "required_evidence": {"items": {}, "contains": {"const": "property"}}}, "required": ["required_evidence"]},
       "validate": {"network_back": {"verifies": {"contains": {"local": {"properties": {"type": {"const": "testcase"}, "verification_kind": {"const": "property"}}, "required": ["verification_kind"]}}, "minContains": 1}}}
     },
     {
       "id": "requested-integration",
       "message": "A requirement requesting integration evidence must have integration coverage.",
-      "select": {"properties": {"type": {"enum": ["req", "treq"]}, "needs_artifacts": {"items": {}, "contains": {"const": "integration"}}}, "required": ["needs_artifacts"]},
+      "select": {"properties": {"type": {"enum": ["req", "treq"]}, "required_evidence": {"items": {}, "contains": {"const": "integration"}}}, "required": ["required_evidence"]},
       "validate": {"network_back": {"verifies": {"contains": {"local": {"properties": {"type": {"const": "testcase"}, "verification_kind": {"const": "integration"}}, "required": ["verification_kind"]}}, "minContains": 1}}}
     },
     {
       "id": "requested-e2e",
       "message": "A requirement requesting E2E evidence must have E2E coverage.",
-      "select": {"properties": {"type": {"enum": ["req", "treq"]}, "needs_artifacts": {"items": {}, "contains": {"const": "e2e"}}}, "required": ["needs_artifacts"]},
+      "select": {"properties": {"type": {"enum": ["req", "treq"]}, "required_evidence": {"items": {}, "contains": {"const": "e2e"}}}, "required": ["required_evidence"]},
       "validate": {"network_back": {"verifies": {"contains": {"local": {"properties": {"type": {"const": "testcase"}, "verification_kind": {"const": "e2e"}}, "required": ["verification_kind"]}}, "minContains": 1}}}
     },
     {
       "id": "unwanted-bdd",
       "message": "BDD evidence may only verify requirements that request BDD coverage.",
       "select": {"properties": {"type": {"const": "testcase"}, "verification_kind": {"const": "bdd"}}, "required": ["verification_kind"]},
-      "validate": {"network": {"verifies": {"items": {"local": {"properties": {"needs_artifacts": {"items": {}, "contains": {"const": "bdd"}}}}}}}}
+      "validate": {"network": {"verifies": {"items": {"local": {"properties": {"required_evidence": {"items": {}, "contains": {"const": "bdd"}}}}}}}}
     },
     {
       "id": "unwanted-unit",
       "message": "Unit evidence may only verify requirements that request unit coverage.",
       "select": {"properties": {"type": {"const": "testcase"}, "verification_kind": {"const": "unit"}}, "required": ["verification_kind"]},
-      "validate": {"network": {"verifies": {"items": {"local": {"properties": {"needs_artifacts": {"items": {}, "contains": {"const": "unit"}}}}}}}}
+      "validate": {"network": {"verifies": {"items": {"local": {"properties": {"required_evidence": {"items": {}, "contains": {"const": "unit"}}}}}}}}
     },
     {
       "id": "unwanted-property",
       "message": "Property evidence may only verify requirements that request property coverage.",
       "select": {"properties": {"type": {"const": "testcase"}, "verification_kind": {"const": "property"}}, "required": ["verification_kind"]},
-      "validate": {"network": {"verifies": {"items": {"local": {"properties": {"needs_artifacts": {"items": {}, "contains": {"const": "property"}}}}}}}}
+      "validate": {"network": {"verifies": {"items": {"local": {"properties": {"required_evidence": {"items": {}, "contains": {"const": "property"}}}}}}}}
     },
     {
       "id": "unwanted-integration",
       "message": "Integration evidence may only verify requirements that request integration coverage.",
       "select": {"properties": {"type": {"const": "testcase"}, "verification_kind": {"const": "integration"}}, "required": ["verification_kind"]},
-      "validate": {"network": {"verifies": {"items": {"local": {"properties": {"needs_artifacts": {"items": {}, "contains": {"const": "integration"}}}}}}}}
+      "validate": {"network": {"verifies": {"items": {"local": {"properties": {"required_evidence": {"items": {}, "contains": {"const": "integration"}}}}}}}}
     },
     {
       "id": "unwanted-e2e",
       "message": "E2E evidence may only verify requirements that request E2E coverage.",
       "select": {"properties": {"type": {"const": "testcase"}, "verification_kind": {"const": "e2e"}}, "required": ["verification_kind"]},
-      "validate": {"network": {"verifies": {"items": {"local": {"properties": {"needs_artifacts": {"items": {}, "contains": {"const": "e2e"}}}}}}}}
+      "validate": {"network": {"verifies": {"items": {"local": {"properties": {"required_evidence": {"items": {}, "contains": {"const": "e2e"}}}}}}}}
     }
   ]
 }
