@@ -4,10 +4,14 @@
     "type-feature": {"properties": {"type": {"const": "feature"}}},
     "type-req": {"properties": {"type": {"const": "req"}}},
     "type-treq": {"properties": {"type": {"const": "treq"}}},
+    "type-adr": {"properties": {"type": {"const": "adr"}}},
     "type-impl": {"properties": {"type": {"const": "impl"}}},
     "type-testcase": {"properties": {"type": {"const": "testcase"}}},
     "requirement-like": {
       "properties": {"type": {"enum": ["req", "treq"]}}
+    },
+    "decision-affectable": {
+      "properties": {"type": {"enum": ["feature", "req", "treq", "impl"]}}
     }
   },
   "schemas": [
@@ -41,7 +45,7 @@
         "local": {
           "properties": {
             "id": {"pattern": "^REQ_[A-Z0-9_]+$"},
-            "status": {},
+            "status": {"enum": ["draft", "accepted", "deprecated"]},
             "revision": {},
             "required_evidence": {"items": {}, "minItems": 1}
           },
@@ -65,7 +69,7 @@
         "local": {
           "properties": {
             "id": {"pattern": "^TREQ_[A-Z0-9_]+$"},
-            "status": {},
+            "status": {"enum": ["draft", "accepted", "deprecated"]},
             "revision": {},
             "required_evidence": {"items": {}, "minItems": 1}
           },
@@ -80,6 +84,65 @@
           }
         }
       }
+    },
+    {
+      "id": "adr-contract",
+      "message": "An architecture decision must have an ADR_#### ID, decision lifecycle, decision date, minimal decision record sections, and only valid impact links.",
+      "select": {"$ref": "#/$defs/type-adr"},
+      "validate": {
+        "local": {
+          "properties": {
+            "id": {"pattern": "^ADR_[0-9]{4}$"},
+            "status": {"enum": ["proposed", "accepted", "rejected", "deprecated", "superseded"]},
+            "decision_date": {},
+            "content": {"pattern": "\\*\\*Context\\.\\*\\*[\\s\\S]+\\*\\*Decision\\.\\*\\*[\\s\\S]+\\*\\*Consequences\\.\\*\\*[\\s\\S]+\\*\\*Alternatives considered\\.\\*\\*[\\s\\S]+"},
+            "derives": {"maxItems": 0},
+            "implements": {"maxItems": 0},
+            "verifies": {"maxItems": 0}
+          },
+          "required": ["status", "decision_date", "content"]
+        },
+        "network": {
+          "affects": {"items": {"local": {"$ref": "#/$defs/decision-affectable"}}},
+          "supersedes": {"items": {"local": {"$ref": "#/$defs/type-adr"}}}
+        }
+      }
+    },
+    {
+      "id": "adr-supersedes-contract",
+      "message": "Only an accepted architecture decision may supersede another decision, and every target must already be marked superseded.",
+      "select": {"properties": {"type": {"const": "adr"}, "supersedes": {"items": {}, "minItems": 1}}, "required": ["supersedes"]},
+      "validate": {
+        "local": {"properties": {"status": {"const": "accepted"}}},
+        "network": {"supersedes": {"items": {"local": {"properties": {"type": {"const": "adr"}, "status": {"const": "superseded"}}, "required": ["status"]}}}}
+      }
+    },
+    {
+      "id": "adr-superseded-contract",
+      "message": "A superseded architecture decision must be replaced by exactly one accepted architecture decision.",
+      "select": {"properties": {"type": {"const": "adr"}, "status": {"const": "superseded"}}, "required": ["status"]},
+      "validate": {
+        "network_back": {
+          "supersedes": {
+            "contains": {"local": {"properties": {"type": {"const": "adr"}, "status": {"const": "accepted"}}, "required": ["status"]}},
+            "items": {"local": {"$ref": "#/$defs/type-adr"}},
+            "minContains": 1,
+            "maxContains": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "affects-source-contract",
+      "message": "The affects relation is reserved for architecture decisions.",
+      "select": {"properties": {"affects": {"items": {}, "minItems": 1}}, "required": ["affects"]},
+      "validate": {"local": {"properties": {"type": {"const": "adr"}}}}
+    },
+    {
+      "id": "supersedes-source-contract",
+      "message": "The supersedes relation is reserved for architecture decisions.",
+      "select": {"properties": {"supersedes": {"items": {}, "minItems": 1}}, "required": ["supersedes"]},
+      "validate": {"local": {"properties": {"type": {"const": "adr"}}}}
     },
     {
       "id": "impl-contract",

@@ -166,3 +166,14 @@ Provider-specific response and failure details are normalized into stable public
 
 **Verification intent.** Trigger representative provider HTTP and SDK failures through public router execution and verify the resulting public error type and stable error metadata.
 ```
+
+## Architecture decisions
+
+The following accepted decision records explain architectural choices that shape
+this provider contract without becoming additional requirements.
+
+```{needtable}
+:columns: id;title;status;decision_date
+:style: table
+:filter: type == "adr" and "REQ_PROVIDER_ADAPTER_INTEROPERABILITY" in affects
+```

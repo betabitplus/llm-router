@@ -86,7 +86,7 @@ manual review dashboard.
 
 ## Review from different perspectives
 
-::::{grid} 1 2 3 3
+::::{grid} 1 2 4 4
 :gutter: 3
 
 :::{grid-item-card} Product perspective
@@ -113,6 +113,14 @@ manual review dashboard.
 **What actually ran?** Open each test result and inspect its evidence.
 :::
 
+:::{grid-item-card} Decision perspective
+:link: decisions/index
+:link-type: doc
+:class-card: portal-card
+
+**Why this design?** Review significant architecture choices, alternatives, consequences, and supersession history.
+:::
+
 ::::
 
 ## Reference and diagnostics
@@ -120,6 +128,7 @@ manual review dashboard.
 - {doc}`API reference <api>` — public Python API.
 - {doc}`Live executable examples <auto_examples/index>` — runnable public workflows.
 - {doc}`Requirements traceability <traceability>` — implementation/source-centric view.
+- {doc}`Architecture decisions <decisions/index>` — decision rationale and supersession history.
 - {doc}`Verification diagnostics <verification>` — dense JUnit/Sphinx-Needs tables for advanced inspection.
 - `needs.json` — machine-readable authoritative graph emitted by the documentation build.
 - `release-dossier.pdf` — release PDF emitted by the publication workflow.
@@ -129,6 +138,7 @@ manual review dashboard.
 :maxdepth: 3
 
 requirements/index
+decisions/index
 specifications
 tests
 api

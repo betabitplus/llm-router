@@ -2335,7 +2335,7 @@ docs = [
     { name = "sphinx-design", specifier = ">=0.6,<1" },
     { name = "sphinx-gallery", specifier = ">=0.21" },
     { name = "sphinx-llm", specifier = ">=1,<2" },
-    { name = "sphinx-needs", specifier = ">=8.3.1,<9" },
+    { name = "sphinx-needs", specifier = ">=8.4,<9" },
     { name = "sphinx-simplepdf", specifier = ">=1.7,<2" },
     { name = "sphinx-test-reports", specifier = ">=1.4,<2" },
     { name = "sphinxcontrib-mermaid", specifier = ">=2.1" },

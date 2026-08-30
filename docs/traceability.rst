@@ -1,8 +1,9 @@
 Requirements traceability
 =========================
 
-Requirements are the engineering source of truth. Verification and implementation
-evidence are linked into the same Sphinx-Needs graph. Product requirements and
+The Sphinx-Needs graph is the engineering source of truth. Requirements define
+obligations, Architecture Decisions preserve significant rationale, and verification
+and implementation evidence link into the same graph. Product requirements and
 engineering constraints carry an explicit ``draft`` / ``accepted`` / ``deprecated``
 lifecycle state; semantic changes advance ``revision`` so existing evidence must
 be reviewed against the new contract.
@@ -13,6 +14,18 @@ Requirement hierarchy
 .. needtable::
    :columns: id;title;type;status;derives;derives_back
    :filter: type in ["goal", "feature", "req", "treq"]
+
+Architecture decisions
+----------------------
+
+Architecture decisions preserve significant engineering rationale without becoming
+requirements or verification obligations. ``affects`` connects a decision to the
+Feature, Requirement, Engineering Constraint, or implementation artifact it shapes;
+``supersedes`` preserves replacement history between ADRs.
+
+.. needtable::
+   :columns: id;title;status;decision_date;affects;supersedes;supersedes_back
+   :filter: type == "adr"
 
 Implementation evidence
 -----------------------
@@ -78,4 +91,4 @@ Graph inventory
 
 .. needtable::
    :columns: id;title;type;required_evidence
-   :filter: type in ["goal", "feature", "req", "treq", "impl", "testcase"]
+   :filter: type in ["goal", "feature", "req", "treq", "adr", "impl", "testcase"]

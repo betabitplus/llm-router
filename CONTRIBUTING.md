@@ -33,6 +33,31 @@ Run push-time hooks:
 uv run pre-commit run --all-files --hook-stage pre-push
 ```
 
+## Architecture Decisions
+
+Record only significant engineering choices as `ADR_####` Architecture Decision
+needs under `docs/decisions/`. Keep each record to Context, Decision,
+Consequences, and Alternatives considered. ADRs explain rationale; requirements
+and Engineering Constraints remain the enforceable contracts.
+
+Sphinx-Needs schema validation is the semantic ADR linter. The existing
+`markdownlint` and `mdformat` hooks cover Markdown quality. ubCode provides live
+schema/link diagnostics from the same `ubproject.toml`; when the optional `ubc`
+CLI is available, run:
+
+```bash
+ubc check docs/decisions
+```
+
+For the complete authoritative graph and evidence check, run:
+
+```bash
+uv run python scripts/build_docs_portal.py
+```
+
+This produces both `needs.json` and `schema_violations.json`; do not introduce a
+parallel ADR metadata store or ADR-specific source database.
+
 ## Template And Tooling Updates
 
 Check whether this repo is behind the released Ternforge template:

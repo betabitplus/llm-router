@@ -117,3 +117,14 @@ Routing accounts for per-provider and per-key availability before choosing or wa
 
 **Verification intent.** Verify limiter state directly across multiple provider/key identities, interval combinations, failure updates, and subsequent successful updates.
 ```
+
+## Architecture decisions
+
+The following accepted decision records explain routing boundaries that shape
+these requirements without becoming additional product obligations.
+
+```{needtable}
+:columns: id;title;status;decision_date
+:style: table
+:filter: type == "adr" and "REQ_SYNC_ROUTE_FALLBACK" in affects
+```

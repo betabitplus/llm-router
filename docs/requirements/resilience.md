@@ -47,3 +47,14 @@ Invalid structured output can be repaired without allowing unbounded repair atte
 
 **Verification intent.** Exercise successful and exhausted repair through public structured-output behavior and use property-based inputs to verify prompt and attempt bounds over arbitrary invalid output and validation details.
 ```
+
+## Architecture decisions
+
+The following accepted decision records explain the recovery boundaries behind
+these requirements without replacing the requirements themselves.
+
+```{needtable}
+:columns: id;title;status;decision_date
+:style: table
+:filter: type == "adr" and "REQ_PROVIDER_RETRY" in affects
+```
