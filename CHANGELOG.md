@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.15.0](https://github.com/betabitplus/llm-router/compare/v0.14.2...v0.15.0) (2026-09-02)
+
+
+### Features
+
+* add engineering experiment capsules ([#85](https://github.com/betabitplus/llm-router/issues/85)) ([85dd604](https://github.com/betabitplus/llm-router/commit/85dd6048a691297878af1b05d69a815295c220e6))
+
 ## [0.14.2](https://github.com/betabitplus/llm-router/compare/v0.14.1...v0.14.2) (2026-08-29)
 
 
