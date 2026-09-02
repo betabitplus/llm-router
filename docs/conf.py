@@ -65,6 +65,16 @@ myst_fence_as_directive = {"mermaid"}
 nb_execution_mode = "off"
 nb_code_prompt_show = "Show experiment code"
 nb_code_prompt_hide = "Hide experiment code"
+nb_mime_priority_overrides = [
+    ("simplepdf", "text/html", 30),
+    ("simplepdf", "image/svg+xml", 40),
+    ("simplepdf", "image/png", 50),
+    ("simplepdf", "image/gif", 60),
+    ("simplepdf", "image/jpeg", 70),
+    ("simplepdf", "text/markdown", 80),
+    ("simplepdf", "text/latex", 90),
+    ("simplepdf", "text/plain", 100),
+]
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_favicon = "_static/gallery/multi-route.svg"
