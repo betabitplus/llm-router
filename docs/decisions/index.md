@@ -43,7 +43,7 @@ records already marked `superseded`.
 ## Decision log
 
 ```{needtable} Architecture decision log
-:columns: id;title;status;decision_date
+:columns: id;title;status;decision_date;informs_back
 :style: table
 :filter: type == "adr"
 :sort: id
@@ -65,10 +65,11 @@ Metadata stays deliberately small: stable `ADR_####` ID, lifecycle `status`,
 `revision` or `required_evidence`.
 
 Use `affects` only when a decision materially shapes an existing Feature,
-Requirement, Engineering Constraint, or implementation artifact. If a decision
-creates an enforceable engineering invariant, express that invariant as an
-Engineering Constraint and link the ADR to it; tests verify the constraint, not
-the ADR.
+Requirement, Engineering Constraint, or implementation artifact. An Engineering
+Experiment may point to the ADR with `informs` when observed evidence materially
+contributed to the choice. If a decision creates an enforceable engineering
+invariant, express that invariant as an Engineering Constraint and link the ADR to
+it; tests verify the constraint, not the ADR.
 
 ## Tooling and validation
 

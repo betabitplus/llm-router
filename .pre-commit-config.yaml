@@ -19,11 +19,11 @@ repos:
   # =============================================================================
   - repo: local
     hooks:
-      # Linter - runs first to catch issues
+      # Linter - runs first to catch issues in mutable project code.
       - id: ruff
         name: ruff (lint + autofix)
         entry: >-
-          bash -c 'paths=(); for path in src tests examples workbench scripts; do
+          bash -c 'paths=(); for path in src tests examples scripts; do
           [ ! -e "$path" ] || paths+=("$path"); done; uv run ruff check --fix
           --unsafe-fixes "${paths[@]}"'
         language: system
@@ -32,11 +32,20 @@ repos:
         stages: [pre-commit]
         exclude: ^sandbox/
 
-      # Formatter - runs after linter fixes
+      # Experiment source is causal evidence: check it, never auto-mutate it.
+      - id: ruff-experiments
+        name: ruff (experiments check-only)
+        entry: uv run ruff check experiments
+        language: system
+        pass_filenames: false
+        files: ^experiments/
+        stages: [pre-commit]
+
+      # Formatter - runs after linter fixes on mutable project code only.
       - id: ruff-format
         name: ruff-format
         entry: >-
-          bash -c 'paths=(); for path in src tests examples workbench scripts; do
+          bash -c 'paths=(); for path in src tests examples scripts; do
           [ ! -e "$path" ] || paths+=("$path"); done; uv run ruff format
           "${paths[@]}"'
         language: system
@@ -102,6 +111,14 @@ repos:
         files: (pyproject\.toml|uv\.lock)$
         stages: [pre-commit]
 
+      - id: experiment-reports
+        name: experiment capsules (structure + captured evidence)
+        entry: uv run python scripts/check_experiment_reports.py
+        language: system
+        pass_filenames: false
+        files: ^(experiments/llm_router/exp_[^/]+/|scripts/(check_experiment_reports|capture_experiment)\.py$)
+        stages: [pre-commit]
+
       - id: uv-sync-post-checkout
         name: uv sync after checkout (if deps changed)
         entry: bash -c 'if git diff --name-only "$PRE_COMMIT_FROM_REF" "$PRE_COMMIT_TO_REF" 2>/dev/null | grep -qE "pyproject.toml|uv.lock"; then uv sync --locked --all-groups; fi'
@@ -133,7 +150,7 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        files: (^src/|^tests/|^examples/|^workbench/|^pyproject.toml$)
+        files: (^src/|^tests/|^examples/|^experiments/|^pyproject.toml$)
         stages: [pre-push]
 
       - id: py-lib-policy
@@ -347,7 +364,7 @@ repos:
       - id: check-added-large-files
         args: [--maxkb=1000]
         stages: [pre-commit]
-        exclude: ^(tests/[^/]+/(e2e/.*/cassettes/|data/))
+        exclude: ^(tests/[^/]+/(e2e/.*/cassettes/|data/)|experiments/[^/]+/exp_[^/]+/inputs/)
 
       # Check for files that would conflict on case-insensitive filesystems
       - id: check-case-conflict

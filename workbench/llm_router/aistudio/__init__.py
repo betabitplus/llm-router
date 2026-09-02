@@ -1,1 +1,0 @@
-"""AI Studio workbench entrypoints."""

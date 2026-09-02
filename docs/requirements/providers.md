@@ -167,6 +167,18 @@ Provider-specific response and failure details are normalized into stable public
 **Verification intent.** Trigger representative provider HTTP and SDK failures through public router execution and verify the resulting public error type and stable error metadata.
 ```
 
+## Engineering experiments
+
+These retained observations show the upstream provider behavior that informed the
+provider-boundary design. They are context for the contract, not verification of
+it.
+
+```{needtable}
+:columns: id;title;experiment_date;informs
+:style: table
+:filter: type == "exp" and "ADR_0001" in informs
+```
+
 ## Architecture decisions
 
 The following accepted decision records explain architectural choices that shape

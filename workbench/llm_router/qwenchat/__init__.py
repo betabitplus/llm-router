@@ -1,1 +1,0 @@
-"""QwenChat workbench entrypoints."""

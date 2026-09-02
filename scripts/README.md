@@ -59,8 +59,15 @@ uv run py-lib-policy .
 uv build
 ```
 
-Use the running-loop diagnostic helper only for real workbench modules:
+Validate the strict Question → (Step → Evidence)+ → Conclusion experiment-report
+format and source/snapshot provenance:
 
 ```bash
-uv run python scripts/reproduce_running_loop.py workbench.llm_router.<module>
+uv run python scripts/check_experiment_reports.py
+```
+
+Use the running-loop diagnostic helper only for real experiment modules:
+
+```bash
+uv run python scripts/reproduce_running_loop.py experiments.llm_router.<module>
 ```

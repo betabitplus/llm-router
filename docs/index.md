@@ -1,10 +1,10 @@
 # llm-router engineering portal
 
-This site is the release-level map of **product intent → requirements → executable
-behavior → implementation → test evidence**. You should be able to review the
-system without opening the repository or an IDE.
+This site is the release-level map of **product intent, engineering learning and
+decisions, requirements, executable behavior, implementation, and test evidence**.
+You should be able to review the system without opening the repository or an IDE.
 
-::::{grid} 1 2 2 2
+::::{grid} 1 2 3 3
 :gutter: 3
 
 :::{grid-item-card} 🧭 Requirements hub
@@ -23,6 +23,24 @@ constraints, and the relationships between them.
 
 Explore a compact Goal → Feature overview, then drill into one product area at a
 time. Implementation and test provenance stay out of product maps on purpose.
+:::
+
+:::{grid-item-card} 🔬 Engineering experiments
+:link: experiments/index
+:link-type: doc
+:class-card: portal-card
+
+See what was tested while an answer was still uncertain, the evidence observed,
+and which decision or contract that learning informed.
+:::
+
+:::{grid-item-card} 🧠 Architecture decisions
+:link: decisions/index
+:link-type: doc
+:class-card: portal-card
+
+Review significant design choices, alternatives, consequences, and supersession
+history without turning every implementation detail into an ADR.
 :::
 
 :::{grid-item-card} 📖 Executable specifications
@@ -86,7 +104,7 @@ manual review dashboard.
 
 ## Review from different perspectives
 
-::::{grid} 1 2 4 4
+::::{grid} 1 2 3 3
 :gutter: 3
 
 :::{grid-item-card} Product perspective
@@ -95,6 +113,14 @@ manual review dashboard.
 :class-card: portal-card
 
 **Why and what?** Follow Goal → Feature → Requirement. Engineering constraints are a separate implementation-facing view.
+:::
+
+:::{grid-item-card} Experiment perspective
+:link: experiments/index
+:link-type: doc
+:class-card: portal-card
+
+**What did we learn before deciding?** Review the question, method, observed evidence, conclusion, and informed artifacts.
 :::
 
 :::{grid-item-card} Behavior perspective
@@ -127,7 +153,8 @@ manual review dashboard.
 
 - {doc}`API reference <api>` — public Python API.
 - {doc}`Live executable examples <auto_examples/index>` — runnable public workflows.
-- {doc}`Requirements traceability <traceability>` — implementation/source-centric view.
+- {doc}`Engineering traceability <traceability>` — dense graph and source-centric diagnostic view.
+- {doc}`Engineering experiments <experiments/index>` — retained experimental evidence and informed artifacts.
 - {doc}`Architecture decisions <decisions/index>` — decision rationale and supersession history.
 - {doc}`Verification diagnostics <verification>` — dense JUnit/Sphinx-Needs tables for advanced inspection.
 - `needs.json` — machine-readable authoritative graph emitted by the documentation build.
@@ -138,6 +165,7 @@ manual review dashboard.
 :maxdepth: 3
 
 requirements/index
+experiments/index
 decisions/index
 specifications
 tests

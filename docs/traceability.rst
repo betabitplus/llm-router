@@ -1,7 +1,8 @@
-Requirements traceability
-=========================
+Engineering traceability
+========================
 
-The Sphinx-Needs graph is the engineering source of truth. Requirements define
+The Sphinx-Needs graph is the engineering source of truth. Engineering Experiments
+preserve durable learning from uncertain investigations, Requirements define
 obligations, Architecture Decisions preserve significant rationale, and verification
 and implementation evidence link into the same graph. Product requirements and
 engineering constraints carry an explicit ``draft`` / ``accepted`` / ``deprecated``
@@ -15,6 +16,21 @@ Requirement hierarchy
    :columns: id;title;type;status;derives;derives_back
    :filter: type in ["goal", "feature", "req", "treq"]
 
+Engineering experiments
+-----------------------
+
+Engineering experiments preserve observations that materially informed a later
+contract or decision. Each EXP is a self-contained capsule with one authoritative
+captured notebook report; ``informs`` links its conclusion to an ADR, Requirement,
+or Engineering Constraint. The notebook presents Question, ordered Step/Evidence
+pairs, and Conclusion with stored text or rich MIME outputs. Documentation builds
+render those outputs without executing the experiment. Experiments do not satisfy
+implementation or verification obligations.
+
+.. needtable::
+   :columns: id;title;experiment_date;informs
+   :filter: type == "exp"
+
 Architecture decisions
 ----------------------
 
@@ -24,7 +40,7 @@ Feature, Requirement, Engineering Constraint, or implementation artifact it shap
 ``supersedes`` preserves replacement history between ADRs.
 
 .. needtable::
-   :columns: id;title;status;decision_date;affects;supersedes;supersedes_back
+   :columns: id;title;status;decision_date;informs_back;affects;supersedes;supersedes_back
    :filter: type == "adr"
 
 Implementation evidence
@@ -91,4 +107,4 @@ Graph inventory
 
 .. needtable::
    :columns: id;title;type;required_evidence
-   :filter: type in ["goal", "feature", "req", "treq", "adr", "impl", "testcase"]
+   :filter: type in ["goal", "feature", "req", "treq", "exp", "adr", "impl", "testcase"]

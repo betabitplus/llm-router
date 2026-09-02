@@ -83,7 +83,7 @@ Public API coherence, packaging, examples, and developer-facing guarantees.
 
 ## Visual perspectives
 
-::::{grid} 1 2 2 2
+::::{grid} 1 2 3 3
 :gutter: 3
 
 :::{grid-item-card} 🗺️ Requirement maps
@@ -94,6 +94,15 @@ Public API coherence, packaging, examples, and developer-facing guarantees.
 See the product hierarchy **Goal → Feature → Requirement**, then drill into
 small feature-focused maps. Engineering constraints are shown separately so they
 do not masquerade as another layer of product intent.
+:::
+
+:::{grid-item-card} 🔬 Engineering experiments
+:link: ../experiments/index
+:link-type: doc
+:class-card: portal-card
+
+Review retained experimental observations that informed requirements, engineering
+constraints, or architecture decisions before they became authoritative.
 :::
 
 :::{grid-item-card} 🧪 Executable specifications
@@ -120,6 +129,10 @@ Product requirements use one reviewable structure throughout the portal:
 Engineering constraints use the same structure, but their normative paragraph
 is labeled **Constraint** because they describe implementation-facing boundaries
 or invariants derived from a product requirement.
+
+An incoming `informed by experiment` relation adds empirical context for why a
+requirement or constraint exists. It is rationale, not verification: only declared
+implementation and test evidence can satisfy `required_evidence`.
 
 ### Lifecycle
 

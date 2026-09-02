@@ -5,6 +5,7 @@
     "type-req": {"properties": {"type": {"const": "req"}}},
     "type-treq": {"properties": {"type": {"const": "treq"}}},
     "type-adr": {"properties": {"type": {"const": "adr"}}},
+    "type-exp": {"properties": {"type": {"const": "exp"}}},
     "type-impl": {"properties": {"type": {"const": "impl"}}},
     "type-testcase": {"properties": {"type": {"const": "testcase"}}},
     "requirement-like": {
@@ -12,6 +13,9 @@
     },
     "decision-affectable": {
       "properties": {"type": {"enum": ["feature", "req", "treq", "impl"]}}
+    },
+    "experiment-informed-target": {
+      "properties": {"type": {"enum": ["adr", "req", "treq"]}}
     }
   },
   "schemas": [
@@ -143,6 +147,35 @@
       "message": "The supersedes relation is reserved for architecture decisions.",
       "select": {"properties": {"supersedes": {"items": {}, "minItems": 1}}, "required": ["supersedes"]},
       "validate": {"local": {"properties": {"type": {"const": "adr"}}}}
+    },
+    {
+      "id": "experiment-contract",
+      "message": "An engineering experiment must have an EXP_#### ID, date, question/conclusion summary, and only valid informed targets.",
+      "select": {"$ref": "#/$defs/type-exp"},
+      "validate": {
+        "local": {
+          "properties": {
+            "id": {"pattern": "^EXP_[0-9]{4}$"},
+            "experiment_date": {},
+            "content": {"pattern": "\\*\\*Question\\.\\*\\*[\\s\\S]+\\*\\*Conclusion\\.\\*\\*[\\s\\S]+"},
+            "derives": {"maxItems": 0},
+            "implements": {"maxItems": 0},
+            "verifies": {"maxItems": 0},
+            "affects": {"maxItems": 0},
+            "supersedes": {"maxItems": 0}
+          },
+          "required": ["experiment_date", "content"]
+        },
+        "network": {
+          "informs": {"items": {"local": {"$ref": "#/$defs/experiment-informed-target"}}}
+        }
+      }
+    },
+    {
+      "id": "informs-source-contract",
+      "message": "The informs relation is reserved for engineering experiments.",
+      "select": {"properties": {"informs": {"items": {}, "minItems": 1}}, "required": ["informs"]},
+      "validate": {"local": {"properties": {"type": {"const": "exp"}}}}
     },
     {
       "id": "impl-contract",

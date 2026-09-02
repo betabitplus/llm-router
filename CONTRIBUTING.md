@@ -73,7 +73,7 @@ uvx --from copier==9.17.2 copier update
 ```
 
 The update command leaves product-owned `src/`, `tests/`, `docs/`,
-`examples/`, and `workbench/` files alone by default. Review the resulting
+`examples/`, and `experiments/` files alone by default. Review the resulting
 diff, run validation, then land the update through the normal pull request to `main`.
 
 ## Running Tests
@@ -113,30 +113,36 @@ Run an example directly:
 direnv exec . uv run python examples/llm_router/<module>.py
 ```
 
-Keep examples focused on imports from `llm_router`. If an example
-needs private modules, move that investigation to `workbench/` or convert it
-into a test.
+Keep examples focused on imports from `llm_router`. If an example needs private
+modules, convert that behavior into a test or keep the investigation temporary;
+a retained Engineering Experiment must stay independent of production code.
 
 Sphinx-Gallery discovers committed examples from `examples/llm_router/`, and the
 examples smoke test keeps those scripts executable.
 
-## Live Workbench Scripts
+## Engineering Experiments
 
-`workbench/` is manual-only. Add focused probes there when a behavior needs
-live investigation outside committed pytest coverage.
+`experiments/` is manual-only. Add focused probes there when a behavior needs
+live investigation outside committed pytest coverage. Probe code is laboratory
+equipment, not production evidence. When a result becomes durable engineering
+knowledge, preserve it as one self-contained `EXP_####` capsule under
+`experiments/llm_router/` and link the EXP to any ADR, Requirement, or Engineering
+Constraint it informs.
 
-Run a probe directly:
+Each capsule owns one canonical `src/experiment.py`, one authoritative
+`report/report.ipynb`, causal inputs, optional retained artifacts, and its own uv
+lock plus exact Python version. Do not import production `llm_router`, project
+`src/`, tests, sibling experiments, or shared experiment helpers.
 
-```bash
-direnv exec . uv run python -m workbench.llm_router.<module>
-```
+Retained reports use a strict sequential notebook grammar: Question, then one or
+more Step → Evidence pairs, then Conclusion. Evidence cells may contain text,
+JSON, images, plots, HTML, or multiple outputs, and their input code is hidden
+behind the standard MyST-NB toggle. Documentation builds render stored outputs only
+and never contact live providers.
 
-Reproduce the same probe inside an already-running event loop:
-
-```bash
-direnv exec . uv run python scripts/reproduce_running_loop.py \
-    workbench.llm_router.<module>
-```
+Capture a report through `scripts/capture_experiment.py`; it executes an isolated
+temporary copy with the capsule's locked environment and records a capsule digest.
+Validate all retained evidence with `uv run python scripts/check_experiment_reports.py`.
 
 ## Commit And Release Conventions
 
