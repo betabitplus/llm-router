@@ -89,5 +89,5 @@ aggregates testcase IDs because showing dozens of execution nodes is useful for
 provenance but poor for reading the product model.
 
 For exact implementation markers use :doc:`traceability`. For behavioral review
-use :doc:`specifications`. The raw JUnit-imported hierarchy is available at
-:doc:`local-pytest-evidence` for diagnostics and provenance.
+use :doc:`specifications`. The test-result views above preserve the imported
+execution hierarchy when you need diagnostics or provenance.

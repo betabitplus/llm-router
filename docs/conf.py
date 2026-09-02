@@ -111,6 +111,8 @@ if not local_pytest_junit.is_file():
     exclude_patterns.append("local-pytest-evidence.rst")
 
 sphinx_tags = globals().get("tags")
+if sphinx_tags is not None and shutil.which("dot") is not None:
+    sphinx_tags.add("graphviz_available")
 
 # Required CI stays fully offline. Explicit live documentation builds can opt in
 # to external inventories and get links for external APIs used in examples.
