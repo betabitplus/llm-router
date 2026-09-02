@@ -33,6 +33,31 @@ Run push-time hooks:
 uv run pre-commit run --all-files --hook-stage pre-push
 ```
 
+## Architecture Decisions
+
+Record only significant engineering choices as `ADR_####` Architecture Decision
+needs under `docs/decisions/`. Keep each record to Context, Decision,
+Consequences, and Alternatives considered. ADRs explain rationale; requirements
+and Engineering Constraints remain the enforceable contracts.
+
+Sphinx-Needs schema validation is the semantic ADR linter. The existing
+`markdownlint` and `mdformat` hooks cover Markdown quality. ubCode provides live
+schema/link diagnostics from the same `ubproject.toml`; when the optional `ubc`
+CLI is available, run:
+
+```bash
+ubc check docs/decisions
+```
+
+For the complete authoritative graph and evidence check, run:
+
+```bash
+uv run python scripts/build_docs_portal.py
+```
+
+This produces both `needs.json` and `schema_violations.json`; do not introduce a
+parallel ADR metadata store or ADR-specific source database.
+
 ## Template And Tooling Updates
 
 Check whether this repo is behind the released Ternforge template:
@@ -48,7 +73,7 @@ uvx --from copier==9.17.2 copier update
 ```
 
 The update command leaves product-owned `src/`, `tests/`, `docs/`,
-`examples/`, and `workbench/` files alone by default. Review the resulting
+`examples/`, and `experiments/` files alone by default. Review the resulting
 diff, run validation, then land the update through the normal pull request to `main`.
 
 ## Running Tests
@@ -88,30 +113,46 @@ Run an example directly:
 direnv exec . uv run python examples/llm_router/<module>.py
 ```
 
-Keep examples focused on imports from `llm_router`. If an example
-needs private modules, move that investigation to `workbench/` or convert it
-into a test.
+Keep examples focused on imports from `llm_router`. If an example needs private
+modules, convert that behavior into a test or keep the investigation temporary;
+a retained Engineering Experiment must stay independent of the shipped package.
 
+Every committed example should have a matching link from the package usage docs.
 Sphinx-Gallery discovers committed examples from `examples/llm_router/`, and the
-examples smoke test keeps those scripts executable.
+examples smoke test keeps those scripts executable so docs examples do not drift
+silently.
 
-## Live Workbench Scripts
+## Engineering Experiments
 
-`workbench/` is manual-only. Add focused probes there when a behavior needs
-live investigation outside committed pytest coverage.
+`experiments/` is optional and contains durable investigations, not another test
+suite or a home for ad-hoc scripts. Preserve an investigation only when its exact
+inputs, executable method, environment, and captured result are useful engineering
+knowledge.
 
-Run a probe directly:
+Each retained experiment is a self-contained capsule under
+`experiments/<project>/exp_####_<slug>/` with `src/experiment.py`, one captured
+`report/report.ipynb`, its own `pyproject.toml`, `uv.lock`, and `.python-version`,
+plus causal `inputs/` and optional retained `artifacts/` when needed.
 
-```bash
-direnv exec . uv run python -m workbench.llm_router.<module>
-```
+Capsules are standalone uv projects. They must not import the parent package,
+repository `src/` or `tests/`, sibling experiments, or shared experiment helpers,
+and they must not use local/workspace/editable dependencies. `py-lib-policy`
+enforces these reusable structural boundaries. Project-specific capture, report,
+and documentation tooling may add stricter rules locally.
 
-Reproduce the same probe inside an already-running event loop:
+In this pilot, durable experiment knowledge is also represented by an `EXP_####`
+need linked with `informs` to any ADR, Requirement, or Engineering Constraint it
+shaped. Experiments never verify contracts.
 
-```bash
-direnv exec . uv run python scripts/reproduce_running_loop.py \
-    workbench.llm_router.<module>
-```
+Retained reports use a strict sequential notebook grammar: Question, then one or
+more Step → Evidence pairs, then Conclusion. Evidence cells may contain text,
+JSON, images, plots, HTML, or multiple outputs. Documentation builds render stored
+outputs only and never contact live providers.
+
+Capture a report through `scripts/capture_experiment.py`; it executes an isolated
+temporary copy with the capsule's locked environment and records a capsule digest.
+Validate retained report integrity with
+`uv run python scripts/check_experiment_reports.py`.
 
 ## Commit And Release Conventions
 

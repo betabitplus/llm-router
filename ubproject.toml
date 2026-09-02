@@ -8,12 +8,26 @@ id_required = true
 build_json = true
 schema_definitions_from_json = "docs/_traceability/schemas.json"
 
+[needs.fields.status]
+description = "Lifecycle state for requirements, engineering constraints, and architecture decisions."
+schema.enum = ["draft", "proposed", "accepted", "rejected", "deprecated", "superseded"]
+
 [needs.fields.revision]
 description = "Human-managed semantic revision used by conditional trace links."
 schema.type = "integer"
 schema.minimum = 1
 
-[needs.fields.needs_artifacts]
+[needs.fields.decision_date]
+description = "Date recorded for an architecture decision."
+schema.type = "string"
+schema.pattern = "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+[needs.fields.experiment_date]
+description = "Date on which an engineering experiment produced the recorded result."
+schema.type = "string"
+schema.pattern = "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+[needs.fields.required_evidence]
 description = "Minimal implementation and verification evidence required by this requirement."
 schema.type = "array"
 schema.items.type = "string"
@@ -79,6 +93,18 @@ incoming = "implemented by"
 outgoing = "verifies"
 incoming = "verified by"
 
+[needs.links.affects]
+outgoing = "affects"
+incoming = "affected by decision"
+
+[needs.links.supersedes]
+outgoing = "supersedes"
+incoming = "superseded by"
+
+[needs.links.informs]
+outgoing = "informs"
+incoming = "informed by experiment"
+
 [[needs.types]]
 directive = "goal"
 title = "Goal"
@@ -102,8 +128,22 @@ style = "node"
 
 [[needs.types]]
 directive = "treq"
-title = "Technical Requirement"
+title = "Engineering Constraint"
 prefix = "TREQ_"
+color = ""
+style = "node"
+
+[[needs.types]]
+directive = "adr"
+title = "Architecture Decision"
+prefix = "ADR_"
+color = ""
+style = "node"
+
+[[needs.types]]
+directive = "exp"
+title = "Engineering Experiment"
+prefix = "EXP_"
 color = ""
 style = "node"
 

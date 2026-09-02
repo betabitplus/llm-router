@@ -15,11 +15,16 @@ The package root exposes the supported public API intentionally.
 
 ```{req} Declared public API resolves from the package root
 :id: REQ_PUBLIC_API_SURFACE
+:status: accepted
 :revision: 1
-:needs_artifacts: impl;unit
+:required_evidence: impl;unit
 :derives: FEAT_PUBLIC_API
 
-Every symbol declared as part of the package public API must resolve from the package root without requiring callers to import internal modules.
+**Statement.** Every symbol declared as part of the package public API shall resolve from the package root without requiring callers to import internal modules.
+
+**Rationale.** A coherent package-root surface gives callers a stable import contract and lets internal module organization evolve without becoming public API accidentally.
+
+**Verification intent.** Compare the declared public surface with actual package-root imports and verify each exported symbol resolves without importing private modules directly.
 ```
 
 ```{feature} Executable examples
@@ -31,9 +36,14 @@ Examples are import-safe source files that can also be executed by the documenta
 
 ```{req} Example imports do not start live network workflows
 :id: REQ_EXAMPLE_IMPORT_SAFETY
+:status: accepted
 :revision: 1
-:needs_artifacts: unit
+:required_evidence: unit
 :derives: FEAT_EXECUTABLE_EXAMPLES
 
-Importing any shipped example module must not initiate network access or start its live workflow as an import side effect.
+**Statement.** Importing a shipped example module shall not initiate network access or start its live workflow as an import side effect.
+
+**Rationale.** Documentation tooling, IDEs, static analysis, and users may import example modules for inspection; import must therefore remain safe and deterministic.
+
+**Verification intent.** Import every shipped example in an isolated test context and verify the import itself does not initiate its executable workflow or network activity.
 ```

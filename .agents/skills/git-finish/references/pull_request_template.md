@@ -14,7 +14,7 @@ Describe the change in a few sentences.
 - [ ] `src/`
 - [ ] `tests/`
 - [ ] `docs/`
-- [ ] `workbench/`
+- [ ] `experiments/`
 - [ ] repository tooling, release, or CI
 
 ## Validation
@@ -22,7 +22,7 @@ Describe the change in a few sentences.
 - [ ] Ran `uv run pre-commit run --all-files`
 - [ ] Ran `uv run pre-commit run --all-files --hook-stage pre-push`
 - [ ] Ran targeted tests if behavior changed
-- [ ] Ran affected `workbench/` scripts manually if probe logic changed
+- [ ] Re-captured affected `experiments/` if causal experiment logic changed
 
 ## Docs
 

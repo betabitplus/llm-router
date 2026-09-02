@@ -71,7 +71,7 @@ def test_generation_precedence_preserves_omission_vs_explicit_none(
     assert settings.temperature == expected
 
 
-@pytest.mark.verifies("TREQ_REPAIR_PROMPT_BOUNDS[revision==1]")
+@pytest.mark.verifies("REQ_STRUCTURED_OUTPUT_REPAIR[revision==1]")
 @pytest.mark.verification_kind("property")
 @given(
     invalid_output=st.text(min_size=0, max_size=2_000),

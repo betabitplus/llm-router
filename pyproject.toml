@@ -44,7 +44,7 @@ urls.Repository = "https://github.com/betabitplus/llm-router"
 
 [dependency-groups]
 dev = [
-  "allure-pytest-bdd>=2.16,<3",
+  "allure-pytest>=2.16,<3",
   # Security auditing
   "bandit>=1.9.4",
   "beartype>=0.22.9",
@@ -73,6 +73,9 @@ dev = [
   "mdformat-gfm>=1",
   "mdformat-ruff>=0.1.3",
   "mdformat-tables>=1",
+  "myst-nb>=1.4,<2",
+  "nbdime>=4,<5",
+  "nbformat>=5.10,<6",
   "nest-asyncio>=1.6",
   "pillow>=12.2",
   "pip-audit>=2.10.1",
@@ -108,12 +111,13 @@ docs = [
   "pydata-sphinx-theme>=0.20",
   "sphinx>=8.2.3",
   "sphinx-codelinks>=1.4,<2",
+  "sphinx-design>=0.6,<1",
   "sphinx-gallery>=0.21",
   "sphinx-llm>=1,<2",
-  "sphinx-needs>=8.3.1,<9",
+  "sphinx-needs>=8.4,<9",
   "sphinx-simplepdf>=1.7,<2",
   "sphinx-test-reports>=1.4,<2",
-  "sphinxcontrib-mermaid>=2.1"
+  "sphinxcontrib-mermaid>=2.1",
 ]
 
 [tool.setuptools]
@@ -127,7 +131,7 @@ package-dir."" = "src"
 
 [tool.uv]
 required-version = "==0.12.5"
-sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v1.2.5" }
+sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v2.0.0" }
 sources.py-lib-runtime = { git = "https://github.com/betabitplus/ternforge-tooling-py-runtime.git", tag = "v1.1.7" }
 sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git", tag = "v2.2.2" }
 
@@ -137,6 +141,8 @@ sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooli
 target-version = "py313"
 # Match Black's defaults (line length = 88).
 line-length = 88
+# Captured experiment notebooks are evidence documents; lint their owned source instead.
+extend-exclude = [ "experiments/**/report/*.ipynb" ]
 # Enable auto-fixes for safe rules (`ruff check --fix`).
 fix = true
 # Format Python snippets inside docstrings.
@@ -230,12 +236,30 @@ lint.per-file-ignores."examples/*" = [
   "ERA001", # Sphinx-Gallery uses code-like configuration comments.
   "T20",    # Examples may print their public API output.
 ]
+lint.per-file-ignores."experiments/*" = [
+  "ANN",     # Experiment probes do not need full typing
+  "C901",    # Provider/lab probes may keep linear scenario orchestration
+  "D",       # Experiment probes can keep lightweight docs
+  "E501",    # Preserve literal prompts and captured source without churn
+  "EM",      # Direct contextual failure messages are acceptable in probes
+  "PERF",    # Clarity matters more than micro-optimizing one-off probes
+  "PLR0912", # Explicit experiment branches may stay linear
+  "PLR0915", # Complete probe flows may remain procedural
+  "PLR2004", # Allow scenario constants
+  "S101",    # Allow assert statements
+  "T20",     # Allow print statements
+  "TRY003",  # Descriptive experiment exceptions may stay inline
+]
 # Scripts are utility code; keep them readable without production strictness.
 lint.per-file-ignores."scripts/*" = [
-  "ANN",    # No type annotation requirements
-  "D",      # No docstring requirements
-  "ERA001", # Allow commented-out experiments
-  "T20",    # Allow print statements
+  "ANN",     # No type annotation requirements
+  "C901",    # Utility validators may keep explicit linear control flow
+  "D",       # No docstring requirements
+  "ERA001",  # Allow commented-out experiments
+  "PERF401", # Prefer readable validation loops in utility scripts
+  "PLR0912", # Utility validators may branch across independent checks
+  "PLR0915", # Utility validators may keep one complete validation pass
+  "T20",     # Allow print statements
 ]
 lint.per-file-ignores."tests/*" = [
   "ANN",     # Type annotations not required everywhere
@@ -251,13 +275,6 @@ lint.per-file-ignores."tests/*" = [
   "S101",    # Allow assert statements
   "T20",     # Allow print statements in test diagnostics
   "TRY003",  # Allow long exception messages
-]
-lint.per-file-ignores."workbench/*" = [
-  "ANN",     # Manual probes do not need full typing
-  "D",       # Manual probes can keep lightweight docs
-  "PLR2004", # Allow scenario constants
-  "S101",    # Allow assert statements
-  "T20",     # Allow print statements
 ]
 # Ignore rules that are too noisy or conflict with formatter/project style.
 lint.task-tags = [ "@impl", "FIXME", "TODO", "XXX" ]
@@ -283,8 +300,7 @@ ignore-nested-functions = false
 ignore-nested-classes = false
 ignore-setters = false
 ignore-overloaded-functions = true
-ignore-regex = [ "^wrapper$" ]
-exclude = [ ".agents", "docs", "scripts", "tests" ]
+exclude = [ ".agents", "docs", "experiments", "scripts", "tests" ]
 color = true
 verbose = 1
 quiet = false
@@ -313,6 +329,7 @@ ignore = [
   "__pycache__/**",
   "docs/**",
   "examples/**",
+  "experiments/**",
   "features/**",
   "plan/**",
   "release-please-config.json",
@@ -321,7 +338,6 @@ ignore = [
   "tests/**",
   "typos.toml",
   "uv.lock",
-  "workbench/**",
 ]
 
 # ---------------- Deptry (dependency hygiene) ----------------
@@ -330,9 +346,9 @@ extend_exclude = [
   ".agents",
   ".venv",
   "examples",
+  "experiments",
   "scripts",
   "tests",
-  "workbench",
 ]
 known_first_party = [ "llm_router" ]
 
@@ -362,6 +378,8 @@ exclude = [
   "docs/_build",
   "docs/auto_examples",
   "docs/generated",
+  # Standalone experiment capsules own separate environments and import roots.
+  "experiments",
   # Utility and verification code are checked by Ruff/pytest instead.
   "scripts",
   "tests",
@@ -403,6 +421,7 @@ src.exclude = [
   "docs/_build/",
   "docs/auto_examples/",
   "docs/generated/",
+  "experiments/",
   "scripts/",
   "tests/",
 ]
@@ -430,6 +449,7 @@ ini_options.norecursedirs = [
   "docs/_build",
   "docs/auto_examples",
   "docs/generated",
+  "experiments",
   "scripts",
 ]
 # ---------------- Pytest configuration ----------------
@@ -470,7 +490,6 @@ root_packages = [
   "examples",
   "llm_router",
   "tests",
-  "workbench",
 ]
 include_external_packages = true
 
@@ -535,22 +554,6 @@ id = "llm-router-shipped-package-examples-boundary"
 type = "forbidden"
 source_modules = [ "llm_router" ]
 forbidden_modules = [ "examples" ]
-allow_indirect_imports = true
-
-[[tool.importlinter.contracts]]
-name = "LLM Router workbench must not import shipped package"
-id = "llm-router-workbench-boundary"
-type = "forbidden"
-source_modules = [ "workbench.llm_router" ]
-forbidden_modules = [ "llm_router", "src" ]
-allow_indirect_imports = true
-
-[[tool.importlinter.contracts]]
-name = "LLM Router shipped package must not import workbench"
-id = "llm-router-shipped-package-workbench-boundary"
-type = "forbidden"
-source_modules = [ "llm_router" ]
-forbidden_modules = [ "workbench" ]
 allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]

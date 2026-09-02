@@ -1,15 +1,47 @@
-Requirements traceability
-=========================
+Engineering traceability
+========================
 
-Requirements are the engineering source of truth. Verification and implementation
-evidence are linked into the same Sphinx-Needs graph.
+The Sphinx-Needs graph is the engineering source of truth. Engineering Experiments
+preserve durable learning from uncertain investigations, Requirements define
+obligations, Architecture Decisions preserve significant rationale, and verification
+and implementation evidence link into the same graph. Product requirements and
+engineering constraints carry an explicit ``draft`` / ``accepted`` / ``deprecated``
+lifecycle state; semantic changes advance ``revision`` so existing evidence must
+be reviewed against the new contract.
 
 Requirement hierarchy
 ---------------------
 
 .. needtable::
-   :columns: id;title;type;derives;derives_back
+   :columns: id;title;type;status;derives;derives_back
    :filter: type in ["goal", "feature", "req", "treq"]
+
+Engineering experiments
+-----------------------
+
+Engineering experiments preserve observations that materially informed a later
+contract or decision. Each EXP is a self-contained capsule with one authoritative
+captured notebook report; ``informs`` links its conclusion to an ADR, Requirement,
+or Engineering Constraint. The notebook presents Question, ordered Step/Evidence
+pairs, and Conclusion with stored text or rich MIME outputs. Documentation builds
+render those outputs without executing the experiment. Experiments do not satisfy
+implementation or verification obligations.
+
+.. needtable::
+   :columns: id;title;experiment_date;informs
+   :filter: type == "exp"
+
+Architecture decisions
+----------------------
+
+Architecture decisions preserve significant engineering rationale without becoming
+requirements or verification obligations. ``affects`` connects a decision to the
+Feature, Requirement, Engineering Constraint, or implementation artifact it shapes;
+``supersedes`` preserves replacement history between ADRs.
+
+.. needtable::
+   :columns: id;title;status;decision_date;informs_back;affects;supersedes;supersedes_back
+   :filter: type == "adr"
 
 Implementation evidence
 -----------------------
@@ -44,7 +76,7 @@ Evidence matrices
 Requirement evidence coverage:
 
 .. needtable::
-   :columns: id;title;needs_artifacts;implements_back;verifies_back
+   :columns: id;title;status;revision;required_evidence;implements_back;verifies_back
    :filter: type in ["req", "treq"]
 
 Non-passing verification evidence (empty on a healthy build):
@@ -60,8 +92,10 @@ Required CI publishes one ``python-test-evidence-<sha>`` artifact containing the
 pytest JUnit report, the context-enabled ``.coverage`` database,
 ``coverage.json`` with per-test contexts, and raw ``allure-results``. JUnit is
 the authoritative verification input imported into Sphinx-Needs. Coverage
-contexts and Allure remain auxiliary execution evidence; they are intentionally
-not converted into a second TEST-to-CODE graph or a separately hosted report.
+contexts and Allure remain auxiliary execution evidence. Allure is rendered as
+the human-facing :doc:`test portal <tests>` so images, JSON, logs, PDFs, and
+videos can be inspected directly, but it does not define trace links or satisfy
+requirement obligations; JUnit and Sphinx-Needs remain authoritative.
 
 The built documentation already exposes the authoritative graph as
 ``needs.json`` and provides derived agent-readable page Markdown plus
@@ -72,5 +106,5 @@ Graph inventory
 ---------------
 
 .. needtable::
-   :columns: id;title;type;needs_artifacts
-   :filter: type in ["goal", "feature", "req", "treq", "impl", "testcase"]
+   :columns: id;title;type;required_evidence
+   :filter: type in ["goal", "feature", "req", "treq", "exp", "adr", "impl", "testcase"]

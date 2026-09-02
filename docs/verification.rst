@@ -1,109 +1,93 @@
-Verification evidence
-=====================
+Verification
+============
 
-This page is the human-facing view of the authoritative pytest evidence imported
-from the release JUnit report into the Sphinx-Needs graph. It does not create a
-second test report: every row below is a view of the same imported testcase Need
-that satisfies the requirements graph.
+This page answers two questions quickly: **is every requested verification layer
+covered?** and **where do I inspect the concrete execution?** JUnit remains the
+authoritative execution input imported into Sphinx-Needs; the views below only
+present that evidence differently.
 
-Release test outcome
---------------------
+Release outcome
+---------------
 
-The suite summary comes directly from the imported JUnit run used to build the
-release documentation.
+.. grid:: 2 2 4 4
+   :gutter: 2
 
-.. needtable::
-   :columns: title as "Suite";cases as "Cases";passed as "Passed";failed as "Failed";errors as "Errors";skipped as "Skipped"
-   :filter: type == "testsuite"
+   .. grid-item-card:: Executed
+      :class-card: portal-card
 
-The current evidence inventory contains:
+      :need_count:`type == "testcase"` tests
 
-* :need_count:`type == "testcase" and verification_kind == "bdd"` BDD testcase(s)
-* :need_count:`type == "testcase" and verification_kind == "unit"` unit testcase(s)
-* :need_count:`type == "testcase" and verification_kind == "integration"` integration testcase(s)
-* :need_count:`type == "testcase" and verification_kind == "property"` property testcase(s)
-* :need_count:`type == "testcase" and verification_kind == "e2e"` end-to-end testcase(s)
+   .. grid-item-card:: Passed
+      :class-card: portal-card
 
-Requirement-to-evidence chain
------------------------------
+      :need_count:`type == "testcase" and result == "passed"` passed
 
-This is the complete requirement-level chain. ``Needs Artifacts`` says which
-implementation or verification kinds are required. ``Implemented By`` links to
-the exact implementation marker and source location. ``Verified By`` links to
-the concrete executed testcase records. The categorized testcase tables below
-show the result, duration, source, and verification kind for those testcase IDs.
+   .. grid-item-card:: Failed / errored
+      :class-card: portal-card
 
-.. needtable::
-   :columns: id;title;needs_artifacts as "Required evidence";implements_back as "Implemented by";verifies_back as "Verified by"
-   :filter: type in ["req", "treq"]
+      :need_count:`type == "testcase" and (result == "failed" or result == "error")` failed or errored
 
-BDD scenarios
--------------
+   .. grid-item-card:: Skipped
+      :class-card: portal-card
 
-BDD evidence connects an executable Gherkin scenario to its pytest execution and
-requirement revision. ``Feature source`` and ``Test source`` link to the exact
-release tag in GitHub; ``Result`` and ``Duration`` come from the release JUnit
-execution.
+      :need_count:`type == "testcase" and result == "skipped"` skipped
 
-.. needtable::
-   :columns: id;result;time as "Duration (s)";gherkin_scenario as "Scenario";gherkin_feature as "Feature source";classname as "Test source";verifies as "Requirement"
-   :filter: type == "testcase" and verification_kind == "bdd"
-   :style_row: tr_[[copy('result')]]
+Verification matrix
+-------------------
 
-Unit tests
-----------
+The matrix keeps individual testcase IDs out of the overview. Rows are product
+requirements and engineering constraints; columns are verification layers.
+``x/x`` means all executions in that layer passed. ``missing`` means the object
+requests that verification kind but no execution was found. A dash means that
+layer is not requested.
 
-.. needtable::
-   :columns: id;title;result;time as "Duration (s)";classname as "Test source";verifies as "Requirement"
-   :filter: type == "testcase" and verification_kind == "unit"
-   :style_row: tr_[[copy('result')]]
+.. raw:: html
 
-Integration tests
------------------
+   <iframe
+     class="verification-matrix-frame"
+     src="verification-matrix.html"
+     title="Requirement verification matrix"
+   ></iframe>
 
-.. needtable::
-   :columns: id;title;result;time as "Duration (s)";classname as "Test source";verifies as "Requirement"
-   :filter: type == "testcase" and verification_kind == "integration"
-   :style_row: tr_[[copy('result')]]
-
-Property tests
---------------
-
-.. needtable::
-   :columns: id;title;result;time as "Duration (s)";classname as "Test source";verifies as "Requirement"
-   :filter: type == "testcase" and verification_kind == "property"
-   :style_row: tr_[[copy('result')]]
-
-End-to-end tests
-----------------
-
-The table is intentionally empty when no requirement asks for end-to-end
-evidence in the current graph. An empty table therefore means ``e2e`` is not a
-required verification kind for this release, not that a requested test was lost.
-
-.. needtable::
-   :columns: id;title;result;time as "Duration (s)";classname as "Test source";verifies as "Requirement"
-   :filter: type == "testcase" and verification_kind == "e2e"
-   :style_row: tr_[[copy('result')]]
-
-Visual and media evidence
+Inspect concrete evidence
 -------------------------
 
-``llm-router`` is an API library, so its pytest evidence does not manufacture a
-screenshot for every testcase. A screenshot of a green test runner would add no
-behavioral proof beyond the imported JUnit result. For image, document, and video
-BDD scenarios the feature and test-source links above identify the executable
-scenario and its assertions. The :doc:`live multimodal example
-<auto_examples/multimodal_inputs>` renders representative media inputs and
-outputs for human inspection, but examples remain demonstrations rather than a
-replacement for testcase evidence.
+.. grid:: 1 1 3 3
+   :gutter: 3
 
-Raw imported evidence
+   .. grid-item-card:: BDD stories
+      :link: test-results/bdd/index.html
+      :link-type: url
+      :class-card: portal-card
+
+      Read Feature → Rule → Scenario → Given/When/Then. Evidence is attached to
+      the exact step that produced it.
+
+   .. grid-item-card:: By requirement
+      :link: test-results/requirements/index.html
+      :link-type: url
+      :class-card: portal-card
+
+      Expand a requirement, then choose BDD, unit, integration, or property.
+      Each entry remains the real execution result with human-readable title,
+      status, timing, parameters, and any runtime attachments.
+
+   .. grid-item-card:: All tests by layer
+      :link: test-results/all/index.html
+      :link-type: url
+      :class-card: portal-card
+
+      Browse all 117 executions when you need engineering-level inventory rather
+      than product navigation.
+
+How traceability fits
 ---------------------
 
-The release documentation also contains the raw JUnit-imported testcase page.
-Its ``testsuite -> testfile -> testcase`` links preserve the structure of the
-JUnit report. The raw testcase cards intentionally expose lower-level imported
-metadata and are useful for provenance/debugging; use the categorized tables
-above for normal review because all relevant result/source/requirement fields are
-visible without expanding a collapsed card.
+A requirement page remains the authoritative place for ``derives from``,
+``implemented by``, and ``verified by`` relationships. The matrix deliberately
+aggregates testcase IDs because showing dozens of execution nodes is useful for
+provenance but poor for reading the product model.
+
+For exact implementation markers use :doc:`traceability`. For behavioral review
+use :doc:`specifications`. The test-result views above preserve the imported
+execution hierarchy when you need diagnostics or provenance.

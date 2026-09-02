@@ -10,8 +10,10 @@ The committed documentation surface is intentionally small.
 
 - `api.md` defines the generated public API reference.
 - `examples/llm_router/` is the source of truth for runnable user workflows.
-- `requirements/` contains the authoritative engineering requirements graph.
-- `traceability.rst` renders implementation and verification evidence from that graph.
+- `requirements/` contains authoritative product requirements and engineering constraints.
+- `experiments/` preserves self-contained Engineering Experiment capsules; each capsule owns its authoritative captured `report/report.ipynb`, and Sphinx renders a gitignored build-time copy with execution disabled.
+- `decisions/` preserves significant architecture decisions and their rationale.
+- `traceability.rst` renders the combined Sphinx-Needs graph and its implementation and verification evidence.
 
 A traceability build needs current pytest evidence. Generate the gitignored local JUnit
 with the same hermetic contract as required CI, then build without executing live examples:

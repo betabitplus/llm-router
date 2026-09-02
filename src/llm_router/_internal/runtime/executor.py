@@ -146,7 +146,7 @@ class ProviderRouteExecutor:
             state = step.state
 
     # @impl Same-route provider retry, IMPL_PROVIDER_RETRY, [REQ_PROVIDER_RETRY[revision==1]]
-    # @impl Retry decision boundary, IMPL_PROVIDER_RETRY_CLASSIFICATION, [TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]]
+    # @impl Retry decision boundary, IMPL_PROVIDER_RETRY_CLASSIFICATION, [REQ_PROVIDER_RETRY[revision==1]]
     def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:
         """Run one provider call with same-route retry."""
         adapter = self._adapter_for(request)
