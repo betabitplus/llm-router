@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.15.1](https://github.com/betabitplus/llm-router/compare/v0.15.0...v0.15.1) (2026-09-02)
+
+
+### Bug Fixes
+
+* **docs:** define simplepdf notebook mime priority ([#88](https://github.com/betabitplus/llm-router/issues/88)) ([e2c3c48](https://github.com/betabitplus/llm-router/commit/e2c3c48ed45dc1cdcd0bd34bc4fc250f1c3c4af3))
+
 ## [0.15.0](https://github.com/betabitplus/llm-router/compare/v0.14.2...v0.15.0) (2026-09-02)
 
 
