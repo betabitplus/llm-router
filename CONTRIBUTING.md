@@ -115,34 +115,44 @@ direnv exec . uv run python examples/llm_router/<module>.py
 
 Keep examples focused on imports from `llm_router`. If an example needs private
 modules, convert that behavior into a test or keep the investigation temporary;
-a retained Engineering Experiment must stay independent of production code.
+a retained Engineering Experiment must stay independent of the shipped package.
 
+Every committed example should have a matching link from the package usage docs.
 Sphinx-Gallery discovers committed examples from `examples/llm_router/`, and the
-examples smoke test keeps those scripts executable.
+examples smoke test keeps those scripts executable so docs examples do not drift
+silently.
 
 ## Engineering Experiments
 
-`experiments/` is manual-only. Add focused probes there when a behavior needs
-live investigation outside committed pytest coverage. Probe code is laboratory
-equipment, not production evidence. When a result becomes durable engineering
-knowledge, preserve it as one self-contained `EXP_####` capsule under
-`experiments/llm_router/` and link the EXP to any ADR, Requirement, or Engineering
-Constraint it informs.
+`experiments/` is optional and contains durable investigations, not another test
+suite or a home for ad-hoc scripts. Preserve an investigation only when its exact
+inputs, executable method, environment, and captured result are useful engineering
+knowledge.
 
-Each capsule owns one canonical `src/experiment.py`, one authoritative
-`report/report.ipynb`, causal inputs, optional retained artifacts, and its own uv
-lock plus exact Python version. Do not import production `llm_router`, project
-`src/`, tests, sibling experiments, or shared experiment helpers.
+Each retained experiment is a self-contained capsule under
+`experiments/<project>/exp_####_<slug>/` with `src/experiment.py`, one captured
+`report/report.ipynb`, its own `pyproject.toml`, `uv.lock`, and `.python-version`,
+plus causal `inputs/` and optional retained `artifacts/` when needed.
+
+Capsules are standalone uv projects. They must not import the parent package,
+repository `src/` or `tests/`, sibling experiments, or shared experiment helpers,
+and they must not use local/workspace/editable dependencies. `py-lib-policy`
+enforces these reusable structural boundaries. Project-specific capture, report,
+and documentation tooling may add stricter rules locally.
+
+In this pilot, durable experiment knowledge is also represented by an `EXP_####`
+need linked with `informs` to any ADR, Requirement, or Engineering Constraint it
+shaped. Experiments never verify contracts.
 
 Retained reports use a strict sequential notebook grammar: Question, then one or
 more Step → Evidence pairs, then Conclusion. Evidence cells may contain text,
-JSON, images, plots, HTML, or multiple outputs, and their input code is hidden
-behind the standard MyST-NB toggle. Documentation builds render stored outputs only
-and never contact live providers.
+JSON, images, plots, HTML, or multiple outputs. Documentation builds render stored
+outputs only and never contact live providers.
 
 Capture a report through `scripts/capture_experiment.py`; it executes an isolated
 temporary copy with the capsule's locked environment and records a capsule digest.
-Validate all retained evidence with `uv run python scripts/check_experiment_reports.py`.
+Validate retained report integrity with
+`uv run python scripts/check_experiment_reports.py`.
 
 ## Commit And Release Conventions
 

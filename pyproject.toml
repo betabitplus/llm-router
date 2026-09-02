@@ -131,7 +131,7 @@ package-dir."" = "src"
 
 [tool.uv]
 required-version = "==0.12.5"
-sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v1.2.5" }
+sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v2.0.0" }
 sources.py-lib-runtime = { git = "https://github.com/betabitplus/ternforge-tooling-py-runtime.git", tag = "v1.1.7" }
 sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git", tag = "v2.2.2" }
 
@@ -141,7 +141,7 @@ sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooli
 target-version = "py313"
 # Match Black's defaults (line length = 88).
 line-length = 88
-# Captured notebooks are evidence documents; lint their owned `src/` instead.
+# Captured experiment notebooks are evidence documents; lint their owned source instead.
 extend-exclude = [ "experiments/**/report/*.ipynb" ]
 # Enable auto-fixes for safe rules (`ruff check --fix`).
 fix = true
@@ -238,17 +238,17 @@ lint.per-file-ignores."examples/*" = [
 ]
 lint.per-file-ignores."experiments/*" = [
   "ANN",     # Experiment probes do not need full typing
-  "C901",    # Provider probes may keep linear scenario orchestration
+  "C901",    # Provider/lab probes may keep linear scenario orchestration
   "D",       # Experiment probes can keep lightweight docs
-  "E501",    # Preserve captured prompt/source text without formatter-driven recapture
-  "EM",      # Experiment failures may use direct contextual messages
+  "E501",    # Preserve literal prompts and captured source without churn
+  "EM",      # Direct contextual failure messages are acceptable in probes
   "PERF",    # Clarity matters more than micro-optimizing one-off probes
-  "PLR0912", # Provider/report validators may have explicit scenario branches
-  "PLR0915", # Provider/report validators may stay procedural
+  "PLR0912", # Explicit experiment branches may stay linear
+  "PLR0915", # Complete probe flows may remain procedural
   "PLR2004", # Allow scenario constants
   "S101",    # Allow assert statements
   "T20",     # Allow print statements
-  "TRY003",  # Experiment failures may use descriptive exception messages
+  "TRY003",  # Descriptive experiment exceptions may stay inline
 ]
 # Scripts are utility code; keep them readable without production strictness.
 lint.per-file-ignores."scripts/*" = [
@@ -300,7 +300,6 @@ ignore-nested-functions = false
 ignore-nested-classes = false
 ignore-setters = false
 ignore-overloaded-functions = true
-ignore-regex = [ "^wrapper$" ]
 exclude = [ ".agents", "docs", "experiments", "scripts", "tests" ]
 color = true
 verbose = 1
@@ -379,7 +378,7 @@ exclude = [
   "docs/_build",
   "docs/auto_examples",
   "docs/generated",
-  # Standalone experiment capsules use their own uv environments and import roots.
+  # Standalone experiment capsules own separate environments and import roots.
   "experiments",
   # Utility and verification code are checked by Ruff/pytest instead.
   "scripts",
@@ -450,6 +449,7 @@ ini_options.norecursedirs = [
   "docs/_build",
   "docs/auto_examples",
   "docs/generated",
+  "experiments",
   "scripts",
 ]
 # ---------------- Pytest configuration ----------------
@@ -490,7 +490,6 @@ root_packages = [
   "examples",
   "llm_router",
   "tests",
-  "experiments",
 ]
 include_external_packages = true
 
@@ -555,22 +554,6 @@ id = "llm-router-shipped-package-examples-boundary"
 type = "forbidden"
 source_modules = [ "llm_router" ]
 forbidden_modules = [ "examples" ]
-allow_indirect_imports = true
-
-[[tool.importlinter.contracts]]
-name = "LLM Router experiments must not import shipped package"
-id = "llm-router-experiments-boundary"
-type = "forbidden"
-source_modules = [ "experiments.llm_router" ]
-forbidden_modules = [ "llm_router", "src" ]
-allow_indirect_imports = true
-
-[[tool.importlinter.contracts]]
-name = "LLM Router shipped package must not import experiments"
-id = "llm-router-shipped-package-experiments-boundary"
-type = "forbidden"
-source_modules = [ "llm_router" ]
-forbidden_modules = [ "experiments" ]
 allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]

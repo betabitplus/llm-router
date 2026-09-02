@@ -41,6 +41,14 @@ repos:
         files: ^experiments/
         stages: [pre-commit]
 
+      - id: ruff-format-experiments
+        name: ruff-format (experiments check-only)
+        entry: uv run ruff format --check experiments
+        language: system
+        pass_filenames: false
+        files: ^experiments/
+        stages: [pre-commit]
+
       # Formatter - runs after linter fixes on mutable project code only.
       - id: ruff-format
         name: ruff-format
@@ -150,7 +158,7 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        files: (^src/|^tests/|^examples/|^experiments/|^pyproject.toml$)
+        files: (^src/|^tests/|^examples/|^pyproject.toml$)
         stages: [pre-push]
 
       - id: py-lib-policy
