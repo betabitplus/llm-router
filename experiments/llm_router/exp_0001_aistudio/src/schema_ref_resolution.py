@@ -19,10 +19,8 @@ Checks:
         the workaround preserved schema meaning while satisfying AI Studio.
 
 Examples:
-    Run manually:
-        uv run python -m experiments.llm_router.aistudio.schema_ref_resolution
-        uv run python scripts/reproduce_running_loop.py \
-            experiments.llm_router.aistudio.schema_ref_resolution
+    From this capsule root:
+        uv run --locked --managed-python python src/schema_ref_resolution.py
 """
 
 from __future__ import annotations

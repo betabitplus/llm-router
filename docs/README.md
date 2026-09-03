@@ -11,12 +11,13 @@ The committed documentation surface is intentionally small.
 - `api.md` defines the generated public API reference.
 - `examples/llm_router/` is the source of truth for runnable user workflows.
 - `requirements/` contains authoritative product requirements and engineering constraints.
-- `experiments/` preserves self-contained Engineering Experiment capsules; each capsule owns its authoritative captured `report/report.ipynb`, and Sphinx renders a gitignored build-time copy with execution disabled.
+- `experiments/` preserves self-contained Engineering Experiment capsules; each capsule owns its authoritative captured `report/report.ipynb`, and DocOps mounts it directly into Sphinx with execution disabled.
 - `decisions/` preserves significant architecture decisions and their rationale.
 - `traceability.rst` renders the combined Sphinx-Needs graph and its implementation and verification evidence.
 
-A traceability build needs current pytest evidence. Generate the gitignored local JUnit
-with the same hermetic contract as required CI, then build without executing live examples:
+A complete local portal build needs current pytest evidence. Generate JUnit and Allure
+from the same hermetic test run, then let DocOps consume those artifacts. Documentation
+builds are read-only: they do not execute provider examples or Engineering Experiments.
 
 ```bash
 uv run pytest -c pyproject.toml -n 2 \
@@ -24,15 +25,10 @@ uv run pytest -c pyproject.toml -n 2 \
     --block-network \
     --allowed-hosts='localhost,127\\.0\\.0\\.1' \
     --cov-context=test \
-    --junitxml=docs/_traceability/local-pytest.xml
-uv run sphinx-build -W --keep-going -D plot_gallery=0 -b html docs docs/_build/html
+    --junitxml=docs/_traceability/local-pytest.xml \
+    --alluredir=allure-results
+uv run ternforge-docops build portal --allure-results allure-results
 ```
 
-The full live gallery uses the same local JUnit prerequisite and additionally requires
-configured provider credentials:
-
-```bash
-uv run sphinx-build -W --keep-going -b html docs docs/_build/html
-```
-
-Required CI performs the same JUnit import automatically before its documentation build.
+Use `uv run ternforge-docops build html` when only the Sphinx/Needs/LLM output is needed.
+Required CI produces the same evidence before its documentation build.

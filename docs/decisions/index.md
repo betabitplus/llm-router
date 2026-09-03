@@ -88,10 +88,9 @@ The ADR format has no separate parser or metadata store:
 - `needs.json` is the machine-readable decision graph; no separate ADR index or
   database is generated.
 
-For complete local validation, build the engineering portal with
-`uv run python scripts/build_docs_portal.py`. This runs the executable evidence
-pipeline before the strict Sphinx build, so requirement evidence laws and ADR
-laws are checked together.
+For complete local presentation, first produce the project test evidence and then
+build the engineering portal with `uv run ternforge-docops build portal --allure-results allure-results`. DocOps consumes existing evidence and runs the
+strict Sphinx graph build; it never executes the project test suite itself.
 
 ```{toctree}
 :hidden:

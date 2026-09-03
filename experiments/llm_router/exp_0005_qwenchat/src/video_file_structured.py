@@ -21,10 +21,8 @@ Checks:
         structured path completed and what token accounting it returned.
 
 Examples:
-    Run manually:
-        uv run python -m experiments.llm_router.qwenchat.video_file_structured
-        uv run python scripts/reproduce_running_loop.py \
-            experiments.llm_router.qwenchat.video_file_structured
+    From this capsule root:
+        uv run --locked --managed-python python src/video_file_structured.py
 """
 
 from __future__ import annotations

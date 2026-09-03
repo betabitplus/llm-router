@@ -21,10 +21,8 @@ Checks:
         native route and token accounting visible beside the parsed video summary.
 
 Examples:
-    Run manually:
-        uv run python -m experiments.llm_router.aistudio.video_url_structured
-        uv run python scripts/reproduce_running_loop.py \
-            experiments.llm_router.aistudio.video_url_structured
+    From this capsule root:
+        uv run --locked --managed-python python src/video_url_structured.py
 """
 
 from __future__ import annotations
@@ -48,7 +46,7 @@ from py_lib_testkit import console
 
 # Keep one fixed public clip URL so this script stays about the native remote
 # video part shape instead of a changing input source.
-_MODEL = "gemini-3.6-flash"
+_MODEL = "gemini-3.5-flash-lite"
 _VIDEO_URL = "https://www.youtube.com/shorts/QUxqvF0pyGw"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _PROMPT = build_indoor_video_prompt()

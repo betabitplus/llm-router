@@ -11,6 +11,7 @@ exp_####_<provider>/
 ├── report/report.ipynb
 ├── inputs/
 ├── artifacts/
+├── jupyter/kernels/<name>/kernel.json
 ├── pyproject.toml
 ├── uv.lock
 └── .python-version
@@ -20,6 +21,6 @@ exp_####_<provider>/
 
 The authoritative report is only `report/report.ipynb`. It follows one provider-level Question followed by ordered Step → captured Evidence pairs and a Conclusion. Evidence cells use `hide-input` and retain real Jupyter outputs such as text, JSON, images, and links to PDF/video inputs.
 
-Capture is performed explicitly through `scripts/capture_experiment.py`. The script copies the capsule to a temporary directory outside the monorepo, executes the notebook with the capsule's locked uv environment and managed Python, then records a capsule digest before copying the captured report back. Documentation and CI never execute provider calls.
+Capture is explicit through `uv run ternforge-docops experiments capture ####`. DocOps copies the capsule to an isolated temporary directory, executes the notebook through the capsule-owned Jupyter kernelspec, records the causal capsule digest, validates the captured report, and only then replaces retained evidence. Documentation and CI never execute provider calls.
 
-Validate all capsules with `scripts/check_experiment_reports.py`. Sphinx renders the authoritative notebooks through a gitignored build-time copy under `docs/experiments/_generated/` with MyST-NB execution disabled.
+Validate all capsules with `uv run ternforge-docops experiments validate`. Sphinx mounts the authoritative notebooks in place through DocOps with MyST-NB execution disabled; no generated notebook copy is kept under `docs/`.

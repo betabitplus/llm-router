@@ -20,10 +20,8 @@ Checks:
         remains visible behind the title comparison.
 
 Examples:
-    Run manually:
-        uv run python -m experiments.llm_router.aistudio.pdf_structured
-        uv run python scripts/reproduce_running_loop.py \
-            experiments.llm_router.aistudio.pdf_structured
+    From this capsule root:
+        uv run --locked --managed-python python src/pdf_structured.py
 """
 
 from __future__ import annotations
@@ -51,7 +49,7 @@ from py_lib_testkit import console
 _CAPSULE_ROOT = Path(__file__).resolve().parent.parent
 # Keep the shared PDF fixture fixed so this script stays about the native AI
 # Studio file path rather than changing source content.
-_MODEL = "gemini-3.6-flash"
+_MODEL = "gemini-3.5-flash-lite"
 _PDF_PATH = _CAPSULE_ROOT / "inputs/variative.pdf"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _PROMPT = build_pdf_digest_prompt()
