@@ -121,10 +121,10 @@ repos:
 
       - id: experiment-reports
         name: experiment capsules (structure + captured evidence)
-        entry: uv run python scripts/check_experiment_reports.py
+        entry: uv run ternforge-docops experiments validate
         language: system
         pass_filenames: false
-        files: ^(experiments/llm_router/exp_[^/]+/|scripts/(check_experiment_reports|capture_experiment)\.py$)
+        files: ^experiments/llm_router/exp_[^/]+/
         stages: [pre-commit]
 
       - id: uv-sync-post-checkout

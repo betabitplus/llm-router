@@ -21,10 +21,8 @@ Checks:
         structured JSON stayed aligned with the emitted tool call.
 
 Examples:
-    Run manually:
-        uv run python -m experiments.llm_router.qwenchat.tool_choice_named_structured
-        uv run python scripts/reproduce_running_loop.py \
-            experiments.llm_router.qwenchat.tool_choice_named_structured
+    From this capsule root:
+        uv run --locked --managed-python python src/tool_choice_named_structured.py
 """
 
 from __future__ import annotations

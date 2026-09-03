@@ -41,7 +41,6 @@ allure-report/
 docs/_traceability/local-pytest.xml
 docs/_build/
 docs/auto_examples/
-docs/experiments/_generated/
 docs/generated/
 docs/sg_execution_times.rst
 records/

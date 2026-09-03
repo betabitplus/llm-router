@@ -49,13 +49,15 @@ CLI is available, run:
 ubc check docs/decisions
 ```
 
-For the complete authoritative graph and evidence check, run:
+For the complete authoritative graph and evidence presentation, build through
+released DocOps tooling:
 
 ```bash
-uv run python scripts/build_docs_portal.py
+uv run ternforge-docops build portal --allure-results allure-results
 ```
 
-This produces both `needs.json` and `schema_violations.json`; do not introduce a
+The build consumes already-produced test evidence, emits `needs.json` and schema
+validation output, and never runs the project test suite. Do not introduce a
 parallel ADR metadata store or ADR-specific source database.
 
 ## Template And Tooling Updates
@@ -131,14 +133,15 @@ knowledge.
 
 Each retained experiment is a self-contained capsule under
 `experiments/<project>/exp_####_<slug>/` with `src/experiment.py`, one captured
-`report/report.ipynb`, its own `pyproject.toml`, `uv.lock`, and `.python-version`,
-plus causal `inputs/` and optional retained `artifacts/` when needed.
+`report/report.ipynb`, a capsule-owned Jupyter kernelspec, its own `pyproject.toml`,
+`uv.lock`, and `.python-version`, plus causal `inputs/` and optional retained
+`artifacts/` when needed.
 
 Capsules are standalone uv projects. They must not import the parent package,
 repository `src/` or `tests/`, sibling experiments, or shared experiment helpers,
 and they must not use local/workspace/editable dependencies. `py-lib-policy`
-enforces these reusable structural boundaries. Project-specific capture, report,
-and documentation tooling may add stricter rules locally.
+enforces reusable structural boundaries; `ternforge-docops` owns retained report,
+capture, and documentation integration semantics.
 
 In this pilot, durable experiment knowledge is also represented by an `EXP_####`
 need linked with `informs` to any ADR, Requirement, or Engineering Constraint it
@@ -149,10 +152,10 @@ more Step → Evidence pairs, then Conclusion. Evidence cells may contain text,
 JSON, images, plots, HTML, or multiple outputs. Documentation builds render stored
 outputs only and never contact live providers.
 
-Capture a report through `scripts/capture_experiment.py`; it executes an isolated
-temporary copy with the capsule's locked environment and records a capsule digest.
-Validate retained report integrity with
-`uv run python scripts/check_experiment_reports.py`.
+Capture a report with `uv run ternforge-docops experiments capture ####`; DocOps
+executes an isolated temporary copy through the capsule-owned kernelspec and records
+a causal capsule digest. Validate retained report integrity with
+`uv run ternforge-docops experiments validate`.
 
 ## Commit And Release Conventions
 

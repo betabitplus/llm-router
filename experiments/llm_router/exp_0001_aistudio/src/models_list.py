@@ -17,10 +17,8 @@ Checks:
         manual run can inspect the actual catalog served by that configured endpoint.
 
 Examples:
-    Run manually:
-        uv run python -m experiments.llm_router.aistudio.models_list
-        uv run python scripts/reproduce_running_loop.py \
-            experiments.llm_router.aistudio.models_list
+    From this capsule root:
+        uv run --locked --managed-python python src/models_list.py
 """
 
 from __future__ import annotations

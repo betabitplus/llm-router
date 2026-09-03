@@ -20,10 +20,8 @@ Checks:
         final structured JSON stayed aligned with the executed tool trace.
 
 Examples:
-    Run manually:
-        uv run python -m experiments.llm_router.gemini_webapi.tool_loop_structured_async
-        uv run python scripts/reproduce_running_loop.py \
-            experiments.llm_router.gemini_webapi.tool_loop_structured_async
+    From this capsule root:
+        uv run --locked --managed-python python src/tool_loop_structured_async.py
 """
 
 from __future__ import annotations

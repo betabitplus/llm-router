@@ -15,10 +15,6 @@ dependencies = [
 [dependency-groups]
 report = [
   "ipykernel>=7.3",
-  "ipython>=9.14.1",
-  "jupyter>=1.1.1",
-  "nbclient>=0.10",
-  "nbformat>=5.10,<6",
 ]
 
 [tool.uv]

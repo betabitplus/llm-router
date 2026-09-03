@@ -22,10 +22,8 @@ Checks:
         beside the logprob trace.
 
 Examples:
-    Run manually:
-        uv run python -m experiments.llm_router.openai.logprobs_text_generation
-        uv run python scripts/reproduce_running_loop.py \
-            experiments.llm_router.openai.logprobs_text_generation
+    From this capsule root:
+        uv run --locked --managed-python python src/logprobs_text_generation.py
 """
 
 from __future__ import annotations

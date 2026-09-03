@@ -30,6 +30,7 @@ experiments/llm_router/exp_####_<slug>/
 │   └── report.ipynb        # authoritative captured report
 ├── inputs/                 # causal media/schema inputs when needed
 ├── artifacts/              # retained supplementary evidence when needed
+├── jupyter/kernels/<name>/kernel.json
 ├── pyproject.toml
 ├── uv.lock
 └── .python-version
@@ -41,13 +42,13 @@ Capsules are deliberately temporally isolated. They do not import `llm_router`, 
 
 A provider report has one overall Question and then a sequence of related provider capability checks. Each Evidence cell is executed during an explicit live capture and tagged `hide-input`, so MyST-NB keeps the captured output visible while implementation code stays behind the **Show experiment code** toggle. Rich Jupyter MIME output is retained directly in the notebook: images render inline, JSON/text stays beside the action that produced it, and causal PDF/video inputs remain linked from the report.
 
-The notebook is the only report representation. There is no parallel Jupytext Markdown source and no committed copy under `docs/`. Sphinx copies the authoritative capsule notebook into a gitignored build-time integration directory and renders it with `nb_execution_mode = "off"`; documentation builds never contact providers.
+The notebook is the only report representation. There is no parallel Jupytext Markdown source and no committed copy under `docs/`. DocOps mounts the authoritative capsule notebook directly into the Sphinx source graph and renders stored outputs with MyST-NB execution disabled; documentation builds never contact providers.
 
 ## Capture and validation
 
-Use `scripts/capture_experiment.py` to capture one experiment from a temporary copy outside the monorepo. The temporary copy is executed with the capsule's own `uv.lock` and managed Python. A successful capture stores a SHA-256 capsule digest over `src/**`, `inputs/**`, `pyproject.toml`, `uv.lock`, `.python-version`, and executable notebook code cells. Changing causal code, input, or dependencies makes retained evidence stale, while prose-only notebook edits do not.
+Use `uv run ternforge-docops experiments capture ####` to capture one experiment from an isolated temporary copy. The capsule-owned Jupyter kernelspec defines its language/runtime command; for these Python capsules that command enters the locked uv `report` group and starts `ipykernel`. A successful capture stores a SHA-256 digest over causal capsule state. Python source and executable notebook cells are canonicalized structurally, so comment-only changes do not stale evidence, while runtime, dependency, input, kernelspec, or executable-code changes do.
 
-Use `scripts/check_experiment_reports.py` to validate all five capsules and reports. The narrow project validator checks capsule layout/isolation, the single EXP record, path/ID agreement, Question → `(Step → Evidence)+` → Conclusion ordering, sequential execution counts, captured outputs, `hide-input`, accidental errors, and the capsule digest. Standard tooling handles the rest: uv owns environments, nbformat validates notebooks, nbdime handles semantic notebook diff/merge, MyST-NB renders stored evidence, Sphinx-Needs owns graph metadata/relations, and existing repository checks cover formatting and secrets.
+Use `uv run ternforge-docops experiments validate` to validate all five capsules and reports. DocOps owns the retained-report contract: capsule-owned kernelspec, single EXP record, path/ID agreement, Question → `(Step → Evidence)+` → Conclusion ordering, sequential execution counts, captured outputs, `hide-input`, accidental errors, and freshness. `py-lib-policy` owns reusable repository/layout/isolation rules; uv owns capsule environments; MyST-NB renders stored evidence; Sphinx-Needs owns graph metadata and relations.
 
 ```{toctree}
 :hidden:

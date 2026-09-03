@@ -1,8 +1,8 @@
 # Scripts
 
 Repo-local scripts live here only when the implementation is specific to this
-repository. Shared development commands come from `py-lib-testkit` console
-scripts.
+repository. Shared development commands come from released Ternforge tooling
+such as `py-lib-testkit`, `py-lib-policy`, and `ternforge-docops`.
 
 ## Shared Repo Config
 
@@ -60,14 +60,8 @@ uv build
 ```
 
 Validate the strict Question → (Step → Evidence)+ → Conclusion experiment-report
-format and source/snapshot provenance:
+format and capsule provenance through the shared DocOps tool:
 
 ```bash
-uv run python scripts/check_experiment_reports.py
-```
-
-Use the running-loop diagnostic helper only for real experiment modules:
-
-```bash
-uv run python scripts/reproduce_running_loop.py experiments.llm_router.<module>
+uv run ternforge-docops experiments validate
 ```

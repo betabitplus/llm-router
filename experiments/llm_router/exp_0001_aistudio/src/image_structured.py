@@ -21,10 +21,8 @@ Checks:
         alongside the parsed scene summary.
 
 Examples:
-    Run manually:
-        uv run python -m experiments.llm_router.aistudio.image_structured
-        uv run python scripts/reproduce_running_loop.py \
-            experiments.llm_router.aistudio.image_structured
+    From this capsule root:
+        uv run --locked --managed-python python src/image_structured.py
 """
 
 from __future__ import annotations
@@ -50,9 +48,9 @@ from py_lib_testkit import console
 # =============================================================================
 
 _CAPSULE_ROOT = Path(__file__).resolve().parent.parent
-# Keep the preview model and shared traffic image fixed so the manual result
+# Keep the stable smoke model and shared traffic image fixed so the manual result
 # focuses on the AI Studio non-video image path.
-_MODEL = "gemini-3.6-flash"
+_MODEL = "gemini-3.5-flash-lite"
 _IMAGE_PATH = _CAPSULE_ROOT / "inputs/test_image.png"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _PROMPT = build_scene_summary_prompt()
