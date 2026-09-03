@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.16.0](https://github.com/betabitplus/llm-router/compare/v0.15.1...v0.16.0) (2026-09-03)
+
+
+### Features
+
+* adopt Ternforge DocOps ([#90](https://github.com/betabitplus/llm-router/issues/90)) ([672ff43](https://github.com/betabitplus/llm-router/commit/672ff43ef5b79f42b08aeaf967dcff04e7227937))
+
 ## [0.15.1](https://github.com/betabitplus/llm-router/compare/v0.15.0...v0.15.1) (2026-09-02)
 
 
