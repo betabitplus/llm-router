@@ -22,29 +22,10 @@ needs_render_context = {
     "source_base": _source_base,
     "source_ref": _source_ref,
 }
-needs_string_links = {
-    "gherkin_feature_source": {
-        "regex": r"(?P<path>features/.+\.feature)$",
-        "link_url": "{{ source_base }}/{{ source_ref }}/{{ path }}",
-        "link_name": "{{ path }}",
-        "options": ["gherkin_feature"],
-    },
-    "pytest_module_source": {
-        "regex": r"(?P<module>tests(?:\.[A-Za-z0-9_]+)+)$",
-        "link_url": (
-            "{{ source_base }}/{{ source_ref }}/{{ module | replace('.', '/') }}.py"
-        ),
-        "link_name": "{{ module | replace('.', '/') }}.py",
-        "options": ["classname"],
-    },
-}
+# Generic source-link mappings and JUnit ingestion are owned by DocOps.
 
 html_static_path = ["_static"]
 html_favicon = "_static/gallery/multi-route.svg"
-
-local_pytest_junit = _docs_root / "_traceability" / "local-pytest.xml"
-if not local_pytest_junit.is_file():
-    exclude_patterns.append("local-pytest-evidence.rst")
 
 # Required CI stays fully offline. Explicit live documentation builds can opt in
 # to external inventories and get links for external APIs used in examples.

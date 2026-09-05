@@ -13,7 +13,7 @@ The committed documentation surface is intentionally small.
 - `requirements/` contains authoritative product requirements and engineering constraints.
 - `experiments/` preserves self-contained Engineering Experiment capsules; each capsule owns its authoritative captured `report/report.ipynb`, and DocOps mounts it directly into Sphinx with execution disabled.
 - `decisions/` preserves significant architecture decisions and their rationale.
-- `traceability.rst` renders the combined Sphinx-Needs graph and its implementation and verification evidence.
+- `traceability`, `verification`, and `tests` are DocOps-owned generated views over the project graph and retained execution evidence.
 
 A complete local portal build needs current pytest evidence. Generate JUnit and Allure
 from the same hermetic test run, then let DocOps consume those artifacts. Documentation
@@ -25,9 +25,11 @@ uv run pytest -c pyproject.toml -n 2 \
     --block-network \
     --allowed-hosts='localhost,127\\.0\\.0\\.1' \
     --cov-context=test \
-    --junitxml=docs/_traceability/local-pytest.xml \
+    --junitxml=test-results/pytest-junit.xml \
     --alluredir=allure-results
-uv run ternforge-docops build portal --allure-results allure-results
+uv run ternforge-docops build portal \
+    --junit test-results/pytest-junit.xml \
+    --allure-results allure-results
 ```
 
 Use `uv run ternforge-docops build html` when only the Sphinx/Needs/LLM output is needed.
