@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.17.0](https://github.com/betabitplus/llm-router/compare/v0.16.0...v0.17.0) (2026-09-05)
+
+
+### Features
+
+* finish DocOps ownership cutover ([#94](https://github.com/betabitplus/llm-router/issues/94)) ([f527b07](https://github.com/betabitplus/llm-router/commit/f527b074ee8126dfa4b60ccdce87dc0919f7dc97))
+
 ## [0.16.0](https://github.com/betabitplus/llm-router/compare/v0.15.1...v0.16.0) (2026-09-03)
 
 
