@@ -44,6 +44,7 @@ urls.Repository = "https://github.com/betabitplus/llm-router"
 
 [dependency-groups]
 dev = [
+  # Test runner, plugins, and retained execution evidence
   "allure-pytest>=2.16,<3",
   # Security auditing
   "bandit>=1.9.4",
@@ -106,7 +107,7 @@ dev = [
 ]
 docs = [
   "matplotlib>=3.11.1",
-  "ternforge-docops>=0.2.2,<0.3",
+  "ternforge-docops>=0.4.1,<0.5",
 ]
 
 [tool.setuptools]
@@ -123,7 +124,7 @@ required-version = "==0.12.5"
 sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v2.0.0" }
 sources.py-lib-runtime = { git = "https://github.com/betabitplus/ternforge-tooling-py-runtime.git", tag = "v1.1.7" }
 sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git", tag = "v2.3.0" }
-sources.ternforge-docops = { git = "https://github.com/betabitplus/ternforge-tooling-docops.git", tag = "v0.2.2" }
+sources.ternforge-docops = { git = "https://github.com/betabitplus/ternforge-tooling-docops.git", tag = "v0.4.1" }
 
 # ---------------- Ruff configuration ----------------
 [tool.ruff]
