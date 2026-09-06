@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.17.1](https://github.com/betabitplus/llm-router/compare/v0.17.0...v0.17.1) (2026-09-06)
+
+
+### Bug Fixes
+
+* adopt DocOps recovery release ([#96](https://github.com/betabitplus/llm-router/issues/96)) ([20d99ff](https://github.com/betabitplus/llm-router/commit/20d99ffafe0c47158ca4b7fcf8d51bd948796ac9))
+
 ## [0.17.0](https://github.com/betabitplus/llm-router/compare/v0.16.0...v0.17.0) (2026-09-05)
 
 
