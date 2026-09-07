@@ -40,9 +40,11 @@ Capsules are deliberately temporally isolated. They do not import `llm_router`, 
 
 ## Report format
 
-A provider report has one overall Question and then a sequence of related provider capability checks. Each Evidence cell is executed during an explicit live capture and tagged `hide-input`, so MyST-NB keeps the captured output visible while implementation code stays behind the **Show experiment code** toggle. Rich Jupyter MIME output is retained directly in the notebook: images render inline, JSON/text stays beside the action that produced it, and causal PDF/video inputs remain linked from the report.
+A provider report has one overall Question and one decision-level Answer, followed by a compact **Capability findings** table and the retained evidence for each capability. The table uses empirical outcomes only: `Observed working`, `Working with caveat`, `Observed unsupported`, or `Inconclusive`. An outcome describes only what the retained capture demonstrated; it is not a permanent provider-support claim. Each finding row drills into the matching evidence section.
 
-The notebook is the only report representation. There is no parallel Jupytext Markdown source and no committed copy under `docs/`. DocOps mounts the authoritative capsule notebook directly into the Sphinx source graph and renders stored outputs with MyST-NB execution disabled; documentation builds never contact providers.
+Each Evidence cell is executed during an explicit live capture and tagged `hide-input`. The published DocOps UI keeps the first level decision-focused: **Input** and **Observed output** are shown together, while the actual executed provider code and the complete raw result are grouped under one **Technical details** disclosure. Rich Jupyter MIME output remains primary evidence: images render inline, PDF/video inputs stay directly inspectable, and structured/text outputs remain beside the action that produced them.
+
+The notebook is the only report representation. There is no parallel Jupytext Markdown source and no committed copy under `docs/`. DocOps mounts the authoritative capsule notebook directly into the Sphinx source graph and renders stored outputs with MyST-NB execution disabled; documentation builds never contact providers. The hidden EXP need carries graph metadata (`id`, `experiment_date`, `informs`); Question and Answer live only in the narrative cells rather than being duplicated into metadata.
 
 ## Capture and validation
 
