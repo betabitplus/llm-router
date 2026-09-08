@@ -7,7 +7,7 @@ import asyncio
 
 import pytest
 from py_lib_testkit import evidence
-from pytest_bdd import given, scenarios, then, when
+from pytest_bdd import given, parsers, scenarios, then, when
 
 from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProfile
 from tests.llm_router.bdd._support import prepare_gemini_webapi_runtime
@@ -41,26 +41,26 @@ def _usage_payload(response: LLMRouterResponse) -> object:
     )
 
 
-@given("the QwenChat async route", target_fixture="router")
-def qwenchat_async_route() -> LLMRouter:
-    return LLMRouter(
-        RouterProfile(model=Model.QWEN_MAX_LATEST, provider=Provider.QWENCHAT),
-        temperature=0.0,
-        seed=42,
-    )
-
-
-@given("the Gemini WebAPI async route", target_fixture="router")
-def gemini_webapi_async_route(
+@given(parsers.parse('the "{route}" async text route'), target_fixture="router")
+def provider_async_text_route(
+    route: str,
     monkeypatch: pytest.MonkeyPatch,
     request: pytest.FixtureRequest,
 ) -> LLMRouter:
-    prepare_gemini_webapi_runtime(monkeypatch, request)
-    return LLMRouter(
-        RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GEMINI_WEBAPI),
-        temperature=0.0,
-        seed=42,
-    )
+    if route == "QwenChat":
+        return LLMRouter(
+            RouterProfile(model=Model.QWEN_MAX_LATEST, provider=Provider.QWENCHAT),
+            temperature=0.0,
+            seed=42,
+        )
+    if route == "Gemini WebAPI":
+        prepare_gemini_webapi_runtime(monkeypatch, request)
+        return LLMRouter(
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GEMINI_WEBAPI),
+            temperature=0.0,
+            seed=42,
+        )
+    raise ValueError(route)  # pragma: no cover - Examples owns the valid values.
 
 
 @given("the OpenAI-compatible async route", target_fixture="router")

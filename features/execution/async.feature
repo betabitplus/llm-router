@@ -4,21 +4,18 @@ Feature: Async public execution
 
   Rule: The public async entry point returns the requested result
 
-    Scenario: QwenChat returns a short text reply asynchronously
-      Given the QwenChat async route
+    Scenario Outline: A provider route returns a short text reply asynchronously
+      Given the "<route>" async text route
       When the async route receives:
         """
         Reply with only: pong
         """
       Then the normalized reply is "pong"
 
-    Scenario: Gemini WebAPI returns a short text reply asynchronously
-      Given the Gemini WebAPI async route
-      When the async route receives:
-        """
-        Reply with only: pong
-        """
-      Then the normalized reply is "pong"
+      Examples:
+        | route         |
+        | QwenChat      |
+        | Gemini WebAPI |
 
     Scenario: An OpenAI-compatible route extracts a legal case asynchronously
       Given the OpenAI-compatible async route
