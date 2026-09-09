@@ -307,18 +307,15 @@ async def run_case(case: str) -> dict[str, Any]:
 
 
 def display_result(result: Mapping[str, Any]) -> None:
-    raw = json.dumps(result, indent=2, ensure_ascii=False, default=str).replace(
-        "'", "\\u0027"
-    )
+    raw = json.dumps(result, indent=2, ensure_ascii=False, default=str)
     content = [
         _facts_markdown("Observed output", _summary_items(result)),
         "",
-        "::::{card} Raw captured result",
-        "",
-        ":::{data-viewer}",
+        ":::{dropdown} Raw captured result",
+        "`````json",
         raw,
+        "`````",
         ":::",
-        "::::",
     ]
     display(Markdown("\n".join(content)))
 
