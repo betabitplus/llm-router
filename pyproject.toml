@@ -107,7 +107,7 @@ dev = [
 ]
 docs = [
   "matplotlib>=3.11.1",
-  "ternforge-docops>=0.7.0,<0.8",
+  "ternforge-docops>=0.8.0,<0.9",
 ]
 
 [tool.setuptools]
@@ -123,8 +123,8 @@ package-dir."" = "src"
 required-version = "==0.12.5"
 sources.py-lib-policy = { git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git", tag = "v2.1.1" }
 sources.py-lib-runtime = { git = "https://github.com/betabitplus/ternforge-tooling-py-runtime.git", tag = "v1.2.1" }
-sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git", tag = "v2.3.4" }
-sources.ternforge-docops = { git = "https://github.com/betabitplus/ternforge-tooling-docops.git", tag = "v0.7.0" }
+sources.py-lib-testkit = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git", tag = "v2.4.1" }
+sources.ternforge-docops = { git = "https://github.com/betabitplus/ternforge-tooling-docops.git", tag = "v0.8.1" }
 
 # ---------------- Ruff configuration ----------------
 [tool.ruff]

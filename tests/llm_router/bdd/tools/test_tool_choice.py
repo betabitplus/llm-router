@@ -71,6 +71,9 @@ def provider_tool_choice_route(
 
 @when("the route is forced to use add:", target_fixture="response")
 def force_add_tool(router: LLMRouter, docstring: str) -> LLMRouterResponse:
+    evidence.contract("Response schema", ToolResult)
+    evidence.contract("Tool · add", add)
+    evidence.contract("Tool · multiply", multiply)
     return router.query(
         [_SYSTEM_PROMPT, docstring],
         tools=[add, multiply],
@@ -113,6 +116,8 @@ def aistudio_numeric_tool_choice_route() -> LLMRouter:
 
 @when("the route is forced to add 40 and 2", target_fixture="response")
 def force_aistudio_add(router: LLMRouter) -> LLMRouterResponse:
+    evidence.contract("Tool · add", add)
+    evidence.contract("Tool · multiply", multiply)
     prompt = (
         "You have tools add(a, b) and multiply(a, b), each returning {result}.\n"
         "Use ONLY add with a=40 and b=2, then reply with ONLY the number."

@@ -73,6 +73,7 @@ def analyze_traffic_image(
     route, router = image_route
     image_path = get_llm_router_test_data_path(_IMAGE_FILENAME)
     evidence.file("Input image", image_path, media_type="image/png")
+    evidence.contract("Response schema", SceneSummary)
     image = build_test_image(_IMAGE_FILENAME)
     if route == "QwenChat":
         messages = [f"{_SYSTEM_PROMPT}\n\n{docstring}", image]

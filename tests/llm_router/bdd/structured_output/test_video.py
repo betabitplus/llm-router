@@ -91,6 +91,7 @@ def analyze_example_rooftop_video(
     _, router = video_route
     video_path = get_llm_router_test_data_path(_VIDEO_FILENAME)
     evidence.file("Input video", video_path, media_type="video/mp4")
+    evidence.contract("Response schema", VideoObservation)
     return router.query(
         [_SYSTEM_PROMPT, docstring, build_test_video_file(_VIDEO_FILENAME)],
         response_schema=VideoObservation,
@@ -118,6 +119,7 @@ def analyze_example_remote_video(
     from tests.llm_router.support.media.video import build_indoor_video_prompt
 
     _, router = video_route
+    evidence.contract("Response schema", VideoObservation)
     return router.query(
         [_SYSTEM_PROMPT, build_indoor_video_prompt(), build_test_video_url()],
         response_schema=VideoObservation,
