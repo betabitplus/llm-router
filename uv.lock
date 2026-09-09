@@ -2424,7 +2424,7 @@ dev = [
 ]
 docs = [
     { name = "matplotlib", specifier = ">=3.11.1" },
-    { name = "ternforge-docops", git = "https://github.com/betabitplus/ternforge-tooling-docops.git?tag=v0.6.5" },
+    { name = "ternforge-docops", git = "https://github.com/betabitplus/ternforge-tooling-docops.git?tag=v0.6.6" },
 ]
 
 [[package]]
@@ -4866,8 +4866,8 @@ wheels = [
 
 [[package]]
 name = "ternforge-docops"
-version = "0.6.5"
-source = { git = "https://github.com/betabitplus/ternforge-tooling-docops.git?tag=v0.6.5#8ec9127af79ab8c145e9e9a4d1e1dad949fa680b" }
+version = "0.6.6"
+source = { git = "https://github.com/betabitplus/ternforge-tooling-docops.git?tag=v0.6.6#b98577f032224d98a568d918cb23381a7b4736cd" }
 dependencies = [
     { name = "docutils" },
     { name = "jupyter-client" },
