@@ -16,19 +16,16 @@ expressed as requirements or engineering constraints.
 :gutter: 2
 
 :::{grid-item-card} Accepted
-:class-card: portal-card
 
 {need_count}`type == "adr" and status == "accepted"` current decisions
 :::
 
 :::{grid-item-card} Proposed
-:class-card: portal-card
 
 {need_count}`type == "adr" and status == "proposed"` decisions under review
 :::
 
 :::{grid-item-card} Superseded
-:class-card: portal-card
 
 {need_count}`type == "adr" and status == "superseded"` historical decisions replaced by newer ADRs
 :::

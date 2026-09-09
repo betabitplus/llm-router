@@ -10,7 +10,6 @@ area below, or use the visual maps when you want the whole picture.
 :::{grid-item-card} Routing reliability
 :link: routing
 :link-type: doc
-:class-card: portal-card
 
 Fallback, route ordering, timeouts, attempt limits, and rate-limit-aware routing.
 :::
@@ -18,7 +17,6 @@ Fallback, route ordering, timeouts, attempt limits, and rate-limit-aware routing
 :::{grid-item-card} Configuration
 :link: configuration
 :link-type: doc
-:class-card: portal-card
 
 Effective settings, credentials, validation, and installed configuration behavior.
 :::
@@ -26,7 +24,6 @@ Effective settings, credentials, validation, and installed configuration behavio
 :::{grid-item-card} Provider portability
 :link: providers
 :link-type: doc
-:class-card: portal-card
 
 Provider adapters and the normalized public semantics they must preserve.
 :::
@@ -34,7 +31,6 @@ Provider adapters and the normalized public semantics they must preserve.
 :::{grid-item-card} Resilience
 :link: resilience
 :link-type: doc
-:class-card: portal-card
 
 Retries, recoverable failures, and reliable execution across provider boundaries.
 :::
@@ -42,7 +38,6 @@ Retries, recoverable failures, and reliable execution across provider boundaries
 :::{grid-item-card} Structured output & media
 :link: structured_output
 :link-type: doc
-:class-card: portal-card
 
 Schemas, text, images, documents, video, and multimodal normalization.
 :::
@@ -50,7 +45,6 @@ Schemas, text, images, documents, video, and multimodal normalization.
 :::{grid-item-card} Tool orchestration
 :link: tools
 :link-type: doc
-:class-card: portal-card
 
 Tool selection, execution, multi-round loops, and public tool traces.
 :::
@@ -58,7 +52,6 @@ Tool selection, execution, multi-round loops, and public tool traces.
 :::{grid-item-card} Sessions
 :link: sessions
 :link-type: doc
-:class-card: portal-card
 
 Conversation continuity, persistence, restoration, and forking.
 :::
@@ -66,7 +59,6 @@ Conversation continuity, persistence, restoration, and forking.
 :::{grid-item-card} Data safety
 :link: security
 :link-type: doc
-:class-card: portal-card
 
 Sensitive-data redaction and safe failure/logging behavior.
 :::
@@ -74,7 +66,6 @@ Sensitive-data redaction and safe failure/logging behavior.
 :::{grid-item-card} Developer usability
 :link: developer
 :link-type: doc
-:class-card: portal-card
 
 Public API coherence, packaging, examples, and developer-facing guarantees.
 :::
@@ -89,7 +80,6 @@ Public API coherence, packaging, examples, and developer-facing guarantees.
 :::{grid-item-card} 🗺️ Requirement maps
 :link: maps
 :link-type: doc
-:class-card: portal-card
 
 See the product hierarchy **Goal → Feature → Requirement**, then drill into
 small feature-focused maps. Engineering constraints are shown separately so they
@@ -99,7 +89,6 @@ do not masquerade as another layer of product intent.
 :::{grid-item-card} 🔬 Engineering experiments
 :link: ../experiments/index
 :link-type: doc
-:class-card: portal-card
 
 Review retained experimental observations that informed requirements, engineering
 constraints, or architecture decisions before they became authoritative.
@@ -108,7 +97,6 @@ constraints, or architecture decisions before they became authoritative.
 :::{grid-item-card} 🧪 Executable specifications
 :link: ../specifications
 :link-type: doc
-:class-card: portal-card
 
 Read Gherkin directly on the site and see compact execution summaries immediately
 under each feature.
@@ -140,21 +128,18 @@ implementation and test evidence can satisfy `required_evidence`.
 :gutter: 2
 
 :::{grid-item-card} Accepted
-:class-card: portal-card
 
 {need_count}`type in ["req", "treq"] and status == "accepted"` objects form the
 current reviewed engineering contract.
 :::
 
 :::{grid-item-card} Draft
-:class-card: portal-card
 
 {need_count}`type in ["req", "treq"] and status == "draft"` objects are still
 under review and must not be mistaken for an accepted contract.
 :::
 
 :::{grid-item-card} Deprecated
-:class-card: portal-card
 
 {need_count}`type in ["req", "treq"] and status == "deprecated"` objects remain
 visible for history and impact analysis but are no longer current intent.
