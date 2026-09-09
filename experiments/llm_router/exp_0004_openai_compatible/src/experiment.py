@@ -8,39 +8,30 @@ import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote
-
-from IPython.display import IFrame, Image, Markdown, Video, display
 
 CASES = {
     "text_generation": {
         "module": "text_generation_async",
-        "label": "Async text generation",
         "input": None,
     },
     "retry_text_generation": {
         "module": "retry_text_generation_async",
-        "label": "Provider retry behavior",
         "input": None,
     },
     "logprobs_text_generation": {
         "module": "logprobs_text_generation",
-        "label": "Token logprobs",
         "input": None,
     },
     "image_structured": {
         "module": "image_structured",
-        "label": "Image input with structured output",
         "input": "test_image.png",
     },
     "tool_loop": {
         "module": "tool_loop_structured_async",
-        "label": "Multi-round tool calling",
         "input": None,
     },
     "tool_choice_named": {
         "module": "tool_choice_named_structured",
-        "label": "Named function tool choice",
         "input": None,
     },
 }
@@ -75,34 +66,9 @@ def _case_module(case: str) -> Any:
     return importlib.import_module(CASES[case]["module"])
 
 
-def _rendered_value(value: Any) -> str:
-    if isinstance(value, str):
-        return value
-    return json.dumps(value, ensure_ascii=False, default=str)
-
-
-def _facts_markdown(title: str, facts: list[tuple[str, Any]]) -> str:
-    lines = [f":::{{card}} {title}", ""]
-    for label, value in facts:
-        rendered = _rendered_value(value)
-        if "\n" in rendered or len(rendered) > 120:
-            lines.extend(
-                (
-                    f"**{label}**",
-                    "",
-                    "`````text",
-                    rendered,
-                    "`````",
-                    "",
-                )
-            )
-        else:
-            lines.append(f"- **{label}:** {rendered}")
-    lines.append(":::")
-    return "\n".join(lines)
-
-
-def _input_facts(case: str, module: Any) -> list[tuple[str, Any]]:
+def case_input(case: str) -> dict[str, Any]:
+    """Return the provider inputs that materially define one experiment case."""
+    module = _case_module(case)
     facts: list[tuple[str, Any]] = []
     filename = CASES[case].get("input")
     if filename:
@@ -122,66 +88,21 @@ def _input_facts(case: str, module: Any) -> list[tuple[str, Any]]:
                 "No content payload; this case exercises the provider operation directly.",
             )
         )
-    return facts
+    return dict(facts)
 
 
-def display_case_input(case: str) -> None:
-    module = _case_module(case)
-    display(Markdown(_facts_markdown("Input", _input_facts(case, module))))
-
+def case_input_path(case: str) -> Path | None:
+    """Return the retained local input file used by one case, when present."""
     filename = CASES[case].get("input")
     if not filename:
-        return
-    path = Path(__file__).resolve().parent.parent / "inputs" / filename
-    suffix = path.suffix.lower()
-    if suffix in {".png", ".jpg", ".jpeg", ".gif", ".webp"}:
-        display(Image(filename=str(path)))
-        return
-
-    relative_url = f"inputs/{quote(filename)}"
-    if suffix == ".pdf":
-        display(IFrame(relative_url, width="100%", height=640))
-    elif suffix in {".mp4", ".webm", ".mov"}:
-        display(
-            Video(
-                url=relative_url,
-                width=900,
-                html_attributes="controls preload='metadata'",
-            )
-        )
-    else:
-        display(Markdown(f"[Open {filename}]({relative_url})"))
+        return None
+    return Path(__file__).resolve().parent.parent / "inputs" / str(filename)
 
 
-def display_case_code(case: str) -> None:
+def case_source(case: str) -> str:
+    """Return the exact provider pipeline executed by one experiment case."""
     module = _case_module(case)
-    source = inspect.getsource(module.run_pipeline).strip()
-    comments: list[str] = []
-    for line in source.splitlines():
-        stripped = line.strip()
-        if not stripped.startswith("# "):
-            continue
-        comment = stripped.removeprefix("# ").strip()
-        if comment and comment not in comments:
-            comments.append(comment)
-
-    content: list[str] = []
-    if comments:
-        content.extend(("**Core flow**", ""))
-        content.extend(f"- {comment}" for comment in comments[:6])
-        content.append("")
-    content.extend(
-        (
-            ":::{dropdown} Actual provider code",
-            "This is the actual `run_pipeline()` executed for this capture, not notebook-only pseudocode.",
-            "",
-            "`````python",
-            source,
-            "`````",
-            ":::",
-        )
-    )
-    display(Markdown("\n".join(content)))
+    return inspect.getsource(module.run_pipeline).strip()
 
 
 def _short_text(value: Any, *, limit: int = 260) -> str:
@@ -189,7 +110,8 @@ def _short_text(value: Any, *, limit: int = 260) -> str:
     return text if len(text) <= limit else f"{text[: limit - 1]}…"
 
 
-def _summary_items(result: Mapping[str, Any]) -> list[tuple[str, Any]]:
+def summarize_result(result: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the domain-specific observations worth surfacing for one result."""
     items: list[tuple[str, Any]] = []
 
     def add(label: str, value: Any) -> None:
@@ -279,7 +201,7 @@ def _summary_items(result: Mapping[str, Any]) -> list[tuple[str, Any]]:
 
     if not items:
         add("Captured fields", ", ".join(result))
-    return items
+    return dict(items)
 
 
 async def run_case(case: str) -> dict[str, Any]:
@@ -291,37 +213,17 @@ async def run_case(case: str) -> dict[str, Any]:
     return dict(result)
 
 
-def display_result(result: Mapping[str, Any]) -> None:
-    raw = json.dumps(result, indent=2, ensure_ascii=False, default=str)
-    content = [
-        _facts_markdown("Observed output", _summary_items(result)),
-        "",
-        ":::{dropdown} Raw captured result",
-        "`````json",
-        raw,
-        "`````",
-        ":::",
-    ]
-    display(Markdown("\n".join(content)))
-
-
-async def run_all() -> None:
-    for case in CASES:
-        print(f"\n=== {case} ===")
-        display_case_input(case)
-        display_case_code(case)
-        display_result(await run_case(case))
+async def run_all() -> dict[str, dict[str, Any]]:
+    """Run every retained case and return its raw captured result."""
+    return {case: await run_case(case) for case in CASES}
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("case", nargs="?", choices=[*CASES, "all"], default="all")
     args = parser.parse_args()
-    if args.case == "all":
-        asyncio.run(run_all())
-    else:
-        result = asyncio.run(run_case(args.case))
-        display_result(result)
+    result = asyncio.run(run_all() if args.case == "all" else run_case(args.case))
+    print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
 
 
 if __name__ == "__main__":
