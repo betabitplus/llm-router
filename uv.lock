@@ -2400,7 +2400,7 @@ dev = [
     { name = "pip-audit", specifier = ">=2.10.1" },
     { name = "pre-commit", specifier = ">=4.6" },
     { name = "py-lib-policy", git = "https://github.com/betabitplus/ternforge-tooling-py-policy.git?tag=v2.1.1" },
-    { name = "py-lib-testkit", git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.3.4" },
+    { name = "py-lib-testkit", git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.4.1" },
     { name = "pygments", specifier = ">=2.20" },
     { name = "pymupdf" },
     { name = "pyproject-fmt", specifier = ">=2.23" },
@@ -2424,7 +2424,7 @@ dev = [
 ]
 docs = [
     { name = "matplotlib", specifier = ">=3.11.1" },
-    { name = "ternforge-docops", git = "https://github.com/betabitplus/ternforge-tooling-docops.git?tag=v0.7.0" },
+    { name = "ternforge-docops", git = "https://github.com/betabitplus/ternforge-tooling-docops.git?tag=v0.8.1" },
 ]
 
 [[package]]
@@ -3531,8 +3531,8 @@ dependencies = [
 
 [[package]]
 name = "py-lib-testkit"
-version = "2.3.4"
-source = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.3.4#5897d910cfbd667cd41d6d91053f57c269cd9491" }
+version = "2.4.1"
+source = { git = "https://github.com/betabitplus/ternforge-tooling-py-testkit.git?tag=v2.4.1#390e4945afe8ce5fefe011c4748f5497588b406e" }
 dependencies = [
     { name = "ipython" },
     { name = "nest-asyncio" },
@@ -4866,8 +4866,8 @@ wheels = [
 
 [[package]]
 name = "ternforge-docops"
-version = "0.7.0"
-source = { git = "https://github.com/betabitplus/ternforge-tooling-docops.git?tag=v0.7.0#18a848a91cbe79c54ce3a126cd5aa1810b561570" }
+version = "0.8.1"
+source = { git = "https://github.com/betabitplus/ternforge-tooling-docops.git?tag=v0.8.1#45461772c2d2d811df8b251c6365d5354032a1c0" }
 dependencies = [
     { name = "docutils" },
     { name = "jupyter-client" },

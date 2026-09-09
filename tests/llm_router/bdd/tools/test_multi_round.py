@@ -132,6 +132,9 @@ def execute_calculation_workflow(
     docstring: str,
 ) -> LLMRouterResponse:
     router, response_schema = multi_round_route
+    evidence.contract("Response schema", response_schema)
+    evidence.contract("Tool · add", add)
+    evidence.contract("Tool · multiply", multiply)
     return router.query(
         [_SYSTEM_PROMPT, docstring],
         tools=[add, multiply],
@@ -167,6 +170,7 @@ def multi_round_workflow_is_preserved(response: LLMRouterResponse) -> None:
     "a Google GenAI route with a profile-level multiply tool", target_fixture="router"
 )
 def google_profile_tool_route() -> LLMRouter:
+    evidence.contract("Profile tool · multiply", multiply)
     return LLMRouter(
         RouterProfile(
             provider=Provider.GOOGLE,
@@ -180,10 +184,12 @@ def google_profile_tool_route() -> LLMRouter:
 
 @when("the route is required to calculate 17 times 19", target_fixture="response")
 def execute_profile_tool_workflow(router: LLMRouter) -> LLMRouterResponse:
+    response_schema = _profile_tool_audit_schema()
+    evidence.contract("Response schema", response_schema)
     return router.query(
         _PROFILE_TOOL_PROMPT,
         tool_choice="required",
-        response_schema=_profile_tool_audit_schema(),
+        response_schema=response_schema,
         max_tool_rounds=4,
     )
 

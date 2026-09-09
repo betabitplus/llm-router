@@ -76,6 +76,7 @@ def analyze_example_pdf(
     _, router = document_route
     pdf_path = get_llm_router_test_data_path(_PDF_FILENAME)
     evidence.file("Input PDF", pdf_path, media_type="application/pdf")
+    evidence.contract("Response schema", PDFDigest)
     return router.query(
         [_SYSTEM_PROMPT, docstring, build_test_pdf_file(_PDF_FILENAME)],
         response_schema=PDFDigest,

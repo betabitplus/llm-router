@@ -111,6 +111,7 @@ def short_text_reply_is_preserved(response: LLMRouterResponse) -> None:
 
 @when("the async route extracts a legal case from:", target_fixture="response")
 def extract_legal_case(router: LLMRouter, docstring: str) -> LLMRouterResponse:
+    evidence.contract("Response schema", LegalCase)
     return asyncio.run(
         router.aquery(
             [_LEGAL_SYSTEM_PROMPT, docstring],
@@ -136,6 +137,7 @@ def legal_case_is_preserved(response: LLMRouterResponse) -> None:
 
 @when("the async route requests the example movie record", target_fixture="response")
 def request_movie_record(router: LLMRouter) -> LLMRouterResponse:
+    evidence.contract("Response schema", MovieRecord)
     return asyncio.run(
         router.aquery(
             [_MOVIE_SYSTEM_PROMPT, build_movie_prompt()],
@@ -162,6 +164,7 @@ def movie_record_is_grounded(response: LLMRouterResponse) -> None:
 def analyze_image_asynchronously(router: LLMRouter) -> LLMRouterResponse:
     image_path = get_llm_router_test_data_path(_IMAGE_FILENAME)
     evidence.file("Input image", image_path, media_type="image/png")
+    evidence.contract("Response schema", SceneSummary)
     return asyncio.run(
         router.aquery(
             [

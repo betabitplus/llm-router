@@ -73,6 +73,7 @@ def qwenchat_structured_text_route() -> LLMRouter:
 @when("the route receives the incident request:", target_fixture="response")
 def request_incident_report(router: LLMRouter, docstring: str) -> LLMRouterResponse:
     """Execute the structured text request from the Gherkin Doc String."""
+    evidence.contract("Response schema", IncidentReport)
     return router.query(
         f"{_SYSTEM_PROMPT}\n\n{docstring}\n",
         response_schema=IncidentReport,
