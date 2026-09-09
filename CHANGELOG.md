@@ -4,6 +4,19 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.18.0](https://github.com/betabitplus/llm-router/compare/v0.17.2...v0.18.0) (2026-09-09)
+
+
+### Features
+
+* publish BDD execution contracts ([#122](https://github.com/betabitplus/llm-router/issues/122)) ([4f16574](https://github.com/betabitplus/llm-router/commit/4f1657409aeedeb6e866aa5d15562d1b227c88cc))
+
+
+### Bug Fixes
+
+* **experiments:** use native raw JSON evidence ([#119](https://github.com/betabitplus/llm-router/issues/119)) ([ce86a62](https://github.com/betabitplus/llm-router/commit/ce86a62adf45eb741ebab3c11c8ef2fda858c254))
+* improve experiment evidence readability ([#117](https://github.com/betabitplus/llm-router/issues/117)) ([35b828c](https://github.com/betabitplus/llm-router/commit/35b828c9969c7218b7e37acd34cad5303304c080))
+
 ## [0.17.2](https://github.com/betabitplus/llm-router/compare/v0.17.1...v0.17.2) (2026-09-06)
 
 
