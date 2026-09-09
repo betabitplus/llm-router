@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import html
 import importlib
 import inspect
 import json
@@ -11,7 +10,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
-from IPython.display import HTML, Image, display
+from IPython.display import IFrame, Image, Markdown, Video, display
 
 CASES = {
     "runtime_preflight": {
@@ -91,15 +90,31 @@ def _case_module(case: str) -> Any:
     return importlib.import_module(CASES[case]["module"])
 
 
-def _html_value(value: Any) -> str:
+def _rendered_value(value: Any) -> str:
     if isinstance(value, str):
-        rendered = value
-    else:
-        rendered = json.dumps(value, ensure_ascii=False, default=str)
-    escaped = html.escape(rendered)
-    if "\n" in rendered or len(rendered) > 120:
-        return f'<pre class="exp-value">{escaped}</pre>'
-    return f"<code>{escaped}</code>"
+        return value
+    return json.dumps(value, ensure_ascii=False, default=str)
+
+
+def _facts_markdown(title: str, facts: list[tuple[str, Any]]) -> str:
+    lines = [f":::{{card}} {title}", ""]
+    for label, value in facts:
+        rendered = _rendered_value(value)
+        if "\n" in rendered or len(rendered) > 120:
+            lines.extend(
+                (
+                    f"**{label}**",
+                    "",
+                    "`````text",
+                    rendered,
+                    "`````",
+                    "",
+                )
+            )
+        else:
+            lines.append(f"- **{label}:** {rendered}")
+    lines.append(":::")
+    return "\n".join(lines)
 
 
 def _input_facts(case: str, module: Any) -> list[tuple[str, Any]]:
@@ -127,18 +142,7 @@ def _input_facts(case: str, module: Any) -> list[tuple[str, Any]]:
 
 def display_case_input(case: str) -> None:
     module = _case_module(case)
-    rows = "".join(
-        f"<dt>{html.escape(label)}</dt><dd>{_html_value(value)}</dd>"
-        for label, value in _input_facts(case, module)
-    )
-    display(
-        HTML(
-            '<section class="exp-panel exp-input-panel">'
-            '<div class="exp-kicker">Input</div>'
-            f'<dl class="exp-facts">{rows}</dl>'
-            "</section>"
-        )
-    )
+    display(Markdown(_facts_markdown("Input", _input_facts(case, module))))
 
     filename = CASES[case].get("input")
     if not filename:
@@ -151,62 +155,48 @@ def display_case_input(case: str) -> None:
 
     relative_url = f"inputs/{quote(filename)}"
     if suffix == ".pdf":
-        display(
-            HTML(
-                '<div class="exp-media-frame">'
-                f'<object data="{relative_url}" type="application/pdf">'
-                f'<a href="{relative_url}">Open {html.escape(filename)}</a>'
-                "</object></div>"
-            )
-        )
+        display(IFrame(relative_url, width="100%", height=640))
     elif suffix in {".mp4", ".webm", ".mov"}:
         display(
-            HTML(
-                '<div class="exp-media-frame">'
-                f'<video controls preload="metadata" src="{relative_url}"></video>'
-                "</div>"
+            Video(
+                url=relative_url,
+                width=900,
+                html_attributes="controls preload='metadata'",
             )
         )
     else:
-        display(HTML(f'<a href="{relative_url}">Open {html.escape(filename)}</a>'))
+        display(Markdown(f"[Open {filename}]({relative_url})"))
 
 
 def display_case_code(case: str) -> None:
     module = _case_module(case)
     source = inspect.getsource(module.run_pipeline).strip()
-    lines = source.splitlines()
-    escaped_source = html.escape(source)
-    note = (
-        "This is the actual <code>run_pipeline()</code> executed for this capture, "
-        "not notebook-only pseudocode."
-    )
-    if len(lines) <= 30:
-        code = f'<pre class="exp-code"><code>{escaped_source}</code></pre>'
-    else:
-        comments = []
-        for line in lines:
-            stripped = line.strip()
-            if not stripped.startswith("# "):
-                continue
-            comment = stripped.removeprefix("# ").strip()
-            if comment and comment not in comments:
-                comments.append(comment)
-        flow = ""
-        if comments:
-            items = "".join(f"<li>{html.escape(item)}</li>" for item in comments[:6])
-            flow = f'<div class="exp-code-flow"><strong>Core flow</strong><ul>{items}</ul></div>'
-        code = (
-            f'{flow}<details class="exp-code-details">'
-            f"<summary>Show full run_pipeline() · {len(lines)} lines</summary>"
-            f'<pre class="exp-code"><code>{escaped_source}</code></pre></details>'
-        )
-    display(
-        HTML(
-            '<section class="exp-panel exp-code-panel">'
-            '<div class="exp-kicker">Core provider code</div>'
-            f'<p class="exp-note">{note}</p>{code}</section>'
+    comments: list[str] = []
+    for line in source.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("# "):
+            continue
+        comment = stripped.removeprefix("# ").strip()
+        if comment and comment not in comments:
+            comments.append(comment)
+
+    content: list[str] = []
+    if comments:
+        content.extend(("**Core flow**", ""))
+        content.extend(f"- {comment}" for comment in comments[:6])
+        content.append("")
+    content.extend(
+        (
+            ":::{dropdown} Actual provider code",
+            "This is the actual `run_pipeline()` executed for this capture, not notebook-only pseudocode.",
+            "",
+            "`````python",
+            source,
+            "`````",
+            ":::",
         )
     )
+    display(Markdown("\n".join(content)))
 
 
 def _short_text(value: Any, *, limit: int = 260) -> str:
@@ -317,20 +307,19 @@ async def run_case(case: str) -> dict[str, Any]:
 
 
 def display_result(result: Mapping[str, Any]) -> None:
-    rows = "".join(
-        f"<dt>{html.escape(label)}</dt><dd>{_html_value(value)}</dd>"
-        for label, value in _summary_items(result)
+    raw = json.dumps(result, indent=2, ensure_ascii=False, default=str).replace(
+        "'", "\\u0027"
     )
-    raw = html.escape(json.dumps(result, indent=2, ensure_ascii=False, default=str))
-    display(
-        HTML(
-            '<section class="exp-panel exp-result-panel">'
-            '<div class="exp-kicker">Observed output</div>'
-            f'<dl class="exp-facts exp-result-facts">{rows}</dl>'
-            '<details class="exp-raw-result"><summary>Raw captured result</summary>'
-            f"<pre><code>{raw}</code></pre></details></section>"
-        )
-    )
+    content = [
+        _facts_markdown("Observed output", _summary_items(result)),
+        "",
+        ":::{dropdown} Raw captured result",
+        "`````json",
+        raw,
+        "`````",
+        ":::",
+    ]
+    display(Markdown("\n".join(content)))
 
 
 async def run_all() -> None:

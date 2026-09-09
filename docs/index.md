@@ -10,7 +10,6 @@ You should be able to review the system without opening the repository or an IDE
 :::{grid-item-card} 🧭 Requirements hub
 :link: requirements/index
 :link-type: doc
-:class-card: portal-card
 
 Start here for product goals, features, accepted product requirements, engineering
 constraints, and the relationships between them.
@@ -19,7 +18,6 @@ constraints, and the relationships between them.
 :::{grid-item-card} 🗺️ Requirement maps
 :link: requirements/maps
 :link-type: doc
-:class-card: portal-card
 
 Explore a compact Goal → Feature overview, then drill into one product area at a
 time. Implementation and test provenance stay out of product maps on purpose.
@@ -28,7 +26,6 @@ time. Implementation and test provenance stay out of product maps on purpose.
 :::{grid-item-card} 🔬 Engineering experiments
 :link: experiments/index
 :link-type: doc
-:class-card: portal-card
 
 See what was tested while an answer was still uncertain, the evidence observed,
 and which decision or contract that learning informed.
@@ -37,7 +34,6 @@ and which decision or contract that learning informed.
 :::{grid-item-card} 🧠 Architecture decisions
 :link: decisions/index
 :link-type: doc
-:class-card: portal-card
 
 Review significant design choices, alternatives, consequences, and supersession
 history without turning every implementation detail into an ADR.
@@ -46,7 +42,6 @@ history without turning every implementation detail into an ADR.
 :::{grid-item-card} 📖 Executable specifications
 :link: specifications
 :link-type: doc
-:class-card: portal-card
 
 Read Gherkin directly on the site. Each feature is followed by its concrete
 executed testcase evidence.
@@ -55,7 +50,6 @@ executed testcase evidence.
 :::{grid-item-card} 🧪 Test results
 :link: tests
 :link-type: doc
-:class-card: portal-card
 
 Inspect every pytest execution with status, duration, parameters, logs, and rich
 attachments such as images, JSON, PDFs, and video.
@@ -73,25 +67,21 @@ links are satisfied; the cards below show the current graph and execution state.
 :gutter: 2
 
 :::{grid-item-card} Product contract
-:class-card: portal-card
 
 {need_count}`type == "req" and status == "accepted"` accepted product requirements
 :::
 
 :::{grid-item-card} Engineering constraints
-:class-card: portal-card
 
 {need_count}`type == "treq" and status == "accepted"` accepted constraints
 :::
 
 :::{grid-item-card} Verification
-:class-card: portal-card
 
 {need_count}`type == "testcase" and result == "passed"` / {need_count}`type == "testcase"` executions passing
 :::
 
 :::{grid-item-card} Implementation provenance
-:class-card: portal-card
 
 {need_count}`type == "impl"` source-linked implementation slices
 :::
@@ -110,7 +100,6 @@ manual review dashboard.
 :::{grid-item-card} Product perspective
 :link: requirements/index
 :link-type: doc
-:class-card: portal-card
 
 **Why and what?** Follow Goal → Feature → Requirement. Engineering constraints are a separate implementation-facing view.
 :::
@@ -118,7 +107,6 @@ manual review dashboard.
 :::{grid-item-card} Experiment perspective
 :link: experiments/index
 :link-type: doc
-:class-card: portal-card
 
 **What did we learn before deciding?** Review the question, method, observed evidence, conclusion, and informed artifacts.
 :::
@@ -126,7 +114,6 @@ manual review dashboard.
 :::{grid-item-card} Behavior perspective
 :link: specifications
 :link-type: doc
-:class-card: portal-card
 
 **What does the user observe?** Read the executable Gherkin and its executions.
 :::
@@ -134,7 +121,6 @@ manual review dashboard.
 :::{grid-item-card} Verification perspective
 :link: tests
 :link-type: doc
-:class-card: portal-card
 
 **What actually ran?** Open each test result and inspect its evidence.
 :::
@@ -142,7 +128,6 @@ manual review dashboard.
 :::{grid-item-card} Decision perspective
 :link: decisions/index
 :link-type: doc
-:class-card: portal-card
 
 **Why this design?** Review significant architecture choices, alternatives, consequences, and supersession history.
 :::
