@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.18.2](https://github.com/betabitplus/llm-router/compare/v0.18.1...v0.18.2) (2026-09-09)
+
+
+### Bug Fixes
+
+* restore experiment report progressive disclosure ([#127](https://github.com/betabitplus/llm-router/issues/127)) ([b0b0122](https://github.com/betabitplus/llm-router/commit/b0b0122566bc2e9814cc11a26f43a48f8bb492cb))
+
 ## [0.18.1](https://github.com/betabitplus/llm-router/compare/v0.18.0...v0.18.1) (2026-09-09)
 
 
