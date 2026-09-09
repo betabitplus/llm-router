@@ -313,11 +313,12 @@ def display_result(result: Mapping[str, Any]) -> None:
     content = [
         _facts_markdown("Observed output", _summary_items(result)),
         "",
-        ":::{dropdown} Raw captured result",
-        "`````json",
+        "::::{card} Raw captured result",
+        "",
+        ":::{data-viewer}",
         raw,
-        "`````",
         ":::",
+        "::::",
     ]
     display(Markdown("\n".join(content)))
 
