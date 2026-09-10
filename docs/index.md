@@ -1,144 +1,121 @@
 # llm-router engineering portal
 
-This site is the release-level map of **product intent, engineering learning and
-decisions, requirements, executable behavior, implementation, and test evidence**.
-You should be able to review the system without opening the repository or an IDE.
+This portal is meant to be **read as a connected model of the system**, not as a
+collection of reports. Pick the route that matches the question you have and stay
+on that route until you have enough evidence.
 
-::::{grid} 1 2 3 3
+## Three ways through the system
+
+::::{grid} 1 1 3 3
 :gutter: 3
 
-:::{grid-item-card} ✅ Specification health
-:link: specification-health
-:link-type: doc
-
-Start with recursive Goal → Feature → Requirement coverage, current required evidence,
-and the exact active nodes that block deep coverage.
-:::
-
-:::{grid-item-card} 🧭 Requirements hub
+:::{grid-item-card} 1. Audit an idea end to end
 :link: requirements/index
 :link-type: doc
 
-Start here for product goals, features, accepted product requirements, engineering
-constraints, and the relationships between them.
+**Start here most of the time.** Choose a product goal, follow its Goal → Feature →
+Requirement branch, then open one-hop proof links to reach engineering constraints,
+implementation, and executed verification.
 :::
 
-:::{grid-item-card} 🗺️ Requirement maps
+:::{grid-item-card} 2. Follow a relationship or change
 :link: requirements/maps
 :link-type: doc
 
-Explore a compact Goal → Feature overview, then drill into one product area at a
-time. Implementation and test provenance stay out of product maps on purpose.
+Start from the whole intent map or a known idea. Move up to the intent that caused
+it, down to the contracts it creates, or sideways through the nearby idea links on
+each product branch. Use dense traceability only when you need forensic detail.
 :::
 
-:::{grid-item-card} 🔬 Engineering experiments
-:link: experiments/index
+:::{grid-item-card} 3. Check release confidence
+:link: specification-health
 :link-type: doc
 
-See what was tested while an answer was still uncertain, the evidence observed,
-and which decision or contract that learning informed.
-:::
-
-:::{grid-item-card} 🧠 Architecture decisions
-:link: decisions/index
-:link-type: doc
-
-Review significant design choices, alternatives, consequences, and supersession
-history without turning every implementation detail into an ADR.
-:::
-
-:::{grid-item-card} 📖 Executable specifications
-:link: specifications
-:link-type: doc
-
-Read Gherkin directly on the site. Each feature is followed by its concrete
-executed testcase evidence.
-:::
-
-:::{grid-item-card} 🧪 Test results
-:link: tests
-:link-type: doc
-
-Inspect every pytest execution with status, duration, parameters, logs, and rich
-attachments such as images, JSON, PDFs, and video.
+Start from the current release contract. If a branch is incomplete or has stale or
+missing evidence, jump directly to the blocking node and follow that branch to its
+proof instead of scanning global test or requirement lists.
 :::
 
 ::::
 
-## Engineering health
+## The normal reading direction
 
-{doc}`Specification health <specification-health>` is the canonical coverage view.
-It separates structural decomposition, current direct evidence, and recursive deep
-coverage instead of combining them into one score. Missing or stale evidence remains
-part of the same strict Sphinx-Needs build and is never hidden behind a second graph or
-manual dashboard.
+Intent → capability → contract → engineering constraint → implementation / test → evidence
 
-## Review from different perspectives
+You do not need to visit every page type. The normal review is:
 
-::::{grid} 1 2 3 3
+1. choose a goal in the {doc}`Intent map <requirements/index>`;
+2. read that product branch from top to bottom;
+3. expand proof only for the REQ/TREQ you want to inspect;
+4. open the implementation or executed test node when you need concrete evidence;
+5. return through the same relationships or switch to one of the nearby ideas shown
+   on the branch page.
+
+This mirrors the authoritative graph. The portal does not maintain a second
+navigation model just for presentation.
+
+## Supporting context, when you need it
+
+::::{grid} 1 2 2 2
 :gutter: 3
 
-:::{grid-item-card} Product perspective
-:link: requirements/index
-:link-type: doc
-
-**Why and what?** Follow Goal → Feature → Requirement. Engineering constraints are a separate implementation-facing view.
-:::
-
-:::{grid-item-card} Experiment perspective
-:link: experiments/index
-:link-type: doc
-
-**What did we learn before deciding?** Review the question, method, observed evidence, conclusion, and informed artifacts.
-:::
-
-:::{grid-item-card} Behavior perspective
-:link: specifications
-:link-type: doc
-
-**What does the user observe?** Read the executable Gherkin and its executions.
-:::
-
-:::{grid-item-card} Verification perspective
-:link: tests
-:link-type: doc
-
-**What actually ran?** Open each test result and inspect its evidence.
-:::
-
-:::{grid-item-card} Decision perspective
+:::{grid-item-card} Architecture decisions
 :link: decisions/index
 :link-type: doc
 
-**Why this design?** Review significant architecture choices, alternatives, consequences, and supersession history.
+Why a durable design choice was made, what alternatives were rejected, and which
+contracts or implementation slices it affects.
+:::
+
+:::{grid-item-card} Engineering experiments
+:link: experiments/index
+:link-type: doc
+
+What was learned before a requirement or architecture decision became authoritative.
+Experiments provide rationale, never verification.
+:::
+
+:::{grid-item-card} Executable specifications
+:link: specifications
+:link-type: doc
+
+Human-readable Gherkin behavior and its concrete executions. Use this when the
+public behavior itself is what you want to inspect.
+:::
+
+:::{grid-item-card} API and runnable examples
+:link: api
+:link-type: doc
+
+The public Python surface and practical workflows. These are usage references, not
+the primary engineering-control path.
 :::
 
 ::::
 
-## Reference and diagnostics
+## Advanced diagnostics
 
-- {doc}`API reference <api>` — public Python API.
-- {doc}`Live executable examples <auto_examples/index>` — runnable public workflows.
-- {doc}`Specification health <specification-health>` — recursive structure and current-evidence coverage.
-- {doc}`Engineering traceability <traceability>` — dense graph and source-centric diagnostic view.
-- {doc}`Engineering experiments <experiments/index>` — retained experimental evidence and informed artifacts.
-- {doc}`Architecture decisions <decisions/index>` — decision rationale and supersession history.
-- {doc}`Verification diagnostics <verification>` — dense JUnit/Sphinx-Needs tables for advanced inspection.
-- `needs.json` — machine-readable authoritative graph emitted by the documentation build.
-- `release-dossier.pdf` — release PDF emitted by the publication workflow.
+The pages below deliberately expose dense global data. They are useful for audits
+and debugging, but they are **not required stops** in the normal semantic flow.
+
+- {doc}`Engineering traceability <traceability>` — dense cross-graph/source diagnostics.
+- {doc}`Verification diagnostics <verification>` — requirement/evidence matrix for forensic inspection.
+- {doc}`Raw test results <tests>` — every pytest execution and attachment.
+- `needs.json` — machine-readable authoritative Sphinx-Needs graph.
+- `release-dossier.pdf` — release PDF produced by the publication workflow.
 
 ```{toctree}
 :hidden:
 :maxdepth: 3
 
 requirements/index
+specification-health
 experiments/index
 decisions/index
 specifications
-tests
 api
 auto_examples/index
-specification-health
 traceability
 verification
+tests
 ```

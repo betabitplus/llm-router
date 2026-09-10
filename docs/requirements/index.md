@@ -1,161 +1,137 @@
-# Requirements hub
+# Intent map
 
-The requirements graph is the primary way to understand **why** `llm-router`
-exists and how product intent becomes executable behavior. Start with a product
-area below, or use the visual maps when you want the whole picture.
+This is the main semantic entry point to `llm-router`. Do not start from a catalogue
+of requirements or tests. Start from **why the product exists**, choose one goal, and
+follow that branch until you reach the proof you need.
 
-::::{grid} 1 2 3 3
+## Request execution and reliability
+
+These goals describe how a request is configured, routed, recovered, and kept
+portable across provider families.
+
+::::{grid} 1 2 2 2
 :gutter: 3
 
-:::{grid-item-card} Routing reliability
+:::{grid-item-card} Keep requests moving across route failures
 :link: routing
 :link-type: doc
 
-Fallback, route ordering, timeouts, attempt limits, and rate-limit-aware routing.
+Fallback, timeouts, route-attempt limits, sticky starting routes, and rate-limit-aware
+selection.
 :::
 
-:::{grid-item-card} Configuration
+:::{grid-item-card} Make effective configuration predictable
 :link: configuration
 :link-type: doc
 
-Effective settings, credentials, validation, and installed configuration behavior.
+Precedence, credentials, validation, installed configuration, and the runtime behavior
+that must follow from it.
 :::
 
-:::{grid-item-card} Provider portability
-:link: providers
-:link-type: doc
-
-Provider adapters and the normalized public semantics they must preserve.
-:::
-
-:::{grid-item-card} Resilience
+:::{grid-item-card} Recover from transient failures without unbounded work
 :link: resilience
 :link-type: doc
 
-Retries, recoverable failures, and reliable execution across provider boundaries.
+Provider retry and structured-output repair, including the lower-level constraints
+that keep both recovery loops bounded and deterministic.
 :::
 
-:::{grid-item-card} Structured output & media
+:::{grid-item-card} Preserve one public contract across providers
+:link: providers
+:link-type: doc
+
+Provider portability, asynchronous execution, normalized success responses, usage,
+and public provider-error boundaries.
+:::
+
+::::
+
+## User capabilities
+
+These goals describe what callers can do through the normalized router contract.
+
+::::{grid} 1 1 3 3
+:gutter: 3
+
+:::{grid-item-card} Rich input and structured output
 :link: structured_output
 :link-type: doc
 
-Schemas, text, images, documents, video, and multimodal normalization.
+Structured text, documents, images, video, schema handling, and multimodal content
+normalization.
 :::
 
-:::{grid-item-card} Tool orchestration
+:::{grid-item-card} Local tool orchestration
 :link: tools
 :link-type: doc
 
-Tool selection, execution, multi-round loops, and public tool traces.
+Explicit tool choice, multi-round execution, callable contracts, bounded failures,
+and public tool behavior.
 :::
 
-:::{grid-item-card} Sessions
+:::{grid-item-card} Session continuity
 :link: sessions
 :link-type: doc
 
-Conversation continuity, persistence, restoration, and forking.
+Remembering, isolating, forking, clearing, saving, restoring, and safely serializing
+conversation state.
 :::
 
-:::{grid-item-card} Data safety
+::::
+
+## Trust and usability
+
+These goals constrain how the system can be observed and consumed.
+
+::::{grid} 1 2 2 2
+:gutter: 3
+
+:::{grid-item-card} Keep sensitive data out of retained artifacts
 :link: security
 :link-type: doc
 
-Sensitive-data redaction and safe failure/logging behavior.
+Credentials, request content, tool arguments, runtime diagnostics, and replay evidence
+must stay safe to retain.
 :::
 
-:::{grid-item-card} Developer usability
+:::{grid-item-card} Keep the public library safe to consume
 :link: developer
 :link-type: doc
 
-Public API coherence, packaging, examples, and developer-facing guarantees.
+A coherent package-root API and examples that remain safe to import and inspect.
 :::
 
 ::::
 
-## Visual perspectives
+## How each branch works
 
-::::{grid} 1 2 3 3
-:gutter: 3
+Every product-area page follows the same reading pattern:
 
-:::{grid-item-card} 🗺️ Requirement maps
-:link: maps
-:link-type: doc
+Goal → Feature → Requirement → optional Engineering Constraint → implementation / executed test
 
-See the product hierarchy **Goal → Feature → Requirement**, then drill into
-small feature-focused maps. Engineering constraints are shown separately so they
-do not masquerade as another layer of product intent.
-:::
+First read the **Idea branch** diagram to see the whole local hierarchy without test
+noise. Then read only the contracts that matter to you. Under every REQ and TREQ,
+open **Follow this contract to proof** to see exactly one downstream hop. That keeps
+each drill-down small while still letting you walk all the way to implementation and
+test evidence.
 
-:::{grid-item-card} 🔬 Engineering experiments
-:link: ../experiments/index
-:link-type: doc
+If you want to change direction, use **Continue nearby** at the bottom of the branch
+instead of returning to a global catalogue.
 
-Review retained experimental observations that informed requirements, engineering
-constraints, or architecture decisions before they became authoritative.
-:::
+## Whole product at a glance
 
-:::{grid-item-card} 🧪 Executable specifications
-:link: ../specifications
-:link-type: doc
+The {doc}`Whole-system intent map <maps>` shows only Goals and Features so you can
+reorient without losing the forest in implementation or test nodes.
 
-Read Gherkin directly on the site and see compact execution summaries immediately
-under each feature.
-:::
+::::{dropdown} Reference: lifecycle and complete object catalogues
 
-::::
+**Accepted** requirements and engineering constraints are the current reviewed
+contract. **Draft** items are still under review. **Deprecated** items remain visible
+for history and impact analysis but are not current obligations.
 
-## How to read a requirement
-
-Product requirements use one reviewable structure throughout the portal:
-
-- **Statement** is the normative product contract: what the system shall do.
-- **Rationale** explains why the capability matters and helps reviewers detect
-  accidental or gold-plated requirements.
-- **Verification intent** describes the observable proof expected without
-  turning a particular test fixture into the requirement itself.
-
-Engineering constraints use the same structure, but their normative paragraph
-is labeled **Constraint** because they describe implementation-facing boundaries
-or invariants derived from a product requirement.
-
-An incoming `informed by experiment` relation adds empirical context for why a
-requirement or constraint exists. It is rationale, not verification: only declared
-implementation and test evidence can satisfy `required_evidence`.
-
-### Lifecycle
-
-::::{grid} 1 3 3 3
-:gutter: 2
-
-:::{grid-item-card} Accepted
-
-{need_count}`type in ["req", "treq"] and status == "accepted"` objects form the
-current reviewed engineering contract.
-:::
-
-:::{grid-item-card} Draft
-
-{need_count}`type in ["req", "treq"] and status == "draft"` objects are still
-under review and must not be mistaken for an accepted contract.
-:::
-
-:::{grid-item-card} Deprecated
-
-{need_count}`type in ["req", "treq"] and status == "deprecated"` objects remain
-visible for history and impact analysis but are no longer current intent.
-:::
-
-::::
-
-A semantic change to an accepted requirement increments its `revision`. Source
-and verification links target that exact revision, so stale evidence is rejected
-until it has been reviewed and repinned.
-
-## Requirements catalogue
-
-Every authoritative requirement object is linked below. Use these lists for fast
-scanning; open an item for its full text and relationships, or switch to
-{doc}`Requirement maps <maps>` for the visual hierarchy.
+A semantic change to an accepted requirement increments its `revision`. Source and
+verification links target that exact revision, so stale evidence is rejected until it
+has been reviewed and repinned.
 
 ### Goals
 
@@ -181,6 +157,8 @@ scanning; open an item for its full text and relationships, or switch to
 :filter: type == "treq"
 ```
 
+::::
+
 ```{toctree}
 :hidden:
 :maxdepth: 2
@@ -188,8 +166,8 @@ scanning; open an item for its full text and relationships, or switch to
 maps
 routing
 configuration
-providers
 resilience
+providers
 structured_output
 tools
 sessions
