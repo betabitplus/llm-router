@@ -18,7 +18,7 @@ from llm_router import LLMRouter, Model, Provider, RouterProfile, Session
 def build_router(session: Session) -> LLMRouter:
     """Build a router bound to one session."""
     return LLMRouter(
-        RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO),
+        RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GOOGLE),
         session=session,
         temperature=0.0,
         seed=42,

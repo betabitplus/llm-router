@@ -56,7 +56,7 @@ class VideoObservation(BaseModel):
 def build_router() -> LLMRouter:
     """Create the live router used by each media example."""
     return LLMRouter(
-        RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO),
+        RouterProfile(model=Model.GEMINI_FLASH_LITE, provider=Provider.AISTUDIO),
         temperature=0.0,
         seed=42,
     )

@@ -94,7 +94,8 @@ def preferred_route_is_blocked(
         ],
         round_robin_start=False,
         shuffle_fallbacks=False,
-        limits_by_provider=_openrouter_limits(rps=20.0),
+        # Keep key 1 blocked long enough that host scheduling cannot reopen it.
+        limits_by_provider=_openrouter_limits(rps=0.2),
     )
     first_response = router.query("first")
     return {
