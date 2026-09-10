@@ -4,6 +4,14 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.21.1](https://github.com/betabitplus/llm-router/compare/v0.21.0...v0.21.1) (2026-09-10)
+
+
+### Bug Fixes
+
+* keep uv lock version in release sync ([#141](https://github.com/betabitplus/llm-router/issues/141)) ([f69de13](https://github.com/betabitplus/llm-router/commit/f69de13bb97b1232550e85ec73dc41da52efb24c))
+* stabilize live documentation routes ([#139](https://github.com/betabitplus/llm-router/issues/139)) ([7a5f0c9](https://github.com/betabitplus/llm-router/commit/7a5f0c978b754523beaa41decd563e94f9f4daf9))
+
 ## [0.21.0](https://github.com/betabitplus/llm-router/compare/v0.20.0...v0.21.0) (2026-09-10)
 
 
