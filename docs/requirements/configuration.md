@@ -55,16 +55,30 @@ Router, route, request, credential, and installed configuration are resolved int
 **Verification intent.** Exercise the public credential boundary for successful and missing-key cases and directly verify key-source precedence and rotation semantics across representative configurations.
 ```
 
-```{req} Installed configuration invalidates dependent runtime caches
+```{req} Installed configuration becomes effective coherently
 :id: REQ_CONFIG_INSTALLATION_COHERENCE
 :status: accepted
-:revision: 1
+:revision: 2
 :required_evidence: impl;unit
 :derives: FEAT_CONFIGURATION_PRECEDENCE
 
-**Statement.** Installing a new active configuration shall round-trip through the public configuration API and invalidate provider-adapter caches whose behavior depends on that configuration.
+**Statement.** Installing a new active configuration shall round-trip through the public configuration API and become the effective configuration for subsequent runtime behavior.
 
-**Rationale.** A newly installed configuration is not effective if cached provider objects continue using values derived from the previous configuration.
+**Rationale.** A newly installed configuration is not effective if later requests continue to observe behavior derived from the previous configuration.
 
-**Verification intent.** Install configuration through the public API and verify both round-trip visibility and invalidation of configuration-dependent adapter caches.
+**Verification intent.** Install configuration through the public API and verify the active snapshot round-trips as the newly installed configuration. Configuration-dependent cache invalidation is verified by the derived engineering constraint below.
+```
+
+```{treq} Configuration-dependent caches are invalidated
+:id: TREQ_CONFIG_CACHE_INVALIDATION
+:status: accepted
+:revision: 1
+:required_evidence: impl;unit
+:derives: REQ_CONFIG_INSTALLATION_COHERENCE
+
+**Constraint.** Installing a new active configuration shall invalidate provider-adapter caches whose behavior depends on configuration-derived values.
+
+**Rationale.** Reusing provider objects created from an earlier configuration would make the public installation contract observe stale runtime behavior.
+
+**Verification intent.** Directly install a replacement configuration and verify configuration-dependent adapter caches are invalidated before subsequent provider use.
 ```
