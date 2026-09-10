@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.21.0](https://github.com/betabitplus/llm-router/compare/v0.20.0...v0.21.0) (2026-09-10)
+
+
+### Features
+
+* add semantic portal review flow ([#137](https://github.com/betabitplus/llm-router/issues/137)) ([272d871](https://github.com/betabitplus/llm-router/commit/272d8712dc705b64b579aaf3261bfeb48d45aefb))
+
 ## [0.20.0](https://github.com/betabitplus/llm-router/compare/v0.19.0...v0.20.0) (2026-09-10)
 
 
