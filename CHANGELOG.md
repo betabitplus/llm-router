@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.21.3](https://github.com/betabitplus/llm-router/compare/v0.21.2...v0.21.3) (2026-09-10)
+
+
+### Bug Fixes
+
+* repin dossier evidence stack ([#144](https://github.com/betabitplus/llm-router/issues/144)) ([1c35e21](https://github.com/betabitplus/llm-router/commit/1c35e21480d24071bb77301054284f364714887b))
+
 ## [0.21.2](https://github.com/betabitplus/llm-router/compare/v0.21.1...v0.21.2) (2026-09-10)
 
 
