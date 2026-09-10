@@ -15,7 +15,7 @@ def test_declared_public_api_resolves() -> None:
     assert all(hasattr(package, name) for name in package.__all__)
 
 
-@pytest.mark.verifies("REQ_CONFIG_INSTALLATION_COHERENCE[revision==1]")
+@pytest.mark.verifies("REQ_CONFIG_INSTALLATION_COHERENCE[revision==2]")
 @pytest.mark.verification_kind("unit")
 def test_public_config_lifecycle_round_trips_active_snapshot() -> None:
     config = package.get_config()

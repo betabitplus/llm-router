@@ -26,7 +26,8 @@ def get_config() -> LLMRouterConfig:
         return _installed_config
 
 
-# @impl Config installation coherence, IMPL_CONFIG_INSTALLATION_COHERENCE, [REQ_CONFIG_INSTALLATION_COHERENCE[revision==1]]
+# @impl Config installation coherence, IMPL_CONFIG_INSTALLATION_COHERENCE, [REQ_CONFIG_INSTALLATION_COHERENCE[revision==2]]
+# @impl Config cache invalidation, IMPL_CONFIG_CACHE_INVALIDATION, [TREQ_CONFIG_CACHE_INVALIDATION[revision==1]]
 def install_config(config: object) -> LLMRouterConfig:
     """Install a validated config snapshot."""
     if not isinstance(config, LLMRouterConfig):
