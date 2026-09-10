@@ -7,6 +7,14 @@ You should be able to review the system without opening the repository or an IDE
 ::::{grid} 1 2 3 3
 :gutter: 3
 
+:::{grid-item-card} ✅ Specification health
+:link: specification-health
+:link-type: doc
+
+Start with recursive Goal → Feature → Requirement coverage, current required evidence,
+and the exact active nodes that block deep coverage.
+:::
+
 :::{grid-item-card} 🧭 Requirements hub
 :link: requirements/index
 :link-type: doc
@@ -59,38 +67,11 @@ attachments such as images, JSON, PDFs, and video.
 
 ## Engineering health
 
-The portal starts with release health before detailed traceability. A successful
-strict documentation build means the declared evidence laws and revision-pinned
-links are satisfied; the cards below show the current graph and execution state.
-
-::::{grid} 1 2 4 4
-:gutter: 2
-
-:::{grid-item-card} Product contract
-
-{need_count}`type == "req" and status == "accepted"` accepted product requirements
-:::
-
-:::{grid-item-card} Engineering constraints
-
-{need_count}`type == "treq" and status == "accepted"` accepted constraints
-:::
-
-:::{grid-item-card} Verification
-
-{need_count}`type == "testcase" and result == "passed"` / {need_count}`type == "testcase"` executions passing
-:::
-
-:::{grid-item-card} Implementation provenance
-
-{need_count}`type == "impl"` source-linked implementation slices
-:::
-
-::::
-
-Missing, unwanted, stale, or non-passing declared evidence fails the same strict
-Sphinx-Needs build that produces this portal; it is not hidden behind a separate
-manual review dashboard.
+{doc}`Specification health <specification-health>` is the canonical coverage view.
+It separates structural decomposition, current direct evidence, and recursive deep
+coverage instead of combining them into one score. Missing or stale evidence remains
+part of the same strict Sphinx-Needs build and is never hidden behind a second graph or
+manual dashboard.
 
 ## Review from different perspectives
 
@@ -138,6 +119,7 @@ manual review dashboard.
 
 - {doc}`API reference <api>` — public Python API.
 - {doc}`Live executable examples <auto_examples/index>` — runnable public workflows.
+- {doc}`Specification health <specification-health>` — recursive structure and current-evidence coverage.
 - {doc}`Engineering traceability <traceability>` — dense graph and source-centric diagnostic view.
 - {doc}`Engineering experiments <experiments/index>` — retained experimental evidence and informed artifacts.
 - {doc}`Architecture decisions <decisions/index>` — decision rationale and supersession history.
@@ -156,6 +138,7 @@ specifications
 tests
 api
 auto_examples/index
+specification-health
 traceability
 verification
 ```
