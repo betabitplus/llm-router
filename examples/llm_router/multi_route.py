@@ -21,8 +21,8 @@ def build_router() -> LLMRouter:
     """Create a router with an ordered provider fallback list."""
     return LLMRouter(
         [
-            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO),
-            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GOOGLE),
+            RouterProfile(model=Model.GEMINI_FLASH_LITE, provider=Provider.AISTUDIO),
+            RouterProfile(model=Model.GEMINI_FLASH_LITE, provider=Provider.GOOGLE),
         ],
         temperature=0.0,
         seed=42,
