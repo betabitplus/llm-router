@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.21.2](https://github.com/betabitplus/llm-router/compare/v0.21.1...v0.21.2) (2026-09-10)
+
+
+### Bug Fixes
+
+* avoid quota-sensitive live doc routes ([#142](https://github.com/betabitplus/llm-router/issues/142)) ([8055412](https://github.com/betabitplus/llm-router/commit/8055412584972d056b6728eda4bb5ba72ccd203c))
+
 ## [0.21.1](https://github.com/betabitplus/llm-router/compare/v0.21.0...v0.21.1) (2026-09-10)
 
 
