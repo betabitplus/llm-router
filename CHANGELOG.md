@@ -4,6 +4,14 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.23.0](https://github.com/betabitplus/llm-router/compare/v0.22.0...v0.23.0) (2026-09-12)
+
+
+### Features
+
+* adopt boundary assurance releases ([#148](https://github.com/betabitplus/llm-router/issues/148)) ([3960d3e](https://github.com/betabitplus/llm-router/commit/3960d3e758b0f1fed81e7761a3198e0ed5f2b98c))
+* adopt verification assurance map ([#150](https://github.com/betabitplus/llm-router/issues/150)) ([83fad20](https://github.com/betabitplus/llm-router/commit/83fad207c28b0a46b3edfb54f58e3990cf41b488))
+
 ## [0.22.0](https://github.com/betabitplus/llm-router/compare/v0.21.3...v0.22.0) (2026-09-12)
 
 
