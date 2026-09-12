@@ -4,7 +4,7 @@
 
 Read this page as one continuous branch of the product idea. Start with the local
 **Idea branch** for the big picture. Then inspect only the contracts you care about;
-under each REQ/TREQ, **Follow this contract to proof** reveals one downstream hop so
+under each Requirement/Technical requirement, **Follow this contract to proof** reveals one downstream hop so
 you can drill into implementation or executed verification without opening a global
 catalogue.
 
@@ -30,14 +30,14 @@ clickable next-level links below it to enter the branch you want.
 :root_depth: 3
 :filter: type in ["goal", "feature", "req", "treq"]
 :link_types: derives
-:alt: Tool orchestration from goal through requirements and engineering constraints
+:alt: Tool orchestration from goal through requirements and technical requirements
 ```
 
 ::::
 
 ::::{only} not graphviz_available
-The graph renderer is unavailable in this build. The authoritative Goal, Feature,
-REQ, and TREQ cards below preserve the same hierarchy through their relationship
+The graph renderer is unavailable in this build. The authoritative Goal, Capability,
+Requirement, and Technical requirement cards below preserve the same hierarchy through their relationship
 links.
 ::::
 
@@ -138,7 +138,7 @@ Contracts in this capability:
 :required_evidence: impl;unit
 :derives: REQ_MULTI_ROUND_TOOL_EXECUTION
 
-**Constraint.** The tool registry shall reject duplicate tool names, derive callable schemas that match Python signatures, parse supported provider tool-call shapes, and execute registered callables consistently.
+**Statement.** The tool registry shall reject duplicate tool names, derive callable schemas that match Python signatures, parse supported provider tool-call shapes, and execute registered callables consistently.
 
 **Rationale.** The registry is the translation boundary between Python callables and provider tool schemas; ambiguity or schema drift there can invoke the wrong arguments or callable.
 

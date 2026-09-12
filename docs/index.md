@@ -9,13 +9,14 @@ on that route until you have enough evidence.
 ::::{grid} 1 1 3 3
 :gutter: 3
 
-:::{grid-item-card} 1. Audit an idea end to end
-:link: requirements/index
+:::{grid-item-card} 1. Read the product end to end
+:link: traceability-reader
 :link-type: doc
 
-**Start here most of the time.** Choose a product goal, follow its Goal → Feature →
-Requirement branch, then open one-hop proof links to reach engineering constraints,
-implementation, and executed verification.
+**Start here most of the time.** Follow the numbered staircase from goal
+to capability to requirement to technical requirement. Implementation and verification
+stay inside the contract they prove, while the collapsible sidebar jumps between
+goals and capabilities. IDs and concrete test records remain secondary.
 :::
 
 :::{grid-item-card} 2. Follow a relationship or change
@@ -27,26 +28,26 @@ it, down to the contracts it creates, or sideways through the nearby idea links 
 each product branch. Use dense traceability only when you need forensic detail.
 :::
 
-:::{grid-item-card} 3. Check release confidence
-:link: specification-health
+:::{grid-item-card} 3. See release health at a glance
+:link: specification-map
 :link-type: doc
 
-Start from the current release contract. If a branch is incomplete or has stale or
-missing evidence, jump directly to the blocking node and follow that branch to its
-proof instead of scanning global test or requirement lists.
+Use the one-screen specification map for the whole release picture. Hover a region
+for its human title and health reason; open the canonical contract only when you
+need details.
 :::
 
 ::::
 
 ## The normal reading direction
 
-Intent → capability → contract → engineering constraint → implementation / test → evidence
+Goal → Capability → Requirement → Technical requirement → Implementation / Verification
 
 You do not need to visit every page type. The normal review is:
 
 1. choose a goal in the {doc}`Intent map <requirements/index>`;
 2. read that product branch from top to bottom;
-3. expand proof only for the REQ/TREQ you want to inspect;
+3. expand proof only for the Requirement/Technical requirement you want to inspect;
 4. open the implementation or executed test node when you need concrete evidence;
 5. return through the same relationships or switch to one of the nearby ideas shown
    on the branch page.
@@ -109,6 +110,8 @@ and debugging, but they are **not required stops** in the normal semantic flow.
 :maxdepth: 3
 
 requirements/index
+traceability-reader
+specification-map
 specification-health
 experiments/index
 decisions/index

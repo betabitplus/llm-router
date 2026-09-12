@@ -4,6 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from py_lib_testkit import evidence
 from pydantic import BaseModel
 
 from llm_router import Model, Provider, ProviderError, VideoSchema
@@ -32,6 +33,17 @@ class FakeProviderCodeError(Exception):
 
 class FakeClient:
     def __init__(self, outcomes: list[object]) -> None:
+        evidence.observation(
+            "Gemini WebAPI SDK substitute",
+            kind="external-substitute",
+            payload={
+                "producer": "GeminiWebAPIFakeClient",
+                "boundary": "provider-sdk",
+                "mode": "in-process-fake-sdk",
+                "transport": "SDK surface",
+                "target": "Gemini WebAPI client/provider",
+            },
+        )
         self.outcomes = outcomes
         self.calls: list[dict[str, object]] = []
 

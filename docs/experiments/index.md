@@ -1,6 +1,6 @@
 # Engineering experiments
 
-Engineering experiments preserve **what was observed while answering an uncertain engineering question**. Each retained experiment is one self-contained provider capsule under `experiments/llm_router/` with one canonical executable entrypoint and one authoritative captured notebook report. Experiments may inform an ADR, Requirement, or Engineering Constraint; they never verify a production contract.
+Engineering experiments preserve **what was observed while answering an uncertain engineering question**. Each retained experiment is one self-contained provider capsule under `experiments/llm_router/` with one canonical executable entrypoint and one authoritative captured notebook report. Experiments may inform an ADR, Requirement, or Technical requirement; they never verify a production contract.
 
 ## Experiment log
 

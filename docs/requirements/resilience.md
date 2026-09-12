@@ -4,7 +4,7 @@
 
 Read this page as one continuous branch of the product idea. Start with the local
 **Idea branch** for the big picture. Then inspect only the contracts you care about;
-under each REQ/TREQ, **Follow this contract to proof** reveals one downstream hop so
+under each Requirement/Technical requirement, **Follow this contract to proof** reveals one downstream hop so
 you can drill into implementation or executed verification without opening a global
 catalogue.
 
@@ -30,14 +30,14 @@ clickable next-level links below it to enter the branch you want.
 :root_depth: 3
 :filter: type in ["goal", "feature", "req", "treq"]
 :link_types: derives
-:alt: Resilient execution from goal through requirements and engineering constraints
+:alt: Resilient execution from goal through requirements and technical requirements
 ```
 
 ::::
 
 ::::{only} not graphviz_available
-The graph renderer is unavailable in this build. The authoritative Goal, Feature,
-REQ, and TREQ cards below preserve the same hierarchy through their relationship
+The graph renderer is unavailable in this build. The authoritative Goal, Capability,
+Requirement, and Technical requirement cards below preserve the same hierarchy through their relationship
 links.
 ::::
 
@@ -101,7 +101,7 @@ Contracts in this capability:
 :required_evidence: impl;unit
 :derives: REQ_PROVIDER_RETRY
 
-**Constraint.** Retry classification shall use explicit status and exception semantics rather than message substrings.
+**Statement.** Retry classification shall use explicit status and exception semantics rather than message substrings.
 
 **Rationale.** Message matching is brittle and can classify unrelated exceptions as retryable merely because their text resembles a transient transport failure.
 
@@ -161,7 +161,7 @@ Contracts in this capability:
 :required_evidence: impl;property
 :derives: REQ_STRUCTURED_OUTPUT_REPAIR
 
-**Constraint.** Repair prompts shall bound incorporated invalid output and validation details for arbitrary generated input.
+**Statement.** Repair prompts shall bound incorporated invalid output and validation details for arbitrary generated input.
 
 **Rationale.** Even a finite retry loop can consume unbounded prompt space if malformed output and validation detail are copied without limits.
 
