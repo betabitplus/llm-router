@@ -38,6 +38,7 @@ class FakeClient:
             kind="external-substitute",
             payload={
                 "producer": "GeminiWebAPIFakeClient",
+                "producer_id": "PRODUCER_GEMINI_WEBAPI_FAKE_SDK",
                 "boundary": "provider-sdk",
                 "mode": "in-process-fake-sdk",
                 "transport": "SDK surface",
