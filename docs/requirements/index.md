@@ -4,6 +4,17 @@ This is the main semantic entry point to `llm-router`. Do not start from a catal
 of requirements or tests. Start from **why the product exists**, choose one goal, and
 follow that branch until you reach the proof you need.
 
+## Canonical terms
+
+| Human-facing level    | Internal ID prefix |
+| --------------------- | ------------------ |
+| Goal                  | `GOAL_`            |
+| Capability            | `FEAT_`            |
+| Requirement           | `REQ_`             |
+| Technical requirement | `TREQ_`            |
+
+These are the four specification levels used in the portal. `feature` and `treq` remain internal directive/type names for compatibility; they are not additional human-facing concepts. Gherkin **Feature** is a separate standard BDD term and keeps that name only in BDD documentation.
+
 ## Request execution and reliability
 
 These goals describe how a request is configured, routed, recovered, and kept
@@ -32,7 +43,7 @@ that must follow from it.
 :link: resilience
 :link-type: doc
 
-Provider retry and structured-output repair, including the lower-level constraints
+Provider retry and structured-output repair, including the Technical requirements
 that keep both recovery loops bounded and deterministic.
 :::
 
@@ -107,10 +118,10 @@ A coherent package-root API and examples that remain safe to import and inspect.
 
 Every product-area page follows the same reading pattern:
 
-Goal → Feature → Requirement → optional Engineering Constraint → implementation / executed test
+Goal → Capability → Requirement → optional Technical requirement → implementation / executed test
 
 First read the **Idea branch** diagram to see the whole local hierarchy without test
-noise. Then read only the contracts that matter to you. Under every REQ and TREQ,
+noise. Then read only the contracts that matter to you. Under every Requirement and Technical requirement,
 open **Follow this contract to proof** to see exactly one downstream hop. That keeps
 each drill-down small while still letting you walk all the way to implementation and
 test evidence.
@@ -120,12 +131,12 @@ instead of returning to a global catalogue.
 
 ## Whole product at a glance
 
-The {doc}`Whole-system intent map <maps>` shows only Goals and Features so you can
+The {doc}`Whole-system intent map <maps>` shows only Goals and Capabilities so you can
 reorient without losing the forest in implementation or test nodes.
 
 ::::{dropdown} Reference: lifecycle and complete object catalogues
 
-**Accepted** requirements and engineering constraints are the current reviewed
+**Accepted** requirements and technical requirements are the current reviewed
 contract. **Draft** items are still under review. **Deprecated** items remain visible
 for history and impact analysis but are not current obligations.
 
@@ -145,13 +156,13 @@ has been reviewed and repinned.
 :filter: type == "feature"
 ```
 
-### Product requirements
+### Requirements
 
 ```{needlist}
 :filter: type == "req"
 ```
 
-### Engineering constraints
+### Technical requirements
 
 ```{needlist}
 :filter: type == "treq"

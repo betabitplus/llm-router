@@ -3,6 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
+from py_lib_testkit import evidence
 
 from llm_router import Model, Provider, ProviderError
 from llm_router._internal.capabilities.content import normalize_content
@@ -48,6 +49,17 @@ class FakeAsyncModels(FakeModels):
 
 class FakeClient:
     def __init__(self, outcomes: list[object]) -> None:
+        evidence.observation(
+            "Google GenAI SDK substitute",
+            kind="external-substitute",
+            payload={
+                "producer": "GoogleGenAIFakeClient",
+                "boundary": "provider-sdk",
+                "mode": "in-process-fake-sdk",
+                "transport": "SDK surface",
+                "target": "Google GenAI SDK/provider",
+            },
+        )
         self.models = FakeModels(outcomes)
         self.aio = SimpleNamespace(models=FakeAsyncModels(list(outcomes)))
 

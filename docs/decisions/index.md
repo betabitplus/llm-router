@@ -1,14 +1,14 @@
 # Architecture decisions
 
 Architecture Decision Records (ADRs) preserve the reasoning behind significant
-engineering choices. They live in the same Sphinx-Needs graph as requirements,
-constraints, implementation, and verification evidence, but they are **not**
+engineering choices. They live in the same Sphinx-Needs graph as Requirements,
+Technical requirements, Implementation, and Verification, but they are **not**
 requirements and do not create verification obligations by themselves.
 
 Write an ADR when a choice is consequential, has credible alternatives, and a
 future engineer is likely to ask why the system was shaped this way. Do not write
 ADRs for routine refactors, dependency bumps, naming choices, or facts already
-expressed as requirements or engineering constraints.
+expressed as requirements or technical requirements.
 
 ## Decision lifecycle
 
@@ -61,11 +61,11 @@ Metadata stays deliberately small: stable `ADR_####` ID, lifecycle `status`,
 `decision_date`, and optional `affects` / `supersedes` links. ADRs do not use
 `revision` or `required_evidence`.
 
-Use `affects` only when a decision materially shapes an existing Feature,
-Requirement, Engineering Constraint, or implementation artifact. An Engineering
+Use `affects` only when a decision materially shapes an existing Capability,
+Requirement, Technical requirement, or implementation artifact. An Engineering
 Experiment may point to the ADR with `informs` when observed evidence materially
 contributed to the choice. If a decision creates an enforceable engineering
-invariant, express that invariant as an Engineering Constraint and link the ADR to
+invariant, express that invariant as a Technical requirement and link the ADR to
 it; tests verify the constraint, not the ADR.
 
 ## Tooling and validation

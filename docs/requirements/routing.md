@@ -4,7 +4,7 @@
 
 Read this page as one continuous branch of the product idea. Start with the local
 **Idea branch** for the big picture. Then inspect only the contracts you care about;
-under each REQ/TREQ, **Follow this contract to proof** reveals one downstream hop so
+under each Requirement/Technical requirement, **Follow this contract to proof** reveals one downstream hop so
 you can drill into implementation or executed verification without opening a global
 catalogue.
 
@@ -30,14 +30,14 @@ clickable next-level links below it to enter the branch you want.
 :root_depth: 3
 :filter: type in ["goal", "feature", "req", "treq"]
 :link_types: derives
-:alt: Routing reliability from goal through requirements and engineering constraints
+:alt: Routing reliability from goal through requirements and technical requirements
 ```
 
 ::::
 
 ::::{only} not graphviz_available
-The graph renderer is unavailable in this build. The authoritative Goal, Feature,
-REQ, and TREQ cards below preserve the same hierarchy through their relationship
+The graph renderer is unavailable in this build. The authoritative Goal, Capability,
+Requirement, and Technical requirement cards below preserve the same hierarchy through their relationship
 links.
 ::::
 
@@ -170,7 +170,7 @@ Contracts in this capability:
 :required_evidence: impl;unit
 :derives: REQ_ROUTE_STICKY_START
 
-**Constraint.** Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.
+**Statement.** Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.
 
 **Rationale.** Sticky-start behavior depends on stable route identity even when the candidate order is transformed internally.
 
@@ -230,7 +230,7 @@ Contracts in this capability:
 :required_evidence: impl;unit
 :derives: REQ_RATE_LIMIT_ROUTING
 
-**Constraint.** Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, and reset transient failure state after success.
+**Statement.** Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, and reset transient failure state after success.
 
 **Rationale.** Sharing limiter state across unrelated providers or keys would create false throttling, while retaining transient failure state after recovery would make routing progressively less accurate.
 

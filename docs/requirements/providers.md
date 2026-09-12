@@ -4,7 +4,7 @@
 
 Read this page as one continuous branch of the product idea. Start with the local
 **Idea branch** for the big picture. Then inspect only the contracts you care about;
-under each REQ/TREQ, **Follow this contract to proof** reveals one downstream hop so
+under each Requirement/Technical requirement, **Follow this contract to proof** reveals one downstream hop so
 you can drill into implementation or executed verification without opening a global
 catalogue.
 
@@ -30,14 +30,14 @@ clickable next-level links below it to enter the branch you want.
 :root_depth: 3
 :filter: type in ["goal", "feature", "req", "treq"]
 :link_types: derives
-:alt: Provider portability from goal through requirements and engineering constraints
+:alt: Provider portability from goal through requirements and technical requirements
 ```
 
 ::::
 
 ::::{only} not graphviz_available
-The graph renderer is unavailable in this build. The authoritative Goal, Feature,
-REQ, and TREQ cards below preserve the same hierarchy through their relationship
+The graph renderer is unavailable in this build. The authoritative Goal, Capability,
+Requirement, and Technical requirement cards below preserve the same hierarchy through their relationship
 links.
 ::::
 
@@ -83,7 +83,7 @@ Contracts in this capability:
 
 **Rationale.** Provider portability depends on adapters changing transport details without changing the meaning of the public router contract.
 
-**Verification intent.** Require source implementation evidence for each supported adapter and verify provider-specific transport invariants through the derived engineering constraints below rather than duplicating every capability in this broad product requirement.
+**Verification intent.** Require source implementation evidence for each supported adapter and verify provider-specific transport invariants through the derived technical requirements below rather than duplicating every capability in this broad Requirement.
 ```
 
 ::::{dropdown} Follow this contract to proof
@@ -102,7 +102,7 @@ Contracts in this capability:
 :required_evidence: impl;integration
 :derives: REQ_PROVIDER_ADAPTER_INTEROPERABILITY
 
-**Constraint.** The OpenAI-compatible adapter shall preserve synchronous and asynchronous success, tool-result messages, retryable transport failures, malformed responses, and public provider-error translation across a real HTTP boundary.
+**Statement.** The OpenAI-compatible adapter shall preserve synchronous and asynchronous success, tool-result messages, retryable transport failures, malformed responses, and public provider-error translation across a real HTTP boundary.
 
 **Rationale.** OpenAI-compatible providers share a transport shape but still expose enough protocol behavior that adapter correctness must be proven at an HTTP boundary rather than only through mocks of internal calls.
 
@@ -125,7 +125,7 @@ Contracts in this capability:
 :required_evidence: impl;integration
 :derives: REQ_PROVIDER_ADAPTER_INTEROPERABILITY
 
-**Constraint.** The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.
+**Statement.** The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.
 
 **Rationale.** QwenChat uses provider-specific proxy and upload protocols that can fail independently of the normalized router model.
 
@@ -148,7 +148,7 @@ Contracts in this capability:
 :required_evidence: impl;integration
 :derives: REQ_PROVIDER_ADAPTER_INTEROPERABILITY
 
-**Constraint.** The AI Studio adapter shall use the intended text and native-media transports and translate retryable native failures into the public provider-error boundary.
+**Statement.** The AI Studio adapter shall use the intended text and native-media transports and translate retryable native failures into the public provider-error boundary.
 
 **Rationale.** Text and native-media execution follow different provider paths, so adapter correctness requires preserving the intended transport selection as well as normalized failures.
 
@@ -171,7 +171,7 @@ Contracts in this capability:
 :required_evidence: impl;integration
 :derives: REQ_PROVIDER_ADAPTER_INTEROPERABILITY
 
-**Constraint.** The Gemini WebAPI adapter shall preserve synchronous and asynchronous SDK behavior, local media paths, structured and textual tool outputs, retryable failures, and provider-specific error codes.
+**Statement.** The Gemini WebAPI adapter shall preserve synchronous and asynchronous SDK behavior, local media paths, structured and textual tool outputs, retryable failures, and provider-specific error codes.
 
 **Rationale.** The WebAPI SDK exposes provider-specific session, media, tool, and error shapes that must not leak through or be lost during normalization.
 
@@ -194,7 +194,7 @@ Contracts in this capability:
 :required_evidence: impl;integration
 :derives: REQ_PROVIDER_ADAPTER_INTEROPERABILITY
 
-**Constraint.** The Google GenAI adapter shall preserve synchronous and asynchronous SDK behavior and translate retryable SDK failures into the public provider-error boundary.
+**Statement.** The Google GenAI adapter shall preserve synchronous and asynchronous SDK behavior and translate retryable SDK failures into the public provider-error boundary.
 
 **Rationale.** Both execution modes must preserve the same normalized semantics even though the provider SDK exposes separate synchronous and asynchronous call paths.
 
@@ -291,7 +291,7 @@ Contracts in this capability:
 :required_evidence: impl;unit
 :derives: REQ_RESPONSE_NORMALIZATION
 
-**Constraint.** Provider-specific usage mappings and objects shall normalize into the common usage statistics model with a consistent total token count.
+**Statement.** Provider-specific usage mappings and objects shall normalize into the common usage statistics model with a consistent total token count.
 
 **Rationale.** Usage metadata arrives in provider-specific shapes but downstream accounting and diagnostics require one stable representation.
 

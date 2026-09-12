@@ -4,7 +4,7 @@
 
 Read this page as one continuous branch of the product idea. Start with the local
 **Idea branch** for the big picture. Then inspect only the contracts you care about;
-under each REQ/TREQ, **Follow this contract to proof** reveals one downstream hop so
+under each Requirement/Technical requirement, **Follow this contract to proof** reveals one downstream hop so
 you can drill into implementation or executed verification without opening a global
 catalogue.
 
@@ -30,14 +30,14 @@ clickable next-level links below it to enter the branch you want.
 :root_depth: 3
 :filter: type in ["goal", "feature", "req", "treq"]
 :link_types: derives
-:alt: Data safety from goal through requirements and engineering constraints
+:alt: Data safety from goal through requirements and technical requirements
 ```
 
 ::::
 
 ::::{only} not graphviz_available
-The graph renderer is unavailable in this build. The authoritative Goal, Feature,
-REQ, and TREQ cards below preserve the same hierarchy through their relationship
+The graph renderer is unavailable in this build. The authoritative Goal, Capability,
+Requirement, and Technical requirement cards below preserve the same hierarchy through their relationship
 links.
 ::::
 
@@ -101,7 +101,7 @@ Contracts in this capability:
 :required_evidence: impl;bdd
 :derives: REQ_SENSITIVE_DATA_PROTECTION
 
-**Constraint.** Runtime logging and public tool failures shall use bounded safe metadata rather than credential values, request contents, or tool arguments.
+**Statement.** Runtime logging and public tool failures shall use bounded safe metadata rather than credential values, request contents, or tool arguments.
 
 **Rationale.** Runtime diagnostics must remain useful for failure analysis without converting exceptions or log records into a secondary channel for sensitive input.
 
@@ -124,7 +124,7 @@ Contracts in this capability:
 :required_evidence: bdd
 :derives: REQ_SENSITIVE_DATA_PROTECTION
 
-**Constraint.** Recorded provider interactions shall remove authentication headers and equivalent credential material before the cassette becomes durable evidence.
+**Statement.** Recorded provider interactions shall remove authentication headers and equivalent credential material before the cassette becomes durable evidence.
 
 **Rationale.** Replay cassettes are source-controlled test evidence and therefore must be safe to retain independently of the credentials used during a live recording.
 
