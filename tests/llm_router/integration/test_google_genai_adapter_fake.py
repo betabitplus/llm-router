@@ -54,6 +54,7 @@ class FakeClient:
             kind="external-substitute",
             payload={
                 "producer": "GoogleGenAIFakeClient",
+                "producer_id": "PRODUCER_GOOGLE_GENAI_FAKE_SDK",
                 "boundary": "provider-sdk",
                 "mode": "in-process-fake-sdk",
                 "transport": "SDK surface",
