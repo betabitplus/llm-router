@@ -8,7 +8,7 @@ Engineering work is anchored in the engineering graph, not in tests or code in i
 - If an ADR creates an enforceable invariant, capture that invariant as a Technical requirement; implementation and tests trace to the technical requirement, not to the ADR.
 - Declare the minimum required evidence with `required_evidence`.
 - Link pytest evidence with a revision-pinned `verifies` reference (`REQ_ID[revision==N]`) and an explicit `verification_kind`.
-- Capture objective execution facts through `py-lib-testkit` and standard retained artifacts (JUnit, Allure, coverage.py contexts) when available. Do not infer verification scope or assurance from test directory names or source inspection when runtime evidence can provide the fact directly.
+- Capture objective execution facts through `py-lib-testkit` and standard retained artifacts (JUnit, Allure, coverage.py contexts) when available. Publish `substitute`, `replay`, or `direct` boundary interactions only when that relation was actually observed; a verification-kind label never implies external reach. For Property verification, retained Hypothesis runtime evidence establishes generated execution while source-declared strategies are enrichment only. Do not infer verification scope or assurance from test directory names or source inspection when runtime evidence can provide the fact directly.
 - Link implementation evidence in source with a revision-pinned target: `# @impl Title, IMPL_ID, [REQ_ID[revision==N]]`.
 - Use ubCode/`ubc` for fast graph navigation, queries, references, and impact analysis when available; Sphinx-Needs remains the authoritative graph.
 - When ubConnect is licensed, use GitHub Issues only as tracking mirrors via the typed `issue` field; do not import Issues as authoritative requirements.
