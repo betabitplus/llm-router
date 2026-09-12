@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.23.1](https://github.com/betabitplus/llm-router/compare/v0.23.0...v0.23.1) (2026-09-12)
+
+
+### Bug Fixes
+
+* adopt complementary evidence semantics ([#151](https://github.com/betabitplus/llm-router/issues/151)) ([17b2c0a](https://github.com/betabitplus/llm-router/commit/17b2c0a717c4f95fa4d20a4c69a5e3b877172c98))
+
 ## [0.23.0](https://github.com/betabitplus/llm-router/compare/v0.22.0...v0.23.0) (2026-09-12)
 
 
