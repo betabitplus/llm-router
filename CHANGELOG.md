@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.23.3](https://github.com/betabitplus/llm-router/compare/v0.23.2...v0.23.3) (2026-09-12)
+
+
+### Bug Fixes
+
+* adopt DocOps SimplePDF normalization ([#155](https://github.com/betabitplus/llm-router/issues/155)) ([4163d6d](https://github.com/betabitplus/llm-router/commit/4163d6d57ca54cf4e3d8e32d79356cbce13c67a6))
+
 ## [0.23.2](https://github.com/betabitplus/llm-router/compare/v0.23.1...v0.23.2) (2026-09-12)
 
 
