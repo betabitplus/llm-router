@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.23.2](https://github.com/betabitplus/llm-router/compare/v0.23.1...v0.23.2) (2026-09-12)
+
+
+### Bug Fixes
+
+* adopt infra CI docs evidence split ([#153](https://github.com/betabitplus/llm-router/issues/153)) ([071e6a7](https://github.com/betabitplus/llm-router/commit/071e6a719bb7f772a00ce5ad62f3f323cb9497ad))
+
 ## [0.23.1](https://github.com/betabitplus/llm-router/compare/v0.23.0...v0.23.1) (2026-09-12)
 
 
