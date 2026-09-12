@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.23.4](https://github.com/betabitplus/llm-router/compare/v0.23.3...v0.23.4) (2026-09-12)
+
+
+### Bug Fixes
+
+* adopt DocOps renderer compatibility ([#157](https://github.com/betabitplus/llm-router/issues/157)) ([5afd6f2](https://github.com/betabitplus/llm-router/commit/5afd6f21b4ad8494a84051709576d05628cbeb19))
+
 ## [0.23.3](https://github.com/betabitplus/llm-router/compare/v0.23.2...v0.23.3) (2026-09-12)
 
 
