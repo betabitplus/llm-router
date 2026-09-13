@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.24.1](https://github.com/betabitplus/llm-router/compare/v0.24.0...v0.24.1) (2026-09-13)
+
+
+### Bug Fixes
+
+* stabilize live key rotation example ([#161](https://github.com/betabitplus/llm-router/issues/161)) ([ce64789](https://github.com/betabitplus/llm-router/commit/ce64789b6db74c39bdf5a7e19c58450fb3e2a7fd))
+
 ## [0.24.0](https://github.com/betabitplus/llm-router/compare/v0.23.4...v0.24.0) (2026-09-13)
 
 
