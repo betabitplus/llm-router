@@ -1,7 +1,7 @@
 [project]
 name = "exp_0004_openai_compatible"
 version = "0.0.0"
-requires-python = "==3.13.7.*"
+requires-python = "==3.14.7.*"
 dependencies = [
   "httpx",
   "openai",
