@@ -4,6 +4,13 @@
 
 - **deps**: update vulnerable runtime dependencies (#9) (#10)
 
+## [0.24.0](https://github.com/betabitplus/llm-router/compare/v0.23.4...v0.24.0) (2026-09-13)
+
+
+### Features
+
+* add evidence producer trust assurance ([#159](https://github.com/betabitplus/llm-router/issues/159)) ([8eebdec](https://github.com/betabitplus/llm-router/commit/8eebdecc97d963137ed9019158697ba88d2fb994))
+
 ## [0.23.4](https://github.com/betabitplus/llm-router/compare/v0.23.3...v0.23.4) (2026-09-12)
 
 
