@@ -385,8 +385,20 @@ def main() -> None:
           "Mutation Analysis no longer duplicates long usage guidance")
     check('id="mutation-history"' in mutation_page and "Recent changes" in mutation_page,
           "Mutation Analysis exposes compact retained change history")
-    check("New 3" in mutation_page and "Resolved 3" in mutation_page,
-          "Mutation Analysis history retains the proven New→Resolved acceptance cycle")
+    retained_history = [load(path) for path in sorted((RESULTS / "campaign-history").glob("*.json"))]
+    history_triage = []
+    for retained_run in retained_history:
+        triage_totals = {"new": 0, "resolved": 0}
+        for contract in (retained_run.get("contracts") or {}).values():
+            retained_triage = ((contract.get("result") or {}).get("triage") or {})
+            triage_totals["new"] += int(retained_triage.get("new_unresolved_survivors") or 0)
+            triage_totals["resolved"] += int(retained_triage.get("resolved_survivors") or 0)
+        history_triage.append(triage_totals)
+    check(
+        any(row["new"] == 3 for row in history_triage)
+        and any(row["resolved"] == 3 for row in history_triage),
+        "retained campaign history proves the New 3 → Resolved 3 acceptance cycle",
+    )
     check("Fresh</strong> · New 0 · Debt 49" in mutation_page,
           "Mutation Analysis labels current survivor debt compactly")
     check("Why some contracts are N/A" in mutation_page,

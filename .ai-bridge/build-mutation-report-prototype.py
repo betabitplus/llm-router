@@ -1518,7 +1518,7 @@ def mutation_history_section(summary,feedback):
         )
     return f"""<section id="mutation-history">
 <h2>Recent changes<a class="headerlink" href="#mutation-history" title="Link to this heading">#</a></h2>
-<p><small>Includes controlled pilot acceptance probes.</small></p>
+<p><small>Most recent retained mutation campaigns.</small></p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead><tr><th>Signal</th><th>Run scope</th><th>Duration</th><th>Evidence</th></tr></thead>
 <tbody>{''.join(rows) if rows else '<tr><td colspan="4">No retained campaigns yet.</td></tr>'}</tbody>
