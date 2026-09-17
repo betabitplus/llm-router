@@ -441,211 +441,163 @@ def main() -> None:
 
     check("Contract Evidence" in assurance_page,
           "assurance page is named Contract Evidence")
-    check("TERNFORGE-P34-REQUIREMENT-MONITOR-START" in assurance_page and
-          assurance_page.count("TERNFORGE-P34-REQUIREMENT-MONITOR-START") == 1,
-          "P34 Requirement monitor projection is installed once")
-    check('"schema":"ternforge-requirement-monitor-p34-1"' in assurance_page,
-          "embedded Requirement monitor model carries the P34 schema")
-    for heading in ("1. Test Coverage", "2. Fault-based Testing", "3. History"):
-        check(heading in assurance_page, f"P34 monitor contains agreed section: {heading}")
+    check(monitor_facts.get("schema") == "ternforge-requirement-monitor-p34-1",
+          "Requirement monitor facts carry the P34 schema")
+    check(assurance_page.count('id="tf-requirement-monitor"') == 1,
+          "accepted Requirement monitor is installed exactly once")
+    check(
+        'id="ce-coverage-req_invalid_configuration_errors"' in assurance_page
+        and 'id="ce-faults-req_invalid_configuration_errors"' in assurance_page
+        and 'id="ce-history-req_invalid_configuration_errors"' in assurance_page,
+        "accepted Requirement monitor preserves canonical Contract Evidence anchors",
+    )
+    check(not (HTML / "verification-assurance-experiment.html").exists(),
+          "retired experiment page is not emitted after canonical cutover")
+    check("EXPERIMENT" not in assurance_page,
+          "canonical Contract Evidence carries no experiment labeling")
+
+    for heading in ("Verification matrix", "Fault model", "History"):
+        check(heading in assurance_page, f"canonical monitor contains accepted section: {heading}")
     for removed_heading in (
         "Evidence Frontier", "Fault Detection", "Evidence Trust", "Assurance Gap",
         "Evidence Paths", "Investigate", "Why / verification intent",
         "Possible ≠ Must ≠ Actual", "Target profile · ",
     ):
         check(removed_heading not in assurance_page,
-              f"P34 monitor removes superseded section/concept: {removed_heading}")
-
-    check("tf-p34-toc" in assurance_page and
-          all(label in assurance_page for label in (">1 Test Coverage<", ">2 Fault-based Testing<", ">3 History<")),
-          "P34 has only the three agreed monitor sections")
-    for nav_label in ("Requirement ↗", "Verification profile ↗", "Test plan ↗", "Execution ↗"):
-        check(nav_label in assurance_page, f"P34 outward navigation retains {nav_label}")
-    check("anchor.closest('#verification-assurance-map > section[id^=\"assurance-\"]')" in assurance_page,
-          "P34 same-page hashes keep the selected Requirement active")
+              f"canonical monitor removes superseded section/concept: {removed_heading}")
 
     for status in ("PASS", "FAIL", "N/A", "UNKNOWN"):
-        check(status in assurance_page, f"P34 visible status vocabulary contains {status}")
-    check('const statusLabel=s=>' in assurance_page and '"MET":"PASS"' in assurance_page and '"NOT MET":"FAIL"' in assurance_page,
-          "P34 keeps internal aggregation tokens hidden behind the public PASS / FAIL vocabulary")
-    check("Weakest blocking signal" not in assurance_page and
-          "tf-p34-summary" in assurance_page and
-          "Test Coverage" in assurance_page and
-          "Fault-based" in assurance_page and
-          all(label in assurance_page for label in (
-              "Component", "Component integration", "System", "System integration", "Acceptance",
-              "Implementation", "Runtime / dependency", "Interface / protocol", "Architecture", "Specification / model",
-          )),
-          "P34 headline summarizes PASS / FAIL / N/A by coverage level and fault group")
+        check(status in assurance_page, f"canonical visible status vocabulary contains {status}")
+    check("MET" not in assurance_page and "NOT MET" not in assurance_page,
+          "internal aggregation tokens are not visible in canonical monitor")
 
-    check("Test level" in assurance_page and
-          all(label in assurance_page for label in ("Local", "Substitute", "Replay", "Direct live")) and
-          all(label in assurance_page for label in ("Component", "Component integration", "System", "System integration", "Acceptance")),
-          "P34 Test Coverage renders the agreed Test Level × Boundary matrix")
-    check("data-cell=" in assurance_page and "tf-p34-cell-detail" in assurance_page and
-          "Representation fidelity" in assurance_page and
-          'actual:"Actual"' in assurance_page,
-          "P34 matrix cells switch one compact parameter panel with explicit Representation value")
-    check('disabled aria-disabled="true"' in assurance_page and
-          "if(!target) return ''" in assurance_page,
-          "P34 N/A coverage cells are disabled and cannot generate a detail panel")
-    for signal in ("Semantic coverage", "Representation fidelity", "Provenance", "Producer qualification", "Freshness"):
-        check(signal in assurance_page, f"P34 selected coverage cell exposes useful signal: {signal}")
-    for removed_signal in (">Covered<", "M&S validation", "Evidence paths"):
-        check(removed_signal not in assurance_page,
-              f"P34 coverage detail removes redundant/non-applicable row: {removed_signal}")
-    for criterion in (
+    check(
+        "Test level" in assurance_page
+        and all(label in assurance_page for label in ("Local", "Substitute", "Replay", "Direct live"))
+        and all(label in assurance_page for label in (
+            "Component", "Component integration", "System", "System integration", "Acceptance",
+        )),
+        "canonical monitor renders the accepted Test Level × Boundary matrix",
+    )
+    check("data-cell=" in assurance_page and 'id="cell-inspector"' in assurance_page,
+          "canonical matrix cells switch the accepted cell inspector")
+    check(
+        all(label in assurance_page for label in (
+            "Required evidence", "Semantic coverage", "passing required evidence",
+            "4 pass", "0 fail", "1 missing", "Retained path properties", "4 paths",
+            "Evidence confidence",
+        )),
+        "canonical Component × Local inspector tells the accepted 4/5 → 4 retained paths story",
+    )
+    check(
+        "Representation" in assurance_page
+        and "dependent-wrap" in assurance_page
+        and "M&amp;S validation" in assurance_page
+        and all(label in assurance_page for label in (
+            "N/A", "L0", "L1", "L2", "L3", "L4", "NOT DECLARED", "INACTIVE",
+        )),
+        "canonical monitor nests M&S under Representation with the complete state space",
+    )
+    check(
+        all(label in assurance_page for label in (
+            "Provenance", "Producer qualification", "Freshness",
+            "COMPLETE", "QUALIFIED", "CURRENT",
+        )),
+        "canonical retained-path confidence signals are present",
+    )
+    check(
+        "Stops synthetic or surrogate evidence from being counted as proof that the required target actually ran." in assurance_page
+        and "Checks that evidence-producing tools cannot silently turn bad verification into green evidence." in assurance_page
+        and "A surrogate path must meet its declared model-validation level before that evidence can pass." in assurance_page,
+        "canonical help text states concrete blocking semantics",
+    )
+    check(
+        all(label in assurance_page for label in (
+            "Requirement ↗", "Verification profile ↗", "Test model ↗", "Raw facts ↗",
+        )),
+        "canonical cell inspector retains deliberate drill-downs",
+    )
+    check(
+        "ALL items" not in assurance_page
+        and "ALL paths" not in assurance_page
+        and "Conditional model check" not in assurance_page
+        and "Depends on Representation" not in assurance_page,
+        "canonical monitor omits redundant aggregation/meta prose",
+    )
+    check(
+        ".signal-card.na-signal{opacity:" not in assurance_page
+        and "background:var(--pst-color-background)" in assurance_page,
+        "canonical inactive tooltips remain opaque",
+    )
+    check(
+        "TERNFORGE-NO-CACHE" in assurance_page
+        and 'http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"' in assurance_page,
+        "canonical monitor HTML prevents stale local browser caching",
+    )
+
+    contract_monitor = monitor_facts["contracts"]["REQ_INVALID_CONFIGURATION_ERRORS"]
+    declared_criteria = {
+        item
+        for row in contract_monitor["target"]["coverage"]
+        for item in row.get("items") or []
+    }
+    check(declared_criteria == {
         "VC_CONFIG_PROVIDER_IDENTITY", "VC_CONFIG_MODEL_DECLARATION",
         "VC_CONFIG_REQUIRED_BASE_URL", "VC_CONFIG_ATTEMPT_TIMEOUT",
         "VC_CONFIG_RETRY_ATTEMPTS", "VC_INVALID_CONFIGURATION_PUBLIC_REJECTION",
-    ):
-        check(criterion in assurance_page, f"P34 embeds declared verification criterion: {criterion}")
-    check("VC_CONFIG_MODEL_DECLARATION" in assurance_page and "UNKNOWN" in assurance_page,
-          "P34 keeps the missing model-declaration criterion honest")
-    check('metricSignalHtml("Semantic coverage",String(passed.length),String(target.declared_count),status)' in assurance_page,
-          "P34 semantic coverage uses one Actual count and one Target count without duplicate percentages")
-    check("data-summary-coverage" in assurance_page and "data-summary-fault" in assurance_page and
-          "scrollMonitorTarget" in assurance_page and
-          "syncMonitorChrome" in assurance_page and
-          'const desiredTop=chrome.headerBottom+(isInternal?chrome.tocHeight+20:16)' in assurance_page and
-          'target.startsWith("ce-coverage-")?selected' in assurance_page and
-          ".bd-article-container{overflow:visible!important}" in assurance_page,
-          "P34 coverage hash keeps the monitor verdict visible while other hashes remain fixed-header-aware")
-    check("padding-bottom:34rem" in assurance_page,
-          "P34 keeps enough bottom scroll room for History hash positioning")
-    for link_label in ("Requirement ↗", "Verification profile ↗", "Test model ↗", "Raw facts ↗"):
-        check(link_label in assurance_page, f"P34 coverage detail exposes deliberate drill-down link: {link_label}")
-    check("Why this target?" not in assurance_page and
-          "tf-p34-basis" not in assurance_page,
-          "P34 monitor does not inline Requirement semantics or target rationale")
-    check("tf-p34-state-lane" in assurance_page and
-          all(option in assurance_page for option in (
-              "Synthetic / abstract", "Surrogate / simulated", "Representative", "Actual",
-              "COMPLETE", "INCOMPLETE", "QUALIFIED", "NOT QUALIFIED", "CURRENT", "STALE", "UNKNOWN",
-          )) and
-          "ACTUAL" in assurance_page and "TARGET" in assurance_page,
-          "P34 categorical signals visibly show all options plus Actual and Target markers")
-    check("tf-p34-help" in assurance_page and
-          "Fails when a required behavior case in this cell has no passing evidence." in assurance_page and
-          "Stops synthetic or surrogate evidence from being counted as proof that the required target actually ran." in assurance_page and
-          "Checks that evidence-producing tools cannot silently turn bad verification into green evidence." in assurance_page and
-          'button.setAttribute("aria-expanded"' in assurance_page,
-          "P34 ? help states concrete failure modes in one sentence instead of embedded documentation")
-    check("TERNFORGE-NO-CACHE" in assurance_page and
-          'http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"' in assurance_page,
-          "P34 monitor HTML prevents stale local browser caching")
-    check('id="ce-coverage-req_invalid_configuration_errors"' in assurance_page and
-          'id="ce-faults-req_invalid_configuration_errors"' in assurance_page and
-          'id="ce-history-req_invalid_configuration_errors"' in assurance_page and
-          'id="tf-requirement-monitor"' in assurance_page and
-          "EXPERIMENT" not in assurance_page,
-          "accepted Requirement monitor is installed at canonical Contract Evidence anchors")
-    check(not (HTML / "verification-assurance-experiment.html").exists(),
-          "retired experiment page is not emitted after canonical cutover")
-    check(all(label in assurance_page for label in (
-              "Required evidence", "Retained path properties", "Evidence confidence",
-              "passing required evidence", "4 pass", "1 missing", "scope-count", "model paths",
-          )),
-          "P34 canonical monitor makes required evidence the lead story and scopes properties to retained paths")
-    check(all(label in assurance_page for label in ("N/A", "L0", "L1", "L2", "L3", "L4", "UNKNOWN", "NOT DECLARED", "INACTIVE")) and
-          "dependent-wrap" in assurance_page and "M&amp;S validation" in assurance_page,
-          "P34 canonical monitor nests M&S under Representation while retaining the complete inactive state space")
-    check("ALL items" not in assurance_page and "ALL paths" not in assurance_page and
-          "Conditional model check" not in assurance_page and "Depends on Representation" not in assurance_page,
-          "P34 canonical monitor removes quantifier/meta prose that duplicated the visible denominators and hierarchy")
-    check(".signal-card.na-signal{opacity:" not in assurance_page and
-          "background:var(--pst-color-background)" in assurance_page and
-          "PASS appears only when every required verification path" in assurance_page,
-          "P34 canonical monitor keeps inactive tooltips opaque and uses the public PASS / FAIL vocabulary")
-    check(all(label in assurance_page for label in (
-              "Fault classes", "Required", "Challenged", "Detected",
-              "Mutation checks", "Generated", "Reached", "Killed",
-              "27/31", "11/27", "27/27",
-          )) and
-          "Detection effectiveness" not in assurance_page and
-          "EXTRA" not in assurance_page,
-          "P34 canonical monitor renders fault evidence as dependent denominator chains without non-blocking evidence badges")
-    for criterion_text in (
-        "A mismatched provider key and provider identity is rejected as invalid configuration.",
-        "An undeclared requested model is rejected before provider execution.",
-        "A provider that requires an explicit base URL is rejected when that URL is absent.",
-        "A zero or negative effective attempt timeout is rejected.",
-        "An effective retry maximum-attempt count below one is rejected.",
-    ):
-        check(criterion_text in assurance_page, f"P34 profile retains verification-criterion meaning outside the visible monitor: {criterion_text}")
-    check("Evidence ↗" in assurance_page and "Criterion ↗" in assurance_page and
-          "evidence_url" in assurance_page and
-          "Gap: no passing evidence is retained for this required item in the selected cell." not in assurance_page,
-          "P34 criteria stay monitor-only while routing passing evidence and missing criteria to drill-downs")
+    }, "canonical monitor facts retain all six declared verification criteria")
+    check(
+        contract_monitor["target"]["coverage"][0]["declared_count"] == 5
+        and contract_monitor["target"]["coverage"][1]["declared_count"] == 1,
+        "canonical monitor facts retain the Component 5 / System 1 denominators",
+    )
 
-    check("data-fault-tab=" in assurance_page and
-          all(label in assurance_page for label in (
-              "Implementation", "Runtime / dependency", "Interface / protocol",
-              "Architecture", "Specification / model",
-          )),
-          "P34 Fault-based Testing uses project Test Model groups as tabs")
-    check("No required fault classes" in assurance_page and
-          "EXTRA" not in assurance_page and
-          "if(!stats.required.length) return ''" in assurance_page and
-          'disabled aria-disabled="true"' in assurance_page,
-          "P34 N/A fault groups are disabled without surfacing non-blocking optional evidence in the monitor")
-    check("Rows = Test Levels; columns = boundary modes" in assurance_page and
-          "Requirement-selected fault checks; N/A means this group has no required fault classes for this Requirement." in assurance_page,
-          "P34 section-level ? help stays compact while explaining matrix axes and fault scope")
-    check("metricRow('Required fault classes exercised',String(stats.exercised.length),String(stats.required.length)" in assurance_page and
-          "metricRow('Exercised classes detected',String(detected),String(stats.exercised.length)" in assurance_page and
-          "coverage=stats.exercised.length+' / '+stats.required.length" in assurance_page,
-          "P34 fault detail uses one number per Actual/Target column and simple count ratios in tabs")
-    for metric in (
-        "Required fault classes exercised", "Exercised classes detected",
-        "Component Mutation Reach", "System Mutation Reach",
-        "Component Mutation Sensitivity", "System Mutation Sensitivity",
-        "Retained mutmut Test Strength",
-    ):
-        check(metric in assurance_page, f"P34 Implementation detail exposes metric: {metric}")
-    for fault_class in (
-        "impl.comparison", "impl.boundary", "impl.control-flow",
-        "interface.unexpected-interaction", "spec.wrong-outcome",
-        "spec.missing-partition", "spec.wrong-ordering-boundary",
-    ):
-        check(fault_class in assurance_page, f"P34 embeds Requirement fault applicability: {fault_class}")
-    for fault_semantic in (
-        "A comparison/operator change alters the implementation decision.",
-        "A boundary value or threshold change alters accepted vs rejected behavior.",
-        "The system performs an external interaction that the contract says must not occur.",
-        "A Requirement-relevant semantic partition is absent from verification.",
-    ):
-        check(fault_semantic in assurance_page, f"P34 fault class has semantic meaning: {fault_semantic}")
-    check("Why this group?" not in assurance_page and
-          "tf-p34-fault-class-main" not in assurance_page,
-          "P34 fault monitor removes inline semantic rationale and long class descriptions")
-    check("Profile ↗" in assurance_page and "Raw ↗" in assurance_page and
-          "Verification profile ↗" in assurance_page and "Requirement ↗" in assurance_page,
-          "P34 fault-class rows stay monitor-only and route missing vs exercised classes to the correct sources")
-    check('"generated":31' in assurance_page and
-          '"reached":27' in assurance_page and
-          '"killed":11' in assurance_page and
-          '"sensitivity":40.7' in assurance_page and
-          '"sensitivity":100.0' in assurance_page and
-          '"valid_mutants":102' in assurance_page and
-          '"score":59.8' in assurance_page,
-          "P34 embeds exact mutation Actuals with separate denominators")
-    check("runtime.latency-timeout" in assurance_page and
-          "architecture.forbidden-edge" in assurance_page and
-          "optional" in assurance_page and "EXTRA" not in assurance_page,
-          "P34 retains optional fault evidence in underlying facts without surfacing it as a monitor badge")
+    check(
+        "data-fault=" in assurance_page
+        and all(label in assurance_page for label in (
+            "Implementation", "Runtime / dependency", "Interface / protocol",
+            "Architecture", "Specification / model",
+        )),
+        "canonical Fault model renders all project Test Model groups",
+    )
+    check(
+        "This fault group has no required classes for this Requirement." in assurance_page
+        and "EXTRA" not in assurance_page,
+        "N/A fault groups stay quiet and do not surface non-blocking optional evidence",
+    )
+    check(
+        all(label in assurance_page for label in (
+            "Fault classes", "Required", "Challenged", "Detected",
+            "Mutation checks", "Generated", "Reached", "Killed",
+            "27/31", "11/27", "27/27",
+        )),
+        "canonical fault detail renders the accepted dependent denominator chains",
+    )
+    optional_faults = {
+        item["id"]
+        for group in contract_monitor["target"]["fault_groups"]
+        for item in group["items"]
+        if item["state"] == "optional"
+    }
+    check(optional_faults == {"runtime.latency-timeout", "architecture.forbidden-edge"},
+          "optional fault evidence remains in underlying facts despite having no monitor badge")
+    check("Why this group?" not in assurance_page,
+          "canonical Fault model contains no inline semantic rationale")
+    check("Profile ↗" in assurance_page and "Raw ↗" in assurance_page,
+          "canonical Fault model retains profile/raw drill-downs")
 
-    check("Verification status" in assurance_page and
-          "Component sensitivity" in assurance_page and
-          "System sensitivity" in assurance_page and
-          "Target revision" in assurance_page and
-          "Full history ↗" in assurance_page,
-          "P34 History stays compact and links to retained detail")
-    check("Assurance is not pass/fail" not in assurance_page and
-          "tf-gap-hero" not in assurance_page and
-          "tf-path-group-grid" not in assurance_page and
-          "tf-trust-item" not in assurance_page,
-          "P34 default monitor contains no old prose/dashboard sections")
+    check(
+        "Current" in assurance_page
+        and 'href="assurance-snapshots.json">History ↗</a>' in assurance_page,
+        "canonical History stays compact and links to retained history",
+    )
+    check(
+        "Assurance is not pass/fail" not in assurance_page
+        and "tf-gap-hero" not in assurance_page
+        and "tf-path-group-grid" not in assurance_page
+        and "tf-trust-item" not in assurance_page,
+        "canonical monitor contains no superseded prose/dashboard sections",
+    )
 
     check(targets == generated_targets,
           "generated Assurance Target registry is an exact projection of the local versioned source")
@@ -908,10 +860,18 @@ def main() -> None:
               for row in snapshots)
               for contract_id in current_by_contract),
           "each target has an explicit P31 history-start event without requiring later snapshots to repeat it")
-    check('"sensitivity":40.7' in assurance_page and
-          '"boundary":"none"' in assurance_page and
-          "VC_CONFIG_MODEL_DECLARATION" in assurance_page,
-          "rendered P34 monitor keeps the real Component sensitivity and verification-criterion gap inputs")
+    component_fault = contract_monitor["fault_actual"]["groups"]["component_local"]
+    component_target = next(
+        row
+        for row in contract_monitor["target"]["coverage"]
+        if row["level"] == "component" and row["boundary"] == "none"
+    )
+    check(
+        component_fault["sensitivity"] == 40.7
+        and "VC_CONFIG_MODEL_DECLARATION" in component_target["items"]
+        and "VC_CONFIG_MODEL_DECLARATION" not in contract_monitor["coverage_actual"],
+        "canonical monitor facts retain the real Component sensitivity and model-declaration gap",
+    )
 
     history = fault_model.get("history") or {}
     check(history.get("tool") == "DVC plots" and len(history.get("rows") or []) >= 11,
@@ -1059,8 +1019,18 @@ def main() -> None:
         "docs/_build/html/test-plan.html",
         "docs/_build/html/_static/mutation-test-elements.js",
     ]
-    missing_artifacts = sorted(path for path in generated_paths if f"`{path}`" not in manifest)
-    check(not missing_artifacts, f"extraction manifest inventories all retained generated artifacts: {missing_artifacts}")
+    history_glob = "`docs/_build/html/mutation-results/campaign-history/*.json`"
+    missing_artifacts = sorted(
+        path
+        for path in generated_paths
+        if f"`{path}`" not in manifest
+        and not (
+            path.startswith("docs/_build/html/mutation-results/campaign-history/")
+            and path.endswith(".json")
+            and history_glob in manifest
+        )
+    )
+    check(not missing_artifacts, f"extraction manifest inventories all retained generated artifact classes: {missing_artifacts}")
 
     check(not (ROOT / "mutants").exists(), "temporary mutmut workspace absent")
     setup = ROOT / "setup.cfg"
