@@ -662,13 +662,19 @@ def build() -> None:
     source = re.sub(
         r'<script id="tf-requirement-monitor-script">.*?</script>', '', source, flags=re.S,
     )
-    contract_section = f'<section id="assurance-{CONTRACT_ID.lower()}">{monitor}</section>'
+    article = f'''<section id="assurance-{CONTRACT_ID.lower()}">
+<h1>Contract Evidence<a class="headerlink" href="#assurance-{CONTRACT_ID.lower()}" title="Link to this heading">#</a></h1>
+{monitor}
+</section>'''
     source, count = re.subn(
-        rf'<section id="assurance-{re.escape(CONTRACT_ID.lower())}">.*?</section>\s*(?=<section id="assurance-|</div>\s*</article>)',
-        contract_section + "\n", source, count=1, flags=re.S,
+        r'(<article class="bd-article">).*?(</article>)',
+        lambda match: match.group(1) + article + match.group(2),
+        source,
+        count=1,
+        flags=re.S,
     )
     if count != 1:
-        raise RuntimeError('Could not replace canonical Requirement section')
+        raise RuntimeError('Could not replace canonical Contract Evidence article body')
     source = source.replace('</head>', style + '\n</head>', 1)
     source = source.replace('</body>', script + '\n</body>', 1)
     source = source.replace(

@@ -446,6 +446,12 @@ def main() -> None:
     check(assurance_page.count('id="tf-requirement-monitor"') == 1,
           "accepted Requirement monitor is installed exactly once")
     check(
+        '<article class="bd-article"><section id="assurance-req_invalid_configuration_errors">' in assurance_page
+        and assurance_page.count('<section id="assurance-') == 1
+        and 'id="verification-assurance-map"' not in assurance_page,
+        "canonical Contract Evidence is an isolated Requirement page, not a monitor nested inside the old assurance map",
+    )
+    check(
         'id="ce-coverage-req_invalid_configuration_errors"' in assurance_page
         and 'id="ce-faults-req_invalid_configuration_errors"' in assurance_page
         and 'id="ce-history-req_invalid_configuration_errors"' in assurance_page,
