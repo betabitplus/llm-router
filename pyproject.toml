@@ -291,7 +291,7 @@ ignore-nested-functions = false
 ignore-nested-classes = false
 ignore-setters = false
 ignore-overloaded-functions = true
-exclude = [ ".agents", "docs", "experiments", "scripts", "tests" ]
+exclude = [ ".agents", ".ai-bridge", "docs", "experiments", "scripts", "tests" ]
 color = true
 verbose = 1
 quiet = false
@@ -302,6 +302,7 @@ omit-covered-files = true
 ignore = [
   "*.egg-info/**",
   ".agents/**",
+  ".ai-bridge/**",
   ".copier-answers.yml",
   ".devcontainer/**",
   ".gherkin-lintrc",
@@ -336,6 +337,7 @@ ignore = [
 [tool.deptry]
 extend_exclude = [
   ".agents",
+  ".ai-bridge",
   ".venv",
   "examples",
   "experiments",
@@ -360,6 +362,8 @@ exclude = [
   "**/__pycache__",
   "*.egg-info",
   ".agents",
+  # Local pilot/prototype tooling is validated by ty, pre-commit, and dedicated gates.
+  ".ai-bridge",
   ".devcontainer",
   ".git",
   ".github",
@@ -447,6 +451,7 @@ ini_options.norecursedirs = [
 # ---------------- Pytest configuration ----------------
 ini_options.addopts = "--cov --cov-report=term-missing --strict-markers"
 ini_options.markers = [
+  "coverage_item(id): declares the semantic Test Model coverage item exercised by this test",
   "hermetic: marks tests that run fully offline using VCR cassettes",
   "slow: marks tests that are slow and should be skipped in fast runs",
   "vcr: marks tests that use VCR.py for HTTP recording/replay",

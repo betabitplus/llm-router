@@ -18,7 +18,11 @@ def _require(*, condition: bool, message: str) -> None:
         raise ConfigurationError(message)
 
 
-# @impl Configuration validation, IMPL_INVALID_CONFIGURATION_ERRORS, [REQ_INVALID_CONFIGURATION_ERRORS[revision==1]]
+# @impl Configuration validation, IMPL_INVALID_CONFIGURATION_ERRORS, [REQ_INVALID_CONFIGURATION_ERRORS[revision==2]]
+# @impl Provider identity validation, IMPL_CONFIG_PROVIDER_IDENTITY, [TREQ_CONFIG_PROVIDER_IDENTITY[revision==1]]
+# @impl Required base URL validation, IMPL_CONFIG_REQUIRED_BASE_URL, [TREQ_CONFIG_REQUIRED_BASE_URL[revision==1]]
+# @impl Attempt timeout validation, IMPL_CONFIG_ATTEMPT_TIMEOUT, [TREQ_CONFIG_ATTEMPT_TIMEOUT[revision==1]]
+# @impl Retry attempt validation, IMPL_CONFIG_RETRY_ATTEMPTS, [TREQ_CONFIG_RETRY_ATTEMPTS[revision==1]]
 def validate_config(config: LLMRouterConfig) -> None:
     """Validate one runtime config snapshot."""
     retry = config.retry_policy

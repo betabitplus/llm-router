@@ -11,7 +11,16 @@ from py_lib_testkit import (
     evidence,
 )
 
-__all__ = ["RequestRecord", "ScriptedHTTPServer", "ScriptedResponse"]
+__all__ = [
+    "ProviderSentinelHTTPServer",
+    "RequestRecord",
+    "ScriptedHTTPServer",
+    "ScriptedResponse",
+]
+
+
+class ProviderSentinelHTTPServer(_ScriptedHTTPServer):
+    """Local HTTP sentinel measuring forbidden calls without claiming substitute use."""
 
 
 class ScriptedHTTPServer(_ScriptedHTTPServer):

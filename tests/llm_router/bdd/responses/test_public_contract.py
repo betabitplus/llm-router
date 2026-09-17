@@ -4,10 +4,16 @@ from __future__ import annotations
 
 from typing import Any
 
+import pytest
+from py_lib_testkit import evidence
 from pytest_bdd import given, scenarios, then, when
 
 from llm_router import ApiKeyNotFoundError, ConfigurationError, Model, ProviderError
-from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.fault_server import (
+    ProviderSentinelHTTPServer,
+    ScriptedHTTPServer,
+    ScriptedResponse,
+)
 from tests.llm_router.support.workers.error_boundary import run_error_boundary_inprocess
 from tests.llm_router.support.workers.response_normalization import (
     run_response_normalization_dual_worker,
@@ -20,6 +26,15 @@ from tests.llm_router.support.workers.retry import (
 )
 
 scenarios("responses/public_contract.feature")
+
+_invalid_model_test_name = (
+    "test_invalid_model_configuration_surfaces_as_a_configuration_error"
+)
+_invalid_model_test = globals()[_invalid_model_test_name]
+globals()[_invalid_model_test_name] = pytest.mark.coverage_item(
+    "VC_INVALID_CONFIGURATION_PUBLIC_REJECTION"
+)(_invalid_model_test)
+del _invalid_model_test
 
 _OPENAI_PATH = openai_chat_path()
 _GOOGLE_PATH = google_generate_path(model=Model.GEMINI_FLASH)
@@ -147,8 +162,44 @@ def provider_error_case() -> dict[str, Any]:
 @when("it reaches the public router boundary")
 @when("the failure reaches the public router boundary")
 def execute_public_error_case(case: dict[str, Any]) -> None:
-    if case["scenario"] != "provider_error":
+    if case["scenario"] == "missing_api_key":
         case["result"] = run_error_boundary_inprocess(scenario=case["scenario"])
+        return
+
+    if case["scenario"] == "invalid_model":
+        with ProviderSentinelHTTPServer(
+            port=0,
+            routes={
+                ("POST", _OPENAI_PATH): [
+                    ScriptedResponse(
+                        status_code=500,
+                        headers={"Content-Type": "application/json"},
+                        body=openai_error_response(
+                            status_code=500,
+                            message=(
+                                "provider must not be called for invalid configuration"
+                            ),
+                        ),
+                    )
+                ]
+            },
+        ) as server:
+            case["result"] = run_error_boundary_inprocess(
+                scenario=case["scenario"],
+                server_base_url=server.base_url,
+            )
+            case["provider_requests"] = server.request_count("POST", _OPENAI_PATH)
+            evidence.observation(
+                "Provider boundary sentinel",
+                kind="boundary-interaction-check",
+                payload={
+                    "boundary": "provider-http",
+                    "requests_received": case["provider_requests"],
+                    "interaction": (
+                        "none" if case["provider_requests"] == 0 else "substitute"
+                    ),
+                },
+            )
         return
 
     with ScriptedHTTPServer(
@@ -189,6 +240,11 @@ def missing_key_error_is_public(case: dict[str, Any]) -> None:
 @then("it fails with a configuration error")
 def configuration_error_is_public(case: dict[str, Any]) -> None:
     _assert_error(case, ConfigurationError.__name__)
+
+
+@then("no provider request is sent")
+def invalid_configuration_stops_before_provider(case: dict[str, Any]) -> None:
+    assert case["provider_requests"] == 0
 
 
 @then("it fails with a provider error")

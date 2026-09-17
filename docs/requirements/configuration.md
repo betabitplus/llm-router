@@ -97,21 +97,128 @@ Contracts in this capability:
 :id: REQ_INVALID_CONFIGURATION_ERRORS
 :collapse: true
 :status: accepted
-:revision: 1
-:required_evidence: impl;bdd;unit
+:revision: 2
+:required_evidence: impl;bdd
 :derives: FEAT_CONFIGURATION_PRECEDENCE
 
-**Statement.** Invalid provider, model, base-URL, timeout, and retry-policy configuration shall be rejected deterministically with public configuration errors before provider execution.
+**Statement.** llm-router shall reject an effective request configuration that violates an applicable configuration constraint with a public configuration error before initiating provider execution.
 
 **Rationale.** Configuration defects should fail close to their source and through stable public error types instead of leaking into provider-specific execution failures.
+```
 
-**Verification intent.** Exercise representative invalid configuration through the public API and directly verify boundary validation rules that are cheaper and clearer to cover below the public scenario layer.
+::::{dropdown} Follow this contract to proof
+
+{doc}`Verification profile → <../verification-profiles/invalid-configuration>`
+
+```{needlist}
+:filter: "'REQ_INVALID_CONFIGURATION_ERRORS' in derives or 'REQ_INVALID_CONFIGURATION_ERRORS' in implements or 'REQ_INVALID_CONFIGURATION_ERRORS' in verifies"
+```
+
+::::
+
+### Derived configuration constraints
+
+```{treq} Configured provider identity is internally consistent
+:id: TREQ_CONFIG_PROVIDER_IDENTITY
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** Each configured provider entry shall identify the same provider as the key under which that entry is registered.
+
+**Rationale.** A configuration that associates one provider key with another provider identity is ambiguous and cannot be executed deterministically.
 ```
 
 ::::{dropdown} Follow this contract to proof
 
 ```{needlist}
-:filter: "'REQ_INVALID_CONFIGURATION_ERRORS' in derives or 'REQ_INVALID_CONFIGURATION_ERRORS' in implements or 'REQ_INVALID_CONFIGURATION_ERRORS' in verifies"
+:filter: "'TREQ_CONFIG_PROVIDER_IDENTITY' in derives or 'TREQ_CONFIG_PROVIDER_IDENTITY' in implements or 'TREQ_CONFIG_PROVIDER_IDENTITY' in verifies"
+```
+
+::::
+
+```{treq} Requested model is declared by the effective configuration
+:id: TREQ_CONFIG_MODEL_DECLARATION
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** A requested model shall be accepted only when it is declared by the effective configuration.
+
+**Rationale.** Treating an undeclared model as executable would defer a configuration defect into provider-specific behavior.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_MODEL_DECLARATION' in derives or 'TREQ_CONFIG_MODEL_DECLARATION' in implements or 'TREQ_CONFIG_MODEL_DECLARATION' in verifies"
+```
+
+::::
+
+```{treq} Required provider base URL is present
+:id: TREQ_CONFIG_REQUIRED_BASE_URL
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** When a configured provider requires an explicit base URL, the effective configuration shall provide one.
+
+**Rationale.** A provider that requires an explicit endpoint cannot be addressed deterministically without that endpoint.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_REQUIRED_BASE_URL' in derives or 'TREQ_CONFIG_REQUIRED_BASE_URL' in implements or 'TREQ_CONFIG_REQUIRED_BASE_URL' in verifies"
+```
+
+::::
+
+```{treq} Attempt timeout is positive
+:id: TREQ_CONFIG_ATTEMPT_TIMEOUT
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** The effective attempt timeout shall be greater than zero.
+
+**Rationale.** A zero or negative attempt interval cannot represent a meaningful wait budget for provider execution.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_ATTEMPT_TIMEOUT' in derives or 'TREQ_CONFIG_ATTEMPT_TIMEOUT' in implements or 'TREQ_CONFIG_ATTEMPT_TIMEOUT' in verifies"
+```
+
+::::
+
+```{treq} Retry attempt limit is positive
+:id: TREQ_CONFIG_RETRY_ATTEMPTS
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** The effective retry maximum-attempt count shall be at least one.
+
+**Rationale.** A retry policy with no permitted attempt cannot define executable retry behavior.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_RETRY_ATTEMPTS' in derives or 'TREQ_CONFIG_RETRY_ATTEMPTS' in implements or 'TREQ_CONFIG_RETRY_ATTEMPTS' in verifies"
 ```
 
 ::::

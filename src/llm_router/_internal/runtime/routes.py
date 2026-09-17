@@ -216,6 +216,7 @@ def _expand_profile(
     ]
 
 
+# @impl Requested model declaration, IMPL_CONFIG_MODEL_DECLARATION, [TREQ_CONFIG_MODEL_DECLARATION[revision==1]]
 def _resolve_model(model: Model | str, *, config: LLMRouterConfig) -> Model:
     """Resolve public model input to the stable model enum."""
     if isinstance(model, Model):

@@ -11,7 +11,7 @@ Engineering experiments preserve **what was observed while answering an uncertai
 :sort: id
 ```
 
-The pilot intentionally contains five provider-level experiments:
+The retained set contains five provider-level experiments:
 
 - **EXP_0001 — AI Studio:** text, retries, model discovery, image/PDF structured output, named tools, tool loops, schema-reference normalization, local video, and remote video.
 - **EXP_0002 — Google GenAI:** text, retries, model discovery, image/PDF structured output, local/remote video, tool loops, and named tool choice.

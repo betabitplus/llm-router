@@ -1,0 +1,331 @@
+{
+  "schema_version": "ternforge-assurance-history-p31-1",
+  "history_starts_at_checkpoint": "p31-local-1",
+  "note": "Legacy profile-based assurance snapshots are frozen through P33. P34 uses Test Plan + Requirement target + Actual evidence and does not append to this legacy series.",
+  "snapshots": [
+    {
+      "contract_id": "REQ_ASYNC_PROVIDER_EXECUTION",
+      "head_sha": "1618432f44299afc567e7b036c26cf2b0f56b7dd",
+      "checkpoint": "p31-local-1",
+      "target_profile": "external-provider-compatibility@1",
+      "target_revision": 1,
+      "requirement_revision": 1,
+      "obligations_met": 2,
+      "obligations_total": 3,
+      "blocking_gap_ids": [
+        "frontier-system-integration-live"
+      ],
+      "blocking_gap_labels": [
+        "Release-time real-provider compatibility"
+      ],
+      "component_mutation_reach": null,
+      "component_mutation_sensitivity": null,
+      "system_mutation_reach": null,
+      "system_mutation_sensitivity": null,
+      "test_strength": null,
+      "new_survivors": null,
+      "survivor_debt": null,
+      "resolved_survivors": null,
+      "fault_layers_detected": 0,
+      "fault_layers_total": 0,
+      "target_source": "policy-derived from authored Statement + Verification intent",
+      "target_rationale": "The claim explicitly spans supported provider families through the public asynchronous router. Repeatable VCR evidence is required continuously, while a pre-release Direct-live obligation is required to detect drift in mutable external provider APIs.",
+      "issue_links": [],
+      "overrides": [],
+      "fingerprint": "628fdb5903313282068885d5c88b72e29902ff6f9cc4dbe4ff90db5844f997ed",
+      "captured_at": "2026-09-15T15:21:37.981929Z",
+      "events": [
+        {
+          "type": "history_started",
+          "detail": "Assurance snapshot retention starts at P31; pre-P31 assurance dimensions are not back-filled."
+        },
+        {
+          "type": "gap_present_at_history_start",
+          "obligation_id": "frontier-system-integration-live"
+        }
+      ]
+    },
+    {
+      "contract_id": "REQ_INVALID_CONFIGURATION_ERRORS",
+      "head_sha": "1618432f44299afc567e7b036c26cf2b0f56b7dd",
+      "checkpoint": "p31-local-1",
+      "target_profile": "public-preprovider-validation@1",
+      "target_revision": 1,
+      "requirement_revision": 1,
+      "obligations_met": 11,
+      "obligations_total": 12,
+      "blocking_gap_ids": [
+        "component-mutation-sensitivity"
+      ],
+      "blocking_gap_labels": [
+        "Component mutation sensitivity"
+      ],
+      "component_mutation_reach": 87.1,
+      "component_mutation_sensitivity": 40.7,
+      "system_mutation_reach": 87.1,
+      "system_mutation_sensitivity": 100.0,
+      "test_strength": 59.8,
+      "new_survivors": 0,
+      "survivor_debt": 41,
+      "resolved_survivors": 0,
+      "fault_layers_detected": 5,
+      "fault_layers_total": 5,
+      "target_source": "policy-derived from authored Statement + Verification intent",
+      "target_rationale": "The requirement explicitly says invalid configuration is rejected deterministically before provider execution, and its verification intent explicitly calls for both a public API scenario and direct lower-level validation checks. Direct-live provider evidence is therefore not a required target for this claim.",
+      "issue_links": [],
+      "overrides": [],
+      "fingerprint": "164f9ea98b547261e5e24ee4b83520dbeb0c0d3202ff3d2db5a4dcf0e90b4c82",
+      "captured_at": "2026-09-15T15:21:38.009452Z",
+      "events": [
+        {
+          "type": "history_started",
+          "detail": "Assurance snapshot retention starts at P31; pre-P31 assurance dimensions are not back-filled."
+        },
+        {
+          "type": "gap_present_at_history_start",
+          "obligation_id": "component-mutation-sensitivity"
+        }
+      ]
+    },
+    {
+      "contract_id": "TREQ_RATE_LIMIT_STATE",
+      "head_sha": "1618432f44299afc567e7b036c26cf2b0f56b7dd",
+      "checkpoint": "p31-local-1",
+      "target_profile": "internal-state@1",
+      "target_revision": 1,
+      "requirement_revision": 1,
+      "obligations_met": 2,
+      "obligations_total": 3,
+      "blocking_gap_ids": [
+        "covered-mutant-strength"
+      ],
+      "blocking_gap_labels": [
+        "Covered-mutant Test Strength"
+      ],
+      "component_mutation_reach": null,
+      "component_mutation_sensitivity": null,
+      "system_mutation_reach": null,
+      "system_mutation_sensitivity": null,
+      "test_strength": 51.0,
+      "new_survivors": 0,
+      "survivor_debt": 49,
+      "resolved_survivors": 0,
+      "fault_layers_detected": 0,
+      "fault_layers_total": 0,
+      "target_source": "policy-derived from authored Statement + Verification intent",
+      "target_rationale": "The claim is entirely about LimiterState behavior inside llm-router. Direct-live provider interaction is neither required nor promoted as a gap; the meaningful weakness is the retained covered-mutant Test Strength of the linked internal-state tests.",
+      "issue_links": [],
+      "overrides": [],
+      "fingerprint": "5e52fb9a7e38e07443b03addc6b284a1c6dd8e0501ced011b6e0e7e17163a0dd",
+      "captured_at": "2026-09-15T15:21:38.036665Z",
+      "events": [
+        {
+          "type": "history_started",
+          "detail": "Assurance snapshot retention starts at P31; pre-P31 assurance dimensions are not back-filled."
+        },
+        {
+          "type": "gap_present_at_history_start",
+          "obligation_id": "covered-mutant-strength"
+        }
+      ]
+    },
+    {
+      "contract_id": "REQ_ASYNC_PROVIDER_EXECUTION",
+      "head_sha": "1618432f44299afc567e7b036c26cf2b0f56b7dd",
+      "checkpoint": "p32-local-1",
+      "target_profile": "external-provider-compatibility@1",
+      "target_revision": 1,
+      "requirement_revision": 1,
+      "obligations_met": 2,
+      "obligations_total": 3,
+      "blocking_gap_ids": [
+        "frontier-system-integration-live"
+      ],
+      "blocking_gap_labels": [
+        "Release-time real-provider compatibility"
+      ],
+      "component_mutation_reach": null,
+      "component_mutation_sensitivity": null,
+      "system_mutation_reach": null,
+      "system_mutation_sensitivity": null,
+      "test_strength": null,
+      "new_survivors": null,
+      "survivor_debt": null,
+      "resolved_survivors": null,
+      "fault_layers_detected": 0,
+      "fault_layers_total": 0,
+      "target_source": "policy-derived from authored Statement + Verification intent",
+      "target_rationale": "The claim explicitly spans supported provider families through the public asynchronous router. Repeatable VCR evidence is required continuously, while a pre-release Direct-live obligation is required to detect drift in mutable external provider APIs.",
+      "issue_links": [],
+      "overrides": [],
+      "fingerprint": "ca3e25f5d5e093f48ddc978d4dc77db346066cbdfba5c9376cc039df79418172",
+      "captured_at": "2026-09-15T16:30:14.733499Z",
+      "events": []
+    },
+    {
+      "contract_id": "REQ_INVALID_CONFIGURATION_ERRORS",
+      "head_sha": "1618432f44299afc567e7b036c26cf2b0f56b7dd",
+      "checkpoint": "p32-local-1",
+      "target_profile": "public-preprovider-validation@1",
+      "target_revision": 1,
+      "requirement_revision": 1,
+      "obligations_met": 11,
+      "obligations_total": 12,
+      "blocking_gap_ids": [
+        "component-mutation-sensitivity"
+      ],
+      "blocking_gap_labels": [
+        "Component mutation sensitivity"
+      ],
+      "component_mutation_reach": 87.1,
+      "component_mutation_sensitivity": 40.7,
+      "system_mutation_reach": 87.1,
+      "system_mutation_sensitivity": 100.0,
+      "test_strength": 59.8,
+      "new_survivors": 0,
+      "survivor_debt": 41,
+      "resolved_survivors": 0,
+      "fault_layers_detected": 5,
+      "fault_layers_total": 5,
+      "target_source": "policy-derived from authored Statement + Verification intent",
+      "target_rationale": "The requirement explicitly says invalid configuration is rejected deterministically before provider execution, and its verification intent explicitly calls for both a public API scenario and direct lower-level validation checks. Direct-live provider evidence is therefore not a required target for this claim.",
+      "issue_links": [],
+      "overrides": [],
+      "fingerprint": "b1303ce6edbabf7d7a3189d754d6266d358aa22a63c4c1bca28e6c26f11d34c2",
+      "captured_at": "2026-09-15T16:30:14.763091Z",
+      "events": []
+    },
+    {
+      "contract_id": "TREQ_RATE_LIMIT_STATE",
+      "head_sha": "1618432f44299afc567e7b036c26cf2b0f56b7dd",
+      "checkpoint": "p32-local-1",
+      "target_profile": "internal-state@1",
+      "target_revision": 1,
+      "requirement_revision": 1,
+      "obligations_met": 2,
+      "obligations_total": 3,
+      "blocking_gap_ids": [
+        "covered-mutant-strength"
+      ],
+      "blocking_gap_labels": [
+        "Covered-mutant Test Strength"
+      ],
+      "component_mutation_reach": null,
+      "component_mutation_sensitivity": null,
+      "system_mutation_reach": null,
+      "system_mutation_sensitivity": null,
+      "test_strength": 51.0,
+      "new_survivors": 0,
+      "survivor_debt": 49,
+      "resolved_survivors": 0,
+      "fault_layers_detected": 0,
+      "fault_layers_total": 0,
+      "target_source": "policy-derived from authored Statement + Verification intent",
+      "target_rationale": "The claim is entirely about LimiterState behavior inside llm-router. Direct-live provider interaction is neither required nor promoted as a gap; the meaningful weakness is the retained covered-mutant Test Strength of the linked internal-state tests.",
+      "issue_links": [],
+      "overrides": [],
+      "fingerprint": "c25f757aeb5d66c1d8e2b4802fb8f421aa6eb487e9da64c919cea722d2be3db9",
+      "captured_at": "2026-09-15T16:30:14.792636Z",
+      "events": []
+    },
+    {
+      "contract_id": "REQ_ASYNC_PROVIDER_EXECUTION",
+      "head_sha": "1618432f44299afc567e7b036c26cf2b0f56b7dd",
+      "checkpoint": "p33-local-1",
+      "target_profile": "external-provider-compatibility@1",
+      "target_revision": 1,
+      "requirement_revision": 1,
+      "obligations_met": 2,
+      "obligations_total": 3,
+      "blocking_gap_ids": [
+        "frontier-system-integration-live"
+      ],
+      "blocking_gap_labels": [
+        "Release-time real-provider compatibility"
+      ],
+      "component_mutation_reach": null,
+      "component_mutation_sensitivity": null,
+      "system_mutation_reach": null,
+      "system_mutation_sensitivity": null,
+      "test_strength": null,
+      "new_survivors": null,
+      "survivor_debt": null,
+      "resolved_survivors": null,
+      "fault_layers_detected": 0,
+      "fault_layers_total": 0,
+      "target_source": "policy-derived from authored Statement + Verification intent",
+      "target_rationale": "The claim explicitly spans supported provider families through the public asynchronous router. Repeatable VCR evidence is required continuously, while a pre-release Direct-live obligation is required to detect drift in mutable external provider APIs.",
+      "issue_links": [],
+      "overrides": [],
+      "fingerprint": "992a70e277faff0025da842ce2a54777746391426b0e30eb1e81023bb080fa76",
+      "captured_at": "2026-09-15T16:59:22.457582Z",
+      "events": []
+    },
+    {
+      "contract_id": "REQ_INVALID_CONFIGURATION_ERRORS",
+      "head_sha": "1618432f44299afc567e7b036c26cf2b0f56b7dd",
+      "checkpoint": "p33-local-1",
+      "target_profile": "public-preprovider-validation@1",
+      "target_revision": 1,
+      "requirement_revision": 1,
+      "obligations_met": 11,
+      "obligations_total": 12,
+      "blocking_gap_ids": [
+        "component-mutation-sensitivity"
+      ],
+      "blocking_gap_labels": [
+        "Component mutation sensitivity"
+      ],
+      "component_mutation_reach": 87.1,
+      "component_mutation_sensitivity": 40.7,
+      "system_mutation_reach": 87.1,
+      "system_mutation_sensitivity": 100.0,
+      "test_strength": 59.8,
+      "new_survivors": 0,
+      "survivor_debt": 41,
+      "resolved_survivors": 0,
+      "fault_layers_detected": 5,
+      "fault_layers_total": 5,
+      "target_source": "policy-derived from authored Statement + Verification intent",
+      "target_rationale": "The requirement explicitly says invalid configuration is rejected deterministically before provider execution, and its verification intent explicitly calls for both a public API scenario and direct lower-level validation checks. Direct-live provider evidence is therefore not a required target for this claim.",
+      "issue_links": [],
+      "overrides": [],
+      "fingerprint": "17a4664e0f2246d3c186afef5a4bfefbf113751d0c54d829e99dc275bcad08fb",
+      "captured_at": "2026-09-15T16:59:22.483882Z",
+      "events": []
+    },
+    {
+      "contract_id": "TREQ_RATE_LIMIT_STATE",
+      "head_sha": "1618432f44299afc567e7b036c26cf2b0f56b7dd",
+      "checkpoint": "p33-local-1",
+      "target_profile": "internal-state@1",
+      "target_revision": 1,
+      "requirement_revision": 1,
+      "obligations_met": 2,
+      "obligations_total": 3,
+      "blocking_gap_ids": [
+        "covered-mutant-strength"
+      ],
+      "blocking_gap_labels": [
+        "Covered-mutant Test Strength"
+      ],
+      "component_mutation_reach": null,
+      "component_mutation_sensitivity": null,
+      "system_mutation_reach": null,
+      "system_mutation_sensitivity": null,
+      "test_strength": 51.0,
+      "new_survivors": 0,
+      "survivor_debt": 49,
+      "resolved_survivors": 0,
+      "fault_layers_detected": 0,
+      "fault_layers_total": 0,
+      "target_source": "policy-derived from authored Statement + Verification intent",
+      "target_rationale": "The claim is entirely about LimiterState behavior inside llm-router. Direct-live provider interaction is neither required nor promoted as a gap; the meaningful weakness is the retained covered-mutant Test Strength of the linked internal-state tests.",
+      "issue_links": [],
+      "overrides": [],
+      "fingerprint": "8d6e20c78d5f270880d89ba1aef46c74aad26b6d700d5161d373c95b5ef23a16",
+      "captured_at": "2026-09-15T16:59:22.514049Z",
+      "events": []
+    }
+  ]
+}

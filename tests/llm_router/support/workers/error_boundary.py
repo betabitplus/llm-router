@@ -65,8 +65,30 @@ def _run_missing_api_key_scenario(*, openrouter_env_prefix: str) -> None:
     router.query("Reply with one word.")
 
 
-def _run_invalid_model_scenario() -> None:
-    from llm_router import LLMRouter, Provider, RouterProfile
+def _run_invalid_model_scenario(*, server_base_url: str | None = None) -> None:
+    from dataclasses import replace
+
+    from llm_router import (
+        LLMRouter,
+        Provider,
+        RouterProfile,
+        get_config,
+        install_config,
+    )
+
+    if server_base_url is not None:
+        config = get_config()
+        provider_base_urls = dict(config.catalog.provider_base_urls)
+        provider_base_urls[Provider.OPENROUTER] = f"{server_base_url}/v1"
+        install_config(
+            replace(
+                config,
+                catalog=replace(
+                    config.catalog,
+                    provider_base_urls=provider_base_urls,
+                ),
+            )
+        )
 
     LLMRouter(
         RouterProfile(
@@ -171,7 +193,7 @@ def run_error_boundary_inprocess(
         if scenario == "missing_api_key":
             _run_missing_api_key_scenario(openrouter_env_prefix=_OPENROUTER_ENV_PREFIX)
         elif scenario == "invalid_model":
-            _run_invalid_model_scenario()
+            _run_invalid_model_scenario(server_base_url=server_base_url)
         elif scenario == "provider_error":
             if not server_base_url:
                 _raise_worker_value_error("provider_error requires --server-base-url")

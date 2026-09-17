@@ -1,0 +1,76 @@
+{
+  "schema_version": "ternforge-assurance-targets-p30-2",
+  "profiles": {
+    "public-preprovider-validation@1": {
+      "name": "Public pre-provider validation",
+      "revision": 1,
+      "status": "pilot-baseline",
+      "source": "llm-router local pilot policy",
+      "rationale": "For a public configuration-validation claim whose authored semantics require deterministic failure before provider execution, sufficient assurance must prove both the public-system outcome and the lower-level validation rules without requiring a live provider call that the requirement explicitly says must not happen.",
+      "cadence": {"mode": "continuous_ci", "description": "Re-evaluate on the retained required CI verification run."},
+      "freshness": {"policy": "current_retained_run", "enforced_by": "verification evidence retention"},
+      "obligations": [
+        {"id":"frontier-component-local-actual","kind":"frontier_cell","label":"Component validation path","reach":"component","boundary":"none","representation_min":"actual","blocking":true,"cadence":"continuous_ci","rationale":"The authored verification intent requires direct validation-rule evidence below the public scenario layer."},
+        {"id":"frontier-system-local-actual","kind":"frontier_cell","label":"Public-system validation path","reach":"system","boundary":"none","representation_min":"actual","blocking":true,"cadence":"continuous_ci","rationale":"The public error contract must be exercised through the router while remaining pre-provider."},
+        {"id":"method-corroboration","kind":"method_count","label":"Independent verification methods","min":2,"blocking":true,"cadence":"continuous_ci","rationale":"The verification intent explicitly combines a public behavioral scenario with direct lower-level validation checks."},
+        {"id":"component-mutation-reach","kind":"mutation_reach","label":"Component mutation reach","group":"component_local","min":80.0,"blocking":true,"cadence":"pilot_audit","rationale":"Pilot policy floor: most generated faults in the declared validation scope should be exercised by the direct validation suite."},
+        {"id":"component-mutation-sensitivity","kind":"mutation_sensitivity","label":"Component mutation sensitivity","group":"component_local","min":80.0,"blocking":true,"cadence":"pilot_audit","rationale":"Pilot policy floor: faults actually reached by the direct validation suite should usually be detected by its assertions."},
+        {"id":"system-mutation-reach","kind":"mutation_reach","label":"System mutation reach","group":"system_local","min":80.0,"blocking":true,"cadence":"pilot_audit","rationale":"The public behavioral path should traverse most mutation sites in the declared validation scope."},
+        {"id":"system-mutation-sensitivity","kind":"mutation_sensitivity","label":"System mutation sensitivity","group":"system_local","min":80.0,"blocking":true,"cadence":"pilot_audit","rationale":"The public behavioral oracle should detect faults that it reaches in the validation implementation."},
+        {"id":"fault-specification","kind":"fault_layer","label":"Specification/model fault challenge","layer":"specification","blocking":true,"cadence":"pilot_audit","rationale":"The executable scenario outcome must reject a plausible wrong public error category."},
+        {"id":"fault-architecture","kind":"fault_layer","label":"Architecture boundary fault challenge","layer":"architecture","blocking":true,"cadence":"pilot_audit","rationale":"Configuration validation must remain in the lower config layer and must not gain a dependency on provider execution code."},
+        {"id":"fault-interface","kind":"fault_layer","label":"Provider-interface isolation challenge","layer":"interface","blocking":true,"cadence":"pilot_audit","rationale":"Invalid model configuration must fail before any provider HTTP interaction."},
+        {"id":"fault-runtime","kind":"fault_layer","label":"Runtime/dependency isolation challenge","layer":"runtime","blocking":true,"cadence":"pilot_audit","rationale":"Injected provider-network degradation must not affect a pre-provider configuration error."},
+        {"id":"fault-implementation","kind":"fault_layer","label":"Implementation fault challenge","layer":"implementation","blocking":true,"cadence":"pilot_audit","rationale":"The declared implementation scope must be mutation-challenged with native operator metadata."}
+      ],
+      "optional_improvements": [
+        {"label":"Add another independent lower-level oracle","rationale":"A property-oriented validation method could corroborate the existing unit checks, but it is not required by the current profile because the public BDD path already supplies an independent behavioral oracle."}
+      ]
+    },
+    "internal-state@1": {
+      "name": "Internal state invariant",
+      "revision": 1,
+      "status": "pilot-baseline",
+      "source": "llm-router local pilot policy",
+      "rationale": "For a purely internal state invariant, assurance should stay on the actual implementation and deterministic local behavior. A provider network call does not strengthen proof of per-provider/key state isolation, conservative interval selection, or reset-after-success semantics.",
+      "cadence": {"mode":"continuous_ci","description":"Re-evaluate direct invariant checks on the retained required CI run; mutation strength is refreshed by the mutation campaign cadence."},
+      "freshness": {"policy":"current_retained_run_plus_mutation_freshness","enforced_by":"verification evidence + mutation campaign fingerprints"},
+      "obligations": [
+        {"id":"frontier-component-local-actual","kind":"frontier_cell","label":"Direct internal-state path","reach":"component","boundary":"none","representation_min":"actual","blocking":true,"cadence":"continuous_ci","rationale":"The requirement is an internal LimiterState invariant and is most directly demonstrated on the actual component implementation."},
+        {"id":"method-direct","kind":"method_count","label":"At least one direct verification method","min":1,"blocking":true,"cadence":"continuous_ci","rationale":"A deterministic direct verification method is sufficient for this narrow internal invariant; extra methods remain optional corroboration."},
+        {"id":"covered-mutant-strength","kind":"test_strength","label":"Covered-mutant Test Strength","min":80.0,"blocking":true,"cadence":"mutation_campaign","rationale":"Pilot policy floor for the retained mutmut metric: linked tests should kill at least 80% of covered valid mutants. This is killed/(killed+survived), not full-scope Mutation Reach."}
+      ],
+      "optional_improvements": [
+        {"label":"Property-based state-transition checks","rationale":"Could explore more provider/key/update sequences without changing the required external-boundary level."}
+      ]
+    },
+    "external-provider-compatibility@1": {
+      "name": "External provider compatibility",
+      "revision": 1,
+      "status": "pilot-baseline",
+      "source": "llm-router local pilot policy",
+      "rationale": "A provider-facing compatibility claim needs both deterministic repeatable coverage and periodic evidence against the mutable real dependency. Replay proves stable known interactions; a release-time Direct-live path detects provider drift that replay cannot observe.",
+      "cadence": {"mode":"mixed","description":"Replay evidence is continuous CI; Direct-live compatibility is a pre-release obligation."},
+      "freshness": {"policy":"per_release_live_check","description":"A release candidate must have retained Direct-live evidence from the release verification window; no historical live result may be silently reused."},
+      "obligations": [
+        {"id":"frontier-system-integration-replay","kind":"frontier_cell","label":"Deterministic cross-provider replay","reach":"system_integration","boundary":"replay","representation_min":"surrogate_simulated","blocking":true,"cadence":"continuous_ci","rationale":"The public asynchronous workflow must continuously exercise provider-facing request/response semantics across supported provider families using repeatable retained interactions."},
+        {"id":"frontier-system-integration-live","kind":"frontier_cell","label":"Release-time real-provider compatibility","reach":"system_integration","boundary":"direct","representation_min":"actual","blocking":true,"cadence":"pre_release","freshness_policy":"release_verification_window","rationale":"Provider APIs are mutable external dependencies; replay alone cannot demonstrate that the current adapters still interoperate with the current real services before release."},
+        {"id":"method-behavior","kind":"method_count","label":"Public behavioral verification method","min":1,"blocking":true,"cadence":"continuous_ci","rationale":"Compatibility must be demonstrated through the public asynchronous behavior, not only by source or adapter-local checks."}
+      ],
+      "optional_improvements": [
+        {"label":"Raise VCR replay credibility above L0","rationale":"Record intended use, cassette pedigree and calibrated comparison to live behavior so replay fidelity can be trusted more strongly between release-time live checks."}
+      ]
+    }
+  },
+  "assignments": {
+    "REQ_INVALID_CONFIGURATION_ERRORS": {
+      "profile":"public-preprovider-validation@1","target_revision":1,"status":"pilot-baseline","source":"policy-derived from authored Statement + Verification intent","effective_requirement_revision":1,"rationale":"The requirement explicitly says invalid configuration is rejected deterministically before provider execution, and its verification intent explicitly calls for both a public API scenario and direct lower-level validation checks. Direct-live provider evidence is therefore not a required target for this claim.","overrides":[],"issue_links":[],"history":[{"revision":1,"status":"active","reason":"Initial explicit Assurance Target introduced by the P30 pilot after replacing generic inferred gaps with Target minus Actual evaluation."}]
+    },
+    "TREQ_RATE_LIMIT_STATE": {
+      "profile":"internal-state@1","target_revision":1,"status":"pilot-baseline","source":"policy-derived from authored Statement + Verification intent","effective_requirement_revision":1,"rationale":"The claim is entirely about LimiterState behavior inside llm-router. Direct-live provider interaction is neither required nor promoted as a gap; the meaningful weakness is the retained covered-mutant Test Strength of the linked internal-state tests.","overrides":[],"issue_links":[],"history":[{"revision":1,"status":"active","reason":"Added as the internal-state counterexample to prove that Direct-live is not a universal assurance target."}]
+    },
+    "REQ_ASYNC_PROVIDER_EXECUTION": {
+      "profile":"external-provider-compatibility@1","target_revision":1,"status":"pilot-baseline","source":"policy-derived from authored Statement + Verification intent","effective_requirement_revision":1,"rationale":"The claim explicitly spans supported provider families through the public asynchronous router. Repeatable VCR evidence is required continuously, while a pre-release Direct-live obligation is required to detect drift in mutable external provider APIs.","overrides":[],"issue_links":[],"history":[{"revision":1,"status":"active","reason":"Added as the provider-facing counterexample where a Direct-live assurance obligation is justified rather than inferred globally."}]
+    }
+  }
+}

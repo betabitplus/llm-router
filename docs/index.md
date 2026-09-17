@@ -76,6 +76,23 @@ What was learned before a requirement or architecture decision became authoritat
 Experiments provide rationale, never verification.
 :::
 
+:::{grid-item-card} Test plan
+:link: test-plan
+:link-type: doc
+
+Project-wide Test Strategy, reusable Test Models, environment classifications,
+completion criteria, evidence gates, and tailoring rules. Requirement-specific
+verification profiles reference this policy instead of cloning it.
+:::
+
+:::{grid-item-card} Verification profiles
+:link: verification-profiles/index
+:link-type: doc
+
+Requirement-specific verification design: which criteria are required, where they are exercised,
+and which fault checks are blocking. Profiles reference normative contracts instead of defining them.
+:::
+
 :::{grid-item-card} Executable specifications
 :link: specifications
 :link-type: doc
@@ -119,6 +136,8 @@ specifications
 api
 auto_examples/index
 traceability
+test-plan
+verification-profiles/index
 verification
 evidence-producers
 tests

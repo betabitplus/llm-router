@@ -19,11 +19,12 @@ Feature: Public response contract
       When it reaches the public router boundary
       Then it fails with a missing-key error
 
-    @REQ_INVALID_CONFIGURATION_ERRORS[revision==1]
+    @REQ_INVALID_CONFIGURATION_ERRORS[revision==2]
     Scenario: Invalid model configuration surfaces as a configuration error
       Given a request uses an unknown model
       When it reaches the public router boundary
       Then it fails with a configuration error
+      And no provider request is sent
 
     @REQ_PROVIDER_ERROR_BOUNDARY[revision==1]
     Scenario: A provider HTTP failure surfaces as a provider error

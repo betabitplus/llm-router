@@ -7,12 +7,11 @@ import pytest
 from llm_router import ConfigurationError, Provider
 from llm_router._internal.config import build_default_config, validate_config
 
-pytestmark = [
-    pytest.mark.verifies("REQ_INVALID_CONFIGURATION_ERRORS[revision==1]"),
-    pytest.mark.verification_kind("unit"),
-]
+pytestmark = [pytest.mark.verification_kind("unit")]
 
 
+@pytest.mark.verifies("TREQ_CONFIG_RETRY_ATTEMPTS[revision==1]")
+@pytest.mark.coverage_item("VC_CONFIG_RETRY_ATTEMPTS")
 def test_validation_rejects_invalid_retry_policy() -> None:
     config = build_default_config()
     invalid_retry = replace(config.retry_policy, max_attempts=0)
@@ -23,6 +22,8 @@ def test_validation_rejects_invalid_retry_policy() -> None:
         validate_config(invalid_config)
 
 
+@pytest.mark.verifies("TREQ_CONFIG_ATTEMPT_TIMEOUT[revision==1]")
+@pytest.mark.coverage_item("VC_CONFIG_ATTEMPT_TIMEOUT")
 def test_validation_rejects_invalid_policy_timeout() -> None:
     config = build_default_config()
     invalid_policy = replace(config.policy, attempt_timeout_seconds=0)
@@ -33,6 +34,8 @@ def test_validation_rejects_invalid_policy_timeout() -> None:
         validate_config(invalid_config)
 
 
+@pytest.mark.verifies("TREQ_CONFIG_PROVIDER_IDENTITY[revision==1]")
+@pytest.mark.coverage_item("VC_CONFIG_PROVIDER_IDENTITY")
 def test_validation_rejects_provider_spec_key_mismatch() -> None:
     config = build_default_config()
     provider_specs = dict(config.catalog.providers)
@@ -47,6 +50,8 @@ def test_validation_rejects_provider_spec_key_mismatch() -> None:
         validate_config(invalid_config)
 
 
+@pytest.mark.verifies("TREQ_CONFIG_REQUIRED_BASE_URL[revision==1]")
+@pytest.mark.coverage_item("VC_CONFIG_REQUIRED_BASE_URL")
 def test_validation_rejects_missing_required_base_url() -> None:
     config = build_default_config()
     provider_base_urls = dict(config.provider_base_urls)
