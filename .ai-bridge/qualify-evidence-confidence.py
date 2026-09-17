@@ -38,7 +38,7 @@ def environment() -> dict[str, str | None]:
         "py_lib_testkit": version_or_unknown("py-lib-testkit"),
         "coverage": version_or_unknown("coverage"),
         "assurance_adapter_sha256": sha256_file(ROOT / ".ai-bridge/build-mutation-report-prototype.py"),
-        "requirement_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-requirement-monitor-experiment.py"),
+        "requirement_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-requirement-monitor.py"),
         "qualification_harness_sha256": sha256_file(Path(__file__)),
         "trace_bridge_sha256": sha256_file(ROOT / "tests/conftest.py"),
     }
@@ -341,7 +341,7 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
 
 def internal_controls() -> dict[str, dict[str, object]]:
     adapter = runpy.run_path(str(ROOT / ".ai-bridge/build-mutation-report-prototype.py"), run_name="evidence_confidence_adapter")
-    monitor = runpy.run_path(str(ROOT / ".ai-bridge/build-requirement-monitor-experiment.py"), run_name="evidence_confidence_monitor")
+    monitor = runpy.run_path(str(ROOT / ".ai-bridge/build-requirement-monitor.py"), run_name="evidence_confidence_monitor")
 
     execution_link_state = adapter["execution_link_state"]
     good = execution_link_state(

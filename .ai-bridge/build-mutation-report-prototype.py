@@ -3162,7 +3162,7 @@ def current_evidence_qualification_environment():
       "py_lib_testkit":package_version_or_unknown("py-lib-testkit"),
       "coverage":package_version_or_unknown("coverage"),
       "assurance_adapter_sha256":sha256_file(ROOT/".ai-bridge/build-mutation-report-prototype.py"),
-      "requirement_monitor_sha256":sha256_file(ROOT/".ai-bridge/build-requirement-monitor-experiment.py"),
+      "requirement_monitor_sha256":sha256_file(ROOT/".ai-bridge/build-requirement-monitor.py"),
       "qualification_harness_sha256":sha256_file(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
       "trace_bridge_sha256":sha256_file(ROOT/"tests/conftest.py"),
     }
@@ -3734,7 +3734,6 @@ def requirement_monitor_block(monitor_json):
 .tf-p34-cell.is-na{color:var(--pst-color-text-muted);background:color-mix(in srgb,var(--pst-color-border) 14%,transparent)}
 .tf-p34-cell:disabled{cursor:default;opacity:.62}
 .tf-p34-cell.is-selected{outline:2px solid var(--pst-color-primary);outline-offset:1px}
-.tf-p34-extra{display:inline-block;margin-top:.16rem;font-size:.57rem;font-weight:750;letter-spacing:.04em;color:var(--pst-color-primary)}
 .tf-p34-panel{margin:.65rem 0 0;padding:.7rem .8rem;border:1px solid var(--pst-color-border);border-radius:.45rem;background:var(--pst-color-surface)}
 .tf-p34-panel-head{display:flex;align-items:center;justify-content:space-between;gap:.7rem;margin-bottom:.55rem}
 .tf-p34-panel-head h4{font-size:.88rem;margin:0}
@@ -3817,22 +3816,17 @@ def requirement_monitor_block(monitor_json):
     if(!target) return "N/A";
     return passedForTarget(c,target).length===Number(target.declared_count||0)?"MET":"NOT MET";
   }
-  function extraActual(c,level,boundary){
-    return Object.values(c.coverage_actual||{}).filter(row=>row.level===level&&row.boundary===boundary).length;
-  }
   function groupForDepth(c,depth){
     return Object.values(c.fault_actual.groups||{}).find(row=>row.system_reach===depth)||{};
   }
   function faultGroupStats(c,group){
     const required=(group.items||[]).filter(item=>item.state==="required");
-    const optional=(group.items||[]).filter(item=>item.state==="optional");
     const classes=c.fault_actual.classes||{};
     const exercised=required.filter(item=>classes[item.id]?.exercised);
     const detected=exercised.filter(item=>classes[item.id]?.detected);
-    const optionalExercised=optional.filter(item=>classes[item.id]?.exercised);
     let status="N/A";
     if(required.length) status=(exercised.length===required.length&&detected.length===required.length)?"MET":"NOT MET";
-    return {required,optional,exercised,detected,optionalExercised,status};
+    return {required,exercised,detected,status};
   }
   function implementationSensitivity(c){
     const comp=groupForDepth(c,"component");
@@ -3894,11 +3888,10 @@ def requirement_monitor_block(monitor_json):
         const target=targetCell(c,level,boundary);
         const status=cellStatus(c,target);
         const passed=target?passedForTarget(c,target).length:0;
-        const extra=!target?extraActual(c,level,boundary):0;
         const key=level+"|"+boundary;
-        const subtitle=target?(passed+" / "+Number(target.declared_count||0)):(extra?extra+" path"+(extra===1?"":"s"):"");
+        const subtitle=target?(passed+" / "+Number(target.declared_count||0)):"";
         const disabled=!target;
-        body+='<td><button type="button" class="tf-p34-cell '+statusClass(status)+(selected===key?' is-selected':'')+'"'+(disabled?' disabled aria-disabled="true"':' data-cell="'+esc(key)+'"')+'><strong>'+esc(statusLabel(status))+'</strong><small>'+esc(subtitle)+'</small>'+(extra?'<span class="tf-p34-extra">EXTRA</span>':'')+'</button></td>';
+        body+='<td><button type="button" class="tf-p34-cell '+statusClass(status)+(selected===key?' is-selected':'')+'"'+(disabled?' disabled aria-disabled="true"':' data-cell="'+esc(key)+'"')+'><strong>'+esc(statusLabel(status))+'</strong><small>'+esc(subtitle)+'</small></button></td>';
       }
       body+='</tr>';
     }
@@ -4003,10 +3996,9 @@ def requirement_monitor_block(monitor_json):
   function faultTabsHtml(c,selected){
     return '<div class="tf-p34-fault-tabs">'+(c.target.fault_groups||[]).map((group,index)=>{
       const stats=faultGroupStats(c,group);
-      const extra=stats.optionalExercised.length;
       const disabled=!stats.required.length;
       if(disabled){
-        return '<button type="button" class="tf-p34-fault-tab '+statusClass(stats.status)+'" disabled aria-disabled="true"><strong>'+esc(group.label)+' · N/A</strong><span>No required fault classes</span>'+(extra?'<span class="tf-p34-extra">EXTRA evidence</span>':'')+'</button>';
+        return '<button type="button" class="tf-p34-fault-tab '+statusClass(stats.status)+'" disabled aria-disabled="true"><strong>'+esc(group.label)+' · N/A</strong><span>No required fault classes</span></button>';
       }
       const coverage=stats.exercised.length+' / '+stats.required.length;
       return '<button type="button" class="tf-p34-fault-tab '+statusClass(stats.status)+(index===selected?' is-selected':'')+'" data-fault-tab="'+index+'"><strong>'+esc(group.label)+' · '+esc(statusLabel(stats.status))+'</strong><span>Coverage '+esc(coverage)+'</span><span>Detection '+esc(faultDetectionText(c,group,stats))+'</span></button>';
@@ -4075,7 +4067,7 @@ def requirement_monitor_block(monitor_json):
   function faultHtml(c,selected){
     const requiredTotal=(c.target.fault_groups||[]).flatMap(g=>g.items||[]).filter(i=>i.state==="required").length;
     const exercisedTotal=(c.target.fault_groups||[]).flatMap(g=>g.items||[]).filter(i=>i.state==="required"&&c.fault_actual.classes[i.id]?.exercised).length;
-    const help="Requirement-selected fault checks; N/A is non-blocking and EXTRA is retained non-required evidence.";
+    const help="Requirement-selected fault checks; N/A means this group has no required fault classes for this Requirement.";
     return '<section class="tf-p34-section" id="ce-faults-'+esc(c.id.toLowerCase())+'"><div class="tf-p34-section-head"><h3><span class="tf-p34-signal-name">2. Fault-based Testing'+helpButton(help)+'</span></h3><small>'+exercisedTotal+' of '+requiredTotal+' required classes exercised</small></div>'+
       '<div class="tf-p34-fault-tabs-host">'+faultTabsHtml(c,selected)+'</div><div class="tf-p34-fault-detail">'+faultDetailHtml(c,selected)+'</div></section>';
   }
@@ -5221,6 +5213,10 @@ def integrate_mutation_portal(summary,feedback):
     ensure_root_favicon()
     write_mutation_analysis_page(summary,feedback)
     patch_contract_evidence_view()
+    subprocess.run(
+      [sys.executable,str(ROOT/".ai-bridge/build-requirement-monitor.py")],
+      cwd=ROOT,check=True,
+    )
     patch_traceability_contract_evidence_links()
     patch_verification_contract_evidence_path()
     patch_living_semantic_pages()

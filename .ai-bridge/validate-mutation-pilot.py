@@ -31,7 +31,6 @@ def main() -> None:
         HTML / "mutation-analysis.html",
         HTML / "verification-depth-map.html",
         HTML / "verification-assurance.html",
-        HTML / "verification-assurance-experiment.html",
         HTML / "requirement-monitor-facts.json",
         HTML / "evidence-run-provenance.json",
         HTML / "evidence-confidence-qualification.json",
@@ -82,7 +81,6 @@ def main() -> None:
     readiness = (BRIDGE / "monitor-readiness.md").read_text()
     test_plan_source = (ROOT / "docs/test-plan.md").read_text()
     test_plan_html = (HTML / "test-plan.html").read_text()
-    experiment_page = (HTML / "verification-assurance-experiment.html").read_text()
     configuration_source = (ROOT / "docs/requirements/configuration.md").read_text()
     verification_profile_source = (ROOT / "docs/verification-profiles/invalid-configuration.md").read_text()
     verification_profile_html = (HTML / "verification-profiles/invalid-configuration.html").read_text()
@@ -524,28 +522,37 @@ def main() -> None:
     check("TERNFORGE-NO-CACHE" in assurance_page and
           'http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"' in assurance_page,
           "P34 monitor HTML prevents stale local browser caching")
-    check(all(label in experiment_page for label in (
+    check('id="ce-coverage-req_invalid_configuration_errors"' in assurance_page and
+          'id="ce-faults-req_invalid_configuration_errors"' in assurance_page and
+          'id="ce-history-req_invalid_configuration_errors"' in assurance_page and
+          'id="tf-requirement-monitor"' in assurance_page and
+          "EXPERIMENT" not in assurance_page,
+          "accepted Requirement monitor is installed at canonical Contract Evidence anchors")
+    check(not (HTML / "verification-assurance-experiment.html").exists(),
+          "retired experiment page is not emitted after canonical cutover")
+    check(all(label in assurance_page for label in (
               "Required evidence", "Retained path properties", "Evidence confidence",
               "passing required evidence", "4 pass", "1 missing", "scope-count", "model paths",
           )),
-          "P34 experiment makes required evidence the lead story and scopes properties to retained paths")
-    check(all(label in experiment_page for label in ("N/A", "L0", "L1", "L2", "L3", "L4", "UNKNOWN", "NOT DECLARED", "INACTIVE")) and
-          "dependent-wrap" in experiment_page and "M&amp;S validation" in experiment_page,
-          "P34 experiment nests M&S under Representation while retaining the complete inactive state space")
-    check("ALL items" not in experiment_page and "ALL paths" not in experiment_page and
-          "Conditional model check" not in experiment_page and "Depends on Representation" not in experiment_page,
-          "P34 experiment removes quantifier/meta prose that duplicated the visible denominators and hierarchy")
-    check(".signal-card.na-signal{opacity:" not in experiment_page and
-          "background:var(--pst-color-background)" in experiment_page and
-          "PASS appears only when every required verification path" in experiment_page,
-          "P34 experiment keeps inactive tooltips opaque and uses the public PASS / FAIL vocabulary")
-    check(all(label in experiment_page for label in (
+          "P34 canonical monitor makes required evidence the lead story and scopes properties to retained paths")
+    check(all(label in assurance_page for label in ("N/A", "L0", "L1", "L2", "L3", "L4", "UNKNOWN", "NOT DECLARED", "INACTIVE")) and
+          "dependent-wrap" in assurance_page and "M&amp;S validation" in assurance_page,
+          "P34 canonical monitor nests M&S under Representation while retaining the complete inactive state space")
+    check("ALL items" not in assurance_page and "ALL paths" not in assurance_page and
+          "Conditional model check" not in assurance_page and "Depends on Representation" not in assurance_page,
+          "P34 canonical monitor removes quantifier/meta prose that duplicated the visible denominators and hierarchy")
+    check(".signal-card.na-signal{opacity:" not in assurance_page and
+          "background:var(--pst-color-background)" in assurance_page and
+          "PASS appears only when every required verification path" in assurance_page,
+          "P34 canonical monitor keeps inactive tooltips opaque and uses the public PASS / FAIL vocabulary")
+    check(all(label in assurance_page for label in (
               "Fault classes", "Required", "Challenged", "Detected",
               "Mutation checks", "Generated", "Reached", "Killed",
               "27/31", "11/27", "27/27",
           )) and
-          "Detection effectiveness" not in experiment_page,
-          "P34 experiment renders fault evidence as dependent denominator chains instead of flat independent metrics")
+          "Detection effectiveness" not in assurance_page and
+          "EXTRA" not in assurance_page,
+          "P34 canonical monitor renders fault evidence as dependent denominator chains without non-blocking evidence badges")
     for criterion_text in (
         "A mismatched provider key and provider identity is rejected as invalid configuration.",
         "An undeclared requested model is rejected before provider execution.",
@@ -566,12 +573,12 @@ def main() -> None:
           )),
           "P34 Fault-based Testing uses project Test Model groups as tabs")
     check("No required fault classes" in assurance_page and
-          "EXTRA evidence" in assurance_page and
+          "EXTRA" not in assurance_page and
           "if(!stats.required.length) return ''" in assurance_page and
           'disabled aria-disabled="true"' in assurance_page,
-          "P34 N/A fault groups are disabled, show only non-blocking EXTRA evidence, and do not render misleading 0/0 detail")
+          "P34 N/A fault groups are disabled without surfacing non-blocking optional evidence in the monitor")
     check("Rows = Test Levels; columns = boundary modes" in assurance_page and
-          "Requirement-selected fault checks; N/A is non-blocking and EXTRA is retained non-required evidence." in assurance_page,
+          "Requirement-selected fault checks; N/A means this group has no required fault classes for this Requirement." in assurance_page,
           "P34 section-level ? help stays compact while explaining matrix axes and fault scope")
     check("metricRow('Required fault classes exercised',String(stats.exercised.length),String(stats.required.length)" in assurance_page and
           "metricRow('Exercised classes detected',String(detected),String(stats.exercised.length)" in assurance_page and
@@ -611,8 +618,10 @@ def main() -> None:
           '"valid_mutants":102' in assurance_page and
           '"score":59.8' in assurance_page,
           "P34 embeds exact mutation Actuals with separate denominators")
-    check("EXTRA" in assurance_page and "optional" in assurance_page,
-          "P34 distinguishes optional retained evidence from blocking Target status")
+    check("runtime.latency-timeout" in assurance_page and
+          "architecture.forbidden-edge" in assurance_page and
+          "optional" in assurance_page and "EXTRA" not in assurance_page,
+          "P34 retains optional fault evidence in underlying facts without surfacing it as a monitor badge")
 
     check("Verification status" in assurance_page and
           "Component sensitivity" in assurance_page and
@@ -997,7 +1006,7 @@ def main() -> None:
         "assurance-targets.json",
         "assurance-snapshots.json",
         "build-mutation-report-prototype.py",
-        "build-requirement-monitor-experiment.py",
+        "build-requirement-monitor.py",
         "qualify-evidence-confidence.py",
         "validate-mutation-pilot.py",
         "mutation-testing-integration-plan.md",
