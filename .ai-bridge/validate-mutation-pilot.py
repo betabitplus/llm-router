@@ -671,7 +671,9 @@ def main() -> None:
     ):
         check(
             '<div class="overall met">PASS</div>' in page
-            and "No blocking fault checks selected" in page
+            and "No blocking fault checks selected" not in page
+            and "This Verification Profile does not make fault-based testing a blocking target." not in page
+            and 'class="fault-layout no-inspector"' in page
             and '<span class="status na">N/A</span>' in page,
             f"{contract_id}: complete semantic evidence passes while non-selected Fault model remains N/A",
         )
