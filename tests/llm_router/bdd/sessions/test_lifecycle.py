@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+import pytest
 from pytest_bdd import given, scenarios, then, when
 
 from llm_router import Session
@@ -13,6 +14,35 @@ from tests.llm_router.support.workers.concurrency_isolation import (
 )
 
 scenarios("sessions/lifecycle.feature")
+
+for _test_name, _criterion in (
+    (
+        "test_remembered_turns_are_included_in_later_messages",
+        "VC_SESSION_HISTORY_INCLUDED",
+    ),
+    (
+        "test_history_can_be_ignored_for_one_request",
+        "VC_SESSION_HISTORY_SUPPRESSED",
+    ),
+    (
+        "test_a_fork_starts_with_the_same_history_and_then_changes_independently",
+        "VC_SESSION_FORK_ISOLATION",
+    ),
+    (
+        "test_saving_and_loading_preserves_the_session",
+        "VC_SESSION_PUBLIC_PERSISTENCE",
+    ),
+    (
+        "test_clearing_a_session_removes_history_but_keeps_it_reusable",
+        "VC_SESSION_CLEAR_REUSE",
+    ),
+    (
+        "test_concurrent_requests_keep_their_session_state_separate",
+        "VC_SESSION_CONCURRENT_ISOLATION",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
+del _criterion, _test_name
 
 
 def _session() -> Session:

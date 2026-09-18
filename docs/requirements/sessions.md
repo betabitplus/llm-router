@@ -82,10 +82,11 @@ Contracts in this capability:
 
 **Rationale.** Conversation history is useful only when its inclusion and lifecycle remain explicit; accidental sharing or irreversible mutation would make session behavior unsafe and difficult to reason about.
 
-**Verification intent.** Exercise the public session API across remembering, one-shot history suppression, forking, clearing, reuse, and concurrent requests, and verify the observable histories remain independent where required.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-session-lifecycle>`
 
 ```{needlist}
 :filter: "'REQ_SESSION_LIFECYCLE' in derives or 'REQ_SESSION_LIFECYCLE' in implements or 'REQ_SESSION_LIFECYCLE' in verifies"
@@ -105,10 +106,11 @@ Contracts in this capability:
 
 **Rationale.** Persisted sessions are useful only if restoring them preserves the conversation semantics needed for subsequent requests.
 
-**Verification intent.** Save and restore representative sessions through the public lifecycle and use property-based coverage to verify supported state round-trips across varied content and metadata.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-session-persistence>`
 
 ```{needlist}
 :filter: "'REQ_SESSION_PERSISTENCE' in derives or 'REQ_SESSION_PERSISTENCE' in implements or 'REQ_SESSION_PERSISTENCE' in verifies"
@@ -128,10 +130,11 @@ Contracts in this capability:
 
 **Rationale.** Binary media and versioned serialized data are low-level compatibility boundaries where silent coercion or best-effort loading could corrupt restored session state.
 
-**Verification intent.** Directly verify supported media serialization and explicit rejection of unsupported serialized versions.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-session-persistence>`
 
 ```{needlist}
 :filter: "'TREQ_SESSION_SERIALIZATION' in derives or 'TREQ_SESSION_SERIALIZATION' in implements or 'TREQ_SESSION_SERIALIZATION' in verifies"

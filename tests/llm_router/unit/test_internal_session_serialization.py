@@ -14,6 +14,7 @@ pytestmark = [
 ]
 
 
+@pytest.mark.coverage_item("VC_SESSION_SERIALIZATION_MEDIA")
 def test_save_load_preserves_embedded_media_bytes(tmp_path: Path) -> None:
     file_path = tmp_path / "input.bin"
     file_path.write_bytes(b"file-bytes")
@@ -36,6 +37,7 @@ def test_save_load_preserves_embedded_media_bytes(tmp_path: Path) -> None:
     assert parts[1].fps == 2
 
 
+@pytest.mark.coverage_item("VC_SESSION_SERIALIZATION_VERSION_REJECTION")
 def test_load_rejects_unsupported_serialization_version(tmp_path: Path) -> None:
     path = tmp_path / "session.json"
     path.write_text('{"version": 999, "system": null, "history": []}')

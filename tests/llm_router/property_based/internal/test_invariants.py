@@ -95,6 +95,7 @@ def test_repair_prompt_remains_bounded(
 
 
 @pytest.mark.verifies("REQ_SESSION_PERSISTENCE[revision==1]")
+@pytest.mark.coverage_item("VC_SESSION_PERSISTENCE_GENERATED_STATE")
 @pytest.mark.verification_kind("property")
 @given(turns=st.lists(_TURN, max_size=5))
 @settings(deadline=None)

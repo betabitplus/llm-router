@@ -220,6 +220,56 @@
 
 **Completion:** required criteria = **100%** · declared retained paths = **100%**
 
+(test-plan-session-lifecycle-model)=
+
+### Session lifecycle
+
+| Layer                 | Required denominator                                                             |
+| --------------------- | -------------------------------------------------------------------------------- |
+| Component integration | history inclusion, one-shot history suppression, fork isolation, and clear/reuse |
+| System                | concurrent public requests preserving both session history and routing isolation |
+
+**Design:** state-transition testing · copy-vs-share semantics · explicit history suppression · clear/reuse · concurrent isolation
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-session-persistence-model)=
+
+### Session persistence
+
+| Layer                 | Required denominator                                                                                  |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
+| Component             | generated text/metadata round-trip, supported media serialization, and incompatible-version rejection |
+| Component integration | public Session save/load round-trip                                                                   |
+
+**Design:** property-based round-trip · binary media preservation · serialization-version boundary · public lifecycle round-trip
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-public-api-model)=
+
+### Public package surface
+
+| Layer     | Required denominator                                                        |
+| --------- | --------------------------------------------------------------------------- |
+| Component | the complete current package-declared public surface (`llm_router.__all__`) |
+
+**Design:** authoritative export-set enumeration · package-root resolution
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-example-import-safety-model)=
+
+### Executable example import safety
+
+| Layer     | Required denominator                                                                     |
+| --------- | ---------------------------------------------------------------------------------------- |
+| Component | every shipped Python example module under `examples/llm_router`, excluding `__init__.py` |
+
+**Design:** fresh-module import · network sentinel · live-router call sentinel · one retained path per shipped module
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
 (test-plan-fault-model)=
 
 ### Fault-based testing

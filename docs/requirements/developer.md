@@ -73,10 +73,11 @@ Contracts in this capability:
 
 **Rationale.** A coherent package-root surface gives callers a stable import contract and lets internal module organization evolve without becoming public API accidentally.
 
-**Verification intent.** Compare the declared public surface with actual package-root imports and verify each exported symbol resolves without importing private modules directly.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-public-api-surface>`
 
 ```{needlist}
 :filter: "'REQ_PUBLIC_API_SURFACE' in derives or 'REQ_PUBLIC_API_SURFACE' in implements or 'REQ_PUBLIC_API_SURFACE' in verifies"
@@ -110,10 +111,11 @@ Contracts in this capability:
 
 **Rationale.** Documentation tooling, IDEs, static analysis, and users may import example modules for inspection; import must therefore remain safe and deterministic.
 
-**Verification intent.** Import every shipped example in an isolated test context and verify the import itself does not initiate its executable workflow or network activity.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-example-import-safety>`
 
 ```{needlist}
 :filter: "'REQ_EXAMPLE_IMPORT_SAFETY' in derives or 'REQ_EXAMPLE_IMPORT_SAFETY' in implements or 'REQ_EXAMPLE_IMPORT_SAFETY' in verifies"

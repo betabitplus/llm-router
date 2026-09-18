@@ -49,6 +49,10 @@ def main() -> None:
         HTML / "contract-evidence-async-provider-execution.html",
         HTML / "contract-evidence-response-normalization.html",
         HTML / "contract-evidence-provider-error-boundary.html",
+        HTML / "contract-evidence-session-lifecycle.html",
+        HTML / "contract-evidence-session-persistence.html",
+        HTML / "contract-evidence-public-api-surface.html",
+        HTML / "contract-evidence-example-import-safety.html",
         HTML / "requirement-monitor-facts.json",
         HTML / "evidence-run-provenance.json",
         HTML / "evidence-confidence-qualification.json",
@@ -84,6 +88,10 @@ def main() -> None:
         HTML / "verification-profiles/security.html",
         ROOT / "docs/verification-profiles/providers.md",
         HTML / "verification-profiles/providers.html",
+        ROOT / "docs/verification-profiles/sessions.md",
+        HTML / "verification-profiles/sessions.html",
+        ROOT / "docs/verification-profiles/developer.md",
+        HTML / "verification-profiles/developer.html",
         ROOT / "test-results/evidence-run-inputs.json",
     ]
     for path in required:
@@ -120,6 +128,10 @@ def main() -> None:
     security_profile_source = (ROOT / "docs/verification-profiles/security.md").read_text()
     provider_requirements_source = (ROOT / "docs/requirements/providers.md").read_text()
     provider_profile_source = (ROOT / "docs/verification-profiles/providers.md").read_text()
+    session_requirements_source = (ROOT / "docs/requirements/sessions.md").read_text()
+    session_profile_source = (ROOT / "docs/verification-profiles/sessions.md").read_text()
+    developer_requirements_source = (ROOT / "docs/requirements/developer.md").read_text()
+    developer_profile_source = (ROOT / "docs/verification-profiles/developer.md").read_text()
     pyproject_source = (ROOT / "pyproject.toml").read_text()
     unit_config_source = (ROOT / "tests/llm_router/unit/test_internal_config_validation.py").read_text()
     bdd_public_contract_source = (ROOT / "tests/llm_router/bdd/responses/test_public_contract.py").read_text()
@@ -150,6 +162,10 @@ def main() -> None:
         "(test-plan-structured-recovery-model)=",
         "(test-plan-sensitive-runtime-diagnostics-model)=",
         "(test-plan-vcr-redaction-model)=",
+        "(test-plan-session-lifecycle-model)=",
+        "(test-plan-session-persistence-model)=",
+        "(test-plan-public-api-model)=",
+        "(test-plan-example-import-safety-model)=",
         "(test-plan-fault-model)=",
         "Mutation Reach floor",
         "Mutation Sensitivity floor",
@@ -304,6 +320,46 @@ def main() -> None:
         "VC_PROVIDER_ERROR_SDK",
         "### Fault applicability",
     )), "Provider Verification Profiles own independent coverage targets and explicit Fault Models")
+    check(all(token in session_requirements_source for token in (
+        ":id: GOAL_SESSION_CONTINUITY",
+        ":id: REQ_SESSION_LIFECYCLE",
+        ":id: REQ_SESSION_PERSISTENCE",
+        ":id: TREQ_SESSION_SERIALIZATION",
+    )), "Session continuity Goal keeps the complete normative lifecycle/persistence contract set")
+    check(
+        "**Verification intent.**" not in session_requirements_source,
+        "Session normative contracts keep HOW in Verification Profiles rather than Requirement cards",
+    )
+    check(all(token in session_profile_source for token in (
+        "## Profile · REQ_SESSION_LIFECYCLE",
+        "## Profile · REQ_SESSION_PERSISTENCE",
+        "VC_SESSION_HISTORY_INCLUDED",
+        "VC_SESSION_HISTORY_SUPPRESSED",
+        "VC_SESSION_FORK_ISOLATION",
+        "VC_SESSION_CLEAR_REUSE",
+        "VC_SESSION_CONCURRENT_ISOLATION",
+        "VC_SESSION_PERSISTENCE_GENERATED_STATE",
+        "VC_SESSION_SERIALIZATION_MEDIA",
+        "VC_SESSION_SERIALIZATION_VERSION_REJECTION",
+        "VC_SESSION_PUBLIC_PERSISTENCE",
+        "### Fault applicability",
+    )), "Session Verification Profiles own independent coverage targets and explicit Fault Models")
+    check(all(token in developer_requirements_source for token in (
+        ":id: GOAL_DEVELOPER_USABILITY",
+        ":id: REQ_PUBLIC_API_SURFACE",
+        ":id: REQ_EXAMPLE_IMPORT_SAFETY",
+    )), "Developer usability Goal keeps the complete normative public-surface/example contract set")
+    check(
+        "**Verification intent.**" not in developer_requirements_source,
+        "Developer normative contracts keep HOW in Verification Profiles rather than Requirement cards",
+    )
+    check(all(token in developer_profile_source for token in (
+        "## Profile · REQ_PUBLIC_API_SURFACE",
+        "## Profile · REQ_EXAMPLE_IMPORT_SAFETY",
+        "VC_PUBLIC_API_ROOT_EXPORTS",
+        "VC_EXAMPLE_IMPORT_SAFETY",
+        "### Fault applicability",
+    )), "Developer Verification Profiles own independent coverage targets and explicit Fault Models")
 
     check(all(token in verification_profile_source for token in (
         "## Profile · REQ_INVALID_CONFIGURATION_ERRORS",
@@ -465,14 +521,14 @@ def main() -> None:
     provenance_subjects = evidence_provenance.get("subjects") or {}
     check(
         depth_facts.get("schema_version") == 4
-        and depth_source.get("tests") == 164
-        and depth_source.get("passed") == 164
+        and depth_source.get("tests") == 169
+        and depth_source.get("passed") == 169
         and depth_audit.get("contracts") == 62
-        and depth_audit.get("runtime_evidence") == 164
+        and depth_audit.get("runtime_evidence") == 169
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
         and depth_audit.get("bdd_feature_scenario_errors") == 0,
-        "Depth facts are reproducibly regenerated from the current 164-test retained run",
+        "Depth facts are reproducibly regenerated from the current 169-test retained run",
     )
     check(
         ((depth_inputs.get("junit") or {}).get("sha256")
@@ -784,6 +840,10 @@ def main() -> None:
     async_provider_page = (HTML / "contract-evidence-async-provider-execution.html").read_text()
     response_normalization_page = (HTML / "contract-evidence-response-normalization.html").read_text()
     provider_error_page = (HTML / "contract-evidence-provider-error-boundary.html").read_text()
+    session_lifecycle_page = (HTML / "contract-evidence-session-lifecycle.html").read_text()
+    session_persistence_page = (HTML / "contract-evidence-session-persistence.html").read_text()
+    public_api_page = (HTML / "contract-evidence-public-api-surface.html").read_text()
+    example_import_page = (HTML / "contract-evidence-example-import-safety.html").read_text()
     spec_page = (HTML / "specification-health.html").read_text()
     health_page = (HTML / "verification-health-map.html").read_text()
     depth_page = (HTML / "verification-depth-map.html").read_text()
@@ -885,10 +945,14 @@ def main() -> None:
         "REQ_ASYNC_PROVIDER_EXECUTION",
         "REQ_RESPONSE_NORMALIZATION",
         "REQ_PROVIDER_ERROR_BOUNDARY",
+        "REQ_SESSION_LIFECYCLE",
+        "REQ_SESSION_PERSISTENCE",
+        "REQ_PUBLIC_API_SURFACE",
+        "REQ_EXAMPLE_IMPORT_SAFETY",
     }
     check(
         set(monitor_facts.get("contracts") or {}) == profiled_contracts,
-        "Configuration, Tools, Routing, Resilience, Data Safety, and Providers slices expose exactly nineteen parent Contract Evidence profiles",
+        "Configuration, Tools, Routing, Resilience, Data Safety, Providers, Sessions, and Developer slices expose exactly twenty-three parent Contract Evidence profiles",
     )
     contract_pages = {
         "REQ_REQUEST_OVERRIDE_PRECEDENCE": override_page,
@@ -910,6 +974,10 @@ def main() -> None:
         "REQ_ASYNC_PROVIDER_EXECUTION": async_provider_page,
         "REQ_RESPONSE_NORMALIZATION": response_normalization_page,
         "REQ_PROVIDER_ERROR_BOUNDARY": provider_error_page,
+        "REQ_SESSION_LIFECYCLE": session_lifecycle_page,
+        "REQ_SESSION_PERSISTENCE": session_persistence_page,
+        "REQ_PUBLIC_API_SURFACE": public_api_page,
+        "REQ_EXAMPLE_IMPORT_SAFETY": example_import_page,
     }
     for contract_id, page in contract_pages.items():
         check(
@@ -1338,6 +1406,108 @@ def main() -> None:
             challenged_faults == set(expected["faults"])
             and challenged_faults < required_faults,
             f"{contract_id}: partial Provider Fault Model remains explicit instead of becoming false-green",
+        )
+        page = contract_pages[contract_id]
+        check(
+            '<div class="overall not-met">FAIL</div>' in page
+            and re.search(
+                r'<strong>Verification coverage.*?<span class="status met">PASS</span>',
+                page,
+                re.DOTALL,
+            )
+            and re.search(
+                r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
+                page,
+                re.DOTALL,
+            ),
+            f"{contract_id}: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
+        )
+
+    small_feature_expectations = {
+        "REQ_SESSION_LIFECYCLE": {
+            ("component_integration", "none"): {
+                "VC_SESSION_HISTORY_INCLUDED": 1,
+                "VC_SESSION_HISTORY_SUPPRESSED": 1,
+                "VC_SESSION_FORK_ISOLATION": 1,
+                "VC_SESSION_CLEAR_REUSE": 1,
+            },
+            ("system", "none"): {"VC_SESSION_CONCURRENT_ISOLATION": 1},
+        },
+        "REQ_SESSION_PERSISTENCE": {
+            ("component", "none"): {
+                "VC_SESSION_PERSISTENCE_GENERATED_STATE": 1,
+                "VC_SESSION_SERIALIZATION_MEDIA": 1,
+                "VC_SESSION_SERIALIZATION_VERSION_REJECTION": 1,
+            },
+            ("component_integration", "none"): {
+                "VC_SESSION_PUBLIC_PERSISTENCE": 1,
+            },
+        },
+        "REQ_PUBLIC_API_SURFACE": {
+            ("component", "none"): {"VC_PUBLIC_API_ROOT_EXPORTS": 1},
+        },
+        "REQ_EXAMPLE_IMPORT_SAFETY": {
+            ("component", "none"): {"VC_EXAMPLE_IMPORT_SAFETY": 6},
+        },
+    }
+    for contract_id, expected_cells in small_feature_expectations.items():
+        contract = monitor_facts["contracts"][contract_id]
+        target_cells = {
+            (row.get("level"), row.get("boundary")): row
+            for row in (contract.get("target") or {}).get("coverage") or []
+        }
+        check(
+            set(target_cells) == set(expected_cells)
+            and all(
+                target_cells[key].get("item_path_counts") == counts
+                for key, counts in expected_cells.items()
+            ),
+            f"{contract_id}: coverage target keeps the independently authored Test level/Boundary denominators",
+        )
+        actual_by_item = contract.get("coverage_actual") or {}
+        for (level, boundary), criteria in expected_cells.items():
+            for criterion_id, expected_paths in criteria.items():
+                rows = [
+                    row
+                    for row in actual_by_item.get(criterion_id) or []
+                    if row.get("level") == level and row.get("boundary") == boundary
+                ]
+                check(
+                    len(rows) == expected_paths
+                    and all(
+                        row.get("result") == "passed"
+                        and row.get("provenance") == "COMPLETE"
+                        and row.get("producer_qualification") == "QUALIFIED"
+                        and row.get("freshness") == "CURRENT"
+                        for row in rows
+                    ),
+                    f"{contract_id}: {criterion_id} retains every declared current/qualified evidence path",
+                )
+        retained = (
+            (contract.get("fault_actual") or {}).get("retained_challenges") or {}
+        )
+        check(
+            retained == {},
+            f"{contract_id}: no fault class is credited without an explicit retained challenge",
+        )
+        required_faults = {
+            item["id"]
+            for group in (contract.get("target") or {}).get("fault_groups") or []
+            for item in group.get("items") or []
+            if item.get("state") == "required"
+        }
+        challenged_faults = {
+            class_id
+            for class_id in required_faults
+            if ((contract.get("fault_actual") or {}).get("classes") or {})
+            .get(class_id, {})
+            .get("exercised")
+        }
+        check(
+            bool(required_faults)
+            and challenged_faults == set()
+            and challenged_faults < required_faults,
+            f"{contract_id}: incomplete required Fault Model remains explicit instead of becoming false-green",
         )
         page = contract_pages[contract_id]
         check(
@@ -2018,6 +2188,29 @@ def main() -> None:
         ),
         "Traceability Reader routes Provider parent/derived contracts to the accepted parent Contract Evidence pages",
     )
+    session_trace_routes = {
+        "REQ_SESSION_LIFECYCLE": "contract-evidence-session-lifecycle.html#ce-coverage-req_session_lifecycle",
+        "REQ_SESSION_PERSISTENCE": "contract-evidence-session-persistence.html#ce-coverage-req_session_persistence",
+        "TREQ_SESSION_SERIALIZATION": "contract-evidence-session-persistence.html#ce-coverage-req_session_persistence",
+    }
+    check(
+        all(
+            f'"{contract_id}": "{href}"' in trace_reader_page
+            for contract_id, href in session_trace_routes.items()
+        ),
+        "Traceability Reader routes Session parent/derived contracts to the accepted parent Contract Evidence pages",
+    )
+    developer_trace_routes = {
+        "REQ_PUBLIC_API_SURFACE": "contract-evidence-public-api-surface.html#ce-coverage-req_public_api_surface",
+        "REQ_EXAMPLE_IMPORT_SAFETY": "contract-evidence-example-import-safety.html#ce-coverage-req_example_import_safety",
+    }
+    check(
+        all(
+            f'"{contract_id}": "{href}"' in trace_reader_page
+            for contract_id, href in developer_trace_routes.items()
+        ),
+        "Traceability Reader routes Developer contracts to the accepted parent Contract Evidence pages",
+    )
     check(
         "Assurance reading path" in verification_page
         and "Requirements and Technical requirements with an accepted Verification Profile" in verification_page
@@ -2181,6 +2374,8 @@ def main() -> None:
         "docs/requirements/resilience.md",
         "docs/requirements/security.md",
         "docs/requirements/providers.md",
+        "docs/requirements/sessions.md",
+        "docs/requirements/developer.md",
         "docs/verification-profiles/",
         "features/tools/",
         "features/routing/",
@@ -2207,6 +2402,7 @@ def main() -> None:
         "tests/llm_router/bdd/tools/",
         "tests/llm_router/bdd/resilience/",
         "tests/llm_router/bdd/security/",
+        "tests/llm_router/bdd/sessions/",
         "tests/llm_router/bdd/execution/cassettes/",
         "tests/llm_router/bdd/structured_output/cassettes/",
         "tests/llm_router/property_based/internal/test_invariants.py",
@@ -2229,6 +2425,9 @@ def main() -> None:
         "tests/llm_router/integration/test_google_genai_adapter_fake.py",
         "tests/llm_router/unit/test_internal_config_validation.py",
         "tests/llm_router/unit/test_internal_usage_normalization.py",
+        "tests/llm_router/unit/test_internal_session_serialization.py",
+        "tests/llm_router/unit/test_public_package.py",
+        "tests/test_examples.py",
         "tests/llm_router/unit/test_internal_provider_retry.py",
         "tests/llm_router/unit/test_internal_log_safety.py",
         "tests/llm_router/unit/test_internal_key_resolution.py",

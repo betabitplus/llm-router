@@ -1,12 +1,16 @@
-"""Offline contract checks for live examples."""
+"""Offline contract checks for shipped examples."""
 
 from __future__ import annotations
 
 import importlib
 import socket
+import sys
 from pathlib import Path
+from threading import Thread
 
 import pytest
+
+from llm_router import LLMRouter
 
 EXAMPLES_DIR = Path(__file__).resolve().parents[1] / "examples" / "llm_router"
 
@@ -19,20 +23,38 @@ def _example_modules() -> list[str]:
     ]
 
 
+def _block_live_workflow(*_args: object, **_kwargs: object) -> None:
+    msg = "example import attempted to start a live workflow"
+    raise AssertionError(msg)
+
+
 @pytest.mark.hermetic
 @pytest.mark.verifies("REQ_EXAMPLE_IMPORT_SAFETY[revision==1]")
+@pytest.mark.coverage_item("VC_EXAMPLE_IMPORT_SAFETY")
 @pytest.mark.verification_kind("unit")
-def test_examples_import_without_network(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Examples remain importable without starting live workflows."""
+@pytest.mark.parametrize(
+    "module",
+    _example_modules(),
+    ids=lambda module: module.rsplit(".", maxsplit=1)[-1],
+)
+def test_example_import_is_safe(
+    module: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Each shipped example executes a fresh import without starting live work."""
+    monkeypatch.setattr(socket.socket, "connect", _block_live_workflow)
+    monkeypatch.setattr(socket.socket, "bind", _block_live_workflow)
+    monkeypatch.setattr(socket, "create_connection", _block_live_workflow)
+    monkeypatch.setattr(Thread, "start", _block_live_workflow)
+    monkeypatch.setattr(LLMRouter, "query", _block_live_workflow)
+    monkeypatch.setattr(LLMRouter, "aquery", _block_live_workflow)
 
-    def block_network(*_args: object, **_kwargs: object) -> None:
-        msg = "example import attempted network access"
-        raise AssertionError(msg)
-
-    monkeypatch.setattr(socket.socket, "connect", block_network)
-    monkeypatch.setattr(socket, "create_connection", block_network)
-
-    modules = _example_modules()
-    assert modules
-    for module in modules:
-        importlib.import_module(module)
+    sys.modules.pop(module, None)
+    previous_package = sys.modules.pop("llm_router", None)
+    try:
+        importlib.invalidate_caches()
+        imported = importlib.import_module(module)
+        assert imported.__name__ == module
+    finally:
+        if previous_package is not None:
+            sys.modules["llm_router"] = previous_package

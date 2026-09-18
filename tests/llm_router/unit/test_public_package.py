@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import importlib
+import sys
 from dataclasses import replace
 
 import pytest
@@ -11,10 +13,18 @@ from llm_router import LLMRouterConfig
 
 
 @pytest.mark.verifies("REQ_PUBLIC_API_SURFACE[revision==1]")
+@pytest.mark.coverage_item("VC_PUBLIC_API_ROOT_EXPORTS")
 @pytest.mark.verification_kind("unit")
 def test_declared_public_api_resolves() -> None:
-    assert package.__version__
-    assert all(hasattr(package, name) for name in package.__all__)
+    previous_package = sys.modules.pop("llm_router", None)
+    try:
+        reloaded = importlib.import_module("llm_router")
+        assert reloaded.__version__
+        assert reloaded.__all__
+        assert all(hasattr(reloaded, name) for name in reloaded.__all__)
+    finally:
+        if previous_package is not None:
+            sys.modules["llm_router"] = previous_package
 
 
 @pytest.mark.verifies("REQ_CONFIG_INSTALLATION_COHERENCE[revision==2]")
