@@ -131,6 +131,7 @@ def available_route_is_used(case: dict[str, Any]) -> None:
         None,
     ]
     assert case["server"].request_count("POST", _OPENAI_PATH) == 2
+    case["server"].retain_current_boundary_evidence()
 
 
 @given("every route is temporarily blocked", target_fixture="case")

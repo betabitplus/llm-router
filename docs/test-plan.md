@@ -66,6 +66,31 @@
 
 **Completion:** required coverage = **100%**
 
+(test-plan-tool-selection-model)=
+
+### Tool selection
+
+| Layer              | Required denominator                                                                                                       |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| System integration | every provider-family partition selected by the verification profile, with each declared retained path present and passing |
+
+**Design:** provider-family capability partitioning · explicit named choice vs alternate registered tool · provider-boundary request inspection
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-tool-execution-model)=
+
+### Tool execution
+
+| Layer              | Required denominator                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| Component          | verification-profile-selected registry semantics: duplicate rejection, callable schema/execution, supported call-shape parsing |
+| System integration | selected multi-round and runtime-safety workflows, including every provider-family partition declared by the profile           |
+
+**Design:** state-transition testing · provider-family capability partitioning · tool-result round trip · public error boundary · bounded round termination
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
 (test-plan-fault-model)=
 
 ### Fault-based testing

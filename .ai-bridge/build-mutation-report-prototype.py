@@ -30,10 +30,11 @@ ROOT=Path.cwd()
 if str(ROOT) not in sys.path:
     sys.path.insert(0,str(ROOT))
 OUT=ROOT/"docs/_build/html/mutation-results"
-DEPTH=json.loads((ROOT/"docs/_build/html/verification-depth-facts.json").read_text())
+DEPTH_FACTS_PATH=ROOT/"docs/_build/html/verification-depth-facts.json"
+DEPTH: dict[str, Any]=json.loads(DEPTH_FACTS_PATH.read_text())
 STRENGTH_PATH=ROOT/"docs/_build/html/verification-test-strength-facts.json"
-STRENGTH=json.loads(STRENGTH_PATH.read_text())
-TEST_META={r["nodeid"]:r for r in DEPTH["tests"]}
+STRENGTH: dict[str, Any]=json.loads(STRENGTH_PATH.read_text())
+TEST_META: dict[str, dict[str, Any]]={r["nodeid"]:r for r in DEPTH["tests"]}
 COVERAGE_DB=ROOT/"test-results/.coverage"
 COVERAGE_JSON_PATH=ROOT/"test-results/coverage.json"
 JUNIT_PATH=ROOT/"test-results/pytest-junit.xml"
@@ -216,7 +217,8 @@ def resolve_diff_scope(base_ref):
         }
     return selection
 
-def contract_fingerprints(contract_id,spec):
+def contract_fingerprints(contract_id,spec,mutmut_version=None):
+    mutmut_version=mutmut_version or package_version("mutmut")
     source_fp=sha256_text(scope_source(spec))
     tests_payload=[{"nodeid":nodeid,"source":test_source(nodeid)} for nodeid in spec["tests"]]
     tests_fp=sha256_text(stable_json(tests_payload))
@@ -228,7 +230,7 @@ def contract_fingerprints(contract_id,spec):
       "tests":spec["tests"],
       "mutation_config":MUTATION_CONFIG,
       "adapter_version":MUTATION_SEMANTICS_VERSION,
-      "mutmut_version":package_version("mutmut"),
+      "mutmut_version":mutmut_version,
     }
     config_fp=sha256_text(stable_json(config_payload))
     combined=sha256_text(stable_json({
@@ -256,9 +258,10 @@ def relevant_allure_run_fingerprint():
             rows.append(row)
     return sha256_text(stable_json(rows))
 
-def build_campaign_inputs(mode,base_ref,contract_ids=None):
+def build_campaign_inputs(mode,base_ref,contract_ids=None,mutmut_version=None):
     ids=list(CONTRACTS.keys()) if contract_ids is None else list(contract_ids)
-    contracts={cid:contract_fingerprints(cid,CONTRACTS[cid]) for cid in ids}
+    mutmut_version=mutmut_version or package_version("mutmut")
+    contracts={cid:contract_fingerprints(cid,CONTRACTS[cid],mutmut_version) for cid in ids}
     head=git_sha()
     base=git_sha(base_ref) if base_ref else None
     identity_payload={
@@ -267,7 +270,7 @@ def build_campaign_inputs(mode,base_ref,contract_ids=None):
       "base_sha":base,
       "contracts":contracts,
       "adapter_version":MUTATION_SEMANTICS_VERSION,
-      "mutmut_version":package_version("mutmut"),
+      "mutmut_version":mutmut_version,
       "mutation_config":MUTATION_CONFIG,
     }
     campaign_id=f"{mode}-{head[:12]}-{sha256_text(stable_json(identity_payload))[:12]}"
@@ -516,10 +519,15 @@ def run_mutmut(spec):
     write_config(spec)
     env=os.environ.copy()
     env["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"]="YES"
-    env.pop("VIRTUAL_ENV",None)
-    env.pop("UV_RUN_RECURSION_DEPTH",None)
+    mutmut_executable=shutil.which("mutmut")
+    if mutmut_executable:
+        command=[mutmut_executable,"run","--max-children","4"]
+    else:
+        env.pop("VIRTUAL_ENV",None)
+        env.pop("UV_RUN_RECURSION_DEPTH",None)
+        command=["uv","run","--with","mutmut","mutmut","run","--max-children","4"]
     completed=subprocess.run(
-      ["uv","run","--with","mutmut","mutmut","run","--max-children","4"],
+      command,
       cwd=ROOT,
       env=env,
       text=True,
@@ -3083,8 +3091,21 @@ def requirement_monitor_target(contract_id, policy):
     }
     boundary_keys={"Local":"none","Substitute":"substitute","Replay":"replay","Direct live":"direct"}
     representation_keys={"Synthetic":"synthetic_abstract","Surrogate":"surrogate_simulated","Representative":"representative","Actual":"actual"}
+    coverage_rows=markdown_table_after(section,"### Required coverage")
+    boundaries_by_level=defaultdict(set)
+    for coverage_row in coverage_rows:
+        level_key=level_keys.get(coverage_row.get("Test level",""))
+        if not level_key:
+            continue
+        boundary_key=boundary_keys.get(
+          coverage_row.get("Boundary",""),
+          coverage_row.get("Boundary","").lower().replace(" ","_"),
+        )
+        boundaries_by_level[level_key].add(boundary_key)
+
     criterion_rows=markdown_table_after(section,"### Verification criteria")
-    criteria_by_level=defaultdict(list)
+    criteria_by_cell=defaultdict(list)
+    criterion_path_counts={}
     for criterion_row in criterion_rows:
         criterion_ids=re.findall(r"\x60([^\x60]+)\x60",criterion_row.get("Criterion",""))
         contract_ids=sorted(set(re.findall(r"(?:T?REQ_[A-Z0-9_]+)",criterion_row.get("Contract",""))))
@@ -3092,8 +3113,34 @@ def requirement_monitor_target(contract_id, policy):
         level_key=level_keys.get(level)
         if len(criterion_ids)!=1 or len(contract_ids)!=1 or not level_key:
             continue
+        declared_boundary=criterion_row.get("Boundary","").strip()
+        if declared_boundary:
+            criterion_boundary=boundary_keys.get(
+              declared_boundary,
+              declared_boundary.lower().replace(" ","_"),
+            )
+            if criterion_boundary not in boundaries_by_level.get(level_key,set()):
+                raise RuntimeError(
+                  f"verification criterion {criterion_ids[0]} declares "
+                  f"{level} × {declared_boundary}, which is not a Required coverage cell"
+                )
+        else:
+            possible=boundaries_by_level.get(level_key,set())
+            if len(possible)!=1:
+                raise RuntimeError(
+                  f"verification criterion {criterion_ids[0]} is ambiguous at {level}; "
+                  "add a Boundary column because this Test level has multiple Required coverage cells"
+                )
+            criterion_boundary=next(iter(possible))
         criterion_id=criterion_ids[0]
-        criteria_by_level[level_key].append(criterion_id)
+        required_paths_match=re.search(r"\d+",criterion_row.get("Required paths",""))
+        required_paths=int(required_paths_match.group(0)) if required_paths_match else 1
+        if required_paths<1:
+            raise RuntimeError(
+              f"verification criterion {criterion_id} must require at least one path"
+            )
+        criteria_by_cell[(level_key,criterion_boundary)].append(criterion_id)
+        criterion_path_counts[criterion_id]=required_paths
         criterion_contracts[criterion_id]=contract_ids[0]
         item_descriptions[criterion_id]=re.sub(
           r"\x60([^\x60]+)\x60",r"\1",criterion_row.get("Success criterion","")
@@ -3101,12 +3148,16 @@ def requirement_monitor_target(contract_id, policy):
         anchor_match=re.search(r'id="([^"]+)"',criterion_row.get("Criterion",""))
         if anchor_match:
             item_anchors[criterion_id]=anchor_match.group(1)
-    for row in markdown_table_after(section,"### Required coverage"):
+    for row in coverage_rows:
         level=row.get("Test level","")
         level_key=level_keys.get(level)
         if not level_key:
             continue
-        criteria=list(criteria_by_level.get(level_key) or [])
+        boundary_key=boundary_keys.get(
+          row.get("Boundary",""),
+          row.get("Boundary","").lower().replace(" ","_"),
+        )
+        criteria=list(criteria_by_cell.get((level_key,boundary_key)) or [])
         target_match=re.search(r"(\d+)\s+(?:item|criter)",row.get("Target",""),flags=re.IGNORECASE)
         declared_count=int(target_match.group(1)) if target_match else len(criteria)
         coverage.append({
@@ -3122,6 +3173,10 @@ def requirement_monitor_target(contract_id, policy):
               else None
           ),
           "items":criteria,
+          "item_path_counts":{
+            criterion_id:criterion_path_counts.get(criterion_id,1)
+            for criterion_id in criteria
+          },
           "declared_count":declared_count,
         })
     basis_match=re.search(r"\*\*Coverage basis\.\*\*\s*(.+)",section)
@@ -3261,6 +3316,8 @@ def current_evidence_qualification_environment():
       "py_lib_testkit":package_version_or_unknown("py-lib-testkit"),
       "coverage":package_version_or_unknown("coverage"),
       "hypothesis":package_version_or_unknown("hypothesis"),
+      "vcrpy":package_version_or_unknown("vcrpy"),
+      "pytest_recording":package_version_or_unknown("pytest-recording"),
       "assurance_adapter_sha256":sha256_file(ROOT/".ai-bridge/build-mutation-report-prototype.py"),
       "requirement_monitor_sha256":sha256_file(ROOT/".ai-bridge/build-requirement-monitor.py"),
       "qualification_harness_sha256":sha256_file(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
@@ -3349,7 +3406,13 @@ def allure_monitor_index():
               "sha256":sha256_file(candidate),
             }
             observations.append(row)
-            producer_id=obs_payload.get("producer_id") if observation.get("kind")=="evidence-producer-use" else None
+            producer_id=(
+              obs_payload.get("producer_id")
+              if observation.get("kind") in {
+                "evidence-producer-use","external-substitute","external-replay","external-direct"
+              }
+              else None
+            )
             if producer_id and producer_id not in observed_producer_ids:
                 observed_producer_ids.append(producer_id)
             if observation.get("kind")=="test-execution" and obs_payload.get("nodeid"):
@@ -3375,6 +3438,13 @@ def allure_monitor_index():
           "producer_ids":producer_ids,
           "verification_kind":obs_payload.get("verification_kind"),
           "source_path":obs_payload.get("path"),
+          "fixtures":list(obs_payload.get("fixtures") or []),
+          "markers":list(obs_payload.get("markers") or []),
+          "labels":{
+            str(row.get("name") or ""):str(row.get("value") or "")
+            for row in payload.get("labels") or []
+            if row.get("name")
+          },
           "observations":observations,
         })
     return result
@@ -3472,6 +3542,7 @@ def evidence_run_manifest(junit_root,allure_index):
       "junit":{"path":str(JUNIT_PATH.relative_to(ROOT)),"sha256":sha256_file(JUNIT_PATH)},
       "allure":{"path":str(ALLURE_RESULTS_DIR.relative_to(ROOT)),"results":len(allure_rows),"aggregate_sha256":allure_digest},
       "coverage":{"path":str(COVERAGE_JSON_PATH.relative_to(ROOT)),"sha256":sha256_file(COVERAGE_JSON_PATH)},
+      "coverage_db":{"path":str(COVERAGE_DB.relative_to(ROOT)),"sha256":sha256_file(COVERAGE_DB)},
       "input_snapshot":{
         "path":str(EVIDENCE_RUN_INPUTS_PATH.relative_to(ROOT)),
         "sha256":sha256_file(EVIDENCE_RUN_INPUTS_PATH),
@@ -3542,6 +3613,480 @@ def current_context_files(nodeid):
         return []
 
 
+DEPTH_REACH_ORDER=["component","component_integration","system","system_integration"]
+DEPTH_REPRESENTATION_ORDER=["synthetic_abstract","surrogate_simulated","representative","actual"]
+DEPTH_MS_ORDER=["na","l0","l1","l2","l3","l4"]
+DEPTH_TEST_EVIDENCE_KINDS={"unit","bdd","integration","property","e2e"}
+
+
+def depth_model_validation_records():
+    return {
+      "PRODUCER_SCRIPTED_HTTP_SERVER":{
+        "title":"Scripted HTTP provider model",
+        "representation_fidelity":"surrogate_simulated",
+        "ms_validation":"l0",
+        "intended_use":"Provide deterministic provider-shaped HTTP interactions for adapter/router verification.",
+        "referent":None,
+        "basis":"The surrogate is implemented and its mechanics are qualified, but no structured conceptual-validation record ties each scripted provider behavior to a real referent/intended-use source. Therefore L1 is not claimed.",
+        "calibration":[],
+      },
+      "PRODUCER_VCR":{
+        "title":"VCR replay model",
+        "representation_fidelity":"surrogate_simulated",
+        "ms_validation":"l0",
+        "intended_use":"Replay previously captured provider HTTP interactions deterministically.",
+        "referent":"historical live-provider capture",
+        "basis":"The replay tool is qualified and cassettes originate from recorded interactions, but no structured per-cassette intended-use/conceptual-validation record exists. Therefore L1 is not claimed.",
+        "calibration":[],
+      },
+      "PRODUCER_GOOGLE_GENAI_FAKE_SDK":{
+        "title":"Google GenAI fake SDK model",
+        "representation_fidelity":"surrogate_simulated",
+        "ms_validation":"l2",
+        "intended_use":"Reproduce the Google GenAI SDK surface used by the adapter in-process.",
+        "referent":"live Google GenAI provider/SDK",
+        "basis":"Producer purpose and fake-SDK contracts are explicit; passing live capability experiment EXP_0002 is linked as calibration and compares important provider behaviors at some validation points. No complete intended-domain coverage record exists, so L3 is not claimed.",
+        "calibration":["EXP_0002"],
+      },
+      "PRODUCER_GEMINI_WEBAPI_FAKE_SDK":{
+        "title":"Gemini WebAPI fake SDK model",
+        "representation_fidelity":"surrogate_simulated",
+        "ms_validation":"l2",
+        "intended_use":"Reproduce the Gemini WebAPI client/provider surface used by the adapter in-process.",
+        "referent":"live Gemini WebAPI provider/client",
+        "basis":"Producer purpose and fake-SDK contracts are explicit; passing live capability experiment EXP_0003 is linked as calibration and compares important provider behaviors at some validation points. No complete intended-domain coverage record exists, so L3 is not claimed.",
+        "calibration":["EXP_0003"],
+      },
+    }
+
+
+def current_needs():
+    path=ROOT/"docs/_build/html/needs.json"
+    payload=json.loads(path.read_text())
+    version=payload.get("current_version","")
+    return (payload.get("versions") or {}).get(version,{}).get("needs") or {}
+
+
+def junit_depth_rows():
+    root=ET.parse(JUNIT_PATH).getroot()
+    result=[]
+    for testcase in root.iter("testcase"):
+        classname=testcase.attrib.get("classname") or ""
+        test_name=testcase.attrib.get("name") or ""
+        nodeid=f"{classname.replace('.','/')}.py::{test_name}"
+        props={
+          prop.attrib.get("name"):prop.attrib.get("value")
+          for prop in testcase.findall("./properties/property")
+        }
+        state="passed"
+        if testcase.find("failure") is not None or testcase.find("error") is not None:
+            state="failed"
+        elif testcase.find("skipped") is not None:
+            state="skipped"
+        verifies_ref=str(props.get("verifies") or "")
+        verifies=list(dict.fromkeys(re.findall(r"((?:T?REQ_[A-Z0-9_]+))\[revision==\d+\]",verifies_ref)))
+        result.append({
+          "nodeid":nodeid,
+          "result":state,
+          "verification_kind":props.get("verification_kind"),
+          "verifies":verifies,
+          "source_path":nodeid.split("::",1)[0],
+          "gherkin_feature":props.get("gherkin_feature"),
+          "gherkin_scenario":props.get("gherkin_scenario"),
+        })
+    return result
+
+
+def depth_boundary_fact(allure_row):
+    observations=(allure_row or {}).get("observations") or []
+    zero_provider_http=False
+    positive_provider_http=[]
+    replay_rows=[]
+    substitute_rows=[]
+    direct_rows=[]
+    for observation in observations:
+        kind=observation.get("kind")
+        payload=observation.get("payload") or {}
+        if kind=="boundary-interaction-check" and payload.get("boundary")=="provider-http":
+            requests=payload.get("requests_received")
+            if isinstance(requests,int):
+                if requests==0:
+                    zero_provider_http=True
+                else:
+                    positive_provider_http.append(payload)
+        elif kind=="external-replay" and int(payload.get("play_count") or 0)>0:
+            replay_rows.append(payload)
+        elif kind=="external-substitute":
+            substitute_rows.append(payload)
+        elif kind=="external-direct":
+            direct_rows.append(payload)
+    if direct_rows:
+        row=direct_rows[-1]
+        return "direct","direct_runtime_observation",row,None
+    if replay_rows:
+        row=replay_rows[-1]
+        return "replay","vcr_play_count",{
+          "play_count":int(row.get("play_count") or 0),
+          "all_played":bool(row.get("all_played")),
+        },str(row.get("producer_id") or "PRODUCER_VCR")
+    if positive_provider_http:
+        row=positive_provider_http[-1]
+        producer=next(
+          (
+            str(candidate.get("producer_id"))
+            for candidate in reversed(substitute_rows)
+            if candidate.get("producer_id")
+          ),
+          "PRODUCER_SCRIPTED_HTTP_SERVER",
+        )
+        return "substitute","request_journal",{
+          "requests_received":int(row.get("requests_received") or 0),
+          "sample_paths":list(row.get("sample_paths") or []),
+        },producer
+    if substitute_rows and not zero_provider_http:
+        row=substitute_rows[-1]
+        producer=str(row.get("producer_id") or "") or None
+        return "substitute","substitute_observation",{
+          key:row.get(key)
+          for key in ("producer","producer_id","boundary","mode","transport","target")
+          if row.get(key) is not None
+        },producer
+    if zero_provider_http:
+        return "none","no_boundary_event",{"requests_received":0},None
+    return "none","no_boundary_event",{},None
+
+
+def depth_test_level(nodeid,verification_kind,boundary):
+    product=[
+      path for path in current_context_files(nodeid)
+      if path.startswith("src/llm_router/")
+    ]
+    has_router_api="src/llm_router/_api/router.py" in product
+    has_runtime=any(path.startswith("src/llm_router/_internal/runtime/") for path in product)
+    has_provider=any(path.startswith("src/llm_router/_internal/providers/") for path in product)
+    if boundary!="none" and has_router_api and has_runtime and has_provider:
+        level="system_integration"
+        basis="public router entry → runtime → provider adapter → observed external boundary"
+    elif has_router_api and has_runtime:
+        level="system"
+        basis="public router entry → runtime without a material external boundary"
+    elif verification_kind=="integration" or (verification_kind=="bdd" and len(product)>1):
+        level="component_integration"
+        basis="multiple production components execute across an internal/component boundary"
+    else:
+        level="component"
+        basis="focused production component execution"
+    return level,basis,product
+
+
+def depth_test_fact(junit_row,allure_row,model_records):
+    nodeid=junit_row["nodeid"]
+    verification_kind=(allure_row or {}).get("verification_kind") or junit_row.get("verification_kind")
+    boundary,boundary_basis,boundary_detail,model_producer=depth_boundary_fact(allure_row)
+    level,level_basis,product=depth_test_level(nodeid,verification_kind,boundary)
+    representation="actual" if boundary in {"none","direct"} else "surrogate_simulated"
+    model_record=model_records.get(model_producer) or {}
+    if representation=="actual":
+        ms_validation="na"
+        representation_basis="Actual target implementation participated and no material external surrogate was required by this evidence path."
+        ms_basis="No material M&S/surrogate participates in this evidence path."
+        calibration=[]
+    else:
+        ms_validation=str(model_record.get("ms_validation") or "l0")
+        representation_basis=str(
+          model_record.get("basis")
+          or "A material external substitute/replay participates in this evidence path."
+        )
+        ms_basis=str(
+          model_record.get("basis")
+          or "No structured validation record supports promotion above L0."
+        )
+        calibration=list(model_record.get("calibration") or [])
+    boundary_interactions=[
+      dict(observation.get("payload") or {})
+      for observation in (allure_row or {}).get("observations") or []
+      if observation.get("kind") in {
+        "boundary-interaction-check","external-substitute","external-replay","external-direct"
+      }
+    ]
+    return {
+      "nodeid":nodeid,
+      "result":junit_row.get("result"),
+      "verification_kind":verification_kind,
+      "verifies":list(junit_row.get("verifies") or []),
+      "system_reach":level,
+      "system_reach_basis":level_basis,
+      "boundary_mode":boundary,
+      "boundary_evidence_basis":boundary_basis,
+      "boundary_evidence_detail":boundary_detail,
+      "boundary_interactions":boundary_interactions,
+      "production_run_files":product,
+      "legacy_scope_reach":{
+        "component":"component",
+        "component_integration":"integration_boundary",
+        "system":"public_workflow",
+        "system_integration":"public_workflow",
+      }.get(level,"component"),
+      "legacy_external_reach":{
+        "none":"local","substitute":"substitute","replay":"replay","direct":"direct"
+      }.get(boundary,"local"),
+      "environment":"controlled",
+      "environment_basis":"retained hermetic test execution; no representative or operational environment attestation is claimed",
+      "representation_fidelity":representation,
+      "representation_basis":representation_basis,
+      "model_producer":model_producer,
+      "ms_validation":ms_validation,
+      "ms_validation_basis":ms_basis,
+      "ms_validation_calibration":calibration,
+      "runtime_fixtures":list((allure_row or {}).get("fixtures") or []),
+      "runtime_markers":list((allure_row or {}).get("markers") or []),
+      "source_path":junit_row.get("source_path"),
+      "source_line":None,
+      "gherkin_feature":junit_row.get("gherkin_feature"),
+      "gherkin_scenario":junit_row.get("gherkin_scenario")
+        or ((allure_row or {}).get("labels") or {}).get("story"),
+    }
+
+
+def depth_contract_universe(needs):
+    normative={
+      need_id:need
+      for need_id,need in needs.items()
+      if need.get("type") in {"req","treq"}
+    }
+    direct={
+      need_id
+      for need_id,need in normative.items()
+      if DEPTH_TEST_EVIDENCE_KINDS.intersection(set(need.get("required_evidence") or []))
+    }
+    delegated={
+      need_id
+      for need_id,need in normative.items()
+      if any(child in direct for child in need.get("derives_back") or [])
+    }
+    return sorted(direct|delegated)
+
+
+def depth_direct_rows(contract_id,test_rows,needs,universe):
+    rows=[row for row in test_rows if contract_id in (row.get("verifies") or [])]
+    for child_id in (needs.get(contract_id) or {}).get("derives_back") or []:
+        child=needs.get(child_id) or {}
+        if child.get("type") not in {"req","treq"} or child_id in universe:
+            continue
+        rows.extend(
+          row for row in test_rows
+          if child_id in (row.get("verifies") or [])
+        )
+    return sorted({row["nodeid"]:row for row in rows}.values(),key=lambda row:row["nodeid"])
+
+
+def depth_direct_contract(contract_id,rows):
+    reach=max(rows,key=lambda row:DEPTH_REACH_ORDER.index(row["system_reach"]))["system_reach"]
+    representation=max(
+      rows,key=lambda row:DEPTH_REPRESENTATION_ORDER.index(row["representation_fidelity"])
+    )["representation_fidelity"]
+    representation_row=next(
+      row for row in rows if row["representation_fidelity"]==representation
+    )
+    model_rows=[row for row in rows if row.get("ms_validation")!="na"]
+    if model_rows:
+        ms=max(model_rows,key=lambda row:DEPTH_MS_ORDER.index(row["ms_validation"]))["ms_validation"]
+        ms_row=next(row for row in model_rows if row["ms_validation"]==ms)
+        ms_nodeid=ms_row["nodeid"]
+    else:
+        ms="na"
+        ms_nodeid=None
+    return {
+      "contract_id":contract_id,
+      "system_reach":reach,
+      "environment":"controlled",
+      "basis":"direct_test_evidence",
+      "test_count":len(rows),
+      "nodeids":[row["nodeid"] for row in rows],
+      "child_contracts":[],
+      "representation_fidelity":representation,
+      "representation_nodeid":representation_row["nodeid"],
+      "ms_validation":ms,
+      "ms_validation_nodeid":ms_nodeid,
+    }
+
+
+def depth_contract_rows(test_rows,needs,universe):
+    cache={}
+    universe_set=set(universe)
+
+    def build(contract_id):
+        if contract_id in cache:
+            return cache[contract_id]
+        direct=depth_direct_rows(contract_id,test_rows,needs,universe_set)
+        if direct:
+            cache[contract_id]=depth_direct_contract(contract_id,direct)
+            return cache[contract_id]
+        child_ids=[
+          child
+          for child in (needs.get(contract_id) or {}).get("derives_back") or []
+          if child in universe_set
+        ]
+        children=[build(child) for child in child_ids]
+        children=[row for row in children if row]
+        if not children:
+            cache[contract_id]={
+              "contract_id":contract_id,
+              "system_reach":"component",
+              "environment":"controlled",
+              "basis":"no_retained_test_evidence",
+              "test_count":0,
+              "nodeids":[],
+              "child_contracts":child_ids,
+              "representation_fidelity":"synthetic_abstract",
+              "representation_nodeid":None,
+              "ms_validation":"na",
+              "ms_validation_nodeid":None,
+            }
+            return cache[contract_id]
+        reach=min(
+          (row["system_reach"] for row in children),
+          key=DEPTH_REACH_ORDER.index,
+        )
+        representation=min(
+          (row["representation_fidelity"] for row in children),
+          key=DEPTH_REPRESENTATION_ORDER.index,
+        )
+        child_ms=[row["ms_validation"] for row in children if row["ms_validation"]!="na"]
+        ms=min(child_ms,key=DEPTH_MS_ORDER.index) if child_ms else "na"
+        nodeids=sorted({nodeid for row in children for nodeid in row.get("nodeids") or []})
+        cache[contract_id]={
+          "contract_id":contract_id,
+          "system_reach":reach,
+          "environment":"controlled",
+          "basis":"weakest_child_contract",
+          "test_count":len(nodeids),
+          "nodeids":nodeids,
+          "child_contracts":child_ids,
+          "representation_fidelity":representation,
+          "representation_nodeid":None,
+          "ms_validation":ms,
+          "ms_validation_nodeid":None,
+        }
+        return cache[contract_id]
+
+    return [build(contract_id) for contract_id in universe]
+
+
+def refresh_verification_depth_facts():
+    global DEPTH,TEST_META
+    needs=current_needs()
+    junit_rows=junit_depth_rows()
+    allure_index=allure_monitor_index()
+    allure_rows=[row for rows in allure_index.values() for row in rows]
+    allure_digest=sha256_text(stable_json(sorted(
+      (row["path"],row["sha256"]) for row in allure_rows
+    )))
+    model_records=depth_model_validation_records()
+    tests=[]
+    duplicate_allure=[]
+    for junit_row in junit_rows:
+        matches=allure_index.get(junit_row["nodeid"]) or []
+        if len(matches)!=1:
+            duplicate_allure.append(junit_row["nodeid"])
+        allure_row=matches[0] if len(matches)==1 else {}
+        tests.append(depth_test_fact(junit_row,allure_row,model_records))
+    universe=depth_contract_universe(needs)
+    contracts=depth_contract_rows(tests,needs,universe)
+    coverage_payload=json.loads(COVERAGE_JSON_PATH.read_text()) if COVERAGE_JSON_PATH.exists() else {}
+    coverage_total=float((coverage_payload.get("totals") or {}).get("percent_covered") or 0.0)
+    passed=sum(row.get("result")=="passed" for row in tests)
+    coverage_contexts=sum(bool(row.get("production_run_files")) for row in tests)
+    bdd_errors=sum(
+      row.get("verification_kind")=="bdd"
+      and (not row.get("gherkin_feature") or not row.get("gherkin_scenario"))
+      for row in tests
+    )
+    testcase_needs=sum(need.get("type")=="testcase" for need in needs.values())
+    branch=subprocess.check_output(["git","branch","--show-current"],cwd=ROOT,text=True).strip()
+    payload={
+      "schema_version":4,
+      "source_run":{
+        "branch":branch,
+        "commit":git_sha()[:12],
+        "tests":len(tests),
+        "passed":passed,
+        "coverage_total_percent":round(coverage_total,2),
+        "generated_at":utc_now(),
+        "inputs":{
+          "junit":{
+            "path":str(JUNIT_PATH.relative_to(ROOT)),
+            "sha256":sha256_file(JUNIT_PATH),
+          },
+          "allure":{
+            "path":str(ALLURE_RESULTS_DIR.relative_to(ROOT)),
+            "results":len(allure_rows),
+            "aggregate_sha256":allure_digest,
+          },
+          "coverage":{
+            "path":str(COVERAGE_JSON_PATH.relative_to(ROOT)),
+            "sha256":sha256_file(COVERAGE_JSON_PATH),
+          },
+          "coverage_db":{
+            "path":str(COVERAGE_DB.relative_to(ROOT)),
+            "sha256":sha256_file(COVERAGE_DB),
+          },
+        },
+        "methodology":"DEPTH-P05 · reproducible retained-evidence projection",
+        "execution_environment_evidence":{
+          "block_network_fixture_tests":sum("block_network" in row.get("runtime_fixtures",[]) for row in tests),
+          "record_mode_fixture_tests":sum("record_mode" in row.get("runtime_fixtures",[]) for row in tests),
+          "vcr_fixture_tests":sum("vcr" in row.get("runtime_fixtures",[]) for row in tests),
+          "environment_attestation":"none",
+          "classification":"controlled",
+          "basis":"retained test runtime uses controlled network/record-mode fixtures; no representative or operational environment identity/conformance evidence exists",
+        },
+      },
+      "classification":{
+        "system_reach_order":DEPTH_REACH_ORDER,
+        "system_reach_semantics":"Observed architectural/test-object reach aligned to ISTQB test-object boundaries: Component, Component integration, System, System integration. This does not infer a test-level label from verification_kind alone.",
+        "environment_order":["controlled","representative","operational"],
+        "environment_semantics":"Environment fidelity is independent of dependency interaction mode. Representative requires explicit, versioned environment conformance evidence. Operational requires execution identity from the actual operational platform.",
+        "boundary_mode_order":["none","substitute","replay","direct"],
+        "boundary_semantics":"Boundary mode is an orthogonal runtime fact. Substitute requires retained substitute/request evidence; replay requires a retained replay observation with play_count > 0; direct requires a retained direct-interaction observation.",
+        "contract_rollup":"deepest direct test reach; an intentionally delegated parent uses the weakest child contract conservatively",
+        "representation_fidelity_order":DEPTH_REPRESENTATION_ORDER,
+        "representation_fidelity_semantics":"Ternforge scale: Synthetic/Abstract → Surrogate/Simulated → Representative → Actual. Representative requires intended-use pedigree; replay origin alone is not enough.",
+        "ms_validation_order":DEPTH_MS_ORDER,
+        "ms_validation_semantics":"NASA-STD-7009A validation-factor projection. Generic substitute/replay evidence remains L0; only explicitly calibrated fake-SDK models reach L2 in this pilot.",
+      },
+      "tests":tests,
+      "contracts":contracts,
+      "audit":{
+        "junit_cases":len(junit_rows),
+        "runtime_evidence":len(junit_rows)-len(duplicate_allure),
+        "coverage_contexts":coverage_contexts,
+        "needs_testcases":testcase_needs,
+        "nodeid_mismatches":len(duplicate_allure),
+        "verifies_mismatches":sum(
+          any(contract_id not in needs for contract_id in row.get("verifies") or [])
+          for row in tests
+        ),
+        "bdd_feature_scenario_errors":bdd_errors,
+        "contracts":len(contracts),
+        "actual_scripted_http_tests":sum(row.get("model_producer")=="PRODUCER_SCRIPTED_HTTP_SERVER" for row in tests),
+        "actual_vcr_replay_tests":sum(row.get("boundary_mode")=="replay" for row in tests),
+        "actual_fake_sdk_tests":sum(row.get("model_producer") in {"PRODUCER_GOOGLE_GENAI_FAKE_SDK","PRODUCER_GEMINI_WEBAPI_FAKE_SDK"} for row in tests),
+        "actual_boundary_tests":sum(row.get("boundary_mode")!="none" for row in tests),
+        "methodology_status":"P05 runtime facts regenerated from current retained JUnit + Allure + Coverage",
+        "p05_model_records":len(model_records),
+        "p05_ms_l2_calibrated_producers":sum(row.get("ms_validation")=="l2" for row in model_records.values()),
+        "p05_ms_l3_l4_claimed":sum(row.get("ms_validation") in {"l3","l4"} for row in model_records.values()),
+        "p05_generic_surrogates_validation":"L0",
+      },
+      "model_validation_records":model_records,
+    }
+    DEPTH_FACTS_PATH.write_text(json.dumps(payload,indent=2,sort_keys=True)+"\n")
+    DEPTH=payload
+    TEST_META={row["nodeid"]:row for row in tests}
+    return payload
+
+
 def current_reach_for_target(nodeid,verification_kind,target_level,boundary):
     files=current_context_files(nodeid)
     product=[path for path in files if path.startswith("src/llm_router/")]
@@ -3586,19 +4131,114 @@ def current_representation_from_boundary(boundary,boundary_current,target_repres
     return actual,basis,actual==target_representation
 
 
+
+
+def current_allure_aggregate(allure_index):
+    rows=[row for values in allure_index.values() for row in values]
+    return sha256_text(stable_json(sorted(
+      (row["path"],row["sha256"]) for row in rows
+    )))
+
+
+def depth_run_artifacts_current(allure_index):
+    inputs=((DEPTH.get("source_run") or {}).get("inputs") or {})
+    expected={
+      "junit":(inputs.get("junit") or {}).get("sha256"),
+      "allure":(inputs.get("allure") or {}).get("aggregate_sha256"),
+      "coverage":(inputs.get("coverage") or {}).get("sha256"),
+      "coverage_db":(inputs.get("coverage_db") or {}).get("sha256"),
+    }
+    actual={
+      "junit":sha256_file(JUNIT_PATH),
+      "allure":current_allure_aggregate(allure_index),
+      "coverage":sha256_file(COVERAGE_JSON_PATH),
+      "coverage_db":sha256_file(COVERAGE_DB),
+    }
+    current=all(expected.get(key) and expected.get(key)==actual.get(key) for key in expected)
+    if current:
+        return True,"Depth facts are bound to this exact JUnit, Allure, coverage JSON and coverage DB"
+    mismatches=[key for key in expected if expected.get(key)!=actual.get(key)]
+    return False,"Depth artifact mismatch: "+", ".join(mismatches)
+
+
+def current_depth_classification(nodeid,depth,allure_row):
+    if not depth:
+        return {
+          "current":False,
+          "basis":"no current Depth fact exists for this testcase",
+          "level":"unknown",
+          "boundary":"unknown",
+          "representation":"unknown",
+          "ms_validation":None,
+        }
+    observed_boundary,_,_,observed_producer=depth_boundary_fact(allure_row)
+    verification_kind=(allure_row or {}).get("verification_kind") or depth.get("verification_kind")
+    observed_level,_,observed_product=depth_test_level(
+      nodeid,verification_kind,observed_boundary
+    )
+    observed_representation=(
+      "actual" if observed_boundary in {"none","direct"} else "surrogate_simulated"
+    )
+    model_record=depth_model_validation_records().get(observed_producer) or {}
+    observed_ms=(
+      "na"
+      if observed_representation=="actual"
+      else str(model_record.get("ms_validation") or "l0")
+    )
+    expected_product=sorted(depth.get("production_run_files") or [])
+    boundary_basis=str(depth.get("boundary_evidence_basis") or "")
+    boundary_detail=depth.get("boundary_evidence_detail") or {}
+    if boundary_basis=="no_boundary_event" and boundary_detail.get("requests_received")==0:
+        boundary_basis="current retained provider-boundary observation recorded zero HTTP requests"
+    elif boundary_basis=="request_journal" and isinstance(boundary_detail.get("requests_received"),int):
+        boundary_basis=(
+          "current retained provider-boundary observation recorded "
+          f"{boundary_detail['requests_received']} HTTP request(s)"
+        )
+    elif boundary_basis=="vcr_play_count" and isinstance(boundary_detail.get("play_count"),int):
+        boundary_basis=(
+          f"current retained VCR replay recorded {boundary_detail['play_count']} played interaction(s)"
+        )
+    checks={
+      "production coverage":sorted(observed_product)==expected_product,
+      "Test level":observed_level==depth.get("system_reach"),
+      "Boundary":observed_boundary==depth.get("boundary_mode"),
+      "Representation":observed_representation==depth.get("representation_fidelity"),
+      "M&S":observed_ms==depth.get("ms_validation"),
+      "model producer":observed_producer==depth.get("model_producer"),
+    }
+    current=all(checks.values())
+    mismatches=[name for name,value in checks.items() if not value]
+    return {
+      "current":current,
+      "basis":(
+        "current runtime/coverage facts reproduce the retained Depth classification"
+        if current else
+        "Depth classification mismatch: "+", ".join(mismatches)
+      ),
+      "level":depth.get("system_reach") if current else "unknown",
+      "level_basis":depth.get("system_reach_basis") or "",
+      "boundary":depth.get("boundary_mode") if current else "unknown",
+      "boundary_basis":boundary_basis,
+      "representation":depth.get("representation_fidelity") if current else "unknown",
+      "representation_basis":depth.get("representation_basis") or "",
+      "ms_validation":depth.get("ms_validation") if current else None,
+    }
+
+
 def junit_monitor_actual():
     if not JUNIT_PATH.exists():
         return {}
     root=ET.parse(JUNIT_PATH).getroot()
     allure_index=allure_monitor_index()
+    depth_run_current,depth_run_basis=depth_run_artifacts_current(allure_index)
     run_inputs=load_evidence_run_inputs()
     input_state,input_basis,current_input_digest=current_input_snapshot(run_inputs)
     manifest=evidence_run_manifest(root,allure_index)
     suite_start_ms,suite_end_ms,_=junit_suite_window(root)
     qualification=load_evidence_qualification()
     criterion_contracts=verification_criterion_contracts()
-    criterion_targets=verification_criterion_targets()
-    actual={}
+    actual=defaultdict(list)
     snapshot_inputs=dict(run_inputs.get("inputs") or {})
     for testcase in root.iter("testcase"):
         props={
@@ -3618,15 +4258,18 @@ def junit_monitor_actual():
         elif testcase.find("skipped") is not None:
             state="skipped"
         verifies_ref=props.get("verifies") or ""
-        requirement_id=verifies_ref.split("[",1)[0]
+        requirement_ids=list(dict.fromkeys(
+          re.findall(r"((?:T?REQ_[A-Z0-9_]+))\[revision==\d+\]",verifies_ref)
+        ))
+        criterion_contract=criterion_contracts.get(coverage_item)
+        requirement_id=criterion_contract if criterion_contract in requirement_ids else None
         source_path=nodeid.split("::",1)[0]
         retained_source_path=props.get("source_path") or ""
         retained_source_sha=props.get("source_sha256") or ""
         snapshot_source_sha=snapshot_inputs.get(source_path)
         traceability_complete=bool(
-          re.search(r"\[revision==\d+\]",verifies_ref)
-          and requirement_id
-          and criterion_contracts.get(coverage_item)==requirement_id
+          requirement_id
+          and criterion_contract==requirement_id
           and source_path
           and retained_source_path==source_path
           and retained_source_sha
@@ -3637,33 +4280,33 @@ def junit_monitor_actual():
         allure_row=matches[0] if len(matches)==1 else None
         link=execution_link_state(state,allure_row,suite_start_ms,suite_end_ms,nodeid)
         coverage_current=coverage_context_present(nodeid)
-        criterion_target=criterion_targets.get(coverage_item) or {}
-        target_level=criterion_target.get("level")
-        target_boundary=criterion_target.get("boundary")
-        target_representation=criterion_target.get("representation")
-        boundary,boundary_basis,boundary_current=boundary_from_current_evidence(
-          nodeid,allure_row,target_boundary,depth.get("boundary_mode"),depth.get("boundary_evidence_basis")
+        depth_state=current_depth_classification(nodeid,depth,allure_row)
+        classification_current=bool(depth_run_current and depth_state.get("current"))
+        reach=depth_state.get("level") or "unknown"
+        reach_basis=(
+          depth_state.get("level_basis")
+          if classification_current
+          else depth_run_basis+"; "+str(depth_state.get("basis") or "")
         )
-        reach,reach_basis,reach_current=current_reach_for_target(
-          nodeid,props.get("verification_kind"),target_level,boundary
+        boundary=depth_state.get("boundary") or "unknown"
+        boundary_basis=(
+          depth_state.get("boundary_basis")
+          if classification_current
+          else depth_run_basis+"; "+str(depth_state.get("basis") or "")
         )
-        representation,representation_basis,representation_current=current_representation_from_boundary(
-          boundary,boundary_current,target_representation
+        representation=depth_state.get("representation") or "unknown"
+        representation_basis=(
+          depth_state.get("representation_basis")
+          if classification_current
+          else depth_run_basis+"; "+str(depth_state.get("basis") or "")
         )
-        if representation=="actual":
-            ms_validation="na"
-        elif representation=="surrogate_simulated" and boundary_current:
-            ms_validation="l0"
-        else:
-            ms_validation=None
+        ms_validation=depth_state.get("ms_validation") if classification_current else None
         provenance_complete=bool(
           traceability_complete
           and len(matches)==1
           and link.get("coherent")
           and coverage_current
-          and reach_current
-          and boundary_current
-          and representation_current
+          and classification_current
           and (allure_row or {}).get("sha256")
           and (allure_row or {}).get("observation_sha256")
           and (allure_row or {}).get("observation_aggregate_sha256")
@@ -3700,7 +4343,7 @@ def junit_monitor_actual():
           "PRODUCER_ASSURANCE_ADAPTER",
           "PRODUCER_REQUIREMENT_MONITOR",
         ]))
-        actual[coverage_item]={
+        actual[coverage_item].append({
           "coverage_item":coverage_item,
           "nodeid":nodeid,
           "result":state,
@@ -3741,8 +4384,11 @@ def junit_monitor_actual():
             "test_execution_observation_sha256":(allure_row or {}).get("observation_sha256"),
             "all_verification_observations_sha256":(allure_row or {}).get("observation_aggregate_sha256"),
         },
-        }
-    return actual
+        })
+    return {
+      item_id:sorted(rows,key=lambda row:row.get("nodeid") or "")
+      for item_id,rows in actual.items()
+    }
 
 
 def requirement_monitor_model(base_model):
@@ -3750,7 +4396,7 @@ def requirement_monitor_model(base_model):
     junit_actual=junit_monitor_actual()
     fault_model=json.loads(ASSURANCE_FACTS_PATH.read_text()) if ASSURANCE_FACTS_PATH.exists() else {}
     result={
-      "schema":"ternforge-requirement-monitor-p34-1",
+      "schema":"ternforge-requirement-monitor-p34-2",
       "policy":policy,
       "status_values":["PASS","FAIL","N/A","UNKNOWN"],
       "levels":[
@@ -5390,7 +6036,10 @@ def integrate_mutation_portal(summary,feedback):
 
 def refresh_freshness(campaign):
     selected_ids=list(campaign.get("contracts") or {})
-    current=build_campaign_inputs(campaign["mode"],campaign.get("base_sha"),selected_ids)
+    retained_mutmut_version=(campaign.get("engine") or {}).get("version")
+    current=build_campaign_inputs(
+      campaign["mode"],campaign.get("base_sha"),selected_ids,retained_mutmut_version
+    )
     allure_ids=allure_report_ids()
 
     # A new campaign owns only the contracts it actually measured. Other contracts
@@ -5415,7 +6064,9 @@ def refresh_freshness(campaign):
 
     for contract_id,spec in CONTRACTS.items():
         fact=STRENGTH["contracts"][contract_id]
-        current_fp=contract_fingerprints(contract_id,spec)
+        current_fp=contract_fingerprints(
+          contract_id,spec,retained_mutmut_version
+        )
         recorded={
           "source_fingerprint":fact.get("source_fingerprint"),
           "test_set_fingerprint":fact.get("test_set_fingerprint"),
@@ -5486,6 +6137,13 @@ def refresh_freshness(campaign):
       "mutation_semantics_version":MUTATION_SEMANTICS_VERSION,
     }
     CAMPAIGN_PATH.write_text(json.dumps(campaign,indent=2))
+    depth_payload=refresh_verification_depth_facts()
+    print(
+      f"[P34] depth facts: {len(depth_payload.get('tests') or [])} tests · "
+      f"{len(depth_payload.get('contracts') or [])} contracts · "
+      f"{(depth_payload.get('audit') or {}).get('nodeid_mismatches',0)} nodeid mismatches",
+      flush=True,
+    )
     patch_depth_page()
     integrate_mutation_portal(summary,feedback)
     return summary

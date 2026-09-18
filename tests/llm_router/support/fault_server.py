@@ -26,6 +26,38 @@ class ProviderSentinelHTTPServer(_ScriptedHTTPServer):
 class ScriptedHTTPServer(_ScriptedHTTPServer):
     """Shared scripted HTTP server configured as an llm-router provider substitute."""
 
+    def retain_current_boundary_evidence(self) -> None:
+        """Retain provider-substitute and request-journal facts during test call."""
+        evidence.producer("PRODUCER_SCRIPTED_HTTP_SERVER")
+        evidence.observation(
+            "Provider HTTP substitute",
+            kind="external-substitute",
+            payload={
+                "producer": "ScriptedHTTPServer",
+                "producer_id": "PRODUCER_SCRIPTED_HTTP_SERVER",
+                "boundary": "provider-http",
+                "mode": "local-scripted-http",
+                "transport": "HTTP",
+                "target": "live-provider",
+            },
+        )
+        route_counts = {
+            (method, path): self.request_count(method, path)
+            for method, path in self._routes
+        }
+        evidence.observation(
+            "Provider HTTP boundary interaction",
+            kind="boundary-interaction-check",
+            payload={
+                "boundary": "provider-http",
+                "interaction": "substitute" if sum(route_counts.values()) else "none",
+                "requests_received": sum(route_counts.values()),
+                "sample_paths": sorted(
+                    path for (_, path), count in route_counts.items() if count > 0
+                ),
+            },
+        )
+
     def __enter__(self) -> Self:
         evidence.observation(
             "Provider HTTP substitute",

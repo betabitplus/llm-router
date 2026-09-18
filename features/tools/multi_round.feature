@@ -1,9 +1,10 @@
-@hermetic @vcr @REQ_MULTI_ROUND_TOOL_EXECUTION[revision==1]
+@hermetic @REQ_MULTI_ROUND_TOOL_EXECUTION[revision==1]
 Feature: Multi-round tool execution
   Tool-driven workflows should preserve their intermediate steps in the final result.
 
   Rule: Required tool use can complete a multi-step calculation
 
+    @vcr
     Scenario Outline: A provider route completes a two-step calculation with tools
       Given the "<route>" multi-round tool route
       When the route executes the calculation workflow:
@@ -25,8 +26,14 @@ Feature: Multi-round tool execution
         | AI Studio     |
         | Gemini WebAPI |
 
+    Scenario: OpenAI-compatible completes the multi-round workflow at a local boundary
+      Given the OpenAI-compatible local multi-round route
+      When the local route executes add then multiply
+      Then the local workflow reports add and multiply with final result 84
+
   Rule: Tools configured on a route profile are available to requests
 
+    @vcr
     Scenario: Google GenAI uses a profile-level tool in a structured workflow
       Given a Google GenAI route with a profile-level multiply tool
       When the route is required to calculate 17 times 19

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import pytest
 from pytest_bdd import given, scenarios, then, when
 
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -17,6 +18,19 @@ from tests.llm_router.support.workers.tool_round_limit import (
 )
 
 scenarios("tools/runtime.feature")
+
+for _test_name, _criterion in (
+    (
+        "test_a_local_tool_failure_becomes_a_public_tool_error",
+        "VC_TOOL_RUNTIME_PUBLIC_ERROR",
+    ),
+    (
+        "test_tool_execution_stops_at_the_configured_round_limit",
+        "VC_TOOL_RUNTIME_ROUND_LIMIT",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
+del _criterion, _test_name
 
 _PATH = openai_chat_path()
 

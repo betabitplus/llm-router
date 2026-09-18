@@ -82,10 +82,11 @@ Contracts in this capability:
 
 **Rationale.** Explicit tool choice is caller intent; silently substituting another tool can change side effects and invalidate the meaning of the request.
 
-**Verification intent.** Execute a public tool-capable request with multiple registered tools and an explicit selection, then verify the selected tool is the one requested and executed.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-tool-choice>`
 
 ```{needlist}
 :filter: "'REQ_TOOL_CHOICE' in derives or 'REQ_TOOL_CHOICE' in implements or 'REQ_TOOL_CHOICE' in verifies"
@@ -119,10 +120,11 @@ Contracts in this capability:
 
 **Rationale.** Useful tool orchestration often requires the model to consume one tool result before deciding the next action; a single-round contract would not preserve this workflow.
 
-**Verification intent.** Execute a representative multi-round workflow through the public router and verify each requested tool is executed, its result is returned to the provider turn, and the workflow terminates with the expected final response.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-multi-round-tool-execution>`
 
 ```{needlist}
 :filter: "'REQ_MULTI_ROUND_TOOL_EXECUTION' in derives or 'REQ_MULTI_ROUND_TOOL_EXECUTION' in implements or 'REQ_MULTI_ROUND_TOOL_EXECUTION' in verifies"
@@ -142,10 +144,11 @@ Contracts in this capability:
 
 **Rationale.** The registry is the translation boundary between Python callables and provider tool schemas; ambiguity or schema drift there can invoke the wrong arguments or callable.
 
-**Verification intent.** Directly verify duplicate-name rejection, schema derivation, supported tool-call parsing, and callable execution across representative signatures and provider shapes.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Parent verification profile → <verification-profile-req-multi-round-tool-execution>`
 
 ```{needlist}
 :filter: "'TREQ_TOOL_REGISTRY' in derives or 'TREQ_TOOL_REGISTRY' in implements or 'TREQ_TOOL_REGISTRY' in verifies"
@@ -165,10 +168,11 @@ Contracts in this capability:
 
 **Rationale.** Tool orchestration runs local code with caller data, so failures need a stable public boundary and execution must remain finite even when the provider repeatedly requests tools.
 
-**Verification intent.** Trigger public tool failures containing sensitive arguments and a workflow that exceeds the configured round limit; verify the public error surface, absence of protected argument values, and bounded execution count.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-tool-runtime-safety>`
 
 ```{needlist}
 :filter: "'REQ_TOOL_RUNTIME_SAFETY' in derives or 'REQ_TOOL_RUNTIME_SAFETY' in implements or 'REQ_TOOL_RUNTIME_SAFETY' in verifies"

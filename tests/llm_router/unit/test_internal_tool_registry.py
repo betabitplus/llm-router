@@ -16,6 +16,7 @@ pytestmark = [
 ]
 
 
+@pytest.mark.coverage_item("VC_TOOL_REGISTRY_SCHEMA_EXECUTION")
 def test_callable_tool_schema_and_execution_match_python_signature() -> None:
     registry = ToolRegistry.from_tools([add])
     definition = registry.get("add")
@@ -26,11 +27,13 @@ def test_callable_tool_schema_and_execution_match_python_signature() -> None:
     assert step.result == 3
 
 
+@pytest.mark.coverage_item("VC_TOOL_REGISTRY_DUPLICATE_REJECTION")
 def test_duplicate_tool_names_are_rejected() -> None:
     with pytest.raises(ValueError, match="Duplicate tool name"):
         ToolRegistry.from_tools([add, add])
 
 
+@pytest.mark.coverage_item("VC_TOOL_REGISTRY_CALL_SHAPES")
 @pytest.mark.parametrize(
     "payload",
     [

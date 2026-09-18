@@ -1,9 +1,10 @@
-@hermetic @vcr @REQ_TOOL_CHOICE[revision==1]
+@hermetic @REQ_TOOL_CHOICE[revision==1]
 Feature: Explicit tool choice
   A named tool choice should be honored before the final structured answer is returned.
 
   Rule: A forced named tool is the only tool used
 
+    @vcr
     Scenario Outline: A provider route honors an explicit add tool choice
       Given the "<route>" tool-choice route
       When the route is forced to use add:
@@ -24,7 +25,13 @@ Feature: Explicit tool choice
         | OpenAI-compatible |
         | Gemini WebAPI     |
 
+    @vcr
     Scenario: AI Studio honors an explicit add tool choice
       Given the AI Studio numeric tool-choice route
       When the route is forced to add 40 and 2
       Then the reply is 42 and the runtime trace shows only add
+
+    Scenario: Google GenAI honors an explicit add tool choice
+      Given the Google GenAI local tool-choice route
+      When the Google route is forced to use add
+      Then the Google request and runtime trace show only add with result 42

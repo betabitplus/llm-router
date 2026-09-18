@@ -9,9 +9,12 @@ import sys
 import tempfile
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from importlib.metadata import version as package_version
 from pathlib import Path
+
+import vcr
+from vcr.errors import CannotOverwriteExistingCassetteException
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs/_build/html/evidence-confidence-qualification.json"
@@ -38,6 +41,8 @@ def environment() -> dict[str, str | None]:
         "py_lib_testkit": version_or_unknown("py-lib-testkit"),
         "coverage": version_or_unknown("coverage"),
         "hypothesis": version_or_unknown("hypothesis"),
+        "vcrpy": version_or_unknown("vcrpy"),
+        "pytest_recording": version_or_unknown("pytest-recording"),
         "assurance_adapter_sha256": sha256_file(ROOT / ".ai-bridge/build-mutation-report-prototype.py"),
         "requirement_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-requirement-monitor.py"),
         "qualification_harness_sha256": sha256_file(Path(__file__)),
@@ -337,6 +342,40 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
             scripted_after = server.request_count("GET", route)
         scripted_http_ok = scripted_before == 0 and scripted_after == 1 and scripted_body == b"ok"
 
+        vcr_route = "/vcr-qualification"
+        cassette = tmp / "vcr-control.yaml"
+        with ScriptedHTTPServer(
+            port=0,
+            routes={
+                ("GET", vcr_route): [
+                    ScriptedResponse(
+                        status_code=200,
+                        body=b"recorded",
+                        headers={"Content-Type": "text/plain"},
+                    )
+                ]
+            },
+        ) as server:
+            vcr_url = server.base_url + vcr_route
+            with vcr.use_cassette(str(cassette), record_mode="once"):
+                with urllib.request.urlopen(vcr_url, timeout=2.0) as response:
+                    vcr_recorded_body = response.read()
+        with vcr.use_cassette(str(cassette), record_mode="none"):
+            with urllib.request.urlopen(vcr_url, timeout=2.0) as response:
+                vcr_replayed_body = response.read()
+        vcr_rejected_mismatch = False
+        try:
+            with vcr.use_cassette(str(cassette), record_mode="none"):
+                urllib.request.urlopen(vcr_url + "-not-recorded", timeout=2.0).read()
+        except CannotOverwriteExistingCassetteException:
+            vcr_rejected_mismatch = True
+        vcr_ok = (
+            cassette.exists()
+            and vcr_recorded_body == b"recorded"
+            and vcr_replayed_body == b"recorded"
+            and vcr_rejected_mismatch
+        )
+
         producers = {
             "PRODUCER_PYTEST": {
                 "status": "QUALIFIED" if pytest_ok else "NOT QUALIFIED",
@@ -372,6 +411,11 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
                 "status": "QUALIFIED" if scripted_http_ok else "NOT QUALIFIED",
                 "intended_use": "measure whether the provider HTTP boundary was contacted during a negative-interaction assertion",
                 "false_green_control": "the sentinel request counter must report zero before a request and exactly one after one real localhost request",
+            },
+            "PRODUCER_VCR": {
+                "status": "QUALIFIED" if vcr_ok else "NOT QUALIFIED",
+                "intended_use": "replay the retained HTTP interaction selected by the test without accepting an unrecorded request as a match",
+                "false_green_control": "an exact recorded request must replay while a mismatched unrecorded request is rejected in replay-only mode",
             },
         }
         details = {
@@ -478,18 +522,20 @@ def internal_controls() -> dict[str, dict[str, object]]:
             }
         },
         "coverage_actual": {
-            "REQ_X:component:x": {
-                "level": "component",
-                "boundary": "none",
-                "result": "passed",
-                "representation": "actual",
-                "provenance": "COMPLETE",
-                "provenance_scope": "traceability_only",
-                "producer_qualification": "QUALIFIED",
-                "producer_qualification_scope": "runner_only",
-                "freshness": "CURRENT",
-                "ms_validation": "na",
-            }
+            "REQ_X:component:x": [
+                {
+                    "level": "component",
+                    "boundary": "none",
+                    "result": "passed",
+                    "representation": "actual",
+                    "provenance": "COMPLETE",
+                    "provenance_scope": "traceability_only",
+                    "producer_qualification": "QUALIFIED",
+                    "producer_qualification_scope": "runner_only",
+                    "freshness": "CURRENT",
+                    "ms_validation": "na",
+                }
+            ]
         },
     }
     synthetic_target = {
@@ -504,8 +550,25 @@ def internal_controls() -> dict[str, dict[str, object]]:
     state = cell_state(synthetic_contract, synthetic_target)
     projection_ok = projection_ok and state["provenance_status"] == "UNKNOWN" and state["producer_status"] == "UNKNOWN" and state["overall"] == "UNKNOWN"
 
+    multi_binding_contract = json.loads(json.dumps(synthetic_contract))
+    first_binding = multi_binding_contract["coverage_actual"]["REQ_X:component:x"][0]
+    first_binding["provenance_scope"] = "full_chain"
+    first_binding["producer_qualification_scope"] = "full_chain"
+    second_binding = dict(first_binding)
+    second_binding["result"] = "failed"
+    multi_binding_contract["coverage_actual"]["REQ_X:component:x"].append(second_binding)
+    multi_binding_state = cell_state(multi_binding_contract, synthetic_target)
+    projection_ok = projection_ok and (
+        multi_binding_state["semantic_status"] == "NOT MET"
+        and multi_binding_state["overall"] == "NOT MET"
+        and multi_binding_state["semantic_actual"] == 0
+        and multi_binding_state["failed_count"] == 1
+        and multi_binding_state["retained_count"] == 2
+        and multi_binding_state["missing_count"] == 0
+    )
+
     surrogate_contract = json.loads(json.dumps(synthetic_contract))
-    surrogate_row = surrogate_contract["coverage_actual"]["REQ_X:component:x"]
+    surrogate_row = surrogate_contract["coverage_actual"]["REQ_X:component:x"][0]
     surrogate_row["representation"] = "surrogate_simulated"
     surrogate_row["ms_validation"] = "l2"
     surrogate_without_target = cell_state(surrogate_contract, synthetic_target)
@@ -544,7 +607,7 @@ def main() -> None:
     producers = {**external, **internal}
     payload = {
         "schema": "ternforge-evidence-producer-qualification-1",
-        "qualified_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "qualified_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "environment": environment(),
         "policy": "QUALIFIED means the producer passed the retained intended-use false-green control for the exact current tool/code fingerprint; missing or stale qualification is UNKNOWN.",
         "producers": producers,

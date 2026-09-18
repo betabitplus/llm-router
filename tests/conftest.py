@@ -16,12 +16,12 @@ import json
 import os
 import shutil
 import subprocess
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    import pytest
+import pytest
+from py_lib_testkit import evidence
 
 
 def _sha256(path: Path) -> str:
@@ -99,6 +99,32 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     }
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_call(item: pytest.Item) -> Iterator[None]:
+    """Retain exact VCR replay activity while the Allure test call is active."""
+    yield
+    cassette = item.funcargs.get("vcr")
+    if cassette is None:
+        return
+    play_count = int(getattr(cassette, "play_count", 0) or 0)
+    evidence.producer("PRODUCER_VCR")
+    evidence.observation(
+        "VCR replay boundary interaction",
+        kind="external-replay",
+        payload={
+            "producer": "VCR",
+            "producer_id": "PRODUCER_VCR",
+            "boundary": "provider-http",
+            "interaction": "replay",
+            "mode": "vcr-replay",
+            "transport": "HTTP",
+            "target": "historical-live-provider",
+            "play_count": play_count,
+            "all_played": bool(getattr(cassette, "all_played", False)),
+        },
+    )
 
 
 def pytest_runtest_setup(item: pytest.Item) -> None:

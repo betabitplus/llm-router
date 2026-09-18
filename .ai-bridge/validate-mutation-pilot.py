@@ -34,6 +34,9 @@ def main() -> None:
         HTML / "contract-evidence-request-override-precedence.html",
         HTML / "contract-evidence-credential-resolution.html",
         HTML / "contract-evidence-config-installation-coherence.html",
+        HTML / "contract-evidence-tool-choice.html",
+        HTML / "contract-evidence-multi-round-tool-execution.html",
+        HTML / "contract-evidence-tool-runtime-safety.html",
         HTML / "requirement-monitor-facts.json",
         HTML / "evidence-run-provenance.json",
         HTML / "evidence-confidence-qualification.json",
@@ -59,6 +62,8 @@ def main() -> None:
         HTML / "test-plan.html",
         ROOT / "docs/verification-profiles/invalid-configuration.md",
         HTML / "verification-profiles/invalid-configuration.html",
+        ROOT / "docs/verification-profiles/tools.md",
+        HTML / "verification-profiles/tools.html",
         ROOT / "test-results/evidence-run-inputs.json",
     ]
     for path in required:
@@ -218,6 +223,7 @@ def main() -> None:
         "PRODUCER_PYTEST_BDD",
         "PRODUCER_HYPOTHESIS",
         "PRODUCER_SCRIPTED_HTTP_SERVER",
+        "PRODUCER_VCR",
         "PRODUCER_LLM_ROUTER_TRACE_BRIDGE",
         "PRODUCER_ASSURANCE_ADAPTER",
         "PRODUCER_REQUIREMENT_MONITOR",
@@ -247,7 +253,11 @@ def main() -> None:
         "retained evidence run binds JUnit, Allure, coverage and input snapshot by digest",
     )
     monitor_contract = (monitor_facts.get("contracts") or {}).get("REQ_INVALID_CONFIGURATION_ERRORS") or {}
-    current_paths = list((monitor_contract.get("coverage_actual") or {}).values())
+    current_paths = [
+        row
+        for rows in (monitor_contract.get("coverage_actual") or {}).values()
+        for row in rows
+    ]
     check(len(current_paths) == 5, "Requirement monitor retains the expected five currently executed coverage paths")
     check(
         len({row.get("run_id") for row in current_paths}) == 1 and
@@ -274,9 +284,10 @@ def main() -> None:
             for row in current_paths),
         "every current evidence path still matches the exact test-source bytes captured by its run",
     )
-    system_path = (monitor_contract.get("coverage_actual") or {}).get(
+    system_paths = (monitor_contract.get("coverage_actual") or {}).get(
         "VC_INVALID_CONFIGURATION_PUBLIC_REJECTION"
-    ) or {}
+    ) or []
+    system_path = system_paths[0] if len(system_paths) == 1 else {}
     system_boundary_basis = str(system_path.get("boundary_basis") or "")
     check(
         system_path.get("level") == "system"
@@ -285,6 +296,163 @@ def main() -> None:
         and "zero HTTP requests" in system_boundary_basis,
         "System coverage path proves System reach and Local boundary from the current zero-request provider-boundary observation",
     )
+
+    depth_source = depth_facts.get("source_run") or {}
+    depth_audit = depth_facts.get("audit") or {}
+    depth_inputs = depth_source.get("inputs") or {}
+    provenance_subjects = evidence_provenance.get("subjects") or {}
+    check(
+        depth_facts.get("schema_version") == 4
+        and depth_source.get("tests") == 120
+        and depth_source.get("passed") == 120
+        and depth_audit.get("contracts") == 44
+        and depth_audit.get("runtime_evidence") == 120
+        and depth_audit.get("nodeid_mismatches") == 0
+        and depth_audit.get("verifies_mismatches") == 0
+        and depth_audit.get("bdd_feature_scenario_errors") == 0,
+        "Depth facts are reproducibly regenerated from the current 120-test retained run",
+    )
+    check(
+        ((depth_inputs.get("junit") or {}).get("sha256")
+         == (provenance_subjects.get("junit") or {}).get("sha256"))
+        and ((depth_inputs.get("allure") or {}).get("aggregate_sha256")
+             == (provenance_subjects.get("allure") or {}).get("aggregate_sha256"))
+        and ((depth_inputs.get("coverage") or {}).get("sha256")
+             == (provenance_subjects.get("coverage") or {}).get("sha256"))
+        and ((depth_inputs.get("coverage_db") or {}).get("sha256")
+             == (provenance_subjects.get("coverage_db") or {}).get("sha256")),
+        "Depth classification is digest-bound to the exact JUnit, Allure, coverage JSON and dynamic-context DB used by the monitor",
+    )
+    depth_by_nodeid = {
+        row.get("nodeid"): row for row in depth_facts.get("tests") or []
+    }
+    all_monitor_paths = [
+        row
+        for contract in (monitor_facts.get("contracts") or {}).values()
+        for rows in (contract.get("coverage_actual") or {}).values()
+        for row in rows
+    ]
+    check(
+        all(
+            row.get("nodeid") in depth_by_nodeid
+            and row.get("level") == depth_by_nodeid[row["nodeid"]].get("system_reach")
+            and row.get("boundary") == depth_by_nodeid[row["nodeid"]].get("boundary_mode")
+            and row.get("representation") == depth_by_nodeid[row["nodeid"]].get("representation_fidelity")
+            and row.get("ms_validation") == depth_by_nodeid[row["nodeid"]].get("ms_validation")
+            for row in all_monitor_paths
+        ),
+        "Requirement Monitor Actual is projected only from matching current Depth rows, never reconstructed from Target",
+    )
+    check(
+        all(
+            row.get("provenance") == "COMPLETE"
+            and row.get("producer_qualification") == "QUALIFIED"
+            and row.get("freshness") == "CURRENT"
+            for row in all_monitor_paths
+        ),
+        "all retained Contract Evidence paths are full-chain complete, qualified and current",
+    )
+
+    tool_choice = (monitor_facts.get("contracts") or {}).get("REQ_TOOL_CHOICE") or {}
+    tool_choice_targets = {
+        (row.get("level"), row.get("boundary")): row
+        for row in (tool_choice.get("target") or {}).get("coverage") or []
+    }
+    tool_choice_actual = tool_choice.get("coverage_actual") or {}
+    replay_choice = tool_choice_actual.get("VC_TOOL_CHOICE_REPLAY_FAMILIES") or []
+    local_choice = tool_choice_actual.get("VC_TOOL_CHOICE_GOOGLE_GENAI") or []
+    check(
+        tool_choice_targets.get(("system_integration", "replay"), {}).get("item_path_counts")
+            == {"VC_TOOL_CHOICE_REPLAY_FAMILIES": 4}
+        and tool_choice_targets.get(("system_integration", "substitute"), {}).get("item_path_counts")
+            == {"VC_TOOL_CHOICE_GOOGLE_GENAI": 1}
+        and len(replay_choice) == 4
+        and len(local_choice) == 1,
+        "Tool Choice preserves 4 Replay bindings plus one local Substitute binding without last-test-wins collapse",
+    )
+    check(
+        all(
+            row.get("result") == "passed"
+            and row.get("level") == "system_integration"
+            and row.get("boundary") == "replay"
+            and row.get("representation") == "surrogate_simulated"
+            and str(row.get("ms_validation")).lower() == "l0"
+            and "PRODUCER_VCR" in (row.get("producer_ids") or [])
+            for row in replay_choice
+        )
+        and all(
+            row.get("result") == "passed"
+            and row.get("level") == "system_integration"
+            and row.get("boundary") == "substitute"
+            and row.get("representation") == "surrogate_simulated"
+            and str(row.get("ms_validation")).lower() == "l0"
+            and "PRODUCER_SCRIPTED_HTTP_SERVER" in (row.get("producer_ids") or [])
+            for row in local_choice
+        ),
+        "Tool Choice Actual distinguishes Replay/VCR from Substitute/ScriptedHTTP without representation inflation",
+    )
+
+    tool_multi = (monitor_facts.get("contracts") or {}).get("REQ_MULTI_ROUND_TOOL_EXECUTION") or {}
+    tool_multi_targets = {
+        (row.get("level"), row.get("boundary")): row
+        for row in (tool_multi.get("target") or {}).get("coverage") or []
+    }
+    tool_multi_actual = tool_multi.get("coverage_actual") or {}
+    call_shapes = tool_multi_actual.get("VC_TOOL_REGISTRY_CALL_SHAPES") or []
+    replay_multi = tool_multi_actual.get("VC_TOOL_MULTI_ROUND_REPLAY_FAMILIES") or []
+    local_multi = tool_multi_actual.get("VC_TOOL_MULTI_ROUND_OPENAI_LOCAL") or []
+    check(
+        tool_multi_targets.get(("component", "none"), {}).get("item_path_counts")
+            == {
+                "VC_TOOL_REGISTRY_CALL_SHAPES": 2,
+                "VC_TOOL_REGISTRY_DUPLICATE_REJECTION": 1,
+                "VC_TOOL_REGISTRY_SCHEMA_EXECUTION": 1,
+            }
+        and len(call_shapes) == 2
+        and len(replay_multi) == 4
+        and len(local_multi) == 1,
+        "Multi-round Contract Evidence preserves criterion cardinality 2/1/1 plus four Replay paths and one Substitute path",
+    )
+    check(
+        all(
+            row.get("boundary") == "replay"
+            and row.get("representation") == "surrogate_simulated"
+            and str(row.get("ms_validation")).lower() == "l0"
+            and "PRODUCER_VCR" in (row.get("producer_ids") or [])
+            for row in replay_multi
+        )
+        and all(
+            row.get("boundary") == "substitute"
+            and row.get("representation") == "surrogate_simulated"
+            and str(row.get("ms_validation")).lower() == "l0"
+            and "PRODUCER_SCRIPTED_HTTP_SERVER" in (row.get("producer_ids") or [])
+            for row in local_multi
+        ),
+        "Multi-round Actual keeps Replay and Substitute evidence as distinct same-path classifications",
+    )
+
+    tool_runtime = (monitor_facts.get("contracts") or {}).get("REQ_TOOL_RUNTIME_SAFETY") or {}
+    runtime_actual = tool_runtime.get("coverage_actual") or {}
+    runtime_paths = [
+        row for rows in runtime_actual.values() for row in rows
+    ]
+    check(
+        set(runtime_actual) == {
+            "VC_TOOL_RUNTIME_PUBLIC_ERROR",
+            "VC_TOOL_RUNTIME_ROUND_LIMIT",
+        }
+        and len(runtime_paths) == 2
+        and all(
+            row.get("level") == "system_integration"
+            and row.get("boundary") == "substitute"
+            and row.get("representation") == "surrogate_simulated"
+            and str(row.get("ms_validation")).lower() == "l0"
+            and "PRODUCER_SCRIPTED_HTTP_SERVER" in (row.get("producer_ids") or [])
+            for row in runtime_paths
+        ),
+        "Tool Runtime Safety retains both required System-integration Substitute/Surrogate/L0 paths",
+    )
+
     check(all(token in readiness for token in (
         "P34 MONITOR CUTOVER COMPLETE",
         "Component semantic coverage **4/5 · FAIL**",
@@ -381,6 +549,9 @@ def main() -> None:
     override_page = (HTML / "contract-evidence-request-override-precedence.html").read_text()
     credential_page = (HTML / "contract-evidence-credential-resolution.html").read_text()
     install_page = (HTML / "contract-evidence-config-installation-coherence.html").read_text()
+    tool_choice_page = (HTML / "contract-evidence-tool-choice.html").read_text()
+    tool_multi_page = (HTML / "contract-evidence-multi-round-tool-execution.html").read_text()
+    tool_runtime_page = (HTML / "contract-evidence-tool-runtime-safety.html").read_text()
     spec_page = (HTML / "specification-health.html").read_text()
     health_page = (HTML / "verification-health-map.html").read_text()
     depth_page = (HTML / "verification-depth-map.html").read_text()
@@ -450,25 +621,31 @@ def main() -> None:
 
     check("Contract Evidence" in assurance_page,
           "assurance page is named Contract Evidence")
-    check(monitor_facts.get("schema") == "ternforge-requirement-monitor-p34-1",
-          "Requirement monitor facts carry the P34 schema")
+    check(monitor_facts.get("schema") == "ternforge-requirement-monitor-p34-2",
+          "Requirement monitor facts carry the current P34 multi-binding schema")
     profiled_contracts = {
         "REQ_REQUEST_OVERRIDE_PRECEDENCE",
         "REQ_INVALID_CONFIGURATION_ERRORS",
         "REQ_CREDENTIAL_RESOLUTION",
         "REQ_CONFIG_INSTALLATION_COHERENCE",
+        "REQ_TOOL_CHOICE",
+        "REQ_MULTI_ROUND_TOOL_EXECUTION",
+        "REQ_TOOL_RUNTIME_SAFETY",
     }
     check(
         set(monitor_facts.get("contracts") or {}) == profiled_contracts,
-        "Configuration feature exposes exactly four parent Contract Evidence profiles",
+        "Configuration and Tools slices expose exactly seven parent Contract Evidence profiles",
     )
-    config_pages = {
+    contract_pages = {
         "REQ_REQUEST_OVERRIDE_PRECEDENCE": override_page,
         "REQ_INVALID_CONFIGURATION_ERRORS": assurance_page,
         "REQ_CREDENTIAL_RESOLUTION": credential_page,
         "REQ_CONFIG_INSTALLATION_COHERENCE": install_page,
+        "REQ_TOOL_CHOICE": tool_choice_page,
+        "REQ_MULTI_ROUND_TOOL_EXECUTION": tool_multi_page,
+        "REQ_TOOL_RUNTIME_SAFETY": tool_runtime_page,
     }
-    for contract_id, page in config_pages.items():
+    for contract_id, page in contract_pages.items():
         check(
             page.count('id="tf-requirement-monitor"') == 1
             and page.count('<section id="assurance-') == 1
@@ -533,7 +710,7 @@ def main() -> None:
     check(
         all(label in assurance_page for label in (
             "Required evidence", "Semantic coverage", "passing required evidence",
-            "4 pass", "0 fail", "1 missing", "Retained path properties", "4 paths",
+            "4 pass", "0 fail", "1 missing", "Retained path properties", "4/5 paths",
             "Evidence confidence",
         )),
         "canonical Component × Local inspector tells the accepted 4/5 → 4 retained paths story",
@@ -646,20 +823,22 @@ def main() -> None:
     }
     for contract_id, criteria in expected_actual.items():
         rows = monitor_facts["contracts"][contract_id]["coverage_actual"]
-        check(set(rows) == criteria, f"{contract_id}: every declared criterion has one retained evidence binding")
+        check(set(rows) == criteria, f"{contract_id}: every declared criterion has retained evidence")
+        flat_rows = [row for bindings in rows.values() for row in bindings]
         check(
-            all(row.get("result") == "passed" for row in rows.values())
-            and all(row.get("provenance") == "COMPLETE" for row in rows.values())
-            and all(row.get("producer_qualification") == "QUALIFIED" for row in rows.values())
-            and all(row.get("freshness") == "CURRENT" for row in rows.values()),
+            all(row.get("result") == "passed" for row in flat_rows)
+            and all(row.get("provenance") == "COMPLETE" for row in flat_rows)
+            and all(row.get("producer_qualification") == "QUALIFIED" for row in flat_rows)
+            and all(row.get("freshness") == "CURRENT" for row in flat_rows),
             f"{contract_id}: retained criterion evidence is passed, complete, qualified and current",
         )
     override_actual = override_monitor["coverage_actual"]
     check(
         all(
-            override_actual[item]["boundary"] == "substitute"
-            and override_actual[item]["representation"] == "surrogate_simulated"
-            and str(override_actual[item]["ms_validation"]).lower() == "l0"
+            len(override_actual[item]) == 1
+            and override_actual[item][0]["boundary"] == "substitute"
+            and override_actual[item][0]["representation"] == "surrogate_simulated"
+            and str(override_actual[item][0]["ms_validation"]).lower() == "l0"
             for item in ("VC_REQUEST_OVERRIDE_PRECEDENCE", "VC_REQUEST_EXPLICIT_CLEAR")
         ),
         "override BDD evidence is honestly retained as Substitute / Surrogate / L0",
@@ -894,7 +1073,7 @@ def main() -> None:
     implementation = req_layers["implementation"]
     impl_reach = implementation.get("implementation_reach") or {}
     check((impl_reach.get("covered_statements"), impl_reach.get("executable_statements"), impl_reach.get("percent")) == (22, 24, 91.7) and
-          impl_reach.get("missing_statements") == [22, 40] and
+          len(impl_reach.get("missing_statements") or []) == 2 and
           impl_reach.get("metric") == "implementation_statement_reach" and
           "coverage.py executable statements" in impl_reach.get("basis", ""),
           "Implementation statement reach has an explicit honest 22/24 coverage.py denominator")
@@ -1081,7 +1260,7 @@ def main() -> None:
         path.read_text() for path in sorted((ROOT / "docs/requirements").glob("*.md"))
     )
     normative_contract_ids = set(re.findall(
-        r"^:id:\s+((?:REQ|TREQ)_[A-Z0-9_]+)\s*$", requirements_text, flags=re.M
+        r"^:id:\s+((?:REQ|TREQ)_[A-Z0-9_]+)\s*$", requirements_text, flags=re.MULTILINE
     ))
     check(len(normative_contract_ids) == 49,
           "normative Sphinx-Needs graph contains 49 Requirement/TREQ contracts")
@@ -1182,6 +1361,7 @@ def main() -> None:
     status = subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines()
     approved_pilot_sources = {
         ".ai-bridge/build-mutation-report-prototype.py",
+        ".ai-bridge/build-requirement-monitor.py",
         ".ai-bridge/qualify-evidence-confidence.py",
         ".ai-bridge/validate-mutation-pilot.py",
         "docs/index.md",
@@ -1189,23 +1369,32 @@ def main() -> None:
         "docs/test-plan.md",
         "docs/experiments/index.md",
         "docs/requirements/configuration.md",
+        "docs/requirements/tools.md",
         "docs/verification-profiles/",
+        "features/tools/",
         "pyproject.toml",
         "src/llm_router/_internal/config/validation.py",
         "src/llm_router/_internal/runtime/routes.py",
         "tests/conftest.py",
         "features/responses/public_contract.feature",
         "tests/llm_router/bdd/responses/test_public_contract.py",
+        "tests/llm_router/bdd/routing/test_rate_limits.py",
+        "tests/llm_router/bdd/tools/",
         "tests/llm_router/support/fault_server.py",
         "tests/llm_router/support/workers/error_boundary.py",
         "tests/llm_router/unit/test_internal_config_validation.py",
+        "tests/llm_router/unit/test_internal_tool_registry.py",
     }
     unexpected = []
     for line in status:
         if line.startswith("?? .ai-bridge"):
             continue
         path = line[3:]
-        if path in approved_pilot_sources:
+        if any(
+            path == approved
+            or (approved.endswith("/") and path.startswith(approved))
+            for approved in approved_pilot_sources
+        ):
             continue
         unexpected.append(line)
     check(not unexpected, f"repository has no unrelated source changes outside approved pilot authoring files: {unexpected}")

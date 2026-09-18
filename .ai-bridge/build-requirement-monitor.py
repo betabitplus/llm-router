@@ -111,18 +111,43 @@ def ordered_values(values: set[str], options: list[str]) -> list[str]:
 def cell_state(contract: dict, target: dict) -> dict:
     rows = []
     passed = 0
+    failed = 0
+    covered = 0
+    required_path_count = 0
     for item_id in target["items"]:
-        row = contract["coverage_actual"].get(item_id)
-        if not row:
+        expected_paths = int((target.get("item_path_counts") or {}).get(item_id, 1))
+        required_path_count += expected_paths
+        item_rows = [
+            row
+            for row in contract["coverage_actual"].get(item_id, [])
+            if row.get("level") == target["level"] and row.get("boundary") == target["boundary"]
+        ]
+        if not item_rows:
             continue
-        if row.get("level") == target["level"] and row.get("boundary") == target["boundary"]:
-            rows.append(row)
-            if row.get("result") == "passed":
-                passed += 1
+        covered += 1
+        rows.extend(item_rows)
+        if len(item_rows) == expected_paths and all(row.get("result") == "passed" for row in item_rows):
+            passed += 1
+        else:
+            failed += 1
 
     retained = len(rows)
-    failed = sum(1 for row in rows if row.get("result") != "passed")
-    missing = max(0, int(target["declared_count"]) - retained)
+    missing = max(0, int(target["declared_count"]) - covered)
+    boundary_bases = [
+        str(row.get("boundary_basis") or "")
+        for row in rows
+        if row.get("boundary_basis")
+    ]
+    if target["boundary"] == "none" and any("zero HTTP requests" in value for value in boundary_bases):
+        boundary_summary = "Observed boundary evidence: zero provider HTTP requests in the retained path."
+    elif target["boundary"] == "replay":
+        boundary_summary = f"Observed boundary evidence: {retained} retained path(s) include VCR replay activity."
+    elif target["boundary"] == "substitute":
+        boundary_summary = f"Observed boundary evidence: {retained} retained path(s) include substitute interactions."
+    elif target["boundary"] == "direct":
+        boundary_summary = f"Observed boundary evidence: {retained} retained path(s) include direct external interaction."
+    else:
+        boundary_summary = "Observed boundary evidence: no material external participant is required by this path."
 
     semantic_rule = gate_rule(contract, "semantic_coverage")
     semantic_status = "MET" if (passed == target["declared_count"] if semantic_rule == "ALL" else passed > 0) else "NOT MET"
@@ -186,8 +211,10 @@ def cell_state(contract: dict, target: dict) -> dict:
         "semantic_rule": semantic_rule,
         "required_count": int(target["declared_count"]),
         "retained_count": retained,
+        "required_path_count": required_path_count,
         "failed_count": failed,
         "missing_count": missing,
+        "boundary_summary": boundary_summary,
         "representation_actual_values": ordered_values(set(rep_values), REPRESENTATION),
         "representation_target": rep_target,
         "representation_status": rep_status,
@@ -304,7 +331,7 @@ def coverage_card(state: dict) -> str:
     )
     return (
         f'<div class="signal-card coverage-card {status_class(state["semantic_status"])}-signal">'
-        f'<div class="signal-head"><strong>Semantic coverage {help_tip("Each required behavior needs one passing retained evidence path in this Test level × Boundary cell.")}</strong>'
+        f'<div class="signal-head"><strong>Semantic coverage {help_tip("Each required criterion needs exactly its declared retained path count, and none of those bindings may fail.")}</strong>'
         f'<span class="status {status_class(state["semantic_status"])}">{esc(status_label(state["semantic_status"]))}</span></div>'
         '<div class="coverage-summary">'
         f'<strong>{state["semantic_actual"]}<span>/</span>{state["required_count"]}</strong><small>passing required evidence</small>'
@@ -378,7 +405,7 @@ def cell_inspector(state: dict) -> str:
         '<div class="signal-group primary-group"><div class="signal-group-head"><strong>Required evidence</strong></div>'
         f'{coverage}</div>'
         '<div class="signal-group path-properties"><div class="signal-group-head"><strong>Retained path properties</strong>'
-        f'<span class="group-scope">{state["retained_count"]} {"path" if state["retained_count"] == 1 else "paths"}</span></div>'
+        f'<span class="group-scope">{state["retained_count"]}/{state["required_path_count"]} paths</span></div>'
         f'<div class="representation-stack">{representation}<div class="dependent-wrap">{ms}</div></div>'
         '<div class="confidence-subgroup"><div class="subgroup-head"><strong>Evidence confidence</strong></div>'
         f'<div class="confidence-grid">{confidence}</div></div></div>'
@@ -565,9 +592,10 @@ def render_current() -> None:
 
     data = json.loads(FACTS.read_text())
     for contract_data in (data.get("contracts") or {}).values():
-        for row in (contract_data.get("coverage_actual") or {}).values():
-            row.setdefault("provenance_scope", "traceability_only")
-            row.setdefault("producer_qualification_scope", "runner_only")
+        for rows in (contract_data.get("coverage_actual") or {}).values():
+            for row in rows:
+                row.setdefault("provenance_scope", "traceability_only")
+                row.setdefault("producer_qualification_scope", "runner_only")
     contract = data["contracts"][CONTRACT_ID]
     policy = data["policy"]
     target = contract["target"]
@@ -605,7 +633,11 @@ def render_current() -> None:
                 na_tip = help_tip("This Test level × Boundary path is not required by this Requirement.", focusable=False)
                 row.append(f'<td><div class="matrix-cell na" aria-disabled="true"><span>N/A {na_tip}</span></div></td>')
             else:
-                cell_tip = help_tip("Fails when any required criterion for this exact Test level × Boundary path fails or is unknown.", focusable=False)
+                cell_tip = help_tip(
+                    "Fails when any required criterion for this exact Test level × Boundary path fails or is unknown. "
+                    + state["boundary_summary"],
+                    focusable=False,
+                )
                 row.append(
                     '<td>'
                     f'<button class="matrix-cell {status_class(state["overall"])}" type="button" data-cell="{esc(state["key"])}">'
