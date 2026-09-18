@@ -10,5 +10,6 @@ Start from the normative Requirement first, then open its profile only when you 
 ```{toctree}
 :maxdepth: 1
 
+configuration
 invalid-configuration
 ```

@@ -12,9 +12,9 @@ are demonstrated.
 and directly verify each derived configuration constraint where a lower-level check is clearer and more
 diagnostic than repeating the same rule through the public scenario layer.
 
-**Models:** {ref}`Configuration validation <test-plan-configuration-validation-model>` · {ref}`Fault-based testing <test-plan-fault-model>`
-
 ## Profile · REQ_INVALID_CONFIGURATION_ERRORS
+
+**Models:** {ref}`Configuration validation <test-plan-configuration-validation-model>` · {ref}`Fault-based testing <test-plan-fault-model>`
 
 ### Required coverage
 

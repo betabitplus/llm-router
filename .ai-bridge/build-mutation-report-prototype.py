@@ -1,11 +1,29 @@
 from __future__ import annotations
-import argparse, ast, binascii, hashlib, json, os, re, shutil, socket, struct, subprocess, sys, tempfile, time, urllib.parse, xml.etree.ElementTree as ET, zlib
+
+import argparse
+import ast
+import binascii
+import hashlib
+import json
+import os
+import re
+import shutil
+import socket
+import struct
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.parse
+import xml.etree.ElementTree as ET
+import zlib
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
-from importlib.metadata import version as package_version
+from datetime import UTC, datetime, timedelta
 from html import escape as html_escape
+from importlib.metadata import version as package_version
 from pathlib import Path
 from typing import Any
+
 from coverage import CoverageData
 
 ROOT=Path.cwd()
@@ -67,7 +85,7 @@ CONTRACTS={
 STATUS={"killed":"Killed","survived":"Survived","timeout":"Timeout","suspicious":"RuntimeError","skipped":"Ignored","untested":"NoCoverage","no tests":"NoCoverage"}
 
 def utc_now():
-    return datetime.now(timezone.utc).isoformat().replace("+00:00","Z")
+    return datetime.now(UTC).isoformat().replace("+00:00","Z")
 
 def stable_json(value):
     return json.dumps(value,sort_keys=True,separators=(",",":"),ensure_ascii=False)
@@ -337,8 +355,8 @@ def suppression_active(row):
     except ValueError:
         return False
     if expiry.tzinfo is None:
-        expiry=expiry.replace(tzinfo=timezone.utc)
-    return expiry>datetime.now(timezone.utc)
+        expiry=expiry.replace(tzinfo=UTC)
+    return expiry>datetime.now(UTC)
 
 def suppression_map(contract_id):
     return {
@@ -519,7 +537,9 @@ def function_start(path,name):
     return min([f.lineno,*[d.lineno for d in f.decorator_list]])
 
 def mutant_detail(path,name):
-    from mutmut.mutation.diff_apply import get_diff_for_mutant  # ty: ignore[unresolved-import]
+    from mutmut.mutation.diff_apply import (  # ty: ignore[unresolved-import]
+        get_diff_for_mutant,
+    )
     diff=get_diff_for_mutant(name,path=str(path.relative_to(ROOT)))
     start=function_start(path,name)
     old=new=0
@@ -656,7 +676,7 @@ def write_wrapper(contract_id,spec,allure_ids,fact):
 <a href="../../mutation-analysis.html#mutation-{contract_id.lower()}">Changes / history</a>
 <a href="../../test-results/index.html?tags=TF_SCOPE__{contract_id}">Allure tests</a>
 <details><summary>Exact pytest / Allure tests ({len(spec["tests"])})</summary><ul>{exact}</ul></details>
-<div class="tf-campaign"><strong class="{freshness_class}">{freshness_label}</strong> · {campaign_mode} campaign · {campaign_head[:12]} · content {campaign_id} · run {run_id.split("--")[-1]}{stale_reason} · <a href="{provenance_url}">campaign provenance</a></div>
+<div class="tf-campaign"><strong class="{freshness_class}">{freshness_label}</strong> · {campaign_mode} campaign · {campaign_head[:12]} · content {campaign_id} · run {run_id.rsplit("--", maxsplit=1)[-1]}{stale_reason} · <a href="{provenance_url}">campaign provenance</a></div>
 <div class="tf-triage"><strong class="{triage_class}">{'Attention' if new_unresolved else 'No new unresolved survivors'}</strong> · {triage_text}</div>
 {suppressed_html}</nav>
 <mutation-test-report-app src="mutation-report.json" title-postfix="{contract_id} · llm-router"></mutation-test-report-app>
@@ -744,30 +764,30 @@ def build_summary(campaign):
     }
 
 def patch_depth_boundary_model(t):
-    if '<!-- DEPTH-P30-BOUNDARY-MODEL -->' in t:
+    if "<!-- DEPTH-P30-BOUNDARY-MODEL -->" in t:
      return t
 
     def rep(old,new,n=1):
      nonlocal t
      c=t.count(old)
-     if c!=n: raise RuntimeError(f'P30 Depth patch expected {n}, got {c}: {old[:100]!r}')
+     if c!=n: raise RuntimeError(f"P30 Depth patch expected {n}, got {c}: {old[:100]!r}")
      t=t.replace(old,new,n)
 
-    rep('The treemap has three selectable projections: standard ISTQB <strong>Test Level</strong>, universal <strong>Representation Fidelity</strong>, and mutation-based <strong>Test Strength</strong>. Test Strength colors only objectively measured contracts. Hover a measured contract for score, survivor debt and one missed-behavior example; click for changes / history. Model/simulation trust remains separate as <strong>Evidence Producer Credibility</strong>.</p>',
-        'The treemap has three selectable projections: standard ISTQB <strong>Test Level</strong>, observed <strong>Boundary Reality</strong>, and mutation-based <strong>Test Strength</strong>. Boundary Reality answers how the evidence path interacted with outside reality (local → substitute → replay → direct live); it is an exposure mode, not an assurance-strength score. <strong>Representation Fidelity</strong> now qualifies each concrete evidence path instead of acting as a second independent map axis. Test Strength colors only objectively measured contracts. Model/simulation trust remains separate as <strong>Evidence Producer Credibility</strong>.</p>')
-    rep('''    <button class="tf-depth-dimension" type="button" data-depth-mode="representation">
+    rep("The treemap has three selectable projections: standard ISTQB <strong>Test Level</strong>, universal <strong>Representation Fidelity</strong>, and mutation-based <strong>Test Strength</strong>. Test Strength colors only objectively measured contracts. Hover a measured contract for score, survivor debt and one missed-behavior example; click for changes / history. Model/simulation trust remains separate as <strong>Evidence Producer Credibility</strong>.</p>",
+        "The treemap has three selectable projections: standard ISTQB <strong>Test Level</strong>, observed <strong>Boundary Reality</strong>, and mutation-based <strong>Test Strength</strong>. Boundary Reality answers how the evidence path interacted with outside reality (local → substitute → replay → direct live); it is an exposure mode, not an assurance-strength score. <strong>Representation Fidelity</strong> now qualifies each concrete evidence path instead of acting as a second independent map axis. Test Strength colors only objectively measured contracts. Model/simulation trust remains separate as <strong>Evidence Producer Credibility</strong>.</p>")
+    rep("""    <button class="tf-depth-dimension" type="button" data-depth-mode="representation">
           <span>Representation Fidelity <em class="tf-depth-direction">weak → strong</em></span>
           <strong id="tf-representation-headline">Loading</strong>
           <div class="tf-depth-rail" id="tf-representation-rail"></div>
           <small id="tf-depth-credibility-signal" class="tf-depth-credibility-signal">Evidence credibility · Loading</small>
-        </button>''','''    <button class="tf-depth-dimension" type="button" data-depth-mode="boundary">
+        </button>""","""    <button class="tf-depth-dimension" type="button" data-depth-mode="boundary">
           <span>Boundary Reality <em class="tf-depth-direction">local → live</em></span>
           <strong id="tf-boundary-headline">Loading</strong>
           <div class="tf-depth-rail" id="tf-boundary-rail"></div>
           <small id="tf-depth-credibility-signal" class="tf-depth-credibility-signal">Representation + producer trust qualify the exact path · details below ↓</small>
-        </button>''')
-    rep('''  const REPRESENTATION = {
-    ''','''  const BOUNDARY = {
+        </button>""")
+    rep("""  const REPRESENTATION = {
+    ""","""  const BOUNDARY = {
         no_evidence: {rank:-1,label:"No evidence",short:"—",color:"#667085",description:"No retained verification evidence."},
         none: {rank:0,label:"Local only",short:"Local",color:"#d49a32",description:"The evidence path remains inside llm-router; no external dependency boundary is crossed."},
         substitute: {rank:1,label:"Substitute",short:"Sub",color:"#3b82f6",description:"The path crosses an external-facing interface through a deterministic substitute/fake."},
@@ -775,33 +795,33 @@ def patch_depth_boundary_model(t):
         direct: {rank:3,label:"Direct live",short:"Live",color:"#2f8f5b",description:"The path directly interacts with the current external dependency. This is not universally required; the Assurance Target decides sufficiency."},
       };
       const REPRESENTATION = {
-    ''')
-    rep('''  const REACH_ORDER=["none","component","component_integration","system","system_integration"];
-      const REPRESENTATION_ORDER=''', '''  const REACH_ORDER=["none","component","component_integration","system","system_integration"];
+    """)
+    rep("""  const REACH_ORDER=["none","component","component_integration","system","system_integration"];
+      const REPRESENTATION_ORDER=""", """  const REACH_ORDER=["none","component","component_integration","system","system_integration"];
       const BOUNDARY_ORDER=["no_evidence","none","substitute","replay","direct"];
-      const REPRESENTATION_ORDER=''')
-    rep('''        id,index,reachKey:"none",representationKey:"none",validationKey:"na",
-    ''','''        id,index,reachKey:"none",boundaryKey:"no_evidence",representationKey:"none",validationKey:"na",
-    ''')
-    rep('''      reachKey:String(audited.system_reach||"none"),
+      const REPRESENTATION_ORDER=""")
+    rep("""        id,index,reachKey:"none",representationKey:"none",validationKey:"na",
+    ""","""        id,index,reachKey:"none",boundaryKey:"no_evidence",representationKey:"none",validationKey:"na",
+    """)
+    rep("""      reachKey:String(audited.system_reach||"none"),
           representationKey:String(audited.representation_fidelity||"none"),
-    ''','''      reachKey:String(audited.system_reach||"none"),
+    ""","""      reachKey:String(audited.system_reach||"none"),
           boundaryKey:String(strongestFromRows(testRows,"boundary_mode",BOUNDARY,BOUNDARY_ORDER)||"no_evidence"),
           representationKey:String(audited.representation_fidelity||"none"),
-    ''')
-    rep('''      reachKey: weakest(metrics,"reachKey",REACH_ORDER),
+    """)
+    rep("""      reachKey: weakest(metrics,"reachKey",REACH_ORDER),
           representationKey: weakest(metrics,"representationKey",REPRESENTATION_ORDER),
-    ''','''      reachKey: weakest(metrics,"reachKey",REACH_ORDER),
+    ""","""      reachKey: weakest(metrics,"reachKey",REACH_ORDER),
           boundaryKey: weakest(metrics,"boundaryKey",BOUNDARY_ORDER),
           representationKey: weakest(metrics,"representationKey",REPRESENTATION_ORDER),
-    ''')
-    rep('''      reachDist: distribution(metrics,"reachKey",REACH_ORDER),
+    """)
+    rep("""      reachDist: distribution(metrics,"reachKey",REACH_ORDER),
           representationDist: distribution(metrics,"representationKey",REPRESENTATION_ORDER),
-    ''','''      reachDist: distribution(metrics,"reachKey",REACH_ORDER),
+    ""","""      reachDist: distribution(metrics,"reachKey",REACH_ORDER),
           boundaryDist: distribution(metrics,"boundaryKey",BOUNDARY_ORDER),
           representationDist: distribution(metrics,"representationKey",REPRESENTATION_ORDER),
-    ''')
-    old='''      if(mode==="representation") {
+    """)
+    old="""      if(mode==="representation") {
             const maxKey=strongestFromRows(own.testRows,"representation_fidelity",REPRESENTATION,REPRESENTATION_ORDER)
               || own.representationKey;
             lines.push("<b>Representation Fidelity</b> · <span style='color:"+REPRESENTATION[maxKey].color+"'><b>"+REPRESENTATION[maxKey].label+"</b></span>");
@@ -821,8 +841,8 @@ def patch_depth_boundary_model(t):
                 "</span>"
               ));
             }
-          } else if(mode==="strength") {'''
-    new='''      if(mode==="boundary") {
+          } else if(mode==="strength") {"""
+    new="""      if(mode==="boundary") {
             const maxKey=strongestFromRows(own.testRows,"boundary_mode",BOUNDARY,BOUNDARY_ORDER) || own.boundaryKey;
             lines.push("<b>Boundary Reality</b> · <span style='color:"+BOUNDARY[maxKey].color+"'><b>"+BOUNDARY[maxKey].label+"</b></span>");
             lines.push("<span class='tf-depth-tooltip-note'>Exposure mode only · the Assurance Target decides whether live interaction is required.</span>");
@@ -850,20 +870,20 @@ def patch_depth_boundary_model(t):
               lines.push("<span class='tf-depth-tooltip-note'><b>Evidence producers / M&amp;S validation</b></span>");
               producers.forEach(item=>lines.push("<span class='tf-depth-tooltip-note'>"+escapeHtml(producerDisplayName(item.id))+" · "+escapeHtml(VALIDATION[item.level]?.label || item.level.toUpperCase())+" · "+item.tests+" test"+(item.tests===1?"":"s")+"</span>"));
             }
-          } else if(mode==="strength") {'''
+          } else if(mode==="strength") {"""
     rep(old,new)
-    rep('''    if(mode==="representation") {
+    rep("""    if(mode==="representation") {
           lines.push("<b>Branch floor</b> · <span style='color:"+REPRESENTATION[metric.representationKey].color+"'><b>"+REPRESENTATION[metric.representationKey].label+"</b></span>");
           lines.push("<span class='tf-depth-tooltip-note'>Contracts · "+escapeHtml(compactDist(metric.representationDist,REPRESENTATION,REPRESENTATION_ORDER))+"</span>");
-        } else if(mode==="strength") {''','''    if(mode==="boundary") {
+        } else if(mode==="strength") {""","""    if(mode==="boundary") {
           lines.push("<b>Branch minimum observed boundary</b> · <span style='color:"+BOUNDARY[metric.boundaryKey].color+"'><b>"+BOUNDARY[metric.boundaryKey].label+"</b></span>");
           lines.push("<span class='tf-depth-tooltip-note'>Contracts · "+escapeHtml(compactDist(metric.boundaryDist,BOUNDARY,BOUNDARY_ORDER))+"</span>");
           lines.push("<span class='tf-depth-tooltip-note'>Boundary mode is exposure, not assurance strength.</span>");
-        } else if(mode==="strength") {''')
-    rep('''    if(mode==="representation") return {dict:REPRESENTATION,order:REPRESENTATION_ORDER,key:"representationKey"};
-    ''','''    if(mode==="boundary") return {dict:BOUNDARY,order:BOUNDARY_ORDER,key:"boundaryKey"};
-    ''')
-    rep('''      if(mode==="strength") {
+        } else if(mode==="strength") {""")
+    rep("""    if(mode==="representation") return {dict:REPRESENTATION,order:REPRESENTATION_ORDER,key:"representationKey"};
+    ""","""    if(mode==="boundary") return {dict:BOUNDARY,order:BOUNDARY_ORDER,key:"boundaryKey"};
+    """)
+    rep("""      if(mode==="strength") {
             const fact=isContract ? contractMetrics.get(id)?.strengthFact : null;
             if(fact && fact.fresh===false) addStrengthFreshnessMarker(group,path);
             return;
@@ -874,7 +894,7 @@ def patch_depth_boundary_model(t):
             addCredibilityWarningMarker(group,path);
           }
 
-          if(!active) return;''','''      if(mode==="strength") {
+          if(!active) return;""","""      if(mode==="strength") {
             const fact=isContract ? contractMetrics.get(id)?.strengthFact : null;
             if(fact && fact.fresh===false) addStrengthFreshnessMarker(group,path);
           }
@@ -882,15 +902,15 @@ def patch_depth_boundary_model(t):
             addCredibilityWarningMarker(group,path);
           }
 
-          if(!active) return;''')
-    rep('''    if(selectedProducer && mode!=="representation") {
+          if(!active) return;""")
+    rep("""    if(selectedProducer && mode!=="representation") {
           applyMode("representation").then(focusMap);
           return;
         }
         applyCredibilityOutlines();
-        focusMap();''','''    applyCredibilityOutlines();
-        focusMap();''')
-    rep('''    renderRail("tf-reach-rail",root.reachDist,REACH,REACH_ORDER);
+        focusMap();""","""    applyCredibilityOutlines();
+        focusMap();""")
+    rep("""    renderRail("tf-reach-rail",root.reachDist,REACH,REACH_ORDER);
         renderRail("tf-representation-rail",root.representationDist,REPRESENTATION,REPRESENTATION_ORDER);
         renderRail("tf-strength-rail",root.strengthDist,STRENGTH,STRENGTH_ORDER);
 
@@ -899,7 +919,7 @@ def patch_depth_boundary_model(t):
         document.getElementById("tf-reach-headline").textContent=
           "Max · "+(reachMax?REACH[reachMax].label:"No evidence");
         document.getElementById("tf-representation-headline").textContent=
-          "Max · "+(representationMax?REPRESENTATION[representationMax].label:"No evidence");''','''    renderRail("tf-reach-rail",root.reachDist,REACH,REACH_ORDER);
+          "Max · "+(representationMax?REPRESENTATION[representationMax].label:"No evidence");""","""    renderRail("tf-reach-rail",root.reachDist,REACH,REACH_ORDER);
         renderRail("tf-boundary-rail",root.boundaryDist,BOUNDARY,BOUNDARY_ORDER);
         renderRail("tf-strength-rail",root.strengthDist,STRENGTH,STRENGTH_ORDER);
 
@@ -908,35 +928,35 @@ def patch_depth_boundary_model(t):
         document.getElementById("tf-reach-headline").textContent=
           "Max · "+(reachMax?REACH[reachMax].label:"No evidence");
         document.getElementById("tf-boundary-headline").textContent=
-          "Max observed · "+(boundaryMax?BOUNDARY[boundaryMax].label:"No evidence");''')
-    rep('''      representation:
+          "Max observed · "+(boundaryMax?BOUNDARY[boundaryMax].label:"No evidence");""")
+    rep("""      representation:
             "Representation Fidelity\\n"+
             "Question: how close was the verification article to the actual target?\\n"+
             "Current max: "+(representationMax?REPRESENTATION[representationMax].label:"No evidence")+"\\n"+
             "Contracts: "+axisDistributionText(root.representationDist,REPRESENTATION,REPRESENTATION_ORDER),
-    ''','''      boundary:
+    ""","""      boundary:
             "Boundary Reality\\n"+
             "Question: how did retained evidence interact with outside reality?\\n"+
             "This is an exposure mode, not a universal weak→strong score. The Assurance Target decides what is required.\\n"+
             "Current maximum observed exposure: "+(boundaryMax?BOUNDARY[boundaryMax].label:"No evidence")+"\\n"+
             "Contracts: "+axisDistributionText(root.boundaryDist,BOUNDARY,BOUNDARY_ORDER),
-    ''')
-    rep('''    if(mode!=="representation") {
+    """)
+    rep("""    if(mode!=="representation") {
           selectedProducer=null;
           hoveredProducer=null;
           hoveredContractId=null;
           updateProducerSelectionUi();
         }
-    ''','''    hoveredContractId=null;
+    ""","""    hoveredContractId=null;
         updateProducerSelectionUi();
-    ''')
-    rep('''      hoveredContractId=mode==="representation" && (kind==="Requirement" || kind==="Technical requirement")
+    """)
+    rep("""      hoveredContractId=mode==="representation" && (kind==="Requirement" || kind==="Technical requirement")
             ? String(point.id||"")
-            : null;''','''      hoveredContractId=(kind==="Requirement" || kind==="Technical requirement")
+            : null;""","""      hoveredContractId=(kind==="Requirement" || kind==="Technical requirement")
             ? String(point.id||"")
-            : null;''')
+            : null;""")
     # marker for idempotence
-    rep('</section>','<!-- DEPTH-P30-BOUNDARY-MODEL -->\n</section>')
+    rep("</section>","<!-- DEPTH-P30-BOUNDARY-MODEL -->\n</section>")
     return t
 
 def patch_depth_page():
@@ -971,21 +991,21 @@ def patch_depth_page():
         )
         text=text.replace(
           '      const isContract=kind==="Requirement" || kind==="Technical requirement";\n      if(mode!=="representation") return;',
-          '''      const isContract=kind==="Requirement" || kind==="Technical requirement";
+          """      const isContract=kind==="Requirement" || kind==="Technical requirement";
       if(mode==="strength") {
         const fact=isContract ? contractMetrics.get(id)?.strengthFact : null;
         if(fact && fact.fresh===false) addStrengthFreshnessMarker(group,path);
         return;
       }
-      if(mode!=="representation") return;'''
+      if(mode!=="representation") return;"""
         )
         text=text.replace(
-          '''          lines.push("<b>Test Strength</b> · <span style='color:"+STRENGTH[key].color+"'><b>"+Number(fact.score).toFixed(1)+"% · "+STRENGTH[key].label+"</b></span>");
+          """          lines.push("<b>Test Strength</b> · <span style='color:"+STRENGTH[key].color+"'><b>"+Number(fact.score).toFixed(1)+"% · "+STRENGTH[key].label+"</b></span>");
           lines.push("<span class='tf-depth-tooltip-note'>"+Number(fact.killed||0)+" killed · "+Number(fact.survived||0)+" survived · "+Number(fact.valid_mutants||0)+" covered valid mutants</span>");
           lines.push("<span class='tf-depth-tooltip-note'>Scope · "+escapeHtml(fact.scope_kind)+" "+escapeHtml(fact.scope)+"</span>");
           lines.push("<span class='tf-depth-tooltip-note'>Linked tests · "+Number(fact.linked_test_count||0)+"</span>");
-          lines.push("<span class='tf-depth-tooltip-note'><b>Click → Mutation Analysis</b></span>");''',
-          '''          lines.push("<b>Test Strength</b> · <span style='color:"+STRENGTH[key].color+"'><b>"+Number(fact.score).toFixed(1)+"% · "+STRENGTH[key].label+"</b></span>");
+          lines.push("<span class='tf-depth-tooltip-note'><b>Click → Mutation Analysis</b></span>");""",
+          """          lines.push("<b>Test Strength</b> · <span style='color:"+STRENGTH[key].color+"'><b>"+Number(fact.score).toFixed(1)+"% · "+STRENGTH[key].label+"</b></span>");
           lines.push("<span class='tf-depth-tooltip-note'>"+Number(fact.killed||0)+" killed · "+Number(fact.survived||0)+" survived · "+Number(fact.valid_mutants||0)+" covered valid mutants</span>");
           const freshness=fact.fresh===false ? "STALE" : "Fresh";
           const campaign=fact.campaign_mode ? " · "+fact.campaign_mode+" · "+String(fact.campaign_head_sha||"").slice(0,12) : "";
@@ -995,15 +1015,15 @@ def patch_depth_page():
           }
           lines.push("<span class='tf-depth-tooltip-note'>Scope · "+escapeHtml(fact.scope_kind)+" "+escapeHtml(fact.scope)+"</span>");
           lines.push("<span class='tf-depth-tooltip-note'>Linked tests · "+Number(fact.linked_test_count||0)+"</span>");
-          lines.push("<span class='tf-depth-tooltip-note'><b>Click → Mutation Analysis</b></span>");'''
+          lines.push("<span class='tf-depth-tooltip-note'><b>Click → Mutation Analysis</b></span>");"""
         )
         text=text.replace(
-          '''    document.getElementById("tf-strength-headline").textContent=
-      root.strengthMeasuredCount+" / "+root.strengthTotalCount+" measured";''',
-          '''    const freshMeasured=Number(strengthFacts?.summary?.fresh_measured_contracts||0);
+          """    document.getElementById("tf-strength-headline").textContent=
+      root.strengthMeasuredCount+" / "+root.strengthTotalCount+" measured";""",
+          """    const freshMeasured=Number(strengthFacts?.summary?.fresh_measured_contracts||0);
     const staleMeasured=Number(strengthFacts?.summary?.stale_measured_contracts||0);
     document.getElementById("tf-strength-headline").textContent=
-      root.strengthMeasuredCount+" / "+root.strengthTotalCount+" measured · "+freshMeasured+" fresh · "+staleMeasured+" stale";'''
+      root.strengthMeasuredCount+" / "+root.strengthTotalCount+" measured · "+freshMeasured+" fresh · "+staleMeasured+" stale";"""
         )
         text=text.replace(
           '"Spike coverage: "+root.strengthMeasuredCount+"/"+root.strengthTotalCount+" contracts",',
@@ -1012,11 +1032,11 @@ def patch_depth_page():
 
     if "// DEPTH-P21 survivor delta" not in text:
         text=text.replace(
-          '''          if(fact.fresh===false && Array.isArray(fact.stale_reasons) && fact.stale_reasons.length) {
+          """          if(fact.fresh===false && Array.isArray(fact.stale_reasons) && fact.stale_reasons.length) {
             lines.push("<span class='tf-depth-tooltip-note'>"+escapeHtml(fact.stale_reasons.join(" · "))+"</span>");
           }
-          lines.push("<span class='tf-depth-tooltip-note'>Scope · "+escapeHtml(fact.scope_kind)+" "+escapeHtml(fact.scope)+"</span>");''',
-          '''          if(fact.fresh===false && Array.isArray(fact.stale_reasons) && fact.stale_reasons.length) {
+          lines.push("<span class='tf-depth-tooltip-note'>Scope · "+escapeHtml(fact.scope_kind)+" "+escapeHtml(fact.scope)+"</span>");""",
+          """          if(fact.fresh===false && Array.isArray(fact.stale_reasons) && fact.stale_reasons.length) {
             lines.push("<span class='tf-depth-tooltip-note'>"+escapeHtml(fact.stale_reasons.join(" · "))+"</span>");
           }
           // DEPTH-P21 survivor delta
@@ -1030,7 +1050,7 @@ def patch_depth_page():
               lines.push("<span class='tf-depth-tooltip-note'><b>Attention · "+Number(triage.new_unresolved_survivors||0)+" new unresolved survivor"+(Number(triage.new_unresolved_survivors||0)===1?"":"s")+"</b></span>");
             }
           }
-          lines.push("<span class='tf-depth-tooltip-note'>Scope · "+escapeHtml(fact.scope_kind)+" "+escapeHtml(fact.scope)+"</span>");'''
+          lines.push("<span class='tf-depth-tooltip-note'>Scope · "+escapeHtml(fact.scope_kind)+" "+escapeHtml(fact.scope)+"</span>");"""
         )
         text=text.replace(
           'root.strengthMeasuredCount+" / "+root.strengthTotalCount+" measured · "+freshMeasured+" fresh · "+staleMeasured+" stale";',
@@ -1046,7 +1066,7 @@ def patch_depth_page():
     # enters the mutation change/history journal.
     text=re.sub(
       r'<div id=\"tf-strength-monitor\".*?<div class=\"ternforge-verification-depth-map-shell\">',
-      '<div class=\"ternforge-verification-depth-map-shell\">',text,count=1,flags=re.S
+      '<div class="ternforge-verification-depth-map-shell">',text,count=1,flags=re.DOTALL
     )
     css_start=text.find("/* DEPTH-P26 strength monitor */")
     if css_start!=-1:
@@ -1058,55 +1078,55 @@ def patch_depth_page():
         js_end=text.find("  function contractTarget(index) {",js_start)
         if js_end!=-1:
             text=text[:js_start]+text[js_end:]
-    text=text.replace('    renderStrengthMonitor();\n','')
+    text=text.replace("    renderStrengthMonitor();\n","")
     text=text.replace(
-      '<small class=\"tf-depth-credibility-signal\">Mutation-based · killed / covered valid mutants · click measured contract → analysis</small>',
-      '<small class=\"tf-depth-credibility-signal\">Current snapshot · click measured contract → changes / history</small>'
+      '<small class="tf-depth-credibility-signal">Mutation-based · killed / covered valid mutants · click measured contract → analysis</small>',
+      '<small class="tf-depth-credibility-signal">Current snapshot · click measured contract → changes / history</small>'
     )
     text=text.replace(
-      '''    if(mode===\"strength\") {
+      """    if(mode===\"strength\") {
       const fact=contractMetrics.get(id)?.strengthFact;
       return fact?.report_url || null;
-    }''',
-      '''    if(mode===\"strength\") {
+    }""",
+      """    if(mode===\"strength\") {
       const fact=contractMetrics.get(id)?.strengthFact;
       return fact ? \"mutation-analysis.html#mutation-\"+id.toLowerCase() : null;
-    }''',
+    }""",
       1
     )
     text=text.replace(
-      '    return \"verification-assurance.html#assurance-\"+id.toLowerCase();',
-      '    return \"traceability-reader.html#review-\"+id;'
+      '    return "verification-assurance.html#assurance-"+id.toLowerCase();',
+      '    return "traceability-reader.html#review-"+id;'
     )
     text=text.replace(
-      '''          lines.push(\"<span class='tf-depth-tooltip-note'>\"+Number(fact.killed||0)+\" killed · \"+Number(fact.survived||0)+\" survived · \"+Number(fact.valid_mutants||0)+\" covered valid mutants</span>\");''',
-      '''          lines.push(\"<span class='tf-depth-tooltip-note'>\"+Number(fact.killed||0)+\" killed · \"+Number(fact.survived||0)+\" survived</span>\");''',
+      """          lines.push(\"<span class='tf-depth-tooltip-note'>\"+Number(fact.killed||0)+\" killed · \"+Number(fact.survived||0)+\" survived · \"+Number(fact.valid_mutants||0)+\" covered valid mutants</span>\");""",
+      """          lines.push(\"<span class='tf-depth-tooltip-note'>\"+Number(fact.killed||0)+\" killed · \"+Number(fact.survived||0)+\" survived</span>\");""",
       1
     )
     text=text.replace(
-      '''            lines.push(\"<span class='tf-depth-tooltip-note'><b>Mutation delta</b> · New \"+Number(triage.new_survivors||0)+\" · Resolved \"+Number(triage.resolved_survivors||0)+\" · Suppressed \"+Number(triage.suppressed_survivors||0)+\" · \"+delta+\"</span>\");''',
-      '''            lines.push(\"<span class='tf-depth-tooltip-note'><b>\"+freshness+\"</b> · New \"+Number(triage.new_unresolved_survivors||0)+\" · Debt \"+Number(triage.existing_survivors||0)+\" · \"+delta+\"</span>\");''',
+      """            lines.push(\"<span class='tf-depth-tooltip-note'><b>Mutation delta</b> · New \"+Number(triage.new_survivors||0)+\" · Resolved \"+Number(triage.resolved_survivors||0)+\" · Suppressed \"+Number(triage.suppressed_survivors||0)+\" · \"+delta+\"</span>\");""",
+      """            lines.push(\"<span class='tf-depth-tooltip-note'><b>\"+freshness+\"</b> · New \"+Number(triage.new_unresolved_survivors||0)+\" · Debt \"+Number(triage.existing_survivors||0)+\" · \"+delta+\"</span>\");""",
       1
     )
     text=text.replace(
-      '''          lines.push(\"<span class='tf-depth-tooltip-note'>Scope · \"+escapeHtml(fact.scope_kind)+\" \"+escapeHtml(fact.scope)+\"</span>\");
+      """          lines.push(\"<span class='tf-depth-tooltip-note'>Scope · \"+escapeHtml(fact.scope_kind)+\" \"+escapeHtml(fact.scope)+\"</span>\");
           lines.push(\"<span class='tf-depth-tooltip-note'>Linked tests · \"+Number(fact.linked_test_count||0)+\"</span>\");
-          lines.push(\"<span class='tf-depth-tooltip-note'><b>Click → Mutation Analysis</b></span>\");''',
-      '''          const examples=Array.isArray(fact.survivor_examples)?fact.survivor_examples:[];
+          lines.push(\"<span class='tf-depth-tooltip-note'><b>Click → Mutation Analysis</b></span>\");""",
+      """          const examples=Array.isArray(fact.survivor_examples)?fact.survivor_examples:[];
           if(examples.length) lines.push(\"<span class='tf-depth-tooltip-note'><b>Missed example</b> · \"+escapeHtml(String(examples[0].summary||\"\"))+\"</span>\");
-          lines.push(\"<span class='tf-depth-tooltip-note'><b>Click → changes / history</b></span>\");''',
+          lines.push(\"<span class='tf-depth-tooltip-note'><b>Click → changes / history</b></span>\");""",
       1
     )
 
     if "// DEPTH-P26 compact strength hover" not in text:
         text=text.replace(
-          '''          const freshness=fact.fresh===false ? "STALE" : "Fresh";
+          """          const freshness=fact.fresh===false ? "STALE" : "Fresh";
           const campaign=fact.campaign_mode ? " · "+fact.campaign_mode+" · "+String(fact.campaign_head_sha||"").slice(0,12) : "";
           lines.push("<span class='tf-depth-tooltip-note'><b>"+freshness+"</b>"+escapeHtml(campaign)+"</span>");
-          if(fact.fresh===false && Array.isArray(fact.stale_reasons) && fact.stale_reasons.length) {''',
-          '''          // DEPTH-P26 compact strength hover
+          if(fact.fresh===false && Array.isArray(fact.stale_reasons) && fact.stale_reasons.length) {""",
+          """          // DEPTH-P26 compact strength hover
           const freshness=fact.fresh===false ? "STALE" : "Fresh";
-          if(fact.fresh===false && Array.isArray(fact.stale_reasons) && fact.stale_reasons.length) {''',
+          if(fact.fresh===false && Array.isArray(fact.stale_reasons) && fact.stale_reasons.length) {""",
           1
         )
     text=text.replace(
@@ -1388,7 +1408,7 @@ def portal_nav_item(label,href,active=False,kind=""):
 def patch_navigation_text(text,current=None):
     text=re.sub(
       r'\n<li class="nav-item[^"]*" data-ternforge-p22-nav="(?:health|depth|mutation)">.*?</li>\n',
-      "\n",text,flags=re.S
+      "\n",text,flags=re.DOTALL
     )
     nav_prefix=text.split('<main id="main-content"',1)[0]
     has_native_depth="Verification Depth Map" in nav_prefix
@@ -1513,7 +1533,7 @@ def mutation_history_section(summary,feedback):
           f"<td>{signal}</td>"
           f'<td><code>{html_escape(str(row.get("mode") or "unknown"))}</code> · {selected} contract(s)<br><small>{int(row.get("mutants") or 0)} mutants</small></td>'
           f"<td>{duration_text}</td>"
-          f'<td><a href="{provenance}"><code>{html_escape(run_id.split("--")[-1] or campaign_id)}</code></a>{current}</td>'
+          f'<td><a href="{provenance}"><code>{html_escape(run_id.rsplit("--", maxsplit=1)[-1] or campaign_id)}</code></a>{current}</td>'
           "</tr>"
         )
     return f"""<section id="mutation-history">
@@ -1533,12 +1553,12 @@ def write_mutation_analysis_page(summary,feedback):
     # The PyData shell is reused, but assurance-only runtime projections must
     # never leak into the mutation journal on repeated local rebuilds.
     template=re.sub(
-      r'<!-- TERNFORGE-(?:P2[789]|P3[0-3])-ASSURANCE-EVIDENCE-START -->.*?<!-- TERNFORGE-(?:P2[789]|P3[0-3])-ASSURANCE-EVIDENCE-END -->',
-      '',template,flags=re.S,
+      r"<!-- TERNFORGE-(?:P2[789]|P3[0-3])-ASSURANCE-EVIDENCE-START -->.*?<!-- TERNFORGE-(?:P2[789]|P3[0-3])-ASSURANCE-EVIDENCE-END -->",
+      "",template,flags=re.DOTALL,
     )
     template=re.sub(
-      r'<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-START -->.*?<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-END -->',
-      '',template,flags=re.S,
+      r"<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-START -->.*?<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-END -->",
+      "",template,flags=re.DOTALL,
     )
     measured=[]
     for contract_id,fact in STRENGTH.get("contracts",{}).items():
@@ -1583,7 +1603,7 @@ def write_mutation_analysis_page(summary,feedback):
 <p><a href="verification-depth-map.html">← Test Strength map</a> · Open this page when the map shows a new/stale signal, when you want to work down known debt, or when you need run history.</p>
 <div class="admonition note">
 <p class="admonition-title">Current signal</p>
-<p><strong>New {int(summary.get("new_unresolved_survivors") or 0)}</strong> · <strong>Debt {debt_count}</strong> · Stale {int(summary.get("stale_measured_contracts") or 0)} · Suppressed {int(summary.get("suppressed_survivors") or 0)} · Measured {measured_count}/{total} · <code>{html_escape(str(summary.get("mode") or ""))}</code> run <a href="mutation-results/campaign.json"><code>{html_escape(run_id.split("--")[-1])}</code></a></p>
+<p><strong>New {int(summary.get("new_unresolved_survivors") or 0)}</strong> · <strong>Debt {debt_count}</strong> · Stale {int(summary.get("stale_measured_contracts") or 0)} · Suppressed {int(summary.get("suppressed_survivors") or 0)} · Measured {measured_count}/{total} · <code>{html_escape(str(summary.get("mode") or ""))}</code> run <a href="mutation-results/campaign.json"><code>{html_escape(run_id.rsplit("--", maxsplit=1)[-1])}</code></a></p>
 </div>
 <section id="mutation-work-queue">
 <h2>Changes &amp; debt<a class="headerlink" href="#mutation-work-queue" title="Link to this heading">#</a></h2>
@@ -1607,14 +1627,14 @@ def write_mutation_analysis_page(summary,feedback):
 </section>
 </article>
 """
-    text=re.sub(r'<article class="bd-article">.*?</article>',article,template,count=1,flags=re.S)
-    text=re.sub(r'<title>.*?</title>','<title>Mutation Analysis &#8212; llm-router 0.24.1 documentation</title>',text,count=1,flags=re.S)
+    text=re.sub(r'<article class="bd-article">.*?</article>',article,template,count=1,flags=re.DOTALL)
+    text=re.sub(r"<title>.*?</title>","<title>Mutation Analysis &#8212; llm-router 0.24.1 documentation</title>",text,count=1,flags=re.DOTALL)
     text=re.sub(
       r'<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">.*?</span></li>',
       '<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Mutation Analysis</span></li>',
-      text,count=1,flags=re.S
+      text,count=1,flags=re.DOTALL
     )
-    text=text.replace('_sources/verification-assurance.rst.txt','_sources/mutation-analysis.rst.txt')
+    text=text.replace("_sources/verification-assurance.rst.txt","_sources/mutation-analysis.rst.txt")
     text=patch_navigation_text(text,current="mutation")
     MUTATION_PAGE.write_text(text)
     source=MUTATION_PAGE.parent/"_sources/mutation-analysis.rst.txt"
@@ -1815,7 +1835,7 @@ def probe_architecture_fault():
         for name in ("src","tests","examples"):
             shutil.copytree(ROOT/name,temp/name)
         mutant=temp/"src/llm_router/_internal/runtime/limiter.py"
-        mutant.write_text(mutant.read_text()+'\nfrom llm_router._api.router import LLMRouter  # intentional architecture mutant\n')
+        mutant.write_text(mutant.read_text()+"\nfrom llm_router._api.router import LLMRouter  # intentional architecture mutant\n")
         env=os.environ.copy()
         env["PYTHONPATH"]=f"{temp/'src'}:{temp}"
         completed=subprocess.run(
@@ -1856,8 +1876,15 @@ def probe_runtime_fault():
           "reason":"toxiproxy-server is not installed",
         }
     import httpx
-    from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
-    from tests.llm_router.support.workers.retry import openai_chat_path, openai_success_response
+
+    from tests.llm_router.support.fault_server import (
+        ScriptedHTTPServer,
+        ScriptedResponse,
+    )
+    from tests.llm_router.support.workers.retry import (
+        openai_chat_path,
+        openai_success_response,
+    )
     from tests.llm_router.support.workers.timeout import run_timeout_worker
 
     api_port=free_port()
@@ -2017,8 +2044,8 @@ def probe_invalid_config_architecture_fault():
         mutant=temp/"src/llm_router/_internal/config/validation.py"
         mutant.write_text(
           mutant.read_text()
-          +'\nfrom llm_router._internal.providers import registry as _provider_registry'
-          +'  # intentional REQ_INVALID_CONFIGURATION_ERRORS architecture mutant\n'
+          +"\nfrom llm_router._internal.providers import registry as _provider_registry"
+          +"  # intentional REQ_INVALID_CONFIGURATION_ERRORS architecture mutant\n"
         )
         env=os.environ.copy()
         env["PYTHONPATH"]=f"{temp/'src'}:{temp}"
@@ -2050,6 +2077,7 @@ def probe_invalid_config_architecture_fault():
 
 def _install_openrouter_base_url(base_url):
     from dataclasses import replace
+
     from llm_router import Provider, get_config, install_config
 
     original=get_config()
@@ -2066,9 +2094,17 @@ def _install_openrouter_base_url(base_url):
 
 def probe_invalid_config_interface_isolation():
     from llm_router import install_config
-    from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
-    from tests.llm_router.support.workers.error_boundary import run_error_boundary_inprocess
-    from tests.llm_router.support.workers.retry import openai_chat_path, openai_success_response
+    from tests.llm_router.support.fault_server import (
+        ScriptedHTTPServer,
+        ScriptedResponse,
+    )
+    from tests.llm_router.support.workers.error_boundary import (
+        run_error_boundary_inprocess,
+    )
+    from tests.llm_router.support.workers.retry import (
+        openai_chat_path,
+        openai_success_response,
+    )
 
     path=openai_chat_path()
     routes={
@@ -2118,10 +2154,19 @@ def probe_invalid_config_runtime_isolation():
           "reason":"toxiproxy-server is not installed",
         }
     import httpx
+
     from llm_router import install_config
-    from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
-    from tests.llm_router.support.workers.error_boundary import run_error_boundary_inprocess
-    from tests.llm_router.support.workers.retry import openai_chat_path, openai_success_response
+    from tests.llm_router.support.fault_server import (
+        ScriptedHTTPServer,
+        ScriptedResponse,
+    )
+    from tests.llm_router.support.workers.error_boundary import (
+        run_error_boundary_inprocess,
+    )
+    from tests.llm_router.support.workers.retry import (
+        openai_chat_path,
+        openai_success_response,
+    )
 
     api_port=free_port()
     proxy_port=free_port()
@@ -2563,7 +2608,7 @@ def current_needs():
 def need_field(content,label):
     match=re.search(
       rf"\*\*{re.escape(label)}\.\*\*\s*(.*?)(?=\n\n\*\*|\Z)",
-      str(content or ""),flags=re.S,
+      str(content or ""),flags=re.DOTALL,
     )
     return " ".join(match.group(1).split()) if match else ""
 
@@ -2922,7 +2967,7 @@ def build_assurance_snapshot_history(model):
 def markdown_table_after(text, heading):
     match=re.search(
       rf"^{re.escape(heading)}\s*$\n\n((?:\|.*\|\n?)+)",
-      text,flags=re.M,
+      text,flags=re.MULTILINE,
     )
     if not match:
         return []
@@ -3041,7 +3086,7 @@ def requirement_monitor_target(contract_id, policy):
         if not level_key:
             continue
         criteria=list(criteria_by_level.get(level_key) or [])
-        target_match=re.search(r"(\d+)\s+(?:item|criter)",row.get("Target",""),flags=re.I)
+        target_match=re.search(r"(\d+)\s+(?:item|criter)",row.get("Target",""),flags=re.IGNORECASE)
         declared_count=int(target_match.group(1)) if target_match else len(criteria)
         coverage.append({
           "level":level_key,
@@ -3050,6 +3095,11 @@ def requirement_monitor_target(contract_id, policy):
           "boundary_label":row.get("Boundary",""),
           "representation":representation_keys.get(row.get("Representation",""),row.get("Representation","").lower()),
           "representation_label":row.get("Representation",""),
+          "ms_validation_target":(
+              row.get("M&S target", "").strip()
+              if row.get("M&S target", "").strip() not in {"", "—", "-", "N/A"}
+              else None
+          ),
           "items":criteria,
           "declared_count":declared_count,
         })
@@ -3057,6 +3107,8 @@ def requirement_monitor_target(contract_id, policy):
     coverage_basis=basis_match.group(1).strip() if basis_match else ""
     representation_basis_match=re.search(r"\*\*Representation basis\.\*\*\s*(.+)",section)
     representation_basis=representation_basis_match.group(1).strip() if representation_basis_match else ""
+    model_match=re.search(r"\*\*Models?:\*\*.*?<([^>]+)>",section)
+    model_url=f"test-plan.html#{model_match.group(1)}" if model_match else "test-plan.html#test-plan"
     gate_aggregation={}
     gate_keys={
       "Semantic coverage":"semantic_coverage",
@@ -3119,9 +3171,14 @@ def requirement_monitor_target(contract_id, policy):
         f"{str(path.relative_to(ROOT/'docs')).removesuffix('.md')}.html"
         if path else None
       ),
+      "profile_url":(
+        f"{str(path.relative_to(ROOT/'docs')).removesuffix('.md')}.html#verification-profile-{contract_id.lower().replace('_', '-')}"
+        if path else None
+      ),
       "coverage":coverage,
       "coverage_basis":coverage_basis,
       "representation_basis":representation_basis,
+      "model_url":model_url,
       "gate_aggregation":gate_aggregation,
       "item_descriptions":item_descriptions,
       "item_anchors":item_anchors,
@@ -3203,8 +3260,8 @@ def junit_suite_window(root):
     try:
         start=datetime.fromisoformat(str(raw).replace("Z","+00:00"))
         if start.tzinfo is None:
-            start=start.replace(tzinfo=timezone.utc)
-        start=start.astimezone(timezone.utc)
+            start=start.replace(tzinfo=UTC)
+        start=start.astimezone(UTC)
         duration=float(suite.attrib.get("time") or 0.0)
         end=start+timedelta(seconds=max(duration,0.0))
         return int(start.timestamp()*1000),int(end.timestamp()*1000),start.isoformat()
@@ -3689,7 +3746,7 @@ def requirement_monitor_model(base_model):
 
 
 def requirement_monitor_block(monitor_json):
-    template=r'''<!-- TERNFORGE-P34-REQUIREMENT-MONITOR-START -->
+    template=r"""<!-- TERNFORGE-P34-REQUIREMENT-MONITOR-START -->
 <style>
 .bd-article-container{overflow:visible!important}
 .tf-p34-shell{max-width:74rem;margin:0 auto;padding-bottom:34rem}
@@ -4198,7 +4255,7 @@ def requirement_monitor_block(monitor_json):
   show();
 })();
 </script>
-<!-- TERNFORGE-P34-REQUIREMENT-MONITOR-END -->'''
+<!-- TERNFORGE-P34-REQUIREMENT-MONITOR-END -->"""
     return template.replace("__MODEL__",monitor_json)
 
 
@@ -4233,29 +4290,29 @@ def patch_contract_evidence_view():
     # Contract Evidence is an assurance/confidence view. Execution health and
     # mutation workflow remain in their own monitors/journals.
     text=re.sub(
-      r'<!-- TERNFORGE-P22-MUTATION-START:[^>]+ -->.*?<!-- TERNFORGE-P22-MUTATION-END:[^>]+ -->',
-      '',text,flags=re.S
+      r"<!-- TERNFORGE-P22-MUTATION-START:[^>]+ -->.*?<!-- TERNFORGE-P22-MUTATION-END:[^>]+ -->",
+      "",text,flags=re.DOTALL
     )
     text=re.sub(
-      r'<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-START -->.*?<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-END -->',
-      '',text,flags=re.S
+      r"<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-START -->.*?<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-END -->",
+      "",text,flags=re.DOTALL
     )
     text=re.sub(
-      r'<!-- TERNFORGE-(?:P2[789]|P3[0-3])-ASSURANCE-EVIDENCE-START -->.*?<!-- TERNFORGE-(?:P2[789]|P3[0-3])-ASSURANCE-EVIDENCE-END -->',
-      '',text,flags=re.S
+      r"<!-- TERNFORGE-(?:P2[789]|P3[0-3])-ASSURANCE-EVIDENCE-START -->.*?<!-- TERNFORGE-(?:P2[789]|P3[0-3])-ASSURANCE-EVIDENCE-END -->",
+      "",text,flags=re.DOTALL
     )
     text=re.sub(
-      r'<!-- TERNFORGE-P34-REQUIREMENT-MONITOR-START -->.*?<!-- TERNFORGE-P34-REQUIREMENT-MONITOR-END -->',
-      '',text,flags=re.S
+      r"<!-- TERNFORGE-P34-REQUIREMENT-MONITOR-START -->.*?<!-- TERNFORGE-P34-REQUIREMENT-MONITOR-END -->",
+      "",text,flags=re.DOTALL
     )
     text=text.replace("Verification assurance map","Contract Evidence")
     text=re.sub(
       r'(<h1>Contract Evidence.*?</h1>).*?(?=<section id="assurance-)',
       lambda m:m.group(1)+'\n<div id="tf-assurance-overview"></div>\n',
-      text,count=1,flags=re.S
+      text,count=1,flags=re.DOTALL
     )
 
-    block=f'''<!-- TERNFORGE-P33-ASSURANCE-EVIDENCE-START -->
+    block=f"""<!-- TERNFORGE-P33-ASSURANCE-EVIDENCE-START -->
 <style>
 .tf-assurance-intro{{max-width:70rem;margin-bottom:.85rem}}
 #verification-assurance-map>section[id^="assurance-"]{{display:none}}
@@ -4968,7 +5025,7 @@ def patch_contract_evidence_view():
   show();
 }})();
 </script>
-<!-- TERNFORGE-P33-ASSURANCE-EVIDENCE-END -->'''
+<!-- TERNFORGE-P33-ASSURANCE-EVIDENCE-END -->"""
     monitor_block=requirement_monitor_block(monitor_json)
     text=text.replace("</body>",monitor_block+"\n</body>",1)
     ASSURANCE_PAGE.write_text(text)
@@ -4987,19 +5044,39 @@ def patch_traceability_contract_evidence_links():
         return
     text=path.read_text()
     text=re.sub(
-      r'<!-- TERNFORGE-P27-TRACE-EVIDENCE-START -->.*?<!-- TERNFORGE-P27-TRACE-EVIDENCE-END -->',
-      '',text,flags=re.S
+      r"<!-- TERNFORGE-P27-TRACE-EVIDENCE-START -->.*?<!-- TERNFORGE-P27-TRACE-EVIDENCE-END -->",
+      "",text,flags=re.DOTALL
     )
     text=text.replace(
       'For the contract-by-contract runtime proof path, open\n<a class="reference internal" href="verification-assurance.html"><span class="doc">Verification assurance map</span></a>. For a one-screen overview of the same specification,',
-      'For contract-level proof, use the <strong>Contract evidence</strong> link on the Requirement / TREQ you are reviewing. For a one-screen overview of the same specification,'
+      "For contract-level proof, use the <strong>Contract evidence</strong> link on the Requirement / TREQ you are reviewing. For a one-screen overview of the same specification,"
     )
+    monitor_path=ROOT/"docs/_build/html/requirement-monitor-facts.json"
+    monitor=json.loads(monitor_path.read_text()) if monitor_path.exists() else {"contracts":{}}
+    routes={}
+    for parent_id,contract_data in (monitor.get("contracts") or {}).items():
+        slug=parent_id.lower()
+        for prefix in ("req_","treq_"):
+            if slug.startswith(prefix):
+                slug=slug.removeprefix(prefix)
+                break
+        slug=slug.replace("_","-")
+        href=(
+          f"verification-assurance.html#ce-coverage-{parent_id.lower()}"
+          if parent_id=="REQ_INVALID_CONFIGURATION_ERRORS"
+          else f"contract-evidence-{slug}.html#ce-coverage-{parent_id.lower()}"
+        )
+        routes[parent_id]=href
+        for child_id in set(((contract_data.get("target") or {}).get("criterion_contracts") or {}).values()):
+            routes.setdefault(child_id,href)
+    routes_json=json.dumps(routes,sort_keys=True)
     block=r"""<!-- TERNFORGE-P27-TRACE-EVIDENCE-START -->
 <style>
 .tf-contract-evidence-link{display:flex;justify-content:flex-end;margin-top:.35rem;font-size:.74rem;font-weight:650}
 </style>
 <script>
 (() => {
+  const routes=__CONTRACT_EVIDENCE_ROUTES__;
   const cards=document.querySelectorAll(".ternforge-trace-current,.ternforge-trace-rule-card");
   for(const card of cards) {
     if(card.querySelector(":scope > .tf-contract-evidence-link")) continue;
@@ -5007,11 +5084,13 @@ def patch_traceability_contract_evidence_links():
     const contract=anchors.find(a=>/^#(?:REQ|TREQ)_/.test(new URL(a.href).hash));
     if(!contract) continue;
     const id=new URL(contract.href).hash.slice(1);
+    const href=routes[id];
+    if(!href) continue;
     const reviewId="review-"+id;
     if(!document.getElementById(reviewId)) card.id=reviewId;
     const row=document.createElement("div");
     row.className="tf-contract-evidence-link";
-    row.innerHTML='<a href="verification-assurance.html#assurance-'+id.toLowerCase()+'" title="What proves this contract now?">Contract evidence →</a>';
+    row.innerHTML='<a href="'+href+'" title="What proves this contract now?">Contract evidence →</a>';
     const technical=card.querySelector(":scope > details.ternforge-review-technical");
     if(technical) card.insertBefore(row,technical); else card.appendChild(row);
   }
@@ -5020,6 +5099,7 @@ def patch_traceability_contract_evidence_links():
 })();
 </script>
 <!-- TERNFORGE-P27-TRACE-EVIDENCE-END -->"""
+    block=block.replace("__CONTRACT_EVIDENCE_ROUTES__",routes_json)
     text=text.replace("</body>",block+"\n</body>",1)
     path.write_text(text)
 
@@ -5032,19 +5112,18 @@ def patch_verification_contract_evidence_path():
           r'(<section id="assurance-reading-path">\s*<h2>).*?(?=</section>)',
           lambda m:m.group(1)+
           'Assurance reading path<a class="headerlink" href="#assurance-reading-path" title="Link to this heading">#</a></h2>'
-          '<p><a class="reference internal" href="verification-assurance.html"><span class="doc">Contract Evidence</span></a> '
-          'shows <strong>where evidence is strong or missing across the system</strong> without using pass/fail as confidence. '
-          'For one Requirement / TREQ, start in <a class="reference internal" href="traceability-reader.html"><span class="doc">Traceability Reader</span></a> '
-          'and open <strong>Contract evidence</strong> to inspect its evidence envelope, corroboration and open assurance gaps. '
+          '<p>Start in <a class="reference internal" href="traceability-reader.html"><span class="doc">Traceability Reader</span></a>. '
+          'Requirements and Technical requirements with an accepted Verification Profile expose a <strong>Contract evidence</strong> link to their dedicated Target → Actual monitor; unprofiled contracts do not claim one yet. '
+          'Use that page to inspect required verification cells, retained path properties, selected fault checks, and current gaps. '
           'Execution health stays in Health; verification depth stays in Depth; mutation changes stay in Mutation Analysis.</p>',
-          text,count=1,flags=re.S
+          text,count=1,flags=re.DOTALL
         )
         path.write_text(text)
 
     trust=ROOT/"docs/_build/html/evidence-trust.html"
     if trust.exists():
         text=trust.read_text().replace(
-          '<p>Return to verification-assurance for claim-centric layered proof.</p>',
+          "<p>Return to verification-assurance for claim-centric layered proof.</p>",
           '<p>Return to <a href="traceability-reader.html">Traceability Reader</a> and reopen Contract evidence for the Requirement / TREQ under review.</p>'
         )
         trust.write_text(text)
@@ -5146,8 +5225,8 @@ def patch_living_semantic_pages():
     for path in pages:
         text=path.read_text()
         text=re.sub(
-          r'<!-- TERNFORGE-P28-LIVING-SEMANTICS-START -->.*?<!-- TERNFORGE-P28-LIVING-SEMANTICS-END -->',
-          '',text,flags=re.S
+          r"<!-- TERNFORGE-P28-LIVING-SEMANTICS-START -->.*?<!-- TERNFORGE-P28-LIVING-SEMANTICS-END -->",
+          "",text,flags=re.DOTALL
         )
         text=text.replace("</body>",block+"\n</body>",1)
         path.write_text(text)
@@ -5159,8 +5238,8 @@ def patch_specification_health_mutation(summary):
         return
     text=SPEC_HEALTH_PAGE.read_text()
     text=re.sub(
-      r'<!-- TERNFORGE-P22-MEASUREMENT-START -->.*?<!-- TERNFORGE-P22-MEASUREMENT-END -->',
-      '',text,flags=re.S
+      r"<!-- TERNFORGE-P22-MEASUREMENT-START -->.*?<!-- TERNFORGE-P22-MEASUREMENT-END -->",
+      "",text,flags=re.DOTALL
     )
     total=int(summary.get("total_contracts") or 0)
     measured=int(summary.get("measured_contracts") or 0)
@@ -5171,7 +5250,7 @@ def patch_specification_health_mutation(summary):
 <p>This is coverage of mutation evidence, not a global mutation score. <a href="verification-depth-map.html">Open Test Strength on Verification Depth Map</a>.</p>
 </div>
 <!-- TERNFORGE-P22-MEASUREMENT-END -->"""
-    text,count=re.subn(r'(<h1>Specification health.*?</h1>)',lambda m:m.group(1)+"\n"+block,text,count=1,flags=re.S)
+    text,count=re.subn(r"(<h1>Specification health.*?</h1>)",lambda m:m.group(1)+"\n"+block,text,count=1,flags=re.DOTALL)
     if count:
         SPEC_HEALTH_PAGE.write_text(text)
 
@@ -5327,7 +5406,9 @@ def refresh_freshness(campaign):
 
 def build_contract(contract_id,spec,campaign):
     from mutmut.__main__ import status_by_exit_code  # ty: ignore[unresolved-import]
-    from mutmut.mutation.data import SourceFileMutationData  # ty: ignore[unresolved-import]
+    from mutmut.mutation.data import (  # ty: ignore[unresolved-import]
+        SourceFileMutationData,
+    )
     phase="P23"
     contract_started=time.monotonic()
     print(f"[{phase}] running {contract_id}",flush=True)

@@ -31,6 +31,9 @@ def main() -> None:
         HTML / "mutation-analysis.html",
         HTML / "verification-depth-map.html",
         HTML / "verification-assurance.html",
+        HTML / "contract-evidence-request-override-precedence.html",
+        HTML / "contract-evidence-credential-resolution.html",
+        HTML / "contract-evidence-config-installation-coherence.html",
         HTML / "requirement-monitor-facts.json",
         HTML / "evidence-run-provenance.json",
         HTML / "evidence-confidence-qualification.json",
@@ -372,6 +375,9 @@ def main() -> None:
 
     mutation_page = (HTML / "mutation-analysis.html").read_text()
     assurance_page = (HTML / "verification-assurance.html").read_text()
+    override_page = (HTML / "contract-evidence-request-override-precedence.html").read_text()
+    credential_page = (HTML / "contract-evidence-credential-resolution.html").read_text()
+    install_page = (HTML / "contract-evidence-config-installation-coherence.html").read_text()
     spec_page = (HTML / "specification-health.html").read_text()
     health_page = (HTML / "verification-health-map.html").read_text()
     depth_page = (HTML / "verification-depth-map.html").read_text()
@@ -443,6 +449,40 @@ def main() -> None:
           "assurance page is named Contract Evidence")
     check(monitor_facts.get("schema") == "ternforge-requirement-monitor-p34-1",
           "Requirement monitor facts carry the P34 schema")
+    profiled_contracts = {
+        "REQ_REQUEST_OVERRIDE_PRECEDENCE",
+        "REQ_INVALID_CONFIGURATION_ERRORS",
+        "REQ_CREDENTIAL_RESOLUTION",
+        "REQ_CONFIG_INSTALLATION_COHERENCE",
+    }
+    check(
+        set(monitor_facts.get("contracts") or {}) == profiled_contracts,
+        "Configuration feature exposes exactly four parent Contract Evidence profiles",
+    )
+    config_pages = {
+        "REQ_REQUEST_OVERRIDE_PRECEDENCE": override_page,
+        "REQ_INVALID_CONFIGURATION_ERRORS": assurance_page,
+        "REQ_CREDENTIAL_RESOLUTION": credential_page,
+        "REQ_CONFIG_INSTALLATION_COHERENCE": install_page,
+    }
+    for contract_id, page in config_pages.items():
+        check(
+            page.count('id="tf-requirement-monitor"') == 1
+            and page.count('<section id="assurance-') == 1
+            and f'<section id="assurance-{contract_id.lower()}">' in page
+            and 'id="verification-assurance-map"' not in page,
+            f"{contract_id}: Contract Evidence is one isolated accepted monitor",
+        )
+        check(
+            f'id="ce-coverage-{contract_id.lower()}"' in page
+            and f'id="ce-faults-{contract_id.lower()}"' in page
+            and f'id="ce-history-{contract_id.lower()}"' in page,
+            f"{contract_id}: canonical coverage/fault/history anchors exist",
+        )
+        check(
+            "EXPERIMENT" not in page and "EXTRA" not in page,
+            f"{contract_id}: no retired experiment/optional-evidence badges leak into monitor UI",
+        )
     check(assurance_page.count('id="tf-requirement-monitor"') == 1,
           "accepted Requirement monitor is installed exactly once")
     check(
@@ -557,6 +597,81 @@ def main() -> None:
         and contract_monitor["target"]["coverage"][1]["declared_count"] == 1,
         "canonical monitor facts retain the Component 5 / System 1 denominators",
     )
+
+    override_monitor = monitor_facts["contracts"]["REQ_REQUEST_OVERRIDE_PRECEDENCE"]
+    credential_monitor = monitor_facts["contracts"]["REQ_CREDENTIAL_RESOLUTION"]
+    install_monitor = monitor_facts["contracts"]["REQ_CONFIG_INSTALLATION_COHERENCE"]
+    override_targets = {
+        (row["level"], row["boundary"]): row
+        for row in override_monitor["target"]["coverage"]
+    }
+    check(
+        override_targets[("component", "none")]["declared_count"] == 1
+        and override_targets[("component", "none")]["representation"] == "actual"
+        and override_targets[("system_integration", "substitute")]["declared_count"] == 2
+        and override_targets[("system_integration", "substitute")]["representation"] == "surrogate_simulated"
+        and override_targets[("system_integration", "substitute")]["ms_validation_target"] == "L0",
+        "override profile preserves Component Actual plus System-integration Substitute/Surrogate/L0 targets",
+    )
+    check(
+        [row["declared_count"] for row in credential_monitor["target"]["coverage"]] == [4, 1],
+        "credential profile retains Component 4 / System 1 denominators",
+    )
+    check(
+        len(install_monitor["target"]["coverage"]) == 1
+        and install_monitor["target"]["coverage"][0]["declared_count"] == 3,
+        "configuration-installation profile retains one Component 3/3 denominator",
+    )
+    expected_actual = {
+        "REQ_REQUEST_OVERRIDE_PRECEDENCE": {
+            "VC_REQUEST_OMISSION_PROPERTY",
+            "VC_REQUEST_OVERRIDE_PRECEDENCE",
+            "VC_REQUEST_EXPLICIT_CLEAR",
+        },
+        "REQ_CREDENTIAL_RESOLUTION": {
+            "VC_CREDENTIAL_CUSTOM_ENV_NAME",
+            "VC_CREDENTIAL_AUTO_ROTATION",
+            "VC_CREDENTIAL_REQUIRED_MISSING",
+            "VC_CREDENTIAL_OPTIONAL_MISSING",
+            "VC_CREDENTIAL_PUBLIC_MISSING_ERROR",
+        },
+        "REQ_CONFIG_INSTALLATION_COHERENCE": {
+            "VC_CONFIG_INSTALLATION_ROUND_TRIP",
+            "VC_CONFIG_INSTALLATION_RUNTIME_CAPTURE",
+            "VC_CONFIG_CACHE_INVALIDATION",
+        },
+    }
+    for contract_id, criteria in expected_actual.items():
+        rows = monitor_facts["contracts"][contract_id]["coverage_actual"]
+        check(set(rows) == criteria, f"{contract_id}: every declared criterion has one retained evidence binding")
+        check(
+            all(row.get("result") == "passed" for row in rows.values())
+            and all(row.get("provenance") == "COMPLETE" for row in rows.values())
+            and all(row.get("producer_qualification") == "QUALIFIED" for row in rows.values())
+            and all(row.get("freshness") == "CURRENT" for row in rows.values()),
+            f"{contract_id}: retained criterion evidence is passed, complete, qualified and current",
+        )
+    override_actual = override_monitor["coverage_actual"]
+    check(
+        all(
+            override_actual[item]["boundary"] == "substitute"
+            and override_actual[item]["representation"] == "surrogate_simulated"
+            and str(override_actual[item]["ms_validation"]).lower() == "l0"
+            for item in ("VC_REQUEST_OVERRIDE_PRECEDENCE", "VC_REQUEST_EXPLICIT_CLEAR")
+        ),
+        "override BDD evidence is honestly retained as Substitute / Surrogate / L0",
+    )
+    for contract_id, page in (
+        ("REQ_REQUEST_OVERRIDE_PRECEDENCE", override_page),
+        ("REQ_CREDENTIAL_RESOLUTION", credential_page),
+        ("REQ_CONFIG_INSTALLATION_COHERENCE", install_page),
+    ):
+        check(
+            '<div class="overall met">PASS</div>' in page
+            and "No blocking fault checks selected" in page
+            and '<span class="status na">N/A</span>' in page,
+            f"{contract_id}: complete semantic evidence passes while non-selected Fault model remains N/A",
+        )
 
     check(
         "data-fault=" in assurance_page
@@ -914,12 +1029,20 @@ def main() -> None:
     check("No evidence combines System/System integration reach with a Direct live external interaction." not in assurance_page and
           "No direct live external interaction is retained for this contract." not in assurance_page,
           "old generic gap inference is removed")
-    check("TERNFORGE-P27-TRACE-EVIDENCE-START" in trace_reader_page and
-          "verification-assurance.html#assurance-" in trace_reader_page,
-          "Traceability Reader owns the per-contract Contract Evidence entry link")
-    check("Assurance reading path" in verification_page and
-          "where evidence is strong or missing across the system" in verification_page,
-          "Verification overview documents system and per-contract assurance entry paths")
+    check(
+        "TERNFORGE-P27-TRACE-EVIDENCE-START" in trace_reader_page
+        and "contract-evidence-request-override-precedence.html#ce-coverage-req_request_override_precedence" in trace_reader_page
+        and "contract-evidence-credential-resolution.html#ce-coverage-req_credential_resolution" in trace_reader_page
+        and "contract-evidence-config-installation-coherence.html#ce-coverage-req_config_installation_coherence" in trace_reader_page
+        and "verification-assurance.html#ce-coverage-req_invalid_configuration_errors" in trace_reader_page,
+        "Traceability Reader routes profiled Configuration contracts to their real Contract Evidence pages",
+    )
+    check(
+        "Assurance reading path" in verification_page
+        and "Requirements and Technical requirements with an accepted Verification Profile" in verification_page
+        and "unprofiled contracts do not claim one yet" in verification_page,
+        "Verification overview documents Traceability Reader as the honest Contract Evidence entry path",
+    )
 
     direct_depth=[row for row in depth_facts.get("tests") or [] if row.get("boundary_mode")=="direct"]
     check(len(direct_depth)==0,
@@ -1010,6 +1133,9 @@ def main() -> None:
         "docs/_build/html/verification-test-strength-facts.json",
         "docs/_build/html/verification-depth-map.html",
         "docs/_build/html/verification-assurance.html",
+        "docs/_build/html/contract-evidence-request-override-precedence.html",
+        "docs/_build/html/contract-evidence-credential-resolution.html",
+        "docs/_build/html/contract-evidence-config-installation-coherence.html",
         "docs/_build/html/assurance-fault-model-facts.json",
         "docs/_build/html/assurance-history/index.html",
         "docs/_build/html/assurance-history/assurance-history.csv",
@@ -1026,6 +1152,7 @@ def main() -> None:
         "docs/_build/html/_static/mutation-test-elements.js",
     ]
     history_glob = "`docs/_build/html/mutation-results/campaign-history/*.json`"
+    contract_evidence_glob = "`docs/_build/html/contract-evidence-*.html`"
     missing_artifacts = sorted(
         path
         for path in generated_paths
@@ -1034,6 +1161,11 @@ def main() -> None:
             path.startswith("docs/_build/html/mutation-results/campaign-history/")
             and path.endswith(".json")
             and history_glob in manifest
+        )
+        and not (
+            path.startswith("docs/_build/html/contract-evidence-")
+            and path.endswith(".html")
+            and contract_evidence_glob in manifest
         )
     )
     check(not missing_artifacts, f"extraction manifest inventories all retained generated artifact classes: {missing_artifacts}")

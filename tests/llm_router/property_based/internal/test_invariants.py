@@ -38,6 +38,7 @@ _TURN = st.tuples(_TEXT, _TEXT, _META)
 
 
 @pytest.mark.verifies("REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]")
+@pytest.mark.coverage_item("VC_REQUEST_OMISSION_PROPERTY")
 @pytest.mark.verification_kind("property")
 @given(
     route_temperature=_OPTIONAL_TEMPERATURE,

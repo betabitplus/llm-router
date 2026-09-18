@@ -23,6 +23,7 @@ pytestmark = [
 ]
 
 
+@pytest.mark.coverage_item("VC_CREDENTIAL_CUSTOM_ENV_NAME")
 def test_fixed_key_can_use_configured_custom_env_name(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -44,6 +45,7 @@ def test_fixed_key_can_use_configured_custom_env_name(
     )
 
 
+@pytest.mark.coverage_item("VC_CREDENTIAL_AUTO_ROTATION")
 def test_auto_key_rotation_uses_sorted_available_keys(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -60,6 +62,7 @@ def test_auto_key_rotation_uses_sorted_available_keys(
     assert [key.key_id for key in resolved] == [1, 2, 1]
 
 
+@pytest.mark.coverage_item("VC_CREDENTIAL_REQUIRED_MISSING")
 def test_missing_required_key_raises_public_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -73,6 +76,7 @@ def test_missing_required_key_raises_public_error(
     assert exc_info.value.provider == Provider.NVIDIA.value
 
 
+@pytest.mark.coverage_item("VC_CREDENTIAL_OPTIONAL_MISSING")
 def test_optional_qwenchat_key_can_resolve_to_empty_bearer(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

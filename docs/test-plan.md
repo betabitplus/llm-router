@@ -28,6 +28,44 @@
 
 **Completion:** required coverage = **100%**
 
+(test-plan-configuration-precedence-model)=
+
+### Configuration precedence
+
+| Layer              | Required denominator                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| Component          | generated omission-vs-explicit-value semantics selected by the verification profile                    |
+| System integration | selected public override/clearing scenarios observed across the configured provider-interface boundary |
+
+**Design:** precedence partitioning · omission vs explicit value · explicit clear/null semantics
+
+**Completion:** required coverage = **100%**
+
+(test-plan-credential-resolution-model)=
+
+### Credential resolution
+
+| Layer     | Required denominator                                                                                         |
+| --------- | ------------------------------------------------------------------------------------------------------------ |
+| Component | selected key-source partitions: configured fixed key, automatic rotation, optional missing, required missing |
+| System    | selected public missing-credential error path                                                                |
+
+**Design:** equivalence partitioning · key-source precedence · deterministic rotation
+
+**Completion:** required coverage = **100%**
+
+(test-plan-config-activation-model)=
+
+### Configuration activation
+
+| Layer     | Required denominator                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------- |
+| Component | replacement snapshot round-trip, subsequent runtime snapshot capture, and selected cache invalidation |
+
+**Design:** state transition · replacement snapshot · stale-cache negative control
+
+**Completion:** required coverage = **100%**
+
 (test-plan-fault-model)=
 
 ### Fault-based testing

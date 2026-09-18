@@ -81,11 +81,11 @@ Contracts in this capability:
 **Statement.** Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.
 
 **Rationale.** Callers need predictable precedence and must be able to deliberately clear or null a value rather than have that intent mistaken for “use the default.”
-
-**Verification intent.** Exercise the public configuration path with competing router, route, and request values, including explicit empty/null values, and use property-based coverage for combinations where omission and explicit values must remain distinct.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-request-override-precedence>`
 
 ```{needlist}
 :filter: "'REQ_REQUEST_OVERRIDE_PRECEDENCE' in derives or 'REQ_REQUEST_OVERRIDE_PRECEDENCE' in implements or 'REQ_REQUEST_OVERRIDE_PRECEDENCE' in verifies"
@@ -234,11 +234,11 @@ Contracts in this capability:
 **Statement.** Configured fixed keys, custom environment names, optional credentials, and automatically rotated keys shall resolve deterministically. A missing required credential shall surface as the public missing-key error.
 
 **Rationale.** Credential selection affects both correctness and provider availability; hidden precedence or stale selection would make requests difficult to reproduce and diagnose.
-
-**Verification intent.** Exercise the public credential boundary for successful and missing-key cases and directly verify key-source precedence and rotation semantics across representative configurations.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-credential-resolution>`
 
 ```{needlist}
 :filter: "'REQ_CREDENTIAL_RESOLUTION' in derives or 'REQ_CREDENTIAL_RESOLUTION' in implements or 'REQ_CREDENTIAL_RESOLUTION' in verifies"
@@ -257,11 +257,11 @@ Contracts in this capability:
 **Statement.** Installing a new active configuration shall round-trip through the public configuration API and become the effective configuration for subsequent runtime behavior.
 
 **Rationale.** A newly installed configuration is not effective if later requests continue to observe behavior derived from the previous configuration.
-
-**Verification intent.** Install configuration through the public API and verify the active snapshot round-trips as the newly installed configuration. Configuration-dependent cache invalidation is verified by the derived technical requirement below.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-config-installation-coherence>`
 
 ```{needlist}
 :filter: "'REQ_CONFIG_INSTALLATION_COHERENCE' in derives or 'REQ_CONFIG_INSTALLATION_COHERENCE' in implements or 'REQ_CONFIG_INSTALLATION_COHERENCE' in verifies"
@@ -280,11 +280,11 @@ Contracts in this capability:
 **Statement.** Installing a new active configuration shall invalidate provider-adapter caches whose behavior depends on configuration-derived values.
 
 **Rationale.** Reusing provider objects created from an earlier configuration would make the public installation contract observe stale runtime behavior.
-
-**Verification intent.** Directly install a replacement configuration and verify configuration-dependent adapter caches are invalidated before subsequent provider use.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Parent verification profile → <verification-profile-req-config-installation-coherence>`
 
 ```{needlist}
 :filter: "'TREQ_CONFIG_CACHE_INVALIDATION' in derives or 'TREQ_CONFIG_CACHE_INVALIDATION' in implements or 'TREQ_CONFIG_CACHE_INVALIDATION' in verifies"

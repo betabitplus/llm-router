@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+import pytest
 from pytest_bdd import given, scenarios, then, when
 
 from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
@@ -15,6 +16,19 @@ from tests.llm_router.support.workers.retry import (
 )
 
 scenarios("configuration/overrides.feature")
+
+for _test_name, _criterion in (
+    (
+        "test_request_settings_override_router_and_route_defaults",
+        "VC_REQUEST_OVERRIDE_PRECEDENCE",
+    ),
+    (
+        "test_an_explicit_empty_value_removes_an_inherited_optional_setting",
+        "VC_REQUEST_EXPLICIT_CLEAR",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
+del _criterion, _test_name
 
 _PATH = openai_chat_path()
 

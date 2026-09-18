@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 import llm_router as package
@@ -16,10 +18,13 @@ def test_declared_public_api_resolves() -> None:
 
 
 @pytest.mark.verifies("REQ_CONFIG_INSTALLATION_COHERENCE[revision==2]")
+@pytest.mark.coverage_item("VC_CONFIG_INSTALLATION_ROUND_TRIP")
 @pytest.mark.verification_kind("unit")
-def test_public_config_lifecycle_round_trips_active_snapshot() -> None:
+def test_public_config_lifecycle_round_trips_replacement_snapshot() -> None:
     config = package.get_config()
+    replacement = replace(config, default_key_id=config.default_key_id + 1)
 
-    assert isinstance(config, LLMRouterConfig)
-    assert package.install_config(config) is config
-    assert package.get_config() is config
+    assert isinstance(replacement, LLMRouterConfig)
+    assert replacement is not config
+    assert package.install_config(replacement) is replacement
+    assert package.get_config() is replacement

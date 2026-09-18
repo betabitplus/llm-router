@@ -36,6 +36,13 @@ globals()[_invalid_model_test_name] = pytest.mark.coverage_item(
 )(_invalid_model_test)
 del _invalid_model_test
 
+_missing_key_test_name = "test_missing_credentials_surface_as_a_missingkey_error"
+_missing_key_test = globals()[_missing_key_test_name]
+globals()[_missing_key_test_name] = pytest.mark.coverage_item(
+    "VC_CREDENTIAL_PUBLIC_MISSING_ERROR"
+)(_missing_key_test)
+del _missing_key_test
+
 _OPENAI_PATH = openai_chat_path()
 _GOOGLE_PATH = google_generate_path(model=Model.GEMINI_FLASH)
 _EXPECTED_TEXT = "parity-ok"
