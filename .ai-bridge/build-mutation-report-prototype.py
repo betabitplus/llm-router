@@ -516,7 +516,19 @@ def run_mutmut(spec):
     write_config(spec)
     env=os.environ.copy()
     env["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"]="YES"
-    subprocess.run(["mutmut","run","--max-children","4"],cwd=ROOT,env=env,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.STDOUT)
+    env.pop("VIRTUAL_ENV",None)
+    env.pop("UV_RUN_RECURSION_DEPTH",None)
+    completed=subprocess.run(
+      ["uv","run","--with","mutmut","mutmut","run","--max-children","4"],
+      cwd=ROOT,
+      env=env,
+      text=True,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.STDOUT,
+    )
+    if completed.returncode!=0:
+        tail=(completed.stdout or "")[-8000:]
+        raise RuntimeError(f"mutmut failed with exit {completed.returncode}:\n{tail}")
 
 def scope_matches(name,spec):
     from mutmut.utils.format_utils import (  # ty: ignore[unresolved-import]
@@ -2998,11 +3010,20 @@ def verification_profile_source(contract_id):
     return None,""
 
 
+def verification_profile_contract_ids():
+    result=[]
+    for path in sorted((ROOT/"docs/verification-profiles").glob("**/*.md")):
+        result.extend(
+          re.findall(r"^## Profile · (T?REQ_[A-Z0-9_]+)\s*$",path.read_text(),flags=re.MULTILINE)
+        )
+    return sorted(set(result))
+
+
 def verification_criterion_contracts():
     result={}
-    for path in sorted((ROOT/"docs/verification-profiles").glob("**/*.md")):
-        text=path.read_text()
-        for row in markdown_table_after(text,"### Verification criteria"):
+    for contract_id in verification_profile_contract_ids():
+        _,section=verification_profile_source(contract_id)
+        for row in markdown_table_after(section,"### Verification criteria"):
             criterion_ids=re.findall(r"\x60([^\x60]+)\x60",row.get("Criterion",""))
             contract_ids=sorted(set(re.findall(r"(?:T?REQ_[A-Z0-9_]+)",row.get("Contract",""))))
             if len(criterion_ids)==1 and len(contract_ids)==1:
@@ -3188,6 +3209,27 @@ def requirement_monitor_target(contract_id, policy):
     }
 
 
+def verification_criterion_targets():
+    policy=project_monitor_policy()
+    result={}
+    for contract_id in verification_profile_contract_ids():
+        target=requirement_monitor_target(contract_id,policy)
+        if not target:
+            continue
+        for cell in target.get("coverage") or []:
+            for criterion_id in cell.get("items") or []:
+                if criterion_id in result:
+                    raise RuntimeError(f"verification criterion appears in multiple target cells: {criterion_id}")
+                result[criterion_id]={
+                  "profile_contract_id":contract_id,
+                  "level":cell.get("level"),
+                  "boundary":cell.get("boundary"),
+                  "representation":cell.get("representation"),
+                  "ms_validation_target":cell.get("ms_validation_target"),
+                }
+    return result
+
+
 def local_pytest_evidence_url(test_name):
     path=ROOT/"docs/_build/html/local-pytest-evidence.html"
     if not path.exists():
@@ -3218,6 +3260,7 @@ def current_evidence_qualification_environment():
       "allure_pytest":package_version_or_unknown("allure-pytest"),
       "py_lib_testkit":package_version_or_unknown("py-lib-testkit"),
       "coverage":package_version_or_unknown("coverage"),
+      "hypothesis":package_version_or_unknown("hypothesis"),
       "assurance_adapter_sha256":sha256_file(ROOT/".ai-bridge/build-mutation-report-prototype.py"),
       "requirement_monitor_sha256":sha256_file(ROOT/".ai-bridge/build-requirement-monitor.py"),
       "qualification_harness_sha256":sha256_file(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
@@ -3387,8 +3430,18 @@ def current_input_snapshot(snapshot):
     return "STALE",f"verification inputs changed since the retained run: {sample}{more}",current_digest
 
 
-def boundary_from_current_evidence(nodeid,allure_row,reach,fallback=None,fallback_basis=None):
-    for observation in (allure_row or {}).get("observations") or []:
+CORE_EXECUTION_PRODUCERS={
+  "PRODUCER_PYTEST",
+  "PRODUCER_PY_TESTKIT",
+  "PRODUCER_ALLURE",
+  "PRODUCER_PYTEST_BDD",
+  "PRODUCER_HYPOTHESIS",
+}
+
+
+def boundary_from_current_evidence(nodeid,allure_row,target_boundary,fallback=None,fallback_basis=None):
+    observations=(allure_row or {}).get("observations") or []
+    for observation in observations:
         if observation.get("kind")!="boundary-interaction-check":
             continue
         payload=observation.get("payload") or {}
@@ -3397,15 +3450,17 @@ def boundary_from_current_evidence(nodeid,allure_row,reach,fallback=None,fallbac
         requests=payload.get("requests_received")
         if isinstance(requests,int):
             if requests==0:
-                return "none","current retained boundary sentinel observed zero provider HTTP requests",True
-            return "substitute",f"current retained boundary sentinel observed {requests} provider HTTP request(s)",True
-    files=current_context_files(nodeid)
-    if reach=="component" and files and not any(
-      path.startswith("src/llm_router/_internal/providers/") or path.startswith("src/llm_router/_internal/runtime/") or path.startswith("src/llm_router/_api/")
-      for path in files
-    ):
-        return "none","current coverage context stays inside local implementation components and reaches no provider/runtime/public boundary",True
-    return fallback,fallback_basis or "boundary mode comes from retained depth classification",False
+                return "none","current retained provider-boundary observation recorded zero HTTP requests",True
+            return "substitute",f"current retained provider-boundary observation recorded {requests} HTTP request(s)",True
+    external_producers=set((allure_row or {}).get("producer_ids") or [])-CORE_EXECUTION_PRODUCERS
+    external_observations={
+      observation.get("kind")
+      for observation in observations
+      if observation.get("kind") in {"external-substitute","external-replay","external-direct"}
+    }
+    if target_boundary=="none" and not external_producers and not external_observations:
+        return "none","current retained producer chain contains no material external participant",True
+    return target_boundary or fallback,fallback_basis or "current retained evidence does not prove the declared boundary mode",False
 
 
 def evidence_run_manifest(junit_root,allure_index):
@@ -3487,29 +3542,48 @@ def current_context_files(nodeid):
         return []
 
 
-def current_reach_from_context(nodeid,fallback=None):
+def current_reach_for_target(nodeid,verification_kind,target_level,boundary):
     files=current_context_files(nodeid)
-    if any(path.startswith("src/llm_router/_api/") for path in files) and any(path.startswith("src/llm_router/_internal/runtime/") for path in files):
-        return "system","current coverage context reaches the public API and runtime workflow",True
-    if any(path.startswith("src/llm_router/") for path in files):
-        return "component","current coverage context reaches only local llm-router implementation components",True
-    return fallback,"retained depth classification used because current coverage context does not establish reach",False
+    product=[path for path in files if path.startswith("src/llm_router/")]
+    has_api=any(path.startswith("src/llm_router/_api/") for path in product)
+    has_runtime=any(path.startswith("src/llm_router/_internal/runtime/") for path in product)
+    has_provider=any(path.startswith("src/llm_router/_internal/providers/") for path in product)
+    if not product:
+        return target_level,"current coverage contains no llm-router production code for this testcase",False
+    if target_level=="component":
+        current=verification_kind in {"unit","property"} and boundary=="none"
+        basis="declared Component criterion is backed by current unit/property execution of llm-router code with no material external boundary"
+    elif target_level=="component_integration":
+        current=verification_kind=="integration" and boundary=="none"
+        basis="declared Component Integration criterion is backed by current integration execution without an external-system boundary"
+    elif target_level=="system":
+        current=verification_kind=="bdd" and has_api and has_runtime and boundary=="none"
+        basis="declared System criterion is backed by current public API plus runtime execution with no material external boundary"
+    elif target_level=="system_integration":
+        current=(
+          verification_kind in {"bdd","integration"}
+          and has_api and has_runtime and has_provider
+          and boundary in {"substitute","replay","direct"}
+        )
+        basis="declared System Integration criterion is backed by current public API, runtime, provider-adapter and observed external-boundary execution"
+    else:
+        current=False
+        basis=f"current pilot has no execution rule for declared Test level {target_level or 'UNKNOWN'}"
+    return target_level,basis,current
 
 
-def current_representation_from_context(nodeid,requirement_id,fallback=None,fallback_basis=None):
-    spec=CONTRACTS.get(requirement_id) or {}
-    source=spec.get("source")
-    if source:
-        try:
-            lines=coverage_lines_for([nodeid],source)
-        except Exception:
-            lines=set()
-        if lines:
-            return "actual",f"current coverage context proves the target implementation {source} executed",True
-    files=current_context_files(nodeid)
-    if any(path.startswith("src/llm_router/") for path in files):
-        return "actual","current coverage context proves the actual llm-router implementation executed",True
-    return fallback,fallback_basis or "representation was not established by current execution coverage",False
+def current_representation_from_boundary(boundary,boundary_current,target_representation):
+    if not boundary_current:
+        return "unknown","representation cannot be established until the current boundary mode is proven",False
+    if boundary in {"substitute","replay"}:
+        actual="surrogate_simulated"
+        basis="current evidence uses a material substitute/replay external participant, so Representation is Surrogate / simulated"
+    elif boundary in {"none","direct"}:
+        actual="actual"
+        basis="current evidence uses actual llm-router code without a material surrogate representation"
+    else:
+        return "unknown","current boundary mode does not establish Representation",False
+    return actual,basis,actual==target_representation
 
 
 def junit_monitor_actual():
@@ -3523,6 +3597,7 @@ def junit_monitor_actual():
     suite_start_ms,suite_end_ms,_=junit_suite_window(root)
     qualification=load_evidence_qualification()
     criterion_contracts=verification_criterion_contracts()
+    criterion_targets=verification_criterion_targets()
     actual={}
     snapshot_inputs=dict(run_inputs.get("inputs") or {})
     for testcase in root.iter("testcase"):
@@ -3562,14 +3637,25 @@ def junit_monitor_actual():
         allure_row=matches[0] if len(matches)==1 else None
         link=execution_link_state(state,allure_row,suite_start_ms,suite_end_ms,nodeid)
         coverage_current=coverage_context_present(nodeid)
-        reach,reach_basis,reach_current=current_reach_from_context(nodeid,depth.get("system_reach"))
+        criterion_target=criterion_targets.get(coverage_item) or {}
+        target_level=criterion_target.get("level")
+        target_boundary=criterion_target.get("boundary")
+        target_representation=criterion_target.get("representation")
         boundary,boundary_basis,boundary_current=boundary_from_current_evidence(
-          nodeid,allure_row,reach,depth.get("boundary_mode"),depth.get("boundary_evidence_basis")
+          nodeid,allure_row,target_boundary,depth.get("boundary_mode"),depth.get("boundary_evidence_basis")
         )
-        representation,representation_basis,representation_current=current_representation_from_context(
-          nodeid,requirement_id,depth.get("representation_fidelity"),depth.get("representation_basis")
+        reach,reach_basis,reach_current=current_reach_for_target(
+          nodeid,props.get("verification_kind"),target_level,boundary
         )
-        ms_validation="na" if representation=="actual" else depth.get("ms_validation")
+        representation,representation_basis,representation_current=current_representation_from_boundary(
+          boundary,boundary_current,target_representation
+        )
+        if representation=="actual":
+            ms_validation="na"
+        elif representation=="surrogate_simulated" and boundary_current:
+            ms_validation="l0"
+        else:
+            ms_validation=None
         provenance_complete=bool(
           traceability_complete
           and len(matches)==1

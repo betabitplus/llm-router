@@ -216,6 +216,7 @@ def main() -> None:
         "PRODUCER_ALLURE",
         "PRODUCER_PY_TESTKIT",
         "PRODUCER_PYTEST_BDD",
+        "PRODUCER_HYPOTHESIS",
         "PRODUCER_SCRIPTED_HTTP_SERVER",
         "PRODUCER_LLM_ROUTER_TRACE_BRIDGE",
         "PRODUCER_ASSURANCE_ADAPTER",
@@ -276,11 +277,13 @@ def main() -> None:
     system_path = (monitor_contract.get("coverage_actual") or {}).get(
         "VC_INVALID_CONFIGURATION_PUBLIC_REJECTION"
     ) or {}
+    system_boundary_basis = str(system_path.get("boundary_basis") or "")
     check(
-        system_path.get("level") == "system" and
-        system_path.get("boundary") == "none" and
-        "zero provider HTTP requests" in str(system_path.get("boundary_basis") or ""),
-        "System coverage path derives System reach and Local boundary from current runtime evidence including the zero-request sentinel",
+        system_path.get("level") == "system"
+        and system_path.get("boundary") == "none"
+        and "provider-boundary observation" in system_boundary_basis
+        and "zero HTTP requests" in system_boundary_basis,
+        "System coverage path proves System reach and Local boundary from the current zero-request provider-boundary observation",
     )
     check(all(token in readiness for token in (
         "P34 MONITOR CUTOVER COMPLETE",
@@ -1176,6 +1179,9 @@ def main() -> None:
 
     status = subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines()
     approved_pilot_sources = {
+        ".ai-bridge/build-mutation-report-prototype.py",
+        ".ai-bridge/qualify-evidence-confidence.py",
+        ".ai-bridge/validate-mutation-pilot.py",
         "docs/index.md",
         "docs/README.md",
         "docs/test-plan.md",

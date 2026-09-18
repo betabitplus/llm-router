@@ -37,6 +37,7 @@ def environment() -> dict[str, str | None]:
         "allure_pytest": version_or_unknown("allure-pytest"),
         "py_lib_testkit": version_or_unknown("py-lib-testkit"),
         "coverage": version_or_unknown("coverage"),
+        "hypothesis": version_or_unknown("hypothesis"),
         "assurance_adapter_sha256": sha256_file(ROOT / ".ai-bridge/build-mutation-report-prototype.py"),
         "requirement_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-requirement-monitor.py"),
         "qualification_harness_sha256": sha256_file(Path(__file__)),
@@ -169,6 +170,20 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
             "def qualification_deliberately_fails():\n"
             "    assert False, 'intentional BDD false-green control'\n"
         )
+        (tmp / "test_property_control.py").write_text(
+            "import pytest\n"
+            "from hypothesis import given, strategies as st\n\n"
+            "pytestmark = [\n"
+            "    pytest.mark.verifies('REQ_INVALID_CONFIGURATION_ERRORS[revision==1]'),\n"
+            "    pytest.mark.verification_kind('property'),\n"
+            "]\n\n"
+            "@given(st.integers())\n"
+            "def test_property_control_pass(value):\n"
+            "    assert isinstance(value, int)\n\n"
+            "@given(st.integers())\n"
+            "def test_property_control_fail(value):\n"
+            "    assert value != value, 'intentional Hypothesis false-green control'\n"
+        )
         junit = tmp / "junit.xml"
         allure = tmp / "allure-results"
         input_snapshot = tmp / "evidence-run-inputs.json"
@@ -179,6 +194,7 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
             "-q",
             str(tmp / "test_control.py"),
             str(tmp / "test_bdd_control.py"),
+            str(tmp / "test_property_control.py"),
             "-c",
             str(ROOT / "pyproject.toml"),
             f"--junitxml={junit}",
@@ -198,7 +214,7 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
         )
         if completed.returncode != 1:
             raise AssertionError(
-                "qualification run must fail because two negative controls deliberately fail; "
+                "qualification run must fail because the negative controls deliberately fail; "
                 f"got exit {completed.returncode}\n{completed.stdout[-4000:]}"
             )
         if not junit.exists() or not allure.exists():
@@ -211,6 +227,8 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
         fail_node = unique_suffix(ji, "::test_control_fail")
         bdd_pass_node = unique_suffix(ji, "::test_working_scenario_stays_green")
         bdd_fail_node = unique_suffix(ji, "::test_broken_scenario_is_not_green")
+        property_pass_node = unique_suffix(ji, "::test_property_control_pass")
+        property_fail_node = unique_suffix(ji, "::test_property_control_fail")
 
         def exact_raw(nodeid: str) -> dict[str, object]:
             rows = raw_index.get(nodeid) or []
@@ -228,18 +246,31 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
         fail_raw = exact_raw(fail_node)
         bdd_pass_raw = exact_raw(bdd_pass_node)
         bdd_fail_raw = exact_raw(bdd_fail_node)
+        property_pass_raw = exact_raw(property_pass_node)
+        property_fail_raw = exact_raw(property_fail_node)
         pass_observation = exact_observation(pass_node)
         bdd_pass_observation = exact_observation(bdd_pass_node)
+        property_pass_observation = exact_observation(property_pass_node)
 
         pytest_ok = (
             ji[pass_node]["status"] == "passed"
             and ji[fail_node]["status"] == "failed"
             and ji[bdd_pass_node]["status"] == "passed"
             and ji[bdd_fail_node]["status"] == "failed"
+            and ji[property_pass_node]["status"] == "passed"
+            and ji[property_fail_node]["status"] == "failed"
         )
-        raw_rows = (pass_raw, fail_raw, bdd_pass_raw, bdd_fail_raw)
+        raw_rows = (
+            pass_raw,
+            fail_raw,
+            bdd_pass_raw,
+            bdd_fail_raw,
+            property_pass_raw,
+            property_fail_raw,
+        )
         allure_ok = (
-            [row["status"] for row in raw_rows] == ["passed", "failed", "passed", "failed"]
+            [row["status"] for row in raw_rows]
+            == ["passed", "failed", "passed", "failed", "passed", "failed"]
             and all(isinstance(row.get("start"), int) and isinstance(row.get("stop"), int) for row in raw_rows)
             and all(row.get("result_sha256") for row in raw_rows)
         )
@@ -249,7 +280,11 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
             and "PRODUCER_PYTEST" in set(row.get("producer_ids") or [])
             and "PRODUCER_ALLURE" in set(row.get("producer_ids") or [])
             and row.get("observation_sha256")
-            for node, row in ((pass_node, pass_observation), (bdd_pass_node, bdd_pass_observation))
+            for node, row in (
+                (pass_node, pass_observation),
+                (bdd_pass_node, bdd_pass_observation),
+                (property_pass_node, property_pass_observation),
+            )
         )
         bdd_ok = (
             ji[bdd_pass_node]["status"] == "passed"
@@ -257,6 +292,13 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
             and bdd_pass_raw["status"] == "passed"
             and bdd_fail_raw["status"] == "failed"
             and "PRODUCER_PYTEST_BDD" in set(bdd_pass_observation.get("producer_ids") or [])
+        )
+        hypothesis_ok = (
+            ji[property_pass_node]["status"] == "passed"
+            and ji[property_fail_node]["status"] == "failed"
+            and property_pass_raw["status"] == "passed"
+            and property_fail_raw["status"] == "failed"
+            and "PRODUCER_HYPOTHESIS" in set(property_pass_observation.get("producer_ids") or [])
         )
         snapshot = json.loads(input_snapshot.read_text()) if input_snapshot.exists() else {}
         pass_source = pass_node.split("::", 1)[0]
@@ -316,6 +358,11 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
                 "intended_use": "bind Gherkin scenarios to pytest execution without hiding a failing Then step",
                 "false_green_control": "a passing BDD scenario must identify pytest-bdd as its producer and an intentionally failing Then step must remain failed in both JUnit and Allure",
             },
+            "PRODUCER_HYPOTHESIS": {
+                "status": "QUALIFIED" if hypothesis_ok else "NOT QUALIFIED",
+                "intended_use": "generate property-based examples without hiding a falsifying example",
+                "false_green_control": "a passing generated property must identify Hypothesis while an intentionally falsifiable property remains failed in both JUnit and Allure",
+            },
             "PRODUCER_LLM_ROUTER_TRACE_BRIDGE": {
                 "status": "QUALIFIED" if trace_bridge_ok else "NOT QUALIFIED",
                 "intended_use": "retain the semantic coverage-item binding and exact test-source digest used by the retained run",
@@ -329,11 +376,38 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
         }
         details = {
             "command_exit": completed.returncode,
-            "control_nodeids": {"pass": pass_node, "fail": fail_node, "bdd_pass": bdd_pass_node, "bdd_fail": bdd_fail_node},
+            "control_nodeids": {
+                "pass": pass_node,
+                "fail": fail_node,
+                "bdd_pass": bdd_pass_node,
+                "bdd_fail": bdd_fail_node,
+                "property_pass": property_pass_node,
+                "property_fail": property_fail_node,
+            },
             "input_snapshot_sha256": sha256_file(input_snapshot),
             "retained_statuses": {
-                "junit": {node: ji[node]["status"] for node in (pass_node, fail_node, bdd_pass_node, bdd_fail_node)},
-                "allure": {node: exact_raw(node)["status"] for node in (pass_node, fail_node, bdd_pass_node, bdd_fail_node)},
+                "junit": {
+                    node: ji[node]["status"]
+                    for node in (
+                        pass_node,
+                        fail_node,
+                        bdd_pass_node,
+                        bdd_fail_node,
+                        property_pass_node,
+                        property_fail_node,
+                    )
+                },
+                "allure": {
+                    node: exact_raw(node)["status"]
+                    for node in (
+                        pass_node,
+                        fail_node,
+                        bdd_pass_node,
+                        bdd_fail_node,
+                        property_pass_node,
+                        property_fail_node,
+                    )
+                },
             },
         }
         return producers, details
