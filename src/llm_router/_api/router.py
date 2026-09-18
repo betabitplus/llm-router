@@ -192,7 +192,9 @@ class LLMRouter:
                 Whether the runtime may wait for the earliest cooldown to
                 expire when every route is currently blocked.
             round_robin_start:
-                Whether repeated requests should rotate the starting route.
+                Whether repeated requests should rotate the starting route until
+                a successful fallback establishes that route as the sticky start
+                for subsequent requests through the same router.
             shuffle_fallbacks:
                 Whether fallback routes may be shuffled after the starting
                 route is chosen.

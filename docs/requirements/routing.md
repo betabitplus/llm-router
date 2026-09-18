@@ -121,7 +121,7 @@ Contracts in this capability:
 :collapse: true
 :status: accepted
 :revision: 1
-:required_evidence: impl;bdd
+:required_evidence: impl;bdd;unit
 :derives: FEAT_ROUTE_FALLBACK
 
 **Statement.** A request shall never attempt more routes than the configured route-attempt limit.
@@ -241,6 +241,56 @@ Contracts in this capability:
 
 ```{needlist}
 :filter: "'TREQ_RATE_LIMIT_STATE' in derives or 'TREQ_RATE_LIMIT_STATE' in implements or 'TREQ_RATE_LIMIT_STATE' in verifies"
+```
+
+::::
+
+```{treq} Failure threshold opens a provider-key cooldown
+:id: TREQ_RATE_LIMIT_COOLDOWN_POLICY
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;unit
+:derives: REQ_RATE_LIMIT_ROUTING
+
+**Statement.** For each provider/key limiter bucket, when configured consecutive failures reach
+`cooldown_after_failures`, the bucket shall remain unavailable for the configured
+`cooldown_seconds` interval.
+
+**Rationale.** Failure-based cooldown is part of the public limiter policy. If the threshold or
+duration is ignored, repeated failures can continue to consume a route that the configured policy
+declares temporarily unavailable.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_RATE_LIMIT_COOLDOWN_POLICY' in derives or 'TREQ_RATE_LIMIT_COOLDOWN_POLICY' in implements or 'TREQ_RATE_LIMIT_COOLDOWN_POLICY' in verifies"
+```
+
+::::
+
+```{treq} Availability-aware route and key selection
+:id: TREQ_RATE_LIMIT_AVAILABILITY_SELECTION
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;bdd
+:derives: REQ_RATE_LIMIT_ROUTING
+
+**Statement.** Automatic key selection shall choose an unblocked credential before a blocked
+credential. When every eligible route/key candidate is blocked and waiting is enabled, the router
+shall select the candidate with the shortest remaining wait.
+
+**Rationale.** Rotation is only useful when it consumes available capacity. Waiting on a blocked key
+while another credential is usable, or waiting longer than the earliest available candidate, adds
+avoidable latency and contradicts the all-blocked waiting policy.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_RATE_LIMIT_AVAILABILITY_SELECTION' in derives or 'TREQ_RATE_LIMIT_AVAILABILITY_SELECTION' in implements or 'TREQ_RATE_LIMIT_AVAILABILITY_SELECTION' in verifies"
 ```
 
 ::::

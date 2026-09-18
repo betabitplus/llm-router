@@ -452,6 +452,7 @@ ini_options.norecursedirs = [
 ini_options.addopts = "--cov --cov-report=term-missing --strict-markers"
 ini_options.markers = [
   "coverage_item(id): declares the semantic Test Model coverage item exercised by this test",
+  "fault_item(contract_id, id): declares an intentional contract-specific fault-class challenge",
   "hermetic: marks tests that run fully offline using VCR cassettes",
   "slow: marks tests that are slow and should be skipped in fast runs",
   "vcr: marks tests that use VCR.py for HTTP recording/replay",

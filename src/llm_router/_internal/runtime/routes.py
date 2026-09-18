@@ -75,6 +75,7 @@ class RouteOrderOptions:
     min_routes_for_fallback_shuffle: int
     request_index: int
     max_attempts: int | None
+    selected_start_route_index: int | None = None
     shuffler: RouteShuffler | None = None
 
 
@@ -129,9 +130,7 @@ def ordered_routes(
     routes = list(plan.routes)
     if not routes:
         return ()
-    if options.round_robin_start:
-        start = options.request_index % len(routes)
-        routes = [*routes[start:], *routes[:start]]
+    routes = _ordered_start(routes, options=options)
     if (
         options.shuffle_fallbacks
         and len(routes) >= options.min_routes_for_fallback_shuffle
@@ -143,6 +142,31 @@ def ordered_routes(
     if options.max_attempts is not None:
         routes = routes[: options.max_attempts]
     return tuple(routes)
+
+
+def _ordered_start(
+    routes: list[ExpandedRoute],
+    *,
+    options: RouteOrderOptions,
+) -> list[ExpandedRoute]:
+    """Apply explicit sticky or round-robin start selection."""
+    if options.selected_start_route_index is not None:
+        selected_position = next(
+            (
+                index
+                for index, route in enumerate(routes)
+                if route.route_index == options.selected_start_route_index
+            ),
+            None,
+        )
+        if selected_position is None:
+            return routes
+        return [*routes[selected_position:], *routes[:selected_position]]
+
+    if not options.round_robin_start:
+        return routes
+    start = options.request_index % len(routes)
+    return [*routes[start:], *routes[:start]]
 
 
 def _profiles_from_spec(

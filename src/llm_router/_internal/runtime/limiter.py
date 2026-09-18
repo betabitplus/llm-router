@@ -8,6 +8,7 @@ Why:
 from __future__ import annotations
 
 import os
+from collections.abc import Collection
 from dataclasses import dataclass
 from threading import RLock
 from time import monotonic
@@ -49,11 +50,47 @@ class KeyResolver:
         self._auto_offsets: dict[Provider, int] = {}
         self._lock = RLock()
 
-    def resolve(self, *, provider: Provider, key_id: KeyId) -> ResolvedKey:
+    def resolve(
+        self,
+        *,
+        provider: Provider,
+        key_id: KeyId,
+        preferred_key_ids: Collection[int] | None = None,
+    ) -> ResolvedKey:
         """Resolve one provider key from environment state."""
         if key_id == "auto":
-            return self._resolve_auto(provider=provider)
+            return self._resolve_auto(
+                provider=provider,
+                preferred_key_ids=preferred_key_ids,
+            )
         return self._resolve_fixed(provider=provider, key_id=key_id)
+
+    def candidates(
+        self, *, provider: Provider, key_id: KeyId
+    ) -> tuple[ResolvedKey, ...]:
+        """Return concrete key candidates without advancing automatic rotation."""
+        if key_id != "auto":
+            return (self._resolve_fixed(provider=provider, key_id=key_id),)
+        keys = self._available_keys(provider=provider)
+        if keys:
+            return tuple(
+                self._resolve_fixed(provider=provider, key_id=candidate)
+                for candidate in keys
+            )
+        env_var = self._key_name(provider=provider, key_id=self._config.default_key_id)
+        if _allows_missing_key(provider):
+            return (
+                ResolvedKey(
+                    key_id=self._config.default_key_id,
+                    env_var=env_var,
+                    value="",
+                ),
+            )
+        raise ApiKeyNotFoundError(
+            env_var,
+            provider.value,
+            self._config.default_key_id,
+        )
 
     def _resolve_fixed(self, *, provider: Provider, key_id: int) -> ResolvedKey:
         """Resolve a fixed numeric provider key id."""
@@ -65,8 +102,13 @@ class KeyResolver:
             raise ApiKeyNotFoundError(env_var, provider.value, key_id)
         return ResolvedKey(key_id=key_id, env_var=env_var, value=value)
 
-    def _resolve_auto(self, *, provider: Provider) -> ResolvedKey:
-        """Rotate among discovered provider keys."""
+    def _resolve_auto(
+        self,
+        *,
+        provider: Provider,
+        preferred_key_ids: Collection[int] | None = None,
+    ) -> ResolvedKey:
+        """Rotate among discovered provider keys, preferring eligible candidates."""
         keys = self._available_keys(provider=provider)
         if not keys:
             env_var = self._key_name(
@@ -83,8 +125,15 @@ class KeyResolver:
             )
         with self._lock:
             offset = self._auto_offsets.get(provider, 0)
-            key_id = keys[offset % len(keys)]
-            self._auto_offsets[provider] = offset + 1
+            start = offset % len(keys)
+            ordered_keys = [*keys[start:], *keys[:start]]
+            preferred = set(preferred_key_ids or ())
+            eligible = [
+                candidate for candidate in ordered_keys if candidate in preferred
+            ]
+            key_id = eligible[0] if eligible else ordered_keys[0]
+            selected_position = keys.index(key_id)
+            self._auto_offsets[provider] = selected_position + 1
         return self._resolve_fixed(provider=provider, key_id=key_id)
 
     def _available_keys(self, *, provider: Provider) -> list[int]:
@@ -166,6 +215,7 @@ class LimiterState:
                 key_id=key_id,
             )
 
+    # @impl Cooldown threshold policy, IMPL_RATE_LIMIT_COOLDOWN_POLICY, [TREQ_RATE_LIMIT_COOLDOWN_POLICY[revision==1]]
     def record_failure(
         self,
         *,

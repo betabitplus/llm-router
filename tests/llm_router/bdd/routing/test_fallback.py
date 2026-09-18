@@ -15,7 +15,11 @@ from llm_router import (
     ProviderLimits,
     RouterProfile,
 )
-from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+    retain_fault_injection,
+)
 from tests.llm_router.support.workers.retry import (
     openai_chat_path,
     openai_error_response,
@@ -25,6 +29,67 @@ from tests.llm_router.support.workers.timeout import run_timeout_inprocess
 from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
 
 scenarios("routing/fallback.feature")
+
+for _test_name, _criterion in (
+    ("test_a_failed_route_falls_back_to_the_next_route", "VC_SYNC_ROUTE_FALLBACK"),
+    (
+        "test_a_timedout_route_falls_back_without_waiting_for_it_indefinitely",
+        "VC_ROUTE_TIMEOUT_FALLBACK",
+    ),
+    (
+        "test_a_terminal_route_timeout_is_exposed_when_no_fallback_remains",
+        "VC_ROUTE_TIMEOUT_TERMINAL",
+    ),
+    (
+        "test_an_async_timedout_route_falls_back_to_the_next_route",
+        "VC_ROUTE_TIMEOUT_FALLBACK",
+    ),
+    (
+        "test_an_async_terminal_route_timeout_is_exposed_when_no_fallback_remains",
+        "VC_ROUTE_TIMEOUT_TERMINAL",
+    ),
+    (
+        "test_the_router_does_not_exceed_the_configured_number_of_route_attempts",
+        "VC_ROUTE_ATTEMPT_LIMIT_PUBLIC_CAP",
+    ),
+    (
+        "test_multihop_fallback_keeps_the_actual_successful_route_sticky",
+        "VC_ROUTE_STICKY_MULTI_HOP",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
+
+for _test_name, _contract_id, _fault_class in (
+    (
+        "test_a_failed_route_falls_back_to_the_next_route",
+        "REQ_SYNC_ROUTE_FALLBACK",
+        "interface.error-status",
+    ),
+    (
+        "test_a_timedout_route_falls_back_without_waiting_for_it_indefinitely",
+        "REQ_ROUTE_TIMEOUT_FALLBACK",
+        "runtime.latency-timeout",
+    ),
+    (
+        "test_a_terminal_route_timeout_is_exposed_when_no_fallback_remains",
+        "REQ_ROUTE_TIMEOUT_FALLBACK",
+        "runtime.latency-timeout",
+    ),
+    (
+        "test_an_async_timedout_route_falls_back_to_the_next_route",
+        "REQ_ROUTE_TIMEOUT_FALLBACK",
+        "runtime.latency-timeout",
+    ),
+    (
+        "test_an_async_terminal_route_timeout_is_exposed_when_no_fallback_remains",
+        "REQ_ROUTE_TIMEOUT_FALLBACK",
+        "runtime.latency-timeout",
+    ),
+):
+    globals()[_test_name] = pytest.mark.fault_item(_contract_id, _fault_class)(
+        globals()[_test_name]
+    )
+del _contract_id, _criterion, _fault_class, _test_name
 
 _TIMEOUT_PATH = openai_chat_path()
 _TIMEOUT_TEXT = "timeout fallback ok"
@@ -67,14 +132,35 @@ def first_route_fails(case: dict[str, Any]) -> None:
 @when("a request is made")
 def request_is_made(case: dict[str, Any]) -> None:
     if "timeout_routes" in case:
+        retain_fault_injection(
+            contract_id="REQ_ROUTE_TIMEOUT_FALLBACK",
+            fault_class="runtime.latency-timeout",
+            mechanism=(
+                "scripted provider response delay exceeds "
+                "the configured attempt timeout"
+            ),
+            details={"delay_seconds": _TIMEOUT_DELAY_SECONDS},
+        )
         with ScriptedHTTPServer(port=0, routes=case["timeout_routes"]) as server:
             case["response"] = run_timeout_inprocess(
-                scenario="fallback_after_timeout",
+                scenario=(
+                    "async_fallback_after_timeout"
+                    if case.get("async_timeout")
+                    else "fallback_after_timeout"
+                ),
                 server_base_url=server.base_url,
             )
             case["request_count"] = server.request_count("POST", _TIMEOUT_PATH)
         return
 
+    retain_fault_injection(
+        contract_id="REQ_SYNC_ROUTE_FALLBACK",
+        fault_class="interface.error-status",
+        mechanism=(
+            "scripted provider returns an HTTP error status on the preferred route"
+        ),
+        details={"status_code": case["first_route_status"]},
+    )
     with ScriptedHTTPServer(
         port=0,
         routes={
@@ -135,6 +221,18 @@ def first_route_times_out() -> dict[str, Any]:
     }
 
 
+@given("the first route exceeds its async attempt timeout", target_fixture="case")
+def first_route_times_out_async() -> dict[str, Any]:
+    case = first_route_times_out()
+    case["async_timeout"] = True
+    return case
+
+
+@then("the async request continues with the next route")
+def async_timeout_falls_back(case: dict[str, Any]) -> None:
+    timeout_falls_back(case)
+
+
 @given("another route is available")
 def another_route_is_available(case: dict[str, Any]) -> None:
     assert len(case["timeout_routes"][("POST", _TIMEOUT_PATH)]) == 2
@@ -170,6 +268,14 @@ def only_route_times_out() -> dict[str, Any]:
 
 @when("the timed-out request is executed")
 def execute_terminal_timeout(terminal_case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_ROUTE_TIMEOUT_FALLBACK",
+        fault_class="runtime.latency-timeout",
+        mechanism=(
+            "scripted provider response delay exceeds the configured attempt timeout"
+        ),
+        details={"delay_seconds": _TIMEOUT_DELAY_SECONDS},
+    )
     with ScriptedHTTPServer(port=0, routes=terminal_case["routes"]) as server:
         terminal_case["result"] = run_timeout_inprocess(
             scenario="terminal_timeout",
@@ -184,6 +290,41 @@ def terminal_timeout_is_public(terminal_case: dict[str, Any]) -> None:
     assert result.ok is False
     assert result.error_type == "TimeoutError"
     assert terminal_case["request_count"] == 1
+
+
+@given(
+    "the only route exceeds its async attempt timeout",
+    target_fixture="async_terminal_case",
+)
+def only_route_times_out_async() -> dict[str, Any]:
+    return only_route_times_out()
+
+
+@when("the async timed-out request is executed")
+def execute_async_terminal_timeout(async_terminal_case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_ROUTE_TIMEOUT_FALLBACK",
+        fault_class="runtime.latency-timeout",
+        mechanism=(
+            "scripted provider response delay exceeds "
+            "the configured async attempt timeout"
+        ),
+        details={"delay_seconds": _TIMEOUT_DELAY_SECONDS},
+    )
+    with ScriptedHTTPServer(port=0, routes=async_terminal_case["routes"]) as server:
+        async_terminal_case["result"] = run_timeout_inprocess(
+            scenario="async_terminal_timeout",
+            server_base_url=server.base_url,
+        )
+        async_terminal_case["request_count"] = server.request_count(
+            "POST",
+            _TIMEOUT_PATH,
+        )
+
+
+@then("the async request fails with a timeout error")
+def async_terminal_timeout_is_public(async_terminal_case: dict[str, Any]) -> None:
+    terminal_timeout_is_public(async_terminal_case)
 
 
 @given(
@@ -304,3 +445,94 @@ def second_request_uses_successful_start(public_case: dict[str, Any]) -> None:
     assert response.provider == Provider.NVIDIA.value
     assert len(response.routing_trace) == 1
     assert response.routing_trace[0].route_index == 1
+
+
+@given(
+    "a public router with three routes whose first two fail",
+    target_fixture="multi_hop_case",
+)
+def public_router_with_two_failing_routes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> dict[str, Any]:
+    _openrouter_keys(monkeypatch, count=3)
+    return {
+        "router": LLMRouter(
+            [
+                RouterProfile(
+                    provider=Provider.OPENROUTER,
+                    model=Model.DEEPSEEK_V3,
+                    key_id=key_id,
+                )
+                for key_id in (1, 2, 3)
+            ],
+            round_robin_start=True,
+            shuffle_fallbacks=False,
+            limits_by_provider={
+                Provider.OPENROUTER: ProviderLimits(
+                    rps=0.0,
+                    rpm=0.0,
+                    cooldown_seconds=0.0,
+                    cooldown_after_failures=0,
+                )
+            },
+        )
+    }
+
+
+@when("two requests are made after multi-hop fallback")
+def two_requests_after_multi_hop_fallback(multi_hop_case: dict[str, Any]) -> None:
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", _TIMEOUT_PATH): [
+                ScriptedResponse(
+                    status_code=400,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_error_response(
+                        status_code=400, message="route 0 failed"
+                    ),
+                ),
+                ScriptedResponse(
+                    status_code=400,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_error_response(
+                        status_code=400, message="route 1 failed"
+                    ),
+                ),
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text="third route"),
+                ),
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text="sticky third route"),
+                ),
+            ]
+        },
+    ) as server:
+        with patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ):
+            multi_hop_case["first_response"] = multi_hop_case["router"].query("first")
+            multi_hop_case["second_response"] = multi_hop_case["router"].query("second")
+        multi_hop_case["request_count"] = server.request_count("POST", _TIMEOUT_PATH)
+
+
+@then("the first request succeeds on the third route")
+def first_request_succeeds_on_third_route(multi_hop_case: dict[str, Any]) -> None:
+    response = multi_hop_case["first_response"]
+    assert response.output_text == "third route"
+    assert [attempt.route_index for attempt in response.routing_trace] == [0, 1, 2]
+    assert [attempt.key_id for attempt in response.routing_trace] == [1, 2, 3]
+
+
+@then("the second request starts from the third route")
+def second_request_starts_from_third_route(multi_hop_case: dict[str, Any]) -> None:
+    response = multi_hop_case["second_response"]
+    assert response.output_text == "sticky third route"
+    assert [attempt.route_index for attempt in response.routing_trace] == [2]
+    assert [attempt.key_id for attempt in response.routing_trace] == [3]
+    assert multi_hop_case["request_count"] == 4

@@ -25,6 +25,19 @@ Feature: Route fallback
       When the timed-out request is executed
       Then the request fails with a timeout error
 
+    @REQ_ROUTE_TIMEOUT_FALLBACK[revision==1]
+    Scenario: An async timed-out route falls back to the next route
+      Given the first route exceeds its async attempt timeout
+      And another route is available
+      When a request is made
+      Then the async request continues with the next route
+
+    @REQ_ROUTE_TIMEOUT_FALLBACK[revision==1]
+    Scenario: An async terminal route timeout is exposed when no fallback remains
+      Given the only route exceeds its async attempt timeout
+      When the async timed-out request is executed
+      Then the async request fails with a timeout error
+
     @REQ_ROUTE_ATTEMPT_LIMIT[revision==1]
     Scenario: The router does not exceed the configured number of route attempts
       Given more routes are available than the allowed attempt count
@@ -39,3 +52,10 @@ Feature: Route fallback
       When two requests are made through the same router
       Then the first request succeeds through fallback
       And the second request starts from the previously successful route
+
+    @REQ_ROUTE_STICKY_START[revision==1]
+    Scenario: Multi-hop fallback keeps the actual successful route sticky
+      Given a public router with three routes whose first two fail
+      When two requests are made after multi-hop fallback
+      Then the first request succeeds on the third route
+      And the second request starts from the third route

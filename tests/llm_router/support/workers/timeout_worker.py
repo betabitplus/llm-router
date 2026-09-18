@@ -16,6 +16,7 @@ How:
 from __future__ import annotations
 
 import argparse
+import asyncio
 import json
 import os
 from typing import Any
@@ -43,7 +44,7 @@ def _build_router(*, scenario: str) -> Any:
         cooldown_after_failures=0,
     )
 
-    if scenario == "fallback_after_timeout":
+    if scenario in {"fallback_after_timeout", "async_fallback_after_timeout"}:
         return LLMRouter(
             [delayed, fast],
             limits_by_provider={
@@ -59,7 +60,7 @@ def _build_router(*, scenario: str) -> Any:
             attempt_timeout_seconds=1.0,
         )
 
-    if scenario == "terminal_timeout":
+    if scenario in {"terminal_timeout", "async_terminal_timeout"}:
         return LLMRouter(
             delayed,
             limits_by_provider={
@@ -81,7 +82,10 @@ def _run_scenario(*, scenario: str) -> dict[str, Any]:
     prompt = "Reply with the timeout marker only."
 
     try:
-        response = router.query(prompt)
+        if scenario.startswith("async_"):
+            response = asyncio.run(router.aquery(prompt))
+        else:
+            response = router.query(prompt)
     except Exception as exc:
         return {
             "ok": False,

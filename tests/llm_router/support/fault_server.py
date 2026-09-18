@@ -16,7 +16,29 @@ __all__ = [
     "RequestRecord",
     "ScriptedHTTPServer",
     "ScriptedResponse",
+    "retain_fault_injection",
 ]
+
+
+def retain_fault_injection(
+    *,
+    contract_id: str,
+    fault_class: str,
+    mechanism: str,
+    details: dict[str, object] | None = None,
+) -> None:
+    """Retain one explicit contract-specific fault challenge during the test call."""
+    evidence.producer("PRODUCER_SCRIPTED_HTTP_SERVER")
+    evidence.observation(
+        "Fault injection",
+        kind="fault-injection",
+        payload={
+            "contract_id": contract_id,
+            "fault_class": fault_class,
+            "mechanism": mechanism,
+            "details": details or {},
+        },
+    )
 
 
 class ProviderSentinelHTTPServer(_ScriptedHTTPServer):

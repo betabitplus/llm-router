@@ -477,6 +477,8 @@ def fault_state(contract: dict, group: dict, policy: dict) -> dict:
         "detection_actual": detection_actual,
         "detection_status": detection_status,
         "mutation": mutation,
+        "raw_url": contract["fault_actual"].get("raw_url")
+        or "requirement-monitor-facts.json",
     }
 
 
@@ -550,7 +552,7 @@ def fault_inspector(state: dict) -> str:
     links = [
         f'<a href="{esc(fault_profile_url)}">Verification profile ↗</a>',
         '<a href="test-plan.html#test-plan-fault-model">Fault model ↗</a>',
-        '<a href="assurance-fault-model-facts.json">Raw facts ↗</a>',
+        f'<a href="{esc(str(state.get("raw_url") or "requirement-monitor-facts.json"))}">Raw facts ↗</a>',
     ]
     if state["label"] == "Implementation" and MUTATION_URL:
         links.insert(2, f'<a href="{esc(MUTATION_URL)}">Mutation analysis ↗</a>')
@@ -705,7 +707,7 @@ def render_current() -> None:
     monitor = f"""<div id="tf-requirement-monitor">
 <header class="verdict"><div class="verdict-main"><div><div class="kicker">Verification status {overall_help}</div><h2>{esc(CONTRACT_ID)}</h2></div><div class="overall {status_class(overall)}">{esc(status_label(overall))}</div></div><div class="domain-strip"><a class="domain" href="#ce-coverage-{contract_key}"><strong>Verification coverage {coverage_help}</strong><span class="status {status_class(cell_domain)}">{esc(status_label(cell_domain))}</span><span class="domain-meta">{esc(domain_meta(cell_statuses))}</span></a><a class="domain" href="#ce-faults-{contract_key}"><strong>Fault model {fault_domain_help}</strong><span class="status {status_class(fault_domain)}">{esc(status_label(fault_domain))}</span><span class="domain-meta">{esc(domain_meta(fault_statuses))}</span></a></div></header>
 <section class="section" id="ce-coverage-{contract_key}"><div class="section-head"><h3>Verification matrix {matrix_help}</h3><div class="section-links"><a class="section-link" href="{esc(CONTRACT_URL)}">Requirement ↗</a><a class="section-link" href="{esc(PROFILE_URL)}">Profile ↗</a><a class="section-link" href="requirement-monitor-facts.json">Raw ↗</a></div></div><div class="dashboard-layout"><div class="panel matrix-wrap"><table><thead><tr><th>Test level</th>{''.join(f'<th>{esc(label)}</th>' for _, label in BOUNDARIES)}</tr></thead><tbody>{''.join(matrix_rows)}</tbody></table></div><aside class="inspector" id="cell-inspector">{cell_inspectors[default_cell]}</aside></div></section>
-<section class="section" id="ce-faults-{contract_key}"><div class="section-head"><h3>Fault model {fault_help}</h3><div class="section-links"><a class="section-link" href="{esc(PROFILE_URL)}">Profile ↗</a><a class="section-link" href="test-plan.html#test-plan-fault-model">Model ↗</a><a class="section-link" href="assurance-fault-model-facts.json">Raw ↗</a></div></div><div class="{fault_layout_class}"><div class="fault-grid">{''.join(fault_tiles)}</div>{fault_inspector_markup}</div></section>
+<section class="section" id="ce-faults-{contract_key}"><div class="section-head"><h3>Fault model {fault_help}</h3><div class="section-links"><a class="section-link" href="{esc(PROFILE_URL)}">Profile ↗</a><a class="section-link" href="test-plan.html#test-plan-fault-model">Model ↗</a><a class="section-link" href="requirement-monitor-facts.json">Raw ↗</a></div></div><div class="{fault_layout_class}"><div class="fault-grid">{''.join(fault_tiles)}</div>{fault_inspector_markup}</div></section>
 <section class="section" id="ce-history-{contract_key}"><div class="section-head"><h3>History {history_help}</h3><a class="section-link" href="assurance-snapshots.json">History ↗</a></div><div class="panel history"><strong>Current</strong><div class="history-line"><i class="history-point {status_class(overall)}"></i></div><span class="status {status_class(overall)}">{esc(status_label(overall))}</span></div></section>
 </div>"""
 

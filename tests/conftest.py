@@ -130,12 +130,46 @@ def pytest_runtest_call(item: pytest.Item) -> Iterator[None]:
 def pytest_runtest_setup(item: pytest.Item) -> None:
     """Retain semantic binding and exact test-source identity in JUnit."""
     coverage_markers = list(item.iter_markers(name="coverage_item"))
-    if not coverage_markers:
+    fault_markers = list(item.iter_markers(name="fault_item"))
+    if not coverage_markers and not fault_markers:
         return
+
     for marker in coverage_markers:
         if marker.args:
             _set_user_property(item, "coverage_item", str(marker.args[0]))
             break
+
+    malformed_fault_markers = [
+        marker for marker in fault_markers if len(marker.args) != 2 or marker.kwargs
+    ]
+    if malformed_fault_markers:
+        raise pytest.UsageError(
+            "fault_item requires exactly two positional arguments: "
+            "contract_id and fault class"
+        )
+
+    fault_items = [
+        {
+            "contract_id": contract_id,
+            "fault_class": fault_class,
+        }
+        for contract_id, fault_class in sorted(
+            {(str(marker.args[0]), str(marker.args[1])) for marker in fault_markers}
+        )
+    ]
+    if fault_items:
+        _set_user_property(
+            item,
+            "fault_items",
+            json.dumps(
+                sorted(
+                    fault_items,
+                    key=lambda row: (row["contract_id"], row["fault_class"]),
+                ),
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+        )
 
     source = Path(item.path)
     root = Path(item.config.rootpath)

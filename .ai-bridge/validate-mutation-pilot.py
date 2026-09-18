@@ -37,6 +37,11 @@ def main() -> None:
         HTML / "contract-evidence-tool-choice.html",
         HTML / "contract-evidence-multi-round-tool-execution.html",
         HTML / "contract-evidence-tool-runtime-safety.html",
+        HTML / "contract-evidence-sync-route-fallback.html",
+        HTML / "contract-evidence-route-timeout-fallback.html",
+        HTML / "contract-evidence-route-attempt-limit.html",
+        HTML / "contract-evidence-route-sticky-start.html",
+        HTML / "contract-evidence-rate-limit-routing.html",
         HTML / "requirement-monitor-facts.json",
         HTML / "evidence-run-provenance.json",
         HTML / "evidence-confidence-qualification.json",
@@ -64,6 +69,8 @@ def main() -> None:
         HTML / "verification-profiles/invalid-configuration.html",
         ROOT / "docs/verification-profiles/tools.md",
         HTML / "verification-profiles/tools.html",
+        ROOT / "docs/verification-profiles/routing.md",
+        HTML / "verification-profiles/routing.html",
         ROOT / "test-results/evidence-run-inputs.json",
     ]
     for path in required:
@@ -92,6 +99,8 @@ def main() -> None:
     configuration_source = (ROOT / "docs/requirements/configuration.md").read_text()
     verification_profile_source = (ROOT / "docs/verification-profiles/invalid-configuration.md").read_text()
     verification_profile_html = (HTML / "verification-profiles/invalid-configuration.html").read_text()
+    routing_requirements_source = (ROOT / "docs/requirements/routing.md").read_text()
+    routing_profile_source = (ROOT / "docs/verification-profiles/routing.md").read_text()
     pyproject_source = (ROOT / "pyproject.toml").read_text()
     unit_config_source = (ROOT / "tests/llm_router/unit/test_internal_config_validation.py").read_text()
     bdd_public_contract_source = (ROOT / "tests/llm_router/bdd/responses/test_public_contract.py").read_text()
@@ -166,6 +175,31 @@ def main() -> None:
     ):
         check(misplaced_token not in configuration_source,
               f"Requirement source excludes verification-design content: {misplaced_token}")
+    check(all(token in routing_requirements_source for token in (
+        ":id: GOAL_ROUTING_RELIABILITY",
+        ":id: REQ_SYNC_ROUTE_FALLBACK",
+        ":id: REQ_ROUTE_TIMEOUT_FALLBACK",
+        ":id: REQ_ROUTE_ATTEMPT_LIMIT",
+        ":id: REQ_ROUTE_STICKY_START",
+        ":id: REQ_RATE_LIMIT_ROUTING",
+        ":id: TREQ_ROUTE_ORDER",
+        ":id: TREQ_RATE_LIMIT_STATE",
+        ":id: TREQ_RATE_LIMIT_COOLDOWN_POLICY",
+        ":id: TREQ_RATE_LIMIT_AVAILABILITY_SELECTION",
+    )), "routing Goal keeps both features and the full normative routing contract set")
+    check(all(token in routing_profile_source for token in (
+        "## Profile · REQ_SYNC_ROUTE_FALLBACK",
+        "## Profile · REQ_ROUTE_TIMEOUT_FALLBACK",
+        "## Profile · REQ_ROUTE_ATTEMPT_LIMIT",
+        "## Profile · REQ_ROUTE_STICKY_START",
+        "## Profile · REQ_RATE_LIMIT_ROUTING",
+        "VC_ROUTE_TIMEOUT_FALLBACK",
+        "VC_ROUTE_STICKY_MULTI_HOP",
+        "VC_RATE_LIMIT_AVAILABLE_KEY_BEFORE_WAIT",
+        "VC_RATE_LIMIT_ALL_BLOCKED_WAIT_EARLIEST",
+        "### Fault applicability",
+    )), "Routing Verification Profiles own independent coverage targets and explicit Fault Models")
+
     check(all(token in verification_profile_source for token in (
         "## Profile · REQ_INVALID_CONFIGURATION_ERRORS",
         "### Required coverage",
@@ -180,10 +214,15 @@ def main() -> None:
         "### Fault applicability",
         "### Blocking mutation checks",
     )), "dedicated Verification Profile owns contract-specific verification design")
-    check("coverage_item(id)" in pyproject_source,
-          "coverage_item marker is registered under strict pytest markers")
+    check(
+        "coverage_item(id)" in pyproject_source
+        and "fault_item(contract_id, id)" in pyproject_source,
+        "semantic coverage and contract-specific fault markers are registered under strict pytest markers",
+    )
     check(all(token in root_conftest_source for token in (
         '"coverage_item"',
+        '"fault_item"',
+        '"fault_items"',
         '"source_path"',
         '"source_sha256"',
         '"ternforge-retained-execution-inputs-1"',
@@ -319,14 +358,14 @@ def main() -> None:
     provenance_subjects = evidence_provenance.get("subjects") or {}
     check(
         depth_facts.get("schema_version") == 4
-        and depth_source.get("tests") == 141
-        and depth_source.get("passed") == 141
-        and depth_audit.get("contracts") == 57
-        and depth_audit.get("runtime_evidence") == 141
+        and depth_source.get("tests") == 152
+        and depth_source.get("passed") == 152
+        and depth_audit.get("contracts") == 59
+        and depth_audit.get("runtime_evidence") == 152
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
         and depth_audit.get("bdd_feature_scenario_errors") == 0,
-        "Depth facts are reproducibly regenerated from the current 141-test retained run",
+        "Depth facts are reproducibly regenerated from the current 152-test retained run",
     )
     check(
         ((depth_inputs.get("junit") or {}).get("sha256")
@@ -496,7 +535,10 @@ def main() -> None:
           "generated Test Plan page renders the project-wide strategy")
 
     adapter = campaign.get("adapter") or {}
-    check(adapter.get("version") == "p33-local-1", "retained mutation campaign keeps its original p33-local-1 adapter provenance")
+    check(
+        adapter.get("version") == "p34-local-2",
+        "retained mutation campaign uses the current p34-local-2 adapter provenance",
+    )
     check(adapter.get("mutation_semantics_version") == "p21-local-2",
           "mutation semantics compatibility version remains explicit")
     check(campaign.get("mode") == "full", "retained pilot campaign is full audit")
@@ -506,15 +548,21 @@ def main() -> None:
     check(bool(campaign.get("finished_at")), "retained pilot campaign finished")
     check(float(campaign.get("duration_seconds") or 0) > 0, "retained pilot campaign has runtime")
 
-    check(summary.get("total_contracts") == 57, "57 contracts are present in the verification-depth / mutation measurement universe")
-    check(summary.get("measured_contracts") == 3, "exactly 3 objectively attributable measured contracts")
-    check(summary.get("fresh_measured_contracts") == 3, "all measured contracts are fresh")
+    check(
+        summary.get("total_contracts") == 59,
+        "59 contracts are present in the verification-depth / mutation measurement universe",
+    )
+    check(
+        summary.get("measured_contracts") == 2,
+        "exactly 2 uniquely attributable contracts are measured",
+    )
+    check(summary.get("fresh_measured_contracts") == 2, "all measured contracts are fresh")
     check(summary.get("stale_measured_contracts") == 0, "no measured contract is stale")
-    check(summary.get("new_unresolved_survivors") == 4, "expanded Invalid Configuration scope exposes exactly 4 new unresolved survivors")
-    check(summary.get("resolved_survivors") == 19, "expanded Invalid Configuration tests resolve 19 previously surviving mutants")
-    check(summary.get("unresolved_survivors") == 78, "current measured mutation debt remains explicit")
+    check(summary.get("new_unresolved_survivors") == 0, "current campaign introduces no new unresolved survivors")
+    check(summary.get("resolved_survivors") == 0, "current comparable content reports no fabricated survivor resolution")
+    check(summary.get("unresolved_survivors") == 29, "current measured mutation debt remains explicit")
     check(summary.get("suppressed_survivors") == 0, "no acceptance suppression remains")
-    check(summary.get("readiness") == "attention", "mutation readiness remains attention while new survivors exist")
+    check(summary.get("readiness") == "clear", "mutation readiness is clear when no new unresolved survivor exists")
 
     suppression_path = BRIDGE / "mutation-suppressions.json"
     if suppression_path.exists():
@@ -526,9 +574,8 @@ def main() -> None:
     measured = campaign.get("contracts") or {}
     check(set(measured) == {
         "REQ_INVALID_CONFIGURATION_ERRORS",
-        "TREQ_RATE_LIMIT_STATE",
         "TREQ_TOOL_REGISTRY",
-    }, "current full audit measured the expected 3 pilot contracts")
+    }, "current full audit measures only uniquely attributable pilot contracts")
 
     for contract_id, contract in measured.items():
         result = contract.get("result") or {}
@@ -563,24 +610,44 @@ def main() -> None:
 
         contract_triage = result.get("triage") or {}
         check(contract_triage.get("baseline_available") is True, f"{contract_id}: baseline evidence available")
-        if contract_id == "REQ_INVALID_CONFIGURATION_ERRORS":
-            check(contract_triage.get("baseline_comparable") is False,
-                  "REQ_INVALID_CONFIGURATION_ERRORS: expanded linked-test scope correctly breaks score comparability with the previous campaign")
-            check(contract_triage.get("score_delta") is None,
-                  "REQ_INVALID_CONFIGURATION_ERRORS: no numeric score delta is fabricated across a changed denominator")
-            check(
-                contract_triage.get("new_unresolved_survivors") == 4
-                and contract_triage.get("resolved_survivors") == 19
-                and contract_triage.get("existing_survivors") == 22,
-                "REQ_INVALID_CONFIGURATION_ERRORS: triage preserves new/existing/resolved survivor identities after scope expansion",
-            )
-        else:
-            check(contract_triage.get("baseline_comparable") is True, f"{contract_id}: baseline comparable")
-            check(contract_triage.get("new_unresolved_survivors") == 0, f"{contract_id}: no new unresolved survivor")
-            check(contract_triage.get("score_delta") == 0.0, f"{contract_id}: unchanged comparable score delta is 0.0 pp")
+        check(
+            contract_triage.get("baseline_comparable") is False,
+            f"{contract_id}: adapter-fingerprint change correctly breaks score comparability with the previous campaign",
+        )
+        check(
+            contract_triage.get("score_delta") is None,
+            f"{contract_id}: no numeric score delta is fabricated across a changed campaign fingerprint",
+        )
+        check(
+            contract_triage.get("new_unresolved_survivors") == 0
+            and contract_triage.get("resolved_survivors") == 0
+            and contract_triage.get("existing_survivors") == survived,
+            f"{contract_id}: survivor identities are retained without fabricated new/resolved changes",
+        )
 
     unattributed = strength.get("unattributed") or []
-    check(len(unattributed) == 2, "two shared-scope diagnostics remain explicitly unattributed")
+    check(
+        {row.get("contract_id") for row in unattributed}
+        == {"REQ_ROUTE_ATTEMPT_LIMIT", "REQ_CONFIG_INSTALLATION_COHERENCE"},
+        "shared implementation scopes remain diagnostic-only and explicitly unattributed",
+    )
+    shared_reasons = {
+        row.get("contract_id"): str(row.get("reason") or "")
+        for row in unattributed
+    }
+    check(
+        "TREQ_ROUTE_ORDER" in shared_reasons["REQ_ROUTE_ATTEMPT_LIMIT"]
+        and "TREQ_CONFIG_CACHE_INVALIDATION"
+        in shared_reasons["REQ_CONFIG_INSTALLATION_COHERENCE"],
+        "shared-scope diagnostics name the contracts that prevent unique attribution",
+    )
+    check(
+        not (
+            {"REQ_ROUTE_ATTEMPT_LIMIT", "REQ_CONFIG_INSTALLATION_COHERENCE", "TREQ_RATE_LIMIT_STATE"}
+            & set(strength.get("contracts") or {})
+        ),
+        "shared-scope and retired limiter diagnostics do not leak into measured Requirement/TREQ strength facts",
+    )
 
     filtering = feedback.get("filtering_decision") or {}
     check(filtering.get("decision") == "none", "P23 makes no operator filtering decision")
@@ -598,15 +665,28 @@ def main() -> None:
     tool_choice_page = (HTML / "contract-evidence-tool-choice.html").read_text()
     tool_multi_page = (HTML / "contract-evidence-multi-round-tool-execution.html").read_text()
     tool_runtime_page = (HTML / "contract-evidence-tool-runtime-safety.html").read_text()
+    sync_route_page = (HTML / "contract-evidence-sync-route-fallback.html").read_text()
+    timeout_route_page = (HTML / "contract-evidence-route-timeout-fallback.html").read_text()
+    attempt_limit_page = (HTML / "contract-evidence-route-attempt-limit.html").read_text()
+    sticky_route_page = (HTML / "contract-evidence-route-sticky-start.html").read_text()
+    rate_limit_page = (HTML / "contract-evidence-rate-limit-routing.html").read_text()
     spec_page = (HTML / "specification-health.html").read_text()
     health_page = (HTML / "verification-health-map.html").read_text()
     depth_page = (HTML / "verification-depth-map.html").read_text()
     trace_reader_page = (HTML / "traceability-reader.html").read_text()
     verification_page = (HTML / "verification.html").read_text()
 
-    check(mutation_page.count('id="mutation-') >= 3, "Mutation Analysis exposes contract work queue anchors")
-    check("Current signal" in mutation_page and "New 0" in mutation_page and "Debt 93" in mutation_page,
-          "Mutation Analysis keeps the current mutation signal compact")
+    check(
+        mutation_page.count('id="mutation-') >= 2,
+        "Mutation Analysis exposes the measured contract work queue anchors",
+    )
+    check(
+        "Current signal" in mutation_page
+        and "New 0" in mutation_page
+        and "Debt 29" in mutation_page
+        and "Measured 2/59" in mutation_page,
+        "Mutation Analysis keeps the current measured mutation signal compact and denominator-explicit",
+    )
     check("How this helps during development" not in mutation_page,
           "Mutation Analysis no longer duplicates long usage guidance")
     check('id="mutation-history"' in mutation_page and "Recent changes" in mutation_page,
@@ -625,8 +705,10 @@ def main() -> None:
         and any(row["resolved"] == 3 for row in history_triage),
         "retained campaign history proves the New 3 → Resolved 3 acceptance cycle",
     )
-    check("Fresh</strong> · New 0 · Debt 49" in mutation_page,
-          "Mutation Analysis labels current survivor debt compactly")
+    check(
+        mutation_page.count("Fresh</strong> · New 0 · Debt ") >= 2,
+        "Mutation Analysis labels each measured contract fresh and keeps survivor debt compact",
+    )
     check("Why some contracts are N/A" in mutation_page,
           "Mutation Analysis keeps shared-scope diagnostics behind a compact disclosure")
     check('id="mutation-operator-feedback"' in mutation_page and "Run cost / mutation diagnostics" in mutation_page,
@@ -677,10 +759,15 @@ def main() -> None:
         "REQ_TOOL_CHOICE",
         "REQ_MULTI_ROUND_TOOL_EXECUTION",
         "REQ_TOOL_RUNTIME_SAFETY",
+        "REQ_SYNC_ROUTE_FALLBACK",
+        "REQ_ROUTE_TIMEOUT_FALLBACK",
+        "REQ_ROUTE_ATTEMPT_LIMIT",
+        "REQ_ROUTE_STICKY_START",
+        "REQ_RATE_LIMIT_ROUTING",
     }
     check(
         set(monitor_facts.get("contracts") or {}) == profiled_contracts,
-        "Configuration and Tools slices expose exactly seven parent Contract Evidence profiles",
+        "Configuration, Tools, and Routing slices expose exactly twelve parent Contract Evidence profiles",
     )
     contract_pages = {
         "REQ_REQUEST_OVERRIDE_PRECEDENCE": override_page,
@@ -690,6 +777,11 @@ def main() -> None:
         "REQ_TOOL_CHOICE": tool_choice_page,
         "REQ_MULTI_ROUND_TOOL_EXECUTION": tool_multi_page,
         "REQ_TOOL_RUNTIME_SAFETY": tool_runtime_page,
+        "REQ_SYNC_ROUTE_FALLBACK": sync_route_page,
+        "REQ_ROUTE_TIMEOUT_FALLBACK": timeout_route_page,
+        "REQ_ROUTE_ATTEMPT_LIMIT": attempt_limit_page,
+        "REQ_ROUTE_STICKY_START": sticky_route_page,
+        "REQ_RATE_LIMIT_ROUTING": rate_limit_page,
     }
     for contract_id, page in contract_pages.items():
         check(
@@ -709,6 +801,93 @@ def main() -> None:
             "EXPERIMENT" not in page and "EXTRA" not in page,
             f"{contract_id}: no retired experiment/optional-evidence badges leak into monitor UI",
         )
+
+    routing_fault_expectations = {
+        "REQ_SYNC_ROUTE_FALLBACK": {
+            "interface.error-status": (1, 1),
+        },
+        "REQ_ROUTE_TIMEOUT_FALLBACK": {
+            "runtime.latency-timeout": (4, 4),
+        },
+        "REQ_ROUTE_ATTEMPT_LIMIT": {},
+        "REQ_ROUTE_STICKY_START": {},
+        "REQ_RATE_LIMIT_ROUTING": {
+            "interface.error-status": (1, 1),
+        },
+    }
+    for contract_id, expected_challenges in routing_fault_expectations.items():
+        routing_contract = monitor_facts["contracts"][contract_id]
+        actual_by_item = routing_contract.get("coverage_actual") or {}
+        for target_cell in (routing_contract.get("target") or {}).get("coverage") or []:
+            for criterion_id in target_cell.get("items") or []:
+                expected_paths = int(
+                    (target_cell.get("item_path_counts") or {}).get(criterion_id, 1)
+                )
+                actual_paths = [
+                    row
+                    for row in actual_by_item.get(criterion_id) or []
+                    if row.get("level") == target_cell.get("level")
+                    and row.get("boundary") == target_cell.get("boundary")
+                ]
+                check(
+                    len(actual_paths) == expected_paths
+                    and all(
+                        row.get("result") == "passed"
+                        and row.get("provenance") == "COMPLETE"
+                        and row.get("producer_qualification") == "QUALIFIED"
+                        and row.get("freshness") == "CURRENT"
+                        for row in actual_paths
+                    ),
+                    f"{contract_id}: {criterion_id} retains every declared current/qualified coverage path",
+                )
+
+        retained = (
+            (routing_contract.get("fault_actual") or {}).get("retained_challenges")
+            or {}
+        )
+        check(
+            set(retained) == set(expected_challenges),
+            f"{contract_id}: retained fault challenges contain only explicitly declared runtime-observed classes",
+        )
+        for fault_class, (expected_exercised, expected_detected) in expected_challenges.items():
+            row = retained[fault_class]
+            check(
+                row.get("exercised_paths") == expected_exercised
+                and row.get("detected_paths") == expected_detected
+                and row.get("exercised") is True
+                and row.get("detected") is True
+                and all(
+                    item.get("freshness") == "CURRENT"
+                    and item.get("producer_qualification") == "QUALIFIED"
+                    and item.get("observation_sha256")
+                    for item in row.get("rows") or []
+                ),
+                f"{contract_id}: {fault_class} challenge is current, qualified, and detected on every declared path",
+            )
+
+        required_faults = {
+            item["id"]
+            for group in (routing_contract.get("target") or {}).get("fault_groups") or []
+            for item in group.get("items") or []
+            if item.get("state") == "required"
+        }
+        challenged_faults = {
+            class_id
+            for class_id in required_faults
+            if ((routing_contract.get("fault_actual") or {}).get("classes") or {})
+            .get(class_id, {})
+            .get("exercised")
+        }
+        check(
+            challenged_faults == set(expected_challenges)
+            and challenged_faults < required_faults,
+            f"{contract_id}: partial Fault Model remains explicit instead of becoming false-green",
+        )
+        check(
+            '<div class="overall not-met">FAIL</div>' in contract_pages[contract_id],
+            f"{contract_id}: rendered Overall remains FAIL while required fault classes are still unchallenged",
+        )
+
     check(assurance_page.count('id="tf-requirement-monitor"') == 1,
           "accepted Requirement monitor is installed exactly once")
     check(
@@ -1037,17 +1216,25 @@ def main() -> None:
     check(any(o.get("kind") == "test_strength" and o.get("min") == 80.0
               for o in rate_obligations),
           "Rate-limit state targets the honestly available covered-mutant Test Strength instead of fabricating Mutation Reach")
-    rate_strength = (strength.get("contracts") or {}).get("TREQ_RATE_LIMIT_STATE") or {}
-    check(rate_strength.get("score") == 51.0,
-          "Rate-limit state retained Test Strength is the real 51.0% signal")
-    rate_tests = [row for row in depth_facts.get("tests") or []
-                  if "TREQ_RATE_LIMIT_STATE" in (row.get("verifies") or [])]
-    check(len(rate_tests) == 3 and all(
-          row.get("system_reach") == "component" and
-          row.get("boundary_mode") == "none" and
-          row.get("representation_fidelity") == "actual"
-          for row in rate_tests
-    ), "Rate-limit state target is backed by three Component×Local×Actual paths")
+    check(
+        "TREQ_RATE_LIMIT_STATE" not in (strength.get("contracts") or {}),
+        "legacy Rate-limit state target does not fabricate a current uniquely attributable Test Strength score",
+    )
+    rate_tests = [
+        row
+        for row in depth_facts.get("tests") or []
+        if "TREQ_RATE_LIMIT_STATE" in (row.get("verifies") or [])
+    ]
+    check(
+        rate_tests
+        and all(
+            row.get("system_reach") == "component"
+            and row.get("boundary_mode") == "none"
+            and row.get("representation_fidelity") == "actual"
+            for row in rate_tests
+        ),
+        "Rate-limit state remains backed by current Component×Local×Actual execution paths without an attributed mutation score",
+    )
 
     async_assignment = assignments["REQ_ASYNC_PROVIDER_EXECUTION"]
     async_profile = profiles.get(async_assignment.get("profile")) or {}
@@ -1165,12 +1352,20 @@ def main() -> None:
     check(all("covering_tests" in row for group in (component_faults, system_faults) for row in group.get("mutants") or []),
           "per-mutant retained facts include covering tests without inventing killing tests")
     retained_mutmut = implementation.get("retained_mutmut") or {}
-    check((retained_mutmut.get("killed"), retained_mutmut.get("survived"), retained_mutmut.get("valid_mutants")) == (84, 26, 110) and
-          retained_mutmut.get("new_survivors") == 4 and
-          retained_mutmut.get("existing_survivors") == 22 and
-          retained_mutmut.get("resolved_survivors") == 19 and
-          "mutate_only_covered_lines=true" in retained_mutmut.get("denominator_warning", ""),
-          "retained mutmut Test Strength keeps its separate covered-lines denominator and explicit scope-change triage")
+    check(
+        (
+            retained_mutmut.get("killed"),
+            retained_mutmut.get("survived"),
+            retained_mutmut.get("valid_mutants"),
+        )
+        == (84, 26, 110)
+        and retained_mutmut.get("new_survivors") == 0
+        and retained_mutmut.get("existing_survivors") == 26
+        and retained_mutmut.get("resolved_survivors") == 0
+        and "mutate_only_covered_lines=true"
+        in retained_mutmut.get("denominator_warning", ""),
+        "retained mutmut Test Strength keeps its separate covered-lines denominator without fabricating triage across the adapter-fingerprint change",
+    )
     for layer_id, required_fields in {
         "specification": ("claim_section", "mutation", "parser_validity", "execution_command", "detector", "source_url", "test_source_url"),
         "architecture": ("declared_rule", "baseline_summary", "injected_violation", "execution_command", "detector", "source_url"),
@@ -1244,7 +1439,7 @@ def main() -> None:
     check(
         component_fault["sensitivity"] == 93.5
         and "VC_CONFIG_MODEL_DECLARATION" in component_target["items"]
-        and len((contract_monitor["coverage_actual"].get("VC_CONFIG_MODEL_DECLARATION") or [])) == 1,
+        and len(contract_monitor["coverage_actual"].get("VC_CONFIG_MODEL_DECLARATION") or []) == 1,
         "canonical monitor facts retain the current Component sensitivity and executed model-declaration criterion",
     )
 
@@ -1291,6 +1486,24 @@ def main() -> None:
         and "verification-assurance.html#ce-coverage-req_invalid_configuration_errors" in trace_reader_page,
         "Traceability Reader routes profiled Configuration contracts to their real Contract Evidence pages",
     )
+    routing_trace_routes = {
+        "REQ_SYNC_ROUTE_FALLBACK": "contract-evidence-sync-route-fallback.html#ce-coverage-req_sync_route_fallback",
+        "REQ_ROUTE_TIMEOUT_FALLBACK": "contract-evidence-route-timeout-fallback.html#ce-coverage-req_route_timeout_fallback",
+        "REQ_ROUTE_ATTEMPT_LIMIT": "contract-evidence-route-attempt-limit.html#ce-coverage-req_route_attempt_limit",
+        "REQ_ROUTE_STICKY_START": "contract-evidence-route-sticky-start.html#ce-coverage-req_route_sticky_start",
+        "TREQ_ROUTE_ORDER": "contract-evidence-route-sticky-start.html#ce-coverage-req_route_sticky_start",
+        "REQ_RATE_LIMIT_ROUTING": "contract-evidence-rate-limit-routing.html#ce-coverage-req_rate_limit_routing",
+        "TREQ_RATE_LIMIT_STATE": "contract-evidence-rate-limit-routing.html#ce-coverage-req_rate_limit_routing",
+        "TREQ_RATE_LIMIT_COOLDOWN_POLICY": "contract-evidence-rate-limit-routing.html#ce-coverage-req_rate_limit_routing",
+        "TREQ_RATE_LIMIT_AVAILABILITY_SELECTION": "contract-evidence-rate-limit-routing.html#ce-coverage-req_rate_limit_routing",
+    }
+    check(
+        all(
+            f'"{contract_id}": "{href}"' in trace_reader_page
+            for contract_id, href in routing_trace_routes.items()
+        ),
+        "Traceability Reader routes Routing parent/derived contracts to the accepted parent Contract Evidence pages",
+    )
     check(
         "Assurance reading path" in verification_page
         and "Requirements and Technical requirements with an accepted Verification Profile" in verification_page
@@ -1324,16 +1537,16 @@ def main() -> None:
         check('href="mutation-analysis.html"' in text, f"{name}: portal navigation links Mutation Analysis")
 
     measurement_contract_ids = {row["contract_id"] for row in depth_facts.get("contracts") or []}
-    check(len(measurement_contract_ids) == 57,
-          "verification-depth / mutation measurement universe contains all 57 current contracts")
+    check(len(measurement_contract_ids) == 59,
+          "verification-depth / mutation measurement universe contains all 59 current contracts")
     requirements_text = "\n".join(
         path.read_text() for path in sorted((ROOT / "docs/requirements").glob("*.md"))
     )
     normative_contract_ids = set(re.findall(
         r"^:id:\s+((?:REQ|TREQ)_[A-Z0-9_]+)\s*$", requirements_text, flags=re.MULTILINE
     ))
-    check(len(normative_contract_ids) == 57,
-          "normative Sphinx-Needs graph contains 57 Requirement/TREQ contracts")
+    check(len(normative_contract_ids) == 59,
+          "normative Sphinx-Needs graph contains 59 Requirement/TREQ contracts")
     missing_contracts = sorted(
         contract_id for contract_id in normative_contract_ids if f"`{contract_id}`" not in manifest
     )
@@ -1442,21 +1655,29 @@ def main() -> None:
         "docs/experiments/index.md",
         "docs/requirements/configuration.md",
         "docs/requirements/tools.md",
+        "docs/requirements/routing.md",
         "docs/verification-profiles/",
         "features/tools/",
+        "features/routing/",
         "pyproject.toml",
+        "src/llm_router/_api/router.py",
         "src/llm_router/_internal/config/validation.py",
+        "src/llm_router/_internal/runtime/limiter.py",
+        "src/llm_router/_internal/runtime/router.py",
         "src/llm_router/_internal/runtime/routes.py",
         "tests/conftest.py",
         "features/responses/public_contract.feature",
         "tests/llm_router/bdd/responses/test_public_contract.py",
-        "tests/llm_router/bdd/routing/test_rate_limits.py",
+        "tests/llm_router/bdd/routing/",
         "tests/llm_router/bdd/tools/",
         "tests/llm_router/support/fault_server.py",
         "tests/llm_router/support/workers/error_boundary.py",
+        "tests/llm_router/support/workers/timeout_worker.py",
         "tests/llm_router/integration/test_config_installation_runtime_effect.py",
         "tests/llm_router/unit/test_internal_config_validation.py",
         "tests/llm_router/unit/test_internal_key_resolution.py",
+        "tests/llm_router/unit/test_internal_limiter.py",
+        "tests/llm_router/unit/test_internal_route_order.py",
         "tests/llm_router/unit/test_internal_tool_choice.py",
         "tests/llm_router/unit/test_internal_tool_registry.py",
     }

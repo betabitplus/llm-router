@@ -10,14 +10,13 @@ Feature: Route availability
       When a request is made
       Then the available route is used
 
-    @vcr
     Scenario: The router fails immediately when every route is blocked and waiting is disabled
       Given every route is temporarily blocked
       And waiting for availability is disabled
       When a request is made
       Then the request fails without waiting
 
-    @vcr
+    @TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]
     Scenario: The router waits when every route is blocked and waiting is enabled
       Given every route is temporarily blocked
       And waiting for availability is enabled
@@ -26,9 +25,14 @@ Feature: Route availability
 
   Rule: Automatic key selection uses available capacity before waiting
 
-    @vcr
     Scenario: Requests rotate across available keys before waiting for reuse
       Given a provider route uses automatic key selection with two keys
       When three asynchronous requests are made in sequence
       Then the first two requests use different keys
       And the third request waits for an available key
+
+    @TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]
+    Scenario: An available key is used instead of waiting for a blocked key
+      Given an automatic-key route with one cooled-down key and one available key
+      When a request is made while the next rotating key is still blocked
+      Then the available key is used without waiting

@@ -73,6 +73,7 @@ class RouterRuntime:
         self._limiter = LimiterState()
         self._keys = KeyResolver(self.config)
         self._request_index = 0
+        self._sticky_start_route_index: int | None = None
 
     def query(self, content: object, **runtime_kwargs: object) -> object:
         """Execute one synchronous request."""
@@ -99,6 +100,7 @@ class RouterRuntime:
                 ),
                 request_index=request_index,
                 max_attempts=settings.max_attempts,
+                selected_start_route_index=self._sticky_start_route_index,
             ),
         )
 
@@ -173,6 +175,10 @@ class RouterRuntime:
                 )
                 continue
             self._record_success(route=route, settings=settings, request=request)
+            self._remember_fallback_success(
+                route=route,
+                fallback_occurred=bool(failed_traces or blocked_requests),
+            )
             self._log_attempt_succeeded(request_id=request_id, request=request)
             trace = build_attempt_trace(
                 route=route,
@@ -272,6 +278,10 @@ class RouterRuntime:
                 )
                 continue
             self._record_success(route=route, settings=settings, request=request)
+            self._remember_fallback_success(
+                route=route,
+                fallback_occurred=bool(failed_traces or blocked_requests),
+            )
             self._log_attempt_succeeded(request_id=request_id, request=request)
             trace = build_attempt_trace(
                 route=route,
@@ -327,6 +337,7 @@ class RouterRuntime:
         )
 
     # @impl Rate-limit-aware request preparation, IMPL_RATE_LIMIT_ROUTING, [REQ_RATE_LIMIT_ROUTING[revision==1]]
+    # @impl Availability-aware key selection, IMPL_RATE_LIMIT_AVAILABLE_KEY_SELECTION, [TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]]
     def _prepare_request(
         self,
         *,
@@ -339,7 +350,38 @@ class RouterRuntime:
         if not isinstance(route.provider, Provider):
             msg = f"Unknown provider: {route.provider}"
             raise ValueError(msg)  # noqa: TRY004
-        key = self._keys.resolve(provider=route.provider, key_id=settings.key_id)
+        preferred_key_ids: set[int] | None = None
+        if settings.key_id == "auto":
+            candidates = self._keys.candidates(
+                provider=route.provider,
+                key_id=settings.key_id,
+            )
+            candidate_waits = {
+                candidate.key_id: self._limiter.wait_seconds(
+                    provider=route.provider,
+                    key_id=candidate.key_id,
+                )
+                for candidate in candidates
+            }
+            available_key_ids = {
+                key_id
+                for key_id, candidate_wait in candidate_waits.items()
+                if candidate_wait <= 0.0
+            }
+            if available_key_ids:
+                preferred_key_ids = available_key_ids
+            else:
+                earliest_wait = min(candidate_waits.values())
+                preferred_key_ids = {
+                    key_id
+                    for key_id, candidate_wait in candidate_waits.items()
+                    if candidate_wait == earliest_wait
+                }
+        key = self._keys.resolve(
+            provider=route.provider,
+            key_id=settings.key_id,
+            preferred_key_ids=preferred_key_ids,
+        )
         wait_seconds = self._limiter.wait_seconds(
             provider=route.provider,
             key_id=key.key_id,
@@ -419,6 +461,17 @@ class RouterRuntime:
             limits=limits,
         )
 
+    # @impl Sticky successful-route state, IMPL_ROUTE_STICKY_SUCCESS_STATE, [REQ_ROUTE_STICKY_START[revision==1]]
+    def _remember_fallback_success(
+        self,
+        *,
+        route: ExpandedRoute,
+        fallback_occurred: bool,
+    ) -> None:
+        """Keep the most recently successful fallback route as the next start."""
+        if fallback_occurred:
+            self._sticky_start_route_index = route.route_index
+
     def _record_failure(
         self,
         *,
@@ -469,6 +522,10 @@ class RouterRuntime:
             settings=selected.request.settings,
             request=selected.request,
         )
+        self._remember_fallback_success(
+            route=selected.request.route,
+            fallback_occurred=bool(failed_traces),
+        )
         self._log_attempt_succeeded(request_id=request_id, request=selected.request)
         trace = build_attempt_trace(
             route=selected.request.route,
@@ -518,6 +575,10 @@ class RouterRuntime:
             settings=selected.request.settings,
             request=selected.request,
         )
+        self._remember_fallback_success(
+            route=selected.request.route,
+            fallback_occurred=bool(failed_traces),
+        )
         self._log_attempt_succeeded(request_id=request_id, request=selected.request)
         trace = build_attempt_trace(
             route=selected.request.route,
@@ -533,6 +594,7 @@ class RouterRuntime:
             final_trace=trace,
         )
 
+    # @impl Earliest blocked-route selection, IMPL_RATE_LIMIT_EARLIEST_BLOCKED_SELECTION, [TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]]
     def _select_blocked_request(
         self,
         blocked_requests: Sequence[_BlockedRequest],

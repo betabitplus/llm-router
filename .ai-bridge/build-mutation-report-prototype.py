@@ -57,7 +57,7 @@ ASSURANCE_PAGE=ROOT/"docs/_build/html/verification-assurance.html"
 SPEC_HEALTH_PAGE=ROOT/"docs/_build/html/specification-health.html"
 SUPPRESSIONS_PATH=ROOT/".ai-bridge/mutation-suppressions.json"
 MUTATION_SEMANTICS_VERSION="p21-local-2"
-MUTATION_ADAPTER_VERSION="p33-local-1"
+MUTATION_ADAPTER_VERSION="p34-local-2"
 PROTOTYPE_BUILD_VERSION="p34-local-1"
 MUTATION_CONFIG={
   "process_isolation":"forkserver",
@@ -85,15 +85,21 @@ CONTRACTS={
 "tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_undeclared_default_model",
 "tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_zero_route_attempt_limit",
 "tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_zero_default_tool_rounds"]},
-"TREQ_RATE_LIMIT_STATE":{"source":"src/llm_router/_internal/runtime/limiter.py","kind":"class","scope":"LimiterState","tests":[
-"tests/llm_router/unit/test_internal_limiter.py::test_limiter_state_is_isolated_per_provider_and_key",
-"tests/llm_router/unit/test_internal_limiter.py::test_success_resets_failure_count_before_cooldown_threshold",
-"tests/llm_router/unit/test_internal_limiter.py::test_success_uses_the_more_conservative_rps_or_rpm_interval"]},
 "TREQ_TOOL_REGISTRY":{"source":"src/llm_router/_internal/capabilities/tools.py","kind":"class","scope":"ToolRegistry","tests":[
 "tests/llm_router/unit/test_internal_tool_registry.py::test_callable_tool_schema_and_execution_match_python_signature",
 "tests/llm_router/unit/test_internal_tool_registry.py::test_duplicate_tool_names_are_rejected",
 "tests/llm_router/unit/test_internal_tool_registry.py::test_tool_call_parser_accepts_supported_provider_shapes[payload0]",
 "tests/llm_router/unit/test_internal_tool_registry.py::test_tool_call_parser_accepts_supported_provider_shapes[payload1]"]}}
+SHARED_SCOPE_DIAGNOSTICS={
+  "TREQ_RATE_LIMIT_STATE":{
+    "shared_with":["TREQ_RATE_LIMIT_COOLDOWN_POLICY"],
+    "reason":(
+      "LimiterState now implements sibling contracts TREQ_RATE_LIMIT_STATE and "
+      "TREQ_RATE_LIMIT_COOLDOWN_POLICY; a class-wide mutation result cannot be "
+      "uniquely attributed to either contract."
+    ),
+  },
+}
 STATUS={"killed":"Killed","survived":"Survived","timeout":"Timeout","suspicious":"RuntimeError","skipped":"Ignored","untested":"NoCoverage","no tests":"NoCoverage"}
 
 def utc_now():
@@ -129,6 +135,102 @@ def scope_source(spec):
     start=min([node.lineno,*[d.lineno for d in getattr(node,"decorator_list",[])]])-1
     end=getattr(node,"end_lineno",node.lineno)
     return "".join(lines[start:end])
+
+def requirement_derives_map():
+    result={}
+    pattern=re.compile(r"```\{(?:req|treq)\}.*?\n```",flags=re.DOTALL)
+    for path in sorted((ROOT/"docs/requirements").glob("*.md")):
+        for block in pattern.findall(path.read_text()):
+            contract_match=re.search(r"^:id:\s*(T?REQ_[A-Z0-9_]+)\s*$",block,flags=re.MULTILINE)
+            derives_match=re.search(r"^:derives:\s*([^\n]+)$",block,flags=re.MULTILINE)
+            if not contract_match:
+                continue
+            contract_id=contract_match.group(1)
+            parents=(
+              re.findall(r"T?REQ_[A-Z0-9_]+",derives_match.group(1))
+              if derives_match else []
+            )
+            result[contract_id]=parents
+    return result
+
+
+def contract_derives_from(contract_id,ancestor_id,derives):
+    pending=[contract_id]
+    seen=set()
+    while pending:
+        current=pending.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        for parent in derives.get(current) or []:
+            if parent==ancestor_id:
+                return True
+            pending.append(parent)
+    return False
+
+
+def scope_impl_owners(spec):
+    path=ROOT/spec["source"]
+    text=path.read_text()
+    tree=ast.parse(text)
+    if spec["kind"]=="class":
+        node=next(n for n in tree.body if isinstance(n,ast.ClassDef) and n.name==spec["scope"])
+    else:
+        node=next(n for n in tree.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name==spec["scope"])
+    lines=text.splitlines()
+    start=node.lineno-1
+    while start>0 and lines[start-1].lstrip().startswith("# @impl"):
+        start-=1
+    end=getattr(node,"end_lineno",node.lineno)
+    scope_text="\n".join(lines[start:end])
+    return sorted(set(re.findall(r"\[(T?REQ_[A-Z0-9_]+)\[revision==\d+\]\]",scope_text)))
+
+
+def validate_contract_scope_attribution():
+    derives=requirement_derives_map()
+    errors=[]
+    for contract_id,spec in CONTRACTS.items():
+        owners=scope_impl_owners(spec)
+        invalid=[
+          owner for owner in owners
+          if owner!=contract_id and not contract_derives_from(owner,contract_id,derives)
+        ]
+        if contract_id not in owners or invalid:
+            errors.append(
+              f"{contract_id}: scope {spec['kind']} {spec['scope']} owners={owners}; "
+              f"outside attribution root={invalid}"
+            )
+    if errors:
+        raise RuntimeError(
+          "mutation contract scope is not uniquely attributable:\n"
+          +"\n".join(errors)
+        )
+
+
+def deattribute_shared_scope_strength():
+    unattributed=[
+      row for row in (STRENGTH.get("unattributed") or [])
+      if row.get("contract_id") not in SHARED_SCOPE_DIAGNOSTICS
+    ]
+    contracts=STRENGTH.setdefault("contracts",{})
+    for contract_id,diagnostic in SHARED_SCOPE_DIAGNOSTICS.items():
+        fact=contracts.pop(contract_id,None)
+        if not fact:
+            continue
+        unattributed.append({
+          "contract_id":contract_id,
+          "source_path":fact.get("source_path"),
+          "scope":fact.get("scope"),
+          "score":fact.get("score"),
+          "killed":int(fact.get("killed") or 0),
+          "survived":int(fact.get("survived") or 0),
+          "fresh":False,
+          "stale_reasons":["shared_scope_not_uniquely_attributable"],
+          "shared_with":list(diagnostic.get("shared_with") or []),
+          "reason":diagnostic["reason"],
+        })
+    STRENGTH["unattributed"]=unattributed
+
 
 def test_source(nodeid):
     file_name,test_name=nodeid.split("::",1)
@@ -240,7 +342,9 @@ def contract_fingerprints(contract_id,spec,mutmut_version=None):
       "scope":spec["scope"],
       "tests":spec["tests"],
       "mutation_config":MUTATION_CONFIG,
-      "adapter_version":MUTATION_SEMANTICS_VERSION,
+      "adapter_version":MUTATION_ADAPTER_VERSION,
+      "adapter_sha256":sha256_file(ROOT/".ai-bridge/build-mutation-report-prototype.py"),
+      "mutation_semantics_version":MUTATION_SEMANTICS_VERSION,
       "mutmut_version":mutmut_version,
     }
     config_fp=sha256_text(stable_json(config_payload))
@@ -280,7 +384,9 @@ def build_campaign_inputs(mode,base_ref,contract_ids=None,mutmut_version=None):
       "head_sha":head,
       "base_sha":base,
       "contracts":contracts,
-      "adapter_version":MUTATION_SEMANTICS_VERSION,
+      "adapter_version":MUTATION_ADAPTER_VERSION,
+      "adapter_sha256":sha256_file(ROOT/".ai-bridge/build-mutation-report-prototype.py"),
+      "mutation_semantics_version":MUTATION_SEMANTICS_VERSION,
       "mutmut_version":mutmut_version,
       "mutation_config":MUTATION_CONFIG,
     }
@@ -532,11 +638,14 @@ def run_mutmut(spec):
     env["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"]="YES"
     mutmut_executable=shutil.which("mutmut")
     if mutmut_executable:
-        command=[mutmut_executable,"run","--max-children","4"]
+        command=[mutmut_executable,"run","--max-children",str(MUTATION_CONFIG["max_children"])]
     else:
         env.pop("VIRTUAL_ENV",None)
         env.pop("UV_RUN_RECURSION_DEPTH",None)
-        command=["uv","run","--with","mutmut","mutmut","run","--max-children","4"]
+        command=[
+          "uv","run","--with","mutmut","mutmut","run",
+          "--max-children",str(MUTATION_CONFIG["max_children"]),
+        ]
     completed=subprocess.run(
       command,
       cwd=ROOT,
@@ -545,8 +654,25 @@ def run_mutmut(spec):
       stdout=subprocess.PIPE,
       stderr=subprocess.STDOUT,
     )
+    output=completed.stdout or ""
+    if completed.returncode!=0 and "ForkServerCrashError" in output:
+        print(
+          "[P23] mutmut forkserver crashed; resuming retained mutant set "
+          "with max_children=1",
+          flush=True,
+        )
+        resume_command=[*command[:-1],"1"]
+        completed=subprocess.run(
+          resume_command,
+          cwd=ROOT,
+          env=env,
+          text=True,
+          stdout=subprocess.PIPE,
+          stderr=subprocess.STDOUT,
+        )
+        output=(output+"\n--- forkserver recovery ---\n"+(completed.stdout or ""))
     if completed.returncode!=0:
-        tail=(completed.stdout or "")[-8000:]
+        tail=output[-8000:]
         raise RuntimeError(f"mutmut failed with exit {completed.returncode}:\n{tail}")
 
 def scope_matches(name,spec):
@@ -4446,9 +4572,173 @@ def junit_monitor_actual():
     }
 
 
+def parse_fault_items(raw):
+    if not raw:
+        return []
+    try:
+        rows=json.loads(raw)
+    except Exception:
+        return []
+    if not isinstance(rows,list):
+        return []
+    result=[]
+    for row in rows:
+        if not isinstance(row,dict):
+            continue
+        contract_id=str(row.get("contract_id") or "")
+        fault_class=str(row.get("fault_class") or "")
+        if contract_id and fault_class:
+            result.append({
+              "contract_id":contract_id,
+              "fault_class":fault_class,
+            })
+    return result
+
+
+def junit_fault_actual(policy):
+    if not JUNIT_PATH.exists():
+        return {}
+    root=ET.parse(JUNIT_PATH).getroot()
+    allure_index=allure_monitor_index()
+    run_inputs=load_evidence_run_inputs()
+    input_state,input_basis,_=current_input_snapshot(run_inputs)
+    snapshot_inputs=dict(run_inputs.get("inputs") or {})
+    suite_start_ms,suite_end_ms,_=junit_suite_window(root)
+    qualification=load_evidence_qualification()
+    declared=defaultdict(lambda:defaultdict(list))
+    target_cache={}
+
+    for testcase in root.iter("testcase"):
+        props={
+          prop.attrib.get("name"):prop.attrib.get("value")
+          for prop in testcase.findall("./properties/property")
+        }
+        fault_items=parse_fault_items(props.get("fault_items"))
+        if not fault_items:
+            continue
+
+        classname=testcase.attrib.get("classname") or ""
+        test_name=testcase.attrib.get("name") or ""
+        nodeid=f"{classname.replace('.','/')}.py::{test_name}"
+        state="passed"
+        if testcase.find("failure") is not None or testcase.find("error") is not None:
+            state="failed"
+        elif testcase.find("skipped") is not None:
+            state="skipped"
+
+        matches=allure_index.get(nodeid) or []
+        allure_row=matches[0] if len(matches)==1 else None
+        link=execution_link_state(
+          state,allure_row,suite_start_ms,suite_end_ms,nodeid
+        )
+        source_path=nodeid.split("::",1)[0]
+        retained_source_path=props.get("source_path") or ""
+        retained_source_sha=props.get("source_sha256") or ""
+        source_current=bool(
+          input_state=="CURRENT"
+          and source_path
+          and retained_source_path==source_path
+          and retained_source_sha
+          and retained_source_sha==snapshot_inputs.get(source_path)
+        )
+        producer_status,producer_basis=producer_chain_status(
+          list((allure_row or {}).get("producer_ids") or []),
+          qualification,
+        )
+        observations=(allure_row or {}).get("observations") or []
+
+        for declaration in fault_items:
+            contract_id=declaration["contract_id"]
+            fault_class=declaration["fault_class"]
+            if contract_id not in target_cache:
+                target_cache[contract_id]=requirement_monitor_target(contract_id,policy)
+            target=target_cache[contract_id]
+            if not target:
+                raise RuntimeError(
+                  f"{nodeid}: fault_item references contract without a Verification Profile: "
+                  f"{contract_id}"
+                )
+            class_state={
+              item["id"]:item["state"]
+              for group in (target.get("fault_groups") or [])
+              for item in (group.get("items") or [])
+            }
+            if fault_class not in class_state:
+                raise RuntimeError(
+                  f"{nodeid}: fault_item references unknown project fault class "
+                  f"{fault_class!r} for {contract_id}"
+                )
+            if class_state[fault_class]=="na":
+                raise RuntimeError(
+                  f"{nodeid}: fault_item cannot challenge N/A class "
+                  f"{fault_class!r} for {contract_id}"
+                )
+            matching=[
+              row for row in observations
+              if row.get("kind")=="fault-injection"
+              and (row.get("payload") or {}).get("contract_id")==contract_id
+              and (row.get("payload") or {}).get("fault_class")==fault_class
+            ]
+            observed=bool(
+              len(matches)==1
+              and link.get("coherent")
+              and link.get("freshness")=="CURRENT"
+              and source_current
+              and matching
+            )
+            detected=bool(
+              observed
+              and state=="passed"
+              and producer_status=="QUALIFIED"
+            )
+            payload=(matching[-1].get("payload") or {}) if matching else {}
+            declared[contract_id][fault_class].append({
+              "nodeid":nodeid,
+              "result":state,
+              "exercised":observed,
+              "detected":detected,
+              "mechanism":payload.get("mechanism"),
+              "details":payload.get("details") or {},
+              "producer_qualification":producer_status,
+              "producer_qualification_basis":producer_basis,
+              "freshness":(
+                "CURRENT"
+                if observed else
+                ("STALE" if input_state=="STALE" or link.get("freshness")=="STALE" else "UNKNOWN")
+              ),
+              "freshness_basis":(
+                str(link.get("reason") or input_basis)
+                if not observed else
+                "matching declared fault challenge and runtime injection observation belong to the current retained run"
+              ),
+              "evidence_url":local_pytest_evidence_url(test_name),
+              "observation_path":matching[-1].get("path") if matching else None,
+              "observation_sha256":matching[-1].get("sha256") if matching else None,
+            })
+
+    result={}
+    for contract_id,classes in declared.items():
+        result[contract_id]={}
+        for fault_class,rows in classes.items():
+            exercised=bool(rows) and all(row["exercised"] for row in rows)
+            detected=bool(rows) and exercised and all(row["detected"] for row in rows)
+            result[contract_id][fault_class]={
+              "exercised":exercised,
+              "detected":detected,
+              "declared_paths":len(rows),
+              "exercised_paths":sum(row["exercised"] for row in rows),
+              "detected_paths":sum(row["detected"] for row in rows),
+              "source":"retained_test_fault_challenge",
+              "evidence_url":rows[0].get("evidence_url") if len(rows)==1 else None,
+              "rows":sorted(rows,key=lambda row:row["nodeid"]),
+            }
+    return result
+
+
 def requirement_monitor_model(base_model):
     policy=project_monitor_policy()
     junit_actual=junit_monitor_actual()
+    junit_faults=junit_fault_actual(policy)
     fault_model=json.loads(ASSURANCE_FACTS_PATH.read_text()) if ASSURANCE_FACTS_PATH.exists() else {}
     result={
       "schema":"ternforge-requirement-monitor-p34-2",
@@ -4510,6 +4800,36 @@ def requirement_monitor_model(base_model):
           "architecture.layer-bypass","spec.missing-partition","spec.wrong-ordering-boundary",
         ):
             class_actual.setdefault(class_id,{"exercised":False,"detected":False})
+
+        retained_classes=(junit_faults.get(contract_id) or {})
+        for class_id,retained in retained_classes.items():
+            previous=class_actual.get(class_id) or {"exercised":False,"detected":False}
+            previous_exercised=bool(previous.get("exercised"))
+            retained_exercised=bool(retained.get("exercised"))
+            exercised=previous_exercised or retained_exercised
+            detected=bool(
+              exercised
+              and (not previous_exercised or previous.get("detected"))
+              and (not retained_exercised or retained.get("detected"))
+            )
+            class_actual[class_id]={
+              **previous,
+              **retained,
+              "exercised":exercised,
+              "detected":detected,
+              "sources":{
+                "specialized_probe":previous,
+                "retained_test_challenge":retained,
+              },
+            }
+
+        for fault_group in policy.get("fault_groups") or []:
+            for class_id in fault_group.get("classes") or []:
+                class_actual.setdefault(
+                  class_id,
+                  {"exercised":False,"detected":False},
+                )
+
         target_criteria={item for cell in (target.get("coverage") or []) for item in (cell.get("items") or [])}
         coverage_actual={key:value for key,value in junit_actual.items() if key in target_criteria}
         result["contracts"][contract_id]={
@@ -4525,7 +4845,8 @@ def requirement_monitor_model(base_model):
             "layers":layers,
             "detection_overlap":contract_fault.get("detection_overlap") or {},
             "retained_mutmut":implementation.get("retained_mutmut") or {},
-            "raw_url":"assurance-fault-model-facts.json",
+            "retained_challenges":retained_classes,
+            "raw_url":"requirement-monitor-facts.json",
           },
           "history_url":((fault_model.get("contract_histories") or {}).get(contract_id) or {}).get("url"),
         }
@@ -6409,6 +6730,8 @@ def main():
         print(f"[P21] triage: {summary['new_unresolved_survivors']} new unresolved · {summary['unresolved_survivors']} unresolved · {summary['suppressed_survivors']} suppressed · {summary['resolved_survivors']} resolved",flush=True)
         return
 
+    validate_contract_scope_attribution()
+    deattribute_shared_scope_strength()
     setup=ROOT/"setup.cfg"
     backup=setup.read_bytes() if setup.exists() else None
     campaign=new_campaign(args.mode,args.base_ref)

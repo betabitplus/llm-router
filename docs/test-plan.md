@@ -93,6 +93,32 @@
 
 **Completion:** required criteria = **100%** · declared retained paths = **100%**
 
+(test-plan-routing-fallback-model)=
+
+### Routing fallback
+
+| Layer              | Required denominator                                                                                                                          |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Component          | route-order and route-attempt boundary criteria selected by the verification profile                                                          |
+| System integration | public fallback, timeout, attempt-cap, and sticky-start workflows selected by the verification profile through a controlled provider boundary |
+
+**Design:** failure partitioning · timeout with/without fallback · boundary-value analysis for route caps · route-order identity · sticky-start state transition
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-rate-limit-routing-model)=
+
+### Rate-limit-aware routing
+
+| Layer              | Required denominator                                                                                                                             |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Component          | provider/key isolation, both conservative-interval dominance directions, success reset, and cooldown-threshold state selected by the profile     |
+| System integration | blocked-route skip, all-blocked fail/wait, earliest-availability selection, and auto-key availability/rotation workflows selected by the profile |
+
+**Design:** state-transition testing · provider/key partitioning · timing-boundary analysis · availability ordering · negative interaction control
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
 (test-plan-fault-model)=
 
 ### Fault-based testing
@@ -123,5 +149,10 @@
 | `spec.wrong-outcome`               | The observable outcome differs from the Requirement.                               |
 | `spec.missing-partition`           | A Requirement-relevant semantic partition is absent from verification.             |
 | `spec.wrong-ordering-boundary`     | Observable ordering or before/after boundary semantics are wrong.                  |
+
+For retained pytest evidence, a fault class is challenged only when the test declares
+the exact `contract_id + fault class` and the same execution retains a matching
+runtime fault-injection observation. A marker without the runtime observation is not
+fault evidence.
 
 **Completion:** required fault-class coverage = **100%** · required deterministic fault detection = **100%**
