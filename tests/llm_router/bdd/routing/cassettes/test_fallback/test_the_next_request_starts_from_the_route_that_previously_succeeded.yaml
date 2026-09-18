@@ -1,7 +1,6 @@
 interactions:
 - request:
-    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"Reply ONLY with OK."}],"model":"deepseek-ai/deepseek-v4-flash-0731","seed":42,"temperature":0.0}'
+    body: llm-router-vcr-body-sha256:293fa7f629651518475da6b3ed97a7dce8e2bb9b185bdb76cfe7093774f453fb
     headers:
       Accept:
       - application/json
@@ -63,8 +62,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"Reply ONLY with 12345."}],"model":"deepseek-ai/deepseek-v4-flash-0731","seed":42,"temperature":0.0}'
+    body: llm-router-vcr-body-sha256:0ed73978d27a0a7cce09afc6a62a2bc158b2a5c203bfb3cb2de8910b617f7679
     headers:
       Accept:
       - application/json

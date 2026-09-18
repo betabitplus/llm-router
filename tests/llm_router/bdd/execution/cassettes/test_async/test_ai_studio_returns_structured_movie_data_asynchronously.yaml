@@ -1,17 +1,6 @@
 interactions:
 - request:
-    body: '{"model":"gemini-3.6-flash","messages":[{"role":"user","content":"You are
-      a movie database API."},{"role":"user","content":"Generate a database entry
-      for the 2010 movie Inception.\n\nReturn JSON with:\n- movie_title\n- director\n-
-      cast: at least 3 actors with `name` and `character_name`\n- reviews: at least
-      2 entries with `source` and numeric `rating`\n- tagline\n\nReturn ONLY valid
-      JSON. No markdown."}],"temperature":0.0,"seed":42,"response_format":{"type":"json_schema","json_schema":{"name":"MovieRecord","schema":{"description":"Structured
-      movie record used by the AI Studio text scenario.","properties":{"movie_title":{"title":"Movie
-      Title","type":"string"},"director":{"title":"Director","type":"string"},"cast":{"items":{"description":"Structured
-      cast member entry.","properties":{"name":{"title":"Name","type":"string"},"character_name":{"title":"Character
-      Name","type":"string"}},"required":["name","character_name"],"title":"Actor","type":"object"},"minItems":3,"title":"Cast","type":"array"},"reviews":{"items":{"description":"Short
-      review entry.","properties":{"source":{"title":"Source","type":"string"},"rating":{"description":"Rating
-      out of 10","title":"Rating","type":"number"}},"required":["source","rating"],"title":"Review","type":"object"},"minItems":2,"title":"Reviews","type":"array"},"tagline":{"title":"Tagline","type":"string"}},"required":["movie_title","director","cast","reviews","tagline"],"title":"MovieRecord","type":"object"},"strict":true}}}'
+    body: llm-router-vcr-body-sha256:bb3218999fe68959b5307c48dcb924828b153eda6a51c8cd33d0c142475185a5
     headers:
       accept:
       - '*/*'

@@ -17,7 +17,7 @@ from concurrent.futures import (
 from dataclasses import dataclass
 from time import sleep
 
-from py_lib_runtime import get_logger, preview_exception_message
+from py_lib_runtime import get_logger
 
 from llm_router._api.types import ChatPart, LLMRouterResponse, Provider, RoutingAttempt
 from llm_router._internal.config import get_config
@@ -717,7 +717,6 @@ class RouterRuntime:
             event_type="llm_router.router.request.failed",
             request_id=request_id,
             error_type=type(error).__name__,
-            error_message=preview_exception_message(error),
         )
 
     def _log_route_selected(
@@ -784,7 +783,6 @@ class RouterRuntime:
             model=route.model.value,
             route_index=route.route_index,
             error_type=type(error).__name__,
-            error_message=preview_exception_message(error),
         )
 
     def _log_attempt_succeeded(

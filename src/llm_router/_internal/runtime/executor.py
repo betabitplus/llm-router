@@ -469,18 +469,10 @@ def _advance_structured_result(
     next_attempts = state.structured_attempts + 1
     error_message = validated.error_message or "Validation failed."
     if next_attempts >= config.structured_output_max_attempts:
-        _log_schema_repair_exhausted(
-            request=provider_request,
-            plan=plan,
-            error_message=error_message,
-        )
-        raise structured_output_error(result=result, message=error_message)
+        _log_schema_repair_exhausted(request=provider_request)
+        raise structured_output_error(result=result)
 
-    _log_schema_repair_started(
-        request=provider_request,
-        plan=plan,
-        error_message=error_message,
-    )
+    _log_schema_repair_started(request=provider_request)
     return _ResultStep(
         state=replace(
             state,
@@ -520,13 +512,9 @@ def _validate_structured_result(
         return _StructuredValidation(valid=True)
     validation = validate_schema_output(plan.schema, result.output_text)
     if validation.valid and completed_attempts:
-        _log_schema_repair_succeeded(request=request, plan=plan)
+        _log_schema_repair_succeeded(request=request)
     if not validation.valid:
-        _log_schema_validation_failed(
-            request=request,
-            plan=plan,
-            error_message=validation.error_message or "Validation failed.",
-        )
+        _log_schema_validation_failed(request=request)
     return _StructuredValidation(
         valid=validation.valid,
         value=validation.value,
@@ -577,65 +565,39 @@ def _retry_context(request: ProviderRequest) -> dict[str, Any]:
     return request.log_context()
 
 
-def _log_schema_validation_failed(
-    *,
-    request: ProviderRequest,
-    plan: _ExecutionPlan,
-    error_message: str,
-) -> None:
-    """Log one structured-output validation miss without raw output."""
+def _log_schema_validation_failed(*, request: ProviderRequest) -> None:
+    """Log one structured-output validation miss without caller-controlled detail."""
     logger.warning(
         "Schema validation failed",
         event_type="llm_router.capability.schema.validation.failed",
         **_retry_context(request),
-        schema_name=None if plan.schema is None else plan.schema.name,
-        error_message=preview_value(error_message),
     )
 
 
-def _log_schema_repair_started(
-    *,
-    request: ProviderRequest,
-    plan: _ExecutionPlan,
-    error_message: str,
-) -> None:
-    """Log one structured-output repair attempt."""
+def _log_schema_repair_started(*, request: ProviderRequest) -> None:
+    """Log one structured-output repair attempt without caller-controlled detail."""
     logger.info(
         "Schema repair started",
         event_type="llm_router.capability.schema.repair.started",
         **_retry_context(request),
-        schema_name=None if plan.schema is None else plan.schema.name,
-        error_message=preview_value(error_message),
     )
 
 
-def _log_schema_repair_succeeded(
-    *,
-    request: ProviderRequest,
-    plan: _ExecutionPlan,
-) -> None:
-    """Log successful structured-output repair."""
+def _log_schema_repair_succeeded(*, request: ProviderRequest) -> None:
+    """Log successful structured-output repair without caller-controlled detail."""
     logger.info(
         "Schema repair succeeded",
         event_type="llm_router.capability.schema.repair.succeeded",
         **_retry_context(request),
-        schema_name=None if plan.schema is None else plan.schema.name,
     )
 
 
-def _log_schema_repair_exhausted(
-    *,
-    request: ProviderRequest,
-    plan: _ExecutionPlan,
-    error_message: str,
-) -> None:
-    """Log exhausted structured-output repair."""
+def _log_schema_repair_exhausted(*, request: ProviderRequest) -> None:
+    """Log exhausted structured-output repair without caller-controlled detail."""
     logger.warning(
         "Schema repair exhausted",
         event_type="llm_router.capability.schema.repair.exhausted",
         **_retry_context(request),
-        schema_name=None if plan.schema is None else plan.schema.name,
-        error_message=preview_value(error_message),
     )
 
 

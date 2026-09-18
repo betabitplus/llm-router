@@ -1,6 +1,6 @@
 interactions:
 - request:
-    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"Follow instructions exactly. Reply with only what is asked.\n\nReply with only: pong"}],"stream":false,"temperature":0.0,"seed":42}'
+    body: llm-router-vcr-body-sha256:fea60bc114053c7417d962ac6cb41701530f86e025dcf4657762134e8320183c
     headers:
       Accept:
       - application/json

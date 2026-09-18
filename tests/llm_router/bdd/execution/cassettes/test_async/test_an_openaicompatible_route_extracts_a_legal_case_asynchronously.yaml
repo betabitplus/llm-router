@@ -1,18 +1,6 @@
 interactions:
 - request:
-    body: '{"messages":[{"role":"user","content":"You are a legal assistant. Extract
-      case details."},{"role":"user","content":"In the High Court of Techville. Case
-      No. 2025-CV-001.\n\nBetween:\nGlobal AI Corp (a Delaware corporation), Plaintiff\nv.\nJohn
-      Doe (an individual) and Hackers United Ltd., Defendants.\n\nSummary:\nGlobal
-      AI Corp alleges that John Doe, a former employee, stole proprietary\nalgorithms
-      and shared them with Hackers United Ltd. The plaintiff claims\nbreach of contract
-      and trade secret misappropriation.\nThey are seeking $10 million in damages
-      and a permanent injunction\npreventing further use of the algorithms."}],"model":"deepseek-ai/deepseek-v4-flash-0731","response_format":{"type":"json_schema","json_schema":{"name":"LegalCase","schema":{"$defs":{"Party":{"description":"Structured
-      party entry.","properties":{"name":{"title":"Name","type":"string"},"type":{"$ref":"#/$defs/PartyType"},"role":{"title":"Role","type":"string"}},"required":["name","type","role"],"title":"Party","type":"object"},"PartyType":{"description":"Party
-      type labels used in the structured legal-case schema.","enum":["individual","corporation","government"],"title":"PartyType","type":"string"}},"description":"Structured
-      legal-case output used by OpenAI-compatible text tests.","properties":{"case_name":{"title":"Case
-      Name","type":"string"},"court":{"title":"Court","type":"string"},"plaintiffs":{"items":{"$ref":"#/$defs/Party"},"minItems":1,"title":"Plaintiffs","type":"array"},"defendants":{"items":{"$ref":"#/$defs/Party"},"minItems":1,"title":"Defendants","type":"array"},"legal_issues":{"items":{"type":"string"},"minItems":1,"title":"Legal
-      Issues","type":"array"}},"required":["case_name","court","plaintiffs","defendants","legal_issues"],"title":"LegalCase","type":"object"},"strict":true}},"temperature":0.0}'
+    body: llm-router-vcr-body-sha256:5ae5ab83f84174215495ae0e176ce752fbc0aab2215158946f6f4358663a103d
     headers:
       Accept:
       - application/json

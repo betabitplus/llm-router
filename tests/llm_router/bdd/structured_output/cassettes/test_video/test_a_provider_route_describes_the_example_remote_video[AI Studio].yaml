@@ -1,14 +1,6 @@
 interactions:
 - request:
-    body: '{"contents":[{"parts":[{"text":"Follow instructions exactly. Reply with
-      only what is asked."},{"text":"You are given a short video clip.\n\nReturn JSON
-      with exactly three keys:\n- action: the main activity as a short lowercase word
-      or phrase\n- location: a short phrase describing where it happens\n\n- evidence:
-      exactly 2 short strings describing visible motion or scene cues\n\nIf the clip
-      happens indoors in a gym, dance studio, or training room, mention that in location.\nIn
-      evidence, mention movement, posture, or indoor scene details.\n\nReturn ONLY
-      valid JSON. No markdown."},{"fileData":{"mimeType":"video/mp4","fileUri":"https://www.youtube.com/shorts/QUxqvF0pyGw"}}]}],"generationConfig":{"temperature":0.0,"responseMimeType":"application/json","responseSchema":{"description":"Minimal
-      structured summary for a short video clip.","properties":{"action":{"min_length":4,"title":"Action","type":"STRING"},"location":{"min_length":4,"title":"Location","type":"STRING"},"evidence":{"items":{"type":"STRING"},"min_items":2,"title":"Evidence","type":"ARRAY"}},"required":["action","location","evidence"],"title":"VideoObservation","type":"OBJECT","property_ordering":["action","location","evidence"]}}}'
+    body: llm-router-vcr-body-sha256:f7e31c2e58be17718f4b657d7b2d7d3264e45b3023a2589c85a3ce7ca017cd29
     headers:
       accept:
       - '*/*'

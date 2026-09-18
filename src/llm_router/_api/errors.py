@@ -19,10 +19,7 @@ Notes:
       secrets, full payloads, or provider-specific internals by default
 """
 
-from py_lib_runtime import (
-    preview_exception_message,
-    preview_text,
-)
+from py_lib_runtime import preview_text
 
 from llm_router._api.types import Model, Provider
 
@@ -76,11 +73,11 @@ class ProviderError(LLMRouterError):
         final_message = (
             "Provider "
             f"'{provider}' failed for model '{model}'. "
-            f"Original error: {preview_text(message)}"
+            f"Reason: {preview_text(message)}"
             if message is not None
             else "Provider "
             f"'{provider}' failed for model '{model}'. "
-            f"Original error: {preview_exception_message(cause)}"
+            f"Failure type: {type(cause).__name__}."
         )
         super().__init__(final_message)
 

@@ -19,7 +19,9 @@ from typing import Any
 
 from py_lib_testkit import method_case_insensitive
 
-from tests.llm_router.support._vcr_body_matching import body_llmrouter
+from tests.llm_router.support._vcr_body_matching import (
+    body_llmrouter,
+)
 
 _VCR_EXTENSIONS_REGISTERED_ATTR = "_llm_router_vcr_extensions_registered"
 

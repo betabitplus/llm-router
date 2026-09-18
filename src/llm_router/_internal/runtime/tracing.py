@@ -131,18 +131,15 @@ def append_repair_message(
     return (*messages, normalize_content(repair_prompt))
 
 
-def structured_output_error(
-    *,
-    result: ProviderResult,
-    message: str,
-) -> ProviderError:
-    """Return the public provider error for exhausted structured repair."""
-    cause = ValueError(f"Structured output validation failed: {message}")
+def structured_output_error(*, result: ProviderResult) -> ProviderError:
+    """Return a safe public provider error for exhausted structured repair."""
+    message = "Structured output validation failed."
+    cause = ValueError(message)
     return ProviderError(
         cause,
         result.provider,
         result.model,
-        message=str(cause),
+        message=message,
     )
 
 

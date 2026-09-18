@@ -61,7 +61,7 @@ class ProviderRequest:
         object.__setattr__(self, "messages", tuple(self.messages))
         object.__setattr__(self, "kwargs", MappingProxyType(dict(self.kwargs)))
 
-    # @impl Safe provider log metadata, IMPL_RUNTIME_LOG_SAFETY, [TREQ_RUNTIME_LOG_SAFETY[revision==1]]
+    # @impl Safe provider log metadata, IMPL_RUNTIME_LOG_SAFETY, [TREQ_RUNTIME_LOG_SAFETY[revision==2]]
     def log_context(self) -> dict[str, object]:
         """Return common safe fields for provider and capability logs."""
         context: dict[str, object] = {
@@ -109,6 +109,16 @@ class ProviderFailure(Exception):  # noqa: N818
     retryable: bool
     status_code: int | None = None
     retry_reason: str | None = None
+
+    # @impl Safe provider failure metadata, IMPL_RUNTIME_FAILURE_SAFETY, [TREQ_RUNTIME_LOG_SAFETY[revision==2]]
+    def __post_init__(self) -> None:
+        """Discard provider-controlled text before the failure can become observable."""
+        safe_message = (
+            f"Provider request failed with status code {self.status_code}."
+            if self.status_code is not None
+            else "Provider request failed."
+        )
+        object.__setattr__(self, "message", safe_message)
 
     def __str__(self) -> str:
         """Return the safe failure message."""

@@ -1,15 +1,6 @@
 interactions:
 - request:
-    body: '{"contents":[{"parts":[{"text":"Follow instructions exactly. Reply with
-      only what is asked."},{"text":"Describe the attached image and return JSON.\n\nReturn
-      exactly these keys:\n- primary_subject: a short phrase naming the main thing
-      shown\n- setting: a short phrase describing the setting\n- visible_objects:
-      at least 3 short object names\n- evidence: at least 2 short phrases grounding
-      the answer in the image\n\nIf the scene is a road, highway, or traffic setting,
-      mention that clearly.\nReturn ONLY valid JSON. No markdown."},{"inlineData":{"data":{"kind":"png_pixels","mode":"RGBA","sha256":"9a369e46dbe7c17e5ef3cb1c440c6adc47e1f2531a0ed82f3bfe93c09be47d3a","size":[515,333]},"mimeType":"image/png"}}],"role":"user"}],"generationConfig":{"responseMimeType":"application/json","responseSchema":{"description":"Structured
-      summary for the shared road-traffic image fixture.","properties":{"evidence":{"items":{"type":"STRING"},"min_items":2,"title":"Evidence","type":"ARRAY"},"primary_subject":{"min_length":3,"title":"Primary
-      Subject","type":"STRING"},"setting":{"min_length":3,"title":"Setting","type":"STRING"},"visible_objects":{"items":{"type":"STRING"},"min_items":3,"title":"Visible
-      Objects","type":"ARRAY"}},"property_ordering":["primary_subject","setting","visible_objects","evidence"],"required":["primary_subject","setting","visible_objects","evidence"],"title":"SceneSummary","type":"OBJECT"},"seed":42,"temperature":0.0}}'
+    body: llm-router-vcr-body-sha256:eac35f2fa481e00af29bcea311877ad1ca2a387d1064e85713fe8a192335e663
     headers:
       accept:
       - '*/*'

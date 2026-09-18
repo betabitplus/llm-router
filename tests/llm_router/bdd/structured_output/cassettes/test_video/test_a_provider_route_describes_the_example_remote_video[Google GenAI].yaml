@@ -1,21 +1,6 @@
 interactions:
 - request:
-    body: '{"contents": [{"parts": [{"text": "Follow instructions exactly. Reply with
-      only what is asked."}, {"text": "You are given a short video clip.\n\nReturn
-      JSON with exactly three keys:\n- action: the main activity as a short lowercase
-      word or phrase\n- location: a short phrase describing where it happens\n\n-
-      evidence: exactly 2 short strings describing visible motion or scene cues\n\nIf
-      the clip happens indoors in a gym, dance studio, or training room, mention that
-      in location.\nIn evidence, mention movement, posture, or indoor scene details.\n\nReturn
-      ONLY valid JSON. No markdown."}, {"fileData": {"fileUri": "https://www.youtube.com/shorts/QUxqvF0pyGw"},
-      "videoMetadata": {"fps": 1.0}}], "role": "user"}], "generationConfig": {"temperature":
-      0.0, "seed": 42, "responseMimeType": "application/json", "responseSchema": {"description":
-      "Minimal structured summary for a short video clip.", "properties": {"action":
-      {"min_length": 4, "title": "Action", "type": "STRING"}, "location": {"min_length":
-      4, "title": "Location", "type": "STRING"}, "evidence": {"items": {"type": "STRING"},
-      "min_items": 2, "title": "Evidence", "type": "ARRAY"}}, "property_ordering":
-      ["action", "location", "evidence"], "required": ["action", "location", "evidence"],
-      "title": "VideoObservation", "type": "OBJECT"}}}'
+    body: llm-router-vcr-body-sha256:15b47f2cb6ffe75d2d276d5c247f9d1a901d84c44453f16395b67e380db5da39
     headers:
       accept:
       - '*/*'
@@ -71,22 +56,7 @@ interactions:
       code: 503
       message: Service Unavailable
 - request:
-    body: '{"contents": [{"parts": [{"text": "Follow instructions exactly. Reply with
-      only what is asked."}, {"text": "You are given a short video clip.\n\nReturn
-      JSON with exactly three keys:\n- action: the main activity as a short lowercase
-      word or phrase\n- location: a short phrase describing where it happens\n\n-
-      evidence: exactly 2 short strings describing visible motion or scene cues\n\nIf
-      the clip happens indoors in a gym, dance studio, or training room, mention that
-      in location.\nIn evidence, mention movement, posture, or indoor scene details.\n\nReturn
-      ONLY valid JSON. No markdown."}, {"fileData": {"fileUri": "https://www.youtube.com/shorts/QUxqvF0pyGw"},
-      "videoMetadata": {"fps": 1.0}}], "role": "user"}], "generationConfig": {"temperature":
-      0.0, "seed": 42, "responseMimeType": "application/json", "responseSchema": {"description":
-      "Minimal structured summary for a short video clip.", "properties": {"action":
-      {"min_length": 4, "title": "Action", "type": "STRING"}, "location": {"min_length":
-      4, "title": "Location", "type": "STRING"}, "evidence": {"items": {"type": "STRING"},
-      "min_items": 2, "title": "Evidence", "type": "ARRAY"}}, "property_ordering":
-      ["action", "location", "evidence"], "required": ["action", "location", "evidence"],
-      "title": "VideoObservation", "type": "OBJECT"}}}'
+    body: llm-router-vcr-body-sha256:15b47f2cb6ffe75d2d276d5c247f9d1a901d84c44453f16395b67e380db5da39
     headers:
       accept:
       - '*/*'

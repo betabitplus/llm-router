@@ -44,6 +44,7 @@ def main() -> None:
         HTML / "contract-evidence-rate-limit-routing.html",
         HTML / "contract-evidence-provider-retry.html",
         HTML / "contract-evidence-structured-output-repair.html",
+        HTML / "contract-evidence-sensitive-data-protection.html",
         HTML / "requirement-monitor-facts.json",
         HTML / "evidence-run-provenance.json",
         HTML / "evidence-confidence-qualification.json",
@@ -75,6 +76,8 @@ def main() -> None:
         HTML / "verification-profiles/routing.html",
         ROOT / "docs/verification-profiles/resilience.md",
         HTML / "verification-profiles/resilience.html",
+        ROOT / "docs/verification-profiles/security.md",
+        HTML / "verification-profiles/security.html",
         ROOT / "test-results/evidence-run-inputs.json",
     ]
     for path in required:
@@ -107,6 +110,8 @@ def main() -> None:
     routing_profile_source = (ROOT / "docs/verification-profiles/routing.md").read_text()
     resilience_requirements_source = (ROOT / "docs/requirements/resilience.md").read_text()
     resilience_profile_source = (ROOT / "docs/verification-profiles/resilience.md").read_text()
+    security_requirements_source = (ROOT / "docs/requirements/security.md").read_text()
+    security_profile_source = (ROOT / "docs/verification-profiles/security.md").read_text()
     pyproject_source = (ROOT / "pyproject.toml").read_text()
     unit_config_source = (ROOT / "tests/llm_router/unit/test_internal_config_validation.py").read_text()
     bdd_public_contract_source = (ROOT / "tests/llm_router/bdd/responses/test_public_contract.py").read_text()
@@ -135,6 +140,8 @@ def main() -> None:
         "(test-plan-configuration-validation-model)=",
         "(test-plan-provider-retry-model)=",
         "(test-plan-structured-recovery-model)=",
+        "(test-plan-sensitive-runtime-diagnostics-model)=",
+        "(test-plan-vcr-redaction-model)=",
         "(test-plan-fault-model)=",
         "Mutation Reach floor",
         "Mutation Sensitivity floor",
@@ -233,6 +240,28 @@ def main() -> None:
         "VC_STRUCTURED_REPAIR_ATTEMPT_BOUND",
         "### Fault applicability",
     )), "Resilience Verification Profiles own independent coverage targets and explicit Fault Models")
+    check(all(token in security_requirements_source for token in (
+        ":id: GOAL_DATA_SAFETY",
+        ":id: REQ_SENSITIVE_DATA_PROTECTION",
+        ":id: TREQ_RUNTIME_LOG_SAFETY",
+        ":revision: 2",
+        ":id: TREQ_VCR_AUTH_REDACTION",
+        ":id: TREQ_VCR_REQUEST_CONTENT_REDACTION",
+    )), "Data Safety Goal keeps the complete normative diagnostic and durable-evidence contract set")
+    check(
+        "**Verification intent.**" not in security_requirements_source,
+        "Data Safety normative contracts keep HOW in Verification Profiles rather than Requirement cards",
+    )
+    check(all(token in security_profile_source for token in (
+        "## Profile · REQ_SENSITIVE_DATA_PROTECTION",
+        "VC_SECURITY_LOG_CONTEXT_FIELDS",
+        "VC_VCR_AUTH_DURABLE_REDACTION",
+        "VC_VCR_REQUEST_BODY_DURABLE_REDACTION",
+        "VC_SECURITY_PROVIDER_FAILURE_DIAGNOSTICS",
+        "VC_SECURITY_TOOL_FAILURE_DIAGNOSTICS",
+        "VC_SECURITY_SCHEMA_FAILURE_DIAGNOSTICS",
+        "### Fault applicability",
+    )), "Data Safety Verification Profile owns independent coverage targets and explicit Fault Model")
 
     check(all(token in verification_profile_source for token in (
         "## Profile · REQ_INVALID_CONFIGURATION_ERRORS",
@@ -392,14 +421,14 @@ def main() -> None:
     provenance_subjects = evidence_provenance.get("subjects") or {}
     check(
         depth_facts.get("schema_version") == 4
-        and depth_source.get("tests") == 159
-        and depth_source.get("passed") == 159
-        and depth_audit.get("contracts") == 61
-        and depth_audit.get("runtime_evidence") == 159
+        and depth_source.get("tests") == 163
+        and depth_source.get("passed") == 163
+        and depth_audit.get("contracts") == 62
+        and depth_audit.get("runtime_evidence") == 163
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
         and depth_audit.get("bdd_feature_scenario_errors") == 0,
-        "Depth facts are reproducibly regenerated from the current 159-test retained run",
+        "Depth facts are reproducibly regenerated from the current 163-test retained run",
     )
     check(
         ((depth_inputs.get("junit") or {}).get("sha256")
@@ -583,8 +612,8 @@ def main() -> None:
     check(float(campaign.get("duration_seconds") or 0) > 0, "retained pilot campaign has runtime")
 
     check(
-        summary.get("total_contracts") == 61,
-        "61 contracts are present in the verification-depth / mutation measurement universe",
+        summary.get("total_contracts") == 62,
+        "62 contracts are present in the verification-depth / mutation measurement universe",
     )
     check(
         summary.get("measured_contracts") == 2,
@@ -706,6 +735,7 @@ def main() -> None:
     rate_limit_page = (HTML / "contract-evidence-rate-limit-routing.html").read_text()
     provider_retry_page = (HTML / "contract-evidence-provider-retry.html").read_text()
     structured_repair_page = (HTML / "contract-evidence-structured-output-repair.html").read_text()
+    security_page = (HTML / "contract-evidence-sensitive-data-protection.html").read_text()
     spec_page = (HTML / "specification-health.html").read_text()
     health_page = (HTML / "verification-health-map.html").read_text()
     depth_page = (HTML / "verification-depth-map.html").read_text()
@@ -720,7 +750,7 @@ def main() -> None:
         "Current signal" in mutation_page
         and "New 0" in mutation_page
         and "Debt 29" in mutation_page
-        and "Measured 2/61" in mutation_page,
+        and "Measured 2/62" in mutation_page,
         "Mutation Analysis keeps the current measured mutation signal compact and denominator-explicit",
     )
     check("How this helps during development" not in mutation_page,
@@ -802,10 +832,11 @@ def main() -> None:
         "REQ_RATE_LIMIT_ROUTING",
         "REQ_PROVIDER_RETRY",
         "REQ_STRUCTURED_OUTPUT_REPAIR",
+        "REQ_SENSITIVE_DATA_PROTECTION",
     }
     check(
         set(monitor_facts.get("contracts") or {}) == profiled_contracts,
-        "Configuration, Tools, Routing, and Resilience slices expose exactly fourteen parent Contract Evidence profiles",
+        "Configuration, Tools, Routing, Resilience, and Data Safety slices expose exactly fifteen parent Contract Evidence profiles",
     )
     contract_pages = {
         "REQ_REQUEST_OVERRIDE_PRECEDENCE": override_page,
@@ -822,6 +853,7 @@ def main() -> None:
         "REQ_RATE_LIMIT_ROUTING": rate_limit_page,
         "REQ_PROVIDER_RETRY": provider_retry_page,
         "REQ_STRUCTURED_OUTPUT_REPAIR": structured_repair_page,
+        "REQ_SENSITIVE_DATA_PROTECTION": security_page,
     }
     for contract_id, page in contract_pages.items():
         check(
@@ -1031,6 +1063,107 @@ def main() -> None:
             and re.search(r'<strong>Fault model.*?<span class="status not-met">FAIL</span>', page, re.DOTALL),
             f"{contract_id}: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
         )
+
+    security_contract = monitor_facts["contracts"]["REQ_SENSITIVE_DATA_PROTECTION"]
+    security_expected_cells = {
+        ("component", "none"): {"VC_SECURITY_LOG_CONTEXT_FIELDS": 1},
+        ("system_integration", "substitute"): {
+            "VC_VCR_AUTH_DURABLE_REDACTION": 1,
+            "VC_VCR_REQUEST_BODY_DURABLE_REDACTION": 1,
+            "VC_SECURITY_PROVIDER_FAILURE_DIAGNOSTICS": 1,
+            "VC_SECURITY_TOOL_FAILURE_DIAGNOSTICS": 1,
+            "VC_SECURITY_SCHEMA_FAILURE_DIAGNOSTICS": 1,
+        },
+    }
+    security_target_cells = {
+        (row.get("level"), row.get("boundary")): row
+        for row in (security_contract.get("target") or {}).get("coverage") or []
+    }
+    check(
+        set(security_target_cells) == set(security_expected_cells)
+        and all(
+            security_target_cells[key].get("item_path_counts") == counts
+            for key, counts in security_expected_cells.items()
+        ),
+        "REQ_SENSITIVE_DATA_PROTECTION: Data Safety coverage target keeps the independently authored Test level/Boundary denominators",
+    )
+    security_actual = security_contract.get("coverage_actual") or {}
+    for (level, boundary), criteria in security_expected_cells.items():
+        for criterion_id, expected_paths in criteria.items():
+            rows = [
+                row
+                for row in security_actual.get(criterion_id) or []
+                if row.get("level") == level and row.get("boundary") == boundary
+            ]
+            check(
+                len(rows) == expected_paths
+                and all(
+                    row.get("result") == "passed"
+                    and row.get("provenance") == "COMPLETE"
+                    and row.get("producer_qualification") == "QUALIFIED"
+                    and row.get("freshness") == "CURRENT"
+                    for row in rows
+                ),
+                f"REQ_SENSITIVE_DATA_PROTECTION: {criterion_id} retains every declared current/qualified evidence path",
+            )
+    security_faults = (
+        (security_contract.get("fault_actual") or {}).get("retained_challenges") or {}
+    )
+    expected_security_faults = {
+        "interface.error-status": (1, 1),
+        "interface.payload-schema": (1, 1),
+    }
+    check(
+        set(security_faults) == set(expected_security_faults),
+        "REQ_SENSITIVE_DATA_PROTECTION: retained fault challenges contain only explicitly declared runtime-observed classes",
+    )
+    for fault_class, (exercised, detected) in expected_security_faults.items():
+        row = security_faults[fault_class]
+        check(
+            row.get("exercised_paths") == exercised
+            and row.get("detected_paths") == detected
+            and row.get("exercised") is True
+            and row.get("detected") is True
+            and all(
+                item.get("freshness") == "CURRENT"
+                and item.get("producer_qualification") == "QUALIFIED"
+                and item.get("observation_sha256")
+                for item in row.get("rows") or []
+            ),
+            f"REQ_SENSITIVE_DATA_PROTECTION: {fault_class} challenge is current, qualified, and detected",
+        )
+    required_security_faults = {
+        item["id"]
+        for group in (security_contract.get("target") or {}).get("fault_groups") or []
+        for item in group.get("items") or []
+        if item.get("state") == "required"
+    }
+    challenged_security_faults = {
+        class_id
+        for class_id in required_security_faults
+        if ((security_contract.get("fault_actual") or {}).get("classes") or {})
+        .get(class_id, {})
+        .get("exercised")
+    }
+    check(
+        challenged_security_faults == set(expected_security_faults)
+        and challenged_security_faults < required_security_faults,
+        "REQ_SENSITIVE_DATA_PROTECTION: partial Data Safety Fault Model remains explicit instead of becoming false-green",
+    )
+    check(
+        '<div class="overall not-met">FAIL</div>' in security_page
+        and re.search(
+            r'<strong>Verification coverage.*?<span class="status met">PASS</span>',
+            security_page,
+            re.DOTALL,
+        )
+        and re.search(
+            r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
+            security_page,
+            re.DOTALL,
+        ),
+        "REQ_SENSITIVE_DATA_PROTECTION: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
+    )
 
     check(assurance_page.count('id="tf-requirement-monitor"') == 1,
           "accepted Requirement monitor is installed exactly once")
@@ -1663,6 +1796,19 @@ def main() -> None:
         ),
         "Traceability Reader routes Resilience parent/derived contracts to the accepted parent Contract Evidence pages",
     )
+    security_trace_routes = {
+        "REQ_SENSITIVE_DATA_PROTECTION": "contract-evidence-sensitive-data-protection.html#ce-coverage-req_sensitive_data_protection",
+        "TREQ_RUNTIME_LOG_SAFETY": "contract-evidence-sensitive-data-protection.html#ce-coverage-req_sensitive_data_protection",
+        "TREQ_VCR_AUTH_REDACTION": "contract-evidence-sensitive-data-protection.html#ce-coverage-req_sensitive_data_protection",
+        "TREQ_VCR_REQUEST_CONTENT_REDACTION": "contract-evidence-sensitive-data-protection.html#ce-coverage-req_sensitive_data_protection",
+    }
+    check(
+        all(
+            f'"{contract_id}": "{href}"' in trace_reader_page
+            for contract_id, href in security_trace_routes.items()
+        ),
+        "Traceability Reader routes Data Safety parent/derived contracts to the accepted parent Contract Evidence page",
+    )
     check(
         "Assurance reading path" in verification_page
         and "Requirements and Technical requirements with an accepted Verification Profile" in verification_page
@@ -1696,16 +1842,16 @@ def main() -> None:
         check('href="mutation-analysis.html"' in text, f"{name}: portal navigation links Mutation Analysis")
 
     measurement_contract_ids = {row["contract_id"] for row in depth_facts.get("contracts") or []}
-    check(len(measurement_contract_ids) == 61,
-          "verification-depth / mutation measurement universe contains all 61 current contracts")
+    check(len(measurement_contract_ids) == 62,
+          "verification-depth / mutation measurement universe contains all 62 current contracts")
     requirements_text = "\n".join(
         path.read_text() for path in sorted((ROOT / "docs/requirements").glob("*.md"))
     )
     normative_contract_ids = set(re.findall(
         r"^:id:\s+((?:REQ|TREQ)_[A-Z0-9_]+)\s*$", requirements_text, flags=re.MULTILINE
     ))
-    check(len(normative_contract_ids) == 61,
-          "normative Sphinx-Needs graph contains 61 Requirement/TREQ contracts")
+    check(len(normative_contract_ids) == 62,
+          "normative Sphinx-Needs graph contains 62 Requirement/TREQ contracts")
     missing_contracts = sorted(
         contract_id for contract_id in normative_contract_ids if f"`{contract_id}`" not in manifest
     )
@@ -1800,7 +1946,15 @@ def main() -> None:
     setup = ROOT / "setup.cfg"
     check(not setup.exists() or "[mutmut]" not in setup.read_text(), "temporary mutmut setup config absent")
 
-    status = subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).splitlines()
+    status = [
+        record
+        for record in subprocess.check_output(
+            ["git", "status", "--porcelain", "-z"],
+            cwd=ROOT,
+            text=True,
+        ).split("\0")
+        if record
+    ]
     approved_pilot_sources = {
         ".ai-bridge/build-mutation-report-prototype.py",
         ".ai-bridge/build-requirement-monitor.py",
@@ -1816,27 +1970,38 @@ def main() -> None:
         "docs/requirements/tools.md",
         "docs/requirements/routing.md",
         "docs/requirements/resilience.md",
+        "docs/requirements/security.md",
         "docs/verification-profiles/",
         "features/tools/",
         "features/routing/",
         "features/resilience/",
+        "features/security/",
         "pyproject.toml",
         "src/llm_router/_api/router.py",
+        "src/llm_router/_api/errors.py",
         "src/llm_router/_internal/capabilities/schema.py",
         "src/llm_router/_internal/config/validation.py",
+        "src/llm_router/_internal/providers/base.py",
         "src/llm_router/_internal/providers/retry.py",
         "src/llm_router/_internal/runtime/executor.py",
         "src/llm_router/_internal/runtime/limiter.py",
         "src/llm_router/_internal/runtime/router.py",
         "src/llm_router/_internal/runtime/routes.py",
+        "src/llm_router/_internal/runtime/tracing.py",
         "tests/conftest.py",
+        "tests/llm_router/conftest.py",
         "features/responses/public_contract.feature",
         "tests/llm_router/bdd/responses/test_public_contract.py",
         "tests/llm_router/bdd/routing/",
         "tests/llm_router/bdd/tools/",
         "tests/llm_router/bdd/resilience/",
+        "tests/llm_router/bdd/security/",
+        "tests/llm_router/bdd/execution/cassettes/",
+        "tests/llm_router/bdd/structured_output/cassettes/",
         "tests/llm_router/property_based/internal/test_invariants.py",
         "tests/llm_router/support/fault_server.py",
+        "tests/llm_router/support/_vcr_body_matching.py",
+        "tests/llm_router/support/vcr_extensions.py",
         "tests/llm_router/support/workers/error_boundary.py",
         "tests/llm_router/support/workers/retry.py",
         "tests/llm_router/support/workers/retry_worker.py",
@@ -1845,8 +2010,10 @@ def main() -> None:
         "tests/llm_router/support/workers/timeout_worker.py",
         "tests/llm_router/support/workers/worker_patches.py",
         "tests/llm_router/integration/test_config_installation_runtime_effect.py",
+        "tests/llm_router/integration/test_vcr_redaction.py",
         "tests/llm_router/unit/test_internal_config_validation.py",
         "tests/llm_router/unit/test_internal_provider_retry.py",
+        "tests/llm_router/unit/test_internal_log_safety.py",
         "tests/llm_router/unit/test_internal_key_resolution.py",
         "tests/llm_router/unit/test_internal_limiter.py",
         "tests/llm_router/unit/test_internal_route_order.py",

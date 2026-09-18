@@ -1,7 +1,6 @@
 interactions:
 - request:
-    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"Reply ONLY with A."}],"model":"deepseek-ai/deepseek-v4-flash-0731"}'
+    body: llm-router-vcr-body-sha256:24644dae5238f7b4458cca4f7075729ff66eaab491f8af5e878735dad6ed2166
     headers:
       Accept:
       - application/json

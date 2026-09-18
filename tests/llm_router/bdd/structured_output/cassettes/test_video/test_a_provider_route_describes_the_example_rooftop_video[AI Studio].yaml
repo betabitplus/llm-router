@@ -1,15 +1,6 @@
 interactions:
 - request:
-    body: '{"contents":[{"parts":[{"text":"Follow instructions exactly. Reply with
-      only what is asked."},{"text":"You are given a short video clip.\n\nReturn JSON
-      with exactly three keys:\n- action: the main action as a short lowercase verb
-      or gerund\n- location: a short phrase describing where the action happens\n\n-
-      evidence: exactly 2 short strings describing visible motion or scene cues\n\nIf
-      the clip shows a person jumping or leaping, use a value containing \"jump\"
-      or \"leap\" for action.\nIf it happens on a rooftop, skyscraper, or tall building,
-      mention that in location.\nIn evidence, mention motion or jump-related details.\n\nReturn
-      ONLY valid JSON. No markdown."},{"inlineData":{"data":{"kind":"bytes_sha256","sha256":"efb472561d18a69c78cb8eda083f1211f0a38d830919762c7d12a9145d5b8425","size":1705848},"mimeType":"video/mp4"}}]}],"generationConfig":{"responseMimeType":"application/json","responseSchema":{"description":"Minimal
-      structured summary for a short video clip.","properties":{"action":{"min_length":4,"title":"Action","type":"STRING"},"evidence":{"items":{"type":"STRING"},"min_items":2,"title":"Evidence","type":"ARRAY"},"location":{"min_length":4,"title":"Location","type":"STRING"}},"property_ordering":["action","location","evidence"],"required":["action","location","evidence"],"title":"VideoObservation","type":"OBJECT"},"temperature":0.0}}'
+    body: llm-router-vcr-body-sha256:f3dccfab4a4593190bf586047814596467a6d827805ba1620c0f9d03abbd3a4c
     headers:
       accept:
       - '*/*'

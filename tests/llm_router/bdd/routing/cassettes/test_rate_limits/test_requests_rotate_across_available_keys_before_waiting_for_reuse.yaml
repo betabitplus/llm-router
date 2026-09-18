@@ -1,7 +1,6 @@
 interactions:
 - request:
-    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"Reply ONLY with A."}],"model":"deepseek-ai/deepseek-v4-flash-0731","seed":42,"temperature":0.0}'
+    body: llm-router-vcr-body-sha256:889b25441029f1055b7aa3b015fadbe6f0d8ee7672c6702f6f58507de3cc0014
     headers:
       Accept:
       - application/json
@@ -63,8 +62,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"Reply ONLY with B."}],"model":"deepseek-ai/deepseek-v4-flash-0731","seed":42,"temperature":0.0}'
+    body: llm-router-vcr-body-sha256:d0c7b581a1db47e58e528b6bb09ea509ea2fe52c3d9335aa73b00c10569a7b1b
     headers:
       Accept:
       - application/json
@@ -126,8 +124,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"Reply ONLY with C."}],"model":"deepseek-ai/deepseek-v4-flash-0731","seed":42,"temperature":0.0}'
+    body: llm-router-vcr-body-sha256:c6896568772f12e4511e10971989e20a99bedc0cd7a8d70031387bf838011b2b
     headers:
       Accept:
       - application/json

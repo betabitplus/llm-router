@@ -1,11 +1,6 @@
 interactions:
 - request:
-    body: '{"model":"gemini-3.5-flash-lite","messages":[{"role":"user","content":"Follow
-      instructions exactly. Reply with only what is asked."},{"role":"user","content":"You
-      have tools add(a, b) and multiply(a, b), each returning {result}.\nUse ONLY
-      add with a=40 and b=2, then reply with ONLY the number."}],"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":{"type":"function","function":{"name":"add"}}}'
+    body: llm-router-vcr-body-sha256:8d3131728788b0cc24470be5332d7c683185193f9cf7730ad9b094869d78bc2c
     headers:
       accept:
       - '*/*'
@@ -66,12 +61,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"gemini-3.5-flash-lite","messages":[{"role":"user","content":"Follow
-      instructions exactly. Reply with only what is asked."},{"role":"user","content":"You
-      have tools add(a, b) and multiply(a, b), each returning {result}.\nUse ONLY
-      add with a=40 and b=2, then reply with ONLY the number."},{"role":"assistant","content":"","tool_calls":[{"id":"call_1787053905597_o0y8ihhc20d","type":"function","function":{"name":"add","arguments":"{\"b\":2,\"a\":40}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_1787053905597_o0y8ihhc20d","name":"add"}],"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":"auto"}'
+    body: llm-router-vcr-body-sha256:6ab33f49512091f2c5db8bc3ee0d797b6098598bfcdf7272b340495b50f87ff8
     headers:
       accept:
       - '*/*'

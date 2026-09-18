@@ -379,7 +379,7 @@ def all_attempted_routes_fail(case: dict[str, Any]) -> None:
                 forced_base_url=f"{server.base_url}/v1",
                 disable_sdk_retries=True,
             ),
-            pytest.raises(ProviderError, match="route failed"),
+            pytest.raises(ProviderError, match="status code 400"),
         ):
             case["router"].query("hello")
         case["request_count"] = server.request_count("POST", _TIMEOUT_PATH)

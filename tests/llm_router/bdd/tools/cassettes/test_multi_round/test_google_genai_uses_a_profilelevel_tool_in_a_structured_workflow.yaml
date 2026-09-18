@@ -1,13 +1,6 @@
 interactions:
 - request:
-    body: '{"contents": [{"parts": [{"text": "You have a tool named multiply(a, b)
-      that returns {result}.\nCompute 17*19 using the tool.\nThen return JSON with:\n-
-      final_result\n- tool_calls: a list of tool call summaries with `tool_name` and
-      `result`\n\nReturn ONLY valid JSON. No markdown."}], "role": "user"}], "tools":
-      [{"functionDeclarations": [{"description": "Return a*b as JSON.", "name": "multiply",
-      "parameters": {"properties": {"a": {"type": "INTEGER"}, "b": {"type": "INTEGER"}},
-      "required": ["a", "b"], "type": "OBJECT"}}]}], "toolConfig": {"functionCallingConfig":
-      {"mode": "ANY"}}, "generationConfig": {"temperature": 0.0, "seed": 42}}'
+    body: llm-router-vcr-body-sha256:71463be18150bb17001ecff1207aa6bd826f4a5b0b798045905ad41e1de57833
     headers:
       accept:
       - '*/*'
@@ -72,18 +65,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"contents": [{"parts": [{"text": "You have a tool named multiply(a, b)
-      that returns {result}.\nCompute 17*19 using the tool.\nThen return JSON with:\n-
-      final_result\n- tool_calls: a list of tool call summaries with `tool_name` and
-      `result`\n\nReturn ONLY valid JSON. No markdown."}], "role": "user"}, {"parts":
-      [{"functionCall": {"args": {"a": 17, "b": 19}, "name": "multiply"}, "thoughtSignature":
-      "El4KXAERTTIPkDbGkYVGlvnhI5sEUOjZytPPmvTSAfp7J1q9DunTvwryHT-aTduagUtokbq3A-fWK0WjdXOt-LllFAmdzNXGwxnVbqPkI9SlbqAHiRbs5kDVbhZdt3L6"}],
-      "role": "model"}, {"parts": [{"functionResponse": {"name": "multiply", "response":
-      {"result": 323}}}], "role": "user"}], "tools": [{"functionDeclarations": [{"description":
-      "Return a*b as JSON.", "name": "multiply", "parameters": {"properties": {"a":
-      {"type": "INTEGER"}, "b": {"type": "INTEGER"}}, "required": ["a", "b"], "type":
-      "OBJECT"}}]}], "toolConfig": {"functionCallingConfig": {"mode": "AUTO"}}, "generationConfig":
-      {"temperature": 0.0, "seed": 42}}'
+    body: llm-router-vcr-body-sha256:27babf80182f3270332c05b816a3e7999dc4f47d43cb6319942f1f6f28fc66a2
     headers:
       accept:
       - '*/*'

@@ -1,13 +1,6 @@
 interactions:
 - request:
-    body: '{"model":"gemini-3.5-flash-lite","messages":[{"role":"user","content":"Follow
-      instructions exactly. Reply with only what is asked."},{"role":"user","content":"You
-      have tools add(a, b) and multiply(a, b), each returning {result}.\nStep 1: use
-      add with a=40 and b=2.\nStep 2: multiply the step-1 result by 2.\nReturn JSON
-      with:\n- steps: a list of tool call summaries with `tool_name` and `result`\n-
-      final_result\n\nReturn ONLY valid JSON. No markdown."}],"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":"required"}'
+    body: llm-router-vcr-body-sha256:629a799697215bd44c1e2082477e53313a2eec2f7300a68d56afa1672120d878
     headers:
       accept:
       - '*/*'
@@ -68,14 +61,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"gemini-3.5-flash-lite","messages":[{"role":"user","content":"Follow
-      instructions exactly. Reply with only what is asked."},{"role":"user","content":"You
-      have tools add(a, b) and multiply(a, b), each returning {result}.\nStep 1: use
-      add with a=40 and b=2.\nStep 2: multiply the step-1 result by 2.\nReturn JSON
-      with:\n- steps: a list of tool call summaries with `tool_name` and `result`\n-
-      final_result\n\nReturn ONLY valid JSON. No markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"call_1787053914396_dke37wr9cvi","type":"function","function":{"name":"add","arguments":"{\"b\":2,\"a\":40}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_1787053914396_dke37wr9cvi","name":"add"}],"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":"auto"}'
+    body: llm-router-vcr-body-sha256:cb9e56a1a69cdc41c9139e3d4895bd91f4e62913841b6b6393a32558fee309dd
     headers:
       accept:
       - '*/*'
@@ -136,14 +122,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"gemini-3.5-flash-lite","messages":[{"role":"user","content":"Follow
-      instructions exactly. Reply with only what is asked."},{"role":"user","content":"You
-      have tools add(a, b) and multiply(a, b), each returning {result}.\nStep 1: use
-      add with a=40 and b=2.\nStep 2: multiply the step-1 result by 2.\nReturn JSON
-      with:\n- steps: a list of tool call summaries with `tool_name` and `result`\n-
-      final_result\n\nReturn ONLY valid JSON. No markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"call_1787053914396_dke37wr9cvi","type":"function","function":{"name":"add","arguments":"{\"b\":2,\"a\":40}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_1787053914396_dke37wr9cvi","name":"add"},{"role":"assistant","content":"","tool_calls":[{"id":"call_1787053914891_pqslymtbwsl","type":"function","function":{"name":"multiply","arguments":"{\"b\":2,\"a\":42}"}}]},{"role":"tool","content":"{\"result\":84}","tool_call_id":"call_1787053914891_pqslymtbwsl","name":"multiply"}],"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":"auto"}'
+    body: llm-router-vcr-body-sha256:c08e8ab233e1f4679ed1d28becc431db74b2e8ac1e8c8886500f588ca0a1025c
     headers:
       accept:
       - '*/*'

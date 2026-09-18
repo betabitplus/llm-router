@@ -1,28 +1,6 @@
 interactions:
 - request:
-    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You can
-      use local tools.\n\nAvailable tools:\n- add(a, b): Return a+b as JSON.\n- multiply(a,
-      b): Return a*b as JSON.\n\nWhen a tool is needed, reply with exactly one function
-      call and nothing else.\nUse the format tool_name(arg=value) or tool_name(value1,
-      value2).\nYou MUST use only the tool `add` when a tool is used.\nDo not solve
-      tool work yourself.\nIf all required tool work is complete, return ONLY valid
-      JSON.\n\nYou are a JSON API. Output MUST be valid JSON and MUST conform to this
-      JSON Schema.\n\nReturn ONLY the JSON (no markdown, no code fences, no extra
-      text).\n\nJSON Schema:\n{\"description\": \"Structured result for the forced-tool-choice
-      scenario.\", \"properties\": {\"tool_name\": {\"title\": \"Tool Name\", \"type\":
-      \"string\"}, \"final_result\": {\"title\": \"Final Result\", \"type\": \"integer\"},
-      \"explanation\": {\"title\": \"Explanation\", \"type\": \"string\"}}, \"required\":
-      [\"tool_name\", \"final_result\", \"explanation\"], \"title\": \"ToolResult\",
-      \"type\": \"object\"}\n\nOriginal task:\nFollow instructions exactly. Reply
-      with only what is asked.\n\nYou have tools add(a, b) and multiply(a, b), each
-      returning {result}.\nUse ONLY add with a=40 and b=2, then return JSON with:\n-
-      tool_name\n- final_result\n- explanation\n\nReturn ONLY valid JSON. No markdown.\n\nFollow
-      instructions exactly. Reply with only what is asked.\n\nYou have tools add(a,
-      b) and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and
-      b=2, then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
-      ONLY valid JSON. No markdown."}],"stream":false,"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
-      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
-      a*b as JSON."}}]}'
+    body: llm-router-vcr-body-sha256:8f8ae797d0f0686e2fb2dbb1a5dc5f8af76765a36efe018e711e73407d9eeae6
     headers:
       Accept:
       - application/json
@@ -69,43 +47,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You can
-      use local tools.\n\nAvailable tools:\n- add(a, b): Return a+b as JSON.\n- multiply(a,
-      b): Return a*b as JSON.\n\nWhen a tool is needed, reply with exactly one function
-      call and nothing else.\nUse the format tool_name(arg=value) or tool_name(value1,
-      value2).\nYou MUST use only the tool `add` when a tool is used.\nDo not solve
-      tool work yourself.\nIf all required tool work is complete, return ONLY valid
-      JSON.\n\nYou are a JSON API. Output MUST be valid JSON and MUST conform to this
-      JSON Schema.\n\nReturn ONLY the JSON (no markdown, no code fences, no extra
-      text).\n\nJSON Schema:\n{\"description\": \"Structured result for the forced-tool-choice
-      scenario.\", \"properties\": {\"tool_name\": {\"title\": \"Tool Name\", \"type\":
-      \"string\"}, \"final_result\": {\"title\": \"Final Result\", \"type\": \"integer\"},
-      \"explanation\": {\"title\": \"Explanation\", \"type\": \"string\"}}, \"required\":
-      [\"tool_name\", \"final_result\", \"explanation\"], \"title\": \"ToolResult\",
-      \"type\": \"object\"}\n\nOriginal task:\nFollow instructions exactly. Reply
-      with only what is asked.\n\nYou have tools add(a, b) and multiply(a, b), each
-      returning {result}.\nUse ONLY add with a=40 and b=2, then return JSON with:\n-
-      tool_name\n- final_result\n- explanation\n\nReturn ONLY valid JSON. No markdown.\n\nFollow
-      instructions exactly. Reply with only what is asked.\n\nYou have tools add(a,
-      b) and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and
-      b=2, then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
-      ONLY valid JSON. No markdown."},{"role":"assistant","content":"add(a=40, b=2)"},{"role":"user","content":"Original
-      task:\nFollow instructions exactly. Reply with only what is asked.\n\nYou have
-      tools add(a, b) and multiply(a, b), each returning {result}.\nUse ONLY add with
-      a=40 and b=2, then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
-      ONLY valid JSON. No markdown.\n\nCompleted tool steps so far:\n[{\"args\":{\"a\":40,\"b\":2},\"call_id\":null,\"result\":{\"result\":42},\"tool_name\":\"add\"}]\n\nTool
-      add returned {\"result\":42}.\nIf another tool is needed, reply with exactly
-      one function call and nothing else.\nIf all required tool work is complete,
-      return ONLY valid JSON.\n\nYou are a JSON API. Output MUST be valid JSON and
-      MUST conform to this JSON Schema.\n\nReturn ONLY the JSON (no markdown, no code
-      fences, no extra text).\n\nJSON Schema:\n{\"description\": \"Structured result
-      for the forced-tool-choice scenario.\", \"properties\": {\"tool_name\": {\"title\":
-      \"Tool Name\", \"type\": \"string\"}, \"final_result\": {\"title\": \"Final
-      Result\", \"type\": \"integer\"}, \"explanation\": {\"title\": \"Explanation\",
-      \"type\": \"string\"}}, \"required\": [\"tool_name\", \"final_result\", \"explanation\"],
-      \"title\": \"ToolResult\", \"type\": \"object\"}"}],"stream":false,"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
-      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
-      a*b as JSON."}}]}'
+    body: llm-router-vcr-body-sha256:8f9ab63b0fb84f4cf30480dd2239fbe4d6c0b8cf1cb1fc43f6388d6d0590c9c2
     headers:
       Accept:
       - application/json
@@ -152,20 +94,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You are
-      a JSON API. Output MUST be valid JSON and MUST conform to this JSON Schema.\n\nReturn
-      ONLY the JSON (no markdown, no code fences, no extra text).\n\nJSON Schema:\n{\"description\":
-      \"Structured result for the forced-tool-choice scenario.\", \"properties\":
-      {\"tool_name\": {\"title\": \"Tool Name\", \"type\": \"string\"}, \"final_result\":
-      {\"title\": \"Final Result\", \"type\": \"integer\"}, \"explanation\": {\"title\":
-      \"Explanation\", \"type\": \"string\"}}, \"required\": [\"tool_name\", \"final_result\",
-      \"explanation\"], \"title\": \"ToolResult\", \"type\": \"object\"}\n\nFollow
-      instructions exactly. Reply with only what is asked.\n\nYou have tools add(a,
-      b) and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and
-      b=2, then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
-      ONLY valid JSON. No markdown."}],"stream":false,"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":{"type":"function","function":{"name":"add"}}}'
+    body: llm-router-vcr-body-sha256:16c9c1f7434ebb6aada543c35e83bfa609b4908def1c43bf11c406c6eea41f65
     headers:
       accept:
       - application/json
@@ -211,20 +140,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You are
-      a JSON API. Output MUST be valid JSON and MUST conform to this JSON Schema.\n\nReturn
-      ONLY the JSON (no markdown, no code fences, no extra text).\n\nJSON Schema:\n{\"description\":
-      \"Structured result for the forced-tool-choice scenario.\", \"properties\":
-      {\"tool_name\": {\"title\": \"Tool Name\", \"type\": \"string\"}, \"final_result\":
-      {\"title\": \"Final Result\", \"type\": \"integer\"}, \"explanation\": {\"title\":
-      \"Explanation\", \"type\": \"string\"}}, \"required\": [\"tool_name\", \"final_result\",
-      \"explanation\"], \"title\": \"ToolResult\", \"type\": \"object\"}\n\nFollow
-      instructions exactly. Reply with only what is asked.\n\nYou have tools add(a,
-      b) and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and
-      b=2, then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
-      ONLY valid JSON. No markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"call_0b876a4492ee4ec5896321d6","type":"function","function":{"name":"add","arguments":"{\"a\":40,\"b\":2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_0b876a4492ee4ec5896321d6"}],"stream":false,"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":"auto"}'
+    body: llm-router-vcr-body-sha256:b4f87858a3d7dd7c258dbf92330f0c9bb46c57d45f66e2a6ef7705bc64fc1b10
     headers:
       accept:
       - application/json

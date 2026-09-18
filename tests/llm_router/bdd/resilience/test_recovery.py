@@ -209,7 +209,8 @@ def permanent_failure_is_not_retried(case: dict[str, Any]) -> None:
     result = case["result"]
     assert result.ok is False
     assert result.error_type == "ProviderError"
-    assert _BAD_REQUEST in (result.error_message or "")
+    assert "status code 400" in (result.error_message or "")
+    assert _BAD_REQUEST not in (result.error_message or "")
     assert case["request_count"] == 1
 
 

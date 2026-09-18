@@ -6465,6 +6465,13 @@ def refresh_freshness(campaign):
       "allure_run_fingerprint":relevant_allure_run_fingerprint(),
       "fresh":all(bool(campaign["contracts"][cid].get("fresh")) for cid in selected_ids),
     }
+    depth_payload=refresh_verification_depth_facts()
+    print(
+      f"[P34] depth facts: {len(depth_payload.get('tests') or [])} tests · "
+      f"{len(depth_payload.get('contracts') or [])} contracts · "
+      f"{(depth_payload.get('audit') or {}).get('nodeid_mismatches',0)} nodeid mismatches",
+      flush=True,
+    )
     summary=build_summary(campaign)
     feedback=build_operator_feedback(campaign)
     summary["operator_feedback"]={
@@ -6513,13 +6520,6 @@ def refresh_freshness(campaign):
       "mutation_semantics_version":MUTATION_SEMANTICS_VERSION,
     }
     CAMPAIGN_PATH.write_text(json.dumps(campaign,indent=2))
-    depth_payload=refresh_verification_depth_facts()
-    print(
-      f"[P34] depth facts: {len(depth_payload.get('tests') or [])} tests · "
-      f"{len(depth_payload.get('contracts') or [])} contracts · "
-      f"{(depth_payload.get('audit') or {}).get('nodeid_mismatches',0)} nodeid mismatches",
-      flush=True,
-    )
     patch_depth_page()
     integrate_mutation_portal(summary,feedback)
     return summary

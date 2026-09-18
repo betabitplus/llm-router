@@ -1,33 +1,6 @@
 interactions:
 - request:
-    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You can
-      use local tools.\n\nAvailable tools:\n- add(a, b): Return a+b as JSON.\n- multiply(a,
-      b): Return a*b as JSON.\n\nWhen a tool is needed, reply with exactly one function
-      call and nothing else.\nUse the format tool_name(arg=value) or tool_name(value1,
-      value2).\nYou MUST use tools before giving the final answer.\nDo not solve tool
-      work yourself.\nIf all required tool work is complete, return ONLY valid JSON.\n\nYou
-      are a JSON API. Output MUST be valid JSON and MUST conform to this JSON Schema.\n\nReturn
-      ONLY the JSON (no markdown, no code fences, no extra text).\n\nJSON Schema:\n{\"$defs\":
-      {\"CalculationStep\": {\"description\": \"Structured tool-step summary.\", \"properties\":
-      {\"tool_name\": {\"title\": \"Tool Name\", \"type\": \"string\"}, \"result\":
-      {\"title\": \"Result\", \"type\": \"integer\"}}, \"required\": [\"tool_name\",
-      \"result\"], \"title\": \"CalculationStep\", \"type\": \"object\"}}, \"description\":
-      \"Structured result for the QwenChat tools scenario.\", \"properties\": {\"steps\":
-      {\"items\": {\"$ref\": \"#/$defs/CalculationStep\"}, \"minItems\": 2, \"title\":
-      \"Steps\", \"type\": \"array\"}, \"final_result\": {\"title\": \"Final Result\",
-      \"type\": \"integer\"}}, \"required\": [\"steps\", \"final_result\"], \"title\":
-      \"CalculationAudit\", \"type\": \"object\"}\n\nOriginal task:\nFollow instructions
-      exactly. Reply with only what is asked.\n\nYou have tools add(a, b) and multiply(a,
-      b), each returning {result}.\nStep 1: use add with a=40 and b=2.\nStep 2: multiply
-      the step-1 result by 2.\nReturn JSON with:\n- steps: a list of tool call summaries
-      with `tool_name` and `result`\n- final_result\n\nReturn ONLY valid JSON. No
-      markdown.\n\nFollow instructions exactly. Reply with only what is asked.\n\nYou
-      have tools add(a, b) and multiply(a, b), each returning {result}.\nStep 1: use
-      add with a=40 and b=2.\nStep 2: multiply the step-1 result by 2.\nReturn JSON
-      with:\n- steps: a list of tool call summaries with `tool_name` and `result`\n-
-      final_result\n\nReturn ONLY valid JSON. No markdown."}],"stream":false,"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
-      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
-      a*b as JSON."}}]}'
+    body: llm-router-vcr-body-sha256:4958d1179564832ea9033b7e92c39f021c8b74dbaf01f073631870071f49f4cf
     headers:
       Accept:
       - application/json
@@ -74,53 +47,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You can
-      use local tools.\n\nAvailable tools:\n- add(a, b): Return a+b as JSON.\n- multiply(a,
-      b): Return a*b as JSON.\n\nWhen a tool is needed, reply with exactly one function
-      call and nothing else.\nUse the format tool_name(arg=value) or tool_name(value1,
-      value2).\nYou MUST use tools before giving the final answer.\nDo not solve tool
-      work yourself.\nIf all required tool work is complete, return ONLY valid JSON.\n\nYou
-      are a JSON API. Output MUST be valid JSON and MUST conform to this JSON Schema.\n\nReturn
-      ONLY the JSON (no markdown, no code fences, no extra text).\n\nJSON Schema:\n{\"$defs\":
-      {\"CalculationStep\": {\"description\": \"Structured tool-step summary.\", \"properties\":
-      {\"tool_name\": {\"title\": \"Tool Name\", \"type\": \"string\"}, \"result\":
-      {\"title\": \"Result\", \"type\": \"integer\"}}, \"required\": [\"tool_name\",
-      \"result\"], \"title\": \"CalculationStep\", \"type\": \"object\"}}, \"description\":
-      \"Structured result for the QwenChat tools scenario.\", \"properties\": {\"steps\":
-      {\"items\": {\"$ref\": \"#/$defs/CalculationStep\"}, \"minItems\": 2, \"title\":
-      \"Steps\", \"type\": \"array\"}, \"final_result\": {\"title\": \"Final Result\",
-      \"type\": \"integer\"}}, \"required\": [\"steps\", \"final_result\"], \"title\":
-      \"CalculationAudit\", \"type\": \"object\"}\n\nOriginal task:\nFollow instructions
-      exactly. Reply with only what is asked.\n\nYou have tools add(a, b) and multiply(a,
-      b), each returning {result}.\nStep 1: use add with a=40 and b=2.\nStep 2: multiply
-      the step-1 result by 2.\nReturn JSON with:\n- steps: a list of tool call summaries
-      with `tool_name` and `result`\n- final_result\n\nReturn ONLY valid JSON. No
-      markdown.\n\nFollow instructions exactly. Reply with only what is asked.\n\nYou
-      have tools add(a, b) and multiply(a, b), each returning {result}.\nStep 1: use
-      add with a=40 and b=2.\nStep 2: multiply the step-1 result by 2.\nReturn JSON
-      with:\n- steps: a list of tool call summaries with `tool_name` and `result`\n-
-      final_result\n\nReturn ONLY valid JSON. No markdown."},{"role":"assistant","content":"add(a=40,
-      b=2)"},{"role":"user","content":"Original task:\nFollow instructions exactly.
-      Reply with only what is asked.\n\nYou have tools add(a, b) and multiply(a, b),
-      each returning {result}.\nStep 1: use add with a=40 and b=2.\nStep 2: multiply
-      the step-1 result by 2.\nReturn JSON with:\n- steps: a list of tool call summaries
-      with `tool_name` and `result`\n- final_result\n\nReturn ONLY valid JSON. No
-      markdown.\n\nCompleted tool steps so far:\n[{\"args\":{\"a\":40,\"b\":2},\"call_id\":null,\"result\":{\"result\":42},\"tool_name\":\"add\"}]\n\nTool
-      add returned {\"result\":42}.\nIf another tool is needed, reply with exactly
-      one function call and nothing else.\nIf all required tool work is complete,
-      return ONLY valid JSON.\n\nYou are a JSON API. Output MUST be valid JSON and
-      MUST conform to this JSON Schema.\n\nReturn ONLY the JSON (no markdown, no code
-      fences, no extra text).\n\nJSON Schema:\n{\"$defs\": {\"CalculationStep\": {\"description\":
-      \"Structured tool-step summary.\", \"properties\": {\"tool_name\": {\"title\":
-      \"Tool Name\", \"type\": \"string\"}, \"result\": {\"title\": \"Result\", \"type\":
-      \"integer\"}}, \"required\": [\"tool_name\", \"result\"], \"title\": \"CalculationStep\",
-      \"type\": \"object\"}}, \"description\": \"Structured result for the QwenChat
-      tools scenario.\", \"properties\": {\"steps\": {\"items\": {\"$ref\": \"#/$defs/CalculationStep\"},
-      \"minItems\": 2, \"title\": \"Steps\", \"type\": \"array\"}, \"final_result\":
-      {\"title\": \"Final Result\", \"type\": \"integer\"}}, \"required\": [\"steps\",
-      \"final_result\"], \"title\": \"CalculationAudit\", \"type\": \"object\"}"}],"stream":false,"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
-      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
-      a*b as JSON."}}]}'
+    body: llm-router-vcr-body-sha256:dadde6f0a8ea88a3788a75da50ed3c781e70903aef94ef358465bf5a2b4b5b9b
     headers:
       Accept:
       - application/json
@@ -168,25 +95,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You are
-      a JSON API. Output MUST be valid JSON and MUST conform to this JSON Schema.\n\nReturn
-      ONLY the JSON (no markdown, no code fences, no extra text).\n\nJSON Schema:\n{\"$defs\":
-      {\"CalculationStep\": {\"description\": \"Structured tool-step summary.\", \"properties\":
-      {\"tool_name\": {\"title\": \"Tool Name\", \"type\": \"string\"}, \"result\":
-      {\"title\": \"Result\", \"type\": \"integer\"}}, \"required\": [\"tool_name\",
-      \"result\"], \"title\": \"CalculationStep\", \"type\": \"object\"}}, \"description\":
-      \"Structured result for the QwenChat tools scenario.\", \"properties\": {\"steps\":
-      {\"items\": {\"$ref\": \"#/$defs/CalculationStep\"}, \"minItems\": 2, \"title\":
-      \"Steps\", \"type\": \"array\"}, \"final_result\": {\"title\": \"Final Result\",
-      \"type\": \"integer\"}}, \"required\": [\"steps\", \"final_result\"], \"title\":
-      \"CalculationAudit\", \"type\": \"object\"}\n\nFollow instructions exactly.
-      Reply with only what is asked.\n\nYou have tools add(a, b) and multiply(a, b),
-      each returning {result}.\nStep 1: use add with a=40 and b=2.\nStep 2: multiply
-      the step-1 result by 2.\nReturn JSON with:\n- steps: a list of tool call summaries
-      with `tool_name` and `result`\n- final_result\n\nReturn ONLY valid JSON. No
-      markdown."}],"stream":false,"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":"required"}'
+    body: llm-router-vcr-body-sha256:9071fc5ccdb8199eac48caad3e7a15d88b640b5a69af570918b2d78e02f339b0
     headers:
       accept:
       - application/json
@@ -232,25 +141,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You are
-      a JSON API. Output MUST be valid JSON and MUST conform to this JSON Schema.\n\nReturn
-      ONLY the JSON (no markdown, no code fences, no extra text).\n\nJSON Schema:\n{\"$defs\":
-      {\"CalculationStep\": {\"description\": \"Structured tool-step summary.\", \"properties\":
-      {\"tool_name\": {\"title\": \"Tool Name\", \"type\": \"string\"}, \"result\":
-      {\"title\": \"Result\", \"type\": \"integer\"}}, \"required\": [\"tool_name\",
-      \"result\"], \"title\": \"CalculationStep\", \"type\": \"object\"}}, \"description\":
-      \"Structured result for the QwenChat tools scenario.\", \"properties\": {\"steps\":
-      {\"items\": {\"$ref\": \"#/$defs/CalculationStep\"}, \"minItems\": 2, \"title\":
-      \"Steps\", \"type\": \"array\"}, \"final_result\": {\"title\": \"Final Result\",
-      \"type\": \"integer\"}}, \"required\": [\"steps\", \"final_result\"], \"title\":
-      \"CalculationAudit\", \"type\": \"object\"}\n\nFollow instructions exactly.
-      Reply with only what is asked.\n\nYou have tools add(a, b) and multiply(a, b),
-      each returning {result}.\nStep 1: use add with a=40 and b=2.\nStep 2: multiply
-      the step-1 result by 2.\nReturn JSON with:\n- steps: a list of tool call summaries
-      with `tool_name` and `result`\n- final_result\n\nReturn ONLY valid JSON. No
-      markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"call_982132fe7de94ff18037b345","type":"function","function":{"name":"add","arguments":"{\"a\":40,\"b\":2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_982132fe7de94ff18037b345"}],"stream":false,"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":"auto"}'
+    body: llm-router-vcr-body-sha256:4221b6eede5a3c1f1d7962f2f47fc87337325fecc1fcbe72d1c2bafdb55e7871
     headers:
       accept:
       - application/json
@@ -296,25 +187,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"qwen-max-latest","messages":[{"role":"user","content":"You are
-      a JSON API. Output MUST be valid JSON and MUST conform to this JSON Schema.\n\nReturn
-      ONLY the JSON (no markdown, no code fences, no extra text).\n\nJSON Schema:\n{\"$defs\":
-      {\"CalculationStep\": {\"description\": \"Structured tool-step summary.\", \"properties\":
-      {\"tool_name\": {\"title\": \"Tool Name\", \"type\": \"string\"}, \"result\":
-      {\"title\": \"Result\", \"type\": \"integer\"}}, \"required\": [\"tool_name\",
-      \"result\"], \"title\": \"CalculationStep\", \"type\": \"object\"}}, \"description\":
-      \"Structured result for the QwenChat tools scenario.\", \"properties\": {\"steps\":
-      {\"items\": {\"$ref\": \"#/$defs/CalculationStep\"}, \"minItems\": 2, \"title\":
-      \"Steps\", \"type\": \"array\"}, \"final_result\": {\"title\": \"Final Result\",
-      \"type\": \"integer\"}}, \"required\": [\"steps\", \"final_result\"], \"title\":
-      \"CalculationAudit\", \"type\": \"object\"}\n\nFollow instructions exactly.
-      Reply with only what is asked.\n\nYou have tools add(a, b) and multiply(a, b),
-      each returning {result}.\nStep 1: use add with a=40 and b=2.\nStep 2: multiply
-      the step-1 result by 2.\nReturn JSON with:\n- steps: a list of tool call summaries
-      with `tool_name` and `result`\n- final_result\n\nReturn ONLY valid JSON. No
-      markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"call_982132fe7de94ff18037b345","type":"function","function":{"name":"add","arguments":"{\"a\":40,\"b\":2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call_982132fe7de94ff18037b345"},{"role":"assistant","content":"","tool_calls":[{"id":"call_47392c50b2ef4a3486b6b58f","type":"function","function":{"name":"multiply","arguments":"{\"a\":42,\"b\":2}"}}]},{"role":"tool","content":"{\"result\":84}","tool_call_id":"call_47392c50b2ef4a3486b6b58f"}],"stream":false,"temperature":0.0,"seed":42,"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":"auto"}'
+    body: llm-router-vcr-body-sha256:557f5bdaa7c69e47411f39c0580a08efc5d8dcccc6d9da51fc976d212b9ea4ab
     headers:
       accept:
       - application/json

@@ -1,14 +1,6 @@
 interactions:
 - request:
-    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
-      and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and b=2,
-      then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
-      ONLY valid JSON. No markdown."}],"model":"deepseek-ai/deepseek-v4-flash","response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
-      result for the forced-tool-choice scenario.","properties":{"tool_name":{"title":"Tool
-      Name","type":"string"},"final_result":{"title":"Final Result","type":"integer"},"explanation":{"title":"Explanation","type":"string"}},"required":["tool_name","final_result","explanation"],"title":"ToolResult","type":"object"},"strict":true}},"seed":42,"temperature":0.0,"tool_choice":{"type":"function","function":{"name":"add"}},"tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
-      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
-      a*b as JSON."}}]}'
+    body: llm-router-vcr-body-sha256:6ee6e65402393023dd5c8420579aef3af274c1f307948bb65b0f037c4e05349d
     headers:
       Accept:
       - application/json
@@ -71,16 +63,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"messages":[{"role":"user","content":"Follow instructions exactly. Reply
-      with only what is asked."},{"role":"user","content":"You have tools add(a, b)
-      and multiply(a, b), each returning {result}.\nUse ONLY add with a=40 and b=2,
-      then return JSON with:\n- tool_name\n- final_result\n- explanation\n\nReturn
-      ONLY valid JSON. No markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"chatcmpl-tool-89cb57fe281506f2","type":"function","function":{"name":"add","arguments":"{\"a\":
-      40, \"b\": 2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"chatcmpl-tool-89cb57fe281506f2"}],"model":"deepseek-ai/deepseek-v4-flash","response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
-      result for the forced-tool-choice scenario.","properties":{"tool_name":{"title":"Tool
-      Name","type":"string"},"final_result":{"title":"Final Result","type":"integer"},"explanation":{"title":"Explanation","type":"string"}},"required":["tool_name","final_result","explanation"],"title":"ToolResult","type":"object"},"strict":true}},"seed":42,"temperature":0.0,"tool_choice":"auto","tools":[{"type":"function","function":{"name":"add","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"addArgs","type":"object"},"description":"Return
-      a+b as JSON."}},{"type":"function","function":{"name":"multiply","parameters":{"properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"],"title":"multiplyArgs","type":"object"},"description":"Return
-      a*b as JSON."}}]}'
+    body: llm-router-vcr-body-sha256:7e57cb1fb034daf493d10b5434d0ce2686ad0c838a0dd00866d89fc34f511b41
     headers:
       Accept:
       - application/json
@@ -144,15 +127,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"meta/llama-3.1-8b-instruct","messages":[{"role":"user","content":"Follow
-      instructions exactly. Reply with only what is asked."},{"role":"user","content":"You
-      have tools add(a, b) and multiply(a, b), each returning {result}.\nUse ONLY
-      add with a=40 and b=2, then return JSON with:\n- tool_name\n- final_result\n-
-      explanation\n\nReturn ONLY valid JSON. No markdown."}],"temperature":0.0,"seed":42,"response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
-      result for the forced-tool-choice scenario.","properties":{"tool_name":{"title":"Tool
-      Name","type":"string"},"final_result":{"title":"Final Result","type":"integer"},"explanation":{"title":"Explanation","type":"string"}},"required":["tool_name","final_result","explanation"],"title":"ToolResult","type":"object"},"strict":true}},"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":{"type":"function","function":{"name":"add"}}}'
+    body: llm-router-vcr-body-sha256:531e47d9fa6159162a862d79de24e11bff2bcb92bf93e2b25164cd5dbf914879
     headers:
       Accept:
       - '*/*'
@@ -195,16 +170,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"model":"meta/llama-3.1-8b-instruct","messages":[{"role":"user","content":"Follow
-      instructions exactly. Reply with only what is asked."},{"role":"user","content":"You
-      have tools add(a, b) and multiply(a, b), each returning {result}.\nUse ONLY
-      add with a=40 and b=2, then return JSON with:\n- tool_name\n- final_result\n-
-      explanation\n\nReturn ONLY valid JSON. No markdown."},{"role":"assistant","content":"","tool_calls":[{"id":"call-08e71b60-38e3-4552-a769-62e8925400de","type":"function","function":{"name":"add","arguments":"{\"a\":
-      40, \"b\": 2}"}}]},{"role":"tool","content":"{\"result\":42}","tool_call_id":"call-08e71b60-38e3-4552-a769-62e8925400de"}],"temperature":0.0,"seed":42,"response_format":{"type":"json_schema","json_schema":{"name":"ToolResult","schema":{"description":"Structured
-      result for the forced-tool-choice scenario.","properties":{"tool_name":{"title":"Tool
-      Name","type":"string"},"final_result":{"title":"Final Result","type":"integer"},"explanation":{"title":"Explanation","type":"string"}},"required":["tool_name","final_result","explanation"],"title":"ToolResult","type":"object"},"strict":true}},"tools":[{"type":"function","function":{"name":"add","description":"Return
-      a+b as JSON.","parameters":{"type":"object","title":"addArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}},{"type":"function","function":{"name":"multiply","description":"Return
-      a*b as JSON.","parameters":{"type":"object","title":"multiplyArgs","properties":{"a":{"title":"A","type":"integer"},"b":{"title":"B","type":"integer"}},"required":["a","b"]}}}],"tool_choice":"auto"}'
+    body: llm-router-vcr-body-sha256:1846ef3cea5385bd4e948e7f3dfc5f477fd59cdf8306c2cf0dddbd390ef5a109
     headers:
       Accept:
       - '*/*'

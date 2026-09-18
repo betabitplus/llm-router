@@ -81,11 +81,11 @@ Contracts in this capability:
 **Statement.** Runtime diagnostics and recorded provider traffic shall not persist provider credentials, sensitive request content, or sensitive tool arguments.
 
 **Rationale.** Logs, errors, and replay artifacts are routinely retained and shared during debugging, so sensitive values must not become durable merely because a request was observed or recorded.
-
-**Verification intent.** Exercise public requests containing representative credentials and sensitive tool/request values, then inspect the resulting diagnostics and recorded evidence for both expected safe metadata and absence of the protected values.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-sensitive-data-protection>`
 
 ```{needlist}
 :filter: "'REQ_SENSITIVE_DATA_PROTECTION' in derives or 'REQ_SENSITIVE_DATA_PROTECTION' in implements or 'REQ_SENSITIVE_DATA_PROTECTION' in verifies"
@@ -97,18 +97,18 @@ Contracts in this capability:
 :id: TREQ_RUNTIME_LOG_SAFETY
 :collapse: true
 :status: accepted
-:revision: 1
+:revision: 2
 :required_evidence: impl;bdd
 :derives: REQ_SENSITIVE_DATA_PROTECTION
 
-**Statement.** Runtime logging and public tool failures shall use bounded safe metadata rather than credential values, request contents, or tool arguments.
+**Statement.** Runtime logging and public execution failures shall expose only bounded safe metadata. Provider-supplied error text, credential values, request contents, tool arguments/results, caller schema identifiers, and schema-invalid values shall not be copied into diagnostic artifacts or public failure messages.
 
-**Rationale.** Runtime diagnostics must remain useful for failure analysis without converting exceptions or log records into a secondary channel for sensitive input.
-
-**Verification intent.** Trigger representative runtime and tool failures through public behavior and verify that observable diagnostics contain the intended safe metadata while excluding protected values.
+**Rationale.** Runtime diagnostics must remain useful for failure analysis without converting exceptions, provider error bodies, validation detail, or log records into a secondary channel for sensitive input.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Parent verification profile → <verification-profile-req-sensitive-data-protection>`
 
 ```{needlist}
 :filter: "'TREQ_RUNTIME_LOG_SAFETY' in derives or 'TREQ_RUNTIME_LOG_SAFETY' in implements or 'TREQ_RUNTIME_LOG_SAFETY' in verifies"
@@ -121,20 +121,43 @@ Contracts in this capability:
 :collapse: true
 :status: accepted
 :revision: 1
-:required_evidence: bdd
+:required_evidence: integration
 :derives: REQ_SENSITIVE_DATA_PROTECTION
 
 **Statement.** Recorded provider interactions shall remove authentication headers and equivalent credential material before the cassette becomes durable evidence.
 
 **Rationale.** Replay cassettes are source-controlled test evidence and therefore must be safe to retain independently of the credentials used during a live recording.
-
-**Verification intent.** Record or synthesize provider interactions containing representative authentication material and verify the durable cassette preserves replay-relevant behavior without those protected values.
 ```
 
 ::::{dropdown} Follow this contract to proof
 
+{ref}`Parent verification profile → <verification-profile-req-sensitive-data-protection>`
+
 ```{needlist}
 :filter: "'TREQ_VCR_AUTH_REDACTION' in derives or 'TREQ_VCR_AUTH_REDACTION' in implements or 'TREQ_VCR_AUTH_REDACTION' in verifies"
+```
+
+::::
+
+```{treq} VCR request records persist fingerprints instead of caller payloads
+:id: TREQ_VCR_REQUEST_CONTENT_REDACTION
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: integration
+:derives: REQ_SENSITIVE_DATA_PROTECTION
+
+**Statement.** Durable VCR request records shall replace raw caller-provided prompt text, tool arguments/results, and other request-body content with a deterministic non-reversible replay-matching fingerprint before cassette serialization.
+
+**Rationale.** VCR needs request identity to select the correct retained response, but source-controlled evidence does not need the original caller payload. A deterministic fingerprint preserves replay discrimination without retaining raw request contents.
+```
+
+::::{dropdown} Follow this contract to proof
+
+{ref}`Parent verification profile → <verification-profile-req-sensitive-data-protection>`
+
+```{needlist}
+:filter: "'TREQ_VCR_REQUEST_CONTENT_REDACTION' in derives or 'TREQ_VCR_REQUEST_CONTENT_REDACTION' in implements or 'TREQ_VCR_REQUEST_CONTENT_REDACTION' in verifies"
 ```
 
 ::::

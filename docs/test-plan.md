@@ -145,6 +145,31 @@
 
 **Completion:** required criteria = **100%** · declared retained paths = **100%**
 
+(test-plan-sensitive-runtime-diagnostics-model)=
+
+### Sensitive runtime diagnostics
+
+| Layer              | Required denominator                                                                                              |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| Component          | centralized safe log-context field selection                                                                      |
+| System integration | provider-error, local-tool-failure, and schema-validation failure partitions selected by the verification profile |
+
+**Design:** negative information-flow assertions · hostile provider error payload · secret-bearing tool cause/arguments · secret-bearing schema-invalid value · full structured-log-record inspection
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-vcr-redaction-model)=
+
+### Durable VCR redaction
+
+| Layer              | Required denominator                                                                                                                                                                |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| System integration | authentication/account-data redaction plus raw caller request/tool payload redaction from real router/provider traffic through the actual VCR pre-serialization and replay pipeline |
+
+**Design:** temp-cassette physical serialization · post-write secret scan · deterministic request-body fingerprint · offline replay after the live server is gone
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
 (test-plan-fault-model)=
 
 ### Fault-based testing

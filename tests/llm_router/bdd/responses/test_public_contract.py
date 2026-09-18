@@ -231,12 +231,16 @@ def execute_public_error_case(case: dict[str, Any]) -> None:
         case["provider_requests"] = server.request_count("POST", _OPENAI_PATH)
 
 
-def _assert_error(case: dict[str, Any], expected_type: str) -> None:
+def _assert_error_type(case: dict[str, Any], expected_type: str) -> None:
     result = case["result"]
     assert result.returncode == 0
     assert result.ok is False
     assert result.error_type == expected_type
-    assert case["message"] in (result.error_message or "")
+
+
+def _assert_error(case: dict[str, Any], expected_type: str) -> None:
+    _assert_error_type(case, expected_type)
+    assert case["message"] in (case["result"].error_message or "")
 
 
 @then("it fails with a missing-key error")
@@ -256,5 +260,7 @@ def invalid_configuration_stops_before_provider(case: dict[str, Any]) -> None:
 
 @then("it fails with a provider error")
 def provider_error_is_public(case: dict[str, Any]) -> None:
-    _assert_error(case, ProviderError.__name__)
+    _assert_error_type(case, ProviderError.__name__)
+    assert "status code 400" in (case["result"].error_message or "")
+    assert case["message"] not in (case["result"].error_message or "")
     assert case["provider_requests"] == 1

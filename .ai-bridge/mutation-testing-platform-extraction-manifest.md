@@ -137,7 +137,7 @@ These mappings are llm-router-specific inputs/evidence. The **mechanism** for de
 | `REQ_ROUTE_ATTEMPT_LIMIT`           | `src/llm_router/_internal/runtime/routes.py` · `ordered_routes` · 85.7% diagnostic                 | Shared @impl scope with TREQ_ROUTE_ORDER; diagnostic result is not attributed to either contract.                                                             | llm-router-specific evidence; generic ownership rule → `py-policy`/DocOps. |
 | `TREQ_RATE_LIMIT_STATE`             | `src/llm_router/_internal/runtime/limiter.py` · `class LimiterState` · historical 51.0% diagnostic | The class now implements sibling rate-limit contracts as well; the historical class-wide result is not uniquely attributable and is not a current TREQ score. | llm-router-specific evidence; generic ownership rule → `py-policy`/DocOps. |
 
-## Complete 61-contract migration classification
+## Complete 62-contract migration classification
 
 Every Requirement/TREQ below is **llm-router-specific domain data**. None becomes a platform default contract. Platform owners receive only the generic machinery that measures and renders these contracts.
 
@@ -204,6 +204,7 @@ Every Requirement/TREQ below is **llm-router-specific domain data**. None become
 | `TREQ_TOOL_REGISTRY`                       | Measured / attributable       | 90.3% · 28 killed / 3 survived · `class ToolRegistry`                                                                                                                                                 | llm-router-specific contract; stays in consumer Sphinx-Needs graph. |
 | `TREQ_USAGE_NORMALIZATION`                 | N/A · unmeasured in pilot     | No uniquely attributable retained mutation campaign; do not infer strength.                                                                                                                           | llm-router-specific contract; stays in consumer Sphinx-Needs graph. |
 | `TREQ_VCR_AUTH_REDACTION`                  | N/A · unmeasured in pilot     | No uniquely attributable retained mutation campaign; do not infer strength.                                                                                                                           | llm-router-specific contract; stays in consumer Sphinx-Needs graph. |
+| `TREQ_VCR_REQUEST_CONTENT_REDACTION`       | N/A · unmeasured in pilot     | Durable request-body fingerprinting is verified by retained VCR serialization/replay evidence; no uniquely attributable product mutation scope is claimed.                                            | llm-router-specific contract; stays in consumer Sphinx-Needs graph. |
 
 ## Premature platform spike cleanup — learnings retained, implementation discarded
 

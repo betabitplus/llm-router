@@ -38,6 +38,10 @@ import allure
 import pytest
 from py_lib_testkit import configure_pytest_process, multipart_signature_prefix
 
+from tests.llm_router.support._vcr_body_matching import (
+    is_request_body_fingerprint,
+    request_body_fingerprint,
+)
 from tests.llm_router.support.runtime import clear_test_caches
 from tests.llm_router.support.vcr_extensions import (
     FILTER_HEADERS,
@@ -166,8 +170,91 @@ def vcr_config() -> dict[str, Any]:
     }
 
 
-def _vcr_scrub_request(request: Any) -> Any:
+def _fingerprint_vcr_request_body(request: Any) -> Any:
+    """Replace a request body with its durable non-reversible replay fingerprint."""
+    fingerprint = request_body_fingerprint(request)
+    if fingerprint is not None:
+        request.body = fingerprint
+    return request
+
+
+def _scrub_vcr_gemini_form_body(request: Any, *, content_type: str) -> None:
+    """Remove Gemini WebAPI authentication form state before fingerprinting."""
+    from py_lib_testkit import to_bytes
+
+    parsed_uri = urlparse(str(getattr(request, "uri", "")))
+    if (
+        parsed_uri.hostname != "gemini.google.com"
+        or "application/x-www-form-urlencoded" not in content_type.lower()
+    ):
+        return
+
+    original_body = getattr(request, "body", None)
+    body_text = to_bytes(original_body).decode("utf-8", errors="strict")
+    form_pairs = [
+        (key, value)
+        for key, value in parse_qsl(body_text, keep_blank_values=True)
+        if key != "at"
+    ]
+    scrubbed_body = urlencode(form_pairs)
+    request.body = (
+        scrubbed_body.encode("utf-8")
+        if isinstance(original_body, bytes)
+        else scrubbed_body
+    )
+
+
+def _compact_vcr_multipart_body(request: Any, *, content_type: str) -> None:
+    """Replace one multipart media upload with its stable semantic signature."""
     import json
+
+    from py_lib_testkit import (
+        extract_boundary,
+        extract_single_part_content,
+        is_png,
+        normalize_inline_media_bytes,
+        to_bytes,
+    )
+
+    boundary = extract_boundary(content_type)
+    if not boundary:
+        return
+    raw_body = to_bytes(getattr(request, "body", None))
+    content = extract_single_part_content(raw_body, boundary)
+    if content is None:
+        return
+    mime_type = "image/png" if is_png(content) else "application/octet-stream"
+    signature = normalize_inline_media_bytes(mime_type=mime_type, data=content)
+    request.body = multipart_signature_prefix().decode("ascii") + json.dumps(
+        signature,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
+def _compact_vcr_large_json_body(request: Any, *, content_type: str) -> None:
+    """Normalize very large JSON/media bodies before durable fingerprinting."""
+    import json
+
+    from py_lib_testkit import normalize_json_body, to_bytes
+
+    if "application/json" not in content_type.lower():
+        return
+    raw_body = to_bytes(getattr(request, "body", None))
+    if len(raw_body) <= 200_000:
+        return
+    normalized = normalize_json_body(raw_body)
+    if normalized is not None:
+        request.body = json.dumps(
+            normalized,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+
+
+def _vcr_scrub_request(request: Any) -> Any:
+    """Sanitize one request before VCR matching or durable serialization."""
+    from py_lib_testkit import get_header_value
 
     headers = getattr(request, "headers", None)
     if isinstance(headers, MutableMapping):
@@ -176,75 +263,20 @@ def _vcr_scrub_request(request: Any) -> Any:
 
     request.uri = _vcr_scrub_recorded_text(getattr(request, "uri", None))
     request.body = _vcr_scrub_recorded_text(getattr(request, "body", None))
-
-    # Keep recording artifacts small: multipart uploads and JSON payloads with
-    # embedded base64 media can produce multi-megabyte cassettes. Replace the
-    # recorded request body with a stable semantic signature so replay still
-    # matches while keeping cassettes under the repository size guard.
-    try:
-        from py_lib_testkit import (
-            extract_boundary,
-            extract_single_part_content,
-            get_header_value,
-            is_png,
-            normalize_inline_media_bytes,
-            normalize_json_body,
-            to_bytes,
-        )
-
-        content_type = get_header_value(request, "content-type")
-        parsed_uri = urlparse(str(getattr(request, "uri", "")))
-        if (
-            parsed_uri.hostname == "gemini.google.com"
-            and "application/x-www-form-urlencoded" in content_type.lower()
-        ):
-            original_body = getattr(request, "body", None)
-            body_text = to_bytes(original_body).decode("utf-8", errors="strict")
-            form_pairs = [
-                (key, value)
-                for key, value in parse_qsl(body_text, keep_blank_values=True)
-                if key != "at"
-            ]
-            scrubbed_body = urlencode(form_pairs)
-            request.body = (
-                scrubbed_body.encode("utf-8")
-                if isinstance(original_body, bytes)
-                else scrubbed_body
-            )
-
-        boundary = extract_boundary(content_type)
-        if boundary:
-            raw_body = to_bytes(getattr(request, "body", None))
-            content = extract_single_part_content(raw_body, boundary)
-            if content is not None:
-                mime_type = (
-                    "image/png" if is_png(content) else "application/octet-stream"
-                )
-                signature = normalize_inline_media_bytes(
-                    mime_type=mime_type,
-                    data=content,
-                )
-                request.body = multipart_signature_prefix().decode(
-                    "ascii"
-                ) + json.dumps(signature, sort_keys=True, separators=(",", ":"))
-                return request
-
-        if "application/json" in content_type.lower():
-            raw_body = to_bytes(getattr(request, "body", None))
-            if len(raw_body) > 200_000:
-                normalized = normalize_json_body(raw_body)
-                if normalized is not None:
-                    request.body = json.dumps(
-                        normalized,
-                        sort_keys=True,
-                        separators=(",", ":"),
-                    )
-    except Exception:
-        # Defensive: never fail the test suite just because VCR scrubbing
-        # couldn't parse one payload.
+    if is_request_body_fingerprint(request.body):
         return request
 
-    return request
+    try:
+        content_type = get_header_value(request, "content-type")
+        _scrub_vcr_gemini_form_body(request, content_type=content_type)
+        _compact_vcr_multipart_body(request, content_type=content_type)
+        _compact_vcr_large_json_body(request, content_type=content_type)
+    except Exception:
+        # Fail closed: normalization errors may reduce replay quality, but they
+        # must never cause the raw request body to become durable evidence.
+        return _fingerprint_vcr_request_body(request)
+
+    return _fingerprint_vcr_request_body(request)
 
 
 def _vcr_scrub_response(response: Any) -> Any:

@@ -15,15 +15,21 @@ How:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
+from contextlib import suppress
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 from py_lib_testkit import (
     compare_optional_json_bodies,
     compare_optional_multipart_single_file_content,
+    extract_boundary,
+    extract_single_part_content,
     get_header_value,
+    is_png,
+    normalize_inline_media_bytes,
     normalize_json_body,
     to_bytes,
 )
@@ -39,6 +45,7 @@ _GEMINI_REQUEST_UUID_INDEX = 59
 _UUID4_RE = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
 )
+_BODY_FINGERPRINT_PREFIX = "llm-router-vcr-body-sha256:"
 
 
 # ================================================================================
@@ -46,8 +53,38 @@ _UUID4_RE = re.compile(
 # ================================================================================
 
 
+def is_request_body_fingerprint(value: object) -> bool:
+    """Return whether a value is already a canonical durable VCR body fingerprint."""
+    return to_bytes(value).startswith(_BODY_FINGERPRINT_PREFIX.encode("ascii"))
+
+
+def request_body_fingerprint(request: Any) -> str | None:
+    """Return a deterministic non-reversible fingerprint for one VCR request body."""
+    body = to_bytes(getattr(request, "body", None))
+    if not body:
+        return None
+    if is_request_body_fingerprint(body):
+        return body.decode("ascii")
+    normalized = _normalized_body_for_fingerprint(request, body)
+    if isinstance(normalized, bytes):
+        payload = normalized
+    else:
+        payload = json.dumps(
+            normalized,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ).encode("utf-8")
+    return f"{_BODY_FINGERPRINT_PREFIX}{hashlib.sha256(payload).hexdigest()}"
+
+
 def body_llmrouter(r1: Any, r2: Any) -> None:
     """Match llm_router request bodies with provider-aware normalization."""
+    if _handled_optional_match(
+        _body_fingerprint_equal(r1, r2),
+        "request body fingerprint differs",
+    ):
+        return
     if _handled_optional_match(
         _multipart_single_file_content_equal(r1, r2),
         "multipart single-file content differs",
@@ -78,6 +115,43 @@ def body_llmrouter(r1: Any, r2: Any) -> None:
 # ================================================================================
 # Match Flow Helpers
 # ================================================================================
+
+
+def _body_fingerprint_equal(r1: Any, r2: Any) -> bool | None:
+    left = to_bytes(getattr(r1, "body", None))
+    right = to_bytes(getattr(r2, "body", None))
+    prefix = _BODY_FINGERPRINT_PREFIX.encode("ascii")
+    if not left.startswith(prefix) or not right.startswith(prefix):
+        return None
+    return left == right
+
+
+def _normalized_body_for_fingerprint(request: Any, body: bytes) -> object:
+    content_type = get_header_value(request, "content-type")
+    boundary = extract_boundary(content_type)
+    if boundary:
+        content = extract_single_part_content(body, boundary)
+        if content is not None:
+            mime_type = "image/png" if is_png(content) else "application/octet-stream"
+            return normalize_inline_media_bytes(mime_type=mime_type, data=content)
+
+    if _is_gemini_form_request(request):
+        normalized_form = _normalized_gemini_form_params(body)
+        if normalized_form is not None:
+            return normalized_form
+
+    if _is_qwen_completion_request(request):
+        normalized_qwen = _normalized_qwen_completion_payload(body)
+        if normalized_qwen is not None:
+            return normalized_qwen
+
+    if "application/json" in content_type.lower():
+        with suppress(json.JSONDecodeError, UnicodeDecodeError):
+            normalized_json = normalize_json_body(body)
+            if normalized_json is not None:
+                return normalized_json
+
+    return body
 
 
 def _handled_optional_match(maybe_equal: bool | None, mismatch_message: str) -> bool:
