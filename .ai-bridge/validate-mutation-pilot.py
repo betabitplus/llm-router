@@ -193,20 +193,36 @@ def main() -> None:
     declared_coverage = unit_config_source + "\n" + bdd_public_contract_source
     for coverage_item in (
         "VC_CONFIG_PROVIDER_IDENTITY",
+        "VC_CONFIG_MODEL_DECLARATION",
         "VC_CONFIG_REQUIRED_BASE_URL",
         "VC_CONFIG_ATTEMPT_TIMEOUT",
         "VC_CONFIG_RETRY_ATTEMPTS",
+        "VC_CONFIG_RETRY_WAIT_BOUNDS",
+        "VC_CONFIG_ROUTE_ATTEMPT_LIMIT",
+        "VC_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES",
+        "VC_CONFIG_TOOL_ROUND_LIMIT",
+        "VC_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS",
+        "VC_CONFIG_DEFAULT_PROVIDER_DECLARATION",
+        "VC_CONFIG_DEFAULT_MODEL_MAPPING",
+        "VC_CONFIG_MODEL_PROVIDER_REFERENCES",
         "VC_INVALID_CONFIGURATION_PUBLIC_REJECTION",
     ):
         check(coverage_item in declared_coverage, f"declared runtime binding exists: {coverage_item}")
-    check("VC_CONFIG_MODEL_DECLARATION" not in declared_coverage,
-          "model-declaration criterion remains the intentional uncovered Component criterion")
     check(all(token in unit_config_source for token in (
         "TREQ_CONFIG_PROVIDER_IDENTITY[revision==1]",
+        "TREQ_CONFIG_MODEL_DECLARATION[revision==1]",
         "TREQ_CONFIG_REQUIRED_BASE_URL[revision==1]",
         "TREQ_CONFIG_ATTEMPT_TIMEOUT[revision==1]",
         "TREQ_CONFIG_RETRY_ATTEMPTS[revision==1]",
-    )), "Component tests verify the derived Technical requirements rather than masquerading as parent-Requirement tests")
+        "TREQ_CONFIG_RETRY_WAIT_BOUNDS[revision==1]",
+        "TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT[revision==1]",
+        "TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES[revision==1]",
+        "TREQ_CONFIG_TOOL_ROUND_LIMIT[revision==1]",
+        "TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS[revision==1]",
+        "TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION[revision==1]",
+        "TREQ_CONFIG_DEFAULT_MODEL_MAPPING[revision==1]",
+        "TREQ_CONFIG_MODEL_PROVIDER_REFERENCES[revision==1]",
+    )), "Component tests verify the full derived Technical-requirement set rather than masquerading as parent-Requirement tests")
     check(
         "@REQ_INVALID_CONFIGURATION_ERRORS[revision==2]" in public_contract_feature and
         "And no provider request is sent" in public_contract_feature and
@@ -258,7 +274,7 @@ def main() -> None:
         for rows in (monitor_contract.get("coverage_actual") or {}).values()
         for row in rows
     ]
-    check(len(current_paths) == 5, "Requirement monitor retains the expected five currently executed coverage paths")
+    check(len(current_paths) == 17, "Requirement monitor retains all 17 current Invalid Configuration coverage paths")
     check(
         len({row.get("run_id") for row in current_paths}) == 1 and
         all(row.get("run_id") == evidence_provenance.get("run_id") for row in current_paths),
@@ -303,14 +319,14 @@ def main() -> None:
     provenance_subjects = evidence_provenance.get("subjects") or {}
     check(
         depth_facts.get("schema_version") == 4
-        and depth_source.get("tests") == 120
-        and depth_source.get("passed") == 120
-        and depth_audit.get("contracts") == 44
-        and depth_audit.get("runtime_evidence") == 120
+        and depth_source.get("tests") == 141
+        and depth_source.get("passed") == 141
+        and depth_audit.get("contracts") == 57
+        and depth_audit.get("runtime_evidence") == 141
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
         and depth_audit.get("bdd_feature_scenario_errors") == 0,
-        "Depth facts are reproducibly regenerated from the current 120-test retained run",
+        "Depth facts are reproducibly regenerated from the current 141-test retained run",
     )
     check(
         ((depth_inputs.get("junit") or {}).get("sha256")
@@ -359,19 +375,35 @@ def main() -> None:
         for row in (tool_choice.get("target") or {}).get("coverage") or []
     }
     tool_choice_actual = tool_choice.get("coverage_actual") or {}
+    named_forms = tool_choice_actual.get("VC_TOOL_CHOICE_NAMED_INPUT_FORMS") or []
+    named_serializers = tool_choice_actual.get("VC_TOOL_CHOICE_NAMED_SERIALIZERS") or []
     replay_choice = tool_choice_actual.get("VC_TOOL_CHOICE_REPLAY_FAMILIES") or []
     local_choice = tool_choice_actual.get("VC_TOOL_CHOICE_GOOGLE_GENAI") or []
     check(
-        tool_choice_targets.get(("system_integration", "replay"), {}).get("item_path_counts")
+        tool_choice_targets.get(("component", "none"), {}).get("item_path_counts")
+            == {
+                "VC_TOOL_CHOICE_NAMED_INPUT_FORMS": 2,
+                "VC_TOOL_CHOICE_NAMED_SERIALIZERS": 4,
+            }
+        and tool_choice_targets.get(("system_integration", "replay"), {}).get("item_path_counts")
             == {"VC_TOOL_CHOICE_REPLAY_FAMILIES": 4}
         and tool_choice_targets.get(("system_integration", "substitute"), {}).get("item_path_counts")
             == {"VC_TOOL_CHOICE_GOOGLE_GENAI": 1}
+        and len(named_forms) == 2
+        and len(named_serializers) == 4
         and len(replay_choice) == 4
         and len(local_choice) == 1,
-        "Tool Choice preserves 4 Replay bindings plus one local Substitute binding without last-test-wins collapse",
+        "Tool Choice preserves independent public-input, provider-serializer and provider-family denominators without last-test-wins collapse",
     )
     check(
         all(
+            row.get("result") == "passed"
+            and row.get("level") == "component"
+            and row.get("boundary") == "none"
+            and row.get("representation") == "actual"
+            for row in [*named_forms, *named_serializers]
+        )
+        and all(
             row.get("result") == "passed"
             and row.get("level") == "system_integration"
             and row.get("boundary") == "replay"
@@ -455,8 +487,8 @@ def main() -> None:
 
     check(all(token in readiness for token in (
         "P34 MONITOR CUTOVER COMPLETE",
-        "Component semantic coverage **4/5 · FAIL**",
-        "System semantic coverage **1/1 · PASS**",
+        "13/13 Component criteria · 16/16 paths",
+        "Verification Coverage = PASS · Fault Model = FAIL · Overall = FAIL",
         "compatibility-only `.ai-bridge/assurance-targets.json`",
         "Test Coverage → Fault-based Testing → History",
     )), "monitor readiness ledger records the completed P34 target/actual cutover")
@@ -474,13 +506,15 @@ def main() -> None:
     check(bool(campaign.get("finished_at")), "retained pilot campaign finished")
     check(float(campaign.get("duration_seconds") or 0) > 0, "retained pilot campaign has runtime")
 
-    check(summary.get("total_contracts") == 44, "44 contracts remain in the verification-depth / mutation measurement universe")
+    check(summary.get("total_contracts") == 57, "57 contracts are present in the verification-depth / mutation measurement universe")
     check(summary.get("measured_contracts") == 3, "exactly 3 objectively attributable measured contracts")
     check(summary.get("fresh_measured_contracts") == 3, "all measured contracts are fresh")
     check(summary.get("stale_measured_contracts") == 0, "no measured contract is stale")
-    check(summary.get("new_unresolved_survivors") == 0, "no new unresolved survivor in current clean pilot state")
+    check(summary.get("new_unresolved_survivors") == 4, "expanded Invalid Configuration scope exposes exactly 4 new unresolved survivors")
+    check(summary.get("resolved_survivors") == 19, "expanded Invalid Configuration tests resolve 19 previously surviving mutants")
+    check(summary.get("unresolved_survivors") == 78, "current measured mutation debt remains explicit")
     check(summary.get("suppressed_survivors") == 0, "no acceptance suppression remains")
-    check(summary.get("readiness") == "clear", "mutation readiness is clear")
+    check(summary.get("readiness") == "attention", "mutation readiness remains attention while new survivors exist")
 
     suppression_path = BRIDGE / "mutation-suppressions.json"
     if suppression_path.exists():
@@ -529,9 +563,21 @@ def main() -> None:
 
         contract_triage = result.get("triage") or {}
         check(contract_triage.get("baseline_available") is True, f"{contract_id}: baseline evidence available")
-        check(contract_triage.get("baseline_comparable") is True, f"{contract_id}: baseline comparable")
-        check(contract_triage.get("new_unresolved_survivors") == 0, f"{contract_id}: no new unresolved survivor")
-        check(contract_triage.get("score_delta") == 0.0, f"{contract_id}: current clean score delta is 0.0 pp")
+        if contract_id == "REQ_INVALID_CONFIGURATION_ERRORS":
+            check(contract_triage.get("baseline_comparable") is False,
+                  "REQ_INVALID_CONFIGURATION_ERRORS: expanded linked-test scope correctly breaks score comparability with the previous campaign")
+            check(contract_triage.get("score_delta") is None,
+                  "REQ_INVALID_CONFIGURATION_ERRORS: no numeric score delta is fabricated across a changed denominator")
+            check(
+                contract_triage.get("new_unresolved_survivors") == 4
+                and contract_triage.get("resolved_survivors") == 19
+                and contract_triage.get("existing_survivors") == 22,
+                "REQ_INVALID_CONFIGURATION_ERRORS: triage preserves new/existing/resolved survivor identities after scope expansion",
+            )
+        else:
+            check(contract_triage.get("baseline_comparable") is True, f"{contract_id}: baseline comparable")
+            check(contract_triage.get("new_unresolved_survivors") == 0, f"{contract_id}: no new unresolved survivor")
+            check(contract_triage.get("score_delta") == 0.0, f"{contract_id}: unchanged comparable score delta is 0.0 pp")
 
     unattributed = strength.get("unattributed") or []
     check(len(unattributed) == 2, "two shared-scope diagnostics remain explicitly unattributed")
@@ -710,10 +756,10 @@ def main() -> None:
     check(
         all(label in assurance_page for label in (
             "Required evidence", "Semantic coverage", "passing required evidence",
-            "4 pass", "0 fail", "1 missing", "Retained path properties", "4/5 paths",
+            "13 pass", "0 fail", "0 missing", "Retained path properties", "16/16 paths",
             "Evidence confidence",
         )),
-        "canonical Component × Local inspector tells the accepted 4/5 → 4 retained paths story",
+        "canonical Invalid Configuration Component × Local inspector renders all 13 criteria and 16 retained paths",
     )
     check(
         "Representation" in assurance_page
@@ -770,12 +816,22 @@ def main() -> None:
     check(declared_criteria == {
         "VC_CONFIG_PROVIDER_IDENTITY", "VC_CONFIG_MODEL_DECLARATION",
         "VC_CONFIG_REQUIRED_BASE_URL", "VC_CONFIG_ATTEMPT_TIMEOUT",
-        "VC_CONFIG_RETRY_ATTEMPTS", "VC_INVALID_CONFIGURATION_PUBLIC_REJECTION",
-    }, "canonical monitor facts retain all six declared verification criteria")
+        "VC_CONFIG_RETRY_ATTEMPTS", "VC_CONFIG_RETRY_WAIT_BOUNDS",
+        "VC_CONFIG_ROUTE_ATTEMPT_LIMIT", "VC_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES",
+        "VC_CONFIG_TOOL_ROUND_LIMIT", "VC_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS",
+        "VC_CONFIG_DEFAULT_PROVIDER_DECLARATION", "VC_CONFIG_DEFAULT_MODEL_MAPPING",
+        "VC_CONFIG_MODEL_PROVIDER_REFERENCES", "VC_INVALID_CONFIGURATION_PUBLIC_REJECTION",
+    }, "canonical monitor facts retain all fourteen declared Invalid Configuration criteria")
+    invalid_targets = {
+        (row["level"], row["boundary"]): row
+        for row in contract_monitor["target"]["coverage"]
+    }
     check(
-        contract_monitor["target"]["coverage"][0]["declared_count"] == 5
-        and contract_monitor["target"]["coverage"][1]["declared_count"] == 1,
-        "canonical monitor facts retain the Component 5 / System 1 denominators",
+        invalid_targets[("component", "none")]["declared_count"] == 13
+        and sum(invalid_targets[("component", "none")]["item_path_counts"].values()) == 16
+        and invalid_targets[("system", "none")]["declared_count"] == 1
+        and sum(invalid_targets[("system", "none")]["item_path_counts"].values()) == 1,
+        "canonical monitor facts retain the Component 13 criteria / 16 paths plus System 1 / 1 denominator",
     )
 
     override_monitor = monitor_facts["contracts"]["REQ_REQUEST_OVERRIDE_PRECEDENCE"]
@@ -793,14 +849,27 @@ def main() -> None:
         and override_targets[("system_integration", "substitute")]["ms_validation_target"] == "L0",
         "override profile preserves Component Actual plus System-integration Substitute/Surrogate/L0 targets",
     )
+    credential_targets = {
+        (row["level"], row["boundary"]): row
+        for row in credential_monitor["target"]["coverage"]
+    }
     check(
-        [row["declared_count"] for row in credential_monitor["target"]["coverage"]] == [4, 1],
-        "credential profile retains Component 4 / System 1 denominators",
+        credential_targets[("component", "none")]["declared_count"] == 4
+        and sum(credential_targets[("component", "none")]["item_path_counts"].values()) == 6
+        and credential_targets[("system", "none")]["declared_count"] == 1
+        and sum(credential_targets[("system", "none")]["item_path_counts"].values()) == 1,
+        "credential profile retains Component 4 criteria / 6 paths plus System 1 / 1",
     )
+    install_targets = {
+        (row["level"], row["boundary"]): row
+        for row in install_monitor["target"]["coverage"]
+    }
     check(
-        len(install_monitor["target"]["coverage"]) == 1
-        and install_monitor["target"]["coverage"][0]["declared_count"] == 3,
-        "configuration-installation profile retains one Component 3/3 denominator",
+        install_targets[("component", "none")]["declared_count"] == 3
+        and install_targets[("system_integration", "substitute")]["declared_count"] == 1
+        and install_targets[("system_integration", "substitute")]["representation"] == "surrogate_simulated"
+        and install_targets[("system_integration", "substitute")]["ms_validation_target"] == "L0",
+        "configuration-installation profile requires Component state evidence plus a System-integration Substitute/Surrogate/L0 runtime-effect path",
     )
     expected_actual = {
         "REQ_REQUEST_OVERRIDE_PRECEDENCE": {
@@ -819,6 +888,7 @@ def main() -> None:
             "VC_CONFIG_INSTALLATION_ROUND_TRIP",
             "VC_CONFIG_INSTALLATION_RUNTIME_CAPTURE",
             "VC_CONFIG_CACHE_INVALIDATION",
+            "VC_CONFIG_INSTALLATION_RUNTIME_EFFECT",
         },
     }
     for contract_id, criteria in expected_actual.items():
@@ -843,18 +913,24 @@ def main() -> None:
         ),
         "override BDD evidence is honestly retained as Substitute / Surrogate / L0",
     )
-    for contract_id, page in (
-        ("REQ_REQUEST_OVERRIDE_PRECEDENCE", override_page),
-        ("REQ_CREDENTIAL_RESOLUTION", credential_page),
-        ("REQ_CONFIG_INSTALLATION_COHERENCE", install_page),
-    ):
+    for contract_id, page in contract_pages.items():
         check(
-            '<div class="overall met">PASS</div>' in page
+            '<div class="overall not-met">FAIL</div>' in page
+            and re.search(
+                r"Verification coverage .*?</strong><span class=\"status met\">PASS</span>",
+                page,
+                flags=re.DOTALL,
+            )
+            and re.search(
+                r"Fault model .*?</strong><span class=\"status not-met\">FAIL</span>",
+                page,
+                flags=re.DOTALL,
+            )
             and "No blocking fault checks selected" not in page
             and "This Verification Profile does not make fault-based testing a blocking target." not in page
-            and 'class="fault-layout no-inspector"' in page
-            and '<span class="status na">N/A</span>' in page,
-            f"{contract_id}: complete semantic evidence passes while non-selected Fault model remains N/A",
+            and 'class="fault-layout no-inspector"' not in page
+            and 'data-fault="' in page,
+            f"{contract_id}: semantic coverage passes but incomplete required fault challenges keep Fault model and Overall honestly FAIL",
         )
 
     check(
@@ -874,7 +950,7 @@ def main() -> None:
         all(label in assurance_page for label in (
             "Fault classes", "Required", "Challenged", "Detected",
             "Mutation checks", "Generated", "Reached", "Killed",
-            "27/31", "11/27", "27/27",
+            "31/31", "29/31", "27/31", "27/27",
         )),
         "canonical fault detail renders the accepted dependent denominator chains",
     )
@@ -1021,10 +1097,10 @@ def main() -> None:
     groups = invalid_config_faults.get("groups") or {}
     component_faults = groups.get("component_local") or {}
     system_faults = groups.get("system_local") or {}
-    check((component_faults.get("generated"), component_faults.get("reached"), component_faults.get("killed")) == (31, 27, 11) and
-          component_faults.get("mutation_reach") == 87.1 and component_faults.get("sensitivity") == 40.7 and
+    check((component_faults.get("generated"), component_faults.get("reached"), component_faults.get("killed")) == (31, 31, 29) and
+          component_faults.get("mutation_reach") == 100.0 and component_faults.get("sensitivity") == 93.5 and
           component_faults.get("system_reach") == "component" and component_faults.get("boundary_mode") == "none",
-          "Component×Local fault cell retains exact generated/reached/killed, Reach and Sensitivity")
+          "Component×Local fault cell reflects the expanded validation-test denominator and current mutation detection")
     check((system_faults.get("generated"), system_faults.get("reached"), system_faults.get("killed")) == (31, 27, 27) and
           system_faults.get("mutation_reach") == 87.1 and system_faults.get("sensitivity") == 100.0 and
           system_faults.get("system_reach") == "system" and system_faults.get("boundary_mode") == "none",
@@ -1035,11 +1111,11 @@ def main() -> None:
     check((component_faults["families"]["boundary"]["sensitivity"],
            component_faults["families"]["comparison"]["sensitivity"],
            system_faults["families"]["boundary"]["sensitivity"],
-           system_faults["families"]["comparison"]["sensitivity"]) == (16.7, 60.0, 100.0, 100.0),
-          "native boundary/comparison families retain exact cross-depth sensitivities")
+           system_faults["families"]["comparison"]["sensitivity"]) == (92.9, 94.1, 100.0, 100.0),
+          "native boundary/comparison families retain exact cross-depth sensitivities after coverage expansion")
     overlap = invalid_config_faults.get("detection_overlap") or {}
     check((overlap.get("mutant_universe"), overlap.get("detected_union"), overlap.get("corroborated"),
-           overlap.get("component_only"), overlap.get("system_only"), overlap.get("undetected")) == (31, 27, 11, 0, 16, 4),
+           overlap.get("component_only"), overlap.get("system_only"), overlap.get("undetected")) == (31, 29, 27, 2, 0, 2),
           "fault-model overlap uses exact engine-native mutant IDs for unique/corroborated/undetected detection")
 
     req_layers = invalid_config_faults.get("layers") or {}
@@ -1068,33 +1144,33 @@ def main() -> None:
           float(req_layers["runtime"].get("elapsed_seconds")) < 1.0 and
           req_layers["runtime"].get("detected") == 1,
           "Toxiproxy proves provider degradation is irrelevant to the pre-provider claim")
-    check((req_layers["implementation"].get("generated"), req_layers["implementation"].get("detected")) == (31, 27),
+    check((req_layers["implementation"].get("generated"), req_layers["implementation"].get("detected")) == (31, 29),
           "Requirement implementation fault layer is backed by the same 31-mutant universe with exact union detection")
     implementation = req_layers["implementation"]
     impl_reach = implementation.get("implementation_reach") or {}
-    check((impl_reach.get("covered_statements"), impl_reach.get("executable_statements"), impl_reach.get("percent")) == (22, 24, 91.7) and
-          len(impl_reach.get("missing_statements") or []) == 2 and
+    check((impl_reach.get("covered_statements"), impl_reach.get("executable_statements"), impl_reach.get("percent")) == (23, 24, 95.8) and
+          len(impl_reach.get("missing_statements") or []) == 1 and
           impl_reach.get("metric") == "implementation_statement_reach" and
           "coverage.py executable statements" in impl_reach.get("basis", ""),
-          "Implementation statement reach has an explicit honest 22/24 coverage.py denominator")
-    check(implementation.get("overall_detection") == 87.1,
+          "Implementation statement reach has an explicit honest 23/24 coverage.py denominator")
+    check(implementation.get("overall_detection") == 93.5,
           "Overall Detection is retained as the secondary killed/generated metric")
     native_mutants = implementation.get("mutant_detail") or []
     check(len(native_mutants) == 31 and len({row.get("gremlin_id") for row in native_mutants}) == 31,
           "exact native mutant detail retains all 31 engine-native gremlin IDs without tuple-key collapse")
-    check(sum(bool(row.get("component_killed")) for row in native_mutants) == 11 and
+    check(sum(bool(row.get("component_killed")) for row in native_mutants) == 29 and
           sum(bool(row.get("system_killed")) for row in native_mutants) == 27 and
           sum(bool(row.get("system_reached")) for row in native_mutants) == 27,
           "exact native mutant table agrees with Component/System killed and reached counts")
     check(all("covering_tests" in row for group in (component_faults, system_faults) for row in group.get("mutants") or []),
           "per-mutant retained facts include covering tests without inventing killing tests")
     retained_mutmut = implementation.get("retained_mutmut") or {}
-    check((retained_mutmut.get("killed"), retained_mutmut.get("survived"), retained_mutmut.get("valid_mutants")) == (61, 41, 102) and
-          retained_mutmut.get("new_survivors") == 0 and
-          retained_mutmut.get("existing_survivors") == 41 and
-          retained_mutmut.get("resolved_survivors") == 0 and
+    check((retained_mutmut.get("killed"), retained_mutmut.get("survived"), retained_mutmut.get("valid_mutants")) == (84, 26, 110) and
+          retained_mutmut.get("new_survivors") == 4 and
+          retained_mutmut.get("existing_survivors") == 22 and
+          retained_mutmut.get("resolved_survivors") == 19 and
           "mutate_only_covered_lines=true" in retained_mutmut.get("denominator_warning", ""),
-          "retained mutmut Test Strength keeps its separate covered-lines denominator and survivor debt")
+          "retained mutmut Test Strength keeps its separate covered-lines denominator and explicit scope-change triage")
     for layer_id, required_fields in {
         "specification": ("claim_section", "mutation", "parser_validity", "execution_command", "detector", "source_url", "test_source_url"),
         "architecture": ("declared_rule", "baseline_summary", "injected_violation", "execution_command", "detector", "source_url"),
@@ -1104,7 +1180,7 @@ def main() -> None:
         check(all(req_layers[layer_id].get(field) not in (None, "", []) for field in required_fields),
               f"{layer_id} fault detail retains all promised claim/challenge/detector/drill-down fields")
 
-    # Evaluate the current target from retained facts: only Component Sensitivity should be open.
+    # Evaluate current blocking mutation checks from retained facts.
     current_actual = {
         "component-reach": component_faults.get("mutation_reach"),
         "component-sensitivity": component_faults.get("sensitivity"),
@@ -1112,20 +1188,14 @@ def main() -> None:
         "system-sensitivity": system_faults.get("sensitivity"),
     }
     check(current_actual == {
-        "component-reach": 87.1,
-        "component-sensitivity": 40.7,
+        "component-reach": 100.0,
+        "component-sensitivity": 93.5,
         "system-reach": 87.1,
         "system-sensitivity": 100.0,
-    }, "current target actuals are stable")
-    component_sensitivity = float(current_actual["component-sensitivity"] or 0.0)
-    other_actuals = [
-        float(value or 0.0)
-        for key, value in current_actual.items()
-        if key != "component-sensitivity"
-    ]
+    }, "current mutation-check actuals are stable")
     check(
-        component_sensitivity < 80.0 and all(value >= 80.0 for value in other_actuals),
-        "11/12 target result has exactly one blocking gap: Component mutation sensitivity",
+        all(float(value or 0.0) >= 80.0 for value in current_actual.values()),
+        "all declared Invalid Configuration mutation Reach/Sensitivity thresholds are currently met",
     )
 
     check(assurance_snapshots == generated_assurance_snapshots,
@@ -1149,7 +1219,7 @@ def main() -> None:
           (invalid_snapshot.get("system_mutation_reach"), invalid_snapshot.get("system_mutation_sensitivity")) == (87.1, 100.0) and
           invalid_snapshot.get("test_strength") == 59.8 and
           (invalid_snapshot.get("fault_layers_detected"), invalid_snapshot.get("fault_layers_total")) == (5, 5),
-          "primary Requirement snapshot retains obligations, gaps, Reach/Sensitivity, Test Strength and fault-layer state")
+          "historical P31 primary-Requirement snapshot remains immutable and preserves its original obligations, gaps, Reach/Sensitivity and Test Strength")
     rate_snapshot = current_by_contract["TREQ_RATE_LIMIT_STATE"]
     check((rate_snapshot.get("obligations_met"), rate_snapshot.get("obligations_total")) == (2, 3) and
           rate_snapshot.get("blocking_gap_ids") == ["covered-mutant-strength"] and
@@ -1172,10 +1242,10 @@ def main() -> None:
         if row["level"] == "component" and row["boundary"] == "none"
     )
     check(
-        component_fault["sensitivity"] == 40.7
+        component_fault["sensitivity"] == 93.5
         and "VC_CONFIG_MODEL_DECLARATION" in component_target["items"]
-        and "VC_CONFIG_MODEL_DECLARATION" not in contract_monitor["coverage_actual"],
-        "canonical monitor facts retain the real Component sensitivity and model-declaration gap",
+        and len((contract_monitor["coverage_actual"].get("VC_CONFIG_MODEL_DECLARATION") or [])) == 1,
+        "canonical monitor facts retain the current Component sensitivity and executed model-declaration criterion",
     )
 
     history = fault_model.get("history") or {}
@@ -1254,16 +1324,16 @@ def main() -> None:
         check('href="mutation-analysis.html"' in text, f"{name}: portal navigation links Mutation Analysis")
 
     measurement_contract_ids = {row["contract_id"] for row in depth_facts.get("contracts") or []}
-    check(len(measurement_contract_ids) == 44,
-          "verification-depth / mutation measurement universe remains 44 contracts")
+    check(len(measurement_contract_ids) == 57,
+          "verification-depth / mutation measurement universe contains all 57 current contracts")
     requirements_text = "\n".join(
         path.read_text() for path in sorted((ROOT / "docs/requirements").glob("*.md"))
     )
     normative_contract_ids = set(re.findall(
         r"^:id:\s+((?:REQ|TREQ)_[A-Z0-9_]+)\s*$", requirements_text, flags=re.MULTILINE
     ))
-    check(len(normative_contract_ids) == 49,
-          "normative Sphinx-Needs graph contains 49 Requirement/TREQ contracts")
+    check(len(normative_contract_ids) == 57,
+          "normative Sphinx-Needs graph contains 57 Requirement/TREQ contracts")
     missing_contracts = sorted(
         contract_id for contract_id in normative_contract_ids if f"`{contract_id}`" not in manifest
     )
@@ -1275,7 +1345,7 @@ def main() -> None:
     check("llm-router P34" in manifest and
           "Current portal build: **P34**" in manifest and
           "1. Test Coverage → 2. Fault-based Testing → 3. History" in manifest and
-          "Component semantic coverage **4/5 FAIL**" in manifest and
+          "Component semantic coverage **13/13 PASS · 16/16 paths**" in manifest and
           "old custom Assurance Target/Profile registry is compatibility-only" in manifest,
           "manifest active checkpoint matches the current P34 Requirement monitor")
     check("all feature development happens inside" in manifest,
@@ -1362,6 +1432,8 @@ def main() -> None:
     approved_pilot_sources = {
         ".ai-bridge/build-mutation-report-prototype.py",
         ".ai-bridge/build-requirement-monitor.py",
+        ".ai-bridge/monitor-readiness.md",
+        ".ai-bridge/mutation-testing-platform-extraction-manifest.md",
         ".ai-bridge/qualify-evidence-confidence.py",
         ".ai-bridge/validate-mutation-pilot.py",
         "docs/index.md",
@@ -1382,7 +1454,10 @@ def main() -> None:
         "tests/llm_router/bdd/tools/",
         "tests/llm_router/support/fault_server.py",
         "tests/llm_router/support/workers/error_boundary.py",
+        "tests/llm_router/integration/test_config_installation_runtime_effect.py",
         "tests/llm_router/unit/test_internal_config_validation.py",
+        "tests/llm_router/unit/test_internal_key_resolution.py",
+        "tests/llm_router/unit/test_internal_tool_choice.py",
         "tests/llm_router/unit/test_internal_tool_registry.py",
     }
     unexpected = []

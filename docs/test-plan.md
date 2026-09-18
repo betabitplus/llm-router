@@ -26,7 +26,7 @@
 
 **Design:** equivalence partitioning · boundary value analysis
 
-**Completion:** required coverage = **100%**
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
 
 (test-plan-configuration-precedence-model)=
 
@@ -45,36 +45,38 @@
 
 ### Credential resolution
 
-| Layer     | Required denominator                                                                                         |
-| --------- | ------------------------------------------------------------------------------------------------------------ |
-| Component | selected key-source partitions: configured fixed key, automatic rotation, optional missing, required missing |
-| System    | selected public missing-credential error path                                                                |
+| Layer     | Required denominator                                                                                                                                                               |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Component | selected key-source partitions: configured fixed key, automatic rotation, required missing, plus every provider family explicitly permitted to run with an optional missing bearer |
+| System    | selected public missing-credential error path                                                                                                                                      |
 
-**Design:** equivalence partitioning · key-source precedence · deterministic rotation
+**Design:** equivalence partitioning · key-source precedence · provider-family optional-credential partitioning · deterministic rotation
 
-**Completion:** required coverage = **100%**
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
 
 (test-plan-config-activation-model)=
 
 ### Configuration activation
 
-| Layer     | Required denominator                                                                                  |
-| --------- | ----------------------------------------------------------------------------------------------------- |
-| Component | replacement snapshot round-trip, subsequent runtime snapshot capture, and selected cache invalidation |
+| Layer              | Required denominator                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Component          | replacement snapshot round-trip, subsequent runtime snapshot capture, and selected cache invalidation                        |
+| System integration | a public request created after installation exhibits a replacement-derived runtime effect at an observable provider boundary |
 
-**Design:** state transition · replacement snapshot · stale-cache negative control
+**Design:** state transition · replacement snapshot · stale-cache negative control · post-install behavioral observation
 
-**Completion:** required coverage = **100%**
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
 
 (test-plan-tool-selection-model)=
 
 ### Tool selection
 
-| Layer              | Required denominator                                                                                                       |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| System integration | every provider-family partition selected by the verification profile, with each declared retained path present and passing |
+| Layer              | Required denominator                                                                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Component          | every supported public named-choice input form plus each distinct provider named-choice serialization implementation selected by the profile |
+| System integration | every provider-family partition selected by the verification profile, with each declared retained path present and passing                   |
 
-**Design:** provider-family capability partitioning · explicit named choice vs alternate registered tool · provider-boundary request inspection
+**Design:** public input-form partitioning · provider-family capability partitioning · explicit named choice vs alternate registered tool · provider-boundary request inspection
 
 **Completion:** required criteria = **100%** · declared retained paths = **100%**
 

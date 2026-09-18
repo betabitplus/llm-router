@@ -36,24 +36,42 @@ the verification claim is the request constructed by llm-router, not fidelity of
 
 ### Verification criteria
 
-| Criterion                        | Contract                                         | Test level         | Success criterion                                                                     |
-| -------------------------------- | ------------------------------------------------ | ------------------ | ------------------------------------------------------------------------------------- |
-| `VC_REQUEST_OMISSION_PROPERTY`   | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | Component          | Generated combinations preserve omission as distinct from an explicit call value.     |
-| `VC_REQUEST_OVERRIDE_PRECEDENCE` | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | Request settings override router and route defaults while unrelated defaults survive. |
-| `VC_REQUEST_EXPLICIT_CLEAR`      | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | An explicit empty/null request value clears the inherited optional setting.           |
+| Criterion                        | Contract                                         | Test level         | Boundary   | Required paths | Success criterion                                                                     |
+| -------------------------------- | ------------------------------------------------ | ------------------ | ---------- | -------------: | ------------------------------------------------------------------------------------- |
+| `VC_REQUEST_OMISSION_PROPERTY`   | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | Component          | Local      |              1 | Generated combinations preserve omission as distinct from an explicit call value.     |
+| `VC_REQUEST_OVERRIDE_PRECEDENCE` | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | Substitute |              1 | Request settings override router and route defaults while unrelated defaults survive. |
+| `VC_REQUEST_EXPLICIT_CLEAR`      | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | Substitute |              1 | An explicit empty/null request value clears the inherited optional setting.           |
 
 ### Evidence aggregation
 
-| Signal                 | Rule | Applies to                                                        |
-| ---------------------- | ---- | ----------------------------------------------------------------- |
-| Semantic coverage      | ALL  | required verification criteria                                    |
-| Representation         | ALL  | retained evidence for satisfied criteria                          |
-| Provenance             | ALL  | retained evidence for satisfied criteria                          |
-| Producer qualification | ALL  | retained evidence for satisfied criteria; every required producer |
-| Freshness              | ALL  | retained evidence for satisfied criteria                          |
-| M&S validation         | ALL  | applicable surrogate/model evidence                               |
+| Signal                 | Rule | Applies to                                                         |
+| ---------------------- | ---- | ------------------------------------------------------------------ |
+| Semantic coverage      | ALL  | required verification criteria and each criterion's declared paths |
+| Representation         | ALL  | retained evidence for satisfied criteria                           |
+| Provenance             | ALL  | retained evidence for satisfied criteria                           |
+| Producer qualification | ALL  | retained evidence for satisfied criteria; every required producer  |
+| Freshness              | ALL  | retained evidence for satisfied criteria                           |
+| M&S validation         | ALL  | applicable surrogate/model evidence                                |
 
-No fault classes or blocking mutation checks are selected for this profile.
+### Fault applicability
+
+| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                         |
+| -------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow`                        | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                 |
+| `interface.payload-schema`                                                       | —        | `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | —                                                                                                                           |
+
+#### Fault-group rationale
+
+| Group                 | Why                                                                                                                     |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Layer precedence and explicit-null handling are implemented by branch/boundary decisions that must not silently invert. |
+| Runtime / dependency  | Provider availability, latency, and malformed replies do not determine which local configuration value is effective.    |
+| Interface / protocol  | The provider-facing payload must preserve the resolved value/omission semantics; provider status behavior is separate.  |
+| Architecture          | This Requirement does not depend on a particular internal layering topology.                                            |
+| Specification / model | Ordering, omission-vs-explicit partitions, and the resulting value are the contract itself.                             |
+
+No blocking mutation threshold is selected; the required deterministic fault classes remain blocking.
 
 (verification-profile-req-credential-resolution)=
 
@@ -72,34 +90,54 @@ public error boundary.
 | Component  | Local    | Actual         | —          |  **4 criteria** |
 | System     | Local    | Actual         | —          | **1 criterion** |
 
-**Coverage basis.** Component coverage owns the four key-source partitions. System coverage owns the
-public missing-key error path.
+**Coverage basis.** Component coverage owns the four key-source partitions. Automatic rotation
+requires both configured custom-key mappings and convention-discovered environment keys. The
+optional-missing criterion requires one retained path for every provider family that the implementation
+explicitly permits to run without a bearer credential; that denominator is currently QwenChat +
+Gemini WebAPI (2 paths). System coverage owns the public missing-key error path.
 
 **Representation basis.** All required paths execute the actual llm-router implementation and do not
 depend on a material provider surrogate.
 
 ### Verification criteria
 
-| Criterion                            | Contract                                   | Test level | Success criterion                                                                   |
-| ------------------------------------ | ------------------------------------------ | ---------- | ----------------------------------------------------------------------------------- |
-| `VC_CREDENTIAL_CUSTOM_ENV_NAME`      | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | A configured fixed key resolves through its configured custom environment name.     |
-| `VC_CREDENTIAL_AUTO_ROTATION`        | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Automatic key selection rotates deterministically over sorted available key IDs.    |
-| `VC_CREDENTIAL_REQUIRED_MISSING`     | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | A missing required credential raises the public missing-key error with identity.    |
-| `VC_CREDENTIAL_OPTIONAL_MISSING`     | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | An optional provider credential may resolve to the permitted empty bearer value.    |
-| `VC_CREDENTIAL_PUBLIC_MISSING_ERROR` | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | System     | A public request with a missing required credential surfaces the missing-key error. |
+| Criterion                            | Contract                                   | Test level | Boundary | Required paths | Success criterion                                                                                                       |
+| ------------------------------------ | ------------------------------------------ | ---------- | -------- | -------------: | ----------------------------------------------------------------------------------------------------------------------- |
+| `VC_CREDENTIAL_CUSTOM_ENV_NAME`      | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              1 | A configured fixed key resolves through its configured custom environment name.                                         |
+| `VC_CREDENTIAL_AUTO_ROTATION`        | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              2 | Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs. |
+| `VC_CREDENTIAL_REQUIRED_MISSING`     | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              1 | A missing required credential raises the public missing-key error with identity.                                        |
+| `VC_CREDENTIAL_OPTIONAL_MISSING`     | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              2 | Every provider family that permits an absent bearer credential resolves the permitted empty value.                      |
+| `VC_CREDENTIAL_PUBLIC_MISSING_ERROR` | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | System     | Local    |              1 | A public request with a missing required credential surfaces the missing-key error.                                     |
 
 ### Evidence aggregation
 
-| Signal                 | Rule | Applies to                                                        |
-| ---------------------- | ---- | ----------------------------------------------------------------- |
-| Semantic coverage      | ALL  | required verification criteria                                    |
-| Representation         | ALL  | retained evidence for satisfied criteria                          |
-| Provenance             | ALL  | retained evidence for satisfied criteria                          |
-| Producer qualification | ALL  | retained evidence for satisfied criteria; every required producer |
-| Freshness              | ALL  | retained evidence for satisfied criteria                          |
-| M&S validation         | ALL  | applicable surrogate/model evidence                               |
+| Signal                 | Rule | Applies to                                                         |
+| ---------------------- | ---- | ------------------------------------------------------------------ |
+| Semantic coverage      | ALL  | required verification criteria and each criterion's declared paths |
+| Representation         | ALL  | retained evidence for satisfied criteria                           |
+| Provenance             | ALL  | retained evidence for satisfied criteria                           |
+| Producer qualification | ALL  | retained evidence for satisfied criteria; every required producer  |
+| Freshness              | ALL  | retained evidence for satisfied criteria                           |
+| M&S validation         | ALL  | applicable surrogate/model evidence                                |
 
-No fault classes or blocking mutation checks are selected for this profile.
+### Fault applicability
+
+| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                                                      |
+| -------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow`                        | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                                              |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
+
+#### Fault-group rationale
+
+| Group                 | Why                                                                                                                     |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Required/optional, fixed/auto, custom-name, and rotation branches can fail independently and must remain discriminated. |
+| Runtime / dependency  | Credential resolution reads local configuration/environment state; remote dependency failure is outside this contract.  |
+| Interface / protocol  | Provider protocol behavior is not part of credential-source selection or missing-key translation.                       |
+| Architecture          | No internal layering topology is part of the credential-resolution contract.                                            |
+| Specification / model | Source partitions, deterministic rotation ordering, and public missing-key outcome are all normative semantics.         |
+
+No blocking mutation threshold is selected; the required deterministic fault classes remain blocking.
 
 (verification-profile-req-config-installation-coherence)=
 
@@ -114,33 +152,57 @@ the transition.
 
 ### Required coverage
 
-| Test level | Boundary | Representation | M&S target |         Target |
-| ---------- | -------- | -------------- | ---------- | -------------: |
-| Component  | Local    | Actual         | —          | **3 criteria** |
+| Test level         | Boundary   | Representation | M&S target |          Target |
+| ------------------ | ---------- | -------------- | ---------- | --------------: |
+| Component          | Local      | Actual         | —          |  **3 criteria** |
+| System Integration | Substitute | Surrogate      | L0         | **1 criterion** |
 
 **Coverage basis.** The Component cell requires public replacement round-trip, runtime snapshot
-capture, and the derived cache-invalidation criterion.
+capture, and the derived cache-invalidation criterion. The System-integration cell must then prove
+that a public request created after installation exhibits a replacement-derived runtime effect,
+rather than merely holding a reference to the new snapshot.
 
-**Representation basis.** Every required path executes the actual llm-router implementation without
-a material external surrogate.
+**Representation basis.** Component paths execute the actual llm-router implementation without a
+material external surrogate. The System-integration path uses a scripted provider only as an
+observation boundary for the replacement-derived request; provider behavior itself is not the claim,
+so Surrogate/L0 is sufficient.
 
 ### Verification criteria
 
-| Criterion                                | Contract                                           | Test level | Success criterion                                                                                |
-| ---------------------------------------- | -------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------ |
-| `VC_CONFIG_INSTALLATION_ROUND_TRIP`      | {need}`[[id]] <REQ_CONFIG_INSTALLATION_COHERENCE>` | Component  | Installing a distinct valid snapshot makes that exact snapshot active via public API.            |
-| `VC_CONFIG_INSTALLATION_RUNTIME_CAPTURE` | {need}`[[id]] <REQ_CONFIG_INSTALLATION_COHERENCE>` | Component  | Runtime construction after installation captures the newly active snapshot.                      |
-| `VC_CONFIG_CACHE_INVALIDATION`           | {need}`[[id]] <TREQ_CONFIG_CACHE_INVALIDATION>`    | Component  | Installing a replacement configuration clears registered configuration-dependent adapter caches. |
+| Criterion                                | Contract                                           | Test level         | Boundary   | Required paths | Success criterion                                                                                          |
+| ---------------------------------------- | -------------------------------------------------- | ------------------ | ---------- | -------------: | ---------------------------------------------------------------------------------------------------------- |
+| `VC_CONFIG_INSTALLATION_ROUND_TRIP`      | {need}`[[id]] <REQ_CONFIG_INSTALLATION_COHERENCE>` | Component          | Local      |              1 | Installing a distinct valid snapshot makes that exact snapshot active via public API.                      |
+| `VC_CONFIG_INSTALLATION_RUNTIME_CAPTURE` | {need}`[[id]] <REQ_CONFIG_INSTALLATION_COHERENCE>` | Component          | Local      |              1 | Runtime construction after installation captures the newly active snapshot.                                |
+| `VC_CONFIG_CACHE_INVALIDATION`           | {need}`[[id]] <TREQ_CONFIG_CACHE_INVALIDATION>`    | Component          | Local      |              1 | Installing a replacement configuration clears registered configuration-dependent adapter caches.           |
+| `VC_CONFIG_INSTALLATION_RUNTIME_EFFECT`  | {need}`[[id]] <REQ_CONFIG_INSTALLATION_COHERENCE>` | System Integration | Substitute |              1 | A public request created after installation exhibits a replacement-derived value at the provider boundary. |
 
 ### Evidence aggregation
 
-| Signal                 | Rule | Applies to                                                        |
-| ---------------------- | ---- | ----------------------------------------------------------------- |
-| Semantic coverage      | ALL  | required verification criteria                                    |
-| Representation         | ALL  | retained evidence for satisfied criteria                          |
-| Provenance             | ALL  | retained evidence for satisfied criteria                          |
-| Producer qualification | ALL  | retained evidence for satisfied criteria; every required producer |
-| Freshness              | ALL  | retained evidence for satisfied criteria                          |
-| M&S validation         | ALL  | applicable surrogate/model evidence                               |
+| Signal                 | Rule | Applies to                                                         |
+| ---------------------- | ---- | ------------------------------------------------------------------ |
+| Semantic coverage      | ALL  | required verification criteria and each criterion's declared paths |
+| Representation         | ALL  | retained evidence for satisfied criteria                           |
+| Provenance             | ALL  | retained evidence for satisfied criteria                           |
+| Producer qualification | ALL  | retained evidence for satisfied criteria; every required producer  |
+| Freshness              | ALL  | retained evidence for satisfied criteria                           |
+| M&S validation         | ALL  | applicable surrogate/model evidence                                |
 
-No fault classes or blocking mutation checks are selected for this profile.
+### Fault applicability
+
+| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                               |
+| -------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow`                                                              | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| `architecture.layer-bypass`                                                      | —        | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge`        |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | —                                                                                                                                 |
+
+#### Fault-group rationale
+
+| Group                 | Why                                                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Installation must perform the state replacement and invalidation path rather than returning early or skipping required work.   |
+| Runtime / dependency  | Remote dependency behavior is not needed to prove that a replacement configuration becomes locally effective.                  |
+| Interface / protocol  | The System-integration provider boundary is an observation point; provider protocol failures are not part of this contract.    |
+| Architecture          | Bypassing the required configuration-state/cache transition can leave stale runtime behavior even when the public API returns. |
+| Specification / model | Distinct replacement, post-install ordering, cache invalidation, and observable runtime effect are normative state semantics.  |
+
+No blocking mutation threshold is selected; the required deterministic fault classes remain blocking.

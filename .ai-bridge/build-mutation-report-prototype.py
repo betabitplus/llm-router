@@ -70,10 +70,21 @@ MUTATION_CONFIG={
 CONTRACTS={
 "REQ_INVALID_CONFIGURATION_ERRORS":{"source":"src/llm_router/_internal/config/validation.py","kind":"function","scope":"validate_config","tests":[
 "tests/llm_router/bdd/responses/test_public_contract.py::test_invalid_model_configuration_surfaces_as_a_configuration_error",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_policy_timeout",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_policy",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_wait_bounds[0.0-1.0-retry min wait]",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_wait_bounds[2.0-1.0-retry max wait]",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_undeclared_default_provider",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_provider_spec_key_mismatch",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_model_without_provider_mapping",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_model_mapping_to_undeclared_provider",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_zero_structured_output_attempts",
 "tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_missing_required_base_url",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_provider_spec_key_mismatch"]},
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_default_model_without_default_provider_mapping",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_policy",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_policy_timeout",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_zero_fallback_shuffle_minimum",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_undeclared_default_model",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_zero_route_attempt_limit",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_zero_default_tool_rounds"]},
 "TREQ_RATE_LIMIT_STATE":{"source":"src/llm_router/_internal/runtime/limiter.py","kind":"class","scope":"LimiterState","tests":[
 "tests/llm_router/unit/test_internal_limiter.py::test_limiter_state_is_isolated_per_provider_and_key",
 "tests/llm_router/unit/test_internal_limiter.py::test_success_resets_failure_count_before_cooldown_threshold",
@@ -2396,10 +2407,9 @@ def build_dvc_assurance_history(rows,*,subdir=None,title="Assurance history · T
 def build_fault_model_facts():
     config_spec=CONTRACTS["REQ_INVALID_CONFIGURATION_ERRORS"]
     component_tests=[
-      "tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_policy_timeout",
-      "tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_policy",
-      "tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_missing_required_base_url",
-      "tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_provider_spec_key_mismatch",
+      nodeid
+      for nodeid in config_spec["tests"]
+      if "/unit/test_internal_config_validation.py::" in nodeid
     ]
     system_tests=[
       "tests/llm_router/bdd/responses/test_public_contract.py::test_invalid_model_configuration_surfaces_as_a_configuration_error",
@@ -3133,6 +3143,10 @@ def requirement_monitor_target(contract_id, policy):
                 )
             criterion_boundary=next(iter(possible))
         criterion_id=criterion_ids[0]
+        if criterion_id in criterion_path_counts:
+            raise RuntimeError(
+              f"verification criterion {criterion_id} is declared more than once"
+            )
         required_paths_match=re.search(r"\d+",criterion_row.get("Required paths",""))
         required_paths=int(required_paths_match.group(0)) if required_paths_match else 1
         if required_paths<1:
@@ -3160,6 +3174,12 @@ def requirement_monitor_target(contract_id, policy):
         criteria=list(criteria_by_cell.get((level_key,boundary_key)) or [])
         target_match=re.search(r"(\d+)\s+(?:item|criter)",row.get("Target",""),flags=re.IGNORECASE)
         declared_count=int(target_match.group(1)) if target_match else len(criteria)
+        if declared_count!=len(criteria):
+            raise RuntimeError(
+              f"{contract_id}: Required coverage cell {level} × {row.get('Boundary','')} "
+              f"declares {declared_count} criteria but the Verification criteria table assigns "
+              f"{len(criteria)}"
+            )
         coverage.append({
           "level":level_key,
           "level_label":level,
@@ -3205,22 +3225,57 @@ def requirement_monitor_target(contract_id, policy):
           "rule":rule,
           "applies_to":row.get("Applies to","").strip(),
         }
+    policy_fault_groups=list(policy.get("fault_groups") or [])
+    expected_fault_classes={
+      class_id
+      for group in policy_fault_groups
+      for class_id in group["classes"]
+    }
+    expected_fault_groups={group["label"] for group in policy_fault_groups}
+    rationale_rows=markdown_table_after(section,"#### Fault-group rationale")
     fault_group_rationales={
-      row.get("Group",""):row.get("Why","")
-      for row in markdown_table_after(section,"#### Fault-group rationale")
+      row.get("Group","").strip():row.get("Why","").strip()
+      for row in rationale_rows
+      if row.get("Group","").strip()
     }
     fault_cells=markdown_table_after(section,"### Fault applicability")
+    if not fault_cells:
+        raise RuntimeError(
+          f"{contract_id}: every Contract Evidence profile must explicitly classify "
+          "every project fault class as REQUIRED, OPTIONAL, or N/A"
+        )
     class_state={}
+    duplicates=[]
     for row in fault_cells:
         for column,state in (("REQUIRED","required"),("OPTIONAL","optional"),("N/A","na")):
             for class_id in re.findall(r"\x60([^\x60]+)\x60",row.get(column,"")):
+                if class_id in class_state:
+                    duplicates.append(class_id)
+                    continue
                 class_state[class_id]=state
+    unknown_fault_classes=sorted(set(class_state)-expected_fault_classes)
+    missing_fault_classes=sorted(expected_fault_classes-set(class_state))
+    if duplicates or unknown_fault_classes or missing_fault_classes:
+        raise RuntimeError(
+          f"{contract_id}: fault classification must cover each project class exactly once; "
+          f"duplicates={sorted(set(duplicates))}, unknown={unknown_fault_classes}, "
+          f"missing={missing_fault_classes}"
+        )
+    missing_rationales=sorted(
+      group_label
+      for group_label in expected_fault_groups
+      if not fault_group_rationales.get(group_label)
+    )
+    if missing_rationales:
+        raise RuntimeError(
+          f"{contract_id}: missing Fault-group rationale for {missing_rationales}"
+        )
     fault_groups=[]
-    for group in policy.get("fault_groups") or []:
+    for group in policy_fault_groups:
         items=[
           {
             "id":class_id,
-            "state":class_state.get(class_id,"na"),
+            "state":class_state[class_id],
             "description":(group.get("descriptions") or {}).get(class_id,""),
           }
           for class_id in group["classes"]
@@ -3228,7 +3283,7 @@ def requirement_monitor_target(contract_id, policy):
         fault_groups.append({
           "label":group["label"],
           "items":items,
-          "rationale":fault_group_rationales.get(group["label"],""),
+          "rationale":fault_group_rationales[group["label"]],
         })
     mutation={}
     for row in markdown_table_after(section,"### Blocking mutation checks"):

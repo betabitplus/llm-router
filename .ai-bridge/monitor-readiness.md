@@ -27,21 +27,14 @@ Level A owns the display semantics. `docs/test-plan.md` contains only llm-router
 
 ## Verification-criterion contract
 
-The Verification Profile declares six stable criteria for `REQ_INVALID_CONFIGURATION_ERRORS`:
+The Verification Profile declares fourteen stable criteria for `REQ_INVALID_CONFIGURATION_ERRORS`:
 
-- Component: 5 criteria derived from the five configuration-validity Technical requirements
-- System: 1 criterion for the parent public rejection Requirement
+- Component: 13 criteria derived from the complete set of configuration-validity Technical requirements selected by this parent contract, with 16 declared retained paths where multi-partition criteria require more than one path.
+- System: 1 criterion / 1 retained path for the parent public rejection Requirement.
 
-Current executable bindings:
+Current execution satisfies **13/13 Component criteria · 16/16 paths** and **1/1 System criterion · 1/1 path**. This does **not** make the Requirement green: its explicitly required Fault Model classes are a separate blocking target and currently remain incomplete, so **Verification Coverage = PASS · Fault Model = FAIL · Overall = FAIL**.
 
-- `VC_CONFIG_PROVIDER_IDENTITY` → unit test verifying `TREQ_CONFIG_PROVIDER_IDENTITY`
-- `VC_CONFIG_REQUIRED_BASE_URL` → unit test verifying `TREQ_CONFIG_REQUIRED_BASE_URL`
-- `VC_CONFIG_ATTEMPT_TIMEOUT` → unit test verifying `TREQ_CONFIG_ATTEMPT_TIMEOUT`
-- `VC_CONFIG_RETRY_ATTEMPTS` → unit test verifying `TREQ_CONFIG_RETRY_ATTEMPTS`
-- `VC_CONFIG_MODEL_DECLARATION` → **no Component binding**
-- `VC_INVALID_CONFIGURATION_PUBLIC_REJECTION` → BDD public-path test verifying `REQ_INVALID_CONFIGURATION_ERRORS`
-
-Current intended monitor result remains Component semantic coverage **4/5 · FAIL**; System semantic coverage **1/1 · PASS**.
+The profile parser now fails closed when a Required Coverage count disagrees with the criterion table, a criterion ID is duplicated, a Fault applicability table is absent, any project fault class is missing/duplicated/unknown, or a fault-group rationale is omitted. Missing fault authoring can therefore no longer silently become `N/A`.
 
 Runtime binding is retained without inferring semantics from test names or directories:
 

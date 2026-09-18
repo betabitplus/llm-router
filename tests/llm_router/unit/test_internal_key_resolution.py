@@ -62,6 +62,34 @@ def test_auto_key_rotation_uses_sorted_available_keys(
     assert [key.key_id for key in resolved] == [1, 2, 1]
 
 
+@pytest.mark.coverage_item("VC_CREDENTIAL_AUTO_ROTATION")
+def test_auto_key_rotation_uses_configured_custom_key_names(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = build_default_config()
+    _clear_provider_keys(monkeypatch, Provider.NVIDIA)
+    provider_specs = dict(config.catalog.providers)
+    provider_specs[Provider.NVIDIA] = replace(
+        provider_specs[Provider.NVIDIA],
+        api_key_env_vars={3: "CUSTOM_NVIDIA_3", 1: "CUSTOM_NVIDIA_1"},
+    )
+    config = replace(config, catalog=replace(config.catalog, providers=provider_specs))
+    monkeypatch.setenv("CUSTOM_NVIDIA_3", "key-3")
+    monkeypatch.setenv("CUSTOM_NVIDIA_1", "key-1")
+    resolver = KeyResolver(config)
+
+    resolved = [
+        resolver.resolve(provider=Provider.NVIDIA, key_id="auto") for _ in range(3)
+    ]
+
+    assert [key.key_id for key in resolved] == [1, 3, 1]
+    assert [key.env_var for key in resolved] == [
+        "CUSTOM_NVIDIA_1",
+        "CUSTOM_NVIDIA_3",
+        "CUSTOM_NVIDIA_1",
+    ]
+
+
 @pytest.mark.coverage_item("VC_CREDENTIAL_REQUIRED_MISSING")
 def test_missing_required_key_raises_public_error(
     monkeypatch: pytest.MonkeyPatch,
@@ -77,13 +105,15 @@ def test_missing_required_key_raises_public_error(
 
 
 @pytest.mark.coverage_item("VC_CREDENTIAL_OPTIONAL_MISSING")
-def test_optional_qwenchat_key_can_resolve_to_empty_bearer(
+@pytest.mark.parametrize("provider", [Provider.QWENCHAT, Provider.GEMINI_WEBAPI])
+def test_optional_provider_key_can_resolve_to_empty_bearer(
     monkeypatch: pytest.MonkeyPatch,
+    provider: Provider,
 ) -> None:
     config = build_default_config()
-    _clear_provider_keys(monkeypatch, Provider.QWENCHAT)
+    _clear_provider_keys(monkeypatch, provider)
 
-    resolved = KeyResolver(config).resolve(provider=Provider.QWENCHAT, key_id="auto")
+    resolved = KeyResolver(config).resolve(provider=provider, key_id="auto")
 
-    assert resolved.key_id == 1
+    assert resolved.key_id == config.default_key_id
     assert resolved.value == ""

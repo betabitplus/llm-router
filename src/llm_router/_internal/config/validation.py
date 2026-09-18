@@ -23,6 +23,14 @@ def _require(*, condition: bool, message: str) -> None:
 # @impl Required base URL validation, IMPL_CONFIG_REQUIRED_BASE_URL, [TREQ_CONFIG_REQUIRED_BASE_URL[revision==1]]
 # @impl Attempt timeout validation, IMPL_CONFIG_ATTEMPT_TIMEOUT, [TREQ_CONFIG_ATTEMPT_TIMEOUT[revision==1]]
 # @impl Retry attempt validation, IMPL_CONFIG_RETRY_ATTEMPTS, [TREQ_CONFIG_RETRY_ATTEMPTS[revision==1]]
+# @impl Retry wait validation, IMPL_CONFIG_RETRY_WAIT_BOUNDS, [TREQ_CONFIG_RETRY_WAIT_BOUNDS[revision==1]]
+# @impl Route-attempt limit validation, IMPL_CONFIG_ROUTE_ATTEMPT_LIMIT, [TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT[revision==1]]
+# @impl Fallback shuffle validation, IMPL_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES, [TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES[revision==1]]
+# @impl Tool-round limit validation, IMPL_CONFIG_TOOL_ROUND_LIMIT, [TREQ_CONFIG_TOOL_ROUND_LIMIT[revision==1]]
+# @impl Structured-output attempt validation, IMPL_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS, [TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS[revision==1]]
+# @impl Default provider validation, IMPL_CONFIG_DEFAULT_PROVIDER_DECLARATION, [TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION[revision==1]]
+# @impl Default model mapping validation, IMPL_CONFIG_DEFAULT_MODEL_MAPPING, [TREQ_CONFIG_DEFAULT_MODEL_MAPPING[revision==1]]
+# @impl Model provider reference validation, IMPL_CONFIG_MODEL_PROVIDER_REFERENCES, [TREQ_CONFIG_MODEL_PROVIDER_REFERENCES[revision==1]]
 def validate_config(config: LLMRouterConfig) -> None:
     """Validate one runtime config snapshot."""
     retry = config.retry_policy

@@ -75,7 +75,7 @@ Contracts in this capability:
 :collapse: true
 :status: accepted
 :revision: 1
-:required_evidence: impl;bdd
+:required_evidence: impl;bdd;unit
 :derives: FEAT_TOOL_SELECTION
 
 **Statement.** When the caller explicitly selects a named tool, a supported provider route shall request and execute that tool rather than silently choosing another registered tool.

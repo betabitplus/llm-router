@@ -123,7 +123,7 @@ Contracts in this capability:
 :collapse: true
 :status: accepted
 :revision: 1
-:required_evidence: impl
+:required_evidence: impl;unit
 :derives: REQ_INVALID_CONFIGURATION_ERRORS
 
 **Statement.** Each configured provider entry shall identify the same provider as the key under which that entry is registered.
@@ -144,7 +144,7 @@ Contracts in this capability:
 :collapse: true
 :status: accepted
 :revision: 1
-:required_evidence: impl
+:required_evidence: impl;unit
 :derives: REQ_INVALID_CONFIGURATION_ERRORS
 
 **Statement.** A requested model shall be accepted only when it is declared by the effective configuration.
@@ -165,7 +165,7 @@ Contracts in this capability:
 :collapse: true
 :status: accepted
 :revision: 1
-:required_evidence: impl
+:required_evidence: impl;unit
 :derives: REQ_INVALID_CONFIGURATION_ERRORS
 
 **Statement.** When a configured provider requires an explicit base URL, the effective configuration shall provide one.
@@ -186,7 +186,7 @@ Contracts in this capability:
 :collapse: true
 :status: accepted
 :revision: 1
-:required_evidence: impl
+:required_evidence: impl;unit
 :derives: REQ_INVALID_CONFIGURATION_ERRORS
 
 **Statement.** The effective attempt timeout shall be greater than zero.
@@ -207,7 +207,7 @@ Contracts in this capability:
 :collapse: true
 :status: accepted
 :revision: 1
-:required_evidence: impl
+:required_evidence: impl;unit
 :derives: REQ_INVALID_CONFIGURATION_ERRORS
 
 **Statement.** The effective retry maximum-attempt count shall be at least one.
@@ -219,6 +219,174 @@ Contracts in this capability:
 
 ```{needlist}
 :filter: "'TREQ_CONFIG_RETRY_ATTEMPTS' in derives or 'TREQ_CONFIG_RETRY_ATTEMPTS' in implements or 'TREQ_CONFIG_RETRY_ATTEMPTS' in verifies"
+```
+
+::::
+
+```{treq} Retry wait bounds are coherent
+:id: TREQ_CONFIG_RETRY_WAIT_BOUNDS
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;unit
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** The configured provider retry minimum wait shall be greater than zero, and the maximum wait shall be greater than or equal to that minimum.
+
+**Rationale.** A non-positive minimum or an inverted wait interval cannot define a coherent retry schedule.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_RETRY_WAIT_BOUNDS' in derives or 'TREQ_CONFIG_RETRY_WAIT_BOUNDS' in implements or 'TREQ_CONFIG_RETRY_WAIT_BOUNDS' in verifies"
+```
+
+::::
+
+```{treq} Route-attempt limit is positive when configured
+:id: TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;unit
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** When an effective route-attempt maximum is configured, it shall be at least one.
+
+**Rationale.** A configured route-attempt policy that permits no attempt cannot define executable fallback behavior.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT' in derives or 'TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT' in implements or 'TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT' in verifies"
+```
+
+::::
+
+```{treq} Fallback shuffle minimum is positive
+:id: TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;unit
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** The configured minimum route count for fallback shuffling shall be at least one.
+
+**Rationale.** A shuffle threshold below one cannot describe a meaningful candidate-set boundary.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES' in derives or 'TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES' in implements or 'TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES' in verifies"
+```
+
+::::
+
+```{treq} Default tool-round limit is positive
+:id: TREQ_CONFIG_TOOL_ROUND_LIMIT
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;unit
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** The configured default maximum tool-round count shall be at least one.
+
+**Rationale.** A default tool-loop budget that permits no round is inconsistent with the bounded tool-execution contract.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_TOOL_ROUND_LIMIT' in derives or 'TREQ_CONFIG_TOOL_ROUND_LIMIT' in implements or 'TREQ_CONFIG_TOOL_ROUND_LIMIT' in verifies"
+```
+
+::::
+
+```{treq} Structured-output repair limit is positive
+:id: TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;unit
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** The configured structured-output maximum-attempt count shall be at least one.
+
+**Rationale.** A repair budget with no permitted attempt cannot define executable structured-output behavior.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS' in derives or 'TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS' in implements or 'TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS' in verifies"
+```
+
+::::
+
+```{treq} Default provider is declared
+:id: TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;unit
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** The configured default provider shall be present in the effective provider catalog.
+
+**Rationale.** A default provider that is not declared cannot be resolved into a deterministic route.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION' in derives or 'TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION' in implements or 'TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION' in verifies"
+```
+
+::::
+
+```{treq} Default model is executable by the default provider
+:id: TREQ_CONFIG_DEFAULT_MODEL_MAPPING
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;unit
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** The configured default model shall be present in the effective model registry and shall contain a mapping for the configured default provider.
+
+**Rationale.** A default model/provider pair that cannot be resolved from the registry cannot be executed deterministically.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_DEFAULT_MODEL_MAPPING' in derives or 'TREQ_CONFIG_DEFAULT_MODEL_MAPPING' in implements or 'TREQ_CONFIG_DEFAULT_MODEL_MAPPING' in verifies"
+```
+
+::::
+
+```{treq} Model provider mappings are internally resolvable
+:id: TREQ_CONFIG_MODEL_PROVIDER_REFERENCES
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;unit
+:derives: REQ_INVALID_CONFIGURATION_ERRORS
+
+**Statement.** Every declared model shall map to at least one provider, and every provider referenced by a model mapping shall be present in the effective provider catalog.
+
+**Rationale.** Empty or dangling model mappings defer a configuration defect into route expansion or provider execution.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_CONFIG_MODEL_PROVIDER_REFERENCES' in derives or 'TREQ_CONFIG_MODEL_PROVIDER_REFERENCES' in implements or 'TREQ_CONFIG_MODEL_PROVIDER_REFERENCES' in verifies"
 ```
 
 ::::
@@ -251,7 +419,7 @@ Contracts in this capability:
 :collapse: true
 :status: accepted
 :revision: 2
-:required_evidence: impl;unit
+:required_evidence: impl;unit;integration
 :derives: FEAT_CONFIGURATION_PRECEDENCE
 
 **Statement.** Installing a new active configuration shall round-trip through the public configuration API and become the effective configuration for subsequent runtime behavior.
