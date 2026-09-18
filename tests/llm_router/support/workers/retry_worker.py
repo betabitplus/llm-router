@@ -15,6 +15,7 @@ How:
 from __future__ import annotations
 
 import argparse
+import asyncio
 import json
 from typing import Any
 
@@ -93,11 +94,13 @@ def _build_query_args(case: str, scenario: str) -> tuple[object, dict[str, Any]]
     if case == "aistudio_video":
         return [prompt, VideoSchema(path=str(VIDEO_PATH))], {}
 
+    base_scenario = scenario.removeprefix("async_")
+
     if case == "gemini_webapi":
-        kwargs = {"timeout": 0.05} if scenario == "retryable" else {}
+        kwargs = {"timeout": 0.05} if base_scenario == "retryable" else {}
         return prompt, kwargs
 
-    if case == "qwenchat" and scenario in {
+    if case == "qwenchat" and base_scenario in {
         "retryable_upload",
         "non_retryable_upload",
     }:
@@ -112,7 +115,10 @@ def _run_case(*, case: str, scenario: str) -> dict[str, Any]:
     content, kwargs = _build_query_args(case, scenario)
 
     try:
-        response = router.query(content, **kwargs)
+        if scenario.startswith("async_"):
+            response = asyncio.run(router.aquery(content, **kwargs))
+        else:
+            response = router.query(content, **kwargs)
     except Exception as exc:
         return _error_payload(exc)
     return _success_payload(response.output_text)
@@ -146,7 +152,13 @@ def main() -> None:
     try:
         ensure_worker_env()
         _prepare_case(case=args.case, server_base_url=args.server_base_url)
-        if args.scenario in {"retryable", "retryable_upload", "retryable_api_error"}:
+        base_scenario = args.scenario.removeprefix("async_")
+        if base_scenario in {
+            "retryable",
+            "retryable_upload",
+            "retryable_api_error",
+            "exhausted",
+        }:
             install_fast_worker_runtime_config()
         result = _run_case(case=args.case, scenario=args.scenario)
     except Exception as exc:  # Defensive: worker should always emit JSON.

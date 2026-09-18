@@ -14,4 +14,5 @@ configuration
 invalid-configuration
 tools
 routing
+resilience
 ```

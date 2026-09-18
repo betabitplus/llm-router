@@ -96,6 +96,7 @@ def run_retry_worker(
     case: str,
     scenario: str,
     server_base_url: str,
+    max_attempts: int | None = None,
 ) -> RetryWorkerResult:
     """Run one retry scenario.
 
@@ -104,7 +105,10 @@ def run_retry_worker(
     """
 
     return run_retry_inprocess(
-        case=case, scenario=scenario, server_base_url=server_base_url
+        case=case,
+        scenario=scenario,
+        server_base_url=server_base_url,
+        max_attempts=max_attempts,
     )
 
 
@@ -113,6 +117,7 @@ def run_retry_inprocess(
     case: str,
     scenario: str,
     server_base_url: str,
+    max_attempts: int | None = None,
 ) -> RetryWorkerResult:
     """Run one retry scenario in-process (no subprocess overhead)."""
     import tests.llm_router.support.workers.retry_worker as worker
@@ -134,8 +139,16 @@ def run_retry_inprocess(
 
         _install_provider_base_url_overrides(case=case, server_base_url=server_base_url)
 
-        if scenario in {"retryable", "retryable_upload", "retryable_api_error"}:
-            install_fast_worker_runtime_config()
+        base_scenario = scenario.removeprefix("async_")
+        if base_scenario in {
+            "retryable",
+            "retryable_upload",
+            "retryable_api_error",
+            "exhausted",
+        }:
+            install_fast_worker_runtime_config(
+                retry_max_attempts=max_attempts,
+            )
 
         with _patch_context_for_case(case=case, server_base_url=server_base_url):
             payload = worker._run_case(case=case, scenario=scenario)

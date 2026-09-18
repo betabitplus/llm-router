@@ -114,7 +114,7 @@ def validate_schema_output(
     return SchemaValidationResult(valid=True, value=parsed)
 
 
-# @impl Bounded repair prompt, IMPL_REPAIR_PROMPT_BOUNDS, [TREQ_REPAIR_PROMPT_BOUNDS[revision==1]]
+# @impl Bounded repair prompt, IMPL_REPAIR_PROMPT_BOUNDS, [TREQ_REPAIR_PROMPT_BOUNDS[revision==2]]
 def build_repair_prompt(
     *,
     spec: SchemaSpec,
@@ -124,13 +124,14 @@ def build_repair_prompt(
     """Build bounded validation guidance for a structured-output repair turn."""
     output_preview = preview_value(invalid_output, max_chars=500)
     error_preview = preview_text(error_message, max_chars=300)
+    schema_name = preview_text(spec.name, max_chars=120)
     schema_preview = preview_text(
         json.dumps(dict(spec.json_schema), sort_keys=True),
         max_chars=500,
     )
     return (
         "The previous response did not match the required schema.\n"
-        f"Schema: {spec.name}\n"
+        f"Schema: {schema_name}\n"
         f"Required schema preview: {schema_preview}\n"
         f"Validation error: {error_preview}\n"
         f"Previous response preview: {output_preview}\n"

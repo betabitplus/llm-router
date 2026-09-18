@@ -7,12 +7,12 @@ Why:
 
 from __future__ import annotations
 
-import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any, Protocol
 
+import httpx
 from py_lib_runtime import build_retry_before_sleep_logger
 from tenacity import (
     AsyncRetrying,
@@ -59,6 +59,7 @@ _NON_RETRYABLE_STATUS_CODES = frozenset({400, 401, 403, 404, 422})
 _SERVER_ERROR_STATUS_MIN = 500
 
 
+# @impl Retry status classification, IMPL_PROVIDER_RETRY_STATUS_CLASSIFICATION, [TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]]
 def classify_status_code(status_code: int) -> RetryDecision:
     """Classify an HTTP status code for same-provider retry."""
     if status_code in _RETRYABLE_STATUS_CODES:
@@ -86,24 +87,23 @@ def classify_status_code(status_code: int) -> RetryDecision:
     )
 
 
+def _is_retryable_transport_exception(exc: BaseException) -> bool:
+    """Return whether an exception chain contains a known transport failure type."""
+    retryable_types = (TimeoutError, ConnectionError, httpx.TransportError)
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, retryable_types):
+            return True
+        current = current.__cause__ or current.__context__
+    return False
+
+
+# @impl Retry exception classification, IMPL_PROVIDER_RETRY_EXCEPTION_CLASSIFICATION, [TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]]
 def classify_exception(exc: BaseException) -> RetryDecision:
-    """Classify transport-style exceptions without importing provider SDKs."""
-    tokens = _exception_name_tokens(exc)
-    retryable_fragments = (
-        "timeout",
-        "connect",
-        "network",
-        "disconnect",
-        "remote",
-        "protocol",
-        "read",
-        "write",
-    )
-    if any(
-        token.startswith(fragment)
-        for token in tokens
-        for fragment in retryable_fragments
-    ):
+    """Classify failures by explicit transport exception types."""
+    if _is_retryable_transport_exception(exc):
         return RetryDecision(
             classification=RetryClassification.RETRYABLE,
             reason="transport_exception",
@@ -114,13 +114,6 @@ def classify_exception(exc: BaseException) -> RetryDecision:
     )
 
 
-def _exception_name_tokens(exc: BaseException) -> tuple[str, ...]:
-    """Return lower-case CamelCase-aware exception name tokens."""
-    name = type(exc).__name__
-    spaced = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", name)
-    return tuple(token for token in re.split(r"[^a-z0-9]+", spaced.lower()) if token)
-
-
 def is_retryable_provider_error(exc: BaseException) -> bool:
     """Return whether a public provider error carries a retryable private cause."""
     if not isinstance(exc, ProviderError):
@@ -128,6 +121,7 @@ def is_retryable_provider_error(exc: BaseException) -> bool:
     return bool(getattr(exc.cause, "retryable", False))
 
 
+# @impl Bounded synchronous provider retry, IMPL_PROVIDER_RETRY_SYNC_BOUNDS, [TREQ_PROVIDER_RETRY_BOUNDS[revision==1]]
 def build_provider_retrying(
     *,
     policy: RetryPolicy,
@@ -153,6 +147,7 @@ def build_provider_retrying(
     )
 
 
+# @impl Bounded asynchronous provider retry, IMPL_PROVIDER_RETRY_ASYNC_BOUNDS, [TREQ_PROVIDER_RETRY_BOUNDS[revision==1]]
 def build_provider_async_retrying(
     *,
     policy: RetryPolicy,

@@ -72,19 +72,22 @@ def test_generation_precedence_preserves_omission_vs_explicit_none(
     assert settings.temperature == expected
 
 
-@pytest.mark.verifies("TREQ_REPAIR_PROMPT_BOUNDS[revision==1]")
+@pytest.mark.verifies("TREQ_REPAIR_PROMPT_BOUNDS[revision==2]")
+@pytest.mark.coverage_item("VC_REPAIR_PROMPT_BOUNDS")
 @pytest.mark.verification_kind("property")
 @given(
+    schema_name=st.text(min_size=0, max_size=2_000),
     invalid_output=st.text(min_size=0, max_size=2_000),
     error_message=st.text(min_size=0, max_size=2_000),
 )
 def test_repair_prompt_remains_bounded(
     *,
+    schema_name: str,
     invalid_output: str,
     error_message: str,
 ) -> None:
     prompt = build_repair_prompt(
-        spec=normalize_schema({"title": "Reply", "type": "object"}),
+        spec=normalize_schema({"title": schema_name, "type": "object"}),
         invalid_output=invalid_output,
         error_message=error_message,
     )

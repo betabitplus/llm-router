@@ -440,6 +440,7 @@ def _advance_tool_result(
 
 
 # @impl Structured output repair loop, IMPL_STRUCTURED_OUTPUT_REPAIR, [REQ_STRUCTURED_OUTPUT_REPAIR[revision==2]]
+# @impl Structured output attempt bound, IMPL_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]
 def _advance_structured_result(
     *,
     config: LLMRouterConfig,

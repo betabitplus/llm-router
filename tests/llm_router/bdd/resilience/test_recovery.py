@@ -5,11 +5,16 @@ from __future__ import annotations
 import json
 from typing import Any
 
+import pytest
 from pydantic import BaseModel, Field
 from pytest_bdd import given, scenarios, then, when
 
 from tests.llm_router.support.assertions import parse_json_object
-from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+    retain_fault_injection,
+)
 from tests.llm_router.support.workers.retry import (
     openai_chat_path,
     openai_error_response,
@@ -23,6 +28,71 @@ from tests.llm_router.support.workers.structured_recovery import (
 )
 
 scenarios("resilience/recovery.feature")
+
+for _test_name, _criterion in (
+    (
+        "test_a_temporary_provider_failure_succeeds_on_retry",
+        "VC_PROVIDER_RETRY_TRANSIENT_RECOVERY",
+    ),
+    (
+        "test_an_asynchronous_temporary_provider_failure_succeeds_on_retry",
+        "VC_PROVIDER_RETRY_TRANSIENT_RECOVERY",
+    ),
+    (
+        "test_a_permanent_provider_failure_is_not_retried",
+        "VC_PROVIDER_RETRY_PERMANENT_NO_RETRY",
+    ),
+    (
+        "test_an_asynchronous_permanent_provider_failure_is_not_retried",
+        "VC_PROVIDER_RETRY_PERMANENT_NO_RETRY",
+    ),
+    (
+        "test_synchronous_provider_retry_stops_at_the_configured_attempt_limit",
+        "VC_PROVIDER_RETRY_ATTEMPT_BOUND",
+    ),
+    (
+        "test_asynchronous_provider_retry_stops_at_the_configured_attempt_limit",
+        "VC_PROVIDER_RETRY_ATTEMPT_BOUND",
+    ),
+    (
+        "test_invalid_structured_output_is_repaired",
+        "VC_STRUCTURED_REPAIR_RECOVERY",
+    ),
+    (
+        "test_structured_output_stops_at_a_oneattempt_budget",
+        "VC_STRUCTURED_REPAIR_ATTEMPT_BOUND",
+    ),
+    (
+        "test_structured_output_stops_at_a_twoattempt_budget",
+        "VC_STRUCTURED_REPAIR_ATTEMPT_BOUND",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
+
+for _test_name in (
+    "test_a_temporary_provider_failure_succeeds_on_retry",
+    "test_an_asynchronous_temporary_provider_failure_succeeds_on_retry",
+    "test_a_permanent_provider_failure_is_not_retried",
+    "test_an_asynchronous_permanent_provider_failure_is_not_retried",
+    "test_synchronous_provider_retry_stops_at_the_configured_attempt_limit",
+    "test_asynchronous_provider_retry_stops_at_the_configured_attempt_limit",
+):
+    globals()[_test_name] = pytest.mark.fault_item(
+        "REQ_PROVIDER_RETRY",
+        "interface.error-status",
+    )(globals()[_test_name])
+
+for _test_name in (
+    "test_invalid_structured_output_is_repaired",
+    "test_structured_output_stops_at_a_oneattempt_budget",
+    "test_structured_output_stops_at_a_twoattempt_budget",
+):
+    globals()[_test_name] = pytest.mark.fault_item(
+        "REQ_STRUCTURED_OUTPUT_REPAIR",
+        "interface.payload-schema",
+    )(globals()[_test_name])
+
+del _criterion, _test_name
 
 _OPENAI_PATH = openai_chat_path()
 _QWEN_PATH = qwen_chat_path()
@@ -71,6 +141,12 @@ def failure_is_retryable(case: dict[str, Any]) -> None:
 
 @when("the same provider succeeds on a later attempt")
 def retry_succeeds(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_PROVIDER_RETRY",
+        fault_class="interface.error-status",
+        mechanism="scripted provider returns retryable HTTP 429 before success",
+        details={"status_code": 429},
+    )
     with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
         case["result"] = run_retry_worker(
             case="openai",
@@ -113,6 +189,12 @@ def provider_rejects_permanently() -> dict[str, Any]:
 
 @when("the request is executed")
 def execute_permanent_failure(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_PROVIDER_RETRY",
+        fault_class="interface.error-status",
+        mechanism="scripted provider returns permanent HTTP 400",
+        details={"status_code": 400},
+    )
     with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
         case["result"] = run_retry_worker(
             case="openai",
@@ -156,11 +238,18 @@ def first_structured_result_is_invalid() -> dict[str, Any]:
 
 @when("a later repair attempt returns valid output")
 def repair_succeeds(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_STRUCTURED_OUTPUT_REPAIR",
+        fault_class="interface.payload-schema",
+        mechanism="scripted provider returns schema-invalid structured output",
+        details={"total_attempt_budget": 2},
+    )
     with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
         case["result"] = run_structured_recovery_worker(
             case="qwenchat",
             scenario="recovery",
             server_base_url=server.base_url,
+            max_attempts=2,
         )
         case["request_count"] = server.request_count("POST", _QWEN_PATH)
 
@@ -174,8 +263,152 @@ def structured_result_is_returned(case: dict[str, Any]) -> None:
     assert case["request_count"] == 2
 
 
-@given("every repair attempt returns invalid output", target_fixture="case")
-def every_repair_is_invalid() -> dict[str, Any]:
+@given(
+    "a provider temporarily fails during asynchronous execution",
+    target_fixture="case",
+)
+def provider_temporarily_fails_async() -> dict[str, Any]:
+    return provider_temporarily_fails()
+
+
+@when("the same provider succeeds on a later asynchronous attempt")
+def async_retry_succeeds(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_PROVIDER_RETRY",
+        fault_class="interface.error-status",
+        mechanism="scripted provider returns retryable HTTP 429 before async success",
+        details={"status_code": 429},
+    )
+    with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
+        case["result"] = run_retry_worker(
+            case="openai",
+            scenario="async_retryable",
+            server_base_url=server.base_url,
+        )
+        case["request_count"] = server.request_count("POST", _OPENAI_PATH)
+
+
+@then("the asynchronous request succeeds without route fallback")
+def async_retry_stays_on_route(case: dict[str, Any]) -> None:
+    retry_stays_on_route(case)
+
+
+@given(
+    "a provider rejects an asynchronous request permanently",
+    target_fixture="case",
+)
+def provider_rejects_permanently_async() -> dict[str, Any]:
+    return provider_rejects_permanently()
+
+
+@when("the asynchronous request is executed")
+def execute_permanent_failure_async(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_PROVIDER_RETRY",
+        fault_class="interface.error-status",
+        mechanism="scripted provider returns permanent HTTP 400 during async execution",
+        details={"status_code": 400},
+    )
+    with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
+        case["result"] = run_retry_worker(
+            case="openai",
+            scenario="async_non_retryable",
+            server_base_url=server.base_url,
+        )
+        case["request_count"] = server.request_count("POST", _OPENAI_PATH)
+
+
+@then("the provider is not retried asynchronously")
+def permanent_failure_is_not_retried_async(case: dict[str, Any]) -> None:
+    permanent_failure_is_not_retried(case)
+
+
+def _exhausted_retry_case() -> dict[str, Any]:
+    retryable = ScriptedResponse(
+        status_code=503,
+        headers={"Content-Type": "application/json"},
+        body=openai_error_response(status_code=503, message="still unavailable"),
+    )
+    sentinel = ScriptedResponse(
+        status_code=200,
+        headers={"Content-Type": "application/json"},
+        body=openai_success_response(text="unexpected third attempt"),
+    )
+    return {
+        "routes": {
+            ("POST", _OPENAI_PATH): [retryable, retryable, sentinel],
+        }
+    }
+
+
+@given("a provider keeps failing with retryable errors", target_fixture="case")
+def provider_keeps_failing() -> dict[str, Any]:
+    return _exhausted_retry_case()
+
+
+@when("synchronous retry exhausts a two-attempt budget")
+def sync_retry_exhausts_budget(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_PROVIDER_RETRY",
+        fault_class="interface.error-status",
+        mechanism=(
+            "scripted provider remains HTTP 503 through the full sync retry budget"
+        ),
+        details={"status_code": 503, "max_attempts": 2},
+    )
+    with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
+        case["result"] = run_retry_worker(
+            case="openai",
+            scenario="exhausted",
+            server_base_url=server.base_url,
+            max_attempts=2,
+        )
+        case["request_count"] = server.request_count("POST", _OPENAI_PATH)
+
+
+@then("exactly two synchronous provider attempts are made")
+def exactly_two_sync_attempts(case: dict[str, Any]) -> None:
+    result = case["result"]
+    assert result.ok is False
+    assert result.error_type == "ProviderError"
+    assert case["request_count"] == 2
+
+
+@given(
+    "a provider keeps failing asynchronously with retryable errors",
+    target_fixture="case",
+)
+def provider_keeps_failing_async() -> dict[str, Any]:
+    return _exhausted_retry_case()
+
+
+@when("asynchronous retry exhausts a two-attempt budget")
+def async_retry_exhausts_budget(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_PROVIDER_RETRY",
+        fault_class="interface.error-status",
+        mechanism=(
+            "scripted provider remains HTTP 503 through the full async retry budget"
+        ),
+        details={"status_code": 503, "max_attempts": 2},
+    )
+    with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
+        case["result"] = run_retry_worker(
+            case="openai",
+            scenario="async_exhausted",
+            server_base_url=server.base_url,
+            max_attempts=2,
+        )
+        case["request_count"] = server.request_count("POST", _OPENAI_PATH)
+
+
+@then("exactly two asynchronous provider attempts are made")
+def exactly_two_async_attempts(case: dict[str, Any]) -> None:
+    exactly_two_sync_attempts(case)
+
+
+@given("every structured response is invalid", target_fixture="case")
+def every_structured_response_is_invalid() -> dict[str, Any]:
     invalid = ScriptedResponse(
         status_code=200,
         headers={"Content-Type": "application/json"},
@@ -184,21 +417,46 @@ def every_repair_is_invalid() -> dict[str, Any]:
     return {"routes": {("POST", _QWEN_PATH): [invalid, invalid, invalid]}}
 
 
-@when("the repair limit is reached")
-def repair_limit_is_reached(case: dict[str, Any]) -> None:
+def _run_invalid_structured_budget(case: dict[str, Any], *, max_attempts: int) -> None:
+    retain_fault_injection(
+        contract_id="REQ_STRUCTURED_OUTPUT_REPAIR",
+        fault_class="interface.payload-schema",
+        mechanism="scripted provider returns schema-invalid structured output",
+        details={"total_attempt_budget": max_attempts},
+    )
     with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
         case["result"] = run_structured_recovery_worker(
             case="qwenchat",
             scenario="exhausted",
             server_base_url=server.base_url,
+            max_attempts=max_attempts,
         )
         case["request_count"] = server.request_count("POST", _QWEN_PATH)
 
 
-@then("the request fails with a public provider error")
-def repair_exhaustion_is_public(case: dict[str, Any]) -> None:
+@when("structured output runs with a one-attempt budget")
+def structured_budget_one(case: dict[str, Any]) -> None:
+    _run_invalid_structured_budget(case, max_attempts=1)
+
+
+@then("exactly one structured provider response is evaluated")
+def exactly_one_structured_attempt(case: dict[str, Any]) -> None:
     result = case["result"]
     assert result.ok is False
     assert result.error_type == "ProviderError"
     assert "Structured output validation failed" in (result.error_message or "")
-    assert case["request_count"] == 3
+    assert case["request_count"] == 1
+
+
+@when("structured output runs with a two-attempt budget")
+def structured_budget_two(case: dict[str, Any]) -> None:
+    _run_invalid_structured_budget(case, max_attempts=2)
+
+
+@then("exactly two structured provider responses are evaluated")
+def exactly_two_structured_attempts(case: dict[str, Any]) -> None:
+    result = case["result"]
+    assert result.ok is False
+    assert result.error_type == "ProviderError"
+    assert "Structured output validation failed" in (result.error_message or "")
+    assert case["request_count"] == 2

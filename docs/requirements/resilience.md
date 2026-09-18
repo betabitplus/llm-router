@@ -81,11 +81,11 @@ Contracts in this capability:
 **Statement.** Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.
 
 **Rationale.** Retrying transient failures improves availability, while retrying permanent failures adds latency and cost without increasing the chance of success.
-
-**Verification intent.** Exercise retryable and permanent failures through public provider execution and verify transient failures can recover while permanent failures surface without inappropriate retry.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-provider-retry>`
 
 ```{needlist}
 :filter: "'REQ_PROVIDER_RETRY' in derives or 'REQ_PROVIDER_RETRY' in implements or 'REQ_PROVIDER_RETRY' in verifies"
@@ -104,14 +104,37 @@ Contracts in this capability:
 **Statement.** Retry classification shall use explicit status and exception semantics rather than message substrings.
 
 **Rationale.** Message matching is brittle and can classify unrelated exceptions as retryable merely because their text resembles a transient transport failure.
-
-**Verification intent.** Directly verify representative status and exception classifications, including transport exceptions whose messages resemble retryable failures but whose types do not.
 ```
 
 ::::{dropdown} Follow this contract to proof
 
+{ref}`Parent verification profile → <verification-profile-req-provider-retry>`
+
 ```{needlist}
 :filter: "'TREQ_PROVIDER_RETRY_CLASSIFICATION' in derives or 'TREQ_PROVIDER_RETRY_CLASSIFICATION' in implements or 'TREQ_PROVIDER_RETRY_CLASSIFICATION' in verifies"
+```
+
+::::
+
+```{treq} Same-route provider retry is bounded
+:id: TREQ_PROVIDER_RETRY_BOUNDS
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;bdd
+:derives: REQ_PROVIDER_RETRY
+
+**Statement.** For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing. The initial provider call counts as attempt one.
+
+**Rationale.** Retry may improve availability only while same-route work remains bounded. A retry loop that exceeds its configured attempt budget can multiply latency and external calls before route fallback is allowed to proceed.
+```
+
+::::{dropdown} Follow this contract to proof
+
+{ref}`Parent verification profile → <verification-profile-req-provider-retry>`
+
+```{needlist}
+:filter: "'TREQ_PROVIDER_RETRY_BOUNDS' in derives or 'TREQ_PROVIDER_RETRY_BOUNDS' in implements or 'TREQ_PROVIDER_RETRY_BOUNDS' in verifies"
 ```
 
 ::::
@@ -141,14 +164,37 @@ Contracts in this capability:
 **Statement.** Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.
 
 **Rationale.** Repair improves robustness only while its work remains bounded; unbounded retries can turn a malformed response into runaway execution.
-
-**Verification intent.** Exercise successful and exhausted repair through public structured-output behavior and verify repair terminates at the configured attempt limit.
 ```
 
 ::::{dropdown} Follow this contract to proof
 
+{ref}`Verification profile → <verification-profile-req-structured-output-repair>`
+
 ```{needlist}
 :filter: "'REQ_STRUCTURED_OUTPUT_REPAIR' in derives or 'REQ_STRUCTURED_OUTPUT_REPAIR' in implements or 'REQ_STRUCTURED_OUTPUT_REPAIR' in verifies"
+```
+
+::::
+
+```{treq} Structured-output attempt counting is bounded
+:id: TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;bdd
+:derives: REQ_STRUCTURED_OUTPUT_REPAIR
+
+**Statement.** The configured structured-output maximum-attempt count shall cap the total provider responses evaluated for one structured-output request, including the initial response and every repair turn.
+
+**Rationale.** The configured value is an execution budget, not an additional-repair allowance. Counting the initial response separately from the cap would make the true provider-call bound larger than the declared maximum.
+```
+
+::::{dropdown} Follow this contract to proof
+
+{ref}`Parent verification profile → <verification-profile-req-structured-output-repair>`
+
+```{needlist}
+:filter: "'TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS' in derives or 'TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS' in implements or 'TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS' in verifies"
 ```
 
 ::::
@@ -157,18 +203,18 @@ Contracts in this capability:
 :id: TREQ_REPAIR_PROMPT_BOUNDS
 :collapse: true
 :status: accepted
-:revision: 1
+:revision: 2
 :required_evidence: impl;property
 :derives: REQ_STRUCTURED_OUTPUT_REPAIR
 
-**Statement.** Repair prompts shall bound incorporated invalid output and validation details for arbitrary generated input.
+**Statement.** Repair prompts shall bound every incorporated dynamic component, including schema identity and preview, invalid output, and validation details.
 
-**Rationale.** Even a finite retry loop can consume unbounded prompt space if malformed output and validation detail are copied without limits.
-
-**Verification intent.** Use property-based invalid outputs and validation details to verify the generated repair prompt remains within the intended bounds.
+**Rationale.** Even a finite retry loop can consume unbounded prompt space if caller-controlled schema metadata, malformed output, or validation detail is copied without limits.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Parent verification profile → <verification-profile-req-structured-output-repair>`
 
 ```{needlist}
 :filter: "'TREQ_REPAIR_PROMPT_BOUNDS' in derives or 'TREQ_REPAIR_PROMPT_BOUNDS' in implements or 'TREQ_REPAIR_PROMPT_BOUNDS' in verifies"

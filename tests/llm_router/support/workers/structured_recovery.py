@@ -48,6 +48,7 @@ def run_structured_recovery_worker(
     case: str,
     scenario: str,
     server_base_url: str,
+    max_attempts: int | None = None,
 ) -> StructuredRecoveryWorkerResult:
     """Run one structured-recovery scenario.
 
@@ -60,6 +61,7 @@ def run_structured_recovery_worker(
     return run_structured_recovery_inprocess(
         case=case,
         server_base_url=server_base_url,
+        max_attempts=max_attempts,
     )
 
 
@@ -67,11 +69,15 @@ def run_structured_recovery_inprocess(
     *,
     case: str,
     server_base_url: str,
+    max_attempts: int | None = None,
 ) -> StructuredRecoveryWorkerResult:
     """Run one structured-recovery scenario in-process (no subprocess overhead)."""
     import tests.llm_router.support.workers.structured_recovery_worker as worker
     from llm_router import get_config, install_config
     from tests.llm_router.support.runtime import clear_test_caches
+    from tests.llm_router.support.workers.worker_patches import (
+        install_fast_worker_runtime_config,
+    )
 
     original_config = get_config()
     previous_qwen_key = os.environ.get("QWENCHAT_API_KEY_1")
@@ -80,6 +86,10 @@ def run_structured_recovery_inprocess(
 
     try:
         clear_test_caches()
+        if max_attempts is not None:
+            install_fast_worker_runtime_config(
+                structured_output_max_attempts=max_attempts,
+            )
         if case == "qwenchat":
             install_worker_provider_base_url(
                 provider="qwenchat",

@@ -119,6 +119,32 @@
 
 **Completion:** required criteria = **100%** · declared retained paths = **100%**
 
+(test-plan-provider-retry-model)=
+
+### Provider retry
+
+| Layer              | Required denominator                                                                                                   |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| Component          | explicit status/exception retry classification partitions selected by the verification profile                         |
+| System integration | synchronous/asynchronous retryable, permanent, and exhausted same-route workflows selected by the verification profile |
+
+**Design:** status/exception partitioning · sync/async equivalence · attempt-budget boundary analysis · same-route interaction counting
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-structured-recovery-model)=
+
+### Structured-output recovery
+
+| Layer              | Required denominator                                                                                      |
+| ------------------ | --------------------------------------------------------------------------------------------------------- |
+| Component          | bounded repair-prompt property over dynamic schema metadata, invalid output, and validation detail        |
+| System integration | successful repair plus minimum/intermediate total-attempt boundaries selected by the verification profile |
+
+**Design:** state-transition testing · boundary-value analysis for total attempt budgets · invalid-payload partitioning · property-based prompt-size control
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
 (test-plan-fault-model)=
 
 ### Fault-based testing

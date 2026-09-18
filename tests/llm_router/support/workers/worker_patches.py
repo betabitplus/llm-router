@@ -231,8 +231,12 @@ def patched_gemini_webapi_sdk(*, server_base_url: str):
 # ================================================================================
 
 
-def install_fast_worker_runtime_config() -> None:
-    """Install fast retry and limiter defaults for hermetic worker processes."""
+def install_fast_worker_runtime_config(
+    *,
+    retry_max_attempts: int | None = None,
+    structured_output_max_attempts: int | None = None,
+) -> None:
+    """Install fast bounded retry/structured defaults for hermetic workers."""
     from llm_router import (
         BehaviorDefaults,
         ProviderLimits,
@@ -245,6 +249,11 @@ def install_fast_worker_runtime_config() -> None:
         base_config.retry_policy,
         min_wait_seconds=0.01,
         max_wait_seconds=0.02,
+        max_attempts=(
+            base_config.retry_policy.max_attempts
+            if retry_max_attempts is None
+            else retry_max_attempts
+        ),
     )
     fast_provider_limits = ProviderLimits(
         rps=1_000_000.0,
@@ -260,7 +269,11 @@ def install_fast_worker_runtime_config() -> None:
         retry_policy=fast_retry_policy,
         policy=base_config.policy,
         default_max_tool_rounds=base_config.default_max_tool_rounds,
-        structured_output_max_attempts=base_config.structured_output_max_attempts,
+        structured_output_max_attempts=(
+            base_config.structured_output_max_attempts
+            if structured_output_max_attempts is None
+            else structured_output_max_attempts
+        ),
         provider_limits=fast_provider_limits,
         limits_by_provider=fast_limits_by_provider,
     )

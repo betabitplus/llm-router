@@ -7,31 +7,42 @@ from llm_router._internal.providers.retry import (
     classify_status_code,
 )
 
-pytestmark = [
-    pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]"),
-    pytest.mark.verification_kind("unit"),
-]
+pytestmark = pytest.mark.verification_kind("unit")
 
 
-def test_status_classification_distinguishes_retryable_from_permanent_failures() -> (
-    None
-):
-    retryable = classify_status_code(503)
-    permanent = classify_status_code(400)
+@pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]")
+@pytest.mark.coverage_item("VC_PROVIDER_RETRY_STATUS_CLASSIFICATION")
+def test_retryable_status_is_classified_from_status_semantics() -> None:
+    decision = classify_status_code(503)
 
-    assert (retryable.retryable, retryable.reason) == (True, "retryable_status")
-    assert (permanent.retryable, permanent.reason) == (False, "caller_or_auth_status")
+    assert (decision.retryable, decision.reason) == (True, "retryable_status")
 
 
-def test_transport_exception_detection_uses_type_not_message_substrings() -> None:
-    class RemoteDisconnectedError(RuntimeError):
+@pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]")
+@pytest.mark.coverage_item("VC_PROVIDER_RETRY_STATUS_CLASSIFICATION")
+def test_permanent_status_is_classified_from_status_semantics() -> None:
+    decision = classify_status_code(400)
+
+    assert (decision.retryable, decision.reason) == (False, "caller_or_auth_status")
+
+
+@pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]")
+@pytest.mark.coverage_item("VC_PROVIDER_RETRY_EXCEPTION_CLASSIFICATION")
+def test_transport_exception_type_is_retryable() -> None:
+    decision = classify_exception(ConnectionError("gone"))
+
+    assert (decision.retryable, decision.reason) == (True, "transport_exception")
+
+
+@pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]")
+@pytest.mark.coverage_item("VC_PROVIDER_RETRY_EXCEPTION_CLASSIFICATION")
+def test_unrelated_exception_is_not_retryable_despite_retrylike_name_fragment() -> None:
+    class ReadOnlyConfigurationError(RuntimeError):
         pass
 
-    class CannotOverwriteExistingCassetteError(RuntimeError):
-        pass
+    decision = classify_exception(ReadOnlyConfigurationError("timeout network"))
 
-    transport = classify_exception(RemoteDisconnectedError("gone"))
-    unrelated = classify_exception(CannotOverwriteExistingCassetteError("nope"))
-
-    assert (transport.retryable, transport.reason) == (True, "transport_exception")
-    assert (unrelated.retryable, unrelated.reason) == (False, "exception_not_retryable")
+    assert (decision.retryable, decision.reason) == (
+        False,
+        "exception_not_retryable",
+    )
