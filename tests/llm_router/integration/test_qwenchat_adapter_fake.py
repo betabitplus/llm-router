@@ -236,3 +236,19 @@ def test_qwenchat_normalizes_structured_and_textual_tool_outputs() -> None:
         assert structured.data["parsed"] == {"answer": "ok"}
         assert tool.tool_calls[0].name == "add"
         assert tool.tool_calls[0].args == {"a": 2, "b": 3}
+
+
+for _test_name in (
+    "test_qwenchat_text_crosses_proxy_http_boundary",
+    "test_qwenchat_uploads_media_before_chat",
+    "test_qwenchat_retryable_status_is_translated_to_provider_error",
+    "test_qwenchat_normalizes_structured_and_textual_tool_outputs",
+):
+    globals()[_test_name] = pytest.mark.coverage_item(
+        "VC_PROVIDER_QWENCHAT_ADAPTER_BOUNDARY"
+    )(globals()[_test_name])
+
+globals()["test_qwenchat_retries_upload_before_chat"] = pytest.mark.coverage_item(
+    "VC_PROVIDER_QWENCHAT_UPLOAD_RETRY"
+)(globals()["test_qwenchat_retries_upload_before_chat"])
+del _test_name

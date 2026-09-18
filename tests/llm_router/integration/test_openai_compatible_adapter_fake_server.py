@@ -222,3 +222,17 @@ def test_tool_round_trip_sends_provider_tool_result_message() -> None:
             "tool_call_id": "call_local_tool",
             "content": '{"answer": "ABC"}',
         }
+
+
+for _test_name in (
+    "test_sync_success_crosses_openai_http_boundary",
+    "test_async_success_crosses_openai_http_boundary",
+    "test_retryable_status_is_translated_to_provider_error",
+    "test_malformed_success_json_is_wrapped_as_provider_error",
+    "test_remote_disconnect_is_retryable_transport_failure",
+    "test_tool_round_trip_sends_provider_tool_result_message",
+):
+    globals()[_test_name] = pytest.mark.coverage_item(
+        "VC_PROVIDER_OPENAI_ADAPTER_BOUNDARY"
+    )(globals()[_test_name])
+del _test_name

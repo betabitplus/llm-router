@@ -31,3 +31,9 @@ Feature: Public response contract
       Given a provider rejects a valid request
       When the failure reaches the public router boundary
       Then it fails with a provider error
+
+    @REQ_PROVIDER_ERROR_BOUNDARY[revision==1]
+    Scenario: A provider SDK failure surfaces as a provider error
+      Given a provider SDK rejects a valid request
+      When the failure reaches the public router boundary
+      Then it fails with a provider error

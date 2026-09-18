@@ -170,6 +170,56 @@
 
 **Completion:** required criteria = **100%** · declared retained paths = **100%**
 
+(test-plan-provider-adapter-model)=
+
+### Provider adapter boundaries
+
+| Layer                 | Required denominator                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Component integration | every supported provider family and each distinct transport/failure partition selected by the verification profile |
+| System integration    | workflows whose semantics require public-runtime ordering or retry behavior across the adapter boundary            |
+
+**Design:** provider-family partitioning · native transport selection · request/response translation · malformed/error/disconnect partitions · upload-before-chat ordering
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-async-provider-model)=
+
+### Asynchronous provider execution
+
+| Layer              | Required denominator                                                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| System integration | every supported provider-family partition selected by the profile, collectively covering text, structured-output, and media-capable routes |
+
+**Design:** provider-family partitioning · async public entry point · capability partitioning · normalized response checks
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-response-normalization-model)=
+
+### Provider response normalization
+
+| Layer              | Required denominator                                                                                           |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Component          | every supported usage-metadata shape selected by the profile                                                   |
+| System integration | equivalent successful replies from independently shaped provider families compared at the public router output |
+
+**Design:** provider-shape partitioning · semantic equivalence · stable usage totals · provider-detail non-leakage
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-provider-error-boundary-model)=
+
+### Public provider-error boundary
+
+| Layer              | Required denominator                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| System integration | at least one HTTP-client failure partition and one SDK-originated failure partition through the public router |
+
+**Design:** transport-family partitioning · hostile provider detail · stable public error type/metadata · provider interaction counting
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
 (test-plan-fault-model)=
 
 ### Fault-based testing

@@ -155,3 +155,14 @@ def test_aistudio_native_retryable_status_is_translated() -> None:
         assert exc_info.value.cause.status_code == 503
         assert exc_info.value.cause.retryable is True
         assert exc_info.value.cause.retry_reason == "retryable_status"
+
+
+for _test_name in (
+    "test_aistudio_text_uses_openai_compatible_transport",
+    "test_aistudio_video_uses_native_transport",
+    "test_aistudio_native_retryable_status_is_translated",
+):
+    globals()[_test_name] = pytest.mark.coverage_item(
+        "VC_PROVIDER_AISTUDIO_ADAPTER_BOUNDARY"
+    )(globals()[_test_name])
+del _test_name

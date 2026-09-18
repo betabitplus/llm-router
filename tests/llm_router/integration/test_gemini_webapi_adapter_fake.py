@@ -156,3 +156,16 @@ def test_gemini_webapi_normalizes_structured_and_textual_tool_outputs() -> None:
     assert structured.data["parsed"] == {"answer": "ok"}
     assert tool.tool_calls[0].name == "add"
     assert tool.tool_calls[0].args == {"a": 2, "b": 3}
+
+
+for _test_name in (
+    "test_sync_gemini_webapi_crosses_sdk_boundary",
+    "test_async_gemini_webapi_passes_local_video_path",
+    "test_gemini_webapi_retryable_status_is_translated",
+    "test_gemini_webapi_provider_specific_error_code_is_preserved",
+    "test_gemini_webapi_normalizes_structured_and_textual_tool_outputs",
+):
+    globals()[_test_name] = pytest.mark.coverage_item(
+        "VC_PROVIDER_GEMINI_WEBAPI_ADAPTER_BOUNDARY"
+    )(globals()[_test_name])
+del _test_name

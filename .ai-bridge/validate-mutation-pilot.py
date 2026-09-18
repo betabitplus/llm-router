@@ -45,6 +45,10 @@ def main() -> None:
         HTML / "contract-evidence-provider-retry.html",
         HTML / "contract-evidence-structured-output-repair.html",
         HTML / "contract-evidence-sensitive-data-protection.html",
+        HTML / "contract-evidence-provider-adapter-interoperability.html",
+        HTML / "contract-evidence-async-provider-execution.html",
+        HTML / "contract-evidence-response-normalization.html",
+        HTML / "contract-evidence-provider-error-boundary.html",
         HTML / "requirement-monitor-facts.json",
         HTML / "evidence-run-provenance.json",
         HTML / "evidence-confidence-qualification.json",
@@ -78,6 +82,8 @@ def main() -> None:
         HTML / "verification-profiles/resilience.html",
         ROOT / "docs/verification-profiles/security.md",
         HTML / "verification-profiles/security.html",
+        ROOT / "docs/verification-profiles/providers.md",
+        HTML / "verification-profiles/providers.html",
         ROOT / "test-results/evidence-run-inputs.json",
     ]
     for path in required:
@@ -112,6 +118,8 @@ def main() -> None:
     resilience_profile_source = (ROOT / "docs/verification-profiles/resilience.md").read_text()
     security_requirements_source = (ROOT / "docs/requirements/security.md").read_text()
     security_profile_source = (ROOT / "docs/verification-profiles/security.md").read_text()
+    provider_requirements_source = (ROOT / "docs/requirements/providers.md").read_text()
+    provider_profile_source = (ROOT / "docs/verification-profiles/providers.md").read_text()
     pyproject_source = (ROOT / "pyproject.toml").read_text()
     unit_config_source = (ROOT / "tests/llm_router/unit/test_internal_config_validation.py").read_text()
     bdd_public_contract_source = (ROOT / "tests/llm_router/bdd/responses/test_public_contract.py").read_text()
@@ -262,6 +270,40 @@ def main() -> None:
         "VC_SECURITY_SCHEMA_FAILURE_DIAGNOSTICS",
         "### Fault applicability",
     )), "Data Safety Verification Profile owns independent coverage targets and explicit Fault Model")
+    check(all(token in provider_requirements_source for token in (
+        ":id: GOAL_PROVIDER_PORTABILITY",
+        ":id: REQ_PROVIDER_ADAPTER_INTEROPERABILITY",
+        ":id: TREQ_OPENAI_ADAPTER_BOUNDARY",
+        ":id: TREQ_QWENCHAT_ADAPTER_BOUNDARY",
+        ":id: TREQ_AISTUDIO_ADAPTER_BOUNDARY",
+        ":id: TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY",
+        ":id: TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY",
+        ":id: REQ_ASYNC_PROVIDER_EXECUTION",
+        ":id: REQ_RESPONSE_NORMALIZATION",
+        ":id: TREQ_USAGE_NORMALIZATION",
+        ":id: REQ_PROVIDER_ERROR_BOUNDARY",
+    )), "Provider portability Goal keeps the complete normative adapter/public-contract set")
+    check(
+        "**Verification intent.**" not in provider_requirements_source,
+        "Provider normative contracts keep HOW in Verification Profiles rather than Requirement cards",
+    )
+    check(all(token in provider_profile_source for token in (
+        "## Profile · REQ_PROVIDER_ADAPTER_INTEROPERABILITY",
+        "## Profile · REQ_ASYNC_PROVIDER_EXECUTION",
+        "## Profile · REQ_RESPONSE_NORMALIZATION",
+        "## Profile · REQ_PROVIDER_ERROR_BOUNDARY",
+        "VC_PROVIDER_OPENAI_ADAPTER_BOUNDARY",
+        "VC_PROVIDER_QWENCHAT_ADAPTER_BOUNDARY",
+        "VC_PROVIDER_AISTUDIO_ADAPTER_BOUNDARY",
+        "VC_PROVIDER_GEMINI_WEBAPI_ADAPTER_BOUNDARY",
+        "VC_PROVIDER_GOOGLE_GENAI_ADAPTER_BOUNDARY",
+        "VC_ASYNC_PROVIDER_CAPABILITY_MATRIX",
+        "VC_PROVIDER_USAGE_NORMALIZATION",
+        "VC_PROVIDER_RESPONSE_EQUIVALENCE",
+        "VC_PROVIDER_ERROR_HTTP",
+        "VC_PROVIDER_ERROR_SDK",
+        "### Fault applicability",
+    )), "Provider Verification Profiles own independent coverage targets and explicit Fault Models")
 
     check(all(token in verification_profile_source for token in (
         "## Profile · REQ_INVALID_CONFIGURATION_ERRORS",
@@ -345,6 +387,8 @@ def main() -> None:
         "PRODUCER_LLM_ROUTER_TRACE_BRIDGE",
         "PRODUCER_ASSURANCE_ADAPTER",
         "PRODUCER_REQUIREMENT_MONITOR",
+        "PRODUCER_GOOGLE_GENAI_FAKE_SDK",
+        "PRODUCER_GEMINI_WEBAPI_FAKE_SDK",
     }
     check(
         expected_confidence_producers <= set(qualification_producers) and
@@ -421,14 +465,14 @@ def main() -> None:
     provenance_subjects = evidence_provenance.get("subjects") or {}
     check(
         depth_facts.get("schema_version") == 4
-        and depth_source.get("tests") == 163
-        and depth_source.get("passed") == 163
+        and depth_source.get("tests") == 164
+        and depth_source.get("passed") == 164
         and depth_audit.get("contracts") == 62
-        and depth_audit.get("runtime_evidence") == 163
+        and depth_audit.get("runtime_evidence") == 164
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
         and depth_audit.get("bdd_feature_scenario_errors") == 0,
-        "Depth facts are reproducibly regenerated from the current 163-test retained run",
+        "Depth facts are reproducibly regenerated from the current 164-test retained run",
     )
     check(
         ((depth_inputs.get("junit") or {}).get("sha256")
@@ -674,12 +718,12 @@ def main() -> None:
         contract_triage = result.get("triage") or {}
         check(contract_triage.get("baseline_available") is True, f"{contract_id}: baseline evidence available")
         check(
-            contract_triage.get("baseline_comparable") is False,
-            f"{contract_id}: adapter-fingerprint change correctly breaks score comparability with the previous campaign",
+            contract_triage.get("baseline_comparable") is True,
+            f"{contract_id}: current campaign remains comparable with the immediately previous compatible baseline",
         )
         check(
-            contract_triage.get("score_delta") is None,
-            f"{contract_id}: no numeric score delta is fabricated across a changed campaign fingerprint",
+            contract_triage.get("score_delta") == 0.0,
+            f"{contract_id}: comparable campaign retains the unchanged mutation score without fabricated movement",
         )
         check(
             contract_triage.get("new_unresolved_survivors") == 0
@@ -736,6 +780,10 @@ def main() -> None:
     provider_retry_page = (HTML / "contract-evidence-provider-retry.html").read_text()
     structured_repair_page = (HTML / "contract-evidence-structured-output-repair.html").read_text()
     security_page = (HTML / "contract-evidence-sensitive-data-protection.html").read_text()
+    provider_adapter_page = (HTML / "contract-evidence-provider-adapter-interoperability.html").read_text()
+    async_provider_page = (HTML / "contract-evidence-async-provider-execution.html").read_text()
+    response_normalization_page = (HTML / "contract-evidence-response-normalization.html").read_text()
+    provider_error_page = (HTML / "contract-evidence-provider-error-boundary.html").read_text()
     spec_page = (HTML / "specification-health.html").read_text()
     health_page = (HTML / "verification-health-map.html").read_text()
     depth_page = (HTML / "verification-depth-map.html").read_text()
@@ -833,10 +881,14 @@ def main() -> None:
         "REQ_PROVIDER_RETRY",
         "REQ_STRUCTURED_OUTPUT_REPAIR",
         "REQ_SENSITIVE_DATA_PROTECTION",
+        "REQ_PROVIDER_ADAPTER_INTEROPERABILITY",
+        "REQ_ASYNC_PROVIDER_EXECUTION",
+        "REQ_RESPONSE_NORMALIZATION",
+        "REQ_PROVIDER_ERROR_BOUNDARY",
     }
     check(
         set(monitor_facts.get("contracts") or {}) == profiled_contracts,
-        "Configuration, Tools, Routing, Resilience, and Data Safety slices expose exactly fifteen parent Contract Evidence profiles",
+        "Configuration, Tools, Routing, Resilience, Data Safety, and Providers slices expose exactly nineteen parent Contract Evidence profiles",
     )
     contract_pages = {
         "REQ_REQUEST_OVERRIDE_PRECEDENCE": override_page,
@@ -854,6 +906,10 @@ def main() -> None:
         "REQ_PROVIDER_RETRY": provider_retry_page,
         "REQ_STRUCTURED_OUTPUT_REPAIR": structured_repair_page,
         "REQ_SENSITIVE_DATA_PROTECTION": security_page,
+        "REQ_PROVIDER_ADAPTER_INTEROPERABILITY": provider_adapter_page,
+        "REQ_ASYNC_PROVIDER_EXECUTION": async_provider_page,
+        "REQ_RESPONSE_NORMALIZATION": response_normalization_page,
+        "REQ_PROVIDER_ERROR_BOUNDARY": provider_error_page,
     }
     for contract_id, page in contract_pages.items():
         check(
@@ -1164,6 +1220,140 @@ def main() -> None:
         ),
         "REQ_SENSITIVE_DATA_PROTECTION: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
     )
+
+    provider_expectations = {
+        "REQ_PROVIDER_ADAPTER_INTEROPERABILITY": {
+            "cells": {
+                ("component_integration", "substitute"): {
+                    "VC_PROVIDER_OPENAI_ADAPTER_BOUNDARY": 6,
+                    "VC_PROVIDER_QWENCHAT_ADAPTER_BOUNDARY": 4,
+                    "VC_PROVIDER_AISTUDIO_ADAPTER_BOUNDARY": 3,
+                    "VC_PROVIDER_GEMINI_WEBAPI_ADAPTER_BOUNDARY": 5,
+                    "VC_PROVIDER_GOOGLE_GENAI_ADAPTER_BOUNDARY": 3,
+                },
+                ("system_integration", "substitute"): {
+                    "VC_PROVIDER_QWENCHAT_UPLOAD_RETRY": 1,
+                },
+            },
+            "faults": {},
+        },
+        "REQ_ASYNC_PROVIDER_EXECUTION": {
+            "cells": {
+                ("system_integration", "replay"): {
+                    "VC_ASYNC_PROVIDER_CAPABILITY_MATRIX": 5,
+                },
+            },
+            "faults": {},
+        },
+        "REQ_RESPONSE_NORMALIZATION": {
+            "cells": {
+                ("component", "none"): {
+                    "VC_PROVIDER_USAGE_NORMALIZATION": 3,
+                },
+                ("system_integration", "substitute"): {
+                    "VC_PROVIDER_RESPONSE_EQUIVALENCE": 1,
+                },
+            },
+            "faults": {},
+        },
+        "REQ_PROVIDER_ERROR_BOUNDARY": {
+            "cells": {
+                ("system_integration", "substitute"): {
+                    "VC_PROVIDER_ERROR_HTTP": 1,
+                    "VC_PROVIDER_ERROR_SDK": 1,
+                },
+            },
+            "faults": {"interface.error-status": (2, 2)},
+        },
+    }
+    for contract_id, expected in provider_expectations.items():
+        contract = monitor_facts["contracts"][contract_id]
+        target_cells = {
+            (row.get("level"), row.get("boundary")): row
+            for row in (contract.get("target") or {}).get("coverage") or []
+        }
+        check(
+            set(target_cells) == set(expected["cells"])
+            and all(
+                target_cells[key].get("item_path_counts") == counts
+                for key, counts in expected["cells"].items()
+            ),
+            f"{contract_id}: Provider coverage target keeps the independently authored Test level/Boundary denominators",
+        )
+        actual_by_item = contract.get("coverage_actual") or {}
+        for (level, boundary), criteria in expected["cells"].items():
+            for criterion_id, expected_paths in criteria.items():
+                rows = [
+                    row
+                    for row in actual_by_item.get(criterion_id) or []
+                    if row.get("level") == level and row.get("boundary") == boundary
+                ]
+                check(
+                    len(rows) == expected_paths
+                    and all(
+                        row.get("result") == "passed"
+                        and row.get("provenance") == "COMPLETE"
+                        and row.get("producer_qualification") == "QUALIFIED"
+                        and row.get("freshness") == "CURRENT"
+                        for row in rows
+                    ),
+                    f"{contract_id}: {criterion_id} retains every declared current/qualified evidence path",
+                )
+        retained = (
+            (contract.get("fault_actual") or {}).get("retained_challenges") or {}
+        )
+        check(
+            set(retained) == set(expected["faults"]),
+            f"{contract_id}: retained fault challenges contain only explicitly declared runtime-observed classes",
+        )
+        for fault_class, (exercised, detected) in expected["faults"].items():
+            row = retained[fault_class]
+            check(
+                row.get("exercised_paths") == exercised
+                and row.get("detected_paths") == detected
+                and row.get("exercised") is True
+                and row.get("detected") is True
+                and all(
+                    item.get("freshness") == "CURRENT"
+                    and item.get("producer_qualification") == "QUALIFIED"
+                    and item.get("observation_sha256")
+                    for item in row.get("rows") or []
+                ),
+                f"{contract_id}: {fault_class} challenge is current, qualified, and detected on every declared path",
+            )
+        required_faults = {
+            item["id"]
+            for group in (contract.get("target") or {}).get("fault_groups") or []
+            for item in group.get("items") or []
+            if item.get("state") == "required"
+        }
+        challenged_faults = {
+            class_id
+            for class_id in required_faults
+            if ((contract.get("fault_actual") or {}).get("classes") or {})
+            .get(class_id, {})
+            .get("exercised")
+        }
+        check(
+            challenged_faults == set(expected["faults"])
+            and challenged_faults < required_faults,
+            f"{contract_id}: partial Provider Fault Model remains explicit instead of becoming false-green",
+        )
+        page = contract_pages[contract_id]
+        check(
+            '<div class="overall not-met">FAIL</div>' in page
+            and re.search(
+                r'<strong>Verification coverage.*?<span class="status met">PASS</span>',
+                page,
+                re.DOTALL,
+            )
+            and re.search(
+                r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
+                page,
+                re.DOTALL,
+            ),
+            f"{contract_id}: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
+        )
 
     check(assurance_page.count('id="tf-requirement-monitor"') == 1,
           "accepted Requirement monitor is installed exactly once")
@@ -1809,6 +1999,25 @@ def main() -> None:
         ),
         "Traceability Reader routes Data Safety parent/derived contracts to the accepted parent Contract Evidence page",
     )
+    provider_trace_routes = {
+        "REQ_PROVIDER_ADAPTER_INTEROPERABILITY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
+        "TREQ_OPENAI_ADAPTER_BOUNDARY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
+        "TREQ_QWENCHAT_ADAPTER_BOUNDARY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
+        "TREQ_AISTUDIO_ADAPTER_BOUNDARY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
+        "TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
+        "TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
+        "REQ_ASYNC_PROVIDER_EXECUTION": "contract-evidence-async-provider-execution.html#ce-coverage-req_async_provider_execution",
+        "REQ_RESPONSE_NORMALIZATION": "contract-evidence-response-normalization.html#ce-coverage-req_response_normalization",
+        "TREQ_USAGE_NORMALIZATION": "contract-evidence-response-normalization.html#ce-coverage-req_response_normalization",
+        "REQ_PROVIDER_ERROR_BOUNDARY": "contract-evidence-provider-error-boundary.html#ce-coverage-req_provider_error_boundary",
+    }
+    check(
+        all(
+            f'"{contract_id}": "{href}"' in trace_reader_page
+            for contract_id, href in provider_trace_routes.items()
+        ),
+        "Traceability Reader routes Provider parent/derived contracts to the accepted parent Contract Evidence pages",
+    )
     check(
         "Assurance reading path" in verification_page
         and "Requirements and Technical requirements with an accepted Verification Profile" in verification_page
@@ -1971,6 +2180,7 @@ def main() -> None:
         "docs/requirements/routing.md",
         "docs/requirements/resilience.md",
         "docs/requirements/security.md",
+        "docs/requirements/providers.md",
         "docs/verification-profiles/",
         "features/tools/",
         "features/routing/",
@@ -1992,6 +2202,7 @@ def main() -> None:
         "tests/llm_router/conftest.py",
         "features/responses/public_contract.feature",
         "tests/llm_router/bdd/responses/test_public_contract.py",
+        "tests/llm_router/bdd/execution/test_async.py",
         "tests/llm_router/bdd/routing/",
         "tests/llm_router/bdd/tools/",
         "tests/llm_router/bdd/resilience/",
@@ -2011,7 +2222,13 @@ def main() -> None:
         "tests/llm_router/support/workers/worker_patches.py",
         "tests/llm_router/integration/test_config_installation_runtime_effect.py",
         "tests/llm_router/integration/test_vcr_redaction.py",
+        "tests/llm_router/integration/test_openai_compatible_adapter_fake_server.py",
+        "tests/llm_router/integration/test_qwenchat_adapter_fake.py",
+        "tests/llm_router/integration/test_aistudio_adapter_fake.py",
+        "tests/llm_router/integration/test_gemini_webapi_adapter_fake.py",
+        "tests/llm_router/integration/test_google_genai_adapter_fake.py",
         "tests/llm_router/unit/test_internal_config_validation.py",
+        "tests/llm_router/unit/test_internal_usage_normalization.py",
         "tests/llm_router/unit/test_internal_provider_retry.py",
         "tests/llm_router/unit/test_internal_log_safety.py",
         "tests/llm_router/unit/test_internal_key_resolution.py",

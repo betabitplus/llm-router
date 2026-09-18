@@ -601,10 +601,77 @@ def internal_controls() -> dict[str, dict[str, object]]:
     }
 
 
+def project_sdk_controls() -> dict[str, dict[str, object]]:
+    """Qualify llm-router-owned SDK substitutes against retained adapter cross-checks."""
+    junit_path = ROOT / "test-results/pytest-junit.xml"
+    if not junit_path.exists():
+        return {}
+
+    ji = junit_index(junit_path)
+    producer_source = (ROOT / "docs/evidence-producers.md").read_text()
+    specs = {
+        "PRODUCER_GOOGLE_GENAI_FAKE_SDK": {
+            "qualifications": (
+                "QUAL_GOOGLE_GENAI_FAKE_SUCCESS",
+                "QUAL_GOOGLE_GENAI_FAKE_ERROR",
+            ),
+            "tests": (
+                "tests/llm_router/integration/test_google_genai_adapter_fake.py::test_sync_google_adapter_uses_sdk_boundary_and_normalizes_result",
+                "tests/llm_router/integration/test_google_genai_adapter_fake.py::test_google_sdk_retryable_status_is_translated_to_provider_error",
+            ),
+        },
+        "PRODUCER_GEMINI_WEBAPI_FAKE_SDK": {
+            "qualifications": (
+                "QUAL_GEMINI_WEBAPI_FAKE_SUCCESS",
+                "QUAL_GEMINI_WEBAPI_FAKE_ERROR",
+            ),
+            "tests": (
+                "tests/llm_router/integration/test_gemini_webapi_adapter_fake.py::test_sync_gemini_webapi_crosses_sdk_boundary",
+                "tests/llm_router/integration/test_gemini_webapi_adapter_fake.py::test_gemini_webapi_retryable_status_is_translated",
+                "tests/llm_router/integration/test_gemini_webapi_adapter_fake.py::test_gemini_webapi_provider_specific_error_code_is_preserved",
+            ),
+        },
+    }
+
+    result: dict[str, dict[str, object]] = {}
+    for producer_id, spec in specs.items():
+        tests = spec["tests"]
+        declared = producer_id in producer_source and all(
+            qualification_id in producer_source
+            for qualification_id in spec["qualifications"]
+        )
+        retained = True
+        for nodeid in tests:
+            row = ji.get(nodeid) or {}
+            properties = row.get("properties") or {}
+            source_path = nodeid.split("::", 1)[0]
+            retained = retained and (
+                row.get("status") == "passed"
+                and properties.get("source_path") == source_path
+                and properties.get("source_sha256")
+                == sha256_file(ROOT / source_path)
+            )
+        qualified = bool(declared and retained)
+        result[producer_id] = {
+            "status": "QUALIFIED" if qualified else "NOT QUALIFIED",
+            "intended_use": (
+                "reproduce the provider SDK surface used by the real adapter for "
+                "success and provider-error translation"
+            ),
+            "false_green_control": (
+                "the current retained adapter success and error cross-checks must all "
+                "pass from source-digest-matched test bytes; a happy-path-only or "
+                "error-shape-incompatible fake cannot qualify"
+            ),
+        }
+    return result
+
+
 def main() -> None:
     external, details = external_controls()
     internal = internal_controls()
-    producers = {**external, **internal}
+    project_sdk = project_sdk_controls()
+    producers = {**external, **internal, **project_sdk}
     payload = {
         "schema": "ternforge-evidence-producer-qualification-1",
         "qualified_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),

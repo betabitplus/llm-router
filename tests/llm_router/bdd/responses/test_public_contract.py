@@ -13,16 +13,19 @@ from tests.llm_router.support.fault_server import (
     ProviderSentinelHTTPServer,
     ScriptedHTTPServer,
     ScriptedResponse,
+    retain_fault_injection,
 )
 from tests.llm_router.support.workers.error_boundary import run_error_boundary_inprocess
 from tests.llm_router.support.workers.response_normalization import (
     run_response_normalization_dual_worker,
 )
 from tests.llm_router.support.workers.retry import (
+    google_error_response,
     google_generate_path,
     openai_chat_path,
     openai_error_response,
     openai_success_response,
+    run_retry_worker,
 )
 
 scenarios("responses/public_contract.feature")
@@ -42,6 +45,32 @@ globals()[_missing_key_test_name] = pytest.mark.coverage_item(
     "VC_CREDENTIAL_PUBLIC_MISSING_ERROR"
 )(_missing_key_test)
 del _missing_key_test
+
+for _test_name, _criterion in (
+    (
+        "test_openaicompatible_and_google_routes_normalize_equivalent_replies_consistently",
+        "VC_PROVIDER_RESPONSE_EQUIVALENCE",
+    ),
+    (
+        "test_a_provider_http_failure_surfaces_as_a_provider_error",
+        "VC_PROVIDER_ERROR_HTTP",
+    ),
+    (
+        "test_a_provider_sdk_failure_surfaces_as_a_provider_error",
+        "VC_PROVIDER_ERROR_SDK",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
+
+for _test_name in (
+    "test_a_provider_http_failure_surfaces_as_a_provider_error",
+    "test_a_provider_sdk_failure_surfaces_as_a_provider_error",
+):
+    globals()[_test_name] = pytest.mark.fault_item(
+        "REQ_PROVIDER_ERROR_BOUNDARY",
+        "interface.error-status",
+    )(globals()[_test_name])
+del _criterion, _test_name
 
 _OPENAI_PATH = openai_chat_path()
 _GOOGLE_PATH = google_generate_path(model=Model.GEMINI_FLASH)
@@ -166,6 +195,15 @@ def provider_error_case() -> dict[str, Any]:
     }
 
 
+@given("a provider SDK rejects a valid request", target_fixture="case")
+def provider_sdk_error_case() -> dict[str, Any]:
+    return {
+        "scenario": "provider_sdk_error",
+        "error_type": ProviderError.__name__,
+        "message": "sdk private detail",
+    }
+
+
 @when("it reaches the public router boundary")
 @when("the failure reaches the public router boundary")
 def execute_public_error_case(case: dict[str, Any]) -> None:
@@ -209,6 +247,35 @@ def execute_public_error_case(case: dict[str, Any]) -> None:
             )
         return
 
+    if case["scenario"] == "provider_sdk_error":
+        with ScriptedHTTPServer(
+            port=0,
+            routes={
+                ("POST", _GOOGLE_PATH): [
+                    ScriptedResponse(
+                        status_code=400,
+                        headers={"Content-Type": "application/json"},
+                        body=google_error_response(
+                            status_code=400,
+                            message=case["message"],
+                        ),
+                    )
+                ]
+            },
+        ) as server:
+            retain_fault_injection(
+                contract_id="REQ_PROVIDER_ERROR_BOUNDARY",
+                fault_class="interface.error-status",
+                mechanism="Google GenAI SDK receives a provider HTTP 400 response",
+            )
+            case["result"] = run_retry_worker(
+                case="google",
+                scenario="permanent",
+                server_base_url=server.base_url,
+            )
+            case["provider_requests"] = server.request_count("POST", _GOOGLE_PATH)
+        return
+
     with ScriptedHTTPServer(
         port=0,
         routes={
@@ -224,6 +291,11 @@ def execute_public_error_case(case: dict[str, Any]) -> None:
             ]
         },
     ) as server:
+        retain_fault_injection(
+            contract_id="REQ_PROVIDER_ERROR_BOUNDARY",
+            fault_class="interface.error-status",
+            mechanism="OpenAI-compatible provider HTTP 400 response",
+        )
         case["result"] = run_error_boundary_inprocess(
             scenario="provider_error",
             server_base_url=server.base_url,

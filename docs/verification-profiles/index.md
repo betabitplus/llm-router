@@ -16,4 +16,5 @@ tools
 routing
 resilience
 security
+providers
 ```

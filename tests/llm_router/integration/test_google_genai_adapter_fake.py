@@ -131,3 +131,14 @@ def test_google_sdk_retryable_status_is_translated_to_provider_error() -> None:
     assert exc_info.value.cause.status_code == 503
     assert exc_info.value.cause.retryable is True
     assert exc_info.value.cause.retry_reason == "retryable_status"
+
+
+for _test_name in (
+    "test_sync_google_adapter_uses_sdk_boundary_and_normalizes_result",
+    "test_async_google_adapter_uses_sdk_async_boundary",
+    "test_google_sdk_retryable_status_is_translated_to_provider_error",
+):
+    globals()[_test_name] = pytest.mark.coverage_item(
+        "VC_PROVIDER_GOOGLE_GENAI_ADAPTER_BOUNDARY"
+    )(globals()[_test_name])
+del _test_name

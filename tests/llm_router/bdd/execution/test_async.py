@@ -29,6 +29,17 @@ from tests.llm_router.support.media.scene import (
 
 scenarios("execution/async.feature")
 
+for _test_name in (
+    "test_a_provider_route_returns_a_short_text_reply_asynchronously",
+    "test_an_openaicompatible_route_extracts_a_legal_case_asynchronously",
+    "test_ai_studio_returns_structured_movie_data_asynchronously",
+    "test_google_genai_analyzes_an_image_asynchronously",
+):
+    globals()[_test_name] = pytest.mark.coverage_item(
+        "VC_ASYNC_PROVIDER_CAPABILITY_MATRIX"
+    )(globals()[_test_name])
+del _test_name
+
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _LEGAL_SYSTEM_PROMPT = "You are a legal assistant. Extract case details."
 _MOVIE_SYSTEM_PROMPT = "You are a movie database API."

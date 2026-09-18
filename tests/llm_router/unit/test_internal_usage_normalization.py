@@ -33,3 +33,14 @@ def test_nested_usage_mapping_normalizes() -> None:
     assert normalize_usage({"usage": {"input_tokens": 7, "output_tokens": 8}}) == (
         UsageStats(input_tokens=7, output_tokens=8, total_tokens=15)
     )
+
+
+for _test_name in (
+    "test_openai_usage_mapping_normalizes",
+    "test_google_usage_object_normalizes_and_computes_total",
+    "test_nested_usage_mapping_normalizes",
+):
+    globals()[_test_name] = pytest.mark.coverage_item(
+        "VC_PROVIDER_USAGE_NORMALIZATION"
+    )(globals()[_test_name])
+del _test_name
