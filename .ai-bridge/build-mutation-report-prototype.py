@@ -342,8 +342,6 @@ def contract_fingerprints(contract_id,spec,mutmut_version=None):
       "scope":spec["scope"],
       "tests":spec["tests"],
       "mutation_config":MUTATION_CONFIG,
-      "adapter_version":MUTATION_ADAPTER_VERSION,
-      "adapter_sha256":sha256_file(ROOT/".ai-bridge/build-mutation-report-prototype.py"),
       "mutation_semantics_version":MUTATION_SEMANTICS_VERSION,
       "mutmut_version":mutmut_version,
     }
@@ -527,12 +525,20 @@ def triage_contract(campaign,contract_id):
 
     baseline_score=baseline_result.get("score")
     current_score=current_result.get("score")
+    baseline_adapter=baseline.get("adapter") or {}
+    current_adapter=campaign.get("adapter") or {}
+    baseline_engine=baseline.get("engine") or {}
+    current_engine=campaign.get("engine") or {}
     comparable=bool(
       baseline_available
       and baseline_contract.get("source_path")==campaign["contracts"][contract_id].get("source_path")
       and baseline_contract.get("scope_kind")==campaign["contracts"][contract_id].get("scope_kind")
       and baseline_contract.get("scope")==campaign["contracts"][contract_id].get("scope")
-      and baseline_contract.get("config_fingerprint")==campaign["contracts"][contract_id].get("config_fingerprint")
+      and baseline_engine.get("name")==current_engine.get("name")
+      and baseline_engine.get("version")==current_engine.get("version")
+      and baseline.get("mutation_config")==campaign.get("mutation_config")
+      and baseline_adapter.get("mutation_semantics_version")
+          ==current_adapter.get("mutation_semantics_version")
       and baseline_score is not None and current_score is not None
     )
     score_delta=round(float(current_score)-float(baseline_score),1) if comparable else None
@@ -2530,6 +2536,67 @@ def build_dvc_assurance_history(rows,*,subdir=None,title="Assurance history · T
     }
 
 
+def invalid_config_fault_probe_input_paths():
+    """Return the current source set that can change specialized fault-probe meaning."""
+    config_spec=CONTRACTS["REQ_INVALID_CONFIGURATION_ERRORS"]
+    paths={
+      "docs/requirements/configuration.md",
+      "docs/verification-profiles/invalid-configuration.md",
+      str(config_spec["source"]),
+      "features/responses/public_contract.feature",
+      "tests/llm_router/bdd/responses/test_public_contract.py",
+      "tests/llm_router/unit/test_internal_config_validation.py",
+      "tests/llm_router/integration/test_openai_compatible_adapter_fake_server.py",
+      "tests/llm_router/support/fault_server.py",
+      "tests/llm_router/support/workers/error_boundary.py",
+      "tests/llm_router/support/workers/timeout.py",
+      "pyproject.toml",
+    }
+    paths.update(str(nodeid).split("::",1)[0] for nodeid in config_spec["tests"])
+    return sorted(paths)
+
+
+def invalid_config_fault_probe_binding():
+    """Bind specialized fault facts to the exact current contract and probe inputs."""
+    registry=normative_contract_registry()
+    contract_id="REQ_INVALID_CONFIGURATION_ERRORS"
+    contract=registry[contract_id]
+    inputs={
+      relative:sha256_file(ROOT/relative)
+      for relative in invalid_config_fault_probe_input_paths()
+      if (ROOT/relative).is_file()
+    }
+    return {
+      "contract_id":contract_id,
+      "revision":int(contract["revision"]),
+      "source_path":contract["source_path"],
+      "source_sha256":sha256_file(ROOT/contract["source_path"]),
+      "probe_inputs":inputs,
+      "probe_input_set_sha256":sha256_text(stable_json(inputs)),
+    }
+
+
+def specialized_fault_binding_current(contract_id, contract_fault):
+    """Fail closed when specialized probe facts no longer match current source bytes."""
+    if not contract_fault:
+        return False
+    binding=contract_fault.get("binding") or {}
+    if binding.get("contract_id")!=contract_id:
+        return False
+    try:
+        current=invalid_config_fault_probe_binding()
+    except Exception:
+        return False
+    return (
+      contract_id=="REQ_INVALID_CONFIGURATION_ERRORS"
+      and int(binding.get("revision") or -1)==int(current["revision"])
+      and binding.get("source_path")==current["source_path"]
+      and binding.get("source_sha256")==current["source_sha256"]
+      and binding.get("probe_input_set_sha256")==current["probe_input_set_sha256"]
+      and binding.get("probe_inputs")==current["probe_inputs"]
+    )
+
+
 def build_fault_model_facts():
     config_spec=CONTRACTS["REQ_INVALID_CONFIGURATION_ERRORS"]
     component_tests=[
@@ -2715,6 +2782,7 @@ def build_fault_model_facts():
       "layers":layers,
       "contracts":{
         "REQ_INVALID_CONFIGURATION_ERRORS":{
+          "binding":invalid_config_fault_probe_binding(),
           "engine":"pytest-gremlins",
           "scope":"src/llm_router/_internal/config/validation.py::validate_config",
           "mutant_universe":overlap["mutant_universe"],
@@ -3163,15 +3231,88 @@ def verification_profile_contract_ids():
     return sorted(set(result))
 
 
+def normative_contract_registry():
+    result={}
+    pattern=re.compile(
+      r"\x60\x60\x60\{(?:req|treq)\}.*?\n(?P<body>.*?)\n\x60\x60\x60",
+      flags=re.DOTALL,
+    )
+    for path in sorted((ROOT/"docs/requirements").glob("*.md")):
+        for match in pattern.finditer(path.read_text()):
+            body=match.group("body")
+            id_match=re.search(r"^:id:\s*(T?REQ_[A-Z0-9_]+)\s*$",body,flags=re.MULTILINE)
+            if not id_match:
+                continue
+            contract_id=id_match.group(1)
+            revision_match=re.search(r"^:revision:\s*(\d+)\s*$",body,flags=re.MULTILINE)
+            derives_match=re.search(r"^:derives:\s*(.+?)\s*$",body,flags=re.MULTILINE)
+            if not revision_match:
+                raise RuntimeError(f"{contract_id}: normative contract has no integer revision")
+            if contract_id in result:
+                raise RuntimeError(f"duplicate normative contract id: {contract_id}")
+            result[contract_id]={
+              "revision":int(revision_match.group(1)),
+              "derives":(
+                re.findall(r"(?:T?REQ_[A-Z0-9_]+|FEAT_[A-Z0-9_]+)",derives_match.group(1))
+                if derives_match else []
+              ),
+              "source_path":str(path.relative_to(ROOT)),
+            }
+    return result
+
+
+def parse_revisioned_verifies(raw):
+    return list(dict.fromkeys(
+      (contract_id,int(revision))
+      for contract_id,revision in re.findall(
+        r"((?:T?REQ_[A-Z0-9_]+))\[revision==(\d+)\]",
+        str(raw or ""),
+      )
+    ))
+
+
+def verifies_current_revision(raw,contract_id,registry=None):
+    contracts=registry or normative_contract_registry()
+    current=contracts.get(contract_id)
+    return bool(
+      current
+      and (contract_id,int(current["revision"])) in parse_revisioned_verifies(raw)
+    )
+
+
+def contract_in_profile_scope(profile_contract_id,criterion_contract_id,registry=None):
+    if criterion_contract_id==profile_contract_id:
+        return True
+    contracts=registry or normative_contract_registry()
+    child=contracts.get(criterion_contract_id)
+    if not child or not criterion_contract_id.startswith("TREQ_"):
+        return False
+    pending=list(child.get("derives") or [])
+    seen=set()
+    while pending:
+        current=pending.pop()
+        if current==profile_contract_id:
+            return True
+        if current in seen:
+            continue
+        seen.add(current)
+        parent=contracts.get(current)
+        if parent:
+            pending.extend(parent.get("derives") or [])
+    return False
+
+
 def verification_criterion_contracts():
     result={}
+    policy=project_monitor_policy()
     for contract_id in verification_profile_contract_ids():
-        _,section=verification_profile_source(contract_id)
-        for row in markdown_table_after(section,"### Verification criteria"):
-            criterion_ids=re.findall(r"\x60([^\x60]+)\x60",row.get("Criterion",""))
-            contract_ids=sorted(set(re.findall(r"(?:T?REQ_[A-Z0-9_]+)",row.get("Contract",""))))
-            if len(criterion_ids)==1 and len(contract_ids)==1:
-                result[criterion_ids[0]]=contract_ids[0]
+        target=requirement_monitor_target(contract_id,policy)
+        for criterion_id,criterion_contract in (target.get("criterion_contracts") or {}).items():
+            if criterion_id in result:
+                raise RuntimeError(
+                  f"verification criterion {criterion_id} is declared by multiple profiles"
+                )
+            result[criterion_id]=criterion_contract
     return result
 
 
@@ -3214,6 +3355,10 @@ def requirement_monitor_target(contract_id, policy):
     path,section=verification_profile_source(contract_id)
     if not section:
         return None
+    registry=normative_contract_registry()
+    if contract_id not in registry:
+        raise RuntimeError(f"{contract_id}: Verification Profile has no current normative contract")
+
     coverage=[]
     item_descriptions={}
     item_anchors={}
@@ -3225,112 +3370,215 @@ def requirement_monitor_target(contract_id, policy):
       "System Integration":"system_integration",
       "Acceptance":"acceptance",
     }
-    boundary_keys={"Local":"none","Substitute":"substitute","Replay":"replay","Direct live":"direct"}
-    representation_keys={"Synthetic":"synthetic_abstract","Surrogate":"surrogate_simulated","Representative":"representative","Actual":"actual"}
+    boundary_keys={
+      "Local":"none",
+      "Substitute":"substitute",
+      "Replay":"replay",
+      "Direct live":"direct",
+    }
+    representation_keys={
+      "Synthetic":"synthetic_abstract",
+      "Surrogate":"surrogate_simulated",
+      "Representative":"representative",
+      "Actual":"actual",
+    }
+
     coverage_rows=markdown_table_after(section,"### Required coverage")
+    if not coverage_rows:
+        raise RuntimeError(f"{contract_id}: Verification Profile has no Required coverage rows")
     boundaries_by_level=defaultdict(set)
+    coverage_cells=set()
+    normalized_coverage_rows=[]
     for coverage_row in coverage_rows:
-        level_key=level_keys.get(coverage_row.get("Test level",""))
+        level=coverage_row.get("Test level","").strip()
+        boundary_label=coverage_row.get("Boundary","").strip()
+        representation_label=coverage_row.get("Representation","").strip()
+        level_key=level_keys.get(level)
+        boundary_key=boundary_keys.get(boundary_label)
+        representation=representation_keys.get(representation_label)
         if not level_key:
-            continue
-        boundary_key=boundary_keys.get(
-          coverage_row.get("Boundary",""),
-          coverage_row.get("Boundary","").lower().replace(" ","_"),
-        )
+            raise RuntimeError(f"{contract_id}: unknown Test level in Required coverage: {level!r}")
+        if not boundary_key:
+            raise RuntimeError(f"{contract_id}: unknown Boundary in Required coverage: {boundary_label!r}")
+        if not representation:
+            raise RuntimeError(
+              f"{contract_id}: unknown Representation in Required coverage: {representation_label!r}"
+            )
+        cell_key=(level_key,boundary_key)
+        if cell_key in coverage_cells:
+            raise RuntimeError(
+              f"{contract_id}: duplicate Required coverage cell {level} × {boundary_label}"
+            )
+        coverage_cells.add(cell_key)
         boundaries_by_level[level_key].add(boundary_key)
 
+        ms_raw=coverage_row.get("M&S target","").strip()
+        ms_target=None if ms_raw in {"","—","-","N/A"} else ms_raw.upper()
+        if ms_target is not None and ms_target not in {"L0","L1","L2","L3","L4"}:
+            raise RuntimeError(f"{contract_id}: invalid M&S target {ms_raw!r}")
+        if representation=="surrogate_simulated" and ms_target is None:
+            raise RuntimeError(
+              f"{contract_id}: Surrogate Required coverage must declare an explicit M&S target"
+            )
+        target_match=re.search(
+          r"(\d+)\s+(?:item|items|criterion|criteria)\b",
+          coverage_row.get("Target",""),
+          flags=re.IGNORECASE,
+        )
+        if not target_match:
+            raise RuntimeError(
+              f"{contract_id}: Required coverage cell {level} × {boundary_label} "
+              "must declare an explicit criterion count"
+            )
+        normalized_coverage_rows.append({
+          "level":level,
+          "level_key":level_key,
+          "boundary_label":boundary_label,
+          "boundary_key":boundary_key,
+          "representation_label":representation_label,
+          "representation":representation,
+          "ms_validation_target":ms_target,
+          "declared_count":int(target_match.group(1)),
+        })
+
     criterion_rows=markdown_table_after(section,"### Verification criteria")
+    if not criterion_rows:
+        raise RuntimeError(f"{contract_id}: Verification Profile has no Verification criteria")
     criteria_by_cell=defaultdict(list)
     criterion_path_counts={}
     for criterion_row in criterion_rows:
         criterion_ids=re.findall(r"\x60([^\x60]+)\x60",criterion_row.get("Criterion",""))
-        contract_ids=sorted(set(re.findall(r"(?:T?REQ_[A-Z0-9_]+)",criterion_row.get("Contract",""))))
-        level=criterion_row.get("Test level","")
+        contract_ids=sorted(set(
+          re.findall(r"(?:T?REQ_[A-Z0-9_]+)",criterion_row.get("Contract",""))
+        ))
+        level=criterion_row.get("Test level","").strip()
         level_key=level_keys.get(level)
-        if len(criterion_ids)!=1 or len(contract_ids)!=1 or not level_key:
-            continue
+        if len(criterion_ids)!=1:
+            raise RuntimeError(
+              f"{contract_id}: each Verification criteria row must declare exactly one criterion id"
+            )
+        criterion_id=criterion_ids[0]
+        if len(contract_ids)!=1:
+            raise RuntimeError(
+              f"{contract_id}: criterion {criterion_id} must bind exactly one Requirement/TREQ"
+            )
+        criterion_contract=contract_ids[0]
+        if not level_key:
+            raise RuntimeError(
+              f"{contract_id}: criterion {criterion_id} has unknown Test level {level!r}"
+            )
+        if not contract_in_profile_scope(contract_id,criterion_contract,registry):
+            raise RuntimeError(
+              f"{contract_id}: criterion {criterion_id} binds out-of-scope contract "
+              f"{criterion_contract}; only the parent or its derived technical requirements are allowed"
+            )
+
         declared_boundary=criterion_row.get("Boundary","").strip()
         if declared_boundary:
-            criterion_boundary=boundary_keys.get(
-              declared_boundary,
-              declared_boundary.lower().replace(" ","_"),
-            )
-            if criterion_boundary not in boundaries_by_level.get(level_key,set()):
+            criterion_boundary=boundary_keys.get(declared_boundary)
+            if not criterion_boundary:
                 raise RuntimeError(
-                  f"verification criterion {criterion_ids[0]} declares "
+                  f"{contract_id}: criterion {criterion_id} has unknown Boundary "
+                  f"{declared_boundary!r}"
+                )
+            if (level_key,criterion_boundary) not in coverage_cells:
+                raise RuntimeError(
+                  f"verification criterion {criterion_id} declares "
                   f"{level} × {declared_boundary}, which is not a Required coverage cell"
                 )
         else:
             possible=boundaries_by_level.get(level_key,set())
             if len(possible)!=1:
                 raise RuntimeError(
-                  f"verification criterion {criterion_ids[0]} is ambiguous at {level}; "
+                  f"verification criterion {criterion_id} is ambiguous at {level}; "
                   "add a Boundary column because this Test level has multiple Required coverage cells"
                 )
             criterion_boundary=next(iter(possible))
-        criterion_id=criterion_ids[0]
+
         if criterion_id in criterion_path_counts:
+            raise RuntimeError(f"verification criterion {criterion_id} is declared more than once")
+        required_paths_text=criterion_row.get("Required paths","").strip()
+        required_paths_match=re.fullmatch(r"\*{0,2}\s*(\d+)\s*\*{0,2}",required_paths_text)
+        if not required_paths_match:
             raise RuntimeError(
-              f"verification criterion {criterion_id} is declared more than once"
+              f"{contract_id}: criterion {criterion_id} must declare an explicit integer Required paths"
             )
-        required_paths_match=re.search(r"\d+",criterion_row.get("Required paths",""))
-        required_paths=int(required_paths_match.group(0)) if required_paths_match else 1
+        required_paths=int(required_paths_match.group(1))
         if required_paths<1:
             raise RuntimeError(
               f"verification criterion {criterion_id} must require at least one path"
             )
+        success=re.sub(
+          r"\x60([^\x60]+)\x60",r"\1",criterion_row.get("Success criterion","")
+        ).strip()
+        if not success:
+            raise RuntimeError(
+              f"{contract_id}: criterion {criterion_id} must declare a Success criterion"
+            )
         criteria_by_cell[(level_key,criterion_boundary)].append(criterion_id)
         criterion_path_counts[criterion_id]=required_paths
-        criterion_contracts[criterion_id]=contract_ids[0]
-        item_descriptions[criterion_id]=re.sub(
-          r"\x60([^\x60]+)\x60",r"\1",criterion_row.get("Success criterion","")
-        )
+        criterion_contracts[criterion_id]=criterion_contract
+        item_descriptions[criterion_id]=success
         anchor_match=re.search(r'id="([^"]+)"',criterion_row.get("Criterion",""))
         if anchor_match:
             item_anchors[criterion_id]=anchor_match.group(1)
-    for row in coverage_rows:
-        level=row.get("Test level","")
-        level_key=level_keys.get(level)
-        if not level_key:
-            continue
-        boundary_key=boundary_keys.get(
-          row.get("Boundary",""),
-          row.get("Boundary","").lower().replace(" ","_"),
-        )
-        criteria=list(criteria_by_cell.get((level_key,boundary_key)) or [])
-        target_match=re.search(r"(\d+)\s+(?:item|criter)",row.get("Target",""),flags=re.IGNORECASE)
-        declared_count=int(target_match.group(1)) if target_match else len(criteria)
+
+    for row in normalized_coverage_rows:
+        cell_key=(row["level_key"],row["boundary_key"])
+        criteria=list(criteria_by_cell.get(cell_key) or [])
+        declared_count=row["declared_count"]
+        if not criteria:
+            raise RuntimeError(
+              f"{contract_id}: Required coverage cell {row['level']} × "
+              f"{row['boundary_label']} has no Verification criteria"
+            )
         if declared_count!=len(criteria):
             raise RuntimeError(
-              f"{contract_id}: Required coverage cell {level} × {row.get('Boundary','')} "
-              f"declares {declared_count} criteria but the Verification criteria table assigns "
-              f"{len(criteria)}"
+              f"{contract_id}: Required coverage cell {row['level']} × "
+              f"{row['boundary_label']} declares {declared_count} criteria but the "
+              f"Verification criteria table assigns {len(criteria)}"
             )
         coverage.append({
-          "level":level_key,
-          "level_label":level,
-          "boundary":boundary_keys.get(row.get("Boundary",""),row.get("Boundary","").lower().replace(" ","_")),
-          "boundary_label":row.get("Boundary",""),
-          "representation":representation_keys.get(row.get("Representation",""),row.get("Representation","").lower()),
-          "representation_label":row.get("Representation",""),
-          "ms_validation_target":(
-              row.get("M&S target", "").strip()
-              if row.get("M&S target", "").strip() not in {"", "—", "-", "N/A"}
-              else None
-          ),
+          "level":row["level_key"],
+          "level_label":row["level"],
+          "boundary":row["boundary_key"],
+          "boundary_label":row["boundary_label"],
+          "representation":row["representation"],
+          "representation_label":row["representation_label"],
+          "ms_validation_target":row["ms_validation_target"],
           "items":criteria,
           "item_path_counts":{
-            criterion_id:criterion_path_counts.get(criterion_id,1)
+            criterion_id:criterion_path_counts[criterion_id]
             for criterion_id in criteria
           },
           "declared_count":declared_count,
         })
-    basis_match=re.search(r"\*\*Coverage basis\.\*\*\s*(.+)",section)
-    coverage_basis=basis_match.group(1).strip() if basis_match else ""
-    representation_basis_match=re.search(r"\*\*Representation basis\.\*\*\s*(.+)",section)
-    representation_basis=representation_basis_match.group(1).strip() if representation_basis_match else ""
+
+    basis_match=re.search(
+      r"\*\*Coverage basis\.\*\*\s*(.+?)(?=\n\n|\Z)",
+      section,
+      flags=re.DOTALL,
+    )
+    coverage_basis=(" ".join(basis_match.group(1).split()) if basis_match else "")
+    if not coverage_basis:
+        raise RuntimeError(f"{contract_id}: missing non-empty Coverage basis")
+    representation_basis_match=re.search(
+      r"\*\*Representation basis\.\*\*\s*(.+?)(?=\n\n|\Z)",
+      section,
+      flags=re.DOTALL,
+    )
+    representation_basis=(
+      " ".join(representation_basis_match.group(1).split())
+      if representation_basis_match else ""
+    )
+    if not representation_basis:
+        raise RuntimeError(f"{contract_id}: missing non-empty Representation basis")
+
     model_match=re.search(r"\*\*Models?:\*\*.*?<([^>]+)>",section)
-    model_url=f"test-plan.html#{model_match.group(1)}" if model_match else "test-plan.html#test-plan"
+    if not model_match:
+        raise RuntimeError(f"{contract_id}: missing explicit test-plan Model link")
+    model_url=f"test-plan.html#{model_match.group(1)}"
+
     gate_aggregation={}
     gate_keys={
       "Semantic coverage":"semantic_coverage",
@@ -3340,17 +3588,40 @@ def requirement_monitor_target(contract_id, policy):
       "Freshness":"freshness",
       "M&S validation":"ms_validation",
     }
-    for row in markdown_table_after(section,"### Evidence aggregation"):
-        signal=gate_keys.get(row.get("Signal",""))
+    aggregation_rows=markdown_table_after(section,"### Evidence aggregation")
+    if not aggregation_rows:
+        raise RuntimeError(f"{contract_id}: missing Evidence aggregation table")
+    for row in aggregation_rows:
+        signal_label=row.get("Signal","").strip()
+        signal=gate_keys.get(signal_label)
         if not signal:
-            continue
+            raise RuntimeError(
+              f"{contract_id}: unknown Evidence aggregation signal {signal_label!r}"
+            )
+        if signal in gate_aggregation:
+            raise RuntimeError(
+              f"{contract_id}: duplicate Evidence aggregation signal {signal_label}"
+            )
         rule=row.get("Rule","").strip().upper()
         if rule not in {"ALL","ANY"}:
-            continue
+            raise RuntimeError(
+              f"{contract_id}: Evidence aggregation {signal_label} has invalid rule {rule!r}"
+            )
+        applies_to=row.get("Applies to","").strip()
+        if not applies_to:
+            raise RuntimeError(
+              f"{contract_id}: Evidence aggregation {signal_label} has empty scope"
+            )
         gate_aggregation[signal]={
           "rule":rule,
-          "applies_to":row.get("Applies to","").strip(),
+          "applies_to":applies_to,
         }
+    if set(gate_aggregation)!=set(gate_keys.values()):
+        missing=sorted(set(gate_keys.values())-set(gate_aggregation))
+        raise RuntimeError(
+          f"{contract_id}: Evidence aggregation must declare all six signals; missing={missing}"
+        )
+
     policy_fault_groups=list(policy.get("fault_groups") or [])
     expected_fault_classes={
       class_id
@@ -3411,15 +3682,24 @@ def requirement_monitor_target(contract_id, policy):
           "items":items,
           "rationale":fault_group_rationales[group["label"]],
         })
+
     mutation={}
     for row in markdown_table_after(section,"### Blocking mutation checks"):
-        level=level_keys.get(row.get("Test level",""))
+        level_label=row.get("Test level","").strip()
+        level=level_keys.get(level_label)
         if not level:
-            continue
+            raise RuntimeError(
+              f"{contract_id}: Blocking mutation checks has unknown Test level {level_label!r}"
+            )
         checks=row.get("Required checks","")
+        known=("Mutation Reach" in checks,"Mutation Sensitivity" in checks)
+        if not any(known):
+            raise RuntimeError(
+              f"{contract_id}: Blocking mutation checks row declares no recognized check"
+            )
         mutation[level]={
-          "reach":"Mutation Reach" in checks,
-          "sensitivity":"Mutation Sensitivity" in checks,
+          "reach":known[0],
+          "sensitivity":known[1],
         }
     return {
       "contract_id":contract_id,
@@ -3850,6 +4130,7 @@ def current_needs():
 
 def junit_depth_rows():
     root=ET.parse(JUNIT_PATH).getroot()
+    registry=normative_contract_registry()
     result=[]
     for testcase in root.iter("testcase"):
         classname=testcase.attrib.get("classname") or ""
@@ -3865,12 +4146,36 @@ def junit_depth_rows():
         elif testcase.find("skipped") is not None:
             state="skipped"
         verifies_ref=str(props.get("verifies") or "")
-        verifies=list(dict.fromkeys(re.findall(r"((?:T?REQ_[A-Z0-9_]+))\[revision==\d+\]",verifies_ref)))
+        verifies_refs=parse_revisioned_verifies(verifies_ref)
+        verifies=[
+          contract_id
+          for contract_id,revision in verifies_refs
+          if contract_id in registry
+          and revision==int(registry[contract_id]["revision"])
+        ]
+        verifies_revision_mismatches=[
+          {
+            "contract_id":contract_id,
+            "declared_revision":revision,
+            "current_revision":(
+              int(registry[contract_id]["revision"])
+              if contract_id in registry else None
+            ),
+          }
+          for contract_id,revision in verifies_refs
+          if contract_id not in registry
+          or revision!=int(registry[contract_id]["revision"])
+        ]
         result.append({
           "nodeid":nodeid,
           "result":state,
           "verification_kind":props.get("verification_kind"),
           "verifies":verifies,
+          "verifies_refs":[
+            {"contract_id":contract_id,"revision":revision}
+            for contract_id,revision in verifies_refs
+          ],
+          "verifies_revision_mismatches":verifies_revision_mismatches,
           "source_path":nodeid.split("::",1)[0],
           "gherkin_feature":props.get("gherkin_feature"),
           "gherkin_scenario":props.get("gherkin_scenario"),
@@ -4245,7 +4550,7 @@ def refresh_verification_depth_facts():
         "needs_testcases":testcase_needs,
         "nodeid_mismatches":len(duplicate_allure),
         "verifies_mismatches":sum(
-          any(contract_id not in needs for contract_id in row.get("verifies") or [])
+          bool(row.get("verifies_revision_mismatches"))
           for row in tests
         ),
         "bdd_feature_scenario_errors":bdd_errors,
@@ -4419,6 +4724,7 @@ def junit_monitor_actual():
     suite_start_ms,suite_end_ms,_=junit_suite_window(root)
     qualification=load_evidence_qualification()
     criterion_contracts=verification_criterion_contracts()
+    registry=normative_contract_registry()
     actual=defaultdict(list)
     snapshot_inputs=dict(run_inputs.get("inputs") or {})
     for testcase in root.iter("testcase"):
@@ -4439,11 +4745,16 @@ def junit_monitor_actual():
         elif testcase.find("skipped") is not None:
             state="skipped"
         verifies_ref=props.get("verifies") or ""
-        requirement_ids=list(dict.fromkeys(
-          re.findall(r"((?:T?REQ_[A-Z0-9_]+))\[revision==\d+\]",verifies_ref)
-        ))
         criterion_contract=criterion_contracts.get(coverage_item)
-        requirement_id=criterion_contract if criterion_contract in requirement_ids else None
+        if not criterion_contract:
+            raise RuntimeError(
+              f"{nodeid}: coverage_item references unknown Verification criterion "
+              f"{coverage_item!r}"
+            )
+        revision_current=verifies_current_revision(
+          verifies_ref,criterion_contract,registry
+        )
+        requirement_id=criterion_contract if revision_current else None
         source_path=nodeid.split("::",1)[0]
         retained_source_path=props.get("source_path") or ""
         retained_source_sha=props.get("source_sha256") or ""
@@ -4528,6 +4839,8 @@ def junit_monitor_actual():
           "coverage_item":coverage_item,
           "nodeid":nodeid,
           "result":state,
+          "verifies_revision_current":revision_current,
+          "required_revision":int(registry[criterion_contract]["revision"]),
           "kind":depth.get("verification_kind") or props.get("verification_kind") or (allure_row or {}).get("verification_kind"),
           "level":reach,
           "level_basis":reach_basis,
@@ -4605,6 +4918,7 @@ def junit_fault_actual(policy):
     snapshot_inputs=dict(run_inputs.get("inputs") or {})
     suite_start_ms,suite_end_ms,_=junit_suite_window(root)
     qualification=load_evidence_qualification()
+    registry=normative_contract_registry()
     declared=defaultdict(lambda:defaultdict(list))
     target_cache={}
 
@@ -4646,10 +4960,14 @@ def junit_fault_actual(policy):
           qualification,
         )
         observations=(allure_row or {}).get("observations") or []
+        verifies_ref=props.get("verifies") or ""
 
         for declaration in fault_items:
             contract_id=declaration["contract_id"]
             fault_class=declaration["fault_class"]
+            revision_current=verifies_current_revision(
+              verifies_ref,contract_id,registry
+            )
             if contract_id not in target_cache:
                 target_cache[contract_id]=requirement_monitor_target(contract_id,policy)
             target=target_cache[contract_id]
@@ -4680,7 +4998,8 @@ def junit_fault_actual(policy):
               and (row.get("payload") or {}).get("fault_class")==fault_class
             ]
             observed=bool(
-              len(matches)==1
+              revision_current
+              and len(matches)==1
               and link.get("coherent")
               and link.get("freshness")=="CURRENT"
               and source_current
@@ -4695,6 +5014,11 @@ def junit_fault_actual(policy):
             declared[contract_id][fault_class].append({
               "nodeid":nodeid,
               "result":state,
+              "verifies_revision_current":revision_current,
+              "required_revision":(
+                int(registry[contract_id]["revision"])
+                if contract_id in registry else None
+              ),
               "exercised":observed,
               "detected":detected,
               "mechanism":payload.get("mechanism"),
@@ -4769,7 +5093,11 @@ def requirement_monitor_model(base_model):
         target=requirement_monitor_target(contract_id,policy)
         if not target:
             continue
-        contract_fault=((fault_model.get("contracts") or {}).get(contract_id) or {})
+        raw_contract_fault=((fault_model.get("contracts") or {}).get(contract_id) or {})
+        specialized_probe_current=specialized_fault_binding_current(
+          contract_id,raw_contract_fault
+        )
+        contract_fault=raw_contract_fault if specialized_probe_current else {}
         groups=list((contract_fault.get("groups") or {}).values())
         layers=contract_fault.get("layers") or {}
         class_actual={}
@@ -4841,6 +5169,8 @@ def requirement_monitor_model(base_model):
           "coverage_actual":coverage_actual,
           "fault_actual":{
             "classes":class_actual,
+            "specialized_probe_current":specialized_probe_current,
+            "specialized_probe_binding":raw_contract_fault.get("binding"),
             "groups":contract_fault.get("groups") or {},
             "layers":layers,
             "detection_overlap":contract_fault.get("detection_overlap") or {},

@@ -25,6 +25,10 @@ import.
 **Coverage basis.** `llm_router.__all__` is the authoritative declared surface, so one
 collection-level criterion checks every declared symbol in the current package.
 
+**Representation basis.** The criterion imports and inspects the actual installed
+`llm_router` package surface. No surrogate or external dependency represents the
+public API under test.
+
 ### Verification criteria
 
 | Criterion                    | Contract                                | Test level | Boundary | Required paths | Success criterion                                                                          |
@@ -79,6 +83,10 @@ network and live-router sentinels, forcing a fresh module execution for each exa
 **Coverage basis.** The denominator is every shipped `examples/llm_router/*.py` module
 except `__init__.py`. The current source tree contains six such modules, so the single
 criterion requires six retained parameterized paths.
+
+**Representation basis.** Each path imports the actual shipped example module under
+local network/live-workflow sentinels. No surrogate stands in for the example import
+semantics being claimed.
 
 ### Verification criteria
 

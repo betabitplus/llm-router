@@ -29,16 +29,26 @@ from tests.llm_router.support.media.scene import (
 
 scenarios("execution/async.feature")
 
-for _test_name in (
-    "test_a_provider_route_returns_a_short_text_reply_asynchronously",
-    "test_an_openaicompatible_route_extracts_a_legal_case_asynchronously",
-    "test_ai_studio_returns_structured_movie_data_asynchronously",
-    "test_google_genai_analyzes_an_image_asynchronously",
+for _test_name, _criterion in (
+    (
+        "test_a_provider_route_returns_a_short_text_reply_asynchronously",
+        "VC_ASYNC_TEXT_PROVIDER_MATRIX",
+    ),
+    (
+        "test_an_openaicompatible_route_extracts_a_legal_case_asynchronously",
+        "VC_ASYNC_STRUCTURED_PROVIDER_MATRIX",
+    ),
+    (
+        "test_ai_studio_returns_structured_movie_data_asynchronously",
+        "VC_ASYNC_STRUCTURED_PROVIDER_MATRIX",
+    ),
+    (
+        "test_google_genai_analyzes_an_image_asynchronously",
+        "VC_ASYNC_IMAGE_PROVIDER_MATRIX",
+    ),
 ):
-    globals()[_test_name] = pytest.mark.coverage_item(
-        "VC_ASYNC_PROVIDER_CAPABILITY_MATRIX"
-    )(globals()[_test_name])
-del _test_name
+    globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
+del _criterion, _test_name
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _LEGAL_SYSTEM_PROMPT = "You are a legal assistant. Extract case details."

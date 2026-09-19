@@ -134,10 +134,16 @@ def pytest_runtest_setup(item: pytest.Item) -> None:
     if not coverage_markers and not fault_markers:
         return
 
-    for marker in coverage_markers:
-        if marker.args:
-            _set_user_property(item, "coverage_item", str(marker.args[0]))
-            break
+    malformed_coverage_markers = [
+        marker for marker in coverage_markers if len(marker.args) != 1 or marker.kwargs
+    ]
+    if len(coverage_markers) > 1 or malformed_coverage_markers:
+        raise pytest.UsageError(
+            "coverage_item requires exactly one marker with one positional "
+            "criterion id and no keyword arguments"
+        )
+    if coverage_markers:
+        _set_user_property(item, "coverage_item", str(coverage_markers[0].args[0]))
 
     malformed_fault_markers = [
         marker for marker in fault_markers if len(marker.args) != 2 or marker.kwargs

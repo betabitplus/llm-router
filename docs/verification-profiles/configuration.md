@@ -36,11 +36,11 @@ the verification claim is the request constructed by llm-router, not fidelity of
 
 ### Verification criteria
 
-| Criterion                        | Contract                                         | Test level         | Boundary   | Required paths | Success criterion                                                                     |
-| -------------------------------- | ------------------------------------------------ | ------------------ | ---------- | -------------: | ------------------------------------------------------------------------------------- |
-| `VC_REQUEST_OMISSION_PROPERTY`   | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | Component          | Local      |              1 | Generated combinations preserve omission as distinct from an explicit call value.     |
-| `VC_REQUEST_OVERRIDE_PRECEDENCE` | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | Substitute |              1 | Request settings override router and route defaults while unrelated defaults survive. |
-| `VC_REQUEST_EXPLICIT_CLEAR`      | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | Substitute |              1 | An explicit empty/null request value clears the inherited optional setting.           |
+| Criterion                        | Contract                                         | Test level         | Boundary   | Required paths | Success criterion                                                                                                   |
+| -------------------------------- | ------------------------------------------------ | ------------------ | ---------- | -------------: | ------------------------------------------------------------------------------------------------------------------- |
+| `VC_REQUEST_OMISSION_PROPERTY`   | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | Component          | Local      |              1 | Generated combinations preserve omission as distinct from an explicit call value.                                   |
+| `VC_REQUEST_OVERRIDE_PRECEDENCE` | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | Substitute |              1 | Request settings override router and route defaults while unrelated defaults survive.                               |
+| `VC_REQUEST_EXPLICIT_CLEAR`      | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | Substitute |              2 | Explicit null and explicit empty-collection request values each clear the corresponding inherited optional setting. |
 
 ### Evidence aggregation
 

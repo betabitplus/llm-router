@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import ast
 import json
 import re
 import subprocess
 from pathlib import Path
+from typing import Any, cast
 
 ROOT = Path.cwd()
 HTML = ROOT / "docs/_build/html"
@@ -19,6 +21,64 @@ def check(condition: bool, message: str) -> None:
     if not condition:
         raise AssertionError(message)
     print(f"PASS  {message}")
+
+
+def declared_provider_capabilities() -> dict[str, dict[str, bool]]:
+    """Read the five adapter-family capability declarations from source AST."""
+    families = {
+        "openai": ROOT / "src/llm_router/_internal/providers/openai_compatible.py",
+        "qwenchat": ROOT / "src/llm_router/_internal/providers/qwenchat.py",
+        "aistudio": ROOT / "src/llm_router/_internal/providers/aistudio.py",
+        "gemini_webapi": ROOT / "src/llm_router/_internal/providers/gemini_webapi.py",
+        "google_genai": ROOT / "src/llm_router/_internal/providers/google_genai.py",
+    }
+    keys = {
+        "supports_images",
+        "supports_files",
+        "supports_video",
+        "supports_json_schema",
+        "supports_tools",
+    }
+    result: dict[str, dict[str, bool]] = {}
+    for family, path in families.items():
+        tree = ast.parse(path.read_text(), filename=str(path))
+        calls = [
+            node.value
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Name) and target.id == "capabilities"
+                for target in node.targets
+            )
+            and isinstance(node.value, ast.Call)
+            and (
+                (
+                    isinstance(node.value.func, ast.Name)
+                    and node.value.func.id == "ProviderCapabilities"
+                )
+                or (
+                    isinstance(node.value.func, ast.Attribute)
+                    and node.value.func.attr == "ProviderCapabilities"
+                )
+            )
+        ]
+        if len(calls) != 1:
+            raise AssertionError(
+                f"{family}: expected exactly one ProviderCapabilities declaration"
+            )
+        values = {key: False for key in keys}
+        for keyword in calls[0].keywords:
+            if keyword.arg not in keys:
+                continue
+            if not isinstance(keyword.value, ast.Constant) or not isinstance(
+                keyword.value.value, bool
+            ):
+                raise AssertionError(
+                    f"{family}: capability {keyword.arg} must be a literal boolean"
+                )
+            values[keyword.arg] = keyword.value.value
+        result[family] = values
+    return result
 
 
 def main() -> None:
@@ -142,12 +202,20 @@ def main() -> None:
     developer_profile_source = (ROOT / "docs/verification-profiles/developer.md").read_text()
     structured_requirements_source = (ROOT / "docs/requirements/structured_output.md").read_text()
     structured_profile_source = (ROOT / "docs/verification-profiles/structured-output.md").read_text()
+    all_requirements_source = "\n".join(
+        path.read_text()
+        for path in sorted((ROOT / "docs/requirements").glob("*.md"))
+    )
     pyproject_source = (ROOT / "pyproject.toml").read_text()
     unit_config_source = (ROOT / "tests/llm_router/unit/test_internal_config_validation.py").read_text()
     bdd_public_contract_source = (ROOT / "tests/llm_router/bdd/responses/test_public_contract.py").read_text()
     public_contract_feature = (ROOT / "features/responses/public_contract.feature").read_text()
     root_conftest_source = (ROOT / "tests/conftest.py").read_text()
 
+    check(
+        "**Verification intent.**" not in all_requirements_source,
+        "all normative Requirement/TREQ cards are HOW-free; Verification Profiles own verification design",
+    )
     check(all(token in ownership for token in (
         "A · Ternforge platform",
         "B · Project / repository",
@@ -240,6 +308,10 @@ def main() -> None:
         ":id: TREQ_RATE_LIMIT_COOLDOWN_POLICY",
         ":id: TREQ_RATE_LIMIT_AVAILABILITY_SELECTION",
     )), "routing Goal keeps both features and the full normative routing contract set")
+    check(
+        "**Verification intent.**" not in routing_requirements_source,
+        "Routing normative contracts keep HOW in Verification Profiles rather than Requirement cards",
+    )
     check(all(token in routing_profile_source for token in (
         "## Profile · REQ_SYNC_ROUTE_FALLBACK",
         "## Profile · REQ_ROUTE_TIMEOUT_FALLBACK",
@@ -327,7 +399,12 @@ def main() -> None:
         "VC_PROVIDER_AISTUDIO_ADAPTER_BOUNDARY",
         "VC_PROVIDER_GEMINI_WEBAPI_ADAPTER_BOUNDARY",
         "VC_PROVIDER_GOOGLE_GENAI_ADAPTER_BOUNDARY",
-        "VC_ASYNC_PROVIDER_CAPABILITY_MATRIX",
+        "VC_ASYNC_TEXT_PROVIDER_MATRIX",
+        "VC_ASYNC_STRUCTURED_PROVIDER_MATRIX",
+        "VC_ASYNC_IMAGE_PROVIDER_MATRIX",
+        "VC_ASYNC_DOCUMENT_PROVIDER_MATRIX",
+        "VC_ASYNC_VIDEO_LOCAL_PROVIDER_MATRIX",
+        "VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX",
         "VC_PROVIDER_USAGE_NORMALIZATION",
         "VC_PROVIDER_RESPONSE_EQUIVALENCE",
         "VC_PROVIDER_ERROR_HTTP",
@@ -572,14 +649,14 @@ def main() -> None:
     provenance_subjects = evidence_provenance.get("subjects") or {}
     check(
         depth_facts.get("schema_version") == 4
-        and depth_source.get("tests") == 176
-        and depth_source.get("passed") == 176
+        and depth_source.get("tests") == 180
+        and depth_source.get("passed") == 180
         and depth_audit.get("contracts") == 62
-        and depth_audit.get("runtime_evidence") == 176
+        and depth_audit.get("runtime_evidence") == 180
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
         and depth_audit.get("bdd_feature_scenario_errors") == 0,
-        "Depth facts are reproducibly regenerated from the current 176-test retained run",
+        "Depth facts are reproducibly regenerated from the current 180-test retained run",
     )
     check(
         ((depth_inputs.get("junit") or {}).get("sha256")
@@ -1017,6 +1094,178 @@ def main() -> None:
         set(monitor_facts.get("contracts") or {}) == profiled_contracts,
         "All fifteen product features expose exactly twenty-nine parent Contract Evidence profiles",
     )
+    required_gate_signals = {
+        "semantic_coverage",
+        "representation",
+        "provenance",
+        "producer_qualification",
+        "freshness",
+        "ms_validation",
+    }
+    for contract_id, contract in (monitor_facts.get("contracts") or {}).items():
+        target = contract.get("target") or {}
+        check(
+            bool(target.get("coverage_basis"))
+            and bool(target.get("representation_basis")),
+            f"{contract_id}: Target retains explicit Coverage and Representation basis",
+        )
+        check(
+            set((target.get("gate_aggregation") or {})) == required_gate_signals
+            and all(
+                (row or {}).get("rule") == "ALL"
+                for row in (target.get("gate_aggregation") or {}).values()
+            ),
+            f"{contract_id}: Target declares the complete fail-closed evidence aggregation surface",
+        )
+        actual_rows = [
+            row
+            for rows in (contract.get("coverage_actual") or {}).values()
+            for row in rows
+        ]
+        check(
+            all(row.get("verifies_revision_current") is True for row in actual_rows),
+            f"{contract_id}: every retained coverage binding pins the current normative revision",
+        )
+        fault_rows = [
+            row
+            for retained in ((contract.get("fault_actual") or {}).get("retained_challenges") or {}).values()
+            for row in (retained.get("rows") or [])
+        ]
+        check(
+            all(row.get("verifies_revision_current") is True for row in fault_rows),
+            f"{contract_id}: every credited fault challenge pins the current normative revision",
+        )
+
+    capabilities = declared_provider_capabilities()
+    capability_counts = {
+        "structured": sum(
+            row["supports_json_schema"] for row in capabilities.values()
+        ),
+        "image": sum(row["supports_images"] for row in capabilities.values()),
+        "document": sum(row["supports_files"] for row in capabilities.values()),
+        "video": sum(row["supports_video"] for row in capabilities.values()),
+        "tools": sum(row["supports_tools"] for row in capabilities.values()),
+    }
+
+    def target_paths(contract_id: str, criterion_id: str) -> int:
+        for cell in (
+            (monitor_facts["contracts"][contract_id].get("target") or {}).get(
+                "coverage"
+            )
+            or []
+        ):
+            counts = cell.get("item_path_counts") or {}
+            if criterion_id in counts:
+                return int(counts[criterion_id])
+        raise AssertionError(
+            f"{contract_id}: missing criterion {criterion_id} in Target"
+        )
+
+    check(
+        capability_counts
+        == {
+            "structured": 5,
+            "image": 5,
+            "document": 4,
+            "video": 4,
+            "tools": 5,
+        },
+        "current adapter capability declarations have the audited 5/5/4/4/5 provider-family denominators",
+    )
+    check(
+        target_paths(
+            "REQ_STRUCTURED_TEXT_OUTPUT",
+            "VC_STRUCTURED_TEXT_PROVIDER_MATRIX",
+        )
+        == capability_counts["structured"]
+        and target_paths(
+            "REQ_IMAGE_INPUT",
+            "VC_IMAGE_GROUNDED_PROVIDER_MATRIX",
+        )
+        == capability_counts["image"]
+        and target_paths(
+            "REQ_DOCUMENT_INPUT",
+            "VC_DOCUMENT_GROUNDED_PROVIDER_MATRIX",
+        )
+        == capability_counts["document"]
+        and target_paths(
+            "REQ_VIDEO_INPUT",
+            "VC_VIDEO_LOCAL_GROUNDED_MATRIX",
+        )
+        == capability_counts["video"]
+        and target_paths(
+            "REQ_VIDEO_INPUT",
+            "VC_VIDEO_REMOTE_GROUNDED_MATRIX",
+        )
+        == capability_counts["video"],
+        "Rich input/output provider denominators track current adapter capability declarations",
+    )
+    check(
+        target_paths(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_TEXT_PROVIDER_MATRIX",
+        )
+        == len(capabilities)
+        and target_paths(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_STRUCTURED_PROVIDER_MATRIX",
+        )
+        == capability_counts["structured"]
+        and target_paths(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_IMAGE_PROVIDER_MATRIX",
+        )
+        == capability_counts["image"]
+        and target_paths(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_DOCUMENT_PROVIDER_MATRIX",
+        )
+        == capability_counts["document"]
+        and target_paths(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_VIDEO_LOCAL_PROVIDER_MATRIX",
+        )
+        == capability_counts["video"]
+        and target_paths(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX",
+        )
+        == capability_counts["video"],
+        "Async provider × capability denominators track current adapter declarations",
+    )
+    check(
+        target_paths(
+            "REQ_TOOL_CHOICE",
+            "VC_TOOL_CHOICE_REPLAY_FAMILIES",
+        )
+        + target_paths(
+            "REQ_TOOL_CHOICE",
+            "VC_TOOL_CHOICE_GOOGLE_GENAI",
+        )
+        == capability_counts["tools"],
+        "Tool-choice provider-family denominator tracks all adapters declaring tool support",
+    )
+    check(
+        target_paths(
+            "REQ_RESPONSE_NORMALIZATION",
+            "VC_PROVIDER_RESPONSE_EQUIVALENCE",
+        )
+        == len(capabilities) - 1,
+        "Response-normalization denominator compares every non-baseline provider family",
+    )
+    shipped_examples = [
+        path
+        for path in (ROOT / "examples/llm_router").glob("*.py")
+        if path.name != "__init__.py"
+    ]
+    check(
+        target_paths(
+            "REQ_EXAMPLE_IMPORT_SAFETY",
+            "VC_EXAMPLE_IMPORT_SAFETY",
+        )
+        == len(shipped_examples),
+        "Example-import-safety denominator tracks every shipped example module",
+    )
     contract_pages = {
         "REQ_REQUEST_OVERRIDE_PRECEDENCE": override_page,
         "REQ_INVALID_CONFIGURATION_ERRORS": assurance_page,
@@ -1377,9 +1626,23 @@ def main() -> None:
         "REQ_ASYNC_PROVIDER_EXECUTION": {
             "cells": {
                 ("system_integration", "replay"): {
-                    "VC_ASYNC_PROVIDER_CAPABILITY_MATRIX": 5,
+                    "VC_ASYNC_TEXT_PROVIDER_MATRIX": 5,
+                    "VC_ASYNC_STRUCTURED_PROVIDER_MATRIX": 5,
+                    "VC_ASYNC_IMAGE_PROVIDER_MATRIX": 5,
+                    "VC_ASYNC_DOCUMENT_PROVIDER_MATRIX": 4,
+                    "VC_ASYNC_VIDEO_LOCAL_PROVIDER_MATRIX": 4,
+                    "VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX": 4,
                 },
             },
+            "actual": {
+                "VC_ASYNC_TEXT_PROVIDER_MATRIX": 2,
+                "VC_ASYNC_STRUCTURED_PROVIDER_MATRIX": 2,
+                "VC_ASYNC_IMAGE_PROVIDER_MATRIX": 1,
+                "VC_ASYNC_DOCUMENT_PROVIDER_MATRIX": 0,
+                "VC_ASYNC_VIDEO_LOCAL_PROVIDER_MATRIX": 0,
+                "VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX": 0,
+            },
+            "coverage_pass": False,
             "faults": {},
         },
         "REQ_RESPONSE_NORMALIZATION": {
@@ -1388,9 +1651,11 @@ def main() -> None:
                     "VC_PROVIDER_USAGE_NORMALIZATION": 3,
                 },
                 ("system_integration", "substitute"): {
-                    "VC_PROVIDER_RESPONSE_EQUIVALENCE": 1,
+                    "VC_PROVIDER_RESPONSE_EQUIVALENCE": 4,
                 },
             },
+            "actual": {"VC_PROVIDER_RESPONSE_EQUIVALENCE": 1},
+            "coverage_pass": False,
             "faults": {},
         },
         "REQ_PROVIDER_ERROR_BOUNDARY": {
@@ -1405,21 +1670,34 @@ def main() -> None:
     }
     for contract_id, expected in provider_expectations.items():
         contract = monitor_facts["contracts"][contract_id]
+        cells = cast(
+            dict[tuple[str, str], dict[str, int]],
+            cast(dict[str, Any], expected)["cells"],
+        )
         target_cells = {
             (row.get("level"), row.get("boundary")): row
             for row in (contract.get("target") or {}).get("coverage") or []
         }
         check(
-            set(target_cells) == set(expected["cells"])
+            set(target_cells) == set(cells)
             and all(
                 target_cells[key].get("item_path_counts") == counts
-                for key, counts in expected["cells"].items()
+                for key, counts in cells.items()
             ),
             f"{contract_id}: Provider coverage target keeps the independently authored Test level/Boundary denominators",
         )
         actual_by_item = contract.get("coverage_actual") or {}
-        for (level, boundary), criteria in expected["cells"].items():
-            for criterion_id, expected_paths in criteria.items():
+        expected_actual = {
+            criterion_id: expected_paths
+            for criteria in cells.values()
+            for criterion_id, expected_paths in criteria.items()
+        }
+        expected_actual.update(
+            cast(dict[str, int], cast(dict[str, Any], expected).get("actual") or {})
+        )
+        for (level, boundary), criteria in cells.items():
+            for criterion_id in criteria:
+                expected_paths = expected_actual.get(criterion_id, 0)
                 rows = [
                     row
                     for row in actual_by_item.get(criterion_id) or []
@@ -1432,18 +1710,23 @@ def main() -> None:
                         and row.get("provenance") == "COMPLETE"
                         and row.get("producer_qualification") == "QUALIFIED"
                         and row.get("freshness") == "CURRENT"
+                        and row.get("verifies_revision_current") is True
                         for row in rows
                     ),
-                    f"{contract_id}: {criterion_id} retains every declared current/qualified evidence path",
+                    f"{contract_id}: {criterion_id} retains exactly the current/qualified Actual paths without filling Target gaps",
                 )
         retained = (
             (contract.get("fault_actual") or {}).get("retained_challenges") or {}
         )
+        expected_faults = cast(
+            dict[str, tuple[int, int]],
+            cast(dict[str, Any], expected)["faults"],
+        )
         check(
-            set(retained) == set(expected["faults"]),
+            set(retained) == set(expected_faults),
             f"{contract_id}: retained fault challenges contain only explicitly declared runtime-observed classes",
         )
-        for fault_class, (exercised, detected) in expected["faults"].items():
+        for fault_class, (exercised, detected) in expected_faults.items():
             row = retained[fault_class]
             check(
                 row.get("exercised_paths") == exercised
@@ -1472,15 +1755,18 @@ def main() -> None:
             .get("exercised")
         }
         check(
-            challenged_faults == set(expected["faults"])
+            challenged_faults == set(expected_faults)
             and challenged_faults < required_faults,
             f"{contract_id}: partial Provider Fault Model remains explicit instead of becoming false-green",
         )
         page = contract_pages[contract_id]
+        coverage_pass = bool(cast(dict[str, Any], expected).get("coverage_pass", True))
+        coverage_class = "met" if coverage_pass else "not-met"
+        coverage_label = "PASS" if coverage_pass else "FAIL"
         check(
             '<div class="overall not-met">FAIL</div>' in page
             and re.search(
-                r'<strong>Verification coverage.*?<span class="status met">PASS</span>',
+                rf'<strong>Verification coverage.*?<span class="status {coverage_class}">{coverage_label}</span>',
                 page,
                 re.DOTALL,
             )
@@ -1489,7 +1775,7 @@ def main() -> None:
                 page,
                 re.DOTALL,
             ),
-            f"{contract_id}: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
+            f"{contract_id}: rendered monitor keeps honest Coverage, Fault Model FAIL, and Overall FAIL",
         )
 
     small_feature_expectations = {
@@ -1505,7 +1791,7 @@ def main() -> None:
         "REQ_SESSION_PERSISTENCE": {
             ("component", "none"): {
                 "VC_SESSION_PERSISTENCE_GENERATED_STATE": 1,
-                "VC_SESSION_SERIALIZATION_MEDIA": 1,
+                "VC_SESSION_SERIALIZATION_MEDIA": 4,
                 "VC_SESSION_SERIALIZATION_VERSION_REJECTION": 1,
             },
             ("component_integration", "none"): {
@@ -1846,6 +2132,28 @@ def main() -> None:
     )
 
     contract_monitor = monitor_facts["contracts"]["REQ_INVALID_CONFIGURATION_ERRORS"]
+    invalid_fault_actual = contract_monitor.get("fault_actual") or {}
+    invalid_fault_binding = invalid_fault_actual.get("specialized_probe_binding") or {}
+    check(
+        invalid_fault_actual.get("specialized_probe_current") is True
+        and invalid_fault_binding.get("contract_id") == "REQ_INVALID_CONFIGURATION_ERRORS"
+        and int(invalid_fault_binding.get("revision") or -1)
+        == int(contract_monitor.get("revision") or -2)
+        and bool(invalid_fault_binding.get("source_sha256"))
+        and bool(invalid_fault_binding.get("probe_input_set_sha256"))
+        and bool(invalid_fault_binding.get("probe_inputs")),
+        "Invalid Configuration specialized fault credits are byte-bound to the current Requirement revision and probe inputs",
+    )
+    check(
+        all(
+            not ((contract.get("fault_actual") or {}).get("specialized_probe_binding"))
+            and (contract.get("fault_actual") or {}).get("specialized_probe_current")
+            is False
+            for contract_id, contract in monitor_facts["contracts"].items()
+            if contract_id != "REQ_INVALID_CONFIGURATION_ERRORS"
+        ),
+        "no other Requirement receives undeclared specialized fault credit",
+    )
     declared_criteria = {
         item
         for row in contract_monitor["target"]["coverage"]
@@ -1941,20 +2249,31 @@ def main() -> None:
             f"{contract_id}: retained criterion evidence is passed, complete, qualified and current",
         )
     override_actual = override_monitor["coverage_actual"]
+    override_expected_counts = {
+        "VC_REQUEST_OVERRIDE_PRECEDENCE": 1,
+        "VC_REQUEST_EXPLICIT_CLEAR": 2,
+    }
     check(
         all(
-            len(override_actual[item]) == 1
-            and override_actual[item][0]["boundary"] == "substitute"
-            and override_actual[item][0]["representation"] == "surrogate_simulated"
-            and str(override_actual[item][0]["ms_validation"]).lower() == "l0"
-            for item in ("VC_REQUEST_OVERRIDE_PRECEDENCE", "VC_REQUEST_EXPLICIT_CLEAR")
+            len(override_actual[item]) == expected_count
+            and all(
+                row["boundary"] == "substitute"
+                and row["representation"] == "surrogate_simulated"
+                and str(row["ms_validation"]).lower() == "l0"
+                for row in override_actual[item]
+            )
+            for item, expected_count in override_expected_counts.items()
         ),
-        "override BDD evidence is honestly retained as Substitute / Surrogate / L0",
+        "override BDD evidence is honestly retained as Substitute / Surrogate / L0 with explicit null and empty-value partitions",
     )
     partial_coverage_contracts = {
         contract_id
         for contract_id, expected in structured_expectations.items()
         if not expected["coverage_pass"]
+    } | {
+        contract_id
+        for contract_id, expected in provider_expectations.items()
+        if not expected.get("coverage_pass", True)
     }
     for contract_id, page in contract_pages.items():
         coverage_class = (
@@ -2626,6 +2945,7 @@ def main() -> None:
         "docs/requirements/developer.md",
         "docs/requirements/structured_output.md",
         "docs/verification-profiles/",
+        "features/configuration/overrides.feature",
         "features/tools/",
         "features/routing/",
         "features/resilience/",
@@ -2649,6 +2969,7 @@ def main() -> None:
         "tests/llm_router/conftest.py",
         "features/responses/public_contract.feature",
         "tests/llm_router/bdd/responses/test_public_contract.py",
+        "tests/llm_router/bdd/configuration/test_overrides.py",
         "tests/llm_router/bdd/execution/test_async.py",
         "tests/llm_router/bdd/routing/",
         "tests/llm_router/bdd/tools/",
@@ -2662,6 +2983,7 @@ def main() -> None:
         "tests/llm_router/support/fault_server.py",
         "tests/llm_router/support/_vcr_body_matching.py",
         "tests/llm_router/support/vcr_extensions.py",
+        "tests/llm_router/support/workers/contract_worker.py",
         "tests/llm_router/support/workers/error_boundary.py",
         "tests/llm_router/support/workers/retry.py",
         "tests/llm_router/support/workers/retry_worker.py",

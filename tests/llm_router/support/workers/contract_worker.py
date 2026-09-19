@@ -37,6 +37,11 @@ class CallOverrideEnvelope(BaseModel):
     code: int
 
 
+def _echo_tool(text: str) -> str:
+    """Simple inherited tool used to prove explicit empty-list clearing."""
+    return text
+
+
 def _build_router(*, scenario: str) -> Any:
     from llm_router import LLMRouter, Model, Provider, RouterProfile
 
@@ -60,6 +65,17 @@ def _build_router(*, scenario: str) -> Any:
                 seed=7,
             ),
             temperature=0.7,
+        )
+
+    if scenario == "call_empty_tools_clears_default":
+        return LLMRouter(
+            RouterProfile(
+                model=Model.DEEPSEEK_V3,
+                provider=Provider.OPENROUTER,
+                tools=(_echo_tool,),
+            ),
+            temperature=0.0,
+            seed=1,
         )
 
     if scenario in {
@@ -122,6 +138,11 @@ def _run_case(*, scenario: str) -> dict[str, Any]:
             response = router.query(
                 "Reply with schema-cleared-ok only.",
                 response_schema=None,
+            )
+        elif scenario == "call_empty_tools_clears_default":
+            response = router.query(
+                "Reply with tools-cleared-ok only.",
+                tools=(),
             )
         else:
             _raise_unknown_scenario(scenario)

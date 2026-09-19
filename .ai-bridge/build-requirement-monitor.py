@@ -108,6 +108,60 @@ def ordered_values(values: set[str], options: list[str]) -> list[str]:
     return [option for option in options if option in values]
 
 
+def minimum_ordered_status(
+    values: list[str],
+    target: str,
+    rule: str,
+    order: list[str],
+) -> tuple[str, int]:
+    """Evaluate an ordered evidence property as a minimum required strength."""
+    if not values or target not in order:
+        return "UNKNOWN", 0
+    target_rank = order.index(target)
+    matched = sum(
+        1
+        for value in values
+        if value in order and order.index(value) >= target_rank
+    )
+    unknown = sum(value == "UNKNOWN" for value in values)
+    below = len(values) - matched - unknown
+    if rule == "ANY":
+        if matched:
+            return "MET", matched
+        if unknown:
+            return "UNKNOWN", matched
+        return "NOT MET", matched
+    if below:
+        return "NOT MET", matched
+    if unknown:
+        return "UNKNOWN", matched
+    return "MET", matched
+
+
+def minimum_ms_status(values: list[str], target: str, rule: str) -> tuple[str, int]:
+    """Evaluate M&S as a minimum qualification level, never exact equality."""
+    return minimum_ordered_status(
+        values,
+        target,
+        rule,
+        ["L0", "L1", "L2", "L3", "L4"],
+    )
+
+
+def minimum_representation_status(
+    values: list[str],
+    target: str,
+    rule: str,
+) -> tuple[str, int]:
+    """Evaluate representation realism as a minimum required strength."""
+    return minimum_ordered_status(
+        values,
+        target,
+        rule,
+        ["Synthetic / abstract", "Surrogate / simulated", "Representative", "Actual"],
+    )
+
+
 def cell_state(contract: dict, target: dict) -> dict:
     rows = []
     passed = 0
@@ -156,8 +210,11 @@ def cell_state(contract: dict, target: dict) -> dict:
     rep_rule = gate_rule(contract, "representation")
     rep_values = [representation_label(row.get("representation")) for row in rows]
     rep_target = representation_label(target.get("representation"))
-    rep_status = quantified_status(rep_values, rep_target, rep_rule)
-    rep_matched = sum(1 for value in rep_values if value == rep_target)
+    rep_status, rep_matched = minimum_representation_status(
+        rep_values,
+        rep_target,
+        rep_rule,
+    )
 
     provenance_rule = gate_rule(contract, "provenance")
     provenance_values = [
@@ -193,11 +250,13 @@ def cell_state(contract: dict, target: dict) -> dict:
         ms_status = "N/A"
     elif declared_ms_target:
         ms_target = ms_label(str(declared_ms_target))
-        ms_status = quantified_status(ms_values, ms_target, ms_rule)
+        ms_status, ms_matched = minimum_ms_status(ms_values, ms_target, ms_rule)
     else:
         ms_target = "NOT DECLARED"
         ms_status = "UNKNOWN"
-    ms_matched = sum(1 for value in ms_values if value == ms_target) if ms_target not in {"N/A", "NOT DECLARED"} else 0
+        ms_matched = 0
+    if not ms_rows:
+        ms_matched = 0
 
     overall = combine([semantic_status, rep_status, provenance_status, producer_status, freshness_status, ms_status])
     return {
@@ -446,25 +505,65 @@ def fault_state(contract: dict, group: dict, policy: dict) -> dict:
             killed = int(actual.get("killed", 0) or 0)
             reach = float(actual.get("mutation_reach", 0) or 0)
             sensitivity = float(actual.get("sensitivity", 0) or 0)
-            reach_target = float(policy["mutation_reach_floor"])
-            sensitivity_target = float(policy["mutation_sensitivity_floor"])
+            reach_selected = bool(checks.get("reach"))
+            sensitivity_selected = bool(checks.get("sensitivity"))
+            reach_target_raw = policy.get("mutation_reach_floor")
+            sensitivity_target_raw = policy.get("mutation_sensitivity_floor")
+            reach_target = (
+                float(reach_target_raw)
+                if reach_target_raw is not None
+                else None
+            )
+            sensitivity_target = (
+                float(sensitivity_target_raw)
+                if sensitivity_target_raw is not None
+                else None
+            )
+            reach_status = (
+                "N/A"
+                if not reach_selected
+                else (
+                    "UNKNOWN"
+                    if reach_target is None
+                    else ("MET" if reach >= reach_target else "NOT MET")
+                )
+            )
+            sensitivity_status = (
+                "N/A"
+                if not sensitivity_selected
+                else (
+                    "UNKNOWN"
+                    if sensitivity_target is None
+                    else (
+                        "MET"
+                        if sensitivity >= sensitivity_target
+                        else "NOT MET"
+                    )
+                )
+            )
             mutation.append({
                 "label": label,
                 "generated": generated,
                 "reached": reached,
                 "killed": killed,
                 "reach": reach,
+                "reach_selected": reach_selected,
                 "reach_target": reach_target,
-                "reach_status": "MET" if reach >= reach_target else "NOT MET",
+                "reach_status": reach_status,
                 "sensitivity": sensitivity,
+                "sensitivity_selected": sensitivity_selected,
                 "sensitivity_target": sensitivity_target,
-                "sensitivity_status": "MET" if sensitivity >= sensitivity_target else "NOT MET",
+                "sensitivity_status": sensitivity_status,
             })
 
     mutation_statuses = [
         status
         for item in mutation
-        for status in (item["reach_status"], item["sensitivity_status"])
+        for selected, status in (
+            (item["reach_selected"], item["reach_status"]),
+            (item["sensitivity_selected"], item["sensitivity_status"]),
+        )
+        if selected
     ]
     overall = combine([class_status, detection_status] + mutation_statuses)
     return {
@@ -666,12 +765,17 @@ def render_current() -> None:
         secondary_target = "100%"
         secondary_status = state["detection_status"]
         if state["label"] == "Implementation":
-            component_sensitivity = next((item for item in state["mutation"] if item["label"] == "Mutation Sensitivity · Component"), None)
-            if component_sensitivity:
+            component_sensitivity = next(
+                (item for item in state["mutation"] if item["label"] == "Component"),
+                None,
+            )
+            if component_sensitivity and component_sensitivity.get("sensitivity_selected"):
                 secondary_label = "C sensitivity"
-                secondary_actual = f'{component_sensitivity["actual"]:.1f}%'
-                secondary_target = f'≥{component_sensitivity["target"]:.0f}%'
-                secondary_status = component_sensitivity["status"]
+                secondary_actual = f'{component_sensitivity["sensitivity"]:.1f}%'
+                secondary_target = (
+                    f'≥{component_sensitivity["sensitivity_target"]:.0f}%'
+                )
+                secondary_status = component_sensitivity["sensitivity_status"]
         tip = "Fails if a required fault class is missing, a challenged fault escapes detection, or a required mutation threshold is missed."
         classes_tip = help_tip("Fails when a required fault class was never challenged.", focusable=False)
         secondary_tip_text = "Fails when too many code faults reached by Component tests still survive." if secondary_label == "C sensitivity" else "Fails when the expected oracle misses a challenged required fault."

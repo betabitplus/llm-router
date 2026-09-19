@@ -496,6 +496,77 @@ def internal_controls() -> dict[str, dict[str, object]]:
             }
         )
     )
+    revision_registry = {
+        "REQ_X": {"revision": 2, "derives": [], "source_path": "requirements/x.md"}
+    }
+    revision_match = adapter["verifies_current_revision"]
+    revision_control_ok = (
+        revision_match("REQ_X[revision==2]", "REQ_X", revision_registry)
+        and not revision_match("REQ_X[revision==1]", "REQ_X", revision_registry)
+        and not revision_match("REQ_OTHER[revision==2]", "REQ_X", revision_registry)
+        and not revision_match("REQ_X", "REQ_X", revision_registry)
+    )
+
+    target_parser = adapter["requirement_monitor_target"]
+    target_globals = target_parser.__globals__
+    original_profile_source = target_globals["verification_profile_source"]
+    profile_path, profile_section = original_profile_source("REQ_PUBLIC_API_SURFACE")
+    parser_rejections = []
+    malformed_sections = (
+        profile_section.replace("Local", "Local typo", 1),
+        profile_section.replace("Representation         | ALL", "Representation typo    | ALL", 1),
+        profile_section.replace("**Representation basis.**", "**Representation note.**", 1),
+        profile_section.replace(
+            "<REQ_PUBLIC_API_SURFACE>",
+            "<REQ_PROVIDER_RETRY>",
+            1,
+        ),
+    )
+    try:
+        for malformed in malformed_sections:
+            target_globals["verification_profile_source"] = (
+                lambda _contract_id, malformed=malformed: (profile_path, malformed)
+            )
+            try:
+                target_parser(
+                    "REQ_PUBLIC_API_SURFACE",
+                    adapter["project_monitor_policy"](),
+                )
+            except RuntimeError:
+                parser_rejections.append(True)
+            else:
+                parser_rejections.append(False)
+    finally:
+        target_globals["verification_profile_source"] = original_profile_source
+    parser_fail_closed_ok = parser_rejections == [True, True, True, True]
+
+    specialized_binding = adapter["invalid_config_fault_probe_binding"]()
+    specialized_current = adapter["specialized_fault_binding_current"]
+    stale_revision_binding = json.loads(json.dumps(specialized_binding))
+    stale_revision_binding["revision"] = int(stale_revision_binding["revision"]) - 1
+    stale_source_binding = json.loads(json.dumps(specialized_binding))
+    stale_source_binding["source_sha256"] = "0" * 64
+    stale_inputs_binding = json.loads(json.dumps(specialized_binding))
+    stale_inputs_binding["probe_input_set_sha256"] = "0" * 64
+    specialized_binding_control_ok = (
+        specialized_current(
+            "REQ_INVALID_CONFIGURATION_ERRORS",
+            {"binding": specialized_binding},
+        )
+        and not specialized_current(
+            "REQ_INVALID_CONFIGURATION_ERRORS",
+            {"binding": stale_revision_binding},
+        )
+        and not specialized_current(
+            "REQ_INVALID_CONFIGURATION_ERRORS",
+            {"binding": stale_source_binding},
+        )
+        and not specialized_current(
+            "REQ_INVALID_CONFIGURATION_ERRORS",
+            {"binding": stale_inputs_binding},
+        )
+    )
+
     adapter_ok = (
         good == {"coherent": True, "freshness": "CURRENT", "reason": "JUnit and exact Allure result agree and belong to the same retained execution window"}
         and mismatch.get("coherent") is False
@@ -503,6 +574,9 @@ def internal_controls() -> dict[str, dict[str, object]]:
         and stale.get("coherent") is False
         and stale.get("freshness") == "STALE"
         and [row.get("source") for row in nested_attachments] == ["top.json", "nested.json", "deep.json"]
+        and revision_control_ok
+        and parser_fail_closed_ok
+        and specialized_binding_control_ok
     )
 
     quantified_status = monitor["quantified_status"]
@@ -550,6 +624,27 @@ def internal_controls() -> dict[str, dict[str, object]]:
     state = cell_state(synthetic_contract, synthetic_target)
     projection_ok = projection_ok and state["provenance_status"] == "UNKNOWN" and state["producer_status"] == "UNKNOWN" and state["overall"] == "UNKNOWN"
 
+    weaker_representation_target = dict(synthetic_target)
+    weaker_representation_target["representation"] = "surrogate_simulated"
+    actual_over_surrogate = cell_state(
+        synthetic_contract,
+        weaker_representation_target,
+    )
+    weaker_representation_contract = json.loads(json.dumps(synthetic_contract))
+    weaker_representation_contract["coverage_actual"]["REQ_X:component:x"][0][
+        "representation"
+    ] = "surrogate_simulated"
+    surrogate_under_actual = cell_state(
+        weaker_representation_contract,
+        synthetic_target,
+    )
+    projection_ok = projection_ok and (
+        actual_over_surrogate["representation_status"] == "MET"
+        and actual_over_surrogate["representation_matched"] == 1
+        and surrogate_under_actual["representation_status"] == "NOT MET"
+        and surrogate_under_actual["representation_matched"] == 0
+    )
+
     multi_binding_contract = json.loads(json.dumps(synthetic_contract))
     first_binding = multi_binding_contract["coverage_actual"]["REQ_X:component:x"][0]
     first_binding["provenance_scope"] = "full_chain"
@@ -567,6 +662,21 @@ def internal_controls() -> dict[str, dict[str, object]]:
         and multi_binding_state["missing_count"] == 0
     )
 
+    extra_passing_contract = json.loads(json.dumps(synthetic_contract))
+    extra_first = extra_passing_contract["coverage_actual"]["REQ_X:component:x"][0]
+    extra_first["provenance_scope"] = "full_chain"
+    extra_first["producer_qualification_scope"] = "full_chain"
+    extra_passing_contract["coverage_actual"]["REQ_X:component:x"].append(
+        dict(extra_first)
+    )
+    extra_passing_state = cell_state(extra_passing_contract, synthetic_target)
+    projection_ok = projection_ok and (
+        extra_passing_state["semantic_status"] == "NOT MET"
+        and extra_passing_state["overall"] == "NOT MET"
+        and extra_passing_state["semantic_actual"] == 0
+        and extra_passing_state["retained_count"] == 2
+    )
+
     surrogate_contract = json.loads(json.dumps(synthetic_contract))
     surrogate_row = surrogate_contract["coverage_actual"]["REQ_X:component:x"][0]
     surrogate_row["representation"] = "surrogate_simulated"
@@ -578,6 +688,10 @@ def internal_controls() -> dict[str, dict[str, object]]:
     surrogate_l2 = cell_state(surrogate_contract, surrogate_target)
     surrogate_row["ms_validation"] = "l0"
     surrogate_l0 = cell_state(surrogate_contract, surrogate_target)
+    surrogate_row["ms_validation"] = "l2"
+    surrogate_target_l0 = dict(surrogate_target)
+    surrogate_target_l0["ms_validation_target"] = "l0"
+    surrogate_l2_over_l0 = cell_state(surrogate_contract, surrogate_target_l0)
     projection_ok = projection_ok and (
         surrogate_without_target["ms_status"] == "UNKNOWN"
         and surrogate_without_target["ms_applicable_count"] == 1
@@ -585,18 +699,88 @@ def internal_controls() -> dict[str, dict[str, object]]:
         and surrogate_l2["ms_matched"] == 1
         and surrogate_l0["ms_status"] == "NOT MET"
         and surrogate_l0["ms_matched"] == 0
+        and surrogate_l2_over_l0["ms_status"] == "MET"
+        and surrogate_l2_over_l0["ms_matched"] == 1
+    )
+
+    fault_state = monitor["fault_state"]
+    implementation_group = {
+        "label": "Implementation",
+        "items": [{"id": "impl.control-flow", "state": "required"}],
+    }
+    mutation_contract = {
+        "fault_actual": {
+            "classes": {
+                "impl.control-flow": {"exercised": True, "detected": True}
+            },
+            "groups": {
+                "component_local": {
+                    "generated": 10,
+                    "reached": 10,
+                    "killed": 0,
+                    "mutation_reach": 100.0,
+                    "sensitivity": 0.0,
+                }
+            },
+        },
+        "target": {
+            "mutation": {
+                "component": {"reach": True, "sensitivity": False}
+            }
+        },
+    }
+    mutation_policy = {
+        "mutation_reach_floor": 80.0,
+        "mutation_sensitivity_floor": 80.0,
+    }
+    reach_only = fault_state(
+        mutation_contract,
+        implementation_group,
+        mutation_policy,
+    )
+    sensitivity_contract = json.loads(json.dumps(mutation_contract))
+    sensitivity_contract["target"]["mutation"]["component"] = {
+        "reach": False,
+        "sensitivity": True,
+    }
+    sensitivity_actual = sensitivity_contract["fault_actual"]["groups"][
+        "component_local"
+    ]
+    sensitivity_actual["mutation_reach"] = 0.0
+    sensitivity_actual["killed"] = 10
+    sensitivity_actual["sensitivity"] = 100.0
+    sensitivity_only = fault_state(
+        sensitivity_contract,
+        implementation_group,
+        mutation_policy,
+    )
+    missing_threshold_policy = dict(mutation_policy)
+    missing_threshold_policy["mutation_reach_floor"] = None
+    missing_threshold = fault_state(
+        mutation_contract,
+        implementation_group,
+        missing_threshold_policy,
+    )
+    projection_ok = projection_ok and (
+        reach_only["status"] == "MET"
+        and reach_only["mutation"][0]["reach_selected"] is True
+        and reach_only["mutation"][0]["sensitivity_selected"] is False
+        and sensitivity_only["status"] == "MET"
+        and sensitivity_only["mutation"][0]["reach_selected"] is False
+        and sensitivity_only["mutation"][0]["sensitivity_selected"] is True
+        and missing_threshold["status"] == "UNKNOWN"
     )
 
     return {
         "PRODUCER_ASSURANCE_ADAPTER": {
             "status": "QUALIFIED" if adapter_ok else "NOT QUALIFIED",
             "intended_use": "join retained execution artifacts without accepting mismatched status or stale run membership",
-            "false_green_control": "status disagreement and out-of-run timestamps must be rejected while one coherent result remains current",
+            "false_green_control": "status disagreement, out-of-run timestamps, stale/missing Requirement revision pins, and stale specialized fault-probe bindings must be rejected while coherent current evidence remains current",
         },
         "PRODUCER_REQUIREMENT_MONITOR": {
             "status": "QUALIFIED" if projection_ok else "NOT QUALIFIED",
             "intended_use": "project Target versus Actual without converting missing or failed confidence evidence into green status",
-            "false_green_control": "UNKNOWN, NOT QUALIFIED, partial-scope trust, and under-validated surrogate paths must never become a false PASS",
+            "false_green_control": "UNKNOWN, NOT QUALIFIED, partial-scope trust, exact-cardinality violations, under-validated surrogate paths, and unselected or threshold-less mutation checks must never become a false PASS",
         },
     }
 

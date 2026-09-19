@@ -89,20 +89,21 @@ supported embedded media, and explicit incompatible-version rejection.
 | Component Integration | Local    | Actual         | —          | **1 criterion** |
 
 **Coverage basis.** The parent Requirement needs one public Session round-trip and one
-generated-state property. The derived serialization contract adds distinct media-byte
-and incompatible-version partitions.
+generated-state property. The derived serialization contract adds four explicit media
+partitions — file bytes, image bytes, local-video bytes/descriptor metadata, and
+remote-video descriptor metadata — plus incompatible-version rejection.
 
 **Representation basis.** Persistence is a local serialized-state boundary. All paths
 execute the actual SessionStore/Session serializer; no external surrogate is involved.
 
 ### Verification criteria
 
-| Criterion                                    | Contract                                    | Test level            | Boundary | Required paths | Success criterion                                                                                    |
-| -------------------------------------------- | ------------------------------------------- | --------------------- | -------- | -------------: | ---------------------------------------------------------------------------------------------------- |
-| `VC_SESSION_PERSISTENCE_GENERATED_STATE`     | {need}`[[id]] <REQ_SESSION_PERSISTENCE>`    | Component             | Local    |              1 | Generated turn sequences round-trip system prompt, user/assistant text, order, and metadata exactly. |
-| `VC_SESSION_SERIALIZATION_MEDIA`             | {need}`[[id]] <TREQ_SESSION_SERIALIZATION>` | Component             | Local    |              1 | Supported embedded file/video bytes and media metadata survive save/load.                            |
-| `VC_SESSION_SERIALIZATION_VERSION_REJECTION` | {need}`[[id]] <TREQ_SESSION_SERIALIZATION>` | Component             | Local    |              1 | Unsupported serialization versions raise SessionSerializationError instead of loading state.         |
-| `VC_SESSION_PUBLIC_PERSISTENCE`              | {need}`[[id]] <REQ_SESSION_PERSISTENCE>`    | Component Integration | Local    |              1 | Public Session.save/load preserves the observable system instruction and conversation history.       |
+| Criterion                                    | Contract                                    | Test level            | Boundary | Required paths | Success criterion                                                                                                            |
+| -------------------------------------------- | ------------------------------------------- | --------------------- | -------- | -------------: | ---------------------------------------------------------------------------------------------------------------------------- |
+| `VC_SESSION_PERSISTENCE_GENERATED_STATE`     | {need}`[[id]] <REQ_SESSION_PERSISTENCE>`    | Component             | Local    |              1 | Generated turn sequences round-trip system prompt, user/assistant text, order, and metadata exactly.                         |
+| `VC_SESSION_SERIALIZATION_MEDIA`             | {need}`[[id]] <TREQ_SESSION_SERIALIZATION>` | Component             | Local    |              4 | File bytes, image bytes, local-video bytes/descriptor metadata, and remote-video descriptor metadata each survive save/load. |
+| `VC_SESSION_SERIALIZATION_VERSION_REJECTION` | {need}`[[id]] <TREQ_SESSION_SERIALIZATION>` | Component             | Local    |              1 | Unsupported serialization versions raise SessionSerializationError instead of loading state.                                 |
+| `VC_SESSION_PUBLIC_PERSISTENCE`              | {need}`[[id]] <REQ_SESSION_PERSISTENCE>`    | Component Integration | Local    |              1 | Public Session.save/load preserves the observable system instruction and conversation history.                               |
 
 ### Evidence aggregation
 

@@ -187,11 +187,11 @@
 
 ### Asynchronous provider execution
 
-| Layer              | Required denominator                                                                                                                       |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| System integration | every supported provider-family partition selected by the profile, collectively covering text, structured-output, and media-capable routes |
+| Layer              | Required denominator                                                                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| System integration | every supported provider-family × declared async capability partition: text, structured output, image, document, local video, and remote video where that capability applies |
 
-**Design:** provider-family partitioning · async public entry point · capability partitioning · normalized response checks
+**Design:** provider-family × capability partitioning · async public entry point · async-only media branches · normalized/grounded response checks
 
 **Completion:** required criteria = **100%** · declared retained paths = **100%**
 
@@ -199,10 +199,10 @@
 
 ### Provider response normalization
 
-| Layer              | Required denominator                                                                                           |
-| ------------------ | -------------------------------------------------------------------------------------------------------------- |
-| Component          | every supported usage-metadata shape selected by the profile                                                   |
-| System integration | equivalent successful replies from independently shaped provider families compared at the public router output |
+| Layer              | Required denominator                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Component          | every supported usage-metadata shape selected by the profile                                                  |
+| System integration | each non-baseline provider family independently compared with the OpenAI-compatible canonical public response |
 
 **Design:** provider-shape partitioning · semantic equivalence · stable usage totals · provider-detail non-leakage
 
@@ -237,10 +237,10 @@
 
 ### Session persistence
 
-| Layer                 | Required denominator                                                                                  |
-| --------------------- | ----------------------------------------------------------------------------------------------------- |
-| Component             | generated text/metadata round-trip, supported media serialization, and incompatible-version rejection |
-| Component integration | public Session save/load round-trip                                                                   |
+| Layer                 | Required denominator                                                                                                  |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Component             | generated text/metadata round-trip; file/image/local-video/remote-video serialization; incompatible-version rejection |
+| Component integration | public Session save/load round-trip                                                                                   |
 
 **Design:** property-based round-trip · binary media preservation · serialization-version boundary · public lifecycle round-trip
 

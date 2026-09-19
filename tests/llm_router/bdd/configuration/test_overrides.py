@@ -23,7 +23,11 @@ for _test_name, _criterion in (
         "VC_REQUEST_OVERRIDE_PRECEDENCE",
     ),
     (
-        "test_an_explicit_empty_value_removes_an_inherited_optional_setting",
+        "test_an_explicit_null_value_removes_an_inherited_optional_setting",
+        "VC_REQUEST_EXPLICIT_CLEAR",
+    ),
+    (
+        "test_an_explicit_empty_collection_removes_inherited_tools",
         "VC_REQUEST_EXPLICIT_CLEAR",
     ),
 ):
@@ -110,3 +114,26 @@ def structured_output_is_cleared(case: dict[str, Any]) -> None:
     assert result.ok is True, result.error_message
     assert result.output_text == "schema-cleared-ok"
     assert "response_format" not in case["payload"]
+
+
+@given("tools are enabled by a default", target_fixture="case")
+def tools_default() -> dict[str, Any]:
+    return {}
+
+
+@when("the request explicitly supplies no tools")
+def clear_tools(case: dict[str, Any]) -> None:
+    case.update(
+        _run_public_case(
+            scenario="call_empty_tools_clears_default",
+            response_text="tools-cleared-ok",
+        )
+    )
+
+
+@then("the request is executed without provider tools")
+def tools_are_cleared(case: dict[str, Any]) -> None:
+    result = case["result"]
+    assert result.ok is True, result.error_message
+    assert result.output_text == "tools-cleared-ok"
+    assert "tools" not in case["payload"]

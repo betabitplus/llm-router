@@ -125,7 +125,7 @@ class ProviderFailure(Exception):  # noqa: N818
         return self.message
 
 
-# @impl Provider adapter contract, IMPL_PROVIDER_ADAPTER_INTEROPERABILITY, [REQ_PROVIDER_ADAPTER_INTEROPERABILITY[revision==1]]
+# @impl Provider adapter contract, IMPL_PROVIDER_ADAPTER_INTEROPERABILITY, [REQ_PROVIDER_ADAPTER_INTEROPERABILITY[revision==2]]
 class ProviderAdapter(Protocol):
     """Protocol implemented by concrete provider adapters."""
 

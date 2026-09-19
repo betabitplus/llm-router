@@ -80,29 +80,40 @@ blocking.
 ## Profile · REQ_ASYNC_PROVIDER_EXECUTION
 
 **Verification intent.** Prove the public async entry point across every supported
-provider family while collectively covering text, structured output, and media-capable
-requests without changing the public response contract.
+provider family for each capability partition that the Requirement promises: text,
+structured output, image, document, local video, and remote video.
 
 **Models:** {ref}`Asynchronous provider execution <test-plan-async-provider-model>`
 
 ### Required coverage
 
-| Test level         | Boundary | Representation | M&S target |          Target |
-| ------------------ | -------- | -------------- | ---------- | --------------: |
-| System Integration | Replay   | Surrogate      | L0         | **1 criterion** |
+| Test level         | Boundary | Representation | M&S target |         Target |
+| ------------------ | -------- | -------------- | ---------- | -------------: |
+| System Integration | Replay   | Surrogate      | L0         | **6 criteria** |
 
-**Coverage basis.** One provider-family matrix criterion requires five retained paths:
-OpenAI-compatible, QwenChat, AI Studio, Gemini WebAPI, and Google GenAI. Together they
-cover text, structured-output, and media-capable async execution.
+**Coverage basis.** Capability declarations define the denominator independently of the
+existing async scenarios. Text and JSON-schema execution are supported by all five
+adapter families. Image is supported by all five. Document, local-video, and
+remote-video execution are supported by QwenChat, AI Studio, Gemini WebAPI, and Google
+GenAI, producing independent 5/5/5/4/4/4 provider-family denominators. This deliberately
+exercises async-only branches such as Qwen media upload and AI Studio native-media
+dispatch instead of allowing one successful async path per provider to stand in for all
+declared capabilities.
 
 **Representation basis.** Each path executes the actual public async router and
-provider adapter against retained provider interactions. Replay remains Surrogate/L0.
+provider adapter against retained provider interactions. Replay remains Surrogate/L0;
+a cassette proves the retained async integration path, not a live provider claim.
 
 ### Verification criteria
 
-| Criterion                             | Contract                                      | Test level         | Boundary | Required paths | Success criterion                                                                                                                        |
-| ------------------------------------- | --------------------------------------------- | ------------------ | -------- | -------------: | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `VC_ASYNC_PROVIDER_CAPABILITY_MATRIX` | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              5 | Every supported provider family completes its retained async path, collectively preserving text, structured-output, and media semantics. |
+| Criterion                               | Contract                                      | Test level         | Boundary | Required paths | Success criterion                                                                                           |
+| --------------------------------------- | --------------------------------------------- | ------------------ | -------- | -------------: | ----------------------------------------------------------------------------------------------------------- |
+| `VC_ASYNC_TEXT_PROVIDER_MATRIX`         | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              5 | Every supported adapter family returns the public normalized text contract through async execution.         |
+| `VC_ASYNC_STRUCTURED_PROVIDER_MATRIX`   | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              5 | Every JSON-schema-capable adapter family returns schema-valid structured data through async execution.      |
+| `VC_ASYNC_IMAGE_PROVIDER_MATRIX`        | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              5 | Every image-capable adapter family preserves grounded structured image semantics through async execution.   |
+| `VC_ASYNC_DOCUMENT_PROVIDER_MATRIX`     | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              4 | Every file-capable adapter family preserves grounded structured document semantics through async execution. |
+| `VC_ASYNC_VIDEO_LOCAL_PROVIDER_MATRIX`  | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              4 | Every video-capable adapter family preserves local-video semantics through async execution.                 |
+| `VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX` | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              4 | Every video-capable adapter family preserves remote-video semantics through async execution.                |
 
 ### Evidence aggregation
 
@@ -152,8 +163,10 @@ the public router boundary.
 | System Integration | Substitute | Surrogate      | L0         | **1 criterion** |
 
 **Coverage basis.** Usage normalization requires OpenAI mapping, Google object, and
-nested mapping partitions. Public equivalence requires one dual-provider path whose
-text, usage, tool fields, and routing metadata are compared after normalization.
+nested mapping partitions. Public equivalence uses OpenAI-compatible as the canonical
+baseline and requires one independent comparison for every other supported adapter
+family: QwenChat, AI Studio, Gemini WebAPI, and Google GenAI. The denominator is
+therefore four retained cross-family paths, not one representative pair.
 
 **Representation basis.** Usage tests execute the actual local normalizer. Public
 equivalence executes actual router/adapters against two scripted provider boundaries,
@@ -161,10 +174,10 @@ so external participants remain Surrogate/L0.
 
 ### Verification criteria
 
-| Criterion                          | Contract                                    | Test level         | Boundary   | Required paths | Success criterion                                                                                                                          |
-| ---------------------------------- | ------------------------------------------- | ------------------ | ---------- | -------------: | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `VC_PROVIDER_USAGE_NORMALIZATION`  | {need}`[[id]] <TREQ_USAGE_NORMALIZATION>`   | Component          | Local      |              3 | OpenAI mapping, Google object, and nested usage shapes produce the stable usage model with a consistent total.                             |
-| `VC_PROVIDER_RESPONSE_EQUIVALENCE` | {need}`[[id]] <REQ_RESPONSE_NORMALIZATION>` | System Integration | Substitute |              1 | Equivalent OpenAI-compatible and Google replies expose identical public text/usage semantics without provider-specific tool-field leakage. |
+| Criterion                          | Contract                                    | Test level         | Boundary   | Required paths | Success criterion                                                                                                                                                    |
+| ---------------------------------- | ------------------------------------------- | ------------------ | ---------- | -------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VC_PROVIDER_USAGE_NORMALIZATION`  | {need}`[[id]] <TREQ_USAGE_NORMALIZATION>`   | Component          | Local      |              3 | OpenAI mapping, Google object, and nested usage shapes produce the stable usage model with a consistent total.                                                       |
+| `VC_PROVIDER_RESPONSE_EQUIVALENCE` | {need}`[[id]] <REQ_RESPONSE_NORMALIZATION>` | System Integration | Substitute |              4 | Each non-baseline provider family exposes public text/usage/tool semantics equivalent to the OpenAI-compatible baseline without provider-specific transport leakage. |
 
 ### Evidence aggregation
 

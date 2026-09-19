@@ -75,13 +75,13 @@ Contracts in this capability:
 :id: REQ_PROVIDER_ADAPTER_INTEROPERABILITY
 :collapse: true
 :status: accepted
-:revision: 1
+:revision: 2
 :required_evidence: impl
 :derives: FEAT_PROVIDER_INTEROPERABILITY
 
-**Statement.** Every supported provider adapter shall preserve the normalized router contract across its native HTTP or SDK boundary, including the request and response semantics used by the capabilities that adapter declares supported.
+**Statement.** Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary. Provider-specific transport selection and boundary behavior shall conform to the derived adapter technical requirements; capability semantics are owned by their capability requirements.
 
-**Rationale.** Provider portability depends on adapters changing transport details without changing the meaning of the public router contract.
+**Rationale.** Provider portability depends on adapters changing transport details without changing the normalized router boundary, while media, tools, structured output, and async capability semantics remain independently specified and verifiable.
 
 ```
 

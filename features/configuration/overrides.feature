@@ -10,7 +10,12 @@ Feature: Configuration overrides
       Then the request settings are used
       And unrelated defaults are preserved
 
-    Scenario: An explicit empty value removes an inherited optional setting
+    Scenario: An explicit null value removes an inherited optional setting
       Given structured output is enabled by a default
       When the request explicitly disables structured output
       Then the request is executed without structured output
+
+    Scenario: An explicit empty collection removes inherited tools
+      Given tools are enabled by a default
+      When the request explicitly supplies no tools
+      Then the request is executed without provider tools
