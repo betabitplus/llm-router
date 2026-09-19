@@ -20,6 +20,8 @@ from tests.llm_router.support.media.scene import (
 
 scenarios("structured_output/images.feature")
 
+pytestmark = [pytest.mark.coverage_item("VC_IMAGE_GROUNDED_PROVIDER_MATRIX")]
+
 _IMAGE_FILENAME = "test_image.png"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 

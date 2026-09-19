@@ -270,6 +270,55 @@
 
 **Completion:** required criteria = **100%** · declared retained paths = **100%**
 
+(test-plan-structured-output-provider-matrix)=
+
+### Structured output provider matrix
+
+| Layer              | Required denominator                               |
+| ------------------ | -------------------------------------------------- |
+| System integration | every adapter family declaring JSON-schema support |
+
+**Design:** provider-family capability partitioning · one caller schema across routes · public structured-result equivalence · provider-format non-leakage
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-grounded-media-matrix)=
+
+### Grounded multimodal provider matrix
+
+| Layer              | Required denominator                                                                                                                                      |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| System integration | every adapter family declaring the relevant media capability together with JSON-schema support; video is partitioned into local-file and remote-URL modes |
+
+**Design:** provider-family capability partitioning · retained known media · schema-valid structured result · deterministic grounding assertions · local-vs-remote video partitioning
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-schema-contract-model)=
+
+### Provider-independent schema validation
+
+| Layer     | Required denominator                                                                        |
+| --------- | ------------------------------------------------------------------------------------------- |
+| Component | Pydantic reconstruction, valid mapping-schema enforcement, invalid mapping-schema rejection |
+
+**Design:** Draft 2020-12 object-schema validation · nested/common constraint enforcement · fail-closed schema normalization · requested-model reconstruction
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
+(test-plan-content-normalization-model)=
+
+### Multimodal content normalization
+
+| Layer     | Required denominator                                                                                                   |
+| --------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Component | ordered mixed parts/descriptor metadata, ChatMessage semantics, unsupported input/media, raw-image mode/min/max bounds |
+| System    | representative invalid public requests proving zero provider-boundary interactions                                     |
+
+**Design:** ordered-part equivalence · descriptor metadata preservation · mutable-meta copy semantics · boundary-value analysis · pre-provider negative interaction control
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
 (test-plan-fault-model)=
 
 ### Fault-based testing

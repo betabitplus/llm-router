@@ -53,6 +53,12 @@ def main() -> None:
         HTML / "contract-evidence-session-persistence.html",
         HTML / "contract-evidence-public-api-surface.html",
         HTML / "contract-evidence-example-import-safety.html",
+        HTML / "contract-evidence-structured-text-output.html",
+        HTML / "contract-evidence-document-input.html",
+        HTML / "contract-evidence-image-input.html",
+        HTML / "contract-evidence-video-input.html",
+        HTML / "contract-evidence-structured-schema-contract.html",
+        HTML / "contract-evidence-multimodal-content-normalization.html",
         HTML / "requirement-monitor-facts.json",
         HTML / "evidence-run-provenance.json",
         HTML / "evidence-confidence-qualification.json",
@@ -92,6 +98,8 @@ def main() -> None:
         HTML / "verification-profiles/sessions.html",
         ROOT / "docs/verification-profiles/developer.md",
         HTML / "verification-profiles/developer.html",
+        ROOT / "docs/verification-profiles/structured-output.md",
+        HTML / "verification-profiles/structured-output.html",
         ROOT / "test-results/evidence-run-inputs.json",
     ]
     for path in required:
@@ -132,6 +140,8 @@ def main() -> None:
     session_profile_source = (ROOT / "docs/verification-profiles/sessions.md").read_text()
     developer_requirements_source = (ROOT / "docs/requirements/developer.md").read_text()
     developer_profile_source = (ROOT / "docs/verification-profiles/developer.md").read_text()
+    structured_requirements_source = (ROOT / "docs/requirements/structured_output.md").read_text()
+    structured_profile_source = (ROOT / "docs/verification-profiles/structured-output.md").read_text()
     pyproject_source = (ROOT / "pyproject.toml").read_text()
     unit_config_source = (ROOT / "tests/llm_router/unit/test_internal_config_validation.py").read_text()
     bdd_public_contract_source = (ROOT / "tests/llm_router/bdd/responses/test_public_contract.py").read_text()
@@ -166,6 +176,10 @@ def main() -> None:
         "(test-plan-session-persistence-model)=",
         "(test-plan-public-api-model)=",
         "(test-plan-example-import-safety-model)=",
+        "(test-plan-structured-output-provider-matrix)=",
+        "(test-plan-grounded-media-matrix)=",
+        "(test-plan-schema-contract-model)=",
+        "(test-plan-content-normalization-model)=",
         "(test-plan-fault-model)=",
         "Mutation Reach floor",
         "Mutation Sensitivity floor",
@@ -360,6 +374,43 @@ def main() -> None:
         "VC_EXAMPLE_IMPORT_SAFETY",
         "### Fault applicability",
     )), "Developer Verification Profiles own independent coverage targets and explicit Fault Models")
+    check(all(token in structured_requirements_source for token in (
+        ":id: GOAL_RICH_INPUT_OUTPUT",
+        ":id: FEAT_STRUCTURED_OUTPUT",
+        ":id: REQ_STRUCTURED_TEXT_OUTPUT",
+        ":id: REQ_DOCUMENT_INPUT",
+        ":id: REQ_IMAGE_INPUT",
+        ":id: REQ_VIDEO_INPUT",
+        ":id: REQ_STRUCTURED_SCHEMA_CONTRACT",
+        ":id: REQ_MULTIMODAL_CONTENT_NORMALIZATION",
+        ":revision: 2",
+        "Draft 2020-12",
+    )), "Rich input/output Goal keeps the complete normative structured/media contract set")
+    check(
+        "**Verification intent.**" not in structured_requirements_source,
+        "Rich input/output normative contracts keep HOW in Verification Profiles rather than Requirement cards",
+    )
+    check(all(token in structured_profile_source for token in (
+        "## Profile · REQ_STRUCTURED_TEXT_OUTPUT",
+        "## Profile · REQ_DOCUMENT_INPUT",
+        "## Profile · REQ_IMAGE_INPUT",
+        "## Profile · REQ_VIDEO_INPUT",
+        "## Profile · REQ_STRUCTURED_SCHEMA_CONTRACT",
+        "## Profile · REQ_MULTIMODAL_CONTENT_NORMALIZATION",
+        "VC_STRUCTURED_TEXT_PROVIDER_MATRIX",
+        "VC_DOCUMENT_GROUNDED_PROVIDER_MATRIX",
+        "VC_IMAGE_GROUNDED_PROVIDER_MATRIX",
+        "VC_VIDEO_LOCAL_GROUNDED_MATRIX",
+        "VC_VIDEO_REMOTE_GROUNDED_MATRIX",
+        "VC_SCHEMA_PYDANTIC_RECONSTRUCTION",
+        "VC_SCHEMA_MAPPING_ENFORCEMENT",
+        "VC_SCHEMA_INVALID_MAPPING_REJECTION",
+        "VC_CONTENT_ORDER_DESCRIPTOR_METADATA",
+        "VC_CONTENT_CHAT_MESSAGE_SEMANTICS",
+        "VC_CONTENT_INVALID_INPUT_REJECTION",
+        "VC_CONTENT_PRE_PROVIDER_REJECTION",
+        "### Fault applicability",
+    )), "Rich input/output Verification Profiles own independent coverage targets and explicit Fault Models")
 
     check(all(token in verification_profile_source for token in (
         "## Profile · REQ_INVALID_CONFIGURATION_ERRORS",
@@ -521,14 +572,14 @@ def main() -> None:
     provenance_subjects = evidence_provenance.get("subjects") or {}
     check(
         depth_facts.get("schema_version") == 4
-        and depth_source.get("tests") == 169
-        and depth_source.get("passed") == 169
+        and depth_source.get("tests") == 176
+        and depth_source.get("passed") == 176
         and depth_audit.get("contracts") == 62
-        and depth_audit.get("runtime_evidence") == 169
+        and depth_audit.get("runtime_evidence") == 176
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
         and depth_audit.get("bdd_feature_scenario_errors") == 0,
-        "Depth facts are reproducibly regenerated from the current 169-test retained run",
+        "Depth facts are reproducibly regenerated from the current 176-test retained run",
     )
     check(
         ((depth_inputs.get("junit") or {}).get("sha256")
@@ -844,6 +895,12 @@ def main() -> None:
     session_persistence_page = (HTML / "contract-evidence-session-persistence.html").read_text()
     public_api_page = (HTML / "contract-evidence-public-api-surface.html").read_text()
     example_import_page = (HTML / "contract-evidence-example-import-safety.html").read_text()
+    structured_text_page = (HTML / "contract-evidence-structured-text-output.html").read_text()
+    document_input_page = (HTML / "contract-evidence-document-input.html").read_text()
+    image_input_page = (HTML / "contract-evidence-image-input.html").read_text()
+    video_input_page = (HTML / "contract-evidence-video-input.html").read_text()
+    structured_schema_page = (HTML / "contract-evidence-structured-schema-contract.html").read_text()
+    content_normalization_page = (HTML / "contract-evidence-multimodal-content-normalization.html").read_text()
     spec_page = (HTML / "specification-health.html").read_text()
     health_page = (HTML / "verification-health-map.html").read_text()
     depth_page = (HTML / "verification-depth-map.html").read_text()
@@ -949,10 +1006,16 @@ def main() -> None:
         "REQ_SESSION_PERSISTENCE",
         "REQ_PUBLIC_API_SURFACE",
         "REQ_EXAMPLE_IMPORT_SAFETY",
+        "REQ_STRUCTURED_TEXT_OUTPUT",
+        "REQ_DOCUMENT_INPUT",
+        "REQ_IMAGE_INPUT",
+        "REQ_VIDEO_INPUT",
+        "REQ_STRUCTURED_SCHEMA_CONTRACT",
+        "REQ_MULTIMODAL_CONTENT_NORMALIZATION",
     }
     check(
         set(monitor_facts.get("contracts") or {}) == profiled_contracts,
-        "Configuration, Tools, Routing, Resilience, Data Safety, Providers, Sessions, and Developer slices expose exactly twenty-three parent Contract Evidence profiles",
+        "All fifteen product features expose exactly twenty-nine parent Contract Evidence profiles",
     )
     contract_pages = {
         "REQ_REQUEST_OVERRIDE_PRECEDENCE": override_page,
@@ -978,6 +1041,12 @@ def main() -> None:
         "REQ_SESSION_PERSISTENCE": session_persistence_page,
         "REQ_PUBLIC_API_SURFACE": public_api_page,
         "REQ_EXAMPLE_IMPORT_SAFETY": example_import_page,
+        "REQ_STRUCTURED_TEXT_OUTPUT": structured_text_page,
+        "REQ_DOCUMENT_INPUT": document_input_page,
+        "REQ_IMAGE_INPUT": image_input_page,
+        "REQ_VIDEO_INPUT": video_input_page,
+        "REQ_STRUCTURED_SCHEMA_CONTRACT": structured_schema_page,
+        "REQ_MULTIMODAL_CONTENT_NORMALIZATION": content_normalization_page,
     }
     for contract_id, page in contract_pages.items():
         check(
@@ -1525,6 +1594,159 @@ def main() -> None:
             f"{contract_id}: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
         )
 
+    structured_expectations = {
+        "REQ_STRUCTURED_TEXT_OUTPUT": {
+            "cells": {
+                ("system_integration", "replay", "surrogate_simulated", "L0"): {
+                    "VC_STRUCTURED_TEXT_PROVIDER_MATRIX": 5,
+                },
+            },
+            "actual": {"VC_STRUCTURED_TEXT_PROVIDER_MATRIX": 1},
+            "coverage_pass": False,
+        },
+        "REQ_DOCUMENT_INPUT": {
+            "cells": {
+                ("system_integration", "replay", "surrogate_simulated", "L0"): {
+                    "VC_DOCUMENT_GROUNDED_PROVIDER_MATRIX": 4,
+                },
+            },
+            "actual": {"VC_DOCUMENT_GROUNDED_PROVIDER_MATRIX": 4},
+            "coverage_pass": True,
+        },
+        "REQ_IMAGE_INPUT": {
+            "cells": {
+                ("system_integration", "replay", "surrogate_simulated", "L0"): {
+                    "VC_IMAGE_GROUNDED_PROVIDER_MATRIX": 5,
+                },
+            },
+            "actual": {"VC_IMAGE_GROUNDED_PROVIDER_MATRIX": 4},
+            "coverage_pass": False,
+        },
+        "REQ_VIDEO_INPUT": {
+            "cells": {
+                ("system_integration", "replay", "surrogate_simulated", "L0"): {
+                    "VC_VIDEO_LOCAL_GROUNDED_MATRIX": 4,
+                    "VC_VIDEO_REMOTE_GROUNDED_MATRIX": 4,
+                },
+            },
+            "actual": {
+                "VC_VIDEO_LOCAL_GROUNDED_MATRIX": 4,
+                "VC_VIDEO_REMOTE_GROUNDED_MATRIX": 3,
+            },
+            "coverage_pass": False,
+        },
+        "REQ_STRUCTURED_SCHEMA_CONTRACT": {
+            "cells": {
+                ("component", "none", "actual", None): {
+                    "VC_SCHEMA_PYDANTIC_RECONSTRUCTION": 1,
+                    "VC_SCHEMA_MAPPING_ENFORCEMENT": 1,
+                    "VC_SCHEMA_INVALID_MAPPING_REJECTION": 1,
+                },
+            },
+            "actual": {
+                "VC_SCHEMA_PYDANTIC_RECONSTRUCTION": 1,
+                "VC_SCHEMA_MAPPING_ENFORCEMENT": 1,
+                "VC_SCHEMA_INVALID_MAPPING_REJECTION": 1,
+            },
+            "coverage_pass": True,
+        },
+        "REQ_MULTIMODAL_CONTENT_NORMALIZATION": {
+            "cells": {
+                ("component", "none", "actual", None): {
+                    "VC_CONTENT_ORDER_DESCRIPTOR_METADATA": 1,
+                    "VC_CONTENT_CHAT_MESSAGE_SEMANTICS": 1,
+                    "VC_CONTENT_INVALID_INPUT_REJECTION": 5,
+                },
+                ("system", "none", "actual", None): {
+                    "VC_CONTENT_PRE_PROVIDER_REJECTION": 2,
+                },
+            },
+            "actual": {
+                "VC_CONTENT_ORDER_DESCRIPTOR_METADATA": 1,
+                "VC_CONTENT_CHAT_MESSAGE_SEMANTICS": 1,
+                "VC_CONTENT_INVALID_INPUT_REJECTION": 5,
+                "VC_CONTENT_PRE_PROVIDER_REJECTION": 2,
+            },
+            "coverage_pass": True,
+        },
+    }
+    for contract_id, expected in structured_expectations.items():
+        contract = monitor_facts["contracts"][contract_id]
+        target_cells = {
+            (
+                row.get("level"),
+                row.get("boundary"),
+                row.get("representation"),
+                row.get("ms_validation_target"),
+            ): row
+            for row in (contract.get("target") or {}).get("coverage") or []
+        }
+        check(
+            set(target_cells) == set(expected["cells"])
+            and all(
+                target_cells[key].get("item_path_counts") == counts
+                for key, counts in expected["cells"].items()
+            ),
+            f"{contract_id}: rich-input/output Target preserves independently authored level/boundary/representation denominators",
+        )
+
+        actual_by_item = contract.get("coverage_actual") or {}
+        for criterion_id, expected_paths in expected["actual"].items():
+            rows = actual_by_item.get(criterion_id) or []
+            check(
+                len(rows) == expected_paths
+                and all(
+                    row.get("result") == "passed"
+                    and row.get("provenance") == "COMPLETE"
+                    and row.get("producer_qualification") == "QUALIFIED"
+                    and row.get("freshness") == "CURRENT"
+                    for row in rows
+                ),
+                f"{contract_id}: {criterion_id} reports the exact current retained Actual denominator without filling missing paths",
+            )
+
+        retained = (
+            (contract.get("fault_actual") or {}).get("retained_challenges") or {}
+        )
+        required_faults = {
+            item["id"]
+            for group in (contract.get("target") or {}).get("fault_groups") or []
+            for item in group.get("items") or []
+            if item.get("state") == "required"
+        }
+        challenged_faults = {
+            class_id
+            for class_id in required_faults
+            if ((contract.get("fault_actual") or {}).get("classes") or {})
+            .get(class_id, {})
+            .get("exercised")
+        }
+        check(
+            retained == {}
+            and bool(required_faults)
+            and challenged_faults == set()
+            and challenged_faults < required_faults,
+            f"{contract_id}: absent retained fault challenges stay explicitly red instead of becoming false-green",
+        )
+
+        page = contract_pages[contract_id]
+        coverage_class = "met" if expected["coverage_pass"] else "not-met"
+        coverage_label = "PASS" if expected["coverage_pass"] else "FAIL"
+        check(
+            '<div class="overall not-met">FAIL</div>' in page
+            and re.search(
+                rf'<strong>Verification coverage.*?<span class="status {coverage_class}">{coverage_label}</span>',
+                page,
+                re.DOTALL,
+            )
+            and re.search(
+                r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
+                page,
+                re.DOTALL,
+            ),
+            f"{contract_id}: rendered monitor preserves honest Coverage status, Fault Model FAIL, and Overall FAIL",
+        )
+
     check(assurance_page.count('id="tf-requirement-monitor"') == 1,
           "accepted Requirement monitor is installed exactly once")
     check(
@@ -1729,11 +1951,22 @@ def main() -> None:
         ),
         "override BDD evidence is honestly retained as Substitute / Surrogate / L0",
     )
+    partial_coverage_contracts = {
+        contract_id
+        for contract_id, expected in structured_expectations.items()
+        if not expected["coverage_pass"]
+    }
     for contract_id, page in contract_pages.items():
+        coverage_class = (
+            "not-met" if contract_id in partial_coverage_contracts else "met"
+        )
+        coverage_label = (
+            "FAIL" if contract_id in partial_coverage_contracts else "PASS"
+        )
         check(
             '<div class="overall not-met">FAIL</div>' in page
             and re.search(
-                r"Verification coverage .*?</strong><span class=\"status met\">PASS</span>",
+                rf"Verification coverage .*?</strong><span class=\"status {coverage_class}\">{coverage_label}</span>",
                 page,
                 flags=re.DOTALL,
             )
@@ -1746,7 +1979,7 @@ def main() -> None:
             and "This Verification Profile does not make fault-based testing a blocking target." not in page
             and 'class="fault-layout no-inspector"' not in page
             and 'data-fault="' in page,
-            f"{contract_id}: semantic coverage passes but incomplete required fault challenges keep Fault model and Overall honestly FAIL",
+            f"{contract_id}: rendered Coverage reflects Target/Actual completeness while incomplete required faults keep Overall honestly FAIL",
         )
 
     check(
@@ -2211,6 +2444,21 @@ def main() -> None:
         ),
         "Traceability Reader routes Developer contracts to the accepted parent Contract Evidence pages",
     )
+    structured_trace_routes = {
+        "REQ_STRUCTURED_TEXT_OUTPUT": "contract-evidence-structured-text-output.html#ce-coverage-req_structured_text_output",
+        "REQ_DOCUMENT_INPUT": "contract-evidence-document-input.html#ce-coverage-req_document_input",
+        "REQ_IMAGE_INPUT": "contract-evidence-image-input.html#ce-coverage-req_image_input",
+        "REQ_VIDEO_INPUT": "contract-evidence-video-input.html#ce-coverage-req_video_input",
+        "REQ_STRUCTURED_SCHEMA_CONTRACT": "contract-evidence-structured-schema-contract.html#ce-coverage-req_structured_schema_contract",
+        "REQ_MULTIMODAL_CONTENT_NORMALIZATION": "contract-evidence-multimodal-content-normalization.html#ce-coverage-req_multimodal_content_normalization",
+    }
+    check(
+        all(
+            f'"{contract_id}": "{href}"' in trace_reader_page
+            for contract_id, href in structured_trace_routes.items()
+        ),
+        "Traceability Reader routes Rich input/output contracts to their accepted Contract Evidence pages",
+    )
     check(
         "Assurance reading path" in verification_page
         and "Requirements and Technical requirements with an accepted Verification Profile" in verification_page
@@ -2376,15 +2624,19 @@ def main() -> None:
         "docs/requirements/providers.md",
         "docs/requirements/sessions.md",
         "docs/requirements/developer.md",
+        "docs/requirements/structured_output.md",
         "docs/verification-profiles/",
         "features/tools/",
         "features/routing/",
         "features/resilience/",
         "features/security/",
+        "features/structured_output/",
         "pyproject.toml",
+        "uv.lock",
         "src/llm_router/_api/router.py",
         "src/llm_router/_api/errors.py",
         "src/llm_router/_internal/capabilities/schema.py",
+        "src/llm_router/_internal/capabilities/content.py",
         "src/llm_router/_internal/config/validation.py",
         "src/llm_router/_internal/providers/base.py",
         "src/llm_router/_internal/providers/retry.py",
@@ -2403,6 +2655,7 @@ def main() -> None:
         "tests/llm_router/bdd/resilience/",
         "tests/llm_router/bdd/security/",
         "tests/llm_router/bdd/sessions/",
+        "tests/llm_router/bdd/structured_output/",
         "tests/llm_router/bdd/execution/cassettes/",
         "tests/llm_router/bdd/structured_output/cassettes/",
         "tests/llm_router/property_based/internal/test_invariants.py",
@@ -2417,6 +2670,7 @@ def main() -> None:
         "tests/llm_router/support/workers/timeout_worker.py",
         "tests/llm_router/support/workers/worker_patches.py",
         "tests/llm_router/integration/test_config_installation_runtime_effect.py",
+        "tests/llm_router/integration/test_content_pre_provider_rejection.py",
         "tests/llm_router/integration/test_vcr_redaction.py",
         "tests/llm_router/integration/test_openai_compatible_adapter_fake_server.py",
         "tests/llm_router/integration/test_qwenchat_adapter_fake.py",
@@ -2426,6 +2680,8 @@ def main() -> None:
         "tests/llm_router/unit/test_internal_config_validation.py",
         "tests/llm_router/unit/test_internal_usage_normalization.py",
         "tests/llm_router/unit/test_internal_session_serialization.py",
+        "tests/llm_router/unit/test_internal_schema_normalization.py",
+        "tests/llm_router/unit/test_internal_content_normalization.py",
         "tests/llm_router/unit/test_public_package.py",
         "tests/test_examples.py",
         "tests/llm_router/unit/test_internal_provider_retry.py",

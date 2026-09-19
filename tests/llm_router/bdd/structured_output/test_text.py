@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import pytest
 from py_lib_testkit import evidence
 from pydantic import BaseModel, Field
 from pytest_bdd import given, scenarios, then, when
@@ -11,6 +12,8 @@ from llm_router import LLMRouter, LLMRouterResponse, Model, Provider, RouterProf
 from tests.llm_router.support.assertions import parse_json_object
 
 scenarios("structured_output/text.feature")
+
+pytestmark = [pytest.mark.coverage_item("VC_STRUCTURED_TEXT_PROVIDER_MATRIX")]
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 

@@ -19,4 +19,5 @@ security
 providers
 sessions
 developer
+structured-output
 ```

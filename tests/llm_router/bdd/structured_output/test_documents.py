@@ -22,6 +22,8 @@ from tests.llm_router.support.media.pdf import (
 
 scenarios("structured_output/documents.feature")
 
+pytestmark = [pytest.mark.coverage_item("VC_DOCUMENT_GROUNDED_PROVIDER_MATRIX")]
+
 _PDF_FILENAME = "variative.pdf"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 

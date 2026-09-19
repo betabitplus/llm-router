@@ -14,6 +14,8 @@ from dataclasses import dataclass, replace
 from types import MappingProxyType
 from typing import Any
 
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
 from py_lib_runtime import preview_text, preview_value
 from pydantic import BaseModel
 
@@ -80,14 +82,15 @@ def advance_repair_attempt(state: SchemaRepairState) -> SchemaRepairState:
     )
 
 
-# @impl Structured schema contract, IMPL_STRUCTURED_SCHEMA_CONTRACT, [REQ_STRUCTURED_SCHEMA_CONTRACT[revision==1]]
-# @impl Structured text output, IMPL_STRUCTURED_TEXT_OUTPUT, [REQ_STRUCTURED_TEXT_OUTPUT[revision==1]]
+# @impl Structured schema contract, IMPL_STRUCTURED_SCHEMA_CONTRACT, [REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]]
+# @impl Structured text output, IMPL_STRUCTURED_TEXT_OUTPUT, [REQ_STRUCTURED_TEXT_OUTPUT[revision==2]]
 def normalize_schema(schema: object) -> SchemaSpec:
     """Convert a public schema input into a provider-neutral schema spec."""
     if isinstance(schema, type) and issubclass(schema, BaseModel):
         return _pydantic_schema_spec(schema)
     if isinstance(schema, Mapping):
         copied = deepcopy(dict(schema))
+        _validate_mapping_schema_definition(copied)
         name = str(copied.get("title") or copied.get("$id") or "structured_response")
         return SchemaSpec(
             name=name,
@@ -174,10 +177,23 @@ def _parse_pydantic_model(model: type[BaseModel], value: object) -> BaseModel:
     return model.model_validate(value)
 
 
+def _validate_mapping_schema_definition(schema: Mapping[str, Any]) -> None:
+    """Fail closed unless a caller mapping is a valid object Draft 2020-12 schema."""
+    try:
+        Draft202012Validator.check_schema(dict(schema))
+    except SchemaError as exc:
+        msg = "response_schema mapping must be a valid Draft 2020-12 JSON Schema."
+        raise ValueError(msg) from exc
+
+    if schema.get("type") not in {None, "object"}:
+        msg = "response_schema mapping must describe a JSON object."
+        raise ValueError(msg)
+
+
 def _parse_mapping_schema(schema: Mapping[str, Any], value: object) -> dict[str, Any]:
-    """Parse and lightly validate output against a JSON schema mapping."""
+    """Parse and validate output against the complete caller JSON Schema mapping."""
     parsed = _parse_json_object(value)
-    _validate_mapping_schema(schema, parsed)
+    Draft202012Validator(dict(schema)).validate(parsed)
     return parsed
 
 
@@ -197,69 +213,6 @@ def _parse_json_object(value: object) -> dict[str, Any]:
         msg = "Structured output must be a JSON object."
         raise TypeError(msg)
     return {str(key): item for key, item in decoded.items()}
-
-
-def _validate_mapping_schema(
-    schema: Mapping[str, Any],
-    value: Mapping[str, Any],
-) -> None:
-    """Validate a small provider-neutral subset of JSON Schema."""
-    schema_type = schema.get("type")
-    if schema_type not in {None, "object"}:
-        msg = "Only object JSON schemas are supported by provider-neutral validation."
-        raise ValueError(msg)
-
-    required = schema.get("required", ())
-    if isinstance(required, list | tuple):
-        for field_name in required:
-            if isinstance(field_name, str) and field_name not in value:
-                msg = f"Missing required field: {field_name}."
-                raise ValueError(msg)
-
-    properties = schema.get("properties", {})
-    if isinstance(properties, Mapping):
-        for field_name, field_schema in properties.items():
-            if field_name in value and isinstance(field_schema, Mapping):
-                _validate_json_type(
-                    field_name=str(field_name),
-                    expected=field_schema.get("type"),
-                    value=value[field_name],
-                )
-                _validate_json_constraints(
-                    field_name=str(field_name),
-                    field_schema=field_schema,
-                    value=value[field_name],
-                )
-
-
-def _validate_json_type(
-    *,
-    field_name: str,
-    expected: object,
-    value: object,
-) -> None:
-    """Validate one simple JSON-schema type declaration."""
-    if expected is None:
-        return
-    expected_types = tuple(expected) if isinstance(expected, list) else (expected,)
-    if "null" in expected_types and value is None:
-        return
-
-    validators: dict[str, type[object] | tuple[type[object], ...]] = {
-        "string": str,
-        "integer": int,
-        "number": (int, float),
-        "boolean": bool,
-        "object": dict,
-        "array": list,
-    }
-    for expected_type in expected_types:
-        validator = validators.get(str(expected_type))
-        if validator is not None and isinstance(value, validator):
-            return
-
-    msg = f"Field '{field_name}' does not match expected type {expected!r}."
-    raise ValueError(msg)
 
 
 def _extract_json_payload(value: str) -> str:
@@ -289,29 +242,3 @@ def _strip_json_fence(value: str) -> str:
     if lines[0].strip() not in {"```", "```json", "```JSON"}:
         return value
     return "\n".join(lines[1:-1]).strip()
-
-
-def _validate_json_constraints(
-    *,
-    field_name: str,
-    field_schema: Mapping[str, Any],
-    value: object,
-) -> None:
-    """Validate common shallow JSON-schema constraints."""
-    min_length = field_schema.get("minLength")
-    if (
-        isinstance(min_length, int)
-        and isinstance(value, str)
-        and len(value) < min_length
-    ):
-        msg = f"Field '{field_name}' is shorter than minLength {min_length}."
-        raise ValueError(msg)
-
-    min_items = field_schema.get("minItems")
-    if (
-        isinstance(min_items, int)
-        and isinstance(value, list)
-        and len(value) < min_items
-    ):
-        msg = f"Field '{field_name}' has fewer items than minItems {min_items}."
-        raise ValueError(msg)

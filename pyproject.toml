@@ -30,6 +30,7 @@ dependencies = [
   "gemini-webapi>=1.21,<1.22",
   "google-genai>=1.73.1",
   "httpx",
+  "jsonschema>=4.26,<5",
   "openai",
   "pillow>=12.2",
   "py-lib-runtime",

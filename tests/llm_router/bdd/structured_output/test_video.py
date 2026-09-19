@@ -22,6 +22,19 @@ from tests.llm_router.support.media.video import (
 
 scenarios("structured_output/video.feature")
 
+for _test_name, _criterion in (
+    (
+        "test_a_provider_route_describes_the_example_rooftop_video",
+        "VC_VIDEO_LOCAL_GROUNDED_MATRIX",
+    ),
+    (
+        "test_a_provider_route_describes_the_example_remote_video",
+        "VC_VIDEO_REMOTE_GROUNDED_MATRIX",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
+del _criterion, _test_name
+
 _VIDEO_FILENAME = "jumper.mp4"
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 

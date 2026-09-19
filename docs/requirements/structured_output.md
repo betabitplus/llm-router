@@ -74,18 +74,18 @@ Contracts in this capability:
 :id: REQ_STRUCTURED_TEXT_OUTPUT
 :collapse: true
 :status: accepted
-:revision: 1
+:revision: 2
 :required_evidence: impl;bdd
 :derives: FEAT_STRUCTURED_OUTPUT
 
-**Statement.** A supported text route shall be able to return deterministic structured data that validates against the caller-requested schema.
+**Statement.** A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema. Provider-specific response formatting shall not change the public structured result.
 
 **Rationale.** Callers need structured output to be governed by their schema rather than by provider-specific response formatting.
-
-**Verification intent.** Execute representative structured-text requests through the public router and validate the returned data against the requested schema across supported providers.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-structured-text-output>`
 
 ```{needlist}
 :filter: "'REQ_STRUCTURED_TEXT_OUTPUT' in derives or 'REQ_STRUCTURED_TEXT_OUTPUT' in implements or 'REQ_STRUCTURED_TEXT_OUTPUT' in verifies"
@@ -105,10 +105,11 @@ Contracts in this capability:
 
 **Rationale.** Document-capable callers need the same normalized structured-output contract without embedding provider-specific upload or extraction logic.
 
-**Verification intent.** Submit a representative known document through supported public provider routes, assert grounded structured facts from its contents, and retain the input/result evidence with the execution.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-document-input>`
 
 ```{needlist}
 :filter: "'REQ_DOCUMENT_INPUT' in derives or 'REQ_DOCUMENT_INPUT' in implements or 'REQ_DOCUMENT_INPUT' in verifies"
@@ -128,10 +129,11 @@ Contracts in this capability:
 
 **Rationale.** Image-capable callers need one multimodal contract whose semantics do not change with the selected provider.
 
-**Verification intent.** Submit a representative known image through supported public provider routes, assert structured facts that are visibly grounded in the image, and retain both the input image and structured result as execution evidence.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-image-input>`
 
 ```{needlist}
 :filter: "'REQ_IMAGE_INPUT' in derives or 'REQ_IMAGE_INPUT' in implements or 'REQ_IMAGE_INPUT' in verifies"
@@ -151,10 +153,11 @@ Contracts in this capability:
 
 **Rationale.** Video-capable callers should not need separate public contracts for local and remote media or provider-specific result interpretation.
 
-**Verification intent.** Execute representative supported local and remote video inputs through public provider routes, verify grounded structured facts, and retain useful media/result evidence with each execution.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-video-input>`
 
 ```{needlist}
 :filter: "'REQ_VIDEO_INPUT' in derives or 'REQ_VIDEO_INPUT' in implements or 'REQ_VIDEO_INPUT' in verifies"
@@ -166,18 +169,18 @@ Contracts in this capability:
 :id: REQ_STRUCTURED_SCHEMA_CONTRACT
 :collapse: true
 :status: accepted
-:revision: 1
+:revision: 2
 :required_evidence: impl;unit
 :derives: FEAT_STRUCTURED_OUTPUT
 
-**Statement.** Mapping and Pydantic schema inputs shall normalize into a provider-independent schema contract that preserves required fields and common constraints and can reconstruct the requested model from valid JSON output.
+**Statement.** Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution. Pydantic model types shall preserve their generated schema and reconstruct the requested model from valid JSON output. Provider-specific schema transforms shall not weaken router-side validation.
 
-**Rationale.** Schema normalization is the internal compatibility boundary that prevents provider adapters from interpreting caller schemas differently.
-
-**Verification intent.** Directly verify representative mapping and Pydantic schemas, required/common constraints, and model reconstruction from valid normalized JSON output.
+**Rationale.** Schema normalization is the internal compatibility boundary that prevents provider adapters from silently weakening or interpreting caller schemas differently.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-structured-schema-contract>`
 
 ```{needlist}
 :filter: "'REQ_STRUCTURED_SCHEMA_CONTRACT' in derives or 'REQ_STRUCTURED_SCHEMA_CONTRACT' in implements or 'REQ_STRUCTURED_SCHEMA_CONTRACT' in verifies"
@@ -189,18 +192,18 @@ Contracts in this capability:
 :id: REQ_MULTIMODAL_CONTENT_NORMALIZATION
 :collapse: true
 :status: accepted
-:revision: 1
+:revision: 2
 :required_evidence: impl;unit
 :derives: FEAT_STRUCTURED_OUTPUT
 
-**Statement.** Content normalization shall preserve the ordering of text and supported media parts, reject unsupported content promptly, and revalidate raw media modes before provider execution.
+**Statement.** Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts. Unsupported top-level content or media parts and raw images outside supported mode or dimension bounds shall fail before provider execution.
 
-**Rationale.** Provider adapters can only preserve multimodal request meaning if the normalized content model keeps ordering and media-mode invariants intact.
-
-**Verification intent.** Directly verify ordered mixed content, supported raw media modes, and rejection of unsupported or invalid content before provider execution.
+**Rationale.** Provider adapters can only preserve multimodal request meaning if the normalized content model keeps ordering, message semantics, descriptor metadata, and media invariants intact.
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-req-multimodal-content-normalization>`
 
 ```{needlist}
 :filter: "'REQ_MULTIMODAL_CONTENT_NORMALIZATION' in derives or 'REQ_MULTIMODAL_CONTENT_NORMALIZATION' in implements or 'REQ_MULTIMODAL_CONTENT_NORMALIZATION' in verifies"
