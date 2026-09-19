@@ -318,13 +318,22 @@ def main() -> None:
         "## Profile · REQ_ROUTE_TIMEOUT_FALLBACK",
         "## Profile · REQ_ROUTE_ATTEMPT_LIMIT",
         "## Profile · REQ_ROUTE_STICKY_START",
+        "## Profile · TREQ_ROUTE_ORDER",
         "## Profile · REQ_RATE_LIMIT_ROUTING",
+        "## Profile · TREQ_RATE_LIMIT_STATE",
+        "## Profile · TREQ_RATE_LIMIT_COOLDOWN_POLICY",
+        "## Profile · TREQ_RATE_LIMIT_AVAILABILITY_SELECTION",
         "VC_ROUTE_TIMEOUT_FALLBACK",
-        "VC_ROUTE_STICKY_MULTI_HOP",
+        "VC_ROUTE_STICKY_PUBLIC_NEXT_START",
+        "VC_ROUTE_ORDER_STICKY_START_IDENTITY",
+        "VC_RATE_LIMIT_SKIP_BLOCKED_ROUTE",
+        "VC_RATE_LIMIT_PROVIDER_KEY_ISOLATION",
+        "VC_RATE_LIMIT_COOLDOWN_THRESHOLD",
         "VC_RATE_LIMIT_AVAILABLE_KEY_BEFORE_WAIT",
         "VC_RATE_LIMIT_ALL_BLOCKED_WAIT_EARLIEST",
+        "### Required technical support",
         "### Fault applicability",
-    )), "Routing Verification Profiles own independent coverage targets and explicit Fault Models")
+    )), "Routing Verification Profiles keep REQ/TREQ ownership split, explicit dependencies, and Fault Models")
     check(all(token in resilience_requirements_source for token in (
         ":id: GOAL_RESILIENT_EXECUTION",
         ":id: REQ_PROVIDER_RETRY",
@@ -652,14 +661,14 @@ def main() -> None:
     provenance_subjects = evidence_provenance.get("subjects") or {}
     check(
         depth_facts.get("schema_version") == 4
-        and depth_source.get("tests") == 181
-        and depth_source.get("passed") == 181
+        and depth_source.get("tests") == 184
+        and depth_source.get("passed") == 184
         and depth_audit.get("contracts") == 62
-        and depth_audit.get("runtime_evidence") == 181
+        and depth_audit.get("runtime_evidence") == 184
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
         and depth_audit.get("bdd_feature_scenario_errors") == 0,
-        "Depth facts are reproducibly regenerated from the current 181-test retained run",
+        "Depth facts are reproducibly regenerated from the current 184-test retained run",
     )
     check(
         ((depth_inputs.get("junit") or {}).get("sha256")
@@ -1092,10 +1101,14 @@ def main() -> None:
         "REQ_VIDEO_INPUT",
         "REQ_STRUCTURED_SCHEMA_CONTRACT",
         "REQ_MULTIMODAL_CONTENT_NORMALIZATION",
+        "TREQ_ROUTE_ORDER",
+        "TREQ_RATE_LIMIT_STATE",
+        "TREQ_RATE_LIMIT_COOLDOWN_POLICY",
+        "TREQ_RATE_LIMIT_AVAILABILITY_SELECTION",
     }
     check(
         set(monitor_facts.get("contracts") or {}) == profiled_contracts,
-        "All fifteen product features expose exactly twenty-nine parent Contract Evidence profiles",
+        "All fifteen product features expose twenty-nine parent and four first-class TREQ Contract Evidence profiles",
     )
     required_gate_signals = {
         "semantic_coverage",
@@ -2874,18 +2887,18 @@ def main() -> None:
         "REQ_ROUTE_TIMEOUT_FALLBACK": "contract-evidence-route-timeout-fallback.html#ce-coverage-req_route_timeout_fallback",
         "REQ_ROUTE_ATTEMPT_LIMIT": "contract-evidence-route-attempt-limit.html#ce-coverage-req_route_attempt_limit",
         "REQ_ROUTE_STICKY_START": "contract-evidence-route-sticky-start.html#ce-coverage-req_route_sticky_start",
-        "TREQ_ROUTE_ORDER": "contract-evidence-route-sticky-start.html#ce-coverage-req_route_sticky_start",
+        "TREQ_ROUTE_ORDER": "contract-evidence-route-order.html#ce-coverage-treq_route_order",
         "REQ_RATE_LIMIT_ROUTING": "contract-evidence-rate-limit-routing.html#ce-coverage-req_rate_limit_routing",
-        "TREQ_RATE_LIMIT_STATE": "contract-evidence-rate-limit-routing.html#ce-coverage-req_rate_limit_routing",
-        "TREQ_RATE_LIMIT_COOLDOWN_POLICY": "contract-evidence-rate-limit-routing.html#ce-coverage-req_rate_limit_routing",
-        "TREQ_RATE_LIMIT_AVAILABILITY_SELECTION": "contract-evidence-rate-limit-routing.html#ce-coverage-req_rate_limit_routing",
+        "TREQ_RATE_LIMIT_STATE": "contract-evidence-rate-limit-state.html#ce-coverage-treq_rate_limit_state",
+        "TREQ_RATE_LIMIT_COOLDOWN_POLICY": "contract-evidence-rate-limit-cooldown-policy.html#ce-coverage-treq_rate_limit_cooldown_policy",
+        "TREQ_RATE_LIMIT_AVAILABILITY_SELECTION": "contract-evidence-rate-limit-availability-selection.html#ce-coverage-treq_rate_limit_availability_selection",
     }
     check(
         all(
             f'"{contract_id}": "{href}"' in trace_reader_page
             for contract_id, href in routing_trace_routes.items()
         ),
-        "Traceability Reader routes Routing parent/derived contracts to the accepted parent Contract Evidence pages",
+        "Traceability Reader routes Routing REQ/TREQ contracts to their accepted first-class Contract Evidence pages",
     )
     resilience_trace_routes = {
         "REQ_PROVIDER_RETRY": "contract-evidence-provider-retry.html#ce-coverage-req_provider_retry",
@@ -3043,6 +3056,7 @@ def main() -> None:
         "assurance-snapshots.json",
         "build-mutation-report-prototype.py",
         "build-requirement-monitor.py",
+        "build-upper-assurance-pilot.py",
         "qualify-evidence-confidence.py",
         "validate-mutation-pilot.py",
         "mutation-testing-integration-plan.md",
@@ -3121,6 +3135,7 @@ def main() -> None:
     approved_pilot_sources = {
         ".ai-bridge/build-mutation-report-prototype.py",
         ".ai-bridge/build-requirement-monitor.py",
+        ".ai-bridge/build-upper-assurance-pilot.py",
         ".ai-bridge/monitor-readiness.md",
         ".ai-bridge/mutation-testing-platform-extraction-manifest.md",
         ".ai-bridge/qualify-evidence-confidence.py",
@@ -3128,6 +3143,7 @@ def main() -> None:
         "docs/index.md",
         "docs/README.md",
         "docs/test-plan.md",
+        "docs/assurance-profiles/",
         "docs/experiments/index.md",
         "docs/requirements/configuration.md",
         "docs/requirements/tools.md",

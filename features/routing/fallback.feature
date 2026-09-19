@@ -53,7 +53,6 @@ Feature: Route fallback
       Then the first request succeeds through fallback
       And the second request starts from the previously successful route
 
-    @REQ_ROUTE_STICKY_START[revision==1]
     Scenario: Multi-hop fallback keeps the actual successful route sticky
       Given a public router with three routes whose first two fail
       When two requests are made after multi-hop fallback

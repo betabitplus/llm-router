@@ -11,7 +11,8 @@ The committed documentation surface is intentionally small.
 - `api.md` defines the generated public API reference.
 - `examples/llm_router/` is the source of truth for runnable user workflows.
 - `requirements/` contains authoritative Requirements and Technical requirements.
-- `verification-profiles/` contains requirement-specific verification design: criteria, Test level / Boundary / Representation selections, and fault applicability. Profiles reference requirements; they do not define product semantics.
+- `verification-profiles/` contains Requirement/TREQ verification design: criteria, Test level / Boundary / Representation selections, and fault applicability. Profiles reference requirements; they do not define product semantics.
+- `assurance-profiles/` contains Feature/Goal/Product-System integration and validation Targets that cannot be reduced to one Requirement/TREQ contract.
 - `experiments/` preserves self-contained Engineering Experiment capsules; each capsule owns its authoritative captured `report/report.ipynb`, and DocOps mounts it directly into Sphinx with execution disabled.
 - `decisions/` preserves significant architecture decisions and their rationale.
 - `traceability`, `verification`, and `tests` are DocOps-owned generated views over the project graph and retained execution evidence.
@@ -26,7 +27,7 @@ mkdir -p test-results/allure-results
 COVERAGE_FILE=test-results/.coverage uv run pytest -c pyproject.toml -n 2 \
     --record-mode=none \
     --block-network \
-    --allowed-hosts='localhost,127\\.0\\.0\\.1' \
+    --allowed-hosts='localhost,127\.0\.0\.1' \
     --cov-context=test \
     --junitxml=test-results/pytest-junit.xml \
     --alluredir=test-results/allure-results

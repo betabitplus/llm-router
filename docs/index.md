@@ -111,6 +111,30 @@ the primary engineering-control path.
 
 ::::
 
+## Assurance design
+
+::::{grid} 1 1 2 2
+:gutter: 3
+
+:::{grid-item-card} Upper-level assurance profiles
+:link: assurance-profiles/index
+:link-type: doc
+
+Feature, Goal, and Product/System integration and validation Targets. These profiles
+add only cross-contract or intended-use evidence that cannot be reduced to one
+Requirement/TREQ Verification Profile.
+:::
+
+:::{grid-item-card} Contract verification profiles
+:link: verification-profiles/index
+:link-type: doc
+
+Requirement/TREQ verification Targets: criteria, levels, boundaries, representation,
+fault applicability, and blocking contract-level evidence.
+:::
+
+::::
+
 ## Advanced diagnostics
 
 The pages below deliberately expose dense global data. They are useful for audits
@@ -138,6 +162,7 @@ auto_examples/index
 traceability
 test-plan
 verification-profiles/index
+assurance-profiles/index
 verification
 evidence-producers
 tests

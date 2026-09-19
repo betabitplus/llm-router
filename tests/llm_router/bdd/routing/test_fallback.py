@@ -53,11 +53,21 @@ for _test_name, _criterion in (
         "VC_ROUTE_ATTEMPT_LIMIT_PUBLIC_CAP",
     ),
     (
-        "test_multihop_fallback_keeps_the_actual_successful_route_sticky",
-        "VC_ROUTE_STICKY_MULTI_HOP",
+        "test_the_next_request_starts_from_the_route_that_previously_succeeded",
+        "VC_ROUTE_STICKY_PUBLIC_NEXT_START",
     ),
 ):
     globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
+
+_test_name = "test_multihop_fallback_keeps_the_actual_successful_route_sticky"
+globals()[_test_name] = pytest.mark.assurance_item(
+    "AC_ROUTE_FALLBACK_MULTI_HOP_STICKY"
+)(globals()[_test_name])
+globals()[_test_name] = pytest.mark.verifies(
+    "REQ_SYNC_ROUTE_FALLBACK[revision==1]",
+    "REQ_ROUTE_STICKY_START[revision==1]",
+)(globals()[_test_name])
+globals()[_test_name] = pytest.mark.verification_kind("bdd")(globals()[_test_name])
 
 for _test_name, _path_id in (
     (

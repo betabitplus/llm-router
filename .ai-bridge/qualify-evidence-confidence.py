@@ -45,6 +45,7 @@ def environment() -> dict[str, str | None]:
         "pytest_recording": version_or_unknown("pytest-recording"),
         "assurance_adapter_sha256": sha256_file(ROOT / ".ai-bridge/build-mutation-report-prototype.py"),
         "requirement_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-requirement-monitor.py"),
+        "upper_assurance_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-upper-assurance-pilot.py"),
         "qualification_harness_sha256": sha256_file(Path(__file__)),
         "trace_bridge_sha256": sha256_file(ROOT / "tests/conftest.py"),
     }
@@ -460,6 +461,10 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
 def internal_controls() -> dict[str, dict[str, object]]:
     adapter = runpy.run_path(str(ROOT / ".ai-bridge/build-mutation-report-prototype.py"), run_name="evidence_confidence_adapter")
     monitor = runpy.run_path(str(ROOT / ".ai-bridge/build-requirement-monitor.py"), run_name="evidence_confidence_monitor")
+    upper = runpy.run_path(
+        str(ROOT / ".ai-bridge/build-upper-assurance-pilot.py"),
+        run_name="evidence_confidence_upper_monitor",
+    )
 
     execution_link_state = adapter["execution_link_state"]
     good = execution_link_state(
@@ -771,6 +776,99 @@ def internal_controls() -> dict[str, dict[str, object]]:
         and missing_threshold["status"] == "UNKNOWN"
     )
 
+    upper_criterion_state = upper["criterion_state"]
+    upper_profile = ROOT / "docs/assurance-profiles/routing.md"
+    upper_test_source = ROOT / "tests/conftest.py"
+    upper_target = {
+        "id": "ASSURANCE_CONTROL",
+        "method": "pytest-bdd",
+        "boundary": "Substitute",
+        "required_executions": 1,
+    }
+    upper_source_sha = sha256_file(upper_test_source)
+    upper_profile_sha = sha256_file(upper_profile)
+    upper_row = {
+        "result": "passed",
+        "source_path": str(upper_test_source.relative_to(ROOT)),
+        "source_sha256": upper_source_sha,
+    }
+    upper_run_inputs = {
+        "inputs": {
+            str(upper_profile.relative_to(ROOT)): upper_profile_sha,
+            str(upper_test_source.relative_to(ROOT)): upper_source_sha,
+        }
+    }
+    upper_producer_ids = (
+        "PRODUCER_PYTEST",
+        "PRODUCER_PY_TESTKIT",
+        "PRODUCER_UPPER_ASSURANCE_MONITOR",
+        "PRODUCER_PYTEST_BDD",
+        "PRODUCER_SCRIPTED_HTTP_SERVER",
+    )
+    upper_qualification = {
+        "producers": {
+            producer_id: {"status": "QUALIFIED"}
+            for producer_id in upper_producer_ids
+        }
+    }
+    upper_good = upper_criterion_state(
+        upper_target,
+        [upper_row],
+        run_inputs=upper_run_inputs,
+        qualification=upper_qualification,
+    )
+    upper_missing_execution = upper_criterion_state(
+        upper_target,
+        [],
+        run_inputs=upper_run_inputs,
+        qualification=upper_qualification,
+    )
+    upper_unknown_qualification = json.loads(json.dumps(upper_qualification))
+    upper_unknown_qualification["producers"]["PRODUCER_PYTEST_BDD"]["status"] = "UNKNOWN"
+    upper_unknown_producer = upper_criterion_state(
+        upper_target,
+        [upper_row],
+        run_inputs=upper_run_inputs,
+        qualification=upper_unknown_qualification,
+    )
+    upper_bad_qualification = json.loads(json.dumps(upper_qualification))
+    upper_bad_qualification["producers"]["PRODUCER_SCRIPTED_HTTP_SERVER"]["status"] = (
+        "NOT QUALIFIED"
+    )
+    upper_bad_producer = upper_criterion_state(
+        upper_target,
+        [upper_row],
+        run_inputs=upper_run_inputs,
+        qualification=upper_bad_qualification,
+    )
+    upper_stale_inputs = json.loads(json.dumps(upper_run_inputs))
+    upper_stale_inputs["inputs"][str(upper_test_source.relative_to(ROOT))] = "0" * 64
+    upper_stale_source = upper_criterion_state(
+        upper_target,
+        [upper_row],
+        run_inputs=upper_stale_inputs,
+        qualification=upper_qualification,
+    )
+    upper_missing_profile_inputs = json.loads(json.dumps(upper_run_inputs))
+    upper_missing_profile_inputs["inputs"].pop(str(upper_profile.relative_to(ROOT)))
+    upper_missing_profile = upper_criterion_state(
+        upper_target,
+        [upper_row],
+        run_inputs=upper_missing_profile_inputs,
+        qualification=upper_qualification,
+    )
+    upper_projection_ok = (
+        upper_good["status"] == "MET"
+        and upper_good["execution_status"] == "MET"
+        and upper_good["producer_qualification"]["status"] == "MET"
+        and upper_good["freshness"]["status"] == "MET"
+        and upper_missing_execution["status"] == "NOT MET"
+        and upper_unknown_producer["status"] == "UNKNOWN"
+        and upper_bad_producer["status"] == "NOT MET"
+        and upper_stale_source["status"] == "NOT MET"
+        and upper_missing_profile["status"] == "UNKNOWN"
+    )
+
     return {
         "PRODUCER_ASSURANCE_ADAPTER": {
             "status": "QUALIFIED" if adapter_ok else "NOT QUALIFIED",
@@ -781,6 +879,11 @@ def internal_controls() -> dict[str, dict[str, object]]:
             "status": "QUALIFIED" if projection_ok else "NOT QUALIFIED",
             "intended_use": "project Target versus Actual without converting missing or failed confidence evidence into green status",
             "false_green_control": "UNKNOWN, NOT QUALIFIED, partial-scope trust, exact-cardinality violations, under-validated surrogate paths, and unselected or threshold-less mutation checks must never become a false PASS",
+        },
+        "PRODUCER_UPPER_ASSURANCE_MONITOR": {
+            "status": "QUALIFIED" if upper_projection_ok else "NOT QUALIFIED",
+            "intended_use": "project Feature, Goal, and Product/System assurance from child status plus explicitly declared cross-contract and validation criteria",
+            "false_green_control": "missing execution, UNKNOWN or NOT QUALIFIED producers, stale test source, or missing/stale Assurance Profile provenance must never become a false PASS",
         },
     }
 

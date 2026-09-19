@@ -356,3 +356,25 @@ runtime fault-injection observation. A marker without the runtime observation is
 fault evidence.
 
 **Completion:** required fault-class coverage = **100%** · required deterministic fault detection = **100%**
+
+(test-plan-upper-level-assurance)=
+
+## Upper-level assurance and validation
+
+Requirement/TREQ Verification Profiles prove individual normative contracts. Feature, Goal, and whole-product monitors add only evidence that cannot be reduced to one child contract in isolation.
+
+| Owner level      | Child-support gate      | Direct upper-level evidence                       | Purpose                                                               |
+| ---------------- | ----------------------- | ------------------------------------------------- | --------------------------------------------------------------------- |
+| Feature          | all direct Requirements | Capability integration · Capability validation    | prove cross-Requirement interaction and the capability's intended use |
+| Goal             | all direct Features     | Cross-capability integration · Outcome validation | prove cross-Feature behavior and the Goal-level outcome               |
+| Product / System | all current Goals       | Cross-goal integration · Operational validation   | prove whole-product interactions and intended operation               |
+
+**Ownership rule.** Cross evidence belongs to the lowest common assurance owner of the claims it connects: TREQ × TREQ → REQ, REQ × REQ → Feature, Feature × Feature → Goal, Goal × Goal → Product / System. The same upper-level criterion is never copied into its descendants.
+
+**Target source.** This Test Plan defines the allowed assurance kinds and completion rules. A branch-specific Assurance Profile declares the concrete integration/validation criteria before execution. Existing tests never create or weaken a Target merely by existing.
+
+**Methods.** A declared validation criterion may be satisfied by an appropriate retained test, analysis, inspection, demonstration, manual test, or engineering/operational experiment. The method and environment are part of the criterion Target; stronger evidence may replace a weaker method only when the profile explicitly permits it.
+
+**Status semantics.** A declared criterion is `PASS` only when every required retained execution/evaluation passes. A declared but missing or failing criterion is `FAIL`. A section with no declared Target is `N/A`. An applicable child Goal/Feature/Requirement that has not yet been onboarded into the assurance pipeline is `UNKNOWN`, not `N/A` and never implicit `PASS`.
+
+**Completion.** child support = **100% of required direct children PASS** · declared upper-level criteria = **100% PASS**. `N/A` sections do not block; `UNKNOWN` required child support does block whole-product assurance.

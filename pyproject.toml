@@ -452,6 +452,7 @@ ini_options.norecursedirs = [
 # ---------------- Pytest configuration ----------------
 ini_options.addopts = "--cov --cov-report=term-missing --strict-markers"
 ini_options.markers = [
+  "assurance_item(id): declares an upper-level Feature/Goal/Product-System assurance criterion exercised by this test",
   "coverage_item(id): declares the semantic Test Model coverage item exercised by this test",
   "coverage_path(id_or_selector): declares the exact retained path identity; use case-id for pytest param ids or example:<key> for pytest-bdd Examples",
   "fault_item(contract_id, id): declares an intentional contract-specific fault-class challenge",

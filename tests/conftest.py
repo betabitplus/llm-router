@@ -61,6 +61,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
         "features/**/*.feature",
         "docs/requirements/**/*.md",
         "docs/verification-profiles/**/*.md",
+        "docs/assurance-profiles/**/*.md",
     )
     for pattern in input_scope:
         paths.update(path for path in root.glob(pattern) if path.is_file())
@@ -184,7 +185,13 @@ def pytest_runtest_setup(item: pytest.Item) -> None:
     coverage_markers = list(item.iter_markers(name="coverage_item"))
     coverage_path_markers = list(item.iter_markers(name="coverage_path"))
     fault_markers = list(item.iter_markers(name="fault_item"))
-    if not coverage_markers and not coverage_path_markers and not fault_markers:
+    assurance_markers = list(item.iter_markers(name="assurance_item"))
+    if (
+        not coverage_markers
+        and not coverage_path_markers
+        and not fault_markers
+        and not assurance_markers
+    ):
         return
 
     malformed_coverage_markers = [
@@ -205,6 +212,20 @@ def pytest_runtest_setup(item: pytest.Item) -> None:
     )
     if path_id is not None:
         _set_user_property(item, "coverage_path", path_id)
+
+    malformed_assurance_markers = [
+        marker for marker in assurance_markers if len(marker.args) != 1 or marker.kwargs
+    ]
+    if len(assurance_markers) > 1 or malformed_assurance_markers:
+        raise pytest.UsageError(
+            "assurance_item requires exactly one marker with one positional "
+            "criterion id and no keyword arguments"
+        )
+    if assurance_markers:
+        assurance_item = str(assurance_markers[0].args[0]).strip()
+        if not assurance_item:
+            raise pytest.UsageError("assurance_item criterion id cannot be empty")
+        _set_user_property(item, "assurance_item", assurance_item)
 
     malformed_fault_markers = [
         marker for marker in fault_markers if len(marker.args) != 2 or marker.kwargs

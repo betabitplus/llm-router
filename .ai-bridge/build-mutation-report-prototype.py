@@ -3740,6 +3740,45 @@ def requirement_monitor_target(contract_id, policy):
           "rationale":fault_group_rationales[group["label"]],
         })
 
+    required_treqs=[]
+    technical_support_rows=markdown_table_after(section,"### Required technical support")
+    if technical_support_rows and contract_id.startswith("TREQ_"):
+        raise RuntimeError(
+          f"{contract_id}: Technical requirements cannot declare Required technical support"
+        )
+    for row in technical_support_rows:
+        ids=sorted(set(
+          re.findall(r"TREQ_[A-Z0-9_]+",row.get("Technical requirement",""))
+        ))
+        if len(ids)!=1:
+            raise RuntimeError(
+              f"{contract_id}: each Required technical support row must reference exactly one TREQ"
+            )
+        treq_id=ids[0]
+        target=re.sub(r"\*\*","",row.get("Target","")).strip().upper()
+        if target!="PASS":
+            raise RuntimeError(
+              f"{contract_id}: Required technical support {treq_id} must target PASS"
+            )
+        if treq_id in required_treqs:
+            raise RuntimeError(
+              f"{contract_id}: duplicate Required technical support {treq_id}"
+            )
+        if treq_id not in registry:
+            raise RuntimeError(
+              f"{contract_id}: Required technical support references unknown {treq_id}"
+            )
+        if not contract_in_profile_scope(contract_id,treq_id,registry):
+            raise RuntimeError(
+              f"{contract_id}: Required technical support {treq_id} is not derived from this Requirement"
+            )
+        treq_path,treq_section=verification_profile_source(treq_id)
+        if not treq_path or not treq_section:
+            raise RuntimeError(
+              f"{contract_id}: Required technical support {treq_id} has no first-class Verification Profile"
+            )
+        required_treqs.append(treq_id)
+
     mutation={}
     for row in markdown_table_after(section,"### Blocking mutation checks"):
         level_label=row.get("Test level","").strip()
@@ -3777,6 +3816,7 @@ def requirement_monitor_target(contract_id, policy):
       "item_descriptions":item_descriptions,
       "item_anchors":item_anchors,
       "criterion_contracts":criterion_contracts,
+      "required_treqs":required_treqs,
       "fault_groups":fault_groups,
       "mutation":mutation,
     }
@@ -3838,6 +3878,7 @@ def current_evidence_qualification_environment():
       "pytest_recording":package_version_or_unknown("pytest-recording"),
       "assurance_adapter_sha256":sha256_file(ROOT/".ai-bridge/build-mutation-report-prototype.py"),
       "requirement_monitor_sha256":sha256_file(ROOT/".ai-bridge/build-requirement-monitor.py"),
+      "upper_assurance_monitor_sha256":sha256_file(ROOT/".ai-bridge/build-upper-assurance-pilot.py"),
       "qualification_harness_sha256":sha256_file(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
       "trace_bridge_sha256":sha256_file(ROOT/"tests/conftest.py"),
     }
