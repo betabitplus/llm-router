@@ -142,6 +142,7 @@ def test_normalize_chat_message_preserves_role_parts_and_copies_metadata() -> No
         ),
     ],
 )
+@pytest.mark.coverage_path("case-id")
 def test_invalid_content_is_rejected_locally(value: object, message: str) -> None:
     with pytest.raises((TypeError, ValueError), match=message):
         normalize_content(value)

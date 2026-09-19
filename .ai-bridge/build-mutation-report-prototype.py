@@ -70,8 +70,8 @@ MUTATION_CONFIG={
 CONTRACTS={
 "REQ_INVALID_CONFIGURATION_ERRORS":{"source":"src/llm_router/_internal/config/validation.py","kind":"function","scope":"validate_config","tests":[
 "tests/llm_router/bdd/responses/test_public_contract.py::test_invalid_model_configuration_surfaces_as_a_configuration_error",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_wait_bounds[0.0-1.0-retry min wait]",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_wait_bounds[2.0-1.0-retry max wait]",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_wait_bounds[min-wait-non-positive]",
+"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_wait_bounds[max-wait-below-min]",
 "tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_undeclared_default_provider",
 "tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_provider_spec_key_mismatch",
 "tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_model_without_provider_mapping",
@@ -88,8 +88,8 @@ CONTRACTS={
 "TREQ_TOOL_REGISTRY":{"source":"src/llm_router/_internal/capabilities/tools.py","kind":"class","scope":"ToolRegistry","tests":[
 "tests/llm_router/unit/test_internal_tool_registry.py::test_callable_tool_schema_and_execution_match_python_signature",
 "tests/llm_router/unit/test_internal_tool_registry.py::test_duplicate_tool_names_are_rejected",
-"tests/llm_router/unit/test_internal_tool_registry.py::test_tool_call_parser_accepts_supported_provider_shapes[payload0]",
-"tests/llm_router/unit/test_internal_tool_registry.py::test_tool_call_parser_accepts_supported_provider_shapes[payload1]"]}}
+"tests/llm_router/unit/test_internal_tool_registry.py::test_tool_call_parser_accepts_supported_provider_shapes[openai-function]",
+"tests/llm_router/unit/test_internal_tool_registry.py::test_tool_call_parser_accepts_supported_provider_shapes[google-function]"]}}
 SHARED_SCOPE_DIAGNOSTICS={
   "TREQ_RATE_LIMIT_STATE":{
     "shared_with":["TREQ_RATE_LIMIT_COOLDOWN_POLICY"],
@@ -629,6 +629,47 @@ def remove_suppression(contract_id,fingerprint):
     if len(payload["suppressions"])!=before:
         save_suppressions(payload)
     return before-len(payload["suppressions"])
+
+def validate_linked_test_nodeids():
+    errors=[]
+    for contract_id,spec in CONTRACTS.items():
+        files=sorted({str(nodeid).split("::",1)[0] for nodeid in spec["tests"]})
+        completed=subprocess.run(
+          [
+            sys.executable,"-m","pytest",
+            "--collect-only","-q","--no-cov",
+            "-p","no:randomly","-p","no:random-order",
+            *files,
+          ],
+          cwd=ROOT,
+          text=True,
+          stdout=subprocess.PIPE,
+          stderr=subprocess.STDOUT,
+        )
+        if completed.returncode!=0:
+            tail=(completed.stdout or "")[-8000:]
+            errors.append(
+              f"{contract_id}: linked-test collection failed:\n{tail}"
+            )
+            continue
+        # pytest -q collection output is one exact nodeid per line; ignore
+        # coverage/plugin prose by requiring the declared test-file prefix.
+        collected={
+          line.strip()
+          for line in (completed.stdout or "").splitlines()
+          if any(line.strip().startswith(file_name+"::") for file_name in files)
+        }
+        missing=[nodeid for nodeid in spec["tests"] if nodeid not in collected]
+        if missing:
+            errors.append(
+              f"{contract_id}: linked mutation nodeids are not in current pytest collection: "
+              +", ".join(missing)
+            )
+    if errors:
+        raise RuntimeError(
+          "mutation linked-test preflight failed:\n"+"\n".join(errors)
+        )
+
 
 def write_config(spec):
     selected="\n".join("    "+n for n in spec["tests"])
@@ -3446,6 +3487,7 @@ def requirement_monitor_target(contract_id, policy):
         raise RuntimeError(f"{contract_id}: Verification Profile has no Verification criteria")
     criteria_by_cell=defaultdict(list)
     criterion_path_counts={}
+    criterion_path_ids={}
     for criterion_row in criterion_rows:
         criterion_ids=re.findall(r"\x60([^\x60]+)\x60",criterion_row.get("Criterion",""))
         contract_ids=sorted(set(
@@ -3508,6 +3550,15 @@ def requirement_monitor_target(contract_id, policy):
             raise RuntimeError(
               f"verification criterion {criterion_id} must require at least one path"
             )
+        path_ids_text=criterion_row.get("Required path IDs","").strip()
+        path_ids=[]
+        if path_ids_text and path_ids_text not in {"—","-","N/A","n/a"}:
+            path_ids=re.findall(r"\x60([^\x60]+)\x60",path_ids_text)
+            if len(path_ids)!=required_paths or len(set(path_ids))!=len(path_ids):
+                raise RuntimeError(
+                  f"{contract_id}: criterion {criterion_id} Required path IDs must "
+                  f"declare exactly {required_paths} unique backtick-delimited ids"
+                )
         success=re.sub(
           r"\x60([^\x60]+)\x60",r"\1",criterion_row.get("Success criterion","")
         ).strip()
@@ -3517,6 +3568,7 @@ def requirement_monitor_target(contract_id, policy):
             )
         criteria_by_cell[(level_key,criterion_boundary)].append(criterion_id)
         criterion_path_counts[criterion_id]=required_paths
+        criterion_path_ids[criterion_id]=path_ids
         criterion_contracts[criterion_id]=criterion_contract
         item_descriptions[criterion_id]=success
         anchor_match=re.search(r'id="([^"]+)"',criterion_row.get("Criterion",""))
@@ -3550,6 +3602,11 @@ def requirement_monitor_target(contract_id, policy):
           "item_path_counts":{
             criterion_id:criterion_path_counts[criterion_id]
             for criterion_id in criteria
+          },
+          "item_path_ids":{
+            criterion_id:list(criterion_path_ids[criterion_id])
+            for criterion_id in criteria
+            if criterion_path_ids[criterion_id]
           },
           "declared_count":declared_count,
         })
@@ -4733,6 +4790,7 @@ def junit_monitor_actual():
           for prop in testcase.findall("./properties/property")
         }
         coverage_item=props.get("coverage_item")
+        coverage_path=props.get("coverage_path")
         if not coverage_item:
             continue
         classname=testcase.attrib.get("classname") or ""
@@ -4837,6 +4895,7 @@ def junit_monitor_actual():
         ]))
         actual[coverage_item].append({
           "coverage_item":coverage_item,
+          "coverage_path":coverage_path or None,
           "nodeid":nodeid,
           "result":state,
           "verifies_revision_current":revision_current,
@@ -7061,6 +7120,7 @@ def main():
         return
 
     validate_contract_scope_attribution()
+    validate_linked_test_nodeids()
     deattribute_shared_scope_strength()
     setup=ROOT/"setup.cfg"
     backup=setup.read_bytes() if setup.exists() else None

@@ -46,6 +46,7 @@ def test_fixed_key_can_use_configured_custom_env_name(
 
 
 @pytest.mark.coverage_item("VC_CREDENTIAL_AUTO_ROTATION")
+@pytest.mark.coverage_path("convention-discovered-keys")
 def test_auto_key_rotation_uses_sorted_available_keys(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -63,6 +64,7 @@ def test_auto_key_rotation_uses_sorted_available_keys(
 
 
 @pytest.mark.coverage_item("VC_CREDENTIAL_AUTO_ROTATION")
+@pytest.mark.coverage_path("configured-custom-keys")
 def test_auto_key_rotation_uses_configured_custom_key_names(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -105,7 +107,12 @@ def test_missing_required_key_raises_public_error(
 
 
 @pytest.mark.coverage_item("VC_CREDENTIAL_OPTIONAL_MISSING")
-@pytest.mark.parametrize("provider", [Provider.QWENCHAT, Provider.GEMINI_WEBAPI])
+@pytest.mark.parametrize(
+    "provider",
+    [Provider.QWENCHAT, Provider.GEMINI_WEBAPI],
+    ids=["QwenChat", "Gemini WebAPI"],
+)
+@pytest.mark.coverage_path("case-id")
 def test_optional_provider_key_can_resolve_to_empty_bearer(
     monkeypatch: pytest.MonkeyPatch,
     provider: Provider,

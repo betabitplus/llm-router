@@ -13,7 +13,10 @@ from tests.llm_router.support.assertions import parse_json_object
 
 scenarios("structured_output/text.feature")
 
-pytestmark = [pytest.mark.coverage_item("VC_STRUCTURED_TEXT_PROVIDER_MATRIX")]
+pytestmark = [
+    pytest.mark.coverage_item("VC_STRUCTURED_TEXT_PROVIDER_MATRIX"),
+    pytest.mark.coverage_path("QwenChat"),
+]
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 

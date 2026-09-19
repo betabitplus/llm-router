@@ -27,6 +27,7 @@ def _limits(
 
 @pytest.mark.verifies("TREQ_RATE_LIMIT_STATE[revision==1]")
 @pytest.mark.coverage_item("VC_RATE_LIMIT_CONSERVATIVE_INTERVAL")
+@pytest.mark.coverage_path("rpm-dominant")
 def test_success_uses_rpm_interval_when_it_is_more_conservative() -> None:
     limiter = LimiterState()
 
@@ -45,6 +46,7 @@ def test_success_uses_rpm_interval_when_it_is_more_conservative() -> None:
 
 @pytest.mark.verifies("TREQ_RATE_LIMIT_STATE[revision==1]")
 @pytest.mark.coverage_item("VC_RATE_LIMIT_CONSERVATIVE_INTERVAL")
+@pytest.mark.coverage_path("rps-dominant")
 def test_success_uses_rps_interval_when_it_is_more_conservative() -> None:
     limiter = LimiterState()
 
@@ -63,6 +65,7 @@ def test_success_uses_rps_interval_when_it_is_more_conservative() -> None:
 
 @pytest.mark.verifies("TREQ_RATE_LIMIT_STATE[revision==1]")
 @pytest.mark.coverage_item("VC_RATE_LIMIT_PROVIDER_KEY_ISOLATION")
+@pytest.mark.coverage_path("same-provider-other-key")
 def test_limiter_state_is_isolated_between_keys_of_one_provider() -> None:
     limiter = LimiterState()
     limits = _limits(rps=1.0, rpm=1_000.0)
@@ -80,6 +83,7 @@ def test_limiter_state_is_isolated_between_keys_of_one_provider() -> None:
 
 @pytest.mark.verifies("TREQ_RATE_LIMIT_STATE[revision==1]")
 @pytest.mark.coverage_item("VC_RATE_LIMIT_PROVIDER_KEY_ISOLATION")
+@pytest.mark.coverage_path("same-key-other-provider")
 def test_limiter_state_is_isolated_between_providers_for_same_key_id() -> None:
     limiter = LimiterState()
     limits = _limits(rps=1.0, rpm=1_000.0)
@@ -113,6 +117,7 @@ def test_success_resets_failure_count_before_cooldown_threshold() -> None:
 
 @pytest.mark.verifies("TREQ_RATE_LIMIT_COOLDOWN_POLICY[revision==1]")
 @pytest.mark.coverage_item("VC_RATE_LIMIT_COOLDOWN_THRESHOLD")
+@pytest.mark.coverage_path("below-threshold")
 def test_failure_below_cooldown_threshold_does_not_block_bucket() -> None:
     limiter = LimiterState()
     limits = _limits(cooldown_seconds=7.0, cooldown_after_failures=2)
@@ -124,6 +129,7 @@ def test_failure_below_cooldown_threshold_does_not_block_bucket() -> None:
 
 @pytest.mark.verifies("TREQ_RATE_LIMIT_COOLDOWN_POLICY[revision==1]")
 @pytest.mark.coverage_item("VC_RATE_LIMIT_COOLDOWN_THRESHOLD")
+@pytest.mark.coverage_path("at-threshold")
 def test_failure_at_cooldown_threshold_blocks_for_configured_duration() -> None:
     limiter = LimiterState()
     limits = _limits(cooldown_seconds=7.0, cooldown_after_failures=2)

@@ -90,9 +90,9 @@ semantics being claimed.
 
 ### Verification criteria
 
-| Criterion                  | Contract                                   | Test level | Boundary | Required paths | Success criterion                                                                                           |
-| -------------------------- | ------------------------------------------ | ---------- | -------- | -------------: | ----------------------------------------------------------------------------------------------------------- |
-| `VC_EXAMPLE_IMPORT_SAFETY` | {need}`[[id]] <REQ_EXAMPLE_IMPORT_SAFETY>` | Component  | Local    |              6 | Every shipped example executes a fresh import without network activity or invoking the live query workflow. |
+| Criterion                  | Contract                                   | Test level | Boundary | Required paths | Required path IDs                                                                                                | Success criterion                                                                                           |
+| -------------------------- | ------------------------------------------ | ---------- | -------- | -------------: | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `VC_EXAMPLE_IMPORT_SAFETY` | {need}`[[id]] <REQ_EXAMPLE_IMPORT_SAFETY>` | Component  | Local    |              6 | `key_rotation` · `multi_route` · `multimodal_inputs` · `session_workflow` · `structured_output` · `tool_calling` | Every shipped example executes a fresh import without network activity or invoking the live query workflow. |
 
 ### Evidence aggregation
 

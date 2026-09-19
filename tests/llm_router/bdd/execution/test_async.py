@@ -48,7 +48,27 @@ for _test_name, _criterion in (
     ),
 ):
     globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
-del _criterion, _test_name
+
+for _test_name, _path_id in (
+    (
+        "test_a_provider_route_returns_a_short_text_reply_asynchronously",
+        "example:route",
+    ),
+    (
+        "test_an_openaicompatible_route_extracts_a_legal_case_asynchronously",
+        "OpenAI-compatible",
+    ),
+    (
+        "test_ai_studio_returns_structured_movie_data_asynchronously",
+        "AI Studio",
+    ),
+    (
+        "test_google_genai_analyzes_an_image_asynchronously",
+        "Google GenAI",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_path(_path_id)(globals()[_test_name])
+del _criterion, _path_id, _test_name
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _LEGAL_SYSTEM_PROMPT = "You are a legal assistant. Extract case details."

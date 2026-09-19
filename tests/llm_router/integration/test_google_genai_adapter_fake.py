@@ -99,6 +99,7 @@ pytestmark = [
 ]
 
 
+@pytest.mark.coverage_path("sync-success")
 def test_sync_google_adapter_uses_sdk_boundary_and_normalizes_result() -> None:
     client = FakeClient([_response("ok")])
 
@@ -113,6 +114,7 @@ def test_sync_google_adapter_uses_sdk_boundary_and_normalizes_result() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.coverage_path("async-success")
 async def test_async_google_adapter_uses_sdk_async_boundary() -> None:
     client = FakeClient([_response("async ok")])
 
@@ -122,6 +124,7 @@ async def test_async_google_adapter_uses_sdk_async_boundary() -> None:
     assert client.aio.models.calls[0]["model"] == "gemini-3.6-flash"
 
 
+@pytest.mark.coverage_path("retryable-sdk-status")
 def test_google_sdk_retryable_status_is_translated_to_provider_error() -> None:
     client = FakeClient([FakeAPIError(503, "provider said no")])
 

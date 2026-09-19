@@ -168,8 +168,12 @@ def cell_state(contract: dict, target: dict) -> dict:
     failed = 0
     covered = 0
     required_path_count = 0
+    path_identity_gaps = []
     for item_id in target["items"]:
         expected_paths = int((target.get("item_path_counts") or {}).get(item_id, 1))
+        expected_path_ids = list(
+            (target.get("item_path_ids") or {}).get(item_id, [])
+        )
         required_path_count += expected_paths
         item_rows = [
             row
@@ -177,10 +181,57 @@ def cell_state(contract: dict, target: dict) -> dict:
             if row.get("level") == target["level"] and row.get("boundary") == target["boundary"]
         ]
         if not item_rows:
+            if expected_path_ids:
+                path_identity_gaps.append(
+                    {
+                        "criterion": item_id,
+                        "missing": expected_path_ids,
+                        "unexpected": [],
+                        "duplicates": [],
+                    }
+                )
             continue
         covered += 1
         rows.extend(item_rows)
-        if len(item_rows) == expected_paths and all(row.get("result") == "passed" for row in item_rows):
+        identity_ok = True
+        if expected_path_ids:
+            actual_path_ids = [
+                str(row.get("coverage_path") or "").strip()
+                for row in item_rows
+            ]
+            populated_path_ids = [value for value in actual_path_ids if value]
+            actual_set = set(populated_path_ids)
+            expected_set = set(expected_path_ids)
+            duplicates = sorted(
+                {
+                    value
+                    for value in populated_path_ids
+                    if populated_path_ids.count(value) > 1
+                }
+            )
+            missing_ids = sorted(expected_set - actual_set)
+            unexpected_ids = sorted(actual_set - expected_set)
+            identity_ok = bool(
+                len(actual_path_ids) == expected_paths
+                and len(populated_path_ids) == expected_paths
+                and not duplicates
+                and not missing_ids
+                and not unexpected_ids
+            )
+            if not identity_ok:
+                path_identity_gaps.append(
+                    {
+                        "criterion": item_id,
+                        "missing": missing_ids,
+                        "unexpected": unexpected_ids,
+                        "duplicates": duplicates,
+                    }
+                )
+        if (
+            len(item_rows) == expected_paths
+            and all(row.get("result") == "passed" for row in item_rows)
+            and identity_ok
+        ):
             passed += 1
         else:
             failed += 1
@@ -271,6 +322,7 @@ def cell_state(contract: dict, target: dict) -> dict:
         "required_count": int(target["declared_count"]),
         "retained_count": retained,
         "required_path_count": required_path_count,
+        "path_identity_gaps": path_identity_gaps,
         "failed_count": failed,
         "missing_count": missing,
         "boundary_summary": boundary_summary,
@@ -390,17 +442,18 @@ def coverage_card(state: dict) -> str:
     )
     return (
         f'<div class="signal-card coverage-card {status_class(state["semantic_status"])}-signal">'
-        f'<div class="signal-head"><strong>Semantic coverage {help_tip("Each required criterion needs exactly its declared retained path count, and none of those bindings may fail.")}</strong>'
+        f'<div class="signal-head"><strong>Semantic coverage {help_tip("Each required criterion needs exactly its declared retained path count and, when declared, the exact required path identities. No admitted binding may fail.")}</strong>'
         f'<span class="status {status_class(state["semantic_status"])}">{esc(status_label(state["semantic_status"]))}</span></div>'
         '<div class="coverage-summary">'
-        f'<strong>{state["semantic_actual"]}<span>/</span>{state["required_count"]}</strong><small>passing required evidence</small>'
+        f'<strong>{state["semantic_actual"]}<span>/</span>{state["required_count"]}</strong><small>criteria passing</small>'
         '</div>'
         f'<div class="coverage-strip">{segments}</div>'
         '<div class="coverage-counts">'
-        f'<span class="pass">{state["semantic_actual"]} pass</span>'
-        f'<span class="fail">{state["failed_count"]} fail</span>'
-        f'<span class="missing">{state["missing_count"]} missing</span>'
-        '</div></div>'
+        f'<span class="pass">{state["semantic_actual"]} criteria pass</span>'
+        f'<span class="fail">{state["failed_count"]} criteria fail</span>'
+        f'<span class="missing">{state["missing_count"]} criteria missing</span>'
+        f'<span>{state["retained_count"]}/{state["required_path_count"]} paths retained</span>'
+        f'</div></div>'
     )
 
 

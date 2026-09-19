@@ -1,4 +1,4 @@
-@hermetic @vcr @REQ_VIDEO_INPUT[revision==1]
+@hermetic @vcr @REQ_VIDEO_INPUT[revision==2]
 Feature: Structured video understanding
   Video input should produce structured observations grounded in visible action.
 

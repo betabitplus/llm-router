@@ -50,6 +50,7 @@ pytestmark = [
 ]
 
 
+@pytest.mark.coverage_path("sync-success")
 def test_sync_success_crosses_openai_http_boundary() -> None:
     path = openai_chat_path()
     with ScriptedHTTPServer(
@@ -77,6 +78,7 @@ def test_sync_success_crosses_openai_http_boundary() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.coverage_path("async-success")
 async def test_async_success_crosses_openai_http_boundary() -> None:
     path = openai_chat_path()
     with ScriptedHTTPServer(
@@ -97,6 +99,7 @@ async def test_async_success_crosses_openai_http_boundary() -> None:
         assert server.request_count("POST", path) == 1
 
 
+@pytest.mark.coverage_path("retryable-status")
 def test_retryable_status_is_translated_to_provider_error() -> None:
     path = openai_chat_path()
     with ScriptedHTTPServer(
@@ -119,6 +122,7 @@ def test_retryable_status_is_translated_to_provider_error() -> None:
         assert exc_info.value.cause.retry_reason == "retryable_status"
 
 
+@pytest.mark.coverage_path("malformed-json")
 def test_malformed_success_json_is_wrapped_as_provider_error() -> None:
     path = openai_chat_path()
     with ScriptedHTTPServer(
@@ -140,6 +144,7 @@ def test_malformed_success_json_is_wrapped_as_provider_error() -> None:
         assert exc_info.value.cause.retry_reason == "invalid_json_response"
 
 
+@pytest.mark.coverage_path("disconnect")
 def test_remote_disconnect_is_retryable_transport_failure() -> None:
     path = openai_chat_path()
     with ScriptedHTTPServer(
@@ -153,6 +158,7 @@ def test_remote_disconnect_is_retryable_transport_failure() -> None:
         assert exc_info.value.cause.retry_reason == "transport_exception"
 
 
+@pytest.mark.coverage_path("tool-result")
 def test_tool_round_trip_sends_provider_tool_result_message() -> None:
     path = openai_chat_path()
     registry = ToolRegistry.from_tools([lookup])

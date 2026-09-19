@@ -95,6 +95,7 @@ def test_explicit_successful_start_survives_shuffle_and_attempt_cap() -> None:
 
 @pytest.mark.verifies("REQ_ROUTE_ATTEMPT_LIMIT[revision==1]")
 @pytest.mark.coverage_item("VC_ROUTE_ATTEMPT_LIMIT_BOUNDARIES")
+@pytest.mark.coverage_path("minimum-cap")
 def test_attempt_limit_minimum_keeps_only_one_candidate() -> None:
     routes = ordered_routes(
         _plan(),
@@ -112,6 +113,7 @@ def test_attempt_limit_minimum_keeps_only_one_candidate() -> None:
 
 @pytest.mark.verifies("REQ_ROUTE_ATTEMPT_LIMIT[revision==1]")
 @pytest.mark.coverage_item("VC_ROUTE_ATTEMPT_LIMIT_BOUNDARIES")
+@pytest.mark.coverage_path("intermediate-cap")
 def test_attempt_limit_truncates_larger_candidate_set_exactly() -> None:
     routes = ordered_routes(
         _plan(),

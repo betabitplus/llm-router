@@ -71,6 +71,7 @@ pytestmark = [
 ]
 
 
+@pytest.mark.coverage_path("shared-text-transport")
 def test_aistudio_text_uses_openai_compatible_transport() -> None:
     path = openai_chat_path()
     with ScriptedHTTPServer(
@@ -92,6 +93,7 @@ def test_aistudio_text_uses_openai_compatible_transport() -> None:
         assert body["messages"] == [{"role": "user", "content": "hello"}]
 
 
+@pytest.mark.coverage_path("native-video-transport")
 def test_aistudio_video_uses_native_transport() -> None:
     path = aistudio_video_path(model=Model.GEMINI_FLASH)
     request = _request(
@@ -125,6 +127,7 @@ def test_aistudio_video_uses_native_transport() -> None:
         assert recorded.headers["x-goog-api-key"] == "secret"
 
 
+@pytest.mark.coverage_path("native-retryable-status")
 def test_aistudio_native_retryable_status_is_translated() -> None:
     path = aistudio_video_path(model=Model.GEMINI_FLASH)
     request = _request(

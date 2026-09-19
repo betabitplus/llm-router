@@ -37,6 +37,7 @@ def _block_live_workflow(*_args: object, **_kwargs: object) -> None:
     _example_modules(),
     ids=lambda module: module.rsplit(".", maxsplit=1)[-1],
 )
+@pytest.mark.coverage_path("case-id")
 def test_example_import_is_safe(
     module: str,
     monkeypatch: pytest.MonkeyPatch,

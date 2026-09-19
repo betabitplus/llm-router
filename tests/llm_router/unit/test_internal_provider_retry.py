@@ -12,6 +12,7 @@ pytestmark = pytest.mark.verification_kind("unit")
 
 @pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]")
 @pytest.mark.coverage_item("VC_PROVIDER_RETRY_STATUS_CLASSIFICATION")
+@pytest.mark.coverage_path("retryable-status")
 def test_retryable_status_is_classified_from_status_semantics() -> None:
     decision = classify_status_code(503)
 
@@ -20,6 +21,7 @@ def test_retryable_status_is_classified_from_status_semantics() -> None:
 
 @pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]")
 @pytest.mark.coverage_item("VC_PROVIDER_RETRY_STATUS_CLASSIFICATION")
+@pytest.mark.coverage_path("permanent-status")
 def test_permanent_status_is_classified_from_status_semantics() -> None:
     decision = classify_status_code(400)
 
@@ -28,6 +30,7 @@ def test_permanent_status_is_classified_from_status_semantics() -> None:
 
 @pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]")
 @pytest.mark.coverage_item("VC_PROVIDER_RETRY_EXCEPTION_CLASSIFICATION")
+@pytest.mark.coverage_path("transport-exception")
 def test_transport_exception_type_is_retryable() -> None:
     decision = classify_exception(ConnectionError("gone"))
 
@@ -36,6 +39,7 @@ def test_transport_exception_type_is_retryable() -> None:
 
 @pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]")
 @pytest.mark.coverage_item("VC_PROVIDER_RETRY_EXCEPTION_CLASSIFICATION")
+@pytest.mark.coverage_path("unrelated-exception")
 def test_unrelated_exception_is_not_retryable_despite_retrylike_name_fragment() -> None:
     class ReadOnlyConfigurationError(RuntimeError):
         pass

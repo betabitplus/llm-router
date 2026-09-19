@@ -52,6 +52,7 @@ def _invalid_content(case: str) -> Any:
         ),
     ],
 )
+@pytest.mark.coverage_path("case-id")
 def test_invalid_public_content_never_reaches_provider_boundary(
     case: str,
     error_type: type[Exception],

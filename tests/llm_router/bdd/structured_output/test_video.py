@@ -22,6 +22,8 @@ from tests.llm_router.support.media.video import (
 
 scenarios("structured_output/video.feature")
 
+pytestmark = [pytest.mark.coverage_path("example:route")]
+
 for _test_name, _criterion in (
     (
         "test_a_provider_route_describes_the_example_rooftop_video",

@@ -36,14 +36,14 @@ visible in Actual.
 
 ### Verification criteria
 
-| Criterion                                    | Contract                                             | Test level            | Boundary   | Required paths | Success criterion                                                                                                            |
-| -------------------------------------------- | ---------------------------------------------------- | --------------------- | ---------- | -------------: | ---------------------------------------------------------------------------------------------------------------------------- |
-| `VC_PROVIDER_OPENAI_ADAPTER_BOUNDARY`        | {need}`[[id]] <TREQ_OPENAI_ADAPTER_BOUNDARY>`        | Component Integration | Substitute |              6 | Sync/async success, tool-result emission, retryable status, malformed JSON, and disconnect preserve the OpenAI boundary.     |
-| `VC_PROVIDER_QWENCHAT_ADAPTER_BOUNDARY`      | {need}`[[id]] <TREQ_QWENCHAT_ADAPTER_BOUNDARY>`      | Component Integration | Substitute |              4 | Proxy text, media upload, provider-error translation, and structured/textual tool normalization preserve QwenChat semantics. |
-| `VC_PROVIDER_AISTUDIO_ADAPTER_BOUNDARY`      | {need}`[[id]] <TREQ_AISTUDIO_ADAPTER_BOUNDARY>`      | Component Integration | Substitute |              3 | Text uses the shared transport, native video uses the native transport, and retryable native failure becomes ProviderError.  |
-| `VC_PROVIDER_GEMINI_WEBAPI_ADAPTER_BOUNDARY` | {need}`[[id]] <TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY>` | Component Integration | Substitute |              5 | Sync/async media, structured/tool output, retryable status, and provider-specific error-code partitions are preserved.       |
-| `VC_PROVIDER_GOOGLE_GENAI_ADAPTER_BOUNDARY`  | {need}`[[id]] <TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY>`  | Component Integration | Substitute |              3 | Sync success, async success, and retryable SDK failure preserve the normalized Google GenAI boundary.                        |
-| `VC_PROVIDER_QWENCHAT_UPLOAD_RETRY`          | {need}`[[id]] <TREQ_QWENCHAT_ADAPTER_BOUNDARY>`      | System Integration    | Substitute |              1 | A retryable upload is retried before exactly one subsequent chat request uses the successful uploaded reference.             |
+| Criterion                                    | Contract                                             | Test level            | Boundary   | Required paths | Required path IDs                                                                                       | Success criterion                                                                                                            |
+| -------------------------------------------- | ---------------------------------------------------- | --------------------- | ---------- | -------------: | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `VC_PROVIDER_OPENAI_ADAPTER_BOUNDARY`        | {need}`[[id]] <TREQ_OPENAI_ADAPTER_BOUNDARY>`        | Component Integration | Substitute |              6 | `sync-success` · `async-success` · `tool-result` · `retryable-status` · `malformed-json` · `disconnect` | Sync/async success, tool-result emission, retryable status, malformed JSON, and disconnect preserve the OpenAI boundary.     |
+| `VC_PROVIDER_QWENCHAT_ADAPTER_BOUNDARY`      | {need}`[[id]] <TREQ_QWENCHAT_ADAPTER_BOUNDARY>`      | Component Integration | Substitute |              4 | `proxy-text` · `media-upload` · `retryable-status` · `tool-normalization`                               | Proxy text, media upload, provider-error translation, and structured/textual tool normalization preserve QwenChat semantics. |
+| `VC_PROVIDER_AISTUDIO_ADAPTER_BOUNDARY`      | {need}`[[id]] <TREQ_AISTUDIO_ADAPTER_BOUNDARY>`      | Component Integration | Substitute |              3 | `shared-text-transport` · `native-video-transport` · `native-retryable-status`                          | Text uses the shared transport, native video uses the native transport, and retryable native failure becomes ProviderError.  |
+| `VC_PROVIDER_GEMINI_WEBAPI_ADAPTER_BOUNDARY` | {need}`[[id]] <TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY>` | Component Integration | Substitute |              5 | `sync-media` · `async-media` · `tool-normalization` · `retryable-status` · `provider-error-code`        | Sync/async media, structured/tool output, retryable status, and provider-specific error-code partitions are preserved.       |
+| `VC_PROVIDER_GOOGLE_GENAI_ADAPTER_BOUNDARY`  | {need}`[[id]] <TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY>`  | Component Integration | Substitute |              3 | `sync-success` · `async-success` · `retryable-sdk-status`                                               | Sync success, async success, and retryable SDK failure preserve the normalized Google GenAI boundary.                        |
+| `VC_PROVIDER_QWENCHAT_UPLOAD_RETRY`          | {need}`[[id]] <TREQ_QWENCHAT_ADAPTER_BOUNDARY>`      | System Integration    | Substitute |              1 | —                                                                                                       | A retryable upload is retried before exactly one subsequent chat request uses the successful uploaded reference.             |
 
 ### Evidence aggregation
 
@@ -93,9 +93,10 @@ structured output, image, document, local video, and remote video.
 
 **Coverage basis.** Capability declarations define the denominator independently of the
 existing async scenarios. Text and JSON-schema execution are supported by all five
-adapter families. Image is supported by all five. Document, local-video, and
-remote-video execution are supported by QwenChat, AI Studio, Gemini WebAPI, and Google
-GenAI, producing independent 5/5/5/4/4/4 provider-family denominators. This deliberately
+adapter families. Image is supported by all five. Document and local-video execution are supported by
+QwenChat, AI Studio, Gemini WebAPI, and Google GenAI. Remote-video execution is supported
+by AI Studio, Gemini WebAPI, and Google GenAI. The independent denominators are therefore
+5/5/5/4/4/3. This deliberately
 exercises async-only branches such as Qwen media upload and AI Studio native-media
 dispatch instead of allowing one successful async path per provider to stand in for all
 declared capabilities.
@@ -106,14 +107,14 @@ a cassette proves the retained async integration path, not a live provider claim
 
 ### Verification criteria
 
-| Criterion                               | Contract                                      | Test level         | Boundary | Required paths | Success criterion                                                                                           |
-| --------------------------------------- | --------------------------------------------- | ------------------ | -------- | -------------: | ----------------------------------------------------------------------------------------------------------- |
-| `VC_ASYNC_TEXT_PROVIDER_MATRIX`         | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              5 | Every supported adapter family returns the public normalized text contract through async execution.         |
-| `VC_ASYNC_STRUCTURED_PROVIDER_MATRIX`   | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              5 | Every JSON-schema-capable adapter family returns schema-valid structured data through async execution.      |
-| `VC_ASYNC_IMAGE_PROVIDER_MATRIX`        | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              5 | Every image-capable adapter family preserves grounded structured image semantics through async execution.   |
-| `VC_ASYNC_DOCUMENT_PROVIDER_MATRIX`     | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              4 | Every file-capable adapter family preserves grounded structured document semantics through async execution. |
-| `VC_ASYNC_VIDEO_LOCAL_PROVIDER_MATRIX`  | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              4 | Every video-capable adapter family preserves local-video semantics through async execution.                 |
-| `VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX` | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              4 | Every video-capable adapter family preserves remote-video semantics through async execution.                |
+| Criterion                               | Contract                                      | Test level         | Boundary | Required paths | Required path IDs                                                                 | Success criterion                                                                                           |
+| --------------------------------------- | --------------------------------------------- | ------------------ | -------- | -------------: | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `VC_ASYNC_TEXT_PROVIDER_MATRIX`         | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              5 | `OpenAI-compatible` · `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI` | Every supported adapter family returns the public normalized text contract through async execution.         |
+| `VC_ASYNC_STRUCTURED_PROVIDER_MATRIX`   | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              5 | `OpenAI-compatible` · `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI` | Every JSON-schema-capable adapter family returns schema-valid structured data through async execution.      |
+| `VC_ASYNC_IMAGE_PROVIDER_MATRIX`        | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              5 | `OpenAI-compatible` · `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI` | Every image-capable adapter family preserves grounded structured image semantics through async execution.   |
+| `VC_ASYNC_DOCUMENT_PROVIDER_MATRIX`     | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              4 | `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI`                       | Every file-capable adapter family preserves grounded structured document semantics through async execution. |
+| `VC_ASYNC_VIDEO_LOCAL_PROVIDER_MATRIX`  | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              4 | `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI`                       | Every video-capable adapter family preserves local-video semantics through async execution.                 |
+| `VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX` | {need}`[[id]] <REQ_ASYNC_PROVIDER_EXECUTION>` | System Integration | Replay   |              3 | `AI Studio` · `Gemini WebAPI` · `Google GenAI`                                    | Every remote-video-capable adapter family preserves remote-video semantics through async execution.         |
 
 ### Evidence aggregation
 
@@ -174,10 +175,10 @@ so external participants remain Surrogate/L0.
 
 ### Verification criteria
 
-| Criterion                          | Contract                                    | Test level         | Boundary   | Required paths | Success criterion                                                                                                                                                    |
-| ---------------------------------- | ------------------------------------------- | ------------------ | ---------- | -------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VC_PROVIDER_USAGE_NORMALIZATION`  | {need}`[[id]] <TREQ_USAGE_NORMALIZATION>`   | Component          | Local      |              3 | OpenAI mapping, Google object, and nested usage shapes produce the stable usage model with a consistent total.                                                       |
-| `VC_PROVIDER_RESPONSE_EQUIVALENCE` | {need}`[[id]] <REQ_RESPONSE_NORMALIZATION>` | System Integration | Substitute |              4 | Each non-baseline provider family exposes public text/usage/tool semantics equivalent to the OpenAI-compatible baseline without provider-specific transport leakage. |
+| Criterion                          | Contract                                    | Test level         | Boundary   | Required paths | Required path IDs                                           | Success criterion                                                                                                                                                    |
+| ---------------------------------- | ------------------------------------------- | ------------------ | ---------- | -------------: | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VC_PROVIDER_USAGE_NORMALIZATION`  | {need}`[[id]] <TREQ_USAGE_NORMALIZATION>`   | Component          | Local      |              3 | `openai-mapping` · `google-object` · `nested-mapping`       | OpenAI mapping, Google object, and nested usage shapes produce the stable usage model with a consistent total.                                                       |
+| `VC_PROVIDER_RESPONSE_EQUIVALENCE` | {need}`[[id]] <REQ_RESPONSE_NORMALIZATION>` | System Integration | Substitute |              4 | `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI` | Each non-baseline provider family exposes public text/usage/tool semantics equivalent to the OpenAI-compatible baseline without provider-specific transport leakage. |
 
 ### Evidence aggregation
 

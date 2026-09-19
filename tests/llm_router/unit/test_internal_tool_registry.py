@@ -43,7 +43,9 @@ def test_duplicate_tool_names_are_rejected() -> None:
         },
         {"functionCall": {"name": "add", "args": {"a": 2, "b": 5}}},
     ],
+    ids=["openai-function", "google-function"],
 )
+@pytest.mark.coverage_path("case-id")
 def test_tool_call_parser_accepts_supported_provider_shapes(
     payload: dict[str, object],
 ) -> None:

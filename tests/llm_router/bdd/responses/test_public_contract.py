@@ -62,6 +62,13 @@ for _test_name, _criterion in (
 ):
     globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
 
+_normalization_test_name = (
+    "test_openaicompatible_and_google_routes_normalize_equivalent_replies_consistently"
+)
+globals()[_normalization_test_name] = pytest.mark.coverage_path("Google GenAI")(
+    globals()[_normalization_test_name]
+)
+
 for _test_name in (
     "test_a_provider_http_failure_surfaces_as_a_provider_error",
     "test_a_provider_sdk_failure_surfaces_as_a_provider_error",
@@ -70,7 +77,7 @@ for _test_name in (
         "REQ_PROVIDER_ERROR_BOUNDARY",
         "interface.error-status",
     )(globals()[_test_name])
-del _criterion, _test_name
+del _criterion, _normalization_test_name, _test_name
 
 _OPENAI_PATH = openai_chat_path()
 _GOOGLE_PATH = google_generate_path(model=Model.GEMINI_FLASH)

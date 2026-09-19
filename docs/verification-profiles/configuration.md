@@ -36,11 +36,11 @@ the verification claim is the request constructed by llm-router, not fidelity of
 
 ### Verification criteria
 
-| Criterion                        | Contract                                         | Test level         | Boundary   | Required paths | Success criterion                                                                                                   |
-| -------------------------------- | ------------------------------------------------ | ------------------ | ---------- | -------------: | ------------------------------------------------------------------------------------------------------------------- |
-| `VC_REQUEST_OMISSION_PROPERTY`   | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | Component          | Local      |              1 | Generated combinations preserve omission as distinct from an explicit call value.                                   |
-| `VC_REQUEST_OVERRIDE_PRECEDENCE` | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | Substitute |              1 | Request settings override router and route defaults while unrelated defaults survive.                               |
-| `VC_REQUEST_EXPLICIT_CLEAR`      | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | Substitute |              2 | Explicit null and explicit empty-collection request values each clear the corresponding inherited optional setting. |
+| Criterion                        | Contract                                         | Test level         | Boundary   | Required paths | Required path IDs           | Success criterion                                                                                                   |
+| -------------------------------- | ------------------------------------------------ | ------------------ | ---------- | -------------: | --------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `VC_REQUEST_OMISSION_PROPERTY`   | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | Component          | Local      |              1 | —                           | Generated combinations preserve omission as distinct from an explicit call value.                                   |
+| `VC_REQUEST_OVERRIDE_PRECEDENCE` | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | Substitute |              1 | —                           | Request settings override router and route defaults while unrelated defaults survive.                               |
+| `VC_REQUEST_EXPLICIT_CLEAR`      | {need}`[[id]] <REQ_REQUEST_OVERRIDE_PRECEDENCE>` | System Integration | Substitute |              2 | `null` · `empty-collection` | Explicit null and explicit empty-collection request values each clear the corresponding inherited optional setting. |
 
 ### Evidence aggregation
 
@@ -101,13 +101,13 @@ depend on a material provider surrogate.
 
 ### Verification criteria
 
-| Criterion                            | Contract                                   | Test level | Boundary | Required paths | Success criterion                                                                                                       |
-| ------------------------------------ | ------------------------------------------ | ---------- | -------- | -------------: | ----------------------------------------------------------------------------------------------------------------------- |
-| `VC_CREDENTIAL_CUSTOM_ENV_NAME`      | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              1 | A configured fixed key resolves through its configured custom environment name.                                         |
-| `VC_CREDENTIAL_AUTO_ROTATION`        | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              2 | Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs. |
-| `VC_CREDENTIAL_REQUIRED_MISSING`     | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              1 | A missing required credential raises the public missing-key error with identity.                                        |
-| `VC_CREDENTIAL_OPTIONAL_MISSING`     | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              2 | Every provider family that permits an absent bearer credential resolves the permitted empty value.                      |
-| `VC_CREDENTIAL_PUBLIC_MISSING_ERROR` | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | System     | Local    |              1 | A public request with a missing required credential surfaces the missing-key error.                                     |
+| Criterion                            | Contract                                   | Test level | Boundary | Required paths | Required path IDs                                       | Success criterion                                                                                                       |
+| ------------------------------------ | ------------------------------------------ | ---------- | -------- | -------------: | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `VC_CREDENTIAL_CUSTOM_ENV_NAME`      | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              1 | —                                                       | A configured fixed key resolves through its configured custom environment name.                                         |
+| `VC_CREDENTIAL_AUTO_ROTATION`        | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              2 | `convention-discovered-keys` · `configured-custom-keys` | Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs. |
+| `VC_CREDENTIAL_REQUIRED_MISSING`     | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              1 | —                                                       | A missing required credential raises the public missing-key error with identity.                                        |
+| `VC_CREDENTIAL_OPTIONAL_MISSING`     | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | Component  | Local    |              2 | `QwenChat` · `Gemini WebAPI`                            | Every provider family that permits an absent bearer credential resolves the permitted empty value.                      |
+| `VC_CREDENTIAL_PUBLIC_MISSING_ERROR` | {need}`[[id]] <REQ_CREDENTIAL_RESOLUTION>` | System     | Local    |              1 | —                                                       | A public request with a missing required credential surfaces the missing-key error.                                     |
 
 ### Evidence aggregation
 

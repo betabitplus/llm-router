@@ -81,7 +81,8 @@ class GeminiWebAPIAdapter:
     capabilities = ProviderCapabilities(
         supports_images=True,
         supports_files=True,
-        supports_video=True,
+        supports_video_file=True,
+        supports_video_url=True,
         supports_json_schema=True,
         supports_tools=True,
     )

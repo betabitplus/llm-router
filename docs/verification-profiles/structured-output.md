@@ -34,9 +34,9 @@ inferred from a cassette.
 
 ### Verification criteria
 
-| Criterion                            | Contract                                    | Test level         | Boundary | Required paths | Success criterion                                                                                                                                                                      |
-| ------------------------------------ | ------------------------------------------- | ------------------ | -------- | -------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VC_STRUCTURED_TEXT_PROVIDER_MATRIX` | {need}`[[id]] <REQ_STRUCTURED_TEXT_OUTPUT>` | System Integration | Replay   |              5 | Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through. |
+| Criterion                            | Contract                                    | Test level         | Boundary | Required paths | Required path IDs                                                                 | Success criterion                                                                                                                                                                      |
+| ------------------------------------ | ------------------------------------------- | ------------------ | -------- | -------------: | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VC_STRUCTURED_TEXT_PROVIDER_MATRIX` | {need}`[[id]] <REQ_STRUCTURED_TEXT_OUTPUT>` | System Integration | Replay   |              5 | `OpenAI-compatible` · `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI` | Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through. |
 
 ### Evidence aggregation
 
@@ -94,9 +94,9 @@ input document.
 
 ### Verification criteria
 
-| Criterion                              | Contract                            | Test level         | Boundary | Required paths | Success criterion                                                                                                                       |
-| -------------------------------------- | ----------------------------------- | ------------------ | -------- | -------------: | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `VC_DOCUMENT_GROUNDED_PROVIDER_MATRIX` | {need}`[[id]] <REQ_DOCUMENT_INPUT>` | System Integration | Replay   |              4 | Every file-capable adapter family accepts the same known document and returns schema-valid facts demonstrably grounded in its contents. |
+| Criterion                              | Contract                            | Test level         | Boundary | Required paths | Required path IDs                                           | Success criterion                                                                                                                       |
+| -------------------------------------- | ----------------------------------- | ------------------ | -------- | -------------: | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `VC_DOCUMENT_GROUNDED_PROVIDER_MATRIX` | {need}`[[id]] <REQ_DOCUMENT_INPUT>` | System Integration | Replay   |              4 | `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI` | Every file-capable adapter family accepts the same known document and returns schema-valid facts demonstrably grounded in its contents. |
 
 ### Evidence aggregation
 
@@ -152,9 +152,9 @@ facts are checked against visible, deterministic properties of the retained inpu
 
 ### Verification criteria
 
-| Criterion                           | Contract                         | Test level         | Boundary | Required paths | Success criterion                                                                                                               |
-| ----------------------------------- | -------------------------------- | ------------------ | -------- | -------------: | ------------------------------------------------------------------------------------------------------------------------------- |
-| `VC_IMAGE_GROUNDED_PROVIDER_MATRIX` | {need}`[[id]] <REQ_IMAGE_INPUT>` | System Integration | Replay   |              5 | Every image-capable adapter family accepts the retained image and returns schema-valid facts grounded in visible image content. |
+| Criterion                           | Contract                         | Test level         | Boundary | Required paths | Required path IDs                                                                 | Success criterion                                                                                                               |
+| ----------------------------------- | -------------------------------- | ------------------ | -------- | -------------: | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `VC_IMAGE_GROUNDED_PROVIDER_MATRIX` | {need}`[[id]] <REQ_IMAGE_INPUT>` | System Integration | Replay   |              5 | `OpenAI-compatible` · `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI` | Every image-capable adapter family accepts the retained image and returns schema-valid facts grounded in visible image content. |
 
 ### Evidence aggregation
 
@@ -190,8 +190,9 @@ blocking.
 
 ## Profile · REQ_VIDEO_INPUT
 
-**Verification intent.** Prove both local-file and remote-URL video semantics through
-every adapter family that declares video and JSON-schema support.
+**Verification intent.** Prove each video input form only through adapter families that
+explicitly declare that form plus JSON-schema support. Local-file and remote-URL
+capabilities are independent.
 
 **Models:** {ref}`Grounded multimodal provider matrix <test-plan-grounded-media-matrix>`
 
@@ -201,9 +202,11 @@ every adapter family that declares video and JSON-schema support.
 | ------------------ | -------- | -------------- | ---------- | -------------: |
 | System Integration | Replay   | Surrogate      | L0         | **2 criteria** |
 
-**Coverage basis.** QwenChat, AI Studio, Gemini WebAPI, and Google GenAI all declare
-video and JSON-schema support. The Requirement explicitly names local and remote inputs,
-so each mode has an independent four-provider denominator: eight retained paths total.
+**Coverage basis.** Local-video support is declared by QwenChat, AI Studio, Gemini
+WebAPI, and Google GenAI. Remote-video support is separately validated for AI Studio,
+Gemini WebAPI, and Google GenAI; QwenChat has no remote-video provider capability and is
+not part of that denominator. The two modes therefore have independent 4-path and 3-path
+denominators: seven retained paths total.
 
 **Representation basis.** Both modes execute actual public/runtime/adapter code against
 replayed provider interactions. Replay remains Surrogate/L0 and is not promoted to live
@@ -211,21 +214,21 @@ dependency evidence.
 
 ### Verification criteria
 
-| Criterion                         | Contract                         | Test level         | Boundary | Required paths | Success criterion                                                                                                                                       |
-| --------------------------------- | -------------------------------- | ------------------ | -------- | -------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VC_VIDEO_LOCAL_GROUNDED_MATRIX`  | {need}`[[id]] <REQ_VIDEO_INPUT>` | System Integration | Replay   |              4 | Every video-capable adapter family accepts the retained local clip and returns schema-valid action/location facts grounded in it.                       |
-| `VC_VIDEO_REMOTE_GROUNDED_MATRIX` | {need}`[[id]] <REQ_VIDEO_INPUT>` | System Integration | Replay   |              4 | Every video-capable adapter family accepts the retained remote URL and returns the same public structured-result contract grounded in the remote video. |
+| Criterion                         | Contract                         | Test level         | Boundary | Required paths | Required path IDs                                           | Success criterion                                                                                                                                              |
+| --------------------------------- | -------------------------------- | ------------------ | -------- | -------------: | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VC_VIDEO_LOCAL_GROUNDED_MATRIX`  | {need}`[[id]] <REQ_VIDEO_INPUT>` | System Integration | Replay   |              4 | `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI` | Every video-capable adapter family accepts the retained local clip and returns schema-valid action/location facts grounded in it.                              |
+| `VC_VIDEO_REMOTE_GROUNDED_MATRIX` | {need}`[[id]] <REQ_VIDEO_INPUT>` | System Integration | Replay   |              3 | `AI Studio` · `Gemini WebAPI` · `Google GenAI`              | Every remote-video-capable adapter family accepts the retained remote URL and returns the same public structured-result contract grounded in the remote video. |
 
 ### Evidence aggregation
 
-| Signal                 | Rule | Applies to                                          |
-| ---------------------- | ---- | --------------------------------------------------- |
-| Semantic coverage      | ALL  | both required criteria and all eight declared paths |
-| Representation         | ALL  | retained evidence for satisfied paths               |
-| Provenance             | ALL  | retained evidence for satisfied paths               |
-| Producer qualification | ALL  | retained evidence for satisfied paths               |
-| Freshness              | ALL  | retained evidence for satisfied paths               |
-| M&S validation         | ALL  | applicable replay/model evidence                    |
+| Signal                 | Rule | Applies to                                            |
+| ---------------------- | ---- | ----------------------------------------------------- |
+| Semantic coverage      | ALL  | both required criteria and all seven applicable paths |
+| Representation         | ALL  | retained evidence for satisfied paths                 |
+| Provenance             | ALL  | retained evidence for satisfied paths                 |
+| Producer qualification | ALL  | retained evidence for satisfied paths                 |
+| Freshness              | ALL  | retained evidence for satisfied paths                 |
+| M&S validation         | ALL  | applicable replay/model evidence                      |
 
 ### Fault applicability
 
@@ -235,13 +238,13 @@ dependency evidence.
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                      |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Local-vs-remote media dispatch and provider translation are branch-sensitive.                                                                            |
-| Runtime / dependency  | This profile is the successful video-understanding claim rather than availability/retry behavior.                                                        |
-| Interface / protocol  | Wrong video/schema payload shape invalidates the request; unexpected extra interactions are secondary diagnostics.                                       |
-| Architecture          | No internal topology is prescribed.                                                                                                                      |
-| Specification / model | Both local and remote partitions plus every declared video-capable provider family are mandatory; ordering is useful but not the primary semantic claim. |
+| Group                 | Why                                                                                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Local-vs-remote media dispatch and provider translation are branch-sensitive.                                                                                 |
+| Runtime / dependency  | This profile is the successful video-understanding claim rather than availability/retry behavior.                                                             |
+| Interface / protocol  | Wrong video/schema payload shape invalidates the request; unexpected extra interactions are secondary diagnostics.                                            |
+| Architecture          | No internal topology is prescribed.                                                                                                                           |
+| Specification / model | Each local/remote partition is mandatory only for provider families that declare that exact input form; unsupported provider/input combinations are not gaps. |
 
 No blocking mutation threshold is selected; required deterministic fault classes remain
 blocking.
@@ -337,12 +340,12 @@ material provider interaction.
 
 ### Verification criteria
 
-| Criterion                              | Contract                                              | Test level | Boundary | Required paths | Success criterion                                                                                                                |
-| -------------------------------------- | ----------------------------------------------------- | ---------- | -------- | -------------: | -------------------------------------------------------------------------------------------------------------------------------- |
-| `VC_CONTENT_ORDER_DESCRIPTOR_METADATA` | {need}`[[id]] <REQ_MULTIMODAL_CONTENT_NORMALIZATION>` | Component  | Local    |              1 | Mixed text/file/image/local-video/remote-video parts retain caller order and relevant descriptor metadata.                       |
-| `VC_CONTENT_CHAT_MESSAGE_SEMANTICS`    | {need}`[[id]] <REQ_MULTIMODAL_CONTENT_NORMALIZATION>` | Component  | Local    |              1 | Normalizing a ChatMessage preserves role, ordered parts, and metadata values while owning a separate top-level metadata mapping. |
-| `VC_CONTENT_INVALID_INPUT_REJECTION`   | {need}`[[id]] <REQ_MULTIMODAL_CONTENT_NORMALIZATION>` | Component  | Local    |              5 | Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.                             |
-| `VC_CONTENT_PRE_PROVIDER_REJECTION`    | {need}`[[id]] <REQ_MULTIMODAL_CONTENT_NORMALIZATION>` | System     | Local    |              2 | Representative unsupported-content and invalid-image public requests fail with zero provider-boundary interactions.              |
+| Criterion                              | Contract                                              | Test level | Boundary | Required paths | Required path IDs                                                                                                 | Success criterion                                                                                                                |
+| -------------------------------------- | ----------------------------------------------------- | ---------- | -------- | -------------: | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `VC_CONTENT_ORDER_DESCRIPTOR_METADATA` | {need}`[[id]] <REQ_MULTIMODAL_CONTENT_NORMALIZATION>` | Component  | Local    |              1 | —                                                                                                                 | Mixed text/file/image/local-video/remote-video parts retain caller order and relevant descriptor metadata.                       |
+| `VC_CONTENT_CHAT_MESSAGE_SEMANTICS`    | {need}`[[id]] <REQ_MULTIMODAL_CONTENT_NORMALIZATION>` | Component  | Local    |              1 | —                                                                                                                 | Normalizing a ChatMessage preserves role, ordered parts, and metadata values while owning a separate top-level metadata mapping. |
+| `VC_CONTENT_INVALID_INPUT_REJECTION`   | {need}`[[id]] <REQ_MULTIMODAL_CONTENT_NORMALIZATION>` | Component  | Local    |              5 | `unsupported-top-level` · `unsupported-media-part` · `invalid-image-mode` · `image-too-small` · `image-too-large` | Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.                             |
+| `VC_CONTENT_PRE_PROVIDER_REJECTION`    | {need}`[[id]] <REQ_MULTIMODAL_CONTENT_NORMALIZATION>` | System     | Local    |              2 | `unsupported-top-level` · `invalid-image-mode`                                                                    | Representative unsupported-content and invalid-image public requests fail with zero provider-boundary interactions.              |
 
 ### Evidence aggregation
 

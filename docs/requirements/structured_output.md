@@ -145,13 +145,13 @@ Contracts in this capability:
 :id: REQ_VIDEO_INPUT
 :collapse: true
 :status: accepted
-:revision: 1
+:revision: 2
 :required_evidence: impl;bdd
 :derives: FEAT_STRUCTURED_OUTPUT
 
-**Statement.** Provider routes that declare video input support shall accept supported local and remote video inputs and return structured output grounded in video content.
+**Statement.** Provider routes that declare support for a specific video input form shall accept that supported form and return structured output grounded in video content. Local-file and remote-URL support are independent provider capabilities.
 
-**Rationale.** Video-capable callers should not need separate public contracts for local and remote media or provider-specific result interpretation.
+**Rationale.** Callers should receive one public structured-result contract for the video forms a provider actually supports, without the router inventing unsupported local/remote capability symmetry.
 
 ```
 

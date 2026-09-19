@@ -38,7 +38,23 @@ for _test_name, _criterion in (
     ),
 ):
     globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
-del _criterion, _test_name
+
+for _test_name, _path_id in (
+    (
+        "test_a_provider_route_completes_a_twostep_calculation_with_tools",
+        "example:route",
+    ),
+    (
+        "test_google_genai_uses_a_profilelevel_tool_in_a_structured_workflow",
+        "Google GenAI",
+    ),
+    (
+        "test_openaicompatible_completes_the_multiround_workflow_at_a_local_boundary",
+        "OpenAI-compatible",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_path(_path_id)(globals()[_test_name])
+del _criterion, _path_id, _test_name
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 _PROFILE_TOOL_PROMPT = (

@@ -97,6 +97,7 @@ pytestmark = [
 ]
 
 
+@pytest.mark.coverage_path("sync-media")
 def test_sync_gemini_webapi_crosses_sdk_boundary() -> None:
     client = FakeClient([_response("ok")])
 
@@ -109,6 +110,7 @@ def test_sync_gemini_webapi_crosses_sdk_boundary() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.coverage_path("async-media")
 async def test_async_gemini_webapi_passes_local_video_path(tmp_path: Path) -> None:
     video_path = tmp_path / "clip.mp4"
     video_path.write_bytes(b"video")
@@ -123,6 +125,7 @@ async def test_async_gemini_webapi_passes_local_video_path(tmp_path: Path) -> No
     assert client.calls[0]["file_names"] == ["clip.mp4"]
 
 
+@pytest.mark.coverage_path("retryable-status")
 def test_gemini_webapi_retryable_status_is_translated() -> None:
     client = FakeClient([FakeStatusError(503, "try again")])
 
@@ -134,6 +137,7 @@ def test_gemini_webapi_retryable_status_is_translated() -> None:
     assert exc_info.value.cause.retry_reason == "retryable_status"
 
 
+@pytest.mark.coverage_path("provider-error-code")
 def test_gemini_webapi_provider_specific_error_code_is_preserved() -> None:
     client = FakeClient([FakeProviderCodeError(1060, "server refused")])
 
@@ -145,6 +149,7 @@ def test_gemini_webapi_provider_specific_error_code_is_preserved() -> None:
     assert exc_info.value.cause.retry_reason == "gemini_webapi_error_code"
 
 
+@pytest.mark.coverage_path("tool-normalization")
 def test_gemini_webapi_normalizes_structured_and_textual_tool_outputs() -> None:
     client = FakeClient([_response('{"answer": "ok"}'), _response("add(2, 3)")])
     adapter = GeminiWebAPIAdapter(client=client)

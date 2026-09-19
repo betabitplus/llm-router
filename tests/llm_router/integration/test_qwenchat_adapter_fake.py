@@ -7,7 +7,7 @@ import pytest
 from PIL import Image
 from pydantic import BaseModel
 
-from llm_router import FileSchema, Model, Provider, ProviderError
+from llm_router import FileSchema, Model, Provider, ProviderError, VideoUrlSchema
 from llm_router._internal.capabilities.content import normalize_content
 from llm_router._internal.capabilities.schema import normalize_schema
 from llm_router._internal.capabilities.tools import ToolRegistry
@@ -61,6 +61,7 @@ pytestmark = [
 ]
 
 
+@pytest.mark.coverage_path("proxy-text")
 def test_qwenchat_text_crosses_proxy_http_boundary() -> None:
     path = qwen_chat_path()
     with ScriptedHTTPServer(
@@ -87,6 +88,26 @@ def test_qwenchat_text_crosses_proxy_http_boundary() -> None:
         assert recorded.headers["Authorization"] == "Bearer secret"
 
 
+def test_qwenchat_declares_remote_video_unsupported_and_rejects_url() -> None:
+    assert QwenChatAdapter.capabilities.supports_video_file is True
+    assert QwenChatAdapter.capabilities.supports_video_url is False
+
+    request = _request(
+        messages=[
+            normalize_content(
+                [VideoUrlSchema(url="https://example.test/video.mp4", fps=1)]
+            )
+        ]
+    )
+
+    with pytest.raises(
+        TypeError,
+        match="QwenChat adapter does not support remote video URL media",
+    ):
+        QwenChatAdapter(base_url="http://127.0.0.1:1/api").build_payload(request)
+
+
+@pytest.mark.coverage_path("media-upload")
 def test_qwenchat_uploads_media_before_chat(tmp_path: Path) -> None:
     path = qwen_chat_path()
     upload_path = qwen_upload_path()
@@ -184,6 +205,7 @@ def test_qwenchat_retries_upload_before_chat() -> None:
         assert server.request_count("POST", chat_path) == 1
 
 
+@pytest.mark.coverage_path("retryable-status")
 def test_qwenchat_retryable_status_is_translated_to_provider_error() -> None:
     path = qwen_chat_path()
     with ScriptedHTTPServer(
@@ -209,6 +231,7 @@ def test_qwenchat_retryable_status_is_translated_to_provider_error() -> None:
         assert exc_info.value.cause.retry_reason == "retryable_status"
 
 
+@pytest.mark.coverage_path("tool-normalization")
 def test_qwenchat_normalizes_structured_and_textual_tool_outputs() -> None:
     path = qwen_chat_path()
     registry = ToolRegistry.from_tools([add])

@@ -69,6 +69,24 @@ for _test_name, _criterion in (
 ):
     globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
 
+for _test_name, _path_id in (
+    ("test_a_temporary_provider_failure_succeeds_on_retry", "sync"),
+    ("test_an_asynchronous_temporary_provider_failure_succeeds_on_retry", "async"),
+    ("test_a_permanent_provider_failure_is_not_retried", "sync"),
+    ("test_an_asynchronous_permanent_provider_failure_is_not_retried", "async"),
+    (
+        "test_synchronous_provider_retry_stops_at_the_configured_attempt_limit",
+        "sync",
+    ),
+    (
+        "test_asynchronous_provider_retry_stops_at_the_configured_attempt_limit",
+        "async",
+    ),
+    ("test_structured_output_stops_at_a_oneattempt_budget", "budget-1"),
+    ("test_structured_output_stops_at_a_twoattempt_budget", "budget-2"),
+):
+    globals()[_test_name] = pytest.mark.coverage_path(_path_id)(globals()[_test_name])
+
 for _test_name in (
     "test_a_temporary_provider_failure_succeeds_on_retry",
     "test_an_asynchronous_temporary_provider_failure_succeeds_on_retry",
@@ -92,7 +110,7 @@ for _test_name in (
         "interface.payload-schema",
     )(globals()[_test_name])
 
-del _criterion, _test_name
+del _criterion, _path_id, _test_name
 
 _OPENAI_PATH = openai_chat_path()
 _QWEN_PATH = qwen_chat_path()

@@ -16,6 +16,7 @@ pytestmark = [
 
 
 @pytest.mark.coverage_item("VC_SESSION_SERIALIZATION_MEDIA")
+@pytest.mark.coverage_path("file")
 def test_save_load_preserves_embedded_file_bytes(tmp_path: Path) -> None:
     file_path = tmp_path / "input.bin"
     file_path.write_bytes(b"file-bytes")
@@ -35,6 +36,7 @@ def test_save_load_preserves_embedded_file_bytes(tmp_path: Path) -> None:
 
 
 @pytest.mark.coverage_item("VC_SESSION_SERIALIZATION_MEDIA")
+@pytest.mark.coverage_path("image")
 def test_save_load_preserves_embedded_image_bytes(tmp_path: Path) -> None:
     image = Image.new("RGBA", (3, 2), (12, 34, 56, 78))
     store = SessionStore()
@@ -50,6 +52,7 @@ def test_save_load_preserves_embedded_image_bytes(tmp_path: Path) -> None:
 
 
 @pytest.mark.coverage_item("VC_SESSION_SERIALIZATION_MEDIA")
+@pytest.mark.coverage_path("local-video")
 def test_save_load_preserves_embedded_local_video_bytes_and_metadata(
     tmp_path: Path,
 ) -> None:
@@ -76,6 +79,7 @@ def test_save_load_preserves_embedded_local_video_bytes_and_metadata(
 
 
 @pytest.mark.coverage_item("VC_SESSION_SERIALIZATION_MEDIA")
+@pytest.mark.coverage_path("remote-video")
 def test_save_load_preserves_remote_video_descriptor_metadata(tmp_path: Path) -> None:
     store = SessionStore()
     store.remember(

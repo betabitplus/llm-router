@@ -326,7 +326,8 @@ def _qwenchat_media_content_part(
 ) -> dict[str, str]:
     """Translate one media descriptor to a QwenChat uploaded part."""
     if isinstance(media, VideoUrlMedia):
-        return {"type": "file", "file": media.url}
+        msg = "QwenChat adapter does not support remote video URL media."
+        raise TypeError(msg)
     if uploader is None:
         url = _qwenchat_offline_media_url(media)
     else:
@@ -347,7 +348,8 @@ async def _qwenchat_amedia_content_part(
 ) -> dict[str, str]:
     """Translate one media descriptor to an async QwenChat uploaded part."""
     if isinstance(media, VideoUrlMedia):
-        return {"type": "file", "file": media.url}
+        msg = "QwenChat adapter does not support remote video URL media."
+        raise TypeError(msg)
     if uploader is None:
         url = _qwenchat_offline_media_url(media)
     else:

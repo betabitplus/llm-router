@@ -32,7 +32,19 @@ for _test_name, _criterion in (
     ),
 ):
     globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
-del _criterion, _test_name
+
+for _test_name, _path_id in (
+    (
+        "test_an_explicit_null_value_removes_an_inherited_optional_setting",
+        "null",
+    ),
+    (
+        "test_an_explicit_empty_collection_removes_inherited_tools",
+        "empty-collection",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_path(_path_id)(globals()[_test_name])
+del _criterion, _path_id, _test_name
 
 _PATH = openai_chat_path()
 

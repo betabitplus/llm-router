@@ -59,6 +59,26 @@ for _test_name, _criterion in (
 ):
     globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
 
+for _test_name, _path_id in (
+    (
+        "test_a_timedout_route_falls_back_without_waiting_for_it_indefinitely",
+        "sync",
+    ),
+    (
+        "test_an_async_timedout_route_falls_back_to_the_next_route",
+        "async",
+    ),
+    (
+        "test_a_terminal_route_timeout_is_exposed_when_no_fallback_remains",
+        "sync",
+    ),
+    (
+        "test_an_async_terminal_route_timeout_is_exposed_when_no_fallback_remains",
+        "async",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_path(_path_id)(globals()[_test_name])
+
 for _test_name, _contract_id, _fault_class in (
     (
         "test_a_failed_route_falls_back_to_the_next_route",
@@ -89,7 +109,7 @@ for _test_name, _contract_id, _fault_class in (
     globals()[_test_name] = pytest.mark.fault_item(_contract_id, _fault_class)(
         globals()[_test_name]
     )
-del _contract_id, _criterion, _fault_class, _test_name
+del _contract_id, _criterion, _fault_class, _path_id, _test_name
 
 _TIMEOUT_PATH = openai_chat_path()
 _TIMEOUT_TEXT = "timeout fallback ok"

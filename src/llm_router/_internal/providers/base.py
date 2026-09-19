@@ -33,7 +33,8 @@ class ProviderCapabilities:
 
     supports_images: bool = False
     supports_files: bool = False
-    supports_video: bool = False
+    supports_video_file: bool = False
+    supports_video_url: bool = False
     supports_json_schema: bool = False
     supports_tools: bool = False
 

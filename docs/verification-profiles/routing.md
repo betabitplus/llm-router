@@ -97,10 +97,10 @@ external provider fidelity.
 
 ### Verification criteria
 
-| Criterion                   | Contract                                    | Test level         | Boundary   | Required paths | Success criterion                                                                                                     |
-| --------------------------- | ------------------------------------------- | ------------------ | ---------- | -------------: | --------------------------------------------------------------------------------------------------------------------- |
-| `VC_ROUTE_TIMEOUT_FALLBACK` | {need}`[[id]] <REQ_ROUTE_TIMEOUT_FALLBACK>` | System Integration | Substitute |              2 | Sync and async requests both stop waiting on a timed-out route, then continue to another eligible route and succeed.  |
-| `VC_ROUTE_TIMEOUT_TERMINAL` | {need}`[[id]] <REQ_ROUTE_TIMEOUT_FALLBACK>` | System Integration | Substitute |              2 | Sync and async requests with no fallback both expose the public timeout after exactly the terminal timed-out attempt. |
+| Criterion                   | Contract                                    | Test level         | Boundary   | Required paths | Required path IDs | Success criterion                                                                                                     |
+| --------------------------- | ------------------------------------------- | ------------------ | ---------- | -------------: | ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `VC_ROUTE_TIMEOUT_FALLBACK` | {need}`[[id]] <REQ_ROUTE_TIMEOUT_FALLBACK>` | System Integration | Substitute |              2 | `sync` · `async`  | Sync and async requests both stop waiting on a timed-out route, then continue to another eligible route and succeed.  |
+| `VC_ROUTE_TIMEOUT_TERMINAL` | {need}`[[id]] <REQ_ROUTE_TIMEOUT_FALLBACK>` | System Integration | Substitute |              2 | `sync` · `async`  | Sync and async requests with no fallback both expose the public timeout after exactly the terminal timed-out attempt. |
 
 ### Evidence aggregation
 
@@ -160,10 +160,10 @@ is sufficient.
 
 ### Verification criteria
 
-| Criterion                           | Contract                                 | Test level         | Boundary   | Required paths | Success criterion                                                                                                          |
-| ----------------------------------- | ---------------------------------------- | ------------------ | ---------- | -------------: | -------------------------------------------------------------------------------------------------------------------------- |
-| `VC_ROUTE_ATTEMPT_LIMIT_BOUNDARIES` | {need}`[[id]] <REQ_ROUTE_ATTEMPT_LIMIT>` | Component          | Local      |              2 | A cap of 1 returns one candidate and an intermediate cap truncates a larger candidate set at exactly the configured count. |
-| `VC_ROUTE_ATTEMPT_LIMIT_PUBLIC_CAP` | {need}`[[id]] <REQ_ROUTE_ATTEMPT_LIMIT>` | System Integration | Substitute |              1 | A public request with more failing routes than the configured cap performs no external interaction beyond that cap.        |
+| Criterion                           | Contract                                 | Test level         | Boundary   | Required paths | Required path IDs                  | Success criterion                                                                                                          |
+| ----------------------------------- | ---------------------------------------- | ------------------ | ---------- | -------------: | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `VC_ROUTE_ATTEMPT_LIMIT_BOUNDARIES` | {need}`[[id]] <REQ_ROUTE_ATTEMPT_LIMIT>` | Component          | Local      |              2 | `minimum-cap` · `intermediate-cap` | A cap of 1 returns one candidate and an intermediate cap truncates a larger candidate set at exactly the configured count. |
+| `VC_ROUTE_ATTEMPT_LIMIT_PUBLIC_CAP` | {need}`[[id]] <REQ_ROUTE_ATTEMPT_LIMIT>` | System Integration | Substitute |              1 | —                                  | A public request with more failing routes than the configured cap performs no external interaction beyond that cap.        |
 
 ### Evidence aggregation
 
@@ -292,17 +292,17 @@ ordering.
 
 ### Verification criteria
 
-| Criterion                                 | Contract                                                | Test level         | Boundary   | Required paths | Success criterion                                                                                                          |
-| ----------------------------------------- | ------------------------------------------------------- | ------------------ | ---------- | -------------: | -------------------------------------------------------------------------------------------------------------------------- |
-| `VC_RATE_LIMIT_PROVIDER_KEY_ISOLATION`    | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>`                  | Component          | Local      |              2 | State in one provider/key bucket does not block another key of that provider or the same key ID under another provider.    |
-| `VC_RATE_LIMIT_CONSERVATIVE_INTERVAL`     | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>`                  | Component          | Local      |              2 | The limiter uses the longer spacing interval in both RPS-dominant and RPM-dominant configurations.                         |
-| `VC_RATE_LIMIT_SUCCESS_RESET`             | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>`                  | Component          | Local      |              1 | A success clears transient failure count so a later failure sequence must reach the configured threshold again.            |
-| `VC_RATE_LIMIT_COOLDOWN_THRESHOLD`        | {need}`[[id]] <TREQ_RATE_LIMIT_COOLDOWN_POLICY>`        | Component          | Local      |              2 | Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown.       |
-| `VC_RATE_LIMIT_SKIP_BLOCKED_ROUTE`        | {need}`[[id]] <REQ_RATE_LIMIT_ROUTING>`                 | System Integration | Substitute |              1 | A blocked preferred route is not called when another eligible route is immediately available.                              |
-| `VC_RATE_LIMIT_ALL_BLOCKED_FAIL_FAST`     | {need}`[[id]] <REQ_RATE_LIMIT_ROUTING>`                 | System Integration | Substitute |              1 | When every candidate is blocked and waiting is disabled, the public request fails without sleeping or calling a provider.  |
-| `VC_RATE_LIMIT_ALL_BLOCKED_WAIT_EARLIEST` | {need}`[[id]] <TREQ_RATE_LIMIT_AVAILABILITY_SELECTION>` | System Integration | Substitute |              1 | When waiting is enabled and every candidate is blocked, the candidate with the shortest remaining wait is executed first.  |
-| `VC_RATE_LIMIT_AVAILABLE_KEY_BEFORE_WAIT` | {need}`[[id]] <TREQ_RATE_LIMIT_AVAILABILITY_SELECTION>` | System Integration | Substitute |              1 | Automatic key selection uses an unblocked credential instead of waiting on the next rotating key when that key is blocked. |
-| `VC_RATE_LIMIT_AUTO_KEY_ROTATION`         | {need}`[[id]] <REQ_RATE_LIMIT_ROUTING>`                 | System Integration | Substitute |              1 | With two available automatic credentials, consecutive requests rotate across them before reuse requires waiting.           |
+| Criterion                                 | Contract                                                | Test level         | Boundary   | Required paths | Required path IDs                                     | Success criterion                                                                                                          |
+| ----------------------------------------- | ------------------------------------------------------- | ------------------ | ---------- | -------------: | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `VC_RATE_LIMIT_PROVIDER_KEY_ISOLATION`    | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>`                  | Component          | Local      |              2 | `same-provider-other-key` · `same-key-other-provider` | State in one provider/key bucket does not block another key of that provider or the same key ID under another provider.    |
+| `VC_RATE_LIMIT_CONSERVATIVE_INTERVAL`     | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>`                  | Component          | Local      |              2 | `rpm-dominant` · `rps-dominant`                       | The limiter uses the longer spacing interval in both RPS-dominant and RPM-dominant configurations.                         |
+| `VC_RATE_LIMIT_SUCCESS_RESET`             | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>`                  | Component          | Local      |              1 | —                                                     | A success clears transient failure count so a later failure sequence must reach the configured threshold again.            |
+| `VC_RATE_LIMIT_COOLDOWN_THRESHOLD`        | {need}`[[id]] <TREQ_RATE_LIMIT_COOLDOWN_POLICY>`        | Component          | Local      |              2 | `below-threshold` · `at-threshold`                    | Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown.       |
+| `VC_RATE_LIMIT_SKIP_BLOCKED_ROUTE`        | {need}`[[id]] <REQ_RATE_LIMIT_ROUTING>`                 | System Integration | Substitute |              1 | —                                                     | A blocked preferred route is not called when another eligible route is immediately available.                              |
+| `VC_RATE_LIMIT_ALL_BLOCKED_FAIL_FAST`     | {need}`[[id]] <REQ_RATE_LIMIT_ROUTING>`                 | System Integration | Substitute |              1 | —                                                     | When every candidate is blocked and waiting is disabled, the public request fails without sleeping or calling a provider.  |
+| `VC_RATE_LIMIT_ALL_BLOCKED_WAIT_EARLIEST` | {need}`[[id]] <TREQ_RATE_LIMIT_AVAILABILITY_SELECTION>` | System Integration | Substitute |              1 | —                                                     | When waiting is enabled and every candidate is blocked, the candidate with the shortest remaining wait is executed first.  |
+| `VC_RATE_LIMIT_AVAILABLE_KEY_BEFORE_WAIT` | {need}`[[id]] <TREQ_RATE_LIMIT_AVAILABILITY_SELECTION>` | System Integration | Substitute |              1 | —                                                     | Automatic key selection uses an unblocked credential instead of waiting on the next rotating key when that key is blocked. |
+| `VC_RATE_LIMIT_AUTO_KEY_ROTATION`         | {need}`[[id]] <REQ_RATE_LIMIT_ROUTING>`                 | System Integration | Substitute |              1 | —                                                     | With two available automatic credentials, consecutive requests rotate across them before reuse requires waiting.           |
 
 ### Evidence aggregation
 

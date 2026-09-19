@@ -38,7 +38,14 @@ for _test_name, _criterion in (
     ),
 ):
     globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
-del _criterion, _test_name
+
+for _test_name, _path_id in (
+    ("test_a_provider_route_honors_an_explicit_add_tool_choice", "example:route"),
+    ("test_ai_studio_honors_an_explicit_add_tool_choice", "AI Studio"),
+    ("test_google_genai_honors_an_explicit_add_tool_choice", "Google GenAI"),
+):
+    globals()[_test_name] = pytest.mark.coverage_path(_path_id)(globals()[_test_name])
+del _criterion, _path_id, _test_name
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
 

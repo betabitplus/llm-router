@@ -44,12 +44,12 @@ llm-router plus the observed tool trace, not fidelity of provider reasoning.
 
 ### Verification criteria
 
-| Criterion                          | Contract                         | Test level         | Boundary   | Required paths | Success criterion                                                                                                      |
-| ---------------------------------- | -------------------------------- | ------------------ | ---------- | -------------: | ---------------------------------------------------------------------------------------------------------------------- |
-| `VC_TOOL_CHOICE_NAMED_INPUT_FORMS` | {need}`[[id]] <REQ_TOOL_CHOICE>` | Component          | Local      |              2 | Both supported public named-choice input forms normalize to the same selected registered tool.                         |
-| `VC_TOOL_CHOICE_NAMED_SERIALIZERS` | {need}`[[id]] <REQ_TOOL_CHOICE>` | Component          | Local      |              4 | Each distinct provider translation implementation preserves the selected named tool in its native request/prompt form. |
-| `VC_TOOL_CHOICE_REPLAY_FAMILIES`   | {need}`[[id]] <REQ_TOOL_CHOICE>` | System Integration | Replay     |              4 | All four replay-backed adapter families honor the explicit named tool and execute no alternate registered tool.        |
-| `VC_TOOL_CHOICE_GOOGLE_GENAI`      | {need}`[[id]] <REQ_TOOL_CHOICE>` | System Integration | Substitute |              1 | Google GenAI emits native configuration restricted to the named tool and the runtime trace contains only that tool.    |
+| Criterion                          | Contract                         | Test level         | Boundary   | Required paths | Required path IDs                                                          | Success criterion                                                                                                      |
+| ---------------------------------- | -------------------------------- | ------------------ | ---------- | -------------: | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `VC_TOOL_CHOICE_NAMED_INPUT_FORMS` | {need}`[[id]] <REQ_TOOL_CHOICE>` | Component          | Local      |              2 | `string` · `mapping`                                                       | Both supported public named-choice input forms normalize to the same selected registered tool.                         |
+| `VC_TOOL_CHOICE_NAMED_SERIALIZERS` | {need}`[[id]] <REQ_TOOL_CHOICE>` | Component          | Local      |              4 | `openai-compatible-shared` · `qwenchat` · `google-genai` · `gemini-webapi` | Each distinct provider translation implementation preserves the selected named tool in its native request/prompt form. |
+| `VC_TOOL_CHOICE_REPLAY_FAMILIES`   | {need}`[[id]] <REQ_TOOL_CHOICE>` | System Integration | Replay     |              4 | `OpenAI-compatible` · `QwenChat` · `Gemini WebAPI` · `AI Studio`           | All four replay-backed adapter families honor the explicit named tool and execute no alternate registered tool.        |
+| `VC_TOOL_CHOICE_GOOGLE_GENAI`      | {need}`[[id]] <REQ_TOOL_CHOICE>` | System Integration | Substitute |              1 | `Google GenAI`                                                             | Google GenAI emits native configuration restricted to the named tool and the runtime trace contains only that tool.    |
 
 ### Evidence aggregation
 
@@ -113,13 +113,13 @@ scripted external participants; they therefore remain Surrogate at L0.
 
 ### Verification criteria
 
-| Criterion                              | Contract                                        | Test level         | Boundary   | Required paths | Success criterion                                                                                                    |
-| -------------------------------------- | ----------------------------------------------- | ------------------ | ---------- | -------------: | -------------------------------------------------------------------------------------------------------------------- |
-| `VC_TOOL_REGISTRY_SCHEMA_EXECUTION`    | {need}`[[id]] <TREQ_TOOL_REGISTRY>`             | Component          | Local      |              1 | Callable schema derivation matches the Python signature and execution preserves arguments/results.                   |
-| `VC_TOOL_REGISTRY_DUPLICATE_REJECTION` | {need}`[[id]] <TREQ_TOOL_REGISTRY>`             | Component          | Local      |              1 | Duplicate tool names are rejected deterministically.                                                                 |
-| `VC_TOOL_REGISTRY_CALL_SHAPES`         | {need}`[[id]] <TREQ_TOOL_REGISTRY>`             | Component          | Local      |              2 | Both retained supported provider tool-call shapes normalize into the same callable contract.                         |
-| `VC_TOOL_MULTI_ROUND_REPLAY_FAMILIES`  | {need}`[[id]] <REQ_MULTI_ROUND_TOOL_EXECUTION>` | System Integration | Replay     |              4 | QwenChat, AI Studio, Gemini WebAPI, and Google GenAI complete their retained multi-round workflows with tool traces. |
-| `VC_TOOL_MULTI_ROUND_OPENAI_LOCAL`     | {need}`[[id]] <REQ_MULTI_ROUND_TOOL_EXECUTION>` | System Integration | Substitute |              1 | OpenAI-compatible executes add then multiply, round-trips each tool result, and terminates with final result 84.     |
+| Criterion                              | Contract                                        | Test level         | Boundary   | Required paths | Required path IDs                                           | Success criterion                                                                                                    |
+| -------------------------------------- | ----------------------------------------------- | ------------------ | ---------- | -------------: | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `VC_TOOL_REGISTRY_SCHEMA_EXECUTION`    | {need}`[[id]] <TREQ_TOOL_REGISTRY>`             | Component          | Local      |              1 | —                                                           | Callable schema derivation matches the Python signature and execution preserves arguments/results.                   |
+| `VC_TOOL_REGISTRY_DUPLICATE_REJECTION` | {need}`[[id]] <TREQ_TOOL_REGISTRY>`             | Component          | Local      |              1 | —                                                           | Duplicate tool names are rejected deterministically.                                                                 |
+| `VC_TOOL_REGISTRY_CALL_SHAPES`         | {need}`[[id]] <TREQ_TOOL_REGISTRY>`             | Component          | Local      |              2 | `openai-function` · `google-function`                       | Both retained supported provider tool-call shapes normalize into the same callable contract.                         |
+| `VC_TOOL_MULTI_ROUND_REPLAY_FAMILIES`  | {need}`[[id]] <REQ_MULTI_ROUND_TOOL_EXECUTION>` | System Integration | Replay     |              4 | `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI` | QwenChat, AI Studio, Gemini WebAPI, and Google GenAI complete their retained multi-round workflows with tool traces. |
+| `VC_TOOL_MULTI_ROUND_OPENAI_LOCAL`     | {need}`[[id]] <REQ_MULTI_ROUND_TOOL_EXECUTION>` | System Integration | Substitute |              1 | `OpenAI-compatible`                                         | OpenAI-compatible executes add then multiply, round-trips each tool result, and terminates with final result 84.     |
 
 ### Evidence aggregation
 

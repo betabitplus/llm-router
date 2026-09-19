@@ -35,7 +35,8 @@ def declared_provider_capabilities() -> dict[str, dict[str, bool]]:
     keys = {
         "supports_images",
         "supports_files",
-        "supports_video",
+        "supports_video_file",
+        "supports_video_url",
         "supports_json_schema",
         "supports_tools",
     }
@@ -505,11 +506,13 @@ def main() -> None:
     )), "dedicated Verification Profile owns contract-specific verification design")
     check(
         "coverage_item(id)" in pyproject_source
+        and "coverage_path(id_or_selector)" in pyproject_source
         and "fault_item(contract_id, id)" in pyproject_source,
-        "semantic coverage and contract-specific fault markers are registered under strict pytest markers",
+        "semantic coverage, exact path identity and contract-specific fault markers are registered under strict pytest markers",
     )
     check(all(token in root_conftest_source for token in (
         '"coverage_item"',
+        '"coverage_path"',
         '"fault_item"',
         '"fault_items"',
         '"source_path"',
@@ -649,14 +652,14 @@ def main() -> None:
     provenance_subjects = evidence_provenance.get("subjects") or {}
     check(
         depth_facts.get("schema_version") == 4
-        and depth_source.get("tests") == 180
-        and depth_source.get("passed") == 180
+        and depth_source.get("tests") == 181
+        and depth_source.get("passed") == 181
         and depth_audit.get("contracts") == 62
-        and depth_audit.get("runtime_evidence") == 180
+        and depth_audit.get("runtime_evidence") == 181
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
         and depth_audit.get("bdd_feature_scenario_errors") == 0,
-        "Depth facts are reproducibly regenerated from the current 180-test retained run",
+        "Depth facts are reproducibly regenerated from the current 181-test retained run",
     )
     check(
         ((depth_inputs.get("junit") or {}).get("sha256")
@@ -1143,9 +1146,54 @@ def main() -> None:
         ),
         "image": sum(row["supports_images"] for row in capabilities.values()),
         "document": sum(row["supports_files"] for row in capabilities.values()),
-        "video": sum(row["supports_video"] for row in capabilities.values()),
+        "video_local": sum(
+            row["supports_video_file"] for row in capabilities.values()
+        ),
+        "video_remote": sum(
+            row["supports_video_url"] for row in capabilities.values()
+        ),
         "tools": sum(row["supports_tools"] for row in capabilities.values()),
     }
+    provider_labels = {
+        "openai": "OpenAI-compatible",
+        "qwenchat": "QwenChat",
+        "aistudio": "AI Studio",
+        "gemini_webapi": "Gemini WebAPI",
+        "google_genai": "Google GenAI",
+    }
+    capability_path_ids = {
+        "structured": {
+            provider_labels[family]
+            for family, row in capabilities.items()
+            if row["supports_json_schema"]
+        },
+        "image": {
+            provider_labels[family]
+            for family, row in capabilities.items()
+            if row["supports_images"]
+        },
+        "document": {
+            provider_labels[family]
+            for family, row in capabilities.items()
+            if row["supports_files"]
+        },
+        "video_local": {
+            provider_labels[family]
+            for family, row in capabilities.items()
+            if row["supports_video_file"]
+        },
+        "video_remote": {
+            provider_labels[family]
+            for family, row in capabilities.items()
+            if row["supports_video_url"]
+        },
+        "tools": {
+            provider_labels[family]
+            for family, row in capabilities.items()
+            if row["supports_tools"]
+        },
+    }
+    all_provider_ids = set(provider_labels.values())
 
     def target_paths(contract_id: str, criterion_id: str) -> int:
         for cell in (
@@ -1161,16 +1209,40 @@ def main() -> None:
             f"{contract_id}: missing criterion {criterion_id} in Target"
         )
 
+    def target_path_ids(contract_id: str, criterion_id: str) -> set[str]:
+        for cell in (
+            (monitor_facts["contracts"][contract_id].get("target") or {}).get(
+                "coverage"
+            )
+            or []
+        ):
+            path_ids = cell.get("item_path_ids") or {}
+            if criterion_id in path_ids:
+                return set(path_ids[criterion_id])
+        return set()
+
+    def actual_path_ids(contract_id: str, criterion_id: str) -> list[str]:
+        return [
+            str(row.get("coverage_path") or "")
+            for row in (
+                monitor_facts["contracts"][contract_id]
+                .get("coverage_actual", {})
+                .get(criterion_id, [])
+            )
+            if row.get("coverage_path")
+        ]
+
     check(
         capability_counts
         == {
             "structured": 5,
             "image": 5,
             "document": 4,
-            "video": 4,
+            "video_local": 4,
+            "video_remote": 3,
             "tools": 5,
         },
-        "current adapter capability declarations have the audited 5/5/4/4/5 provider-family denominators",
+        "current adapter capability declarations have the audited 5/5/4/4/3/5 provider-family denominators",
     )
     check(
         target_paths(
@@ -1192,12 +1264,12 @@ def main() -> None:
             "REQ_VIDEO_INPUT",
             "VC_VIDEO_LOCAL_GROUNDED_MATRIX",
         )
-        == capability_counts["video"]
+        == capability_counts["video_local"]
         and target_paths(
             "REQ_VIDEO_INPUT",
             "VC_VIDEO_REMOTE_GROUNDED_MATRIX",
         )
-        == capability_counts["video"],
+        == capability_counts["video_remote"],
         "Rich input/output provider denominators track current adapter capability declarations",
     )
     check(
@@ -1225,12 +1297,12 @@ def main() -> None:
             "REQ_ASYNC_PROVIDER_EXECUTION",
             "VC_ASYNC_VIDEO_LOCAL_PROVIDER_MATRIX",
         )
-        == capability_counts["video"]
+        == capability_counts["video_local"]
         and target_paths(
             "REQ_ASYNC_PROVIDER_EXECUTION",
             "VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX",
         )
-        == capability_counts["video"],
+        == capability_counts["video_remote"],
         "Async provider × capability denominators track current adapter declarations",
     )
     check(
@@ -1253,6 +1325,120 @@ def main() -> None:
         == len(capabilities) - 1,
         "Response-normalization denominator compares every non-baseline provider family",
     )
+    check(
+        target_path_ids(
+            "REQ_STRUCTURED_TEXT_OUTPUT",
+            "VC_STRUCTURED_TEXT_PROVIDER_MATRIX",
+        )
+        == capability_path_ids["structured"]
+        and target_path_ids(
+            "REQ_IMAGE_INPUT",
+            "VC_IMAGE_GROUNDED_PROVIDER_MATRIX",
+        )
+        == capability_path_ids["image"]
+        and target_path_ids(
+            "REQ_DOCUMENT_INPUT",
+            "VC_DOCUMENT_GROUNDED_PROVIDER_MATRIX",
+        )
+        == capability_path_ids["document"]
+        and target_path_ids(
+            "REQ_VIDEO_INPUT",
+            "VC_VIDEO_LOCAL_GROUNDED_MATRIX",
+        )
+        == capability_path_ids["video_local"]
+        and target_path_ids(
+            "REQ_VIDEO_INPUT",
+            "VC_VIDEO_REMOTE_GROUNDED_MATRIX",
+        )
+        == capability_path_ids["video_remote"],
+        "Rich input/output Targets retain the exact provider-family identities implied by adapter capabilities",
+    )
+    check(
+        target_path_ids(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_TEXT_PROVIDER_MATRIX",
+        )
+        == all_provider_ids
+        and target_path_ids(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_STRUCTURED_PROVIDER_MATRIX",
+        )
+        == capability_path_ids["structured"]
+        and target_path_ids(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_IMAGE_PROVIDER_MATRIX",
+        )
+        == capability_path_ids["image"]
+        and target_path_ids(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_DOCUMENT_PROVIDER_MATRIX",
+        )
+        == capability_path_ids["document"]
+        and target_path_ids(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_VIDEO_LOCAL_PROVIDER_MATRIX",
+        )
+        == capability_path_ids["video_local"]
+        and target_path_ids(
+            "REQ_ASYNC_PROVIDER_EXECUTION",
+            "VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX",
+        )
+        == capability_path_ids["video_remote"],
+        "Async Targets retain exact provider identities for every capability partition",
+    )
+    check(
+        target_path_ids(
+            "REQ_TOOL_CHOICE",
+            "VC_TOOL_CHOICE_REPLAY_FAMILIES",
+        )
+        == capability_path_ids["tools"] - {"Google GenAI"}
+        and target_path_ids(
+            "REQ_TOOL_CHOICE",
+            "VC_TOOL_CHOICE_GOOGLE_GENAI",
+        )
+        == {"Google GenAI"}
+        and target_path_ids(
+            "REQ_MULTI_ROUND_TOOL_EXECUTION",
+            "VC_TOOL_MULTI_ROUND_REPLAY_FAMILIES",
+        )
+        == capability_path_ids["tools"] - {"OpenAI-compatible"}
+        and target_path_ids(
+            "REQ_MULTI_ROUND_TOOL_EXECUTION",
+            "VC_TOOL_MULTI_ROUND_OPENAI_LOCAL",
+        )
+        == {"OpenAI-compatible"},
+        "Tool provider matrices retain the exact Replay/Substitute family split",
+    )
+    check(
+        target_path_ids(
+            "REQ_RESPONSE_NORMALIZATION",
+            "VC_PROVIDER_RESPONSE_EQUIVALENCE",
+        )
+        == all_provider_ids - {"OpenAI-compatible"},
+        "Response-normalization Target retains every non-baseline provider identity",
+    )
+    for contract_id, contract in monitor_facts["contracts"].items():
+        for cell in (contract.get("target") or {}).get("coverage") or []:
+            counts = cell.get("item_path_counts") or {}
+            path_ids = cell.get("item_path_ids") or {}
+            for criterion_id, expected_count in counts.items():
+                if int(expected_count) > 1:
+                    check(
+                        criterion_id in path_ids
+                        and len(path_ids[criterion_id]) == int(expected_count)
+                        and len(set(path_ids[criterion_id])) == int(expected_count),
+                        f"{contract_id}/{criterion_id}: every multi-path Target has exact unique path identities",
+                    )
+            for criterion_id, expected_ids in path_ids.items():
+                actual_ids = actual_path_ids(contract_id, criterion_id)
+                check(
+                    len(actual_ids) == len(set(actual_ids)),
+                    f"{contract_id}/{criterion_id}: retained coverage path identities are unique",
+                )
+                check(
+                    set(actual_ids) <= set(expected_ids),
+                    f"{contract_id}/{criterion_id}: retained coverage path identities are a subset of Target",
+                )
     shipped_examples = [
         path
         for path in (ROOT / "examples/llm_router").glob("*.py")
@@ -1314,6 +1500,13 @@ def main() -> None:
         check(
             "EXPERIMENT" not in page and "EXTRA" not in page,
             f"{contract_id}: no retired experiment/optional-evidence badges leak into monitor UI",
+        )
+        check(
+            "path-identity-gaps" not in page
+            and "Missing:" not in page
+            and "Unexpected:" not in page
+            and "Duplicate:" not in page,
+            f"{contract_id}: exact path identities stay out of the compact monitor UI",
         )
 
     routing_fault_expectations = {
@@ -1631,7 +1824,7 @@ def main() -> None:
                     "VC_ASYNC_IMAGE_PROVIDER_MATRIX": 5,
                     "VC_ASYNC_DOCUMENT_PROVIDER_MATRIX": 4,
                     "VC_ASYNC_VIDEO_LOCAL_PROVIDER_MATRIX": 4,
-                    "VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX": 4,
+                    "VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX": 3,
                 },
             },
             "actual": {
@@ -1912,14 +2105,14 @@ def main() -> None:
             "cells": {
                 ("system_integration", "replay", "surrogate_simulated", "L0"): {
                     "VC_VIDEO_LOCAL_GROUNDED_MATRIX": 4,
-                    "VC_VIDEO_REMOTE_GROUNDED_MATRIX": 4,
+                    "VC_VIDEO_REMOTE_GROUNDED_MATRIX": 3,
                 },
             },
             "actual": {
                 "VC_VIDEO_LOCAL_GROUNDED_MATRIX": 4,
                 "VC_VIDEO_REMOTE_GROUNDED_MATRIX": 3,
             },
-            "coverage_pass": False,
+            "coverage_pass": True,
         },
         "REQ_STRUCTURED_SCHEMA_CONTRACT": {
             "cells": {
@@ -2079,11 +2272,12 @@ def main() -> None:
           "canonical matrix cells switch the accepted cell inspector")
     check(
         all(label in assurance_page for label in (
-            "Required evidence", "Semantic coverage", "passing required evidence",
-            "13 pass", "0 fail", "0 missing", "Retained path properties", "16/16 paths",
+            "Required evidence", "Semantic coverage", "criteria passing",
+            "13 criteria pass", "0 criteria fail", "0 criteria missing",
+            "Retained path properties", "16/16 paths retained",
             "Evidence confidence",
         )),
-        "canonical Invalid Configuration Component × Local inspector renders all 13 criteria and 16 retained paths",
+        "canonical Invalid Configuration Component × Local inspector renders compact aggregate counts for all 13 criteria and 16 retained paths",
     )
     check(
         "Representation" in assurance_page
@@ -2958,7 +3152,13 @@ def main() -> None:
         "src/llm_router/_internal/capabilities/schema.py",
         "src/llm_router/_internal/capabilities/content.py",
         "src/llm_router/_internal/config/validation.py",
+        "src/llm_router/_internal/providers/_prompted.py",
+        "src/llm_router/_internal/providers/aistudio.py",
         "src/llm_router/_internal/providers/base.py",
+        "src/llm_router/_internal/providers/gemini_webapi.py",
+        "src/llm_router/_internal/providers/google_genai.py",
+        "src/llm_router/_internal/providers/openai_compatible.py",
+        "src/llm_router/_internal/providers/qwenchat.py",
         "src/llm_router/_internal/providers/retry.py",
         "src/llm_router/_internal/runtime/executor.py",
         "src/llm_router/_internal/runtime/limiter.py",

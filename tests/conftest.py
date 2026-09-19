@@ -127,11 +127,64 @@ def pytest_runtest_call(item: pytest.Item) -> Iterator[None]:
     )
 
 
+def _coverage_path_id(
+    item: pytest.Item,
+    coverage_path_markers: list[pytest.Mark],
+    *,
+    has_coverage_item: bool,
+) -> str | None:
+    """Resolve one retained coverage-path identity from a strict pytest marker."""
+    malformed = [
+        marker
+        for marker in coverage_path_markers
+        if len(marker.args) != 1 or marker.kwargs
+    ]
+    if len(coverage_path_markers) > 1 or malformed:
+        raise pytest.UsageError(
+            "coverage_path requires exactly one marker with one positional "
+            "path id and no keyword arguments"
+        )
+    if not coverage_path_markers:
+        return None
+    if not has_coverage_item:
+        raise pytest.UsageError("coverage_path requires a coverage_item marker")
+
+    raw_path = str(coverage_path_markers[0].args[0]).strip()
+    if raw_path == "case-id":
+        callspec = getattr(item, "callspec", None)
+        if callspec is None or not str(getattr(callspec, "id", "")).strip():
+            raise pytest.UsageError(
+                "coverage_path 'case-id' requires a parametrized pytest case with an id"
+            )
+        path_id = str(callspec.id).strip()
+    elif raw_path.startswith("example:"):
+        example_key = raw_path.split(":", 1)[1].strip()
+        callspec = getattr(item, "callspec", None)
+        params = getattr(callspec, "params", {}) if callspec is not None else {}
+        example = params.get("_pytest_bdd_example")
+        if (
+            not example_key
+            or not isinstance(example, dict)
+            or example_key not in example
+        ):
+            raise pytest.UsageError(
+                f"coverage_path {raw_path!r} cannot resolve pytest-bdd example value"
+            )
+        path_id = str(example[example_key]).strip()
+    else:
+        path_id = raw_path
+
+    if not path_id:
+        raise pytest.UsageError("coverage_path resolved to an empty path id")
+    return path_id
+
+
 def pytest_runtest_setup(item: pytest.Item) -> None:
     """Retain semantic binding and exact test-source identity in JUnit."""
     coverage_markers = list(item.iter_markers(name="coverage_item"))
+    coverage_path_markers = list(item.iter_markers(name="coverage_path"))
     fault_markers = list(item.iter_markers(name="fault_item"))
-    if not coverage_markers and not fault_markers:
+    if not coverage_markers and not coverage_path_markers and not fault_markers:
         return
 
     malformed_coverage_markers = [
@@ -144,6 +197,14 @@ def pytest_runtest_setup(item: pytest.Item) -> None:
         )
     if coverage_markers:
         _set_user_property(item, "coverage_item", str(coverage_markers[0].args[0]))
+
+    path_id = _coverage_path_id(
+        item,
+        coverage_path_markers,
+        has_coverage_item=bool(coverage_markers),
+    )
+    if path_id is not None:
+        _set_user_property(item, "coverage_path", path_id)
 
     malformed_fault_markers = [
         marker for marker in fault_markers if len(marker.args) != 2 or marker.kwargs

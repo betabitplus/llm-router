@@ -355,11 +355,11 @@ def _media_content_part(
     if isinstance(media, FileMedia) and not capabilities.supports_files:
         msg = "OpenAI-compatible adapter does not support file media."
         raise ValueError(msg)
-    if (
-        isinstance(media, VideoFileMedia | VideoUrlMedia)
-        and not capabilities.supports_video
-    ):
-        msg = "OpenAI-compatible adapter does not support video media."
+    if isinstance(media, VideoFileMedia) and not capabilities.supports_video_file:
+        msg = "OpenAI-compatible adapter does not support local video media."
+        raise ValueError(msg)
+    if isinstance(media, VideoUrlMedia) and not capabilities.supports_video_url:
+        msg = "OpenAI-compatible adapter does not support remote video media."
         raise ValueError(msg)
     return {
         "type": media.kind,

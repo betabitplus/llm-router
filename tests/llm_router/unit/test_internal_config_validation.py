@@ -84,7 +84,9 @@ def test_requested_model_must_exist_in_effective_registry() -> None:
         (0.0, 1.0, "retry min wait"),
         (2.0, 1.0, "retry max wait"),
     ],
+    ids=["min-wait-non-positive", "max-wait-below-min"],
 )
+@pytest.mark.coverage_path("case-id")
 def test_validation_rejects_invalid_retry_wait_bounds(
     min_wait_seconds: float,
     max_wait_seconds: float,
@@ -163,6 +165,7 @@ def test_validation_rejects_undeclared_default_provider() -> None:
 
 @pytest.mark.verifies("TREQ_CONFIG_DEFAULT_MODEL_MAPPING[revision==1]")
 @pytest.mark.coverage_item("VC_CONFIG_DEFAULT_MODEL_MAPPING")
+@pytest.mark.coverage_path("default-model-undeclared")
 def test_validation_rejects_undeclared_default_model() -> None:
     config = build_default_config()
     models = dict(config.models)
@@ -175,6 +178,7 @@ def test_validation_rejects_undeclared_default_model() -> None:
 
 @pytest.mark.verifies("TREQ_CONFIG_DEFAULT_MODEL_MAPPING[revision==1]")
 @pytest.mark.coverage_item("VC_CONFIG_DEFAULT_MODEL_MAPPING")
+@pytest.mark.coverage_path("default-provider-mapping-missing")
 def test_validation_rejects_default_model_without_default_provider_mapping() -> None:
     config = build_default_config()
     replacement_provider = next(
@@ -192,6 +196,7 @@ def test_validation_rejects_default_model_without_default_provider_mapping() -> 
 
 @pytest.mark.verifies("TREQ_CONFIG_MODEL_PROVIDER_REFERENCES[revision==1]")
 @pytest.mark.coverage_item("VC_CONFIG_MODEL_PROVIDER_REFERENCES")
+@pytest.mark.coverage_path("empty-model-mapping")
 def test_validation_rejects_model_without_provider_mapping() -> None:
     config = build_default_config()
     model = next(model for model in config.models if model != config.default_model)
@@ -205,6 +210,7 @@ def test_validation_rejects_model_without_provider_mapping() -> None:
 
 @pytest.mark.verifies("TREQ_CONFIG_MODEL_PROVIDER_REFERENCES[revision==1]")
 @pytest.mark.coverage_item("VC_CONFIG_MODEL_PROVIDER_REFERENCES")
+@pytest.mark.coverage_path("undeclared-provider-reference")
 def test_validation_rejects_model_mapping_to_undeclared_provider() -> None:
     config = build_default_config()
     candidates = [

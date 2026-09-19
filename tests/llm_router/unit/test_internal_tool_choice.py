@@ -36,7 +36,9 @@ pytestmark = [
         "add",
         {"type": "function", "function": {"name": "add"}},
     ],
+    ids=["string", "mapping"],
 )
+@pytest.mark.coverage_path("case-id")
 def test_named_tool_choice_input_forms_select_the_registered_tool(
     choice: str | dict[str, Any],
 ) -> None:
@@ -54,6 +56,7 @@ def _named_choice():
 
 
 @pytest.mark.coverage_item("VC_TOOL_CHOICE_NAMED_SERIALIZERS")
+@pytest.mark.coverage_path("openai-compatible-shared")
 def test_named_choice_serializes_for_openai_compatible_family() -> None:
     _, choice = _named_choice()
 
@@ -64,6 +67,7 @@ def test_named_choice_serializes_for_openai_compatible_family() -> None:
 
 
 @pytest.mark.coverage_item("VC_TOOL_CHOICE_NAMED_SERIALIZERS")
+@pytest.mark.coverage_path("qwenchat")
 def test_named_choice_serializes_for_qwenchat() -> None:
     registry, choice = _named_choice()
     request = ProviderRequest(
@@ -84,6 +88,7 @@ def test_named_choice_serializes_for_qwenchat() -> None:
 
 
 @pytest.mark.coverage_item("VC_TOOL_CHOICE_NAMED_SERIALIZERS")
+@pytest.mark.coverage_path("google-genai")
 def test_named_choice_serializes_for_google_genai() -> None:
     _, choice = _named_choice()
 
@@ -94,6 +99,7 @@ def test_named_choice_serializes_for_google_genai() -> None:
 
 
 @pytest.mark.coverage_item("VC_TOOL_CHOICE_NAMED_SERIALIZERS")
+@pytest.mark.coverage_path("gemini-webapi")
 def test_named_choice_serializes_for_gemini_webapi_prompt() -> None:
     registry, choice = _named_choice()
 

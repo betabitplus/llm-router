@@ -37,13 +37,13 @@ and interaction count, not external provider reasoning.
 
 ### Verification criteria
 
-| Criterion                                    | Contract                                            | Test level         | Boundary   | Required paths | Success criterion                                                                                                          |
-| -------------------------------------------- | --------------------------------------------------- | ------------------ | ---------- | -------------: | -------------------------------------------------------------------------------------------------------------------------- |
-| `VC_PROVIDER_RETRY_STATUS_CLASSIFICATION`    | {need}`[[id]] <TREQ_PROVIDER_RETRY_CLASSIFICATION>` | Component          | Local      |              2 | Representative retryable and permanent HTTP statuses are classified from status semantics, not text.                       |
-| `VC_PROVIDER_RETRY_EXCEPTION_CLASSIFICATION` | {need}`[[id]] <TREQ_PROVIDER_RETRY_CLASSIFICATION>` | Component          | Local      |              2 | A transport exception type is retryable while an unrelated exception with retry-like wording/type fragments is not.        |
-| `VC_PROVIDER_RETRY_TRANSIENT_RECOVERY`       | {need}`[[id]] <REQ_PROVIDER_RETRY>`                 | System Integration | Substitute |              2 | Sync and async requests both recover from a transient provider failure on the same route without route fallback.           |
-| `VC_PROVIDER_RETRY_PERMANENT_NO_RETRY`       | {need}`[[id]] <REQ_PROVIDER_RETRY>`                 | System Integration | Substitute |              2 | Sync and async permanent provider failures each produce exactly one provider interaction and no same-route retry.          |
-| `VC_PROVIDER_RETRY_ATTEMPT_BOUND`            | {need}`[[id]] <TREQ_PROVIDER_RETRY_BOUNDS>`         | System Integration | Substitute |              2 | Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond. |
+| Criterion                                    | Contract                                            | Test level         | Boundary   | Required paths | Required path IDs                             | Success criterion                                                                                                          |
+| -------------------------------------------- | --------------------------------------------------- | ------------------ | ---------- | -------------: | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `VC_PROVIDER_RETRY_STATUS_CLASSIFICATION`    | {need}`[[id]] <TREQ_PROVIDER_RETRY_CLASSIFICATION>` | Component          | Local      |              2 | `retryable-status` · `permanent-status`       | Representative retryable and permanent HTTP statuses are classified from status semantics, not text.                       |
+| `VC_PROVIDER_RETRY_EXCEPTION_CLASSIFICATION` | {need}`[[id]] <TREQ_PROVIDER_RETRY_CLASSIFICATION>` | Component          | Local      |              2 | `transport-exception` · `unrelated-exception` | A transport exception type is retryable while an unrelated exception with retry-like wording/type fragments is not.        |
+| `VC_PROVIDER_RETRY_TRANSIENT_RECOVERY`       | {need}`[[id]] <REQ_PROVIDER_RETRY>`                 | System Integration | Substitute |              2 | `sync` · `async`                              | Sync and async requests both recover from a transient provider failure on the same route without route fallback.           |
+| `VC_PROVIDER_RETRY_PERMANENT_NO_RETRY`       | {need}`[[id]] <REQ_PROVIDER_RETRY>`                 | System Integration | Substitute |              2 | `sync` · `async`                              | Sync and async permanent provider failures each produce exactly one provider interaction and no same-route retry.          |
+| `VC_PROVIDER_RETRY_ATTEMPT_BOUND`            | {need}`[[id]] <TREQ_PROVIDER_RETRY_BOUNDS>`         | System Integration | Substitute |              2 | `sync` · `async`                              | Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond. |
 
 ### Evidence aggregation
 
@@ -106,11 +106,11 @@ sufficient because the claim is local repair state and interaction count.
 
 ### Verification criteria
 
-| Criterion                            | Contract                                               | Test level         | Boundary   | Required paths | Success criterion                                                                                                         |
-| ------------------------------------ | ------------------------------------------------------ | ------------------ | ---------- | -------------: | ------------------------------------------------------------------------------------------------------------------------- |
-| `VC_REPAIR_PROMPT_BOUNDS`            | {need}`[[id]] <TREQ_REPAIR_PROMPT_BOUNDS>`             | Component          | Local      |              1 | Property-generated schema identity, invalid output, and validation detail cannot expand the repair prompt beyond its cap. |
-| `VC_STRUCTURED_REPAIR_RECOVERY`      | {need}`[[id]] <REQ_STRUCTURED_OUTPUT_REPAIR>`          | System Integration | Substitute |              1 | With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.   |
-| `VC_STRUCTURED_REPAIR_ATTEMPT_BOUND` | {need}`[[id]] <TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS>` | System Integration | Substitute |              2 | Budgets 1 and 2 each stop after exactly that many invalid provider responses and expose the public structured error.      |
+| Criterion                            | Contract                                               | Test level         | Boundary   | Required paths | Required path IDs       | Success criterion                                                                                                         |
+| ------------------------------------ | ------------------------------------------------------ | ------------------ | ---------- | -------------: | ----------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `VC_REPAIR_PROMPT_BOUNDS`            | {need}`[[id]] <TREQ_REPAIR_PROMPT_BOUNDS>`             | Component          | Local      |              1 | —                       | Property-generated schema identity, invalid output, and validation detail cannot expand the repair prompt beyond its cap. |
+| `VC_STRUCTURED_REPAIR_RECOVERY`      | {need}`[[id]] <REQ_STRUCTURED_OUTPUT_REPAIR>`          | System Integration | Substitute |              1 | —                       | With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.   |
+| `VC_STRUCTURED_REPAIR_ATTEMPT_BOUND` | {need}`[[id]] <TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS>` | System Integration | Substitute |              2 | `budget-1` · `budget-2` | Budgets 1 and 2 each stop after exactly that many invalid provider responses and expose the public structured error.      |
 
 ### Evidence aggregation
 
