@@ -1065,6 +1065,40 @@ def main() -> None:
             f"{name}: undeclared upper Targets use canonical disabled N/A tiles",
         )
 
+    monitor_copy_pages = {
+        path.name: path.read_text()
+        for path in sorted(HTML.glob("contract-evidence-*.html"))
+    }
+    monitor_copy_pages.update(upper_assurance_pages)
+    banned_tooltip_phrases = (
+        "Fails when",
+        "Fails if",
+        "PASS appears only",
+        "never challenged",
+        "escapes the expected oracle",
+        "verification article",
+        "intended-use pedigree",
+    )
+    check(
+        all(
+            phrase not in page
+            for page in monitor_copy_pages.values()
+            for phrase in banned_tooltip_phrases
+        ),
+        "Contract Evidence tooltips avoid failure-condition jargon and stale technical prose",
+    )
+    check(
+        "Checks that evidence-producing tools cannot silently turn bad verification into green evidence."
+        in sticky_route_page
+        and "Checks that evidence-producing tools cannot silently turn bad verification into green evidence."
+        in upper_assurance_pages["Feature fallback"],
+        "REQ and upper assurance use the same plain-language evidence-producer explanation",
+    )
+    check(
+        all(page.count('class="help-tip"') >= 5 for page in upper_assurance_pages.values()),
+        "all upper assurance pages explain their non-obvious monitor signals with tooltips",
+    )
+
     check(
         mutation_page.count('id="mutation-') >= 2,
         "Mutation Analysis exposes the measured contract work queue anchors",
@@ -2378,10 +2412,13 @@ def main() -> None:
         "canonical retained-path confidence signals are present",
     )
     check(
-        "Stops synthetic or surrogate evidence from being counted as proof that the required target actually ran." in assurance_page
-        and "Checks that evidence-producing tools cannot silently turn bad verification into green evidence." in assurance_page
-        and "A surrogate path must meet its declared model-validation level before that evidence can pass." in assurance_page,
-        "canonical help text states concrete blocking semantics",
+        "Checks that the evidence uses the required kind of target: synthetic, surrogate, representative, or actual."
+        in assurance_page
+        and "Checks that evidence-producing tools cannot silently turn bad verification into green evidence."
+        in assurance_page
+        and "Checks that any surrogate or model used as evidence is validated strongly enough for this target."
+        in assurance_page,
+        "canonical help text explains what each assurance signal checks in plain language",
     )
     check(
         all(label in assurance_page for label in (
@@ -2586,9 +2623,10 @@ def main() -> None:
         "canonical Fault model renders all project Test Model groups",
     )
     check(
-        "This fault group has no required classes for this Requirement." in assurance_page
+        "No failure modes from this group are required for this Requirement."
+        in assurance_page
         and "EXTRA" not in assurance_page,
-        "N/A fault groups stay quiet and do not surface non-blocking optional evidence",
+        "N/A fault groups use plain language and do not surface non-blocking optional evidence",
     )
     check(
         all(label in assurance_page for label in (

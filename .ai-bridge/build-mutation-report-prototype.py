@@ -1135,7 +1135,7 @@ def patch_depth_boundary_model(t):
           "Max observed · "+(boundaryMax?BOUNDARY[boundaryMax].label:"No evidence");""")
     rep("""      representation:
             "Representation Fidelity\\n"+
-            "Question: how close was the verification article to the actual target?\\n"+
+            "Question: what kind of target did this evidence actually exercise?\\n"+
             "Current max: "+(representationMax?REPRESENTATION[representationMax].label:"No evidence")+"\\n"+
             "Contracts: "+axisDistributionText(root.representationDist,REPRESENTATION,REPRESENTATION_ORDER),
     ""","""      boundary:
@@ -4635,7 +4635,7 @@ def refresh_verification_depth_facts():
         "boundary_semantics":"Boundary mode is an orthogonal runtime fact. Substitute requires retained substitute/request evidence; replay requires a retained replay observation with play_count > 0; direct requires a retained direct-interaction observation.",
         "contract_rollup":"deepest direct test reach; an intentionally delegated parent uses the weakest child contract conservatively",
         "representation_fidelity_order":DEPTH_REPRESENTATION_ORDER,
-        "representation_fidelity_semantics":"Ternforge scale: Synthetic/Abstract → Surrogate/Simulated → Representative → Actual. Representative requires intended-use pedigree; replay origin alone is not enough.",
+        "representation_fidelity_semantics":"Synthetic/Abstract → Surrogate/Simulated → Representative → Actual. Representative means a non-live setup with explicit evidence that it represents the real target for this use; replay alone is not enough.",
         "ms_validation_order":DEPTH_MS_ORDER,
         "ms_validation_semantics":"NASA-STD-7009A validation-factor projection. Generic substitute/replay evidence remains L0; only explicitly calibrated fake-SDK models reach L2 in this pilot.",
       },
@@ -5509,22 +5509,22 @@ def requirement_monitor_block(monitor_json):
   }
   function representationHelp(key){
     return ({
-      synthetic_abstract:"Constructed analytical or synthetic verification article.",
-      surrogate_simulated:"Executable substitute or simulation stands in for the target.",
-      representative:"Non-actual article with explicit intended-use pedigree.",
-      actual:"The actual target implementation/system/dependency participates.",
-    })[key]||"Representation is not classified.";
+      synthetic_abstract:"Evidence is created without running the real target or a behavioral substitute.",
+      surrogate_simulated:"Runs a controlled substitute or simulation instead of the real target.",
+      representative:"Uses a non-live setup that is explicitly shown to represent the real target for this use.",
+      actual:"Runs the real target implementation, system, or dependency.",
+    })[key]||"The evidence does not say what kind of target was exercised.";
   }
   function helpButton(text){
     return '<button type="button" class="tf-p34-help" aria-expanded="false" aria-label="Explanation">?<span class="tf-p34-help-tip" role="tooltip">'+esc(text).replaceAll("\n","<br>")+'</span></button>';
   }
   function signalHelp(name){
     return ({
-      "Semantic coverage":"Fails when a required behavior case in this cell has no passing evidence.",
-      "Representation fidelity":"Stops synthetic or surrogate evidence from being counted as proof that the required target actually ran.",
-      "Provenance":"Stops evidence from another test, run, source version, or artifact from being attached to this Requirement.",
+      "Semantic coverage":"Checks that every required behavior in this cell has the evidence declared by the profile.",
+      "Representation fidelity":"Checks that the evidence uses the required kind of target: synthetic, surrogate, representative, or actual.",
+      "Provenance":"Checks that each result belongs to the exact test, run, source version, and artifact it claims.",
       "Producer qualification":"Checks that evidence-producing tools cannot silently turn bad verification into green evidence.",
-      "Freshness":"Stops an older result from being reused after code, tests, Gherkin, or verification policy changed.",
+      "Freshness":"Checks that the evidence still matches the current code, tests, Gherkin, and verification policy.",
     })[name]||"";
   }
   function metricSignalHtml(name,actual,target,status){
@@ -5574,7 +5574,7 @@ def requirement_monitor_block(monitor_json):
       '<div class="tf-p34-links"><a href="'+esc(c.contract_url)+'">Requirement ↗</a><a href="'+esc(c.target.source_url)+'">Verification profile ↗</a><a href="test-plan.html#test-plan-configuration-validation-model">Test model ↗</a><a href="requirement-monitor-facts.json">Raw facts ↗</a></div></div>';
   }
   function testCoverageHtml(c,selected){
-    const help="Rows = Test Levels; columns = boundary modes (Local no external boundary, Substitute stand-in, Replay recorded, Direct live live dependency); N/A = not required.";
+    const help="Shows where proof is required across Test level × Boundary. Click a required cell to compare Actual with Target.";
     return '<section class="tf-p34-section" id="ce-coverage-'+esc(c.id.toLowerCase())+'"><div class="tf-p34-section-head"><h3><span class="tf-p34-signal-name">1. Test Coverage'+helpButton(help)+'</span></h3><small>click a required cell for Actual / Target</small></div>'+
       '<div class="tf-p34-matrix-host">'+matrixHtml(c,selected)+'</div><div class="tf-p34-cell-detail">'+coverageDetailHtml(c,selected)+'</div></section>';
   }
@@ -5616,13 +5616,13 @@ def requirement_monitor_block(monitor_json):
   }
   function faultMetricHelp(label){
     return ({
-      "Required fault classes exercised":"Fails when any required fault class in this group was never challenged.",
-      "Exercised classes detected":"Fails when the expected oracle misses a challenged required fault.",
-      "Component Mutation Reach":"Fails when too few generated code faults are executed by Component tests.",
-      "System Mutation Reach":"Fails when too few generated code faults are executed by System tests.",
-      "Component Mutation Sensitivity":"Fails when too many code faults reached by Component tests still survive.",
-      "System Mutation Sensitivity":"Fails when too many code faults reached by System tests still survive.",
-      "Retained mutmut Test Strength":"Diagnostic retained mutation score; it does not decide PASS or FAIL here.",
+      "Required fault classes exercised":"Checks how many required failure modes are actually triggered by tests.",
+      "Exercised classes detected":"Checks that triggered failure modes are actually caught by the test oracle.",
+      "Component Mutation Reach":"Checks that Component tests execute enough of the generated code faults.",
+      "System Mutation Reach":"Checks that System tests execute enough of the generated code faults.",
+      "Component Mutation Sensitivity":"Checks that Component tests catch enough of the code faults they actually execute.",
+      "System Mutation Sensitivity":"Checks that System tests catch enough of the code faults they actually execute.",
+      "Retained mutmut Test Strength":"Shows the retained mutation score for context; it does not control PASS or FAIL here.",
     })[label]||"";
   }
   function metricRow(label,actual,target,status){
