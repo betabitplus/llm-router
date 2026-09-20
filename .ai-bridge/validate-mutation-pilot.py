@@ -132,9 +132,22 @@ def main() -> None:
         ROOT / "docs/assurance-profiles/security.md",
         HTML / "assurance-profiles/security.html",
         HTML / "contract-evidence-provider-adapter-interoperability.html",
+        HTML / "contract-evidence-openai-adapter-boundary.html",
+        HTML / "contract-evidence-qwenchat-adapter-boundary.html",
+        HTML / "contract-evidence-aistudio-adapter-boundary.html",
+        HTML / "contract-evidence-gemini-webapi-adapter-boundary.html",
+        HTML / "contract-evidence-google-genai-adapter-boundary.html",
         HTML / "contract-evidence-async-provider-execution.html",
         HTML / "contract-evidence-response-normalization.html",
+        HTML / "contract-evidence-usage-normalization.html",
         HTML / "contract-evidence-provider-error-boundary.html",
+        HTML / "assurance-feat-provider-interoperability.html",
+        HTML / "assurance-feat-async-execution.html",
+        HTML / "assurance-feat-public-response-contract.html",
+        HTML / "assurance-goal-provider-portability.html",
+        ROOT / "docs/assurance-profiles/providers.md",
+        HTML / "assurance-profiles/providers.html",
+        HTML / "specifications/_generated/providers/assurance.html",
         HTML / "contract-evidence-session-lifecycle.html",
         HTML / "contract-evidence-session-persistence.html",
         HTML / "contract-evidence-session-serialization.html",
@@ -236,6 +249,9 @@ def main() -> None:
     ).read_text()
     provider_requirements_source = (ROOT / "docs/requirements/providers.md").read_text()
     provider_profile_source = (ROOT / "docs/verification-profiles/providers.md").read_text()
+    provider_assurance_profile_source = (
+        ROOT / "docs/assurance-profiles/providers.md"
+    ).read_text()
     session_requirements_source = (ROOT / "docs/requirements/sessions.md").read_text()
     session_profile_source = (ROOT / "docs/verification-profiles/sessions.md").read_text()
     session_assurance_profile_source = (
@@ -485,9 +501,16 @@ def main() -> None:
     )
     check(all(token in provider_profile_source for token in (
         "## Profile · REQ_PROVIDER_ADAPTER_INTEROPERABILITY",
+        "## Profile · TREQ_OPENAI_ADAPTER_BOUNDARY",
+        "## Profile · TREQ_QWENCHAT_ADAPTER_BOUNDARY",
+        "## Profile · TREQ_AISTUDIO_ADAPTER_BOUNDARY",
+        "## Profile · TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY",
+        "## Profile · TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY",
         "## Profile · REQ_ASYNC_PROVIDER_EXECUTION",
         "## Profile · REQ_RESPONSE_NORMALIZATION",
+        "## Profile · TREQ_USAGE_NORMALIZATION",
         "## Profile · REQ_PROVIDER_ERROR_BOUNDARY",
+        "VC_PROVIDER_ADAPTER_INTEROPERABILITY_MATRIX",
         "VC_PROVIDER_OPENAI_ADAPTER_BOUNDARY",
         "VC_PROVIDER_QWENCHAT_ADAPTER_BOUNDARY",
         "VC_PROVIDER_AISTUDIO_ADAPTER_BOUNDARY",
@@ -503,8 +526,18 @@ def main() -> None:
         "VC_PROVIDER_RESPONSE_EQUIVALENCE",
         "VC_PROVIDER_ERROR_HTTP",
         "VC_PROVIDER_ERROR_SDK",
+        "### Required technical support",
         "### Fault applicability",
-    )), "Provider Verification Profiles own independent coverage targets and explicit Fault Models")
+    )), "Provider Verification Profiles split parent product claims from first-class adapter/usage Technical support")
+    check(all(token in provider_assurance_profile_source for token in (
+        "## Feature · FEAT_PROVIDER_INTEROPERABILITY",
+        "## Feature · FEAT_ASYNC_EXECUTION",
+        "## Feature · FEAT_PUBLIC_RESPONSE_CONTRACT",
+        "## Goal · GOAL_PROVIDER_PORTABILITY",
+        "AC_PROVIDER_PUBLIC_SUCCESS_ERROR_STABILITY",
+        "AGI_PROVIDER_SYNC_ASYNC_SWAP_EQUIVALENCE",
+        "AOV_PROVIDER_SWAP_PRESERVES_SUCCESS_FAILURE_CONTRACT",
+    )), "Provider Assurance Profile owns public success/error integration, provider swap integration, and Goal outcome validation")
     check(all(token in session_requirements_source for token in (
         ":id: GOAL_SESSION_CONTINUITY",
         ":id: REQ_SESSION_LIFECYCLE",
@@ -1157,8 +1190,14 @@ def main() -> None:
     vcr_request_redaction_page = (HTML / "contract-evidence-vcr-request-content-redaction.html").read_text()
     vcr_response_redaction_page = (HTML / "contract-evidence-vcr-response-content-redaction.html").read_text()
     provider_adapter_page = (HTML / "contract-evidence-provider-adapter-interoperability.html").read_text()
+    openai_adapter_page = (HTML / "contract-evidence-openai-adapter-boundary.html").read_text()
+    qwenchat_adapter_page = (HTML / "contract-evidence-qwenchat-adapter-boundary.html").read_text()
+    aistudio_adapter_page = (HTML / "contract-evidence-aistudio-adapter-boundary.html").read_text()
+    gemini_webapi_adapter_page = (HTML / "contract-evidence-gemini-webapi-adapter-boundary.html").read_text()
+    google_genai_adapter_page = (HTML / "contract-evidence-google-genai-adapter-boundary.html").read_text()
     async_provider_page = (HTML / "contract-evidence-async-provider-execution.html").read_text()
     response_normalization_page = (HTML / "contract-evidence-response-normalization.html").read_text()
+    usage_normalization_page = (HTML / "contract-evidence-usage-normalization.html").read_text()
     provider_error_page = (HTML / "contract-evidence-provider-error-boundary.html").read_text()
     session_lifecycle_page = (HTML / "contract-evidence-session-lifecycle.html").read_text()
     session_persistence_page = (HTML / "contract-evidence-session-persistence.html").read_text()
@@ -1188,6 +1227,10 @@ def main() -> None:
         "Feature provider retry": (HTML / "assurance-feat-provider-retry.html").read_text(),
         "Feature structured recovery": (HTML / "assurance-feat-structured-recovery.html").read_text(),
         "Goal resilience": (HTML / "assurance-goal-resilient-execution.html").read_text(),
+        "Feature provider interoperability": (HTML / "assurance-feat-provider-interoperability.html").read_text(),
+        "Feature async execution": (HTML / "assurance-feat-async-execution.html").read_text(),
+        "Feature public response": (HTML / "assurance-feat-public-response-contract.html").read_text(),
+        "Goal provider portability": (HTML / "assurance-goal-provider-portability.html").read_text(),
         "Product / System": (HTML / "assurance-product-system.html").read_text(),
     }
     spec_page = (HTML / "specification-health.html").read_text()
@@ -1385,12 +1428,16 @@ def main() -> None:
         "Goal data safety": upper_assurance_pages["Goal data safety"],
         "Goal tools": upper_assurance_pages["Goal tools"],
         "Goal resilience": upper_assurance_pages["Goal resilience"],
+        "Goal provider portability": upper_assurance_pages["Goal provider portability"],
         "Feature sessions": upper_assurance_pages["Feature sessions"],
         "Feature data safety": upper_assurance_pages["Feature data safety"],
         "Feature tool selection": upper_assurance_pages["Feature tool selection"],
         "Feature tool execution": upper_assurance_pages["Feature tool execution"],
         "Feature provider retry": upper_assurance_pages["Feature provider retry"],
         "Feature structured recovery": upper_assurance_pages["Feature structured recovery"],
+        "Feature provider interoperability": upper_assurance_pages["Feature provider interoperability"],
+        "Feature async execution": upper_assurance_pages["Feature async execution"],
+        "Feature public response": upper_assurance_pages["Feature public response"],
         "Feature fallback": upper_assurance_pages["Feature fallback"],
         "Feature public API": upper_assurance_pages["Feature public API"],
         "REQ sticky route": sticky_route_page,
@@ -1402,6 +1449,16 @@ def main() -> None:
         "REQ structured repair": structured_repair_page,
         "TREQ structured attempt bounds": structured_attempt_bounds_page,
         "TREQ repair prompt bounds": repair_prompt_bounds_page,
+        "REQ provider interoperability": provider_adapter_page,
+        "TREQ OpenAI adapter": openai_adapter_page,
+        "TREQ QwenChat adapter": qwenchat_adapter_page,
+        "TREQ AI Studio adapter": aistudio_adapter_page,
+        "TREQ Gemini WebAPI adapter": gemini_webapi_adapter_page,
+        "TREQ Google GenAI adapter": google_genai_adapter_page,
+        "REQ async provider": async_provider_page,
+        "REQ response normalization": response_normalization_page,
+        "TREQ usage normalization": usage_normalization_page,
+        "REQ provider error": provider_error_page,
         "REQ session persistence": session_persistence_page,
         "TREQ session serialization": session_serialization_page,
         "REQ data safety": security_page,
@@ -1433,15 +1490,16 @@ def main() -> None:
             f"{name}: hierarchy navigation contains navigation only, without assurance status",
         )
     check(
-        "<span>Goals</span><b>6</b>" in upper_assurance_pages["Product / System"]
+        "<span>Goals</span><b>7</b>" in upper_assurance_pages["Product / System"]
         and '<details class="tf-assurance-next">' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-routing-reliability.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-developer-usability.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-session-continuity.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-data-safety.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-tool-orchestration.html"' in upper_assurance_pages["Product / System"]
-        and 'href="assurance-goal-resilient-execution.html"' in upper_assurance_pages["Product / System"],
-        "Product / System navigation exposes all six onboarded Goals through one compact dropdown",
+        and 'href="assurance-goal-resilient-execution.html"' in upper_assurance_pages["Product / System"]
+        and 'href="assurance-goal-provider-portability.html"' in upper_assurance_pages["Product / System"],
+        "Product / System navigation exposes all seven onboarded Goals through one compact dropdown",
     )
     check(
         "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal routing"]
@@ -1482,6 +1540,33 @@ def main() -> None:
         and 'href="assurance-feat-provider-retry.html"' in upper_assurance_pages["Goal resilience"]
         and 'href="assurance-feat-structured-recovery.html"' in upper_assurance_pages["Goal resilience"],
         "Resilient Execution Goal navigation exposes both capabilities through the shared dropdown",
+    )
+    check(
+        "<span>Capabilities</span><b>3</b>" in upper_assurance_pages["Goal provider portability"]
+        and '<details class="tf-assurance-next">' in upper_assurance_pages["Goal provider portability"]
+        and 'href="assurance-feat-provider-interoperability.html"' in upper_assurance_pages["Goal provider portability"]
+        and 'href="assurance-feat-async-execution.html"' in upper_assurance_pages["Goal provider portability"]
+        and 'href="assurance-feat-public-response-contract.html"' in upper_assurance_pages["Goal provider portability"],
+        "Provider Portability Goal navigation exposes all three capabilities through the shared dropdown",
+    )
+    check(
+        "<span>Requirements</span><b>1</b>" in upper_assurance_pages["Feature provider interoperability"]
+        and 'href="contract-evidence-provider-adapter-interoperability.html"' in upper_assurance_pages["Feature provider interoperability"]
+        and '<details class="tf-assurance-next">' not in upper_assurance_pages["Feature provider interoperability"],
+        "Provider Interoperability Feature navigation uses one direct Requirement link",
+    )
+    check(
+        "<span>Requirements</span><b>1</b>" in upper_assurance_pages["Feature async execution"]
+        and 'href="contract-evidence-async-provider-execution.html"' in upper_assurance_pages["Feature async execution"]
+        and '<details class="tf-assurance-next">' not in upper_assurance_pages["Feature async execution"],
+        "Async Execution Feature navigation uses one direct Requirement link",
+    )
+    check(
+        "<span>Requirements</span><b>2</b>" in upper_assurance_pages["Feature public response"]
+        and '<details class="tf-assurance-next">' in upper_assurance_pages["Feature public response"]
+        and 'href="contract-evidence-response-normalization.html"' in upper_assurance_pages["Feature public response"]
+        and 'href="contract-evidence-provider-error-boundary.html"' in upper_assurance_pages["Feature public response"],
+        "Public Response Feature navigation exposes both direct Requirements",
     )
     check(
         "<span>Requirements</span><b>1</b>" in upper_assurance_pages["Feature provider retry"]
@@ -1540,6 +1625,21 @@ def main() -> None:
         and "<span>Technical support</span><b>1</b>" in sticky_route_page
         and 'href="contract-evidence-route-order.html"' in sticky_route_page,
         "Requirement navigation shows full ancestry and one direct Technical support child",
+    )
+    check(
+        "<span>Technical support</span><b>5</b>" in provider_adapter_page
+        and '<details class="tf-assurance-next">' in provider_adapter_page
+        and 'href="contract-evidence-openai-adapter-boundary.html"' in provider_adapter_page
+        and 'href="contract-evidence-qwenchat-adapter-boundary.html"' in provider_adapter_page
+        and 'href="contract-evidence-aistudio-adapter-boundary.html"' in provider_adapter_page
+        and 'href="contract-evidence-gemini-webapi-adapter-boundary.html"' in provider_adapter_page
+        and 'href="contract-evidence-google-genai-adapter-boundary.html"' in provider_adapter_page,
+        "Provider Interoperability Requirement navigation exposes all five first-class adapter Technical requirements",
+    )
+    check(
+        "<span>Technical support</span><b>1</b>" in response_normalization_page
+        and 'href="contract-evidence-usage-normalization.html"' in response_normalization_page,
+        "Response Normalization navigation exposes first-class usage-normalization Technical support",
     )
     check(
         "Session continuity" in session_persistence_page
@@ -1627,6 +1727,10 @@ def main() -> None:
         "Feature provider retry": "Capability Assurance",
         "Feature structured recovery": "Capability Assurance",
         "Goal resilience": "Outcome Assurance",
+        "Feature provider interoperability": "Capability Assurance",
+        "Feature async execution": "Capability Assurance",
+        "Feature public response": "Capability Assurance",
+        "Goal provider portability": "Outcome Assurance",
         "Product / System": "Product / System Assurance",
     }
     for name, page in upper_assurance_pages.items():
@@ -1682,6 +1786,8 @@ def main() -> None:
         "Feature tool execution",
         "Goal tools",
         "Goal resilience",
+        "Feature public response",
+        "Goal provider portability",
     ):
         page = upper_assurance_pages[name]
         check(
@@ -1704,6 +1810,9 @@ def main() -> None:
         "Feature tool execution",
         "Feature provider retry",
         "Feature structured recovery",
+        "Feature provider interoperability",
+        "Feature async execution",
+        "Feature public response",
         "Product / System",
     ):
         check(
@@ -2361,8 +2470,14 @@ def main() -> None:
         "TREQ_REPAIR_PROMPT_BOUNDS": repair_prompt_bounds_page,
         "REQ_SENSITIVE_DATA_PROTECTION": security_page,
         "REQ_PROVIDER_ADAPTER_INTEROPERABILITY": provider_adapter_page,
+        "TREQ_OPENAI_ADAPTER_BOUNDARY": openai_adapter_page,
+        "TREQ_QWENCHAT_ADAPTER_BOUNDARY": qwenchat_adapter_page,
+        "TREQ_AISTUDIO_ADAPTER_BOUNDARY": aistudio_adapter_page,
+        "TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY": gemini_webapi_adapter_page,
+        "TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY": google_genai_adapter_page,
         "REQ_ASYNC_PROVIDER_EXECUTION": async_provider_page,
         "REQ_RESPONSE_NORMALIZATION": response_normalization_page,
+        "TREQ_USAGE_NORMALIZATION": usage_normalization_page,
         "REQ_PROVIDER_ERROR_BOUNDARY": provider_error_page,
         "REQ_SESSION_LIFECYCLE": session_lifecycle_page,
         "REQ_SESSION_PERSISTENCE": session_persistence_page,
@@ -2834,16 +2949,64 @@ def main() -> None:
         "REQ_PROVIDER_ADAPTER_INTEROPERABILITY": {
             "cells": {
                 ("component_integration", "substitute"): {
+                    "VC_PROVIDER_ADAPTER_INTEROPERABILITY_MATRIX": 5,
+                },
+            },
+            "treqs": [
+                "TREQ_OPENAI_ADAPTER_BOUNDARY",
+                "TREQ_QWENCHAT_ADAPTER_BOUNDARY",
+                "TREQ_AISTUDIO_ADAPTER_BOUNDARY",
+                "TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY",
+                "TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY",
+            ],
+            "faults": {},
+        },
+        "TREQ_OPENAI_ADAPTER_BOUNDARY": {
+            "cells": {
+                ("component_integration", "substitute"): {
                     "VC_PROVIDER_OPENAI_ADAPTER_BOUNDARY": 6,
+                },
+            },
+            "treqs": [],
+            "faults": {},
+        },
+        "TREQ_QWENCHAT_ADAPTER_BOUNDARY": {
+            "cells": {
+                ("component_integration", "substitute"): {
                     "VC_PROVIDER_QWENCHAT_ADAPTER_BOUNDARY": 4,
-                    "VC_PROVIDER_AISTUDIO_ADAPTER_BOUNDARY": 3,
-                    "VC_PROVIDER_GEMINI_WEBAPI_ADAPTER_BOUNDARY": 5,
-                    "VC_PROVIDER_GOOGLE_GENAI_ADAPTER_BOUNDARY": 3,
                 },
                 ("system_integration", "substitute"): {
                     "VC_PROVIDER_QWENCHAT_UPLOAD_RETRY": 1,
                 },
             },
+            "treqs": [],
+            "faults": {},
+        },
+        "TREQ_AISTUDIO_ADAPTER_BOUNDARY": {
+            "cells": {
+                ("component_integration", "substitute"): {
+                    "VC_PROVIDER_AISTUDIO_ADAPTER_BOUNDARY": 3,
+                },
+            },
+            "treqs": [],
+            "faults": {},
+        },
+        "TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY": {
+            "cells": {
+                ("component_integration", "substitute"): {
+                    "VC_PROVIDER_GEMINI_WEBAPI_ADAPTER_BOUNDARY": 5,
+                },
+            },
+            "treqs": [],
+            "faults": {},
+        },
+        "TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY": {
+            "cells": {
+                ("component_integration", "substitute"): {
+                    "VC_PROVIDER_GOOGLE_GENAI_ADAPTER_BOUNDARY": 3,
+                },
+            },
+            "treqs": [],
             "faults": {},
         },
         "REQ_ASYNC_PROVIDER_EXECUTION": {
@@ -2857,6 +3020,7 @@ def main() -> None:
                     "VC_ASYNC_VIDEO_REMOTE_PROVIDER_MATRIX": 3,
                 },
             },
+            "treqs": [],
             "actual": {
                 "VC_ASYNC_TEXT_PROVIDER_MATRIX": 2,
                 "VC_ASYNC_STRUCTURED_PROVIDER_MATRIX": 2,
@@ -2870,15 +3034,22 @@ def main() -> None:
         },
         "REQ_RESPONSE_NORMALIZATION": {
             "cells": {
-                ("component", "none"): {
-                    "VC_PROVIDER_USAGE_NORMALIZATION": 3,
-                },
                 ("system_integration", "substitute"): {
                     "VC_PROVIDER_RESPONSE_EQUIVALENCE": 4,
                 },
             },
+            "treqs": ["TREQ_USAGE_NORMALIZATION"],
             "actual": {"VC_PROVIDER_RESPONSE_EQUIVALENCE": 1},
             "coverage_pass": False,
+            "faults": {},
+        },
+        "TREQ_USAGE_NORMALIZATION": {
+            "cells": {
+                ("component", "none"): {
+                    "VC_PROVIDER_USAGE_NORMALIZATION": 3,
+                },
+            },
+            "treqs": [],
             "faults": {},
         },
         "REQ_PROVIDER_ERROR_BOUNDARY": {
@@ -2888,6 +3059,7 @@ def main() -> None:
                     "VC_PROVIDER_ERROR_SDK": 1,
                 },
             },
+            "treqs": [],
             "faults": {"interface.error-status": (2, 2)},
         },
     }
@@ -2908,6 +3080,11 @@ def main() -> None:
                 for key, counts in cells.items()
             ),
             f"{contract_id}: Provider coverage target keeps the independently authored Test level/Boundary denominators",
+        )
+        check(
+            (contract.get("target") or {}).get("required_treqs")
+            == cast("dict[str, Any]", expected)["treqs"],
+            f"{contract_id}: Provider Technical Support ownership stays explicit instead of duplicating child evidence",
         )
         actual_by_item = contract.get("coverage_actual") or {}
         expected_actual = {
@@ -3770,16 +3947,44 @@ def main() -> None:
           ("system_integration", "replay", "surrogate_simulated", "continuous_ci"),
           ("system_integration", "direct", "actual", "pre_release"),
     }, "provider-facing target requires repeatable Replay plus justified pre-release Direct-live evidence")
-    async_tests = [row for row in depth_facts.get("tests") or []
-                   if "REQ_ASYNC_PROVIDER_EXECUTION" in (row.get("verifies") or [])]
-    check(len(async_tests) == 5 and all(
-          row.get("system_reach") == "system_integration" and
-          row.get("boundary_mode") == "replay" and
-          row.get("representation_fidelity") == "surrogate_simulated"
-          for row in async_tests
-    ), "Async provider execution has five real System-integration×Replay×Surrogate paths")
-    check(not any(row.get("boundary_mode") == "direct" for row in async_tests),
-          "Async provider execution currently has no Direct-live path, creating the intended target-derived release gap")
+    async_tests = [
+        row
+        for row in depth_facts.get("tests") or []
+        if "REQ_ASYNC_PROVIDER_EXECUTION" in (row.get("verifies") or [])
+        and str(row.get("nodeid") or "").startswith(
+            "tests/llm_router/bdd/execution/test_async.py::"
+        )
+    ]
+    async_upper_tests = [
+        row
+        for row in depth_facts.get("tests") or []
+        if "REQ_ASYNC_PROVIDER_EXECUTION" in (row.get("verifies") or [])
+        and row not in async_tests
+    ]
+    check(
+        len(async_tests) == 5
+        and all(
+            row.get("system_reach") == "system_integration"
+            and row.get("boundary_mode") == "replay"
+            and row.get("representation_fidelity") == "surrogate_simulated"
+            for row in async_tests
+        ),
+        "Async provider contract evidence keeps five real System-integration×Replay×Surrogate paths",
+    )
+    check(
+        len(async_upper_tests) == 2
+        and all(
+            row.get("system_reach") == "system_integration"
+            and row.get("boundary_mode") == "substitute"
+            and row.get("representation_fidelity") == "surrogate_simulated"
+            for row in async_upper_tests
+        ),
+        "Provider upper-assurance scenarios remain distinct Substitute evidence and do not inflate the Async Requirement frontier",
+    )
+    check(
+        not any(row.get("boundary_mode") == "direct" for row in async_tests),
+        "Async provider execution currently has no Direct-live contract path, creating the intended target-derived release gap",
+    )
     check(fault_model.get("schema_version") == "ternforge-fault-model-coverage-p31-1",
           "P31 retained fault-model facts use the expected schema")
     layers = {row.get("id"): row for row in fault_model.get("layers") or []}
@@ -4074,14 +4279,14 @@ def main() -> None:
     )
     provider_trace_routes = {
         "REQ_PROVIDER_ADAPTER_INTEROPERABILITY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
-        "TREQ_OPENAI_ADAPTER_BOUNDARY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
-        "TREQ_QWENCHAT_ADAPTER_BOUNDARY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
-        "TREQ_AISTUDIO_ADAPTER_BOUNDARY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
-        "TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
-        "TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
+        "TREQ_OPENAI_ADAPTER_BOUNDARY": "contract-evidence-openai-adapter-boundary.html#ce-coverage-treq_openai_adapter_boundary",
+        "TREQ_QWENCHAT_ADAPTER_BOUNDARY": "contract-evidence-qwenchat-adapter-boundary.html#ce-coverage-treq_qwenchat_adapter_boundary",
+        "TREQ_AISTUDIO_ADAPTER_BOUNDARY": "contract-evidence-aistudio-adapter-boundary.html#ce-coverage-treq_aistudio_adapter_boundary",
+        "TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY": "contract-evidence-gemini-webapi-adapter-boundary.html#ce-coverage-treq_gemini_webapi_adapter_boundary",
+        "TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY": "contract-evidence-google-genai-adapter-boundary.html#ce-coverage-treq_google_genai_adapter_boundary",
         "REQ_ASYNC_PROVIDER_EXECUTION": "contract-evidence-async-provider-execution.html#ce-coverage-req_async_provider_execution",
         "REQ_RESPONSE_NORMALIZATION": "contract-evidence-response-normalization.html#ce-coverage-req_response_normalization",
-        "TREQ_USAGE_NORMALIZATION": "contract-evidence-response-normalization.html#ce-coverage-req_response_normalization",
+        "TREQ_USAGE_NORMALIZATION": "contract-evidence-usage-normalization.html#ce-coverage-treq_usage_normalization",
         "REQ_PROVIDER_ERROR_BOUNDARY": "contract-evidence-provider-error-boundary.html#ce-coverage-req_provider_error_boundary",
     }
     check(
@@ -4089,7 +4294,7 @@ def main() -> None:
             f'"{contract_id}": "{href}"' in trace_reader_page
             for contract_id, href in provider_trace_routes.items()
         ),
-        "Traceability Reader routes Provider parent/derived contracts to the accepted parent Contract Evidence pages",
+        "Traceability Reader routes Provider REQ/TREQ contracts to first-class Contract Evidence pages",
     )
     session_trace_routes = {
         "REQ_SESSION_LIFECYCLE": "contract-evidence-session-lifecycle.html#ce-coverage-req_session_lifecycle",
@@ -4336,6 +4541,8 @@ def main() -> None:
         "tests/conftest.py",
         "tests/llm_router/conftest.py",
         "features/responses/public_contract.feature",
+        "features/providers/",
+        "tests/llm_router/bdd/providers/",
         "tests/llm_router/bdd/responses/test_public_contract.py",
         "tests/llm_router/bdd/configuration/test_overrides.py",
         "tests/llm_router/bdd/execution/test_async.py",
@@ -4368,6 +4575,7 @@ def main() -> None:
         "tests/llm_router/integration/test_aistudio_adapter_fake.py",
         "tests/llm_router/integration/test_gemini_webapi_adapter_fake.py",
         "tests/llm_router/integration/test_google_genai_adapter_fake.py",
+        "tests/llm_router/integration/test_provider_interoperability_matrix.py",
         "tests/llm_router/unit/test_internal_config_validation.py",
         "tests/llm_router/unit/test_internal_usage_normalization.py",
         "tests/llm_router/unit/test_internal_session_serialization.py",

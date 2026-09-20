@@ -111,7 +111,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Verification profile → <verification-profile-req-provider-adapter-interoperability>`
+{ref}`Verification profile → <verification-profile-treq-openai-adapter-boundary>`
 
 ```{needlist}
 :filter: "'TREQ_OPENAI_ADAPTER_BOUNDARY' in derives or 'TREQ_OPENAI_ADAPTER_BOUNDARY' in implements or 'TREQ_OPENAI_ADAPTER_BOUNDARY' in verifies"
@@ -135,7 +135,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Verification profile → <verification-profile-req-provider-adapter-interoperability>`
+{ref}`Verification profile → <verification-profile-treq-qwenchat-adapter-boundary>`
 
 ```{needlist}
 :filter: "'TREQ_QWENCHAT_ADAPTER_BOUNDARY' in derives or 'TREQ_QWENCHAT_ADAPTER_BOUNDARY' in implements or 'TREQ_QWENCHAT_ADAPTER_BOUNDARY' in verifies"
@@ -159,7 +159,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Verification profile → <verification-profile-req-provider-adapter-interoperability>`
+{ref}`Verification profile → <verification-profile-treq-aistudio-adapter-boundary>`
 
 ```{needlist}
 :filter: "'TREQ_AISTUDIO_ADAPTER_BOUNDARY' in derives or 'TREQ_AISTUDIO_ADAPTER_BOUNDARY' in implements or 'TREQ_AISTUDIO_ADAPTER_BOUNDARY' in verifies"
@@ -183,7 +183,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Verification profile → <verification-profile-req-provider-adapter-interoperability>`
+{ref}`Verification profile → <verification-profile-treq-gemini-webapi-adapter-boundary>`
 
 ```{needlist}
 :filter: "'TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY' in derives or 'TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY' in implements or 'TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY' in verifies"
@@ -207,7 +207,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Verification profile → <verification-profile-req-provider-adapter-interoperability>`
+{ref}`Verification profile → <verification-profile-treq-google-genai-adapter-boundary>`
 
 ```{needlist}
 :filter: "'TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY' in derives or 'TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY' in implements or 'TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY' in verifies"
@@ -307,7 +307,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Verification profile → <verification-profile-req-response-normalization>`
+{ref}`Verification profile → <verification-profile-treq-usage-normalization>`
 
 ```{needlist}
 :filter: "'TREQ_USAGE_NORMALIZATION' in derives or 'TREQ_USAGE_NORMALIZATION' in implements or 'TREQ_USAGE_NORMALIZATION' in verifies"
