@@ -90,7 +90,7 @@ Contracts in this capability:
 :collapse: true
 :derives: GOAL_DEVELOPER_USABILITY
 
-Examples are import-safe source files that can also be executed by the documentation workflow.
+Shipped examples are runnable user workflows whose source remains safe to import and inspect without starting the live workflow as an import side effect.
 ```
 
 Contracts in this capability:

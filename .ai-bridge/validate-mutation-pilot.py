@@ -67,7 +67,7 @@ def declared_provider_capabilities() -> dict[str, dict[str, bool]]:
             raise AssertionError(
                 f"{family}: expected exactly one ProviderCapabilities declaration"
             )
-        values = {key: False for key in keys}
+        values = dict.fromkeys(keys, False)
         for keyword in calls[0].keywords:
             if keyword.arg not in keys:
                 continue
@@ -201,6 +201,12 @@ def main() -> None:
     session_profile_source = (ROOT / "docs/verification-profiles/sessions.md").read_text()
     developer_requirements_source = (ROOT / "docs/requirements/developer.md").read_text()
     developer_profile_source = (ROOT / "docs/verification-profiles/developer.md").read_text()
+    developer_assurance_profile_source = (
+        ROOT / "docs/assurance-profiles/developer.md"
+    ).read_text()
+    product_assurance_profile_source = (
+        ROOT / "docs/assurance-profiles/product-system.md"
+    ).read_text()
     structured_requirements_source = (ROOT / "docs/requirements/structured_output.md").read_text()
     structured_profile_source = (ROOT / "docs/verification-profiles/structured-output.md").read_text()
     all_requirements_source = "\n".join(
@@ -461,6 +467,28 @@ def main() -> None:
         "VC_EXAMPLE_IMPORT_SAFETY",
         "### Fault applicability",
     )), "Developer Verification Profiles own independent coverage targets and explicit Fault Models")
+    check(
+        all(
+            token in developer_assurance_profile_source
+            for token in (
+                "## Feature · FEAT_PUBLIC_API",
+                "## Feature · FEAT_EXECUTABLE_EXAMPLES",
+                "## Goal · GOAL_DEVELOPER_USABILITY",
+                "### Capability integration",
+                "### Capability validation",
+                "### Cross-capability integration",
+                "### Outcome validation",
+                "**Target:** N/A",
+            )
+        ),
+        "Developer Assurance Profile explicitly owns upper-level N/A topology without duplicating Requirement proof",
+    )
+    check(
+        "## Product / System" in product_assurance_profile_source
+        and "### Cross-goal integration" in product_assurance_profile_source
+        and "### Operational validation" in product_assurance_profile_source,
+        "Product/System upper Targets live in one project-wide Assurance Profile",
+    )
     check(all(token in structured_requirements_source for token in (
         ":id: GOAL_RICH_INPUT_OUTPUT",
         ":id: FEAT_STRUCTURED_OUTPUT",
@@ -659,16 +687,17 @@ def main() -> None:
     depth_audit = depth_facts.get("audit") or {}
     depth_inputs = depth_source.get("inputs") or {}
     provenance_subjects = evidence_provenance.get("subjects") or {}
+    retained_test_count = int(depth_source.get("tests") or 0)
     check(
         depth_facts.get("schema_version") == 4
-        and depth_source.get("tests") == 184
-        and depth_source.get("passed") == 184
+        and retained_test_count >= 189
+        and depth_source.get("passed") == retained_test_count
         and depth_audit.get("contracts") == 62
-        and depth_audit.get("runtime_evidence") == 184
+        and depth_audit.get("runtime_evidence") == retained_test_count
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
         and depth_audit.get("bdd_feature_scenario_errors") == 0,
-        "Depth facts are reproducibly regenerated from the current 184-test retained run",
+        "Depth facts are reproducibly regenerated from the current retained test run",
     )
     check(
         ((depth_inputs.get("junit") or {}).get("sha256")
@@ -995,6 +1024,9 @@ def main() -> None:
         "Feature fallback": (HTML / "assurance-feat-route-fallback.html").read_text(),
         "Feature rate limit": (HTML / "assurance-feat-rate-limit-routing.html").read_text(),
         "Goal routing": (HTML / "assurance-goal-routing-reliability.html").read_text(),
+        "Feature public API": (HTML / "assurance-feat-public-api.html").read_text(),
+        "Feature examples": (HTML / "assurance-feat-executable-examples.html").read_text(),
+        "Goal developer": (HTML / "assurance-goal-developer-usability.html").read_text(),
         "Product / System": (HTML / "assurance-product-system.html").read_text(),
     }
     spec_page = (HTML / "specification-health.html").read_text()
@@ -1163,13 +1195,21 @@ def main() -> None:
     check(
         "PAGE_SPECS = (" in registry_source
         and "FEATURE_SECTION_LABELS = (" in registry_source
+        and "profile_source: str" in registry_source
+        and "profile_url: str" in registry_source
+        and "docs/assurance-profiles/developer.md" in registry_source
+        and "docs/assurance-profiles/product-system.md" in registry_source
         and "PAGE_SPECS = registry.PAGE_SPECS" in upper_renderer_source
+        and "def parse_profiles(" in upper_renderer_source
         and "for spec in PAGE_SPECS:" in upper_renderer_source
         and upper_renderer_source.count("render_page(") == 2
+        and 'PROFILE = ROOT / "docs/assurance-profiles/routing.md"' not in upper_renderer_source
         and 'for feature_id in ("FEAT_' not in upper_renderer_source
         and 'goal_id = "GOAL_' not in upper_renderer_source
+        and '"schema": "ternforge-upper-assurance-pilot-2"' in upper_renderer_source
+        and '"profiles": profile_capture_facts(run_inputs)' in upper_renderer_source
         and '"goals": goals' in upper_renderer_source,
-        "upper assurance onboarding, navigation, and pages are driven by one declarative registry",
+        "upper assurance onboarding, profiles, navigation, and pages are driven by one declarative registry",
     )
     check(
         "<title>Technical Assurance &#8212; llm-router" in route_order_page
@@ -1179,7 +1219,9 @@ def main() -> None:
     hierarchy_nav_pages = {
         "Product / System": upper_assurance_pages["Product / System"],
         "Goal routing": upper_assurance_pages["Goal routing"],
+        "Goal developer": upper_assurance_pages["Goal developer"],
         "Feature fallback": upper_assurance_pages["Feature fallback"],
+        "Feature public API": upper_assurance_pages["Feature public API"],
         "REQ sticky route": sticky_route_page,
         "TREQ route order": route_order_page,
         "REQ rate limit": rate_limit_page,
@@ -1204,9 +1246,11 @@ def main() -> None:
             f"{name}: hierarchy navigation contains navigation only, without assurance status",
         )
     check(
-        "<span>Goals</span><b>1</b>" in upper_assurance_pages["Product / System"]
-        and 'href="assurance-goal-routing-reliability.html"' in upper_assurance_pages["Product / System"],
-        "Product / System navigation exposes the onboarded Goal as one direct next-level link",
+        "<span>Goals</span><b>2</b>" in upper_assurance_pages["Product / System"]
+        and '<details class="tf-assurance-next">' in upper_assurance_pages["Product / System"]
+        and 'href="assurance-goal-routing-reliability.html"' in upper_assurance_pages["Product / System"]
+        and 'href="assurance-goal-developer-usability.html"' in upper_assurance_pages["Product / System"],
+        "Product / System navigation exposes both onboarded Goals through one compact dropdown",
     )
     check(
         "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal routing"]
@@ -1214,6 +1258,19 @@ def main() -> None:
         and 'href="assurance-feat-route-fallback.html"' in upper_assurance_pages["Goal routing"]
         and 'href="assurance-feat-rate-limit-routing.html"' in upper_assurance_pages["Goal routing"],
         "Goal navigation exposes both monitored capabilities through one compact dropdown",
+    )
+    check(
+        "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal developer"]
+        and '<details class="tf-assurance-next">' in upper_assurance_pages["Goal developer"]
+        and 'href="assurance-feat-public-api.html"' in upper_assurance_pages["Goal developer"]
+        and 'href="assurance-feat-executable-examples.html"' in upper_assurance_pages["Goal developer"],
+        "Developer Goal navigation exposes both monitored capabilities through the shared dropdown",
+    )
+    check(
+        ">Public API</a>" in upper_assurance_pages["Goal developer"]
+        and ">Public API</span>" in upper_assurance_pages["Feature public API"]
+        and ">Public API surface</span>" in public_api_page,
+        "shared hierarchy labels preserve common acronyms without per-page overrides",
     )
     check(
         "<span>Requirements</span><b>4</b>" in upper_assurance_pages["Feature fallback"]
@@ -1255,6 +1312,9 @@ def main() -> None:
         "Feature fallback": "Capability Assurance",
         "Feature rate limit": "Capability Assurance",
         "Goal routing": "Outcome Assurance",
+        "Feature public API": "Capability Assurance",
+        "Feature examples": "Capability Assurance",
+        "Goal developer": "Outcome Assurance",
         "Product / System": "Product / System Assurance",
     }
     for name, page in upper_assurance_pages.items():
@@ -1311,7 +1371,13 @@ def main() -> None:
             and "classList.toggle('selected'" in page,
             f"{name}: active upper criteria use canonical tile → selected inspector interaction",
         )
-    for name in ("Feature rate limit", "Product / System"):
+    for name in (
+        "Feature rate limit",
+        "Feature public API",
+        "Feature examples",
+        "Goal developer",
+        "Product / System",
+    ):
         check(
             'class="fault-tile na"' in upper_assurance_pages[name],
             f"{name}: undeclared upper Targets use canonical disabled N/A tiles",
@@ -1364,6 +1430,21 @@ def main() -> None:
             "Checks that this capability actually delivers the behavior it exists to provide.",
         ),
         "Goal routing": (
+            "Checks that every capability needed by this Goal is independently proven.",
+            "Checks that the capabilities inside this Goal work correctly together.",
+            "Checks that the Goal&#x27;s intended product outcome is achieved in a realistic scenario.",
+        ),
+        "Feature public API": (
+            "Checks that every Requirement needed by this capability is independently proven.",
+            "Checks that the Requirements inside this capability work correctly together.",
+            "Checks that this capability actually delivers the behavior it exists to provide.",
+        ),
+        "Feature examples": (
+            "Checks that every Requirement needed by this capability is independently proven.",
+            "Checks that the Requirements inside this capability work correctly together.",
+            "Checks that this capability actually delivers the behavior it exists to provide.",
+        ),
+        "Goal developer": (
             "Checks that every capability needed by this Goal is independently proven.",
             "Checks that the capabilities inside this Goal work correctly together.",
             "Checks that the Goal&#x27;s intended product outcome is achieved in a realistic scenario.",
@@ -1549,7 +1630,7 @@ def main() -> None:
             f"{contract_id}: Target retains explicit Coverage and Representation basis",
         )
         check(
-            set((target.get("gate_aggregation") or {})) == required_gate_signals
+            set(target.get("gate_aggregation") or {}) == required_gate_signals
             and all(
                 (row or {}).get("rule") == "ALL"
                 for row in (target.get("gate_aggregation") or {}).values()
@@ -2300,8 +2381,8 @@ def main() -> None:
     for contract_id, expected in provider_expectations.items():
         contract = monitor_facts["contracts"][contract_id]
         cells = cast(
-            dict[tuple[str, str], dict[str, int]],
-            cast(dict[str, Any], expected)["cells"],
+            "dict[tuple[str, str], dict[str, int]]",
+            cast("dict[str, Any]", expected)["cells"],
         )
         target_cells = {
             (row.get("level"), row.get("boundary")): row
@@ -2322,7 +2403,7 @@ def main() -> None:
             for criterion_id, expected_paths in criteria.items()
         }
         expected_actual.update(
-            cast(dict[str, int], cast(dict[str, Any], expected).get("actual") or {})
+            cast("dict[str, int]", cast("dict[str, Any]", expected).get("actual") or {})
         )
         for (level, boundary), criteria in cells.items():
             for criterion_id in criteria:
@@ -2348,8 +2429,8 @@ def main() -> None:
             (contract.get("fault_actual") or {}).get("retained_challenges") or {}
         )
         expected_faults = cast(
-            dict[str, tuple[int, int]],
-            cast(dict[str, Any], expected)["faults"],
+            "dict[str, tuple[int, int]]",
+            cast("dict[str, Any]", expected)["faults"],
         )
         check(
             set(retained) == set(expected_faults),
@@ -2389,7 +2470,7 @@ def main() -> None:
             f"{contract_id}: partial Provider Fault Model remains explicit instead of becoming false-green",
         )
         page = contract_pages[contract_id]
-        coverage_pass = bool(cast(dict[str, Any], expected).get("coverage_pass", True))
+        coverage_pass = bool(cast("dict[str, Any]", expected).get("coverage_pass", True))
         coverage_class = "met" if coverage_pass else "not-met"
         coverage_label = "PASS" if coverage_pass else "FAIL"
         check(
@@ -2434,6 +2515,19 @@ def main() -> None:
             ("component", "none"): {"VC_EXAMPLE_IMPORT_SAFETY": 6},
         },
     }
+    developer_fault_expectations = {
+        "REQ_PUBLIC_API_SURFACE": {
+            "architecture.layer-bypass",
+            "spec.wrong-outcome",
+            "spec.missing-partition",
+        },
+        "REQ_EXAMPLE_IMPORT_SAFETY": {
+            "impl.control-flow",
+            "interface.unexpected-interaction",
+            "spec.wrong-outcome",
+            "spec.missing-partition",
+        },
+    }
     for contract_id, expected_cells in small_feature_expectations.items():
         contract = monitor_facts["contracts"][contract_id]
         target_cells = {
@@ -2470,10 +2564,6 @@ def main() -> None:
         retained = (
             (contract.get("fault_actual") or {}).get("retained_challenges") or {}
         )
-        check(
-            retained == {},
-            f"{contract_id}: no fault class is credited without an explicit retained challenge",
-        )
         required_faults = {
             item["id"]
             for group in (contract.get("target") or {}).get("fault_groups") or []
@@ -2487,27 +2577,70 @@ def main() -> None:
             .get(class_id, {})
             .get("exercised")
         }
-        check(
-            bool(required_faults)
-            and challenged_faults == set()
-            and challenged_faults < required_faults,
-            f"{contract_id}: incomplete required Fault Model remains explicit instead of becoming false-green",
-        )
+        expected_developer_faults = developer_fault_expectations.get(contract_id)
         page = contract_pages[contract_id]
-        check(
-            '<div class="overall not-met">FAIL</div>' in page
-            and re.search(
-                r'<strong>Verification coverage.*?<span class="status met">PASS</span>',
-                page,
-                re.DOTALL,
+        if expected_developer_faults is not None:
+            check(
+                set(retained) == expected_developer_faults
+                and required_faults == expected_developer_faults
+                and challenged_faults == expected_developer_faults,
+                f"{contract_id}: retained Developer fault challenges exactly cover the declared required Fault Model",
             )
-            and re.search(
-                r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
-                page,
-                re.DOTALL,
-            ),
-            f"{contract_id}: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
-        )
+            for fault_class in sorted(expected_developer_faults):
+                row = retained[fault_class]
+                check(
+                    row.get("exercised_paths") == 1
+                    and row.get("detected_paths") == 1
+                    and row.get("exercised") is True
+                    and row.get("detected") is True
+                    and all(
+                        item.get("freshness") == "CURRENT"
+                        and item.get("producer_qualification") == "QUALIFIED"
+                        and item.get("verifies_revision_current") is True
+                        and item.get("observation_sha256")
+                        for item in row.get("rows") or []
+                    ),
+                    f"{contract_id}: {fault_class} challenge is current, qualified, revision-bound, and detected",
+                )
+            check(
+                '<div class="overall met">PASS</div>' in page
+                and re.search(
+                    r'<strong>Verification coverage.*?<span class="status met">PASS</span>',
+                    page,
+                    re.DOTALL,
+                )
+                and re.search(
+                    r'<strong>Fault model.*?<span class="status met">PASS</span>',
+                    page,
+                    re.DOTALL,
+                ),
+                f"{contract_id}: rendered monitor keeps Coverage PASS, Fault Model PASS, and Overall PASS",
+            )
+        else:
+            check(
+                retained == {},
+                f"{contract_id}: no fault class is credited without an explicit retained challenge",
+            )
+            check(
+                bool(required_faults)
+                and challenged_faults == set()
+                and challenged_faults < required_faults,
+                f"{contract_id}: incomplete required Fault Model remains explicit instead of becoming false-green",
+            )
+            check(
+                '<div class="overall not-met">FAIL</div>' in page
+                and re.search(
+                    r'<strong>Verification coverage.*?<span class="status met">PASS</span>',
+                    page,
+                    re.DOTALL,
+                )
+                and re.search(
+                    r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
+                    page,
+                    re.DOTALL,
+                ),
+                f"{contract_id}: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
+            )
 
     structured_expectations = {
         "REQ_STRUCTURED_TEXT_OUTPUT": {
@@ -2908,6 +3041,7 @@ def main() -> None:
         for contract_id, expected in provider_expectations.items()
         if not expected.get("coverage_pass", True)
     }
+    complete_fault_contracts = set(developer_fault_expectations)
     for contract_id, page in contract_pages.items():
         coverage_class = (
             "not-met" if contract_id in partial_coverage_contracts else "met"
@@ -2915,15 +3049,24 @@ def main() -> None:
         coverage_label = (
             "FAIL" if contract_id in partial_coverage_contracts else "PASS"
         )
+        fault_complete = contract_id in complete_fault_contracts
+        fault_class = "met" if fault_complete else "not-met"
+        fault_label = "PASS" if fault_complete else "FAIL"
+        overall_class = (
+            "met"
+            if fault_complete and contract_id not in partial_coverage_contracts
+            else "not-met"
+        )
+        overall_label = "PASS" if overall_class == "met" else "FAIL"
         check(
-            '<div class="overall not-met">FAIL</div>' in page
+            f'<div class="overall {overall_class}">{overall_label}</div>' in page
             and re.search(
-                rf"<strong>Verification coverage</strong><span class=\"status {coverage_class}\">{coverage_label}</span>",
+                rf'<strong>Verification coverage</strong><span class="status {coverage_class}">{coverage_label}</span>',
                 page,
                 flags=re.DOTALL,
             )
             and re.search(
-                r"<strong>Fault model</strong><span class=\"status not-met\">FAIL</span>",
+                rf'<strong>Fault model</strong><span class="status {fault_class}">{fault_label}</span>',
                 page,
                 flags=re.DOTALL,
             )
@@ -2931,8 +3074,9 @@ def main() -> None:
             and "This Verification Profile does not make fault-based testing a blocking target." not in page
             and 'class="fault-layout no-inspector"' not in page
             and 'data-fault="' in page,
-            f"{contract_id}: rendered Coverage reflects Target/Actual completeness while incomplete required faults keep Overall honestly FAIL",
+            f"{contract_id}: rendered Coverage, Fault Model, and Overall reflect retained Target/Actual evidence without false-green or stale-red status",
         )
+
 
     check(
         "data-fault=" in assurance_page
@@ -3636,6 +3780,7 @@ def main() -> None:
         "tests/llm_router/bdd/structured_output/cassettes/",
         "tests/llm_router/property_based/internal/test_invariants.py",
         "tests/llm_router/support/fault_server.py",
+        "tests/llm_router/support/fault_observation.py",
         "tests/llm_router/support/_vcr_body_matching.py",
         "tests/llm_router/support/vcr_extensions.py",
         "tests/llm_router/support/workers/contract_worker.py",

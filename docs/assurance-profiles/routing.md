@@ -51,15 +51,3 @@ This profile declares Targets before execution. Child-support gates are derived 
 | Criterion                          | Method     | Test level         | Boundary   | Representation | Required executions | Success criterion                                                                                                                                                                                             |
 | ---------------------------------- | ---------- | ------------------ | ---------- | -------------- | ------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AOV_ROUTING_PREDICTABLE_PROGRESS` | pytest-bdd | System Integration | Substitute | Surrogate      |                   1 | Across consecutive requests in a degraded route set, a request still succeeds through an eligible route and the recovered successful route becomes the preferred starting point once availability permits it. |
-
-## Product / System
-
-**Goal support:** ALL current Goals in the authoritative Sphinx-Needs graph. Goals not yet onboarded into this upper-level assurance pipeline are UNKNOWN.
-
-### Cross-goal integration
-
-**Target:** N/A — no cross-Goal interaction Target is declared in this pilot.
-
-### Operational validation
-
-**Target:** N/A — no whole-product operational/manual/acceptance Target is declared in this pilot. This section is reserved for later end-to-end, operational, manual, UAT, or experiment evidence.

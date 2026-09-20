@@ -13,7 +13,6 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PROFILE = ROOT / "docs/assurance-profiles/routing.md"
 REQ_FACTS = ROOT / "docs/_build/html/requirement-monitor-facts.json"
 JUNIT = ROOT / "test-results/pytest-junit.xml"
 RUN_INPUTS = ROOT / "test-results/evidence-run-inputs.json"
@@ -122,12 +121,13 @@ def producer_gate(target: dict, qualification: dict) -> dict:
     return {"status": domain.combine(statuses), "producers": rows}
 
 
-def freshness_gate(rows: list[dict], run_inputs: dict) -> dict:
+def freshness_gate(target: dict, rows: list[dict], run_inputs: dict) -> dict:
     retained_inputs = run_inputs.get("inputs") or {}
     checks = []
-    profile_rel = str(PROFILE.relative_to(ROOT))
-    profile_retained = retained_inputs.get(profile_rel)
-    profile_current = sha256_file(PROFILE)
+    profile_rel = str(target.get("profile_path") or "").strip()
+    profile_path = ROOT / profile_rel if profile_rel else None
+    profile_retained = retained_inputs.get(profile_rel) if profile_rel else None
+    profile_current = sha256_file(profile_path) if profile_path is not None else None
     if profile_retained is None:
         profile_status = "UNKNOWN"
     elif profile_current == profile_retained:
@@ -263,49 +263,38 @@ def markdown_table_after(section: str, heading: str) -> list[dict[str, str]]:
     return rows
 
 
-def parse_profile() -> dict[str, dict]:
-    text = PROFILE.read_text()
-    owners = {
-        "FEAT_ROUTE_FALLBACK": section_between(
-            text, "Feature · FEAT_ROUTE_FALLBACK", level=2
-        ),
-        "FEAT_RATE_LIMIT_ROUTING": section_between(
-            text, "Feature · FEAT_RATE_LIMIT_ROUTING", level=2
-        ),
-        "GOAL_ROUTING_RELIABILITY": section_between(
-            text, "Goal · GOAL_ROUTING_RELIABILITY", level=2
-        ),
-        "PRODUCT_SYSTEM": section_between(text, "Product / System", level=2),
-    }
-    mapping = {
-        "FEAT_ROUTE_FALLBACK": (
-            ("capability_integration", "Capability integration"),
-            ("capability_validation", "Capability validation"),
-        ),
-        "FEAT_RATE_LIMIT_ROUTING": (
-            ("capability_integration", "Capability integration"),
-            ("capability_validation", "Capability validation"),
-        ),
-        "GOAL_ROUTING_RELIABILITY": (
-            ("cross_capability_integration", "Cross-capability integration"),
-            ("outcome_validation", "Outcome validation"),
-        ),
-        "PRODUCT_SYSTEM": (
-            ("cross_goal_integration", "Cross-goal integration"),
-            ("operational_validation", "Operational validation"),
-        ),
-    }
+def profile_heading(entity_id: str) -> str:
+    if entity_id.startswith("FEAT_"):
+        return f"Feature · {entity_id}"
+    if entity_id.startswith("GOAL_"):
+        return f"Goal · {entity_id}"
+    if entity_id == registry.PRODUCT_SYSTEM_ID:
+        return "Product / System"
+    raise RuntimeError(f"Unsupported upper assurance owner: {entity_id}")
+
+
+def parse_profiles() -> dict[str, dict]:
     result: dict[str, dict] = {}
     seen: set[str] = set()
-    for owner, section in owners.items():
-        result[owner] = {}
-        for key, label in mapping[owner]:
+    source_cache: dict[str, str] = {}
+
+    for spec in PAGE_SPECS:
+        source = spec.profile_source
+        if source not in source_cache:
+            source_cache[source] = (ROOT / source).read_text()
+        section = section_between(
+            source_cache[source],
+            profile_heading(spec.entity_id),
+            level=2,
+        )
+        result[spec.entity_id] = {}
+        for label, key in spec.labels[1:]:
             rows = markdown_table_after(section, label)
             criteria = []
             for row in rows:
                 criterion = row.get("Criterion", "").strip().strip("`")
                 if not criterion:
-                    raise RuntimeError(f"{owner}/{label}: empty criterion")
+                    raise RuntimeError(f"{spec.entity_id}/{label}: empty criterion")
                 if criterion in seen:
                     raise RuntimeError(
                         f"Duplicate upper assurance criterion: {criterion}"
@@ -321,9 +310,11 @@ def parse_profile() -> dict[str, dict]:
                         "representation": row.get("Representation", ""),
                         "required_executions": required,
                         "success_criterion": row.get("Success criterion", ""),
+                        "profile_path": source,
+                        "profile_url": spec.profile_url,
                     }
                 )
-            result[owner][key] = {
+            result[spec.entity_id][key] = {
                 "target": "N/A" if not rows else "REQUIRED",
                 "criteria": criteria,
             }
@@ -391,7 +382,7 @@ def criterion_state(
         else "NOT MET"
     )
     producer_qualification = producer_gate(target, qualification)
-    freshness = freshness_gate(rows, run_inputs)
+    freshness = freshness_gate(target, rows, run_inputs)
     status = domain.combine(
         [execution_status, producer_qualification["status"], freshness["status"]]
     )
@@ -431,9 +422,24 @@ def direct_section_state(
     }
 
 
+def profile_capture_facts(run_inputs: dict) -> dict[str, dict]:
+    retained_inputs = run_inputs.get("inputs") or {}
+    facts: dict[str, dict] = {}
+    for profile_rel in sorted({spec.profile_source for spec in PAGE_SPECS}):
+        current_sha = sha256_file(ROOT / profile_rel)
+        retained_sha = retained_inputs.get(profile_rel)
+        facts[profile_rel] = {
+            "captured_at_run_start": retained_sha is not None,
+            "fresh": retained_sha is not None and retained_sha == current_sha,
+            "retained_sha256": retained_sha,
+            "current_sha256": current_sha,
+        }
+    return facts
+
+
 def build_facts() -> dict:
     graph = parse_need_graph()
-    profile = parse_profile()
+    profile = parse_profiles()
     req_data = json.loads(REQ_FACTS.read_text())
     policy = req_data["policy"]
     contracts = req_data["contracts"]
@@ -597,19 +603,9 @@ def build_facts() -> dict:
         [goal_support, *[value["status"] for value in system_direct.values()]]
     )
 
-    profile_rel = str(PROFILE.relative_to(ROOT))
-    retained_profile_sha = (run_inputs.get("inputs") or {}).get(profile_rel)
-    current_profile_sha = sha256_file(PROFILE)
     return {
-        "schema": "ternforge-upper-assurance-pilot-1",
-        "profile": profile_rel,
-        "profile_captured_at_run_start": retained_profile_sha is not None,
-        "profile_fresh": (
-            retained_profile_sha is not None
-            and retained_profile_sha == current_profile_sha
-        ),
-        "profile_retained_sha256": retained_profile_sha,
-        "profile_current_sha256": current_profile_sha,
+        "schema": "ternforge-upper-assurance-pilot-2",
+        "profiles": profile_capture_facts(run_inputs),
         "qualification_environment": qualification.get("environment") or {},
         "declared_criteria": sorted(declared),
         "actual_criteria": sorted(actual),
@@ -961,7 +957,6 @@ def render_page(
 def build() -> None:
     facts = build_facts()
     FACTS_OUT.write_text(json.dumps(facts, indent=2, sort_keys=True) + "\n")
-    profile_url = "assurance-profiles/routing.html"
     graph = parse_need_graph()
     req_facts = json.loads(REQ_FACTS.read_text())
     monitor_url_map = registry.monitor_urls(
@@ -980,7 +975,7 @@ def build() -> None:
             entity_id=spec.entity_id,
             entity=entity,
             labels=spec.labels,
-            profile_url=profile_url,
+            profile_url=spec.profile_url,
             output=OUTPUTS[spec.entity_id],
             navigation=navigation,
         )

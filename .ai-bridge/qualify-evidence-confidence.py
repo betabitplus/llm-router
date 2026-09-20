@@ -790,6 +790,7 @@ def internal_controls() -> dict[str, dict[str, object]]:
         "method": "pytest-bdd",
         "boundary": "Substitute",
         "required_executions": 1,
+        "profile_path": str(upper_profile.relative_to(ROOT)),
     }
     upper_source_sha = sha256_file(upper_test_source)
     upper_profile_sha = sha256_file(upper_profile)

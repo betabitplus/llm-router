@@ -32,6 +32,8 @@ class PageSpec(NamedTuple):
     facts_path: tuple[str, ...]
     output: str
     labels: tuple[tuple[str, str], ...]
+    profile_source: str
+    profile_url: str
 
 
 PAGE_SPECS = (
@@ -41,6 +43,8 @@ PAGE_SPECS = (
         facts_path=("features", "FEAT_ROUTE_FALLBACK"),
         output="assurance-feat-route-fallback.html",
         labels=FEATURE_SECTION_LABELS,
+        profile_source="docs/assurance-profiles/routing.md",
+        profile_url="assurance-profiles/routing.html",
     ),
     PageSpec(
         entity_id="FEAT_RATE_LIMIT_ROUTING",
@@ -48,6 +52,8 @@ PAGE_SPECS = (
         facts_path=("features", "FEAT_RATE_LIMIT_ROUTING"),
         output="assurance-feat-rate-limit-routing.html",
         labels=FEATURE_SECTION_LABELS,
+        profile_source="docs/assurance-profiles/routing.md",
+        profile_url="assurance-profiles/routing.html",
     ),
     PageSpec(
         entity_id="GOAL_ROUTING_RELIABILITY",
@@ -55,6 +61,35 @@ PAGE_SPECS = (
         facts_path=("goals", "GOAL_ROUTING_RELIABILITY"),
         output="assurance-goal-routing-reliability.html",
         labels=GOAL_SECTION_LABELS,
+        profile_source="docs/assurance-profiles/routing.md",
+        profile_url="assurance-profiles/routing.html",
+    ),
+    PageSpec(
+        entity_id="FEAT_PUBLIC_API",
+        page_title="Capability Assurance",
+        facts_path=("features", "FEAT_PUBLIC_API"),
+        output="assurance-feat-public-api.html",
+        labels=FEATURE_SECTION_LABELS,
+        profile_source="docs/assurance-profiles/developer.md",
+        profile_url="assurance-profiles/developer.html",
+    ),
+    PageSpec(
+        entity_id="FEAT_EXECUTABLE_EXAMPLES",
+        page_title="Capability Assurance",
+        facts_path=("features", "FEAT_EXECUTABLE_EXAMPLES"),
+        output="assurance-feat-executable-examples.html",
+        labels=FEATURE_SECTION_LABELS,
+        profile_source="docs/assurance-profiles/developer.md",
+        profile_url="assurance-profiles/developer.html",
+    ),
+    PageSpec(
+        entity_id="GOAL_DEVELOPER_USABILITY",
+        page_title="Outcome Assurance",
+        facts_path=("goals", "GOAL_DEVELOPER_USABILITY"),
+        output="assurance-goal-developer-usability.html",
+        labels=GOAL_SECTION_LABELS,
+        profile_source="docs/assurance-profiles/developer.md",
+        profile_url="assurance-profiles/developer.html",
     ),
     PageSpec(
         entity_id=PRODUCT_SYSTEM_ID,
@@ -62,6 +97,8 @@ PAGE_SPECS = (
         facts_path=("product_system",),
         output="assurance-product-system.html",
         labels=PRODUCT_SECTION_LABELS,
+        profile_source="docs/assurance-profiles/product-system.md",
+        profile_url="assurance-profiles/product-system.html",
     ),
 )
 
@@ -100,7 +137,14 @@ def short_entity_label(entity_id: str) -> str:
         if entity_id.startswith(prefix):
             entity_id = entity_id.removeprefix(prefix)
             break
-    return entity_id.replace("_", " ").lower().capitalize()
+    acronyms = {"API", "HTTP", "ID", "JSON", "SDK", "URL", "VCR"}
+    words = entity_id.split("_")
+    rendered = [word if word in acronyms else word.lower() for word in words]
+    if rendered:
+        rendered[0] = (
+            rendered[0] if rendered[0] in acronyms else rendered[0].capitalize()
+        )
+    return " ".join(rendered)
 
 
 def normalize_needs_graph(needs: dict[str, dict]) -> dict[str, dict]:
