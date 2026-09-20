@@ -111,7 +111,17 @@ def main() -> None:
         HTML / "contract-evidence-route-sticky-start.html",
         HTML / "contract-evidence-rate-limit-routing.html",
         HTML / "contract-evidence-provider-retry.html",
+        HTML / "contract-evidence-provider-retry-classification.html",
+        HTML / "contract-evidence-provider-retry-bounds.html",
         HTML / "contract-evidence-structured-output-repair.html",
+        HTML / "contract-evidence-structured-output-attempt-bounds.html",
+        HTML / "contract-evidence-repair-prompt-bounds.html",
+        HTML / "assurance-feat-provider-retry.html",
+        HTML / "assurance-feat-structured-recovery.html",
+        HTML / "assurance-goal-resilient-execution.html",
+        ROOT / "docs/assurance-profiles/resilience.md",
+        HTML / "assurance-profiles/resilience.html",
+        HTML / "specifications/_generated/resilience/assurance.html",
         HTML / "contract-evidence-sensitive-data-protection.html",
         HTML / "contract-evidence-runtime-log-safety.html",
         HTML / "contract-evidence-vcr-auth-redaction.html",
@@ -216,6 +226,9 @@ def main() -> None:
     routing_profile_source = (ROOT / "docs/verification-profiles/routing.md").read_text()
     resilience_requirements_source = (ROOT / "docs/requirements/resilience.md").read_text()
     resilience_profile_source = (ROOT / "docs/verification-profiles/resilience.md").read_text()
+    resilience_assurance_profile_source = (
+        ROOT / "docs/assurance-profiles/resilience.md"
+    ).read_text()
     security_requirements_source = (ROOT / "docs/requirements/security.md").read_text()
     security_profile_source = (ROOT / "docs/verification-profiles/security.md").read_text()
     security_assurance_profile_source = (
@@ -385,7 +398,11 @@ def main() -> None:
     )
     check(all(token in resilience_profile_source for token in (
         "## Profile · REQ_PROVIDER_RETRY",
+        "## Profile · TREQ_PROVIDER_RETRY_CLASSIFICATION",
+        "## Profile · TREQ_PROVIDER_RETRY_BOUNDS",
         "## Profile · REQ_STRUCTURED_OUTPUT_REPAIR",
+        "## Profile · TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS",
+        "## Profile · TREQ_REPAIR_PROMPT_BOUNDS",
         "VC_PROVIDER_RETRY_STATUS_CLASSIFICATION",
         "VC_PROVIDER_RETRY_EXCEPTION_CLASSIFICATION",
         "VC_PROVIDER_RETRY_TRANSIENT_RECOVERY",
@@ -394,8 +411,16 @@ def main() -> None:
         "VC_REPAIR_PROMPT_BOUNDS",
         "VC_STRUCTURED_REPAIR_RECOVERY",
         "VC_STRUCTURED_REPAIR_ATTEMPT_BOUND",
+        "### Required technical support",
         "### Fault applicability",
-    )), "Resilience Verification Profiles own independent coverage targets and explicit Fault Models")
+    )), "Resilience Verification Profiles split parent outcomes from first-class Technical support and explicit Fault Models")
+    check(all(token in resilience_assurance_profile_source for token in (
+        "## Feature · FEAT_PROVIDER_RETRY",
+        "## Feature · FEAT_STRUCTURED_RECOVERY",
+        "## Goal · GOAL_RESILIENT_EXECUTION",
+        "AGI_RESILIENCE_RETRY_DURING_REPAIR",
+        "AOV_RESILIENCE_COMBINED_BUDGET_CEILING",
+    )), "Resilience Assurance Profile owns cross-capability recovery composition and combined bounded-work outcome")
     check(all(token in security_requirements_source for token in (
         ":id: GOAL_DATA_SAFETY",
         ":id: REQ_SENSITIVE_DATA_PROTECTION",
@@ -1113,7 +1138,19 @@ def main() -> None:
     route_order_page = (HTML / "contract-evidence-route-order.html").read_text()
     rate_limit_page = (HTML / "contract-evidence-rate-limit-routing.html").read_text()
     provider_retry_page = (HTML / "contract-evidence-provider-retry.html").read_text()
+    provider_retry_classification_page = (
+        HTML / "contract-evidence-provider-retry-classification.html"
+    ).read_text()
+    provider_retry_bounds_page = (
+        HTML / "contract-evidence-provider-retry-bounds.html"
+    ).read_text()
     structured_repair_page = (HTML / "contract-evidence-structured-output-repair.html").read_text()
+    structured_attempt_bounds_page = (
+        HTML / "contract-evidence-structured-output-attempt-bounds.html"
+    ).read_text()
+    repair_prompt_bounds_page = (
+        HTML / "contract-evidence-repair-prompt-bounds.html"
+    ).read_text()
     security_page = (HTML / "contract-evidence-sensitive-data-protection.html").read_text()
     runtime_log_safety_page = (HTML / "contract-evidence-runtime-log-safety.html").read_text()
     vcr_auth_redaction_page = (HTML / "contract-evidence-vcr-auth-redaction.html").read_text()
@@ -1148,6 +1185,9 @@ def main() -> None:
         "Feature tool selection": (HTML / "assurance-feat-tool-selection.html").read_text(),
         "Feature tool execution": (HTML / "assurance-feat-tool-execution.html").read_text(),
         "Goal tools": (HTML / "assurance-goal-tool-orchestration.html").read_text(),
+        "Feature provider retry": (HTML / "assurance-feat-provider-retry.html").read_text(),
+        "Feature structured recovery": (HTML / "assurance-feat-structured-recovery.html").read_text(),
+        "Goal resilience": (HTML / "assurance-goal-resilient-execution.html").read_text(),
         "Product / System": (HTML / "assurance-product-system.html").read_text(),
     }
     spec_page = (HTML / "specification-health.html").read_text()
@@ -1344,16 +1384,24 @@ def main() -> None:
         "Goal sessions": upper_assurance_pages["Goal sessions"],
         "Goal data safety": upper_assurance_pages["Goal data safety"],
         "Goal tools": upper_assurance_pages["Goal tools"],
+        "Goal resilience": upper_assurance_pages["Goal resilience"],
         "Feature sessions": upper_assurance_pages["Feature sessions"],
         "Feature data safety": upper_assurance_pages["Feature data safety"],
         "Feature tool selection": upper_assurance_pages["Feature tool selection"],
         "Feature tool execution": upper_assurance_pages["Feature tool execution"],
+        "Feature provider retry": upper_assurance_pages["Feature provider retry"],
+        "Feature structured recovery": upper_assurance_pages["Feature structured recovery"],
         "Feature fallback": upper_assurance_pages["Feature fallback"],
         "Feature public API": upper_assurance_pages["Feature public API"],
         "REQ sticky route": sticky_route_page,
         "TREQ route order": route_order_page,
         "REQ rate limit": rate_limit_page,
         "REQ provider retry": provider_retry_page,
+        "TREQ provider retry classification": provider_retry_classification_page,
+        "TREQ provider retry bounds": provider_retry_bounds_page,
+        "REQ structured repair": structured_repair_page,
+        "TREQ structured attempt bounds": structured_attempt_bounds_page,
+        "TREQ repair prompt bounds": repair_prompt_bounds_page,
         "REQ session persistence": session_persistence_page,
         "TREQ session serialization": session_serialization_page,
         "REQ data safety": security_page,
@@ -1385,14 +1433,15 @@ def main() -> None:
             f"{name}: hierarchy navigation contains navigation only, without assurance status",
         )
     check(
-        "<span>Goals</span><b>5</b>" in upper_assurance_pages["Product / System"]
+        "<span>Goals</span><b>6</b>" in upper_assurance_pages["Product / System"]
         and '<details class="tf-assurance-next">' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-routing-reliability.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-developer-usability.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-session-continuity.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-data-safety.html"' in upper_assurance_pages["Product / System"]
-        and 'href="assurance-goal-tool-orchestration.html"' in upper_assurance_pages["Product / System"],
-        "Product / System navigation exposes all five onboarded Goals through one compact dropdown",
+        and 'href="assurance-goal-tool-orchestration.html"' in upper_assurance_pages["Product / System"]
+        and 'href="assurance-goal-resilient-execution.html"' in upper_assurance_pages["Product / System"],
+        "Product / System navigation exposes all six onboarded Goals through one compact dropdown",
     )
     check(
         "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal routing"]
@@ -1426,6 +1475,25 @@ def main() -> None:
         and 'href="assurance-feat-tool-selection.html"' in upper_assurance_pages["Goal tools"]
         and 'href="assurance-feat-tool-execution.html"' in upper_assurance_pages["Goal tools"],
         "Tool Orchestration Goal navigation exposes both capabilities through the shared dropdown",
+    )
+    check(
+        "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal resilience"]
+        and '<details class="tf-assurance-next">' in upper_assurance_pages["Goal resilience"]
+        and 'href="assurance-feat-provider-retry.html"' in upper_assurance_pages["Goal resilience"]
+        and 'href="assurance-feat-structured-recovery.html"' in upper_assurance_pages["Goal resilience"],
+        "Resilient Execution Goal navigation exposes both capabilities through the shared dropdown",
+    )
+    check(
+        "<span>Requirements</span><b>1</b>" in upper_assurance_pages["Feature provider retry"]
+        and 'href="contract-evidence-provider-retry.html"' in upper_assurance_pages["Feature provider retry"]
+        and '<details class="tf-assurance-next">' not in upper_assurance_pages["Feature provider retry"],
+        "Provider Retry Feature navigation uses one direct Requirement link",
+    )
+    check(
+        "<span>Requirements</span><b>1</b>" in upper_assurance_pages["Feature structured recovery"]
+        and 'href="contract-evidence-structured-output-repair.html"' in upper_assurance_pages["Feature structured recovery"]
+        and '<details class="tf-assurance-next">' not in upper_assurance_pages["Feature structured recovery"],
+        "Structured Recovery Feature navigation uses one direct Requirement link",
     )
     check(
         "<span>Requirements</span><b>1</b>" in upper_assurance_pages["Feature tool selection"]
@@ -1526,9 +1594,20 @@ def main() -> None:
         "Requirement navigation uses a compact dropdown when several Technical requirements exist",
     )
     check(
-        'href="requirements/resilience.html#GOAL_RESILIENT_EXECUTION"' in provider_retry_page
-        and 'href="requirements/resilience.html#FEAT_PROVIDER_RETRY"' in provider_retry_page,
-        "non-onboarded upper ancestors fall back to normative Requirement pages without broken monitor links",
+        'href="assurance-goal-resilient-execution.html"' in provider_retry_page
+        and 'href="assurance-feat-provider-retry.html"' in provider_retry_page
+        and "<span>Technical support</span><b>2</b>" in provider_retry_page
+        and 'href="contract-evidence-provider-retry-classification.html"' in provider_retry_page
+        and 'href="contract-evidence-provider-retry-bounds.html"' in provider_retry_page,
+        "Provider Retry navigation uses onboarded upper ancestors and exposes both first-class Technical requirements",
+    )
+    check(
+        'href="assurance-goal-resilient-execution.html"' in structured_repair_page
+        and 'href="assurance-feat-structured-recovery.html"' in structured_repair_page
+        and "<span>Technical support</span><b>2</b>" in structured_repair_page
+        and 'href="contract-evidence-structured-output-attempt-bounds.html"' in structured_repair_page
+        and 'href="contract-evidence-repair-prompt-bounds.html"' in structured_repair_page,
+        "Structured Repair navigation uses onboarded upper ancestors and exposes both first-class Technical requirements",
     )
 
     expected_upper_titles = {
@@ -1545,6 +1624,9 @@ def main() -> None:
         "Feature tool selection": "Capability Assurance",
         "Feature tool execution": "Capability Assurance",
         "Goal tools": "Outcome Assurance",
+        "Feature provider retry": "Capability Assurance",
+        "Feature structured recovery": "Capability Assurance",
+        "Goal resilience": "Outcome Assurance",
         "Product / System": "Product / System Assurance",
     }
     for name, page in upper_assurance_pages.items():
@@ -1599,6 +1681,7 @@ def main() -> None:
         "Goal sessions",
         "Feature tool execution",
         "Goal tools",
+        "Goal resilience",
     ):
         page = upper_assurance_pages[name]
         check(
@@ -1619,6 +1702,8 @@ def main() -> None:
         "Goal data safety",
         "Feature tool selection",
         "Feature tool execution",
+        "Feature provider retry",
+        "Feature structured recovery",
         "Product / System",
     ):
         check(
@@ -2269,7 +2354,11 @@ def main() -> None:
         "REQ_ROUTE_STICKY_START": sticky_route_page,
         "REQ_RATE_LIMIT_ROUTING": rate_limit_page,
         "REQ_PROVIDER_RETRY": provider_retry_page,
+        "TREQ_PROVIDER_RETRY_CLASSIFICATION": provider_retry_classification_page,
+        "TREQ_PROVIDER_RETRY_BOUNDS": provider_retry_bounds_page,
         "REQ_STRUCTURED_OUTPUT_REPAIR": structured_repair_page,
+        "TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS": structured_attempt_bounds_page,
+        "TREQ_REPAIR_PROMPT_BOUNDS": repair_prompt_bounds_page,
         "REQ_SENSITIVE_DATA_PROTECTION": security_page,
         "REQ_PROVIDER_ADAPTER_INTEROPERABILITY": provider_adapter_page,
         "REQ_ASYNC_PROVIDER_EXECUTION": async_provider_page,
@@ -2402,27 +2491,66 @@ def main() -> None:
     resilience_expectations = {
         "REQ_PROVIDER_RETRY": {
             "cells": {
+                ("system_integration", "substitute"): {
+                    "VC_PROVIDER_RETRY_TRANSIENT_RECOVERY": 4,
+                    "VC_PROVIDER_RETRY_PERMANENT_NO_RETRY": 2,
+                },
+            },
+            "treqs": [
+                "TREQ_PROVIDER_RETRY_CLASSIFICATION",
+                "TREQ_PROVIDER_RETRY_BOUNDS",
+            ],
+            "faults": {
+                "interface.error-status": (4, 4),
+                "runtime.unavailable-disconnect": (2, 2),
+            },
+        },
+        "TREQ_PROVIDER_RETRY_CLASSIFICATION": {
+            "cells": {
                 ("component", "none"): {
                     "VC_PROVIDER_RETRY_STATUS_CLASSIFICATION": 2,
                     "VC_PROVIDER_RETRY_EXCEPTION_CLASSIFICATION": 2,
                 },
+            },
+            "treqs": [],
+            "faults": {},
+        },
+        "TREQ_PROVIDER_RETRY_BOUNDS": {
+            "cells": {
                 ("system_integration", "substitute"): {
-                    "VC_PROVIDER_RETRY_TRANSIENT_RECOVERY": 2,
-                    "VC_PROVIDER_RETRY_PERMANENT_NO_RETRY": 2,
                     "VC_PROVIDER_RETRY_ATTEMPT_BOUND": 2,
                 },
             },
-            "faults": {"interface.error-status": (6, 6)},
+            "treqs": [],
+            "faults": {"interface.unexpected-interaction": (2, 2)},
         },
         "REQ_STRUCTURED_OUTPUT_REPAIR": {
             "cells": {
-                ("component", "none"): {"VC_REPAIR_PROMPT_BOUNDS": 1},
                 ("system_integration", "substitute"): {
                     "VC_STRUCTURED_REPAIR_RECOVERY": 1,
+                },
+            },
+            "treqs": [
+                "TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS",
+                "TREQ_REPAIR_PROMPT_BOUNDS",
+            ],
+            "faults": {"interface.payload-schema": (1, 1)},
+        },
+        "TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS": {
+            "cells": {
+                ("system_integration", "substitute"): {
                     "VC_STRUCTURED_REPAIR_ATTEMPT_BOUND": 2,
                 },
             },
-            "faults": {"interface.payload-schema": (3, 3)},
+            "treqs": [],
+            "faults": {"interface.unexpected-interaction": (2, 2)},
+        },
+        "TREQ_REPAIR_PROMPT_BOUNDS": {
+            "cells": {
+                ("component", "none"): {"VC_REPAIR_PROMPT_BOUNDS": 1},
+            },
+            "treqs": [],
+            "faults": {},
         },
     }
     for contract_id, expected in resilience_expectations.items():
@@ -2438,6 +2566,10 @@ def main() -> None:
                 for key, counts in expected["cells"].items()
             ),
             f"{contract_id}: Resilience coverage target keeps the independently authored Test level/Boundary denominators",
+        )
+        check(
+            (contract.get("target") or {}).get("required_treqs") == expected["treqs"],
+            f"{contract_id}: Technical Support ownership stays explicit and does not duplicate child evidence",
         )
         actual_by_item = contract.get("coverage_actual") or {}
         for (level, boundary), criteria in expected["cells"].items():
@@ -3913,18 +4045,18 @@ def main() -> None:
     )
     resilience_trace_routes = {
         "REQ_PROVIDER_RETRY": "contract-evidence-provider-retry.html#ce-coverage-req_provider_retry",
-        "TREQ_PROVIDER_RETRY_CLASSIFICATION": "contract-evidence-provider-retry.html#ce-coverage-req_provider_retry",
-        "TREQ_PROVIDER_RETRY_BOUNDS": "contract-evidence-provider-retry.html#ce-coverage-req_provider_retry",
+        "TREQ_PROVIDER_RETRY_CLASSIFICATION": "contract-evidence-provider-retry-classification.html#ce-coverage-treq_provider_retry_classification",
+        "TREQ_PROVIDER_RETRY_BOUNDS": "contract-evidence-provider-retry-bounds.html#ce-coverage-treq_provider_retry_bounds",
         "REQ_STRUCTURED_OUTPUT_REPAIR": "contract-evidence-structured-output-repair.html#ce-coverage-req_structured_output_repair",
-        "TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS": "contract-evidence-structured-output-repair.html#ce-coverage-req_structured_output_repair",
-        "TREQ_REPAIR_PROMPT_BOUNDS": "contract-evidence-structured-output-repair.html#ce-coverage-req_structured_output_repair",
+        "TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS": "contract-evidence-structured-output-attempt-bounds.html#ce-coverage-treq_structured_output_attempt_bounds",
+        "TREQ_REPAIR_PROMPT_BOUNDS": "contract-evidence-repair-prompt-bounds.html#ce-coverage-treq_repair_prompt_bounds",
     }
     check(
         all(
             f'"{contract_id}": "{href}"' in trace_reader_page
             for contract_id, href in resilience_trace_routes.items()
         ),
-        "Traceability Reader routes Resilience parent/derived contracts to the accepted parent Contract Evidence pages",
+        "Traceability Reader routes Resilience REQ/TREQ contracts to first-class Contract Evidence pages",
     )
     security_trace_routes = {
         "REQ_SENSITIVE_DATA_PROTECTION": "contract-evidence-sensitive-data-protection.html#ce-coverage-req_sensitive_data_protection",

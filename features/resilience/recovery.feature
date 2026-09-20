@@ -24,18 +24,30 @@ Feature: Provider recovery
       Then the asynchronous request succeeds without route fallback
 
     @REQ_PROVIDER_RETRY[revision==2]
+    Scenario: A temporary provider disconnect succeeds on retry
+      Given a provider disconnects before returning a response
+      When the same provider succeeds after the transport disconnect
+      Then the request succeeds after one transport retry
+
+    @REQ_PROVIDER_RETRY[revision==2]
+    Scenario: An asynchronous temporary provider disconnect succeeds on retry
+      Given a provider disconnects before an asynchronous response
+      When the same provider succeeds after the asynchronous transport disconnect
+      Then the asynchronous request succeeds after one transport retry
+
+    @REQ_PROVIDER_RETRY[revision==2]
     Scenario: An asynchronous permanent provider failure is not retried
       Given a provider rejects an asynchronous request permanently
       When the asynchronous request is executed
       Then the provider is not retried asynchronously
 
-    @REQ_PROVIDER_RETRY[revision==2] @TREQ_PROVIDER_RETRY_BOUNDS[revision==1]
+    @TREQ_PROVIDER_RETRY_BOUNDS[revision==1]
     Scenario: Synchronous provider retry stops at the configured attempt limit
       Given a provider keeps failing with retryable errors
       When synchronous retry exhausts a two-attempt budget
       Then exactly two synchronous provider attempts are made
 
-    @REQ_PROVIDER_RETRY[revision==2] @TREQ_PROVIDER_RETRY_BOUNDS[revision==1]
+    @TREQ_PROVIDER_RETRY_BOUNDS[revision==1]
     Scenario: Asynchronous provider retry stops at the configured attempt limit
       Given a provider keeps failing asynchronously with retryable errors
       When asynchronous retry exhausts a two-attempt budget
@@ -49,13 +61,13 @@ Feature: Provider recovery
       When a later repair attempt returns valid output
       Then the validated structured result is returned
 
-    @REQ_STRUCTURED_OUTPUT_REPAIR[revision==2] @TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]
+    @TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]
     Scenario: Structured output stops at a one-attempt budget
       Given every structured response is invalid
       When structured output runs with a one-attempt budget
       Then exactly one structured provider response is evaluated
 
-    @REQ_STRUCTURED_OUTPUT_REPAIR[revision==2] @TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]
+    @TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]
     Scenario: Structured output stops at a two-attempt budget
       Given every structured response is invalid
       When structured output runs with a two-attempt budget

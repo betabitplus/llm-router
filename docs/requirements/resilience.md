@@ -108,7 +108,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Parent verification profile → <verification-profile-req-provider-retry>`
+{ref}`Verification profile → <verification-profile-treq-provider-retry-classification>`
 
 ```{needlist}
 :filter: "'TREQ_PROVIDER_RETRY_CLASSIFICATION' in derives or 'TREQ_PROVIDER_RETRY_CLASSIFICATION' in implements or 'TREQ_PROVIDER_RETRY_CLASSIFICATION' in verifies"
@@ -131,7 +131,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Parent verification profile → <verification-profile-req-provider-retry>`
+{ref}`Verification profile → <verification-profile-treq-provider-retry-bounds>`
 
 ```{needlist}
 :filter: "'TREQ_PROVIDER_RETRY_BOUNDS' in derives or 'TREQ_PROVIDER_RETRY_BOUNDS' in implements or 'TREQ_PROVIDER_RETRY_BOUNDS' in verifies"
@@ -191,7 +191,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Parent verification profile → <verification-profile-req-structured-output-repair>`
+{ref}`Verification profile → <verification-profile-treq-structured-output-attempt-bounds>`
 
 ```{needlist}
 :filter: "'TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS' in derives or 'TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS' in implements or 'TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS' in verifies"
@@ -214,7 +214,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Parent verification profile → <verification-profile-req-structured-output-repair>`
+{ref}`Verification profile → <verification-profile-treq-repair-prompt-bounds>`
 
 ```{needlist}
 :filter: "'TREQ_REPAIR_PROMPT_BOUNDS' in derives or 'TREQ_REPAIR_PROMPT_BOUNDS' in implements or 'TREQ_REPAIR_PROMPT_BOUNDS' in verifies"

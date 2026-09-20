@@ -14,5 +14,6 @@ developer
 sessions
 security
 tools
+resilience
 product-system
 ```

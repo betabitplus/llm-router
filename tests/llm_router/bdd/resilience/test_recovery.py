@@ -39,6 +39,14 @@ for _test_name, _criterion in (
         "VC_PROVIDER_RETRY_TRANSIENT_RECOVERY",
     ),
     (
+        "test_a_temporary_provider_disconnect_succeeds_on_retry",
+        "VC_PROVIDER_RETRY_TRANSIENT_RECOVERY",
+    ),
+    (
+        "test_an_asynchronous_temporary_provider_disconnect_succeeds_on_retry",
+        "VC_PROVIDER_RETRY_TRANSIENT_RECOVERY",
+    ),
+    (
         "test_a_permanent_provider_failure_is_not_retried",
         "VC_PROVIDER_RETRY_PERMANENT_NO_RETRY",
     ),
@@ -70,10 +78,21 @@ for _test_name, _criterion in (
     globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
 
 for _test_name, _path_id in (
-    ("test_a_temporary_provider_failure_succeeds_on_retry", "sync"),
-    ("test_an_asynchronous_temporary_provider_failure_succeeds_on_retry", "async"),
-    ("test_a_permanent_provider_failure_is_not_retried", "sync"),
-    ("test_an_asynchronous_permanent_provider_failure_is_not_retried", "async"),
+    ("test_a_temporary_provider_failure_succeeds_on_retry", "sync-status"),
+    (
+        "test_an_asynchronous_temporary_provider_failure_succeeds_on_retry",
+        "async-status",
+    ),
+    ("test_a_temporary_provider_disconnect_succeeds_on_retry", "sync-transport"),
+    (
+        "test_an_asynchronous_temporary_provider_disconnect_succeeds_on_retry",
+        "async-transport",
+    ),
+    ("test_a_permanent_provider_failure_is_not_retried", "sync-status"),
+    (
+        "test_an_asynchronous_permanent_provider_failure_is_not_retried",
+        "async-status",
+    ),
     (
         "test_synchronous_provider_retry_stops_at_the_configured_attempt_limit",
         "sync",
@@ -92,8 +111,6 @@ for _test_name in (
     "test_an_asynchronous_temporary_provider_failure_succeeds_on_retry",
     "test_a_permanent_provider_failure_is_not_retried",
     "test_an_asynchronous_permanent_provider_failure_is_not_retried",
-    "test_synchronous_provider_retry_stops_at_the_configured_attempt_limit",
-    "test_asynchronous_provider_retry_stops_at_the_configured_attempt_limit",
 ):
     globals()[_test_name] = pytest.mark.fault_item(
         "REQ_PROVIDER_RETRY",
@@ -101,13 +118,35 @@ for _test_name in (
     )(globals()[_test_name])
 
 for _test_name in (
-    "test_invalid_structured_output_is_repaired",
+    "test_a_temporary_provider_disconnect_succeeds_on_retry",
+    "test_an_asynchronous_temporary_provider_disconnect_succeeds_on_retry",
+):
+    globals()[_test_name] = pytest.mark.fault_item(
+        "REQ_PROVIDER_RETRY",
+        "runtime.unavailable-disconnect",
+    )(globals()[_test_name])
+
+for _test_name in (
+    "test_synchronous_provider_retry_stops_at_the_configured_attempt_limit",
+    "test_asynchronous_provider_retry_stops_at_the_configured_attempt_limit",
+):
+    globals()[_test_name] = pytest.mark.fault_item(
+        "TREQ_PROVIDER_RETRY_BOUNDS",
+        "interface.unexpected-interaction",
+    )(globals()[_test_name])
+
+globals()["test_invalid_structured_output_is_repaired"] = pytest.mark.fault_item(
+    "REQ_STRUCTURED_OUTPUT_REPAIR",
+    "interface.payload-schema",
+)(globals()["test_invalid_structured_output_is_repaired"])
+
+for _test_name in (
     "test_structured_output_stops_at_a_oneattempt_budget",
     "test_structured_output_stops_at_a_twoattempt_budget",
 ):
     globals()[_test_name] = pytest.mark.fault_item(
-        "REQ_STRUCTURED_OUTPUT_REPAIR",
-        "interface.payload-schema",
+        "TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS",
+        "interface.unexpected-interaction",
     )(globals()[_test_name])
 
 del _criterion, _path_id, _test_name
@@ -180,6 +219,78 @@ def retry_stays_on_route(case: dict[str, Any]) -> None:
     assert result.ok is True, result.error_message
     assert result.output_text == _RETRY_TEXT
     assert case["request_count"] == 2
+
+
+def _disconnect_retry_case() -> dict[str, Any]:
+    return {
+        "routes": {
+            ("POST", _OPENAI_PATH): [
+                ScriptedResponse(status_code=200, disconnect=True),
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text=_RETRY_TEXT),
+                ),
+            ]
+        }
+    }
+
+
+@given("a provider disconnects before returning a response", target_fixture="case")
+def provider_disconnects() -> dict[str, Any]:
+    return _disconnect_retry_case()
+
+
+@when("the same provider succeeds after the transport disconnect")
+def retry_after_disconnect(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_PROVIDER_RETRY",
+        fault_class="runtime.unavailable-disconnect",
+        mechanism="scripted provider disconnects before the first response",
+        details={"transport": "disconnect"},
+    )
+    with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
+        case["result"] = run_retry_worker(
+            case="openai",
+            scenario="retryable",
+            server_base_url=server.base_url,
+        )
+        case["request_count"] = server.request_count("POST", _OPENAI_PATH)
+
+
+@then("the request succeeds after one transport retry")
+def retry_after_disconnect_succeeds(case: dict[str, Any]) -> None:
+    retry_stays_on_route(case)
+
+
+@given(
+    "a provider disconnects before an asynchronous response",
+    target_fixture="case",
+)
+def provider_disconnects_async() -> dict[str, Any]:
+    return _disconnect_retry_case()
+
+
+@when("the same provider succeeds after the asynchronous transport disconnect")
+def retry_after_disconnect_async(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_PROVIDER_RETRY",
+        fault_class="runtime.unavailable-disconnect",
+        mechanism="scripted provider disconnects before the first async response",
+        details={"transport": "disconnect", "mode": "async"},
+    )
+    with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
+        case["result"] = run_retry_worker(
+            case="openai",
+            scenario="async_retryable",
+            server_base_url=server.base_url,
+        )
+        case["request_count"] = server.request_count("POST", _OPENAI_PATH)
+
+
+@then("the asynchronous request succeeds after one transport retry")
+def retry_after_disconnect_async_succeeds(case: dict[str, Any]) -> None:
+    retry_stays_on_route(case)
 
 
 @given("a provider rejects a request permanently", target_fixture="case")
@@ -368,12 +479,13 @@ def provider_keeps_failing() -> dict[str, Any]:
 @when("synchronous retry exhausts a two-attempt budget")
 def sync_retry_exhausts_budget(case: dict[str, Any]) -> None:
     retain_fault_injection(
-        contract_id="REQ_PROVIDER_RETRY",
-        fault_class="interface.error-status",
+        contract_id="TREQ_PROVIDER_RETRY_BOUNDS",
+        fault_class="interface.unexpected-interaction",
         mechanism=(
-            "scripted provider remains HTTP 503 through the full sync retry budget"
+            "a sentinel third provider response detects work beyond the configured "
+            "same-route retry budget"
         ),
-        details={"status_code": 503, "max_attempts": 2},
+        details={"max_attempts": 2, "sentinel_attempt": 3},
     )
     with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
         case["result"] = run_retry_worker(
@@ -404,12 +516,13 @@ def provider_keeps_failing_async() -> dict[str, Any]:
 @when("asynchronous retry exhausts a two-attempt budget")
 def async_retry_exhausts_budget(case: dict[str, Any]) -> None:
     retain_fault_injection(
-        contract_id="REQ_PROVIDER_RETRY",
-        fault_class="interface.error-status",
+        contract_id="TREQ_PROVIDER_RETRY_BOUNDS",
+        fault_class="interface.unexpected-interaction",
         mechanism=(
-            "scripted provider remains HTTP 503 through the full async retry budget"
+            "a sentinel third provider response detects async work beyond the "
+            "configured same-route retry budget"
         ),
-        details={"status_code": 503, "max_attempts": 2},
+        details={"max_attempts": 2, "sentinel_attempt": 3, "mode": "async"},
     )
     with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
         case["result"] = run_retry_worker(
@@ -438,9 +551,12 @@ def every_structured_response_is_invalid() -> dict[str, Any]:
 
 def _run_invalid_structured_budget(case: dict[str, Any], *, max_attempts: int) -> None:
     retain_fault_injection(
-        contract_id="REQ_STRUCTURED_OUTPUT_REPAIR",
-        fault_class="interface.payload-schema",
-        mechanism="scripted provider returns schema-invalid structured output",
+        contract_id="TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS",
+        fault_class="interface.unexpected-interaction",
+        mechanism=(
+            "an extra scripted invalid response remains available as a sentinel "
+            "beyond the structured-output attempt budget"
+        ),
         details={"total_attempt_budget": max_attempts},
     )
     with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
