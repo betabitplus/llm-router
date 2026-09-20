@@ -1,6 +1,14 @@
-@hermetic @REQ_SENSITIVE_DATA_PROTECTION[revision==1]
+@hermetic
 Feature: Sensitive data protection
-  Public diagnostics must preserve useful failure metadata without copying protected caller or provider-controlled values.
+  Public diagnostics and retained replay evidence must stay useful without persisting protected caller or provider-controlled values.
+
+  Rule: Public success diagnostics remain bounded
+
+    @REQ_SENSITIVE_DATA_PROTECTION[revision==1]
+    Scenario: Successful request diagnostics exclude protected prompt and credential
+      Given a successful request contains a protected prompt and credential
+      When the successful request crosses the public router boundary
+      Then successful request diagnostics contain no protected caller values
 
   Rule: Protected values do not cross the public diagnostic boundary
 

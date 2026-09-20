@@ -145,6 +145,18 @@
 
 **Completion:** required criteria = **100%** · declared retained paths = **100%**
 
+(test-plan-data-safety-observability-audit-model)=
+
+### Data-safety observability audit
+
+| Layer              | Required denominator                                                                                                                                |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| System integration | one representative public tool request observed by runtime logging and physically persisted through the actual VCR pre-serialization/write pipeline |
+
+**Design:** end-to-end negative information-flow audit · protected prompt/credential/tool argument/tool-result markers · full structured-log scan · physical cassette scan
+
+**Completion:** required criteria = **100%** · declared retained paths = **100%**
+
 (test-plan-sensitive-runtime-diagnostics-model)=
 
 ### Sensitive runtime diagnostics
@@ -162,9 +174,9 @@
 
 ### Durable VCR redaction
 
-| Layer              | Required denominator                                                                                                                                                                |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| System integration | authentication/account-data redaction plus raw caller request/tool payload redaction from real router/provider traffic through the actual VCR pre-serialization and replay pipeline |
+| Layer              | Required denominator                                                                                                                                                                                  |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| System integration | authentication/account-data redaction, raw caller request/tool payload redaction, and caller-controlled provider-response echo redaction through the actual VCR pre-serialization and replay pipeline |
 
 **Design:** temp-cassette physical serialization · post-write secret scan · deterministic request-body fingerprint · offline replay after the live server is gone
 

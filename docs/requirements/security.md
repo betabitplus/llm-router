@@ -108,7 +108,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Parent verification profile → <verification-profile-req-sensitive-data-protection>`
+{ref}`Verification profile → <verification-profile-treq-runtime-log-safety>`
 
 ```{needlist}
 :filter: "'TREQ_RUNTIME_LOG_SAFETY' in derives or 'TREQ_RUNTIME_LOG_SAFETY' in implements or 'TREQ_RUNTIME_LOG_SAFETY' in verifies"
@@ -131,7 +131,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Parent verification profile → <verification-profile-req-sensitive-data-protection>`
+{ref}`Verification profile → <verification-profile-treq-vcr-auth-redaction>`
 
 ```{needlist}
 :filter: "'TREQ_VCR_AUTH_REDACTION' in derives or 'TREQ_VCR_AUTH_REDACTION' in implements or 'TREQ_VCR_AUTH_REDACTION' in verifies"
@@ -154,10 +154,33 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Parent verification profile → <verification-profile-req-sensitive-data-protection>`
+{ref}`Verification profile → <verification-profile-treq-vcr-request-content-redaction>`
 
 ```{needlist}
 :filter: "'TREQ_VCR_REQUEST_CONTENT_REDACTION' in derives or 'TREQ_VCR_REQUEST_CONTENT_REDACTION' in implements or 'TREQ_VCR_REQUEST_CONTENT_REDACTION' in verifies"
+```
+
+::::
+
+```{treq} VCR response records remove caller-controlled echoes
+:id: TREQ_VCR_RESPONSE_CONTENT_REDACTION
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: integration
+:derives: REQ_SENSITIVE_DATA_PROTECTION
+
+**Statement.** Durable VCR response records shall not persist caller-provided sensitive values echoed by provider response payloads, including tool-call arguments or reflected request content. Such values shall be replaced with replay-safe placeholders before cassette serialization while preserving the response structure required for deterministic replay.
+
+**Rationale.** Providers can echo caller content back in tool-call arguments or response payloads. Redacting only outbound requests is insufficient if the same protected value can become source-controlled evidence through the recorded response.
+```
+
+::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-treq-vcr-response-content-redaction>`
+
+```{needlist}
+:filter: "'TREQ_VCR_RESPONSE_CONTENT_REDACTION' in derives or 'TREQ_VCR_RESPONSE_CONTENT_REDACTION' in implements or 'TREQ_VCR_RESPONSE_CONTENT_REDACTION' in verifies"
 ```
 
 ::::

@@ -189,6 +189,49 @@ def test_vcr_auth_and_account_data_are_removed_before_cassette_persistence(
     assert replayed_sidecar.status_code == 200
 
 
+@pytest.mark.verifies("TREQ_VCR_RESPONSE_CONTENT_REDACTION[revision==1]")
+def test_vcr_response_scrubs_recognized_reflected_credential_before_persistence(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    provider_path = openai_chat_path()
+    protected_reflection = "AIza" + ("A" * 35)
+    cassette = tmp_path / "response-reflection.yaml"
+    recorder = _recorder()
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", _marker("response-reflection-auth"))
+
+    with (
+        ScriptedHTTPServer(
+            port=0,
+            routes={
+                ("POST", provider_path): [
+                    ScriptedResponse(
+                        status_code=200,
+                        headers={"Content-Type": "application/json"},
+                        body=openai_success_response(text=protected_reflection),
+                    )
+                ]
+            },
+        ) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ),
+        recorder.use_cassette(str(cassette), record_mode="once"),
+    ):
+        response = LLMRouter(
+            RouterProfile(
+                model=Model.DEEPSEEK_V3,
+                provider=Provider.OPENROUTER,
+            )
+        ).query(protected_reflection)
+
+    assert response.output_text == protected_reflection
+    persisted = cassette.read_text()
+    assert protected_reflection not in persisted
+    assert "DUMMY_GOOGLE_API_KEY" in persisted
+
+
 @pytest.mark.verifies("TREQ_VCR_REQUEST_CONTENT_REDACTION[revision==1]")
 @pytest.mark.coverage_item("VC_VCR_REQUEST_BODY_DURABLE_REDACTION")
 def test_vcr_request_body_is_fingerprinted_before_cassette_persistence(

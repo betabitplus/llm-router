@@ -57,7 +57,7 @@ for _test_name, _criterion in (
 globals()[
     "test_provider_failure_diagnostics_exclude_providercontrolled_protected_text"
 ] = pytest.mark.fault_item(
-    "REQ_SENSITIVE_DATA_PROTECTION",
+    "TREQ_RUNTIME_LOG_SAFETY",
     "interface.error-status",
 )(
     globals()[
@@ -67,7 +67,7 @@ globals()[
 globals()[
     "test_schema_failure_diagnostics_exclude_invalid_values_and_caller_schema_identity"
 ] = pytest.mark.fault_item(
-    "REQ_SENSITIVE_DATA_PROTECTION",
+    "TREQ_RUNTIME_LOG_SAFETY",
     "interface.payload-schema",
 )(
     globals()[
@@ -100,6 +100,62 @@ def explode(*, value: str) -> None:
 
 
 @given(
+    "a successful request contains a protected prompt and credential",
+    target_fixture="case",
+)
+def successful_request_with_protected_values(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> dict[str, Any]:
+    prompt = _marker("success-prompt")
+    credential = _marker("success-credential")
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", credential)
+    caplog.set_level(logging.INFO, logger="llm_router")
+    return {
+        "prompt": prompt,
+        "credential": credential,
+        "caplog": caplog,
+    }
+
+
+@when("the successful request crosses the public router boundary")
+def successful_request_crosses_public_boundary(case: dict[str, Any]) -> None:
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", _OPENAI_PATH): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text="safe-success-result"),
+                )
+            ]
+        },
+    ) as server:
+        with patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ):
+            response = LLMRouter(
+                RouterProfile(
+                    model=Model.DEEPSEEK_V3,
+                    provider=Provider.OPENROUTER,
+                )
+            ).query(case["prompt"])
+        case["output"] = response.output_text
+        case["request_count"] = server.request_count("POST", _OPENAI_PATH)
+
+
+@then("successful request diagnostics contain no protected caller values")
+def successful_request_diagnostics_are_safe(case: dict[str, Any]) -> None:
+    rendered = _render_logs(case["caplog"])
+    assert case["output"] == "safe-success-result"
+    assert case["request_count"] == 1
+    assert case["prompt"] not in rendered
+    assert case["credential"] not in rendered
+
+
+@given(
     "a provider error contains protected diagnostic text and a protected credential",
     target_fixture="case",
 )
@@ -123,7 +179,7 @@ def provider_error_with_protected_values(
 @when("the provider failure crosses the public router boundary")
 def provider_failure_crosses_public_boundary(case: dict[str, Any]) -> None:
     retain_fault_injection(
-        contract_id="REQ_SENSITIVE_DATA_PROTECTION",
+        contract_id="TREQ_RUNTIME_LOG_SAFETY",
         fault_class="interface.error-status",
         mechanism="scripted provider returns an error body containing protected text",
         details={"status_code": 400},
@@ -297,7 +353,7 @@ def schema_validation_with_protected_values(
 @when("structured validation exhausts its public attempt budget")
 def schema_validation_exhausts_budget(case: dict[str, Any]) -> None:
     retain_fault_injection(
-        contract_id="REQ_SENSITIVE_DATA_PROTECTION",
+        contract_id="TREQ_RUNTIME_LOG_SAFETY",
         fault_class="interface.payload-schema",
         mechanism="scripted provider returns schema-invalid caller-controlled content",
         details={"structured_output_max_attempts": 1},

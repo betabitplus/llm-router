@@ -106,6 +106,14 @@ def main() -> None:
         HTML / "contract-evidence-provider-retry.html",
         HTML / "contract-evidence-structured-output-repair.html",
         HTML / "contract-evidence-sensitive-data-protection.html",
+        HTML / "contract-evidence-runtime-log-safety.html",
+        HTML / "contract-evidence-vcr-auth-redaction.html",
+        HTML / "contract-evidence-vcr-request-content-redaction.html",
+        HTML / "contract-evidence-vcr-response-content-redaction.html",
+        HTML / "assurance-feat-sensitive-data-protection.html",
+        HTML / "assurance-goal-data-safety.html",
+        ROOT / "docs/assurance-profiles/security.md",
+        HTML / "assurance-profiles/security.html",
         HTML / "contract-evidence-provider-adapter-interoperability.html",
         HTML / "contract-evidence-async-provider-execution.html",
         HTML / "contract-evidence-response-normalization.html",
@@ -203,6 +211,9 @@ def main() -> None:
     resilience_profile_source = (ROOT / "docs/verification-profiles/resilience.md").read_text()
     security_requirements_source = (ROOT / "docs/requirements/security.md").read_text()
     security_profile_source = (ROOT / "docs/verification-profiles/security.md").read_text()
+    security_assurance_profile_source = (
+        ROOT / "docs/assurance-profiles/security.md"
+    ).read_text()
     provider_requirements_source = (ROOT / "docs/requirements/providers.md").read_text()
     provider_profile_source = (ROOT / "docs/verification-profiles/providers.md").read_text()
     session_requirements_source = (ROOT / "docs/requirements/sessions.md").read_text()
@@ -256,6 +267,7 @@ def main() -> None:
         "(test-plan-configuration-validation-model)=",
         "(test-plan-provider-retry-model)=",
         "(test-plan-structured-recovery-model)=",
+        "(test-plan-data-safety-observability-audit-model)=",
         "(test-plan-sensitive-runtime-diagnostics-model)=",
         "(test-plan-vcr-redaction-model)=",
         "(test-plan-session-lifecycle-model)=",
@@ -384,6 +396,7 @@ def main() -> None:
         ":revision: 2",
         ":id: TREQ_VCR_AUTH_REDACTION",
         ":id: TREQ_VCR_REQUEST_CONTENT_REDACTION",
+        ":id: TREQ_VCR_RESPONSE_CONTENT_REDACTION",
     )), "Data Safety Goal keeps the complete normative diagnostic and durable-evidence contract set")
     check(
         "**Verification intent.**" not in security_requirements_source,
@@ -391,14 +404,36 @@ def main() -> None:
     )
     check(all(token in security_profile_source for token in (
         "## Profile · REQ_SENSITIVE_DATA_PROTECTION",
+        "## Profile · TREQ_RUNTIME_LOG_SAFETY",
+        "## Profile · TREQ_VCR_AUTH_REDACTION",
+        "## Profile · TREQ_VCR_REQUEST_CONTENT_REDACTION",
+        "## Profile · TREQ_VCR_RESPONSE_CONTENT_REDACTION",
+        "VC_DATA_SAFETY_OBSERVABILITY_AUDIT",
         "VC_SECURITY_LOG_CONTEXT_FIELDS",
         "VC_VCR_AUTH_DURABLE_REDACTION",
         "VC_VCR_REQUEST_BODY_DURABLE_REDACTION",
+        "VC_VCR_RESPONSE_ECHO_DURABLE_REDACTION",
         "VC_SECURITY_PROVIDER_FAILURE_DIAGNOSTICS",
         "VC_SECURITY_TOOL_FAILURE_DIAGNOSTICS",
         "VC_SECURITY_SCHEMA_FAILURE_DIAGNOSTICS",
+        "### Required technical support",
         "### Fault applicability",
-    )), "Data Safety Verification Profile owns independent coverage targets and explicit Fault Model")
+    )), "Data Safety Verification Profiles split parent outcome from first-class technical support and explicit Fault Models")
+    check(
+        all(
+            token in security_assurance_profile_source
+            for token in (
+                "## Feature · FEAT_SENSITIVE_DATA_PROTECTION",
+                "### Capability integration",
+                "### Capability validation",
+                "## Goal · GOAL_DATA_SAFETY",
+                "### Cross-capability integration",
+                "### Outcome validation",
+                "**Target:** N/A",
+            )
+        ),
+        "Data Safety Assurance Profile keeps the one-Requirement/one-Feature upper topology explicitly N/A",
+    )
     check(all(token in provider_requirements_source for token in (
         ":id: GOAL_PROVIDER_PORTABILITY",
         ":id: REQ_PROVIDER_ADAPTER_INTEROPERABILITY",
@@ -722,7 +757,7 @@ def main() -> None:
         depth_facts.get("schema_version") == 4
         and retained_test_count >= 189
         and depth_source.get("passed") == retained_test_count
-        and depth_audit.get("contracts") == 62
+        and depth_audit.get("contracts") == 63
         and depth_audit.get("runtime_evidence") == retained_test_count
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
@@ -911,8 +946,8 @@ def main() -> None:
     check(float(campaign.get("duration_seconds") or 0) > 0, "retained pilot campaign has runtime")
 
     check(
-        summary.get("total_contracts") == 62,
-        "62 contracts are present in the verification-depth / mutation measurement universe",
+        summary.get("total_contracts") == 63,
+        "63 contracts are present in the verification-depth / mutation measurement universe",
     )
     check(
         summary.get("measured_contracts") == 2,
@@ -1036,6 +1071,10 @@ def main() -> None:
     provider_retry_page = (HTML / "contract-evidence-provider-retry.html").read_text()
     structured_repair_page = (HTML / "contract-evidence-structured-output-repair.html").read_text()
     security_page = (HTML / "contract-evidence-sensitive-data-protection.html").read_text()
+    runtime_log_safety_page = (HTML / "contract-evidence-runtime-log-safety.html").read_text()
+    vcr_auth_redaction_page = (HTML / "contract-evidence-vcr-auth-redaction.html").read_text()
+    vcr_request_redaction_page = (HTML / "contract-evidence-vcr-request-content-redaction.html").read_text()
+    vcr_response_redaction_page = (HTML / "contract-evidence-vcr-response-content-redaction.html").read_text()
     provider_adapter_page = (HTML / "contract-evidence-provider-adapter-interoperability.html").read_text()
     async_provider_page = (HTML / "contract-evidence-async-provider-execution.html").read_text()
     response_normalization_page = (HTML / "contract-evidence-response-normalization.html").read_text()
@@ -1060,6 +1099,8 @@ def main() -> None:
         "Goal developer": (HTML / "assurance-goal-developer-usability.html").read_text(),
         "Feature sessions": (HTML / "assurance-feat-session-lifecycle.html").read_text(),
         "Goal sessions": (HTML / "assurance-goal-session-continuity.html").read_text(),
+        "Feature data safety": (HTML / "assurance-feat-sensitive-data-protection.html").read_text(),
+        "Goal data safety": (HTML / "assurance-goal-data-safety.html").read_text(),
         "Product / System": (HTML / "assurance-product-system.html").read_text(),
     }
     spec_page = (HTML / "specification-health.html").read_text()
@@ -1254,7 +1295,9 @@ def main() -> None:
         "Goal routing": upper_assurance_pages["Goal routing"],
         "Goal developer": upper_assurance_pages["Goal developer"],
         "Goal sessions": upper_assurance_pages["Goal sessions"],
+        "Goal data safety": upper_assurance_pages["Goal data safety"],
         "Feature sessions": upper_assurance_pages["Feature sessions"],
+        "Feature data safety": upper_assurance_pages["Feature data safety"],
         "Feature fallback": upper_assurance_pages["Feature fallback"],
         "Feature public API": upper_assurance_pages["Feature public API"],
         "REQ sticky route": sticky_route_page,
@@ -1263,6 +1306,11 @@ def main() -> None:
         "REQ provider retry": provider_retry_page,
         "REQ session persistence": session_persistence_page,
         "TREQ session serialization": session_serialization_page,
+        "REQ data safety": security_page,
+        "TREQ runtime log safety": runtime_log_safety_page,
+        "TREQ VCR auth": vcr_auth_redaction_page,
+        "TREQ VCR request": vcr_request_redaction_page,
+        "TREQ VCR response": vcr_response_redaction_page,
     }
     for name, page in hierarchy_nav_pages.items():
         nav = re.search(
@@ -1283,12 +1331,13 @@ def main() -> None:
             f"{name}: hierarchy navigation contains navigation only, without assurance status",
         )
     check(
-        "<span>Goals</span><b>3</b>" in upper_assurance_pages["Product / System"]
+        "<span>Goals</span><b>4</b>" in upper_assurance_pages["Product / System"]
         and '<details class="tf-assurance-next">' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-routing-reliability.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-developer-usability.html"' in upper_assurance_pages["Product / System"]
-        and 'href="assurance-goal-session-continuity.html"' in upper_assurance_pages["Product / System"],
-        "Product / System navigation exposes all three onboarded Goals through one compact dropdown",
+        and 'href="assurance-goal-session-continuity.html"' in upper_assurance_pages["Product / System"]
+        and 'href="assurance-goal-data-safety.html"' in upper_assurance_pages["Product / System"],
+        "Product / System navigation exposes all four onboarded Goals through one compact dropdown",
     )
     check(
         "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal routing"]
@@ -1309,6 +1358,18 @@ def main() -> None:
         and 'href="assurance-feat-session-lifecycle.html"' in upper_assurance_pages["Goal sessions"]
         and '<details class="tf-assurance-next">' not in upper_assurance_pages["Goal sessions"],
         "Session Goal navigation uses one direct next-level link for its single capability",
+    )
+    check(
+        "<span>Capabilities</span><b>1</b>" in upper_assurance_pages["Goal data safety"]
+        and 'href="assurance-feat-sensitive-data-protection.html"' in upper_assurance_pages["Goal data safety"]
+        and '<details class="tf-assurance-next">' not in upper_assurance_pages["Goal data safety"],
+        "Data Safety Goal navigation uses one direct next-level link for its single capability",
+    )
+    check(
+        "<span>Requirements</span><b>1</b>" in upper_assurance_pages["Feature data safety"]
+        and 'href="contract-evidence-sensitive-data-protection.html"' in upper_assurance_pages["Feature data safety"]
+        and '<details class="tf-assurance-next">' not in upper_assurance_pages["Feature data safety"],
+        "Data Safety Feature navigation uses one direct Requirement link",
     )
     check(
         "<span>Requirements</span><b>2</b>" in upper_assurance_pages["Feature sessions"]
@@ -1343,6 +1404,17 @@ def main() -> None:
         and "<span>Technical support</span><b>1</b>" in session_persistence_page
         and 'href="contract-evidence-session-serialization.html"' in session_persistence_page,
         "Session persistence navigation exposes its first-class serialization Technical requirement",
+    )
+    check(
+        "Data safety" in security_page
+        and "Sensitive data protection" in security_page
+        and "<span>Technical support</span><b>4</b>" in security_page
+        and '<details class="tf-assurance-next">' in security_page
+        and 'href="contract-evidence-runtime-log-safety.html"' in security_page
+        and 'href="contract-evidence-vcr-auth-redaction.html"' in security_page
+        and 'href="contract-evidence-vcr-request-content-redaction.html"' in security_page
+        and 'href="contract-evidence-vcr-response-content-redaction.html"' in security_page,
+        "Data Safety Requirement navigation exposes all four first-class Technical requirements",
     )
     session_serialization_nav = re.search(
         r'<nav class="tf-assurance-nav".*?</nav>',
@@ -1386,6 +1458,8 @@ def main() -> None:
         "Goal developer": "Outcome Assurance",
         "Feature sessions": "Capability Assurance",
         "Goal sessions": "Outcome Assurance",
+        "Feature data safety": "Capability Assurance",
+        "Goal data safety": "Outcome Assurance",
         "Product / System": "Product / System Assurance",
     }
     for name, page in upper_assurance_pages.items():
@@ -1449,6 +1523,8 @@ def main() -> None:
         "Goal developer",
         "Feature sessions",
         "Goal sessions",
+        "Feature data safety",
+        "Goal data safety",
         "Product / System",
     ):
         check(
@@ -1633,14 +1709,14 @@ def main() -> None:
         "Current signal" in mutation_page
         and "New 0" in mutation_page
         and "Debt 29" in mutation_page
-        and "Measured 2/62" in mutation_page,
+        and "Measured 2/63" in mutation_page,
         "Mutation Analysis keeps the current measured mutation signal compact and denominator-explicit",
     )
     check("How this helps during development" not in mutation_page,
           "Mutation Analysis no longer duplicates long usage guidance")
     check('id="mutation-history"' in mutation_page and "Recent changes" in mutation_page,
           "Mutation Analysis exposes compact retained change history")
-    retained_feedback_runs = list((feedback.get("runs") or []))
+    retained_feedback_runs = list(feedback.get("runs") or [])
     check(
         len(retained_feedback_runs) >= 2
         and all(int(row.get("new_unresolved_survivors") or 0) == 0 for row in retained_feedback_runs[-2:])
@@ -2333,35 +2409,85 @@ def main() -> None:
             f"{contract_id}: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
         )
 
-    security_contract = monitor_facts["contracts"]["REQ_SENSITIVE_DATA_PROTECTION"]
-    security_expected_cells = {
+    security_contracts = monitor_facts["contracts"]
+    security_parent = security_contracts["REQ_SENSITIVE_DATA_PROTECTION"]
+    parent_target = (security_parent.get("target") or {}).get("coverage") or []
+    check(
+        len(parent_target) == 1
+        and parent_target[0].get("level") == "system_integration"
+        and parent_target[0].get("boundary") == "substitute"
+        and parent_target[0].get("representation") == "surrogate_simulated"
+        and parent_target[0].get("ms_validation_target") == "L0"
+        and parent_target[0].get("item_path_counts")
+        == {"VC_DATA_SAFETY_OBSERVABILITY_AUDIT": 1}
+        and not (security_parent.get("coverage_actual") or {}),
+        "REQ_SENSITIVE_DATA_PROTECTION: product-level observability target remains explicit and red while the full cross-artifact proof is missing",
+    )
+    check(
+        (security_parent.get("target") or {}).get("required_treqs")
+        == [
+            "TREQ_RUNTIME_LOG_SAFETY",
+            "TREQ_VCR_AUTH_REDACTION",
+            "TREQ_VCR_REQUEST_CONTENT_REDACTION",
+            "TREQ_VCR_RESPONSE_CONTENT_REDACTION",
+        ],
+        "REQ_SENSITIVE_DATA_PROTECTION: Technical Support contains exactly the four narrow technical confidentiality contracts",
+    )
+    check(
+        not (
+            (security_parent.get("fault_actual") or {}).get("retained_challenges")
+            or {}
+        ),
+        "REQ_SENSITIVE_DATA_PROTECTION: child technical fault challenges are not duplicated onto the parent Requirement",
+    )
+    check(
+        '<div class="overall not-met">FAIL</div>' in security_page
+        and re.search(
+            r'<strong>Verification coverage.*?<span class="status not-met">FAIL</span>',
+            security_page,
+            re.DOTALL,
+        )
+        and re.search(
+            r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
+            security_page,
+            re.DOTALL,
+        )
+        and re.search(
+            r'<strong>Technical support.*?<span class="status not-met">FAIL</span>',
+            security_page,
+            re.DOTALL,
+        )
+        and "0 / 4 pass" in security_page,
+        "REQ_SENSITIVE_DATA_PROTECTION: rendered monitor keeps missing product proof and failing Technical Support visible",
+    )
+
+    runtime_contract = security_contracts["TREQ_RUNTIME_LOG_SAFETY"]
+    runtime_expected_cells = {
         ("component", "none"): {"VC_SECURITY_LOG_CONTEXT_FIELDS": 1},
         ("system_integration", "substitute"): {
-            "VC_VCR_AUTH_DURABLE_REDACTION": 1,
-            "VC_VCR_REQUEST_BODY_DURABLE_REDACTION": 1,
             "VC_SECURITY_PROVIDER_FAILURE_DIAGNOSTICS": 1,
             "VC_SECURITY_TOOL_FAILURE_DIAGNOSTICS": 1,
             "VC_SECURITY_SCHEMA_FAILURE_DIAGNOSTICS": 1,
         },
     }
-    security_target_cells = {
+    runtime_target_cells = {
         (row.get("level"), row.get("boundary")): row
-        for row in (security_contract.get("target") or {}).get("coverage") or []
+        for row in (runtime_contract.get("target") or {}).get("coverage") or []
     }
     check(
-        set(security_target_cells) == set(security_expected_cells)
+        set(runtime_target_cells) == set(runtime_expected_cells)
         and all(
-            security_target_cells[key].get("item_path_counts") == counts
-            for key, counts in security_expected_cells.items()
+            runtime_target_cells[key].get("item_path_counts") == counts
+            for key, counts in runtime_expected_cells.items()
         ),
-        "REQ_SENSITIVE_DATA_PROTECTION: Data Safety coverage target keeps the independently authored Test level/Boundary denominators",
+        "TREQ_RUNTIME_LOG_SAFETY: coverage target owns only runtime-diagnostic partitions",
     )
-    security_actual = security_contract.get("coverage_actual") or {}
-    for (level, boundary), criteria in security_expected_cells.items():
+    runtime_actual = runtime_contract.get("coverage_actual") or {}
+    for (level, boundary), criteria in runtime_expected_cells.items():
         for criterion_id, expected_paths in criteria.items():
             rows = [
                 row
-                for row in security_actual.get(criterion_id) or []
+                for row in runtime_actual.get(criterion_id) or []
                 if row.get("level") == level and row.get("boundary") == boundary
             ]
             check(
@@ -2373,65 +2499,109 @@ def main() -> None:
                     and row.get("freshness") == "CURRENT"
                     for row in rows
                 ),
-                f"REQ_SENSITIVE_DATA_PROTECTION: {criterion_id} retains every declared current/qualified evidence path",
+                f"TREQ_RUNTIME_LOG_SAFETY: {criterion_id} retains every declared current/qualified path",
             )
-    security_faults = (
-        (security_contract.get("fault_actual") or {}).get("retained_challenges") or {}
+    runtime_faults = (
+        (runtime_contract.get("fault_actual") or {}).get("retained_challenges") or {}
     )
-    expected_security_faults = {
+    expected_runtime_faults = {
         "interface.error-status": (1, 1),
         "interface.payload-schema": (1, 1),
     }
     check(
-        set(security_faults) == set(expected_security_faults),
-        "REQ_SENSITIVE_DATA_PROTECTION: retained fault challenges contain only explicitly declared runtime-observed classes",
+        set(runtime_faults) == set(expected_runtime_faults),
+        "TREQ_RUNTIME_LOG_SAFETY: provider/schema fault challenges moved to the narrow technical owner",
     )
-    for fault_class, (exercised, detected) in expected_security_faults.items():
-        row = security_faults[fault_class]
+    for fault_class, (exercised, detected) in expected_runtime_faults.items():
+        row = runtime_faults[fault_class]
         check(
             row.get("exercised_paths") == exercised
             and row.get("detected_paths") == detected
             and row.get("exercised") is True
-            and row.get("detected") is True
-            and all(
-                item.get("freshness") == "CURRENT"
-                and item.get("producer_qualification") == "QUALIFIED"
-                and item.get("observation_sha256")
-                for item in row.get("rows") or []
-            ),
-            f"REQ_SENSITIVE_DATA_PROTECTION: {fault_class} challenge is current, qualified, and detected",
+            and row.get("detected") is True,
+            f"TREQ_RUNTIME_LOG_SAFETY: {fault_class} remains detected by retained evidence",
         )
-    required_security_faults = {
-        item["id"]
-        for group in (security_contract.get("target") or {}).get("fault_groups") or []
-        for item in group.get("items") or []
-        if item.get("state") == "required"
-    }
-    challenged_security_faults = {
-        class_id
-        for class_id in required_security_faults
-        if ((security_contract.get("fault_actual") or {}).get("classes") or {})
-        .get(class_id, {})
-        .get("exercised")
-    }
     check(
-        challenged_security_faults == set(expected_security_faults)
-        and challenged_security_faults < required_security_faults,
-        "REQ_SENSITIVE_DATA_PROTECTION: partial Data Safety Fault Model remains explicit instead of becoming false-green",
-    )
-    check(
-        '<div class="overall not-met">FAIL</div>' in security_page
+        '<div class="overall not-met">FAIL</div>' in runtime_log_safety_page
         and re.search(
             r'<strong>Verification coverage.*?<span class="status met">PASS</span>',
-            security_page,
+            runtime_log_safety_page,
             re.DOTALL,
         )
         and re.search(
             r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
-            security_page,
+            runtime_log_safety_page,
             re.DOTALL,
         ),
-        "REQ_SENSITIVE_DATA_PROTECTION: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
+        "TREQ_RUNTIME_LOG_SAFETY: Coverage passes while incomplete Fault Model keeps the contract red",
+    )
+
+    for contract_id, criterion_id, page in (
+        (
+            "TREQ_VCR_AUTH_REDACTION",
+            "VC_VCR_AUTH_DURABLE_REDACTION",
+            vcr_auth_redaction_page,
+        ),
+        (
+            "TREQ_VCR_REQUEST_CONTENT_REDACTION",
+            "VC_VCR_REQUEST_BODY_DURABLE_REDACTION",
+            vcr_request_redaction_page,
+        ),
+    ):
+        contract = security_contracts[contract_id]
+        target_rows = (contract.get("target") or {}).get("coverage") or []
+        actual_rows = (contract.get("coverage_actual") or {}).get(criterion_id) or []
+        check(
+            len(target_rows) == 1
+            and target_rows[0].get("level") == "system_integration"
+            and target_rows[0].get("boundary") == "substitute"
+            and target_rows[0].get("item_path_counts") == {criterion_id: 1}
+            and len(actual_rows) == 1
+            and actual_rows[0].get("result") == "passed"
+            and actual_rows[0].get("provenance") == "COMPLETE"
+            and actual_rows[0].get("producer_qualification") == "QUALIFIED"
+            and actual_rows[0].get("freshness") == "CURRENT",
+            f"{contract_id}: durable VCR coverage is one current qualified physical-persistence path",
+        )
+        check(
+            '<div class="overall not-met">FAIL</div>' in page
+            and re.search(
+                r'<strong>Verification coverage.*?<span class="status met">PASS</span>',
+                page,
+                re.DOTALL,
+            )
+            and re.search(
+                r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
+                page,
+                re.DOTALL,
+            ),
+            f"{contract_id}: passing coverage does not false-green the incomplete Fault Model",
+        )
+
+    response_contract = security_contracts["TREQ_VCR_RESPONSE_CONTENT_REDACTION"]
+    response_target = (response_contract.get("target") or {}).get("coverage") or []
+    check(
+        len(response_target) == 1
+        and response_target[0].get("level") == "system_integration"
+        and response_target[0].get("boundary") == "substitute"
+        and response_target[0].get("item_path_counts")
+        == {"VC_VCR_RESPONSE_ECHO_DURABLE_REDACTION": 1}
+        and not (response_contract.get("coverage_actual") or {}),
+        "TREQ_VCR_RESPONSE_CONTENT_REDACTION: generic caller-echo target stays red despite narrower credential-redaction evidence",
+    )
+    check(
+        '<div class="overall not-met">FAIL</div>' in vcr_response_redaction_page
+        and re.search(
+            r'<strong>Verification coverage.*?<span class="status not-met">FAIL</span>',
+            vcr_response_redaction_page,
+            re.DOTALL,
+        )
+        and re.search(
+            r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
+            vcr_response_redaction_page,
+            re.DOTALL,
+        ),
+        "TREQ_VCR_RESPONSE_CONTENT_REDACTION: known response-echo gap remains visibly unproven",
     )
 
     provider_expectations = {
@@ -3189,6 +3359,9 @@ def main() -> None:
         contract_id
         for contract_id, expected in provider_expectations.items()
         if not expected.get("coverage_pass", True)
+    } | {
+        "REQ_SENSITIVE_DATA_PROTECTION",
+        "TREQ_VCR_RESPONSE_CONTENT_REDACTION",
     }
     complete_fault_contracts = set(developer_fault_expectations)
     for contract_id, page in contract_pages.items():
@@ -3648,16 +3821,17 @@ def main() -> None:
     )
     security_trace_routes = {
         "REQ_SENSITIVE_DATA_PROTECTION": "contract-evidence-sensitive-data-protection.html#ce-coverage-req_sensitive_data_protection",
-        "TREQ_RUNTIME_LOG_SAFETY": "contract-evidence-sensitive-data-protection.html#ce-coverage-req_sensitive_data_protection",
-        "TREQ_VCR_AUTH_REDACTION": "contract-evidence-sensitive-data-protection.html#ce-coverage-req_sensitive_data_protection",
-        "TREQ_VCR_REQUEST_CONTENT_REDACTION": "contract-evidence-sensitive-data-protection.html#ce-coverage-req_sensitive_data_protection",
+        "TREQ_RUNTIME_LOG_SAFETY": "contract-evidence-runtime-log-safety.html#ce-coverage-treq_runtime_log_safety",
+        "TREQ_VCR_AUTH_REDACTION": "contract-evidence-vcr-auth-redaction.html#ce-coverage-treq_vcr_auth_redaction",
+        "TREQ_VCR_REQUEST_CONTENT_REDACTION": "contract-evidence-vcr-request-content-redaction.html#ce-coverage-treq_vcr_request_content_redaction",
+        "TREQ_VCR_RESPONSE_CONTENT_REDACTION": "contract-evidence-vcr-response-content-redaction.html#ce-coverage-treq_vcr_response_content_redaction",
     }
     check(
         all(
             f'"{contract_id}": "{href}"' in trace_reader_page
             for contract_id, href in security_trace_routes.items()
         ),
-        "Traceability Reader routes Data Safety parent/derived contracts to the accepted parent Contract Evidence page",
+        "Traceability Reader routes Data Safety REQ/TREQ contracts to their first-class Contract Evidence pages",
     )
     provider_trace_routes = {
         "REQ_PROVIDER_ADAPTER_INTEROPERABILITY": "contract-evidence-provider-adapter-interoperability.html#ce-coverage-req_provider_adapter_interoperability",
@@ -3749,16 +3923,16 @@ def main() -> None:
         check('href="mutation-analysis.html"' in text, f"{name}: portal navigation links Mutation Analysis")
 
     measurement_contract_ids = {row["contract_id"] for row in depth_facts.get("contracts") or []}
-    check(len(measurement_contract_ids) == 62,
-          "verification-depth / mutation measurement universe contains all 62 current contracts")
+    check(len(measurement_contract_ids) == 63,
+          "verification-depth / mutation measurement universe contains all 63 current contracts")
     requirements_text = "\n".join(
         path.read_text() for path in sorted((ROOT / "docs/requirements").glob("*.md"))
     )
     normative_contract_ids = set(re.findall(
         r"^:id:\s+((?:REQ|TREQ)_[A-Z0-9_]+)\s*$", requirements_text, flags=re.MULTILINE
     ))
-    check(len(normative_contract_ids) == 62,
-          "normative Sphinx-Needs graph contains 62 Requirement/TREQ contracts")
+    check(len(normative_contract_ids) == 63,
+          "normative Sphinx-Needs graph contains 63 Requirement/TREQ contracts")
     missing_contracts = sorted(
         contract_id for contract_id in normative_contract_ids if f"`{contract_id}`" not in manifest
     )

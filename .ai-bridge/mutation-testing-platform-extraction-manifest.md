@@ -209,6 +209,7 @@ Every Requirement/TREQ below is **llm-router-specific domain data**. None become
 | `TREQ_USAGE_NORMALIZATION`                 | N/A · unmeasured in pilot     | No uniquely attributable retained mutation campaign; do not infer strength.                                                                                                                           | llm-router-specific contract; stays in consumer Sphinx-Needs graph. |
 | `TREQ_VCR_AUTH_REDACTION`                  | N/A · unmeasured in pilot     | No uniquely attributable retained mutation campaign; do not infer strength.                                                                                                                           | llm-router-specific contract; stays in consumer Sphinx-Needs graph. |
 | `TREQ_VCR_REQUEST_CONTENT_REDACTION`       | N/A · unmeasured in pilot     | Durable request-body fingerprinting is verified by retained VCR serialization/replay evidence; no uniquely attributable product mutation scope is claimed.                                            | llm-router-specific contract; stays in consumer Sphinx-Needs graph. |
+| `TREQ_VCR_RESPONSE_CONTENT_REDACTION`      | N/A · unmeasured in pilot     | Caller-controlled provider-response echoes have a first-class target but currently lack the complete retained proof; no uniquely attributable mutation scope is claimed.                              | llm-router-specific contract; stays in consumer Sphinx-Needs graph. |
 
 ## Premature platform spike cleanup — learnings retained, implementation discarded
 
