@@ -674,14 +674,13 @@ def support_section(
     title: str,
     state: dict,
     profile_url: str,
-    help_text: str,
 ) -> str:
-    tiles = []
+    cards = []
     for row in state["children"]:
-        tiles.append(
-            f'<a class="fault-tile upper-child-tile {reqmon.status_class(row["status"])}" '
+        cards.append(
+            f'<a class="signal-card {reqmon.status_class(row["status"])}-signal technical-support-card" '
             f'href="{esc(row["url"])}">'
-            '<div class="tile-head">'
+            '<div class="signal-head">'
             f"<strong>{esc(row['id'])}</strong>"
             f'<span class="status {reqmon.status_class(row["status"])}">{esc(reqmon.status_label(row["status"]))}</span>'
             "</div>"
@@ -690,11 +689,11 @@ def support_section(
         )
     return (
         f'<section class="section" id="{esc(section_id)}">'
-        f'<div class="section-head"><h3>{esc(title)} {reqmon.help_tip(help_text)}</h3>'
+        f'<div class="section-head"><h3>{esc(title)}</h3>'
         f'<div class="section-links"><a class="section-link" href="{esc(profile_url)}">Profile ↗</a>'
         '<a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div></div>'
-        '<div class="panel upper-support-panel"><div class="fault-grid upper-support-grid">'
-        + "".join(tiles)
+        '<div class="panel technical-support-panel"><div class="signal-grid">'
+        + "".join(cards)
         + "</div></div></section>"
     )
 
@@ -728,14 +727,16 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
         },
         label="Scenario coverage",
         subject="scenarios",
-        retained_subject="scenario runs",
+        subject_singular="scenario",
+        retained_subject="paths",
+        retained_subject_singular="path",
         tip="Checks that the declared assurance scenario passes.",
     )
     producer_actual_values = sorted(
         {str(row.get("actual") or "UNKNOWN").upper() for row in producer_rows}
     )
     producer = reqmon.lane(
-        "Producer qualification",
+        f"Producer qualification · {len(producer_rows)} producers",
         reqmon.PRODUCER,
         producer_actual_values,
         "QUALIFIED",
@@ -774,8 +775,8 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
         '<div class="signal-grid">'
         '<div class="signal-group primary-group"><div class="signal-group-head"><strong>Required evidence</strong></div>'
         f"{scenario_card}</div>"
-        '<div class="signal-group path-properties"><div class="signal-group-head"><strong>Retained evidence properties</strong>'
-        f'<span class="group-scope">{actual_executions}/{required_executions} scenario runs</span></div>'
+        '<div class="signal-group path-properties"><div class="signal-group-head"><strong>Retained path properties</strong>'
+        f'<span class="group-scope">{actual_executions}/{required_executions} paths</span></div>'
         '<div class="confidence-subgroup"><div class="subgroup-head"><strong>Evidence confidence</strong></div>'
         f'<div class="confidence-grid">{producer}{freshness}</div></div></div></div>'
         '<div class="drilldowns">'
@@ -789,12 +790,11 @@ def direct_section(
     title: str,
     state: dict,
     profile_url: str,
-    help_text: str,
 ) -> tuple[str, dict[str, str], str | None]:
     if state["status"] == "N/A":
         markup = (
             f'<section class="section" id="{esc(section_id)}">'
-            f'<div class="section-head"><h3>{esc(title)} {reqmon.help_tip(help_text)}</h3>'
+            f'<div class="section-head"><h3>{esc(title)}</h3>'
             f'<div class="section-links"><a class="section-link" href="{esc(profile_url)}">Profile ↗</a>'
             '<a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div></div>'
             '<div class="fault-layout no-inspector"><div class="fault-grid">'
@@ -823,7 +823,7 @@ def direct_section(
             criterion["id"],
         )
         tiles.append(
-            f'<button class="fault-tile upper-criterion-tile {reqmon.status_class(criterion["status"])}" '
+            f'<button class="fault-tile {reqmon.status_class(criterion["status"])}" '
             f'type="button" data-upper="{esc(criterion["id"])}" data-upper-inspector="upper-inspector-{esc(section_id)}">'
             '<div class="tile-head">'
             f"<strong>{esc(scenario)}</strong>"
@@ -837,7 +837,7 @@ def direct_section(
         )
     markup = (
         f'<section class="section" id="{esc(section_id)}">'
-        f'<div class="section-head"><h3>{esc(title)} {reqmon.help_tip(help_text)}</h3>'
+        f'<div class="section-head"><h3>{esc(title)}</h3>'
         f'<div class="section-links"><a class="section-link" href="{esc(profile_url)}">Profile ↗</a>'
         '<a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div></div>'
         '<div class="fault-layout"><div class="fault-grid">'
@@ -908,7 +908,6 @@ def render_page(
                     label,
                     state,
                     profile_url,
-                    UPPER_HELP[key],
                 )
             )
         else:
@@ -917,7 +916,6 @@ def render_page(
                 label,
                 state,
                 profile_url,
-                UPPER_HELP[key],
             )
             sections.append(markup)
             upper_inspectors.update(inspectors)
@@ -953,16 +951,7 @@ def render_page(
     if count != 1:
         raise RuntimeError("Could not replace upper-assurance article body")
 
-    extra_style = style_match.group(0).replace(
-        "</style>",
-        "#tf-requirement-monitor .upper-support-panel{padding:.55rem}"
-        "#tf-requirement-monitor .upper-child-tile{display:block;min-height:0;text-decoration:none}"
-        "#tf-requirement-monitor .upper-child-tile.unknown{border-color:color-mix(in srgb,var(--amber) 45%,var(--line))}"
-        "#tf-requirement-monitor .upper-child-tile:hover{outline:2px solid color-mix(in srgb,var(--blue) 55%,transparent);outline-offset:1px}"
-        "@media(max-width:760px){#tf-requirement-monitor .domain-strip.with-support{grid-template-columns:1fr}}"
-        "</style>",
-    )
-    source = source.replace("</head>", extra_style + "\n</head>", 1)
+    source = source.replace("</head>", style_match.group(0) + "\n</head>", 1)
 
     default_js = "".join(
         f"selectUpper(document.querySelector('[data-upper=\\\"{criterion}\\\"]'));"

@@ -1024,8 +1024,8 @@ def main() -> None:
             flags=re.DOTALL,
         )
         check(
-            style is not None and style.group(1).startswith(canonical_style_text),
-            f"{name}: upper assurance extends the canonical REQ monitor CSS without replacing it",
+            style is not None and style.group(1) == canonical_style_text,
+            f"{name}: upper assurance uses the exact canonical REQ monitor CSS",
         )
         check(
             page.count('id="tf-requirement-monitor-style"') == 1
@@ -1100,9 +1100,49 @@ def main() -> None:
         in upper_assurance_pages["Feature fallback"],
         "REQ and upper assurance use the same plain-language evidence-producer explanation",
     )
+    upper_help_expectations = {
+        "Feature fallback": (
+            "Checks that every Requirement needed by this capability is independently proven.",
+            "Checks that the Requirements inside this capability work correctly together.",
+            "Checks that this capability actually delivers the behavior it exists to provide.",
+        ),
+        "Feature rate limit": (
+            "Checks that every Requirement needed by this capability is independently proven.",
+            "Checks that the Requirements inside this capability work correctly together.",
+            "Checks that this capability actually delivers the behavior it exists to provide.",
+        ),
+        "Goal routing": (
+            "Checks that every capability needed by this Goal is independently proven.",
+            "Checks that the capabilities inside this Goal work correctly together.",
+            "Checks that the Goal&#x27;s intended product outcome is achieved in a realistic scenario.",
+        ),
+        "Product / System": (
+            "Checks that every Goal required for whole-product assurance is independently proven.",
+            "Checks that product Goals do not break each other when they interact.",
+            "Checks that the whole product works in the intended end-to-end operating scenario.",
+        ),
+    }
     check(
-        all(page.count('class="help-tip"') >= 5 for page in upper_assurance_pages.values()),
-        "all upper assurance pages explain their non-obvious monitor signals with tooltips",
+        all(
+            all(tip in upper_assurance_pages[name] for tip in tips)
+            for name, tips in upper_help_expectations.items()
+        ),
+        "upper assurance keeps one semantic tooltip for every upper-level domain",
+    )
+    check(
+        all(
+            not re.search(r'class="section-head"><h3>[^<]*<span class="help"', page)
+            for page in upper_assurance_pages.values()
+        ),
+        "upper assurance does not duplicate domain tooltips in section headings",
+    )
+    check(
+        all(
+            'class="signal-card ' in page
+            and "technical-support-card" in page
+            for page in upper_assurance_pages.values()
+        ),
+        "upper child-support sections reuse canonical REQ technical-support cards",
     )
     check(
         "Producer qualification · 8 producers" in sticky_route_page
@@ -1120,7 +1160,7 @@ def main() -> None:
         and "<b>2/2</b><small>inputs</small>" in goal_page
         and goal_page.count('class="state-lane"') >= 4
         and 'class="marker both">ACTUAL = TARGET' in goal_page
-        and "Retained evidence properties" in goal_page
+        and "Retained path properties" in goal_page
         and "Evidence confidence" in goal_page
         and ">Execution<" not in goal_page
         and ">Confidence<" not in goal_page,

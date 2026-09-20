@@ -454,7 +454,9 @@ def coverage_card(
     *,
     label: str = "Semantic coverage",
     subject: str = "criteria",
+    subject_singular: str | None = None,
     retained_subject: str = "paths",
+    retained_subject_singular: str | None = None,
     tip: str = "Checks that every required behavior has the exact evidence path or paths declared by the profile.",
 ) -> str:
     segments = (
@@ -462,19 +464,28 @@ def coverage_card(
         + '<span class="coverage-segment fail"></span>' * state["failed_count"]
         + '<span class="coverage-segment missing"></span>' * state["missing_count"]
     )
+    subject_one = subject_singular or {"criteria": "criterion"}.get(subject, subject)
+    retained_one = retained_subject_singular or {"paths": "path"}.get(
+        retained_subject, retained_subject
+    )
+    shown_subject = subject_one if state["required_count"] == 1 else subject
+    pass_subject = subject_one if state["semantic_actual"] == 1 else subject
+    fail_subject = subject_one if state["failed_count"] == 1 else subject
+    missing_subject = subject_one if state["missing_count"] == 1 else subject
+    shown_retained = retained_one if state["required_path_count"] == 1 else retained_subject
     return (
         f'<div class="signal-card coverage-card {status_class(state["semantic_status"])}-signal">'
         f'<div class="signal-head"><strong>{esc(label)} {help_tip(tip)}</strong>'
         f'<span class="status {status_class(state["semantic_status"])}">{esc(status_label(state["semantic_status"]))}</span></div>'
         '<div class="coverage-summary">'
-        f'<strong>{state["semantic_actual"]}<span>/</span>{state["required_count"]}</strong><small>{esc(subject)} passing</small>'
+        f'<strong>{state["semantic_actual"]}<span>/</span>{state["required_count"]}</strong><small>{esc(shown_subject)} passing</small>'
         '</div>'
         f'<div class="coverage-strip">{segments}</div>'
         '<div class="coverage-counts">'
-        f'<span class="pass">{state["semantic_actual"]} {esc(subject)} pass</span>'
-        f'<span class="fail">{state["failed_count"]} {esc(subject)} fail</span>'
-        f'<span class="missing">{state["missing_count"]} {esc(subject)} missing</span>'
-        f'<span>{state["retained_count"]}/{state["required_path_count"]} {esc(retained_subject)} retained</span>'
+        f'<span class="pass">{state["semantic_actual"]} {esc(pass_subject)} pass</span>'
+        f'<span class="fail">{state["failed_count"]} {esc(fail_subject)} fail</span>'
+        f'<span class="missing">{state["missing_count"]} {esc(missing_subject)} missing</span>'
+        f'<span>{state["retained_count"]}/{state["required_path_count"]} {esc(shown_retained)} retained</span>'
         f'</div></div>'
     )
 
