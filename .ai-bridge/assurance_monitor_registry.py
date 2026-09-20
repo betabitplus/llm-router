@@ -103,6 +103,9 @@ PAGE_SPECS = (
 )
 
 UPPER_MONITOR_URLS = {spec.entity_id: spec.output for spec in PAGE_SPECS}
+CONTRACT_MONITOR_OVERRIDES = {
+    "REQ_INVALID_CONFIGURATION_ERRORS": "verification-assurance.html",
+}
 
 
 def contract_slug(contract_id: str) -> str:
@@ -122,7 +125,10 @@ def monitor_urls(
     urls = dict(UPPER_MONITOR_URLS)
     urls.update(
         {
-            contract_id: f"contract-evidence-{contract_slug(contract_id)}.html"
+            contract_id: CONTRACT_MONITOR_OVERRIDES.get(
+                contract_id,
+                f"contract-evidence-{contract_slug(contract_id)}.html",
+            )
             for contract_id in contract_ids
         }
     )
