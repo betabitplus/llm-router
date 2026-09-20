@@ -76,8 +76,9 @@ blocking.
 
 ## Profile · REQ_SESSION_PERSISTENCE
 
-**Verification intent.** Prove the public save/load path plus generated text/metadata,
-supported embedded media, and explicit incompatible-version rejection.
+**Verification intent.** Prove the public save/load contract across conversation state and
+supported embedded media. Low-level media encoding and serialization-version compatibility
+are owned by the derived {need}`TREQ_SESSION_SERIALIZATION`.
 
 **Models:** {ref}`Session persistence <test-plan-session-persistence-model>`
 
@@ -85,25 +86,93 @@ supported embedded media, and explicit incompatible-version rejection.
 
 | Test level            | Boundary | Representation | M&S target |          Target |
 | --------------------- | -------- | -------------- | ---------- | --------------: |
-| Component             | Local    | Actual         | —          |  **3 criteria** |
-| Component Integration | Local    | Actual         | —          | **1 criterion** |
+| Component             | Local    | Actual         | —          | **1 criterion** |
+| Component Integration | Local    | Actual         | —          |  **2 criteria** |
 
-**Coverage basis.** The parent Requirement needs one public Session round-trip and one
-generated-state property. The derived serialization contract adds four explicit media
-partitions — file bytes, image bytes, local-video bytes/descriptor metadata, and
-remote-video descriptor metadata — plus incompatible-version rejection.
+**Coverage basis.** The public Requirement owns three observable persistence claims: generated
+conversation state round-trips exactly, public Session save/load preserves the observable
+system instruction and history, and the same public path preserves each supported embedded
+media partition. The derived TREQ separately verifies serializer encoding and version
+compatibility; those technical criteria are not counted as REQ evidence.
 
-**Representation basis.** Persistence is a local serialized-state boundary. All paths
-execute the actual SessionStore/Session serializer; no external surrogate is involved.
+**Representation basis.** Both direct paths execute the actual Session/SessionStore
+implementation against local serialized state. No external dependency or surrogate is part
+of the public persistence claim.
 
 ### Verification criteria
 
-| Criterion                                    | Contract                                    | Test level            | Boundary | Required paths | Required path IDs                                 | Success criterion                                                                                                            |
-| -------------------------------------------- | ------------------------------------------- | --------------------- | -------- | -------------: | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `VC_SESSION_PERSISTENCE_GENERATED_STATE`     | {need}`[[id]] <REQ_SESSION_PERSISTENCE>`    | Component             | Local    |              1 | —                                                 | Generated turn sequences round-trip system prompt, user/assistant text, order, and metadata exactly.                         |
-| `VC_SESSION_SERIALIZATION_MEDIA`             | {need}`[[id]] <TREQ_SESSION_SERIALIZATION>` | Component             | Local    |              4 | `file` · `image` · `local-video` · `remote-video` | File bytes, image bytes, local-video bytes/descriptor metadata, and remote-video descriptor metadata each survive save/load. |
-| `VC_SESSION_SERIALIZATION_VERSION_REJECTION` | {need}`[[id]] <TREQ_SESSION_SERIALIZATION>` | Component             | Local    |              1 | —                                                 | Unsupported serialization versions raise SessionSerializationError instead of loading state.                                 |
-| `VC_SESSION_PUBLIC_PERSISTENCE`              | {need}`[[id]] <REQ_SESSION_PERSISTENCE>`    | Component Integration | Local    |              1 | —                                                 | Public Session.save/load preserves the observable system instruction and conversation history.                               |
+| Criterion                                | Contract                                 | Test level            | Boundary | Required paths | Required path IDs                                 | Success criterion                                                                                                   |
+| ---------------------------------------- | ---------------------------------------- | --------------------- | -------- | -------------: | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `VC_SESSION_PERSISTENCE_GENERATED_STATE` | {need}`[[id]] <REQ_SESSION_PERSISTENCE>` | Component             | Local    |              1 | —                                                 | Generated turn sequences round-trip system prompt, user/assistant text, order, and metadata exactly.                |
+| `VC_SESSION_PUBLIC_PERSISTENCE`          | {need}`[[id]] <REQ_SESSION_PERSISTENCE>` | Component Integration | Local    |              1 | —                                                 | Public Session.save/load preserves the observable system instruction and conversation history exactly.              |
+| `VC_SESSION_PUBLIC_MEDIA_PERSISTENCE`    | {need}`[[id]] <REQ_SESSION_PERSISTENCE>` | Component Integration | Local    |              4 | `file` · `image` · `local-video` · `remote-video` | Public Session.save/load preserves each supported embedded-media form through the complete public persistence path. |
+
+### Evidence aggregation
+
+| Signal                 | Rule | Applies to                                                         |
+| ---------------------- | ---- | ------------------------------------------------------------------ |
+| Semantic coverage      | ALL  | required verification criteria and each criterion's declared paths |
+| Representation         | ALL  | retained evidence for satisfied criteria                           |
+| Provenance             | ALL  | retained evidence for satisfied criteria                           |
+| Producer qualification | ALL  | retained evidence for satisfied criteria                           |
+| Freshness              | ALL  | retained evidence for satisfied criteria                           |
+| M&S validation         | ALL  | applicable surrogate/model evidence                                |
+
+### Required technical support
+
+| Technical requirement                                                                | Target |
+| ------------------------------------------------------------------------------------ | ------ |
+| {need}`Session serialization rejects incompatible data <TREQ_SESSION_SERIALIZATION>` | PASS   |
+
+### Fault applicability
+
+| REQUIRED                                                              | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                           |
+| --------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+
+#### Fault-group rationale
+
+| Group                 | Why                                                                                                                                                      |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Public save/load control flow must restore the intended state; serializer encoding/version mechanics belong to the derived TREQ.                         |
+| Runtime / dependency  | Persistence is local state behavior and does not depend on a live external dependency.                                                                   |
+| Interface / protocol  | Serialized payload/schema compatibility is owned by the technical serialization contract, not by this public Requirement.                                |
+| Architecture          | The Requirement constrains observable restored state rather than internal package-layer topology.                                                        |
+| Specification / model | Wrong restored values or an omitted public state/media partition directly violate persistence semantics; serializer/version mechanics remain TREQ-owned. |
+
+No blocking mutation threshold is selected; required deterministic fault obligations remain
+blocking.
+
+(verification-profile-treq-session-serialization)=
+
+## Profile · TREQ_SESSION_SERIALIZATION
+
+**Verification intent.** Prove the low-level serialized representation preserves each
+supported embedded-media form and rejects incompatible serialization versions instead of
+silently loading them.
+
+**Models:** {ref}`Session persistence <test-plan-session-persistence-model>`
+
+### Required coverage
+
+| Test level | Boundary | Representation | M&S target |         Target |
+| ---------- | -------- | -------------- | ---------- | -------------: |
+| Component  | Local    | Actual         | —          | **2 criteria** |
+
+**Coverage basis.** The technical contract has two independent compatibility obligations:
+all four supported embedded-media partitions survive save/load, and an unsupported
+serialization version is rejected explicitly.
+
+**Representation basis.** Tests execute the actual SessionStore serializer/deserializer with
+real temporary files and in-memory media objects. No external model or dependency substitute
+is involved.
+
+### Verification criteria
+
+| Criterion                                    | Contract                                    | Test level | Boundary | Required paths | Required path IDs                                 | Success criterion                                                                                                            |
+| -------------------------------------------- | ------------------------------------------- | ---------- | -------- | -------------: | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `VC_SESSION_SERIALIZATION_MEDIA`             | {need}`[[id]] <TREQ_SESSION_SERIALIZATION>` | Component  | Local    |              4 | `file` · `image` · `local-video` · `remote-video` | File bytes, image bytes, local-video bytes/descriptor metadata, and remote-video descriptor metadata each survive save/load. |
+| `VC_SESSION_SERIALIZATION_VERSION_REJECTION` | {need}`[[id]] <TREQ_SESSION_SERIALIZATION>` | Component  | Local    |              1 | —                                                 | Unsupported serialization versions raise SessionSerializationError instead of loading incompatible state.                    |
 
 ### Evidence aggregation
 
@@ -118,19 +187,19 @@ execute the actual SessionStore/Session serializer; no external surrogate is inv
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                              | OPTIONAL          | N/A                                                                                                                                                                                                                       |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.boundary` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | `impl.comparison` | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
+| REQUIRED                                                                                                                                 | OPTIONAL | N/A                                                                                                                                                                                                                                                        |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Implementation        | Serialization control flow and version boundary decide compatible state; ordinary comparisons are secondary.       |
-| Runtime / dependency  | Persistence uses local state/files rather than a live dependency.                                                  |
-| Interface / protocol  | The serialized payload shape is a compatibility boundary; HTTP-style interaction/status faults are not applicable. |
-| Architecture          | The contract constrains restored semantics, not serializer module placement.                                       |
-| Specification / model | Wrong values, omitted state/media partitions, or reordered history violate round-trip semantics.                   |
+| Group                 | Why                                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Version comparisons, type/shape branches, and encode/decode boundaries directly implement compatibility behavior.                |
+| Runtime / dependency  | Serialization is a local compatibility boundary and has no live dependency failure mode.                                         |
+| Interface / protocol  | The persisted JSON/media representation is the technical payload schema; incompatible shapes must not be silently accepted.      |
+| Architecture          | No package-layer edge is normative for the serializer contract.                                                                  |
+| Specification / model | Missing media partitions, corrupted round-trip values, or accepting an unsupported version directly violate the technical claim. |
 
-No blocking mutation threshold is selected; required deterministic fault classes remain
+No blocking mutation threshold is selected; deterministic technical fault obligations remain
 blocking.

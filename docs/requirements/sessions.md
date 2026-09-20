@@ -134,7 +134,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Verification profile → <verification-profile-req-session-persistence>`
+{ref}`Verification profile → <verification-profile-treq-session-serialization>`
 
 ```{needlist}
 :filter: "'TREQ_SESSION_SERIALIZATION' in derives or 'TREQ_SESSION_SERIALIZATION' in implements or 'TREQ_SESSION_SERIALIZATION' in verifies"

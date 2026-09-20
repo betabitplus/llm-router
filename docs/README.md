@@ -30,7 +30,8 @@ COVERAGE_FILE=test-results/.coverage uv run pytest -c pyproject.toml -n 2 \
     --allowed-hosts='localhost,127\.0\.0\.1' \
     --cov-context=test \
     --junitxml=test-results/pytest-junit.xml \
-    --alluredir=test-results/allure-results
+    --alluredir=test-results/allure-results \
+    --clean-alluredir
 COVERAGE_FILE=test-results/.coverage uv run coverage json \
     --show-contexts \
     -o test-results/coverage.json

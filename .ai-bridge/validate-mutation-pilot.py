@@ -112,6 +112,13 @@ def main() -> None:
         HTML / "contract-evidence-provider-error-boundary.html",
         HTML / "contract-evidence-session-lifecycle.html",
         HTML / "contract-evidence-session-persistence.html",
+        HTML / "contract-evidence-session-serialization.html",
+        HTML / "assurance-feat-session-lifecycle.html",
+        HTML / "assurance-goal-session-continuity.html",
+        HTML / "upper-assurance-facts.json",
+        ROOT / "docs/assurance-profiles/sessions.md",
+        HTML / "assurance-profiles/sessions.html",
+        HTML / "specifications/_generated/sessions/assurance.html",
         HTML / "contract-evidence-public-api-surface.html",
         HTML / "contract-evidence-example-import-safety.html",
         HTML / "contract-evidence-structured-text-output.html",
@@ -173,6 +180,7 @@ def main() -> None:
     strength = load(HTML / "verification-test-strength-facts.json")
     depth_facts = load(HTML / "verification-depth-facts.json")
     monitor_facts = load(HTML / "requirement-monitor-facts.json")
+    upper_facts = load(HTML / "upper-assurance-facts.json")
     evidence_provenance = load(HTML / "evidence-run-provenance.json")
     evidence_qualification = load(HTML / "evidence-confidence-qualification.json")
     evidence_run_inputs = load(ROOT / "test-results/evidence-run-inputs.json")
@@ -199,6 +207,9 @@ def main() -> None:
     provider_profile_source = (ROOT / "docs/verification-profiles/providers.md").read_text()
     session_requirements_source = (ROOT / "docs/requirements/sessions.md").read_text()
     session_profile_source = (ROOT / "docs/verification-profiles/sessions.md").read_text()
+    session_assurance_profile_source = (
+        ROOT / "docs/assurance-profiles/sessions.md"
+    ).read_text()
     developer_requirements_source = (ROOT / "docs/requirements/developer.md").read_text()
     developer_profile_source = (ROOT / "docs/verification-profiles/developer.md").read_text()
     developer_assurance_profile_source = (
@@ -440,17 +451,36 @@ def main() -> None:
     check(all(token in session_profile_source for token in (
         "## Profile · REQ_SESSION_LIFECYCLE",
         "## Profile · REQ_SESSION_PERSISTENCE",
+        "## Profile · TREQ_SESSION_SERIALIZATION",
         "VC_SESSION_HISTORY_INCLUDED",
         "VC_SESSION_HISTORY_SUPPRESSED",
         "VC_SESSION_FORK_ISOLATION",
         "VC_SESSION_CLEAR_REUSE",
         "VC_SESSION_CONCURRENT_ISOLATION",
         "VC_SESSION_PERSISTENCE_GENERATED_STATE",
+        "VC_SESSION_PUBLIC_MEDIA_PERSISTENCE",
         "VC_SESSION_SERIALIZATION_MEDIA",
         "VC_SESSION_SERIALIZATION_VERSION_REJECTION",
         "VC_SESSION_PUBLIC_PERSISTENCE",
+        "### Required technical support",
+        "Session serialization rejects incompatible data <TREQ_SESSION_SERIALIZATION>",
         "### Fault applicability",
-    )), "Session Verification Profiles own independent coverage targets and explicit Fault Models")
+    )), "Session Verification Profiles split public persistence from first-class serialization technical support")
+    check(
+        all(
+            token in session_assurance_profile_source
+            for token in (
+                "## Feature · FEAT_SESSION_LIFECYCLE",
+                "AC_SESSION_FORK_PERSISTENCE_ISOLATION",
+                "### Capability validation",
+                "**Target:** N/A",
+                "## Goal · GOAL_SESSION_CONTINUITY",
+                "### Cross-capability integration",
+                "AOV_SESSION_RESTORED_CONTINUITY",
+            )
+        ),
+        "Session Assurance Profile owns one cross-Requirement integration target and one distinct Goal outcome target",
+    )
     check(all(token in developer_requirements_source for token in (
         ":id: GOAL_DEVELOPER_USABILITY",
         ":id: REQ_PUBLIC_API_SURFACE",
@@ -1012,6 +1042,7 @@ def main() -> None:
     provider_error_page = (HTML / "contract-evidence-provider-error-boundary.html").read_text()
     session_lifecycle_page = (HTML / "contract-evidence-session-lifecycle.html").read_text()
     session_persistence_page = (HTML / "contract-evidence-session-persistence.html").read_text()
+    session_serialization_page = (HTML / "contract-evidence-session-serialization.html").read_text()
     public_api_page = (HTML / "contract-evidence-public-api-surface.html").read_text()
     example_import_page = (HTML / "contract-evidence-example-import-safety.html").read_text()
     structured_text_page = (HTML / "contract-evidence-structured-text-output.html").read_text()
@@ -1027,6 +1058,8 @@ def main() -> None:
         "Feature public API": (HTML / "assurance-feat-public-api.html").read_text(),
         "Feature examples": (HTML / "assurance-feat-executable-examples.html").read_text(),
         "Goal developer": (HTML / "assurance-goal-developer-usability.html").read_text(),
+        "Feature sessions": (HTML / "assurance-feat-session-lifecycle.html").read_text(),
+        "Goal sessions": (HTML / "assurance-goal-session-continuity.html").read_text(),
         "Product / System": (HTML / "assurance-product-system.html").read_text(),
     }
     spec_page = (HTML / "specification-health.html").read_text()
@@ -1220,12 +1253,16 @@ def main() -> None:
         "Product / System": upper_assurance_pages["Product / System"],
         "Goal routing": upper_assurance_pages["Goal routing"],
         "Goal developer": upper_assurance_pages["Goal developer"],
+        "Goal sessions": upper_assurance_pages["Goal sessions"],
+        "Feature sessions": upper_assurance_pages["Feature sessions"],
         "Feature fallback": upper_assurance_pages["Feature fallback"],
         "Feature public API": upper_assurance_pages["Feature public API"],
         "REQ sticky route": sticky_route_page,
         "TREQ route order": route_order_page,
         "REQ rate limit": rate_limit_page,
         "REQ provider retry": provider_retry_page,
+        "REQ session persistence": session_persistence_page,
+        "TREQ session serialization": session_serialization_page,
     }
     for name, page in hierarchy_nav_pages.items():
         nav = re.search(
@@ -1246,11 +1283,12 @@ def main() -> None:
             f"{name}: hierarchy navigation contains navigation only, without assurance status",
         )
     check(
-        "<span>Goals</span><b>2</b>" in upper_assurance_pages["Product / System"]
+        "<span>Goals</span><b>3</b>" in upper_assurance_pages["Product / System"]
         and '<details class="tf-assurance-next">' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-routing-reliability.html"' in upper_assurance_pages["Product / System"]
-        and 'href="assurance-goal-developer-usability.html"' in upper_assurance_pages["Product / System"],
-        "Product / System navigation exposes both onboarded Goals through one compact dropdown",
+        and 'href="assurance-goal-developer-usability.html"' in upper_assurance_pages["Product / System"]
+        and 'href="assurance-goal-session-continuity.html"' in upper_assurance_pages["Product / System"],
+        "Product / System navigation exposes all three onboarded Goals through one compact dropdown",
     )
     check(
         "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal routing"]
@@ -1265,6 +1303,19 @@ def main() -> None:
         and 'href="assurance-feat-public-api.html"' in upper_assurance_pages["Goal developer"]
         and 'href="assurance-feat-executable-examples.html"' in upper_assurance_pages["Goal developer"],
         "Developer Goal navigation exposes both monitored capabilities through the shared dropdown",
+    )
+    check(
+        "<span>Capabilities</span><b>1</b>" in upper_assurance_pages["Goal sessions"]
+        and 'href="assurance-feat-session-lifecycle.html"' in upper_assurance_pages["Goal sessions"]
+        and '<details class="tf-assurance-next">' not in upper_assurance_pages["Goal sessions"],
+        "Session Goal navigation uses one direct next-level link for its single capability",
+    )
+    check(
+        "<span>Requirements</span><b>2</b>" in upper_assurance_pages["Feature sessions"]
+        and '<details class="tf-assurance-next">' in upper_assurance_pages["Feature sessions"]
+        and 'href="contract-evidence-session-lifecycle.html"' in upper_assurance_pages["Feature sessions"]
+        and 'href="contract-evidence-session-persistence.html"' in upper_assurance_pages["Feature sessions"],
+        "Session Feature navigation exposes both monitored Requirements through one compact dropdown",
     )
     check(
         ">Public API</a>" in upper_assurance_pages["Goal developer"]
@@ -1285,6 +1336,24 @@ def main() -> None:
         and "<span>Technical support</span><b>1</b>" in sticky_route_page
         and 'href="contract-evidence-route-order.html"' in sticky_route_page,
         "Requirement navigation shows full ancestry and one direct Technical support child",
+    )
+    check(
+        "Session continuity" in session_persistence_page
+        and "Session lifecycle" in session_persistence_page
+        and "<span>Technical support</span><b>1</b>" in session_persistence_page
+        and 'href="contract-evidence-session-serialization.html"' in session_persistence_page,
+        "Session persistence navigation exposes its first-class serialization Technical requirement",
+    )
+    session_serialization_nav = re.search(
+        r'<nav class="tf-assurance-nav".*?</nav>',
+        session_serialization_page,
+        flags=re.DOTALL,
+    )
+    check(
+        session_serialization_nav is not None
+        and "Session serialization" in session_serialization_nav.group(0)
+        and "tf-assurance-next" not in session_serialization_nav.group(0),
+        "Session serialization TREQ is a leaf while preserving full ancestry",
     )
     route_order_nav = re.search(
         r'<nav class="tf-assurance-nav".*?</nav>',
@@ -1315,6 +1384,8 @@ def main() -> None:
         "Feature public API": "Capability Assurance",
         "Feature examples": "Capability Assurance",
         "Goal developer": "Outcome Assurance",
+        "Feature sessions": "Capability Assurance",
+        "Goal sessions": "Outcome Assurance",
         "Product / System": "Product / System Assurance",
     }
     for name, page in upper_assurance_pages.items():
@@ -1362,7 +1433,7 @@ def main() -> None:
             and 'class="panel history"' in page,
             f"{name}: verdict, domain strip, sections, and History use canonical Contract Evidence structure",
         )
-    for name in ("Feature fallback", "Goal routing"):
+    for name in ("Feature fallback", "Goal routing", "Feature sessions", "Goal sessions"):
         page = upper_assurance_pages[name]
         check(
             'class="fault-layout"' in page
@@ -1376,6 +1447,8 @@ def main() -> None:
         "Feature public API",
         "Feature examples",
         "Goal developer",
+        "Feature sessions",
+        "Goal sessions",
         "Product / System",
     ):
         check(
@@ -1449,6 +1522,16 @@ def main() -> None:
             "Checks that the capabilities inside this Goal work correctly together.",
             "Checks that the Goal&#x27;s intended product outcome is achieved in a realistic scenario.",
         ),
+        "Feature sessions": (
+            "Checks that every Requirement needed by this capability is independently proven.",
+            "Checks that the Requirements inside this capability work correctly together.",
+            "Checks that this capability actually delivers the behavior it exists to provide.",
+        ),
+        "Goal sessions": (
+            "Checks that every capability needed by this Goal is independently proven.",
+            "Checks that the capabilities inside this Goal work correctly together.",
+            "Checks that the Goal&#x27;s intended product outcome is achieved in a realistic scenario.",
+        ),
         "Product / System": (
             "Checks that every Goal required for whole-product assurance is independently proven.",
             "Checks that product Goals do not break each other when they interact.",
@@ -1482,6 +1565,48 @@ def main() -> None:
         and "<b>1/1</b><small>evidence path</small>" in sticky_route_page,
         "REQ Producer qualification distinguishes producer entities from the evidence-path gate",
     )
+    session_persistence_contract = monitor_facts["contracts"]["REQ_SESSION_PERSISTENCE"]
+    check(
+        (session_persistence_contract.get("target") or {}).get("required_treqs")
+        == ["TREQ_SESSION_SERIALIZATION"]
+        and re.search(
+            r'<strong>Technical support.*?<span class="status not-met">FAIL</span>',
+            session_persistence_page,
+            re.DOTALL,
+        ),
+        "Session persistence remains blocked by its first-class serialization Technical requirement",
+    )
+    session_feature_facts = upper_facts["features"]["FEAT_SESSION_LIFECYCLE"]
+    session_goal_facts = upper_facts["goals"]["GOAL_SESSION_CONTINUITY"]
+    session_integration = session_feature_facts["capability_integration"]["criteria"][0]
+    session_outcome = session_goal_facts["outcome_validation"]["criteria"][0]
+    check(
+        session_feature_facts["requirement_support"]["status"] == "NOT MET"
+        and session_feature_facts["capability_integration"]["status"] == "MET"
+        and session_feature_facts["capability_validation"]["status"] == "N/A"
+        and session_feature_facts["status"] == "NOT MET"
+        and session_integration["id"] == "AC_SESSION_FORK_PERSISTENCE_ISOLATION"
+        and session_integration["status"] == "MET"
+        and session_integration["passed_executions"] == 1
+        and session_integration["required_executions"] == 1
+        and session_integration["producer_qualification"]["status"] == "MET"
+        and session_integration["freshness"]["status"] == "MET",
+        "Session Feature keeps proven integration green while red Requirement support blocks overall PASS",
+    )
+    check(
+        session_goal_facts["capability_support"]["status"] == "NOT MET"
+        and session_goal_facts["cross_capability_integration"]["status"] == "N/A"
+        and session_goal_facts["outcome_validation"]["status"] == "MET"
+        and session_goal_facts["status"] == "NOT MET"
+        and session_outcome["id"] == "AOV_SESSION_RESTORED_CONTINUITY"
+        and session_outcome["status"] == "MET"
+        and session_outcome["passed_executions"] == 1
+        and session_outcome["required_executions"] == 1
+        and session_outcome["producer_qualification"]["status"] == "MET"
+        and session_outcome["freshness"]["status"] == "MET",
+        "Session Goal keeps proven restored continuity green while red capability support blocks overall PASS",
+    )
+
     goal_page = upper_assurance_pages["Goal routing"]
     check(
         "0 / 2 capabilities pass" in goal_page
@@ -1515,19 +1640,28 @@ def main() -> None:
           "Mutation Analysis no longer duplicates long usage guidance")
     check('id="mutation-history"' in mutation_page and "Recent changes" in mutation_page,
           "Mutation Analysis exposes compact retained change history")
-    retained_history = [load(path) for path in sorted((RESULTS / "campaign-history").glob("*.json"))]
-    history_triage = []
-    for retained_run in retained_history:
-        triage_totals = {"new": 0, "resolved": 0}
-        for contract in (retained_run.get("contracts") or {}).values():
-            retained_triage = ((contract.get("result") or {}).get("triage") or {})
-            triage_totals["new"] += int(retained_triage.get("new_unresolved_survivors") or 0)
-            triage_totals["resolved"] += int(retained_triage.get("resolved_survivors") or 0)
-        history_triage.append(triage_totals)
+    retained_feedback_runs = list((feedback.get("runs") or []))
     check(
-        any(row["new"] == 3 for row in history_triage)
-        and any(row["resolved"] == 3 for row in history_triage),
-        "retained campaign history proves the New 3 → Resolved 3 acceptance cycle",
+        len(retained_feedback_runs) >= 2
+        and all(int(row.get("new_unresolved_survivors") or 0) == 0 for row in retained_feedback_runs[-2:])
+        and all(int(row.get("resolved_survivors") or 0) == 0 for row in retained_feedback_runs[-2:])
+        and all(int(row.get("mutants") or 0) > 0 for row in retained_feedback_runs[-2:]),
+        "retained campaign summaries preserve current full-audit mutation evidence without fabricating New/Resolved history",
+    )
+    mutation_history_match = re.search(
+        r'<section id="mutation-history">.*?</section>',
+        mutation_page,
+        flags=re.DOTALL,
+    )
+    mutation_history_html = mutation_history_match.group(0) if mutation_history_match else ""
+    check(
+        bool(mutation_history_html)
+        and 'href="#"' not in mutation_history_html
+        and (
+            "mutation-results/campaign-history/" in mutation_history_html
+            or "mutation-results/operator-feedback.json" in mutation_history_html
+        ),
+        "Mutation Analysis history has no broken provenance links and uses retained raw history or summary fallback",
     )
     check(
         mutation_page.count("Fresh</strong> · New 0 · Debt ") >= 2,
@@ -1537,7 +1671,15 @@ def main() -> None:
           "Mutation Analysis keeps shared-scope diagnostics behind a compact disclosure")
     check('id="mutation-operator-feedback"' in mutation_page and "Run cost / mutation diagnostics" in mutation_page,
           "Mutation Analysis keeps operator diagnostics behind a compact disclosure")
-    check(mutation_page.count("Shared @impl scope") >= 1, "portal retains shared-scope attribution warning")
+    check(
+        'id="mutation-unattributed"' in mutation_page
+        and "2 shared-scope diagnostics" in mutation_page
+        and "REQ_ROUTE_ATTEMPT_LIMIT" in mutation_page
+        and "REQ_CONFIG_INSTALLATION_COHERENCE" in mutation_page
+        and "cannot be uniquely attributed" in mutation_page
+        and "diagnostic only" in mutation_page,
+        "portal retains concrete shared-scope attribution diagnostics without assigning shared implementation strength to a contract",
+    )
     check('id="tf-strength-monitor"' not in depth_page and "Test Strength watch" not in depth_page,
           "Depth Map has no duplicate Test Strength watch")
     check("Missed example" in depth_page,
@@ -1576,43 +1718,17 @@ def main() -> None:
     check(monitor_facts.get("schema") == "ternforge-requirement-monitor-p34-2",
           "Requirement monitor facts carry the current P34 multi-binding schema")
     profiled_contracts = {
-        "REQ_REQUEST_OVERRIDE_PRECEDENCE",
-        "REQ_INVALID_CONFIGURATION_ERRORS",
-        "REQ_CREDENTIAL_RESOLUTION",
-        "REQ_CONFIG_INSTALLATION_COHERENCE",
-        "REQ_TOOL_CHOICE",
-        "REQ_MULTI_ROUND_TOOL_EXECUTION",
-        "REQ_TOOL_RUNTIME_SAFETY",
-        "REQ_SYNC_ROUTE_FALLBACK",
-        "REQ_ROUTE_TIMEOUT_FALLBACK",
-        "REQ_ROUTE_ATTEMPT_LIMIT",
-        "REQ_ROUTE_STICKY_START",
-        "REQ_RATE_LIMIT_ROUTING",
-        "REQ_PROVIDER_RETRY",
-        "REQ_STRUCTURED_OUTPUT_REPAIR",
-        "REQ_SENSITIVE_DATA_PROTECTION",
-        "REQ_PROVIDER_ADAPTER_INTEROPERABILITY",
-        "REQ_ASYNC_PROVIDER_EXECUTION",
-        "REQ_RESPONSE_NORMALIZATION",
-        "REQ_PROVIDER_ERROR_BOUNDARY",
-        "REQ_SESSION_LIFECYCLE",
-        "REQ_SESSION_PERSISTENCE",
-        "REQ_PUBLIC_API_SURFACE",
-        "REQ_EXAMPLE_IMPORT_SAFETY",
-        "REQ_STRUCTURED_TEXT_OUTPUT",
-        "REQ_DOCUMENT_INPUT",
-        "REQ_IMAGE_INPUT",
-        "REQ_VIDEO_INPUT",
-        "REQ_STRUCTURED_SCHEMA_CONTRACT",
-        "REQ_MULTIMODAL_CONTENT_NORMALIZATION",
-        "TREQ_ROUTE_ORDER",
-        "TREQ_RATE_LIMIT_STATE",
-        "TREQ_RATE_LIMIT_COOLDOWN_POLICY",
-        "TREQ_RATE_LIMIT_AVAILABILITY_SELECTION",
+        contract_id
+        for path in (ROOT / "docs/verification-profiles").glob("*.md")
+        for contract_id in re.findall(
+            r"^## Profile · ((?:REQ|TREQ)_[A-Z0-9_]+)\s*$",
+            path.read_text(),
+            flags=re.MULTILINE,
+        )
     }
     check(
         set(monitor_facts.get("contracts") or {}) == profiled_contracts,
-        "All fifteen product features expose twenty-nine parent and four first-class TREQ Contract Evidence profiles",
+        "Contract Evidence facts exactly match all first-class REQ/TREQ Verification Profiles",
     )
     required_gate_signals = {
         "semantic_coverage",
@@ -1991,6 +2107,7 @@ def main() -> None:
         "REQ_PROVIDER_ERROR_BOUNDARY": provider_error_page,
         "REQ_SESSION_LIFECYCLE": session_lifecycle_page,
         "REQ_SESSION_PERSISTENCE": session_persistence_page,
+        "TREQ_SESSION_SERIALIZATION": session_serialization_page,
         "REQ_PUBLIC_API_SURFACE": public_api_page,
         "REQ_EXAMPLE_IMPORT_SAFETY": example_import_page,
         "REQ_STRUCTURED_TEXT_OUTPUT": structured_text_page,
@@ -2501,11 +2618,16 @@ def main() -> None:
         "REQ_SESSION_PERSISTENCE": {
             ("component", "none"): {
                 "VC_SESSION_PERSISTENCE_GENERATED_STATE": 1,
-                "VC_SESSION_SERIALIZATION_MEDIA": 4,
-                "VC_SESSION_SERIALIZATION_VERSION_REJECTION": 1,
             },
             ("component_integration", "none"): {
                 "VC_SESSION_PUBLIC_PERSISTENCE": 1,
+                "VC_SESSION_PUBLIC_MEDIA_PERSISTENCE": 4,
+            },
+        },
+        "TREQ_SESSION_SERIALIZATION": {
+            ("component", "none"): {
+                "VC_SESSION_SERIALIZATION_MEDIA": 4,
+                "VC_SESSION_SERIALIZATION_VERSION_REJECTION": 1,
             },
         },
         "REQ_PUBLIC_API_SURFACE": {
@@ -2513,6 +2635,27 @@ def main() -> None:
         },
         "REQ_EXAMPLE_IMPORT_SAFETY": {
             ("component", "none"): {"VC_EXAMPLE_IMPORT_SAFETY": 6},
+        },
+    }
+    session_fault_expectations = {
+        "REQ_SESSION_LIFECYCLE": {
+            "impl.control-flow",
+            "spec.wrong-outcome",
+            "spec.missing-partition",
+            "spec.wrong-ordering-boundary",
+        },
+        "REQ_SESSION_PERSISTENCE": {
+            "impl.control-flow",
+            "spec.wrong-outcome",
+            "spec.missing-partition",
+        },
+        "TREQ_SESSION_SERIALIZATION": {
+            "impl.comparison",
+            "impl.boundary",
+            "impl.control-flow",
+            "interface.payload-schema",
+            "spec.wrong-outcome",
+            "spec.missing-partition",
         },
     }
     developer_fault_expectations = {
@@ -2577,6 +2720,12 @@ def main() -> None:
             .get(class_id, {})
             .get("exercised")
         }
+        expected_session_faults = session_fault_expectations.get(contract_id)
+        if expected_session_faults is not None:
+            check(
+                required_faults == expected_session_faults,
+                f"{contract_id}: Session Fault Model keeps the independently authored required classes",
+            )
         expected_developer_faults = developer_fault_expectations.get(contract_id)
         page = contract_pages[contract_id]
         if expected_developer_faults is not None:
@@ -3417,8 +3566,13 @@ def main() -> None:
     )
 
     history = fault_model.get("history") or {}
-    check(history.get("tool") == "DVC plots" and len(history.get("rows") or []) >= 11,
-          "system Assurance History is rendered by DVC over retained mutation snapshots")
+    check(
+        history.get("tool") == "DVC plots"
+        and len(history.get("rows") or []) == 3
+        and {row.get("run_id") for row in history.get("rows") or []}
+        == {"p31-local-1", "p32-local-1", "p33-local-1"},
+        "system Assurance History is rendered by DVC from the retained P31-P33 assurance snapshot registry",
+    )
     history_page = (HTML / "assurance-history/index.html").read_text()
     check(("Assurance history · Test Strength" in history_page or
            "Assurance history \\u00b7 Test Strength" in history_page) and
@@ -3527,14 +3681,14 @@ def main() -> None:
     session_trace_routes = {
         "REQ_SESSION_LIFECYCLE": "contract-evidence-session-lifecycle.html#ce-coverage-req_session_lifecycle",
         "REQ_SESSION_PERSISTENCE": "contract-evidence-session-persistence.html#ce-coverage-req_session_persistence",
-        "TREQ_SESSION_SERIALIZATION": "contract-evidence-session-persistence.html#ce-coverage-req_session_persistence",
+        "TREQ_SESSION_SERIALIZATION": "contract-evidence-session-serialization.html#ce-coverage-treq_session_serialization",
     }
     check(
         all(
             f'"{contract_id}": "{href}"' in trace_reader_page
             for contract_id, href in session_trace_routes.items()
         ),
-        "Traceability Reader routes Session parent/derived contracts to the accepted parent Contract Evidence pages",
+        "Traceability Reader routes Session Requirement/TREQ contracts to their first-class Contract Evidence pages",
     )
     developer_trace_routes = {
         "REQ_PUBLIC_API_SURFACE": "contract-evidence-public-api-surface.html#ce-coverage-req_public_api_surface",
@@ -3743,6 +3897,8 @@ def main() -> None:
         "features/routing/",
         "features/resilience/",
         "features/security/",
+        "features/sessions/lifecycle.feature",
+        "features/sessions/assurance.feature",
         "features/structured_output/",
         "pyproject.toml",
         "uv.lock",

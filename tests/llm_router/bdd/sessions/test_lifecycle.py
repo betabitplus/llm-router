@@ -6,9 +6,10 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from PIL import Image
 from pytest_bdd import given, scenarios, then, when
 
-from llm_router import Session
+from llm_router import FileSchema, Session, VideoSchema, VideoUrlSchema
 from tests.llm_router.support.workers.concurrency_isolation import (
     run_concurrency_isolation_inprocess,
 )
@@ -44,6 +45,21 @@ for _test_name, _criterion in (
     globals()[_test_name] = pytest.mark.coverage_item(_criterion)(globals()[_test_name])
 del _criterion, _test_name
 
+for _test_name, _path_id in (
+    ("test_saving_and_loading_preserves_an_embedded_file", "file"),
+    ("test_saving_and_loading_preserves_an_embedded_image", "image"),
+    ("test_saving_and_loading_preserves_an_embedded_local_video", "local-video"),
+    (
+        "test_saving_and_loading_preserves_a_remote_video_descriptor",
+        "remote-video",
+    ),
+):
+    globals()[_test_name] = pytest.mark.coverage_item(
+        "VC_SESSION_PUBLIC_MEDIA_PERSISTENCE"
+    )(globals()[_test_name])
+    globals()[_test_name] = pytest.mark.coverage_path(_path_id)(globals()[_test_name])
+del _path_id, _test_name
+
 
 def _session() -> Session:
     session = Session(system="system")
@@ -59,6 +75,59 @@ def previous_conversation() -> dict[str, Any]:
 @given("a session contains conversation history", target_fixture="case")
 def conversation_history() -> dict[str, Any]:
     return {"session": _session()}
+
+
+@given("a session contains an embedded file", target_fixture="case")
+def embedded_file(tmp_path: Path) -> dict[str, Any]:
+    path = tmp_path / "input.bin"
+    path.write_bytes(b"public-file-bytes")
+    session = Session(system="system")
+    session.remember(
+        user_content=(
+            FileSchema(path=str(path), mime_type="application/octet-stream"),
+        ),
+        assistant_text="stored",
+    )
+    return {"session": session}
+
+
+@given("a session contains an embedded image", target_fixture="case")
+def embedded_image() -> dict[str, Any]:
+    image = Image.new("RGBA", (3, 2), (12, 34, 56, 78))
+    session = Session(system="system")
+    session.remember(user_content=(image,), assistant_text="stored")
+    return {"session": session}
+
+
+@given("a session contains an embedded local video", target_fixture="case")
+def embedded_local_video(tmp_path: Path) -> dict[str, Any]:
+    path = tmp_path / "clip.mp4"
+    path.write_bytes(b"public-video-bytes")
+    session = Session(system="system")
+    session.remember(
+        user_content=(
+            VideoSchema(path=str(path), fps=2, start_offset=1, end_offset=5),
+        ),
+        assistant_text="stored",
+    )
+    return {"session": session}
+
+
+@given("a session contains a remote video descriptor", target_fixture="case")
+def remote_video_descriptor() -> dict[str, Any]:
+    session = Session(system="system")
+    session.remember(
+        user_content=(
+            VideoUrlSchema(
+                url="https://video.example/clip.mp4",
+                fps=3,
+                start_offset=2,
+                end_offset=8,
+            ),
+        ),
+        assistant_text="stored",
+    )
+    return {"session": session}
 
 
 @when("a new message is built with history")
@@ -109,6 +178,36 @@ def save_and_load(case: dict[str, Any], tmp_path: Path) -> None:
 def persisted_state_is_preserved(case: dict[str, Any]) -> None:
     assert case["loaded"].system == case["session"].system
     assert case["loaded"].history == case["session"].history
+
+
+@then("the embedded file is preserved")
+def embedded_file_is_preserved(case: dict[str, Any]) -> None:
+    part = case["loaded"].history[0].parts[0]
+    assert Path(part.path).read_bytes() == b"public-file-bytes"
+    assert part.mime_type == "application/octet-stream"
+
+
+@then("the embedded image is preserved")
+def embedded_image_is_preserved(case: dict[str, Any]) -> None:
+    part = case["loaded"].history[0].parts[0]
+    assert isinstance(part, Image.Image)
+    assert part.mode == "RGBA"
+    assert part.size == (3, 2)
+    assert part.getpixel((0, 0)) == (12, 34, 56, 78)
+
+
+@then("the embedded local video is preserved")
+def embedded_local_video_is_preserved(case: dict[str, Any]) -> None:
+    part = case["loaded"].history[0].parts[0]
+    assert Path(part.path).read_bytes() == b"public-video-bytes"
+    assert (part.fps, part.start_offset, part.end_offset) == (2, 1, 5)
+
+
+@then("the remote video descriptor is preserved")
+def remote_video_descriptor_is_preserved(case: dict[str, Any]) -> None:
+    part = case["loaded"].history[0].parts[0]
+    assert part.url == "https://video.example/clip.mp4"
+    assert (part.fps, part.start_offset, part.end_offset) == (3, 2, 8)
 
 
 @when("the session is cleared")

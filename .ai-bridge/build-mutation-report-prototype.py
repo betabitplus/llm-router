@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import ast
 import binascii
+import gzip
 import hashlib
 import json
 import os
@@ -33,7 +34,7 @@ OUT=ROOT/"docs/_build/html/mutation-results"
 DEPTH_FACTS_PATH=ROOT/"docs/_build/html/verification-depth-facts.json"
 DEPTH: dict[str, Any]=json.loads(DEPTH_FACTS_PATH.read_text())
 STRENGTH_PATH=ROOT/"docs/_build/html/verification-test-strength-facts.json"
-STRENGTH: dict[str, Any]=json.loads(STRENGTH_PATH.read_text())
+STRENGTH: dict[str, Any]={}
 TEST_META: dict[str, dict[str, Any]]={r["nodeid"]:r for r in DEPTH["tests"]}
 COVERAGE_DB=ROOT/"test-results/.coverage"
 COVERAGE_JSON_PATH=ROOT/"test-results/coverage.json"
@@ -52,6 +53,9 @@ ASSURANCE_HISTORY_DIR=ROOT/"docs/_build/html/assurance-history"
 ASSURANCE_TARGETS_PATH=ROOT/".ai-bridge/assurance-targets.json"
 ASSURANCE_SNAPSHOTS_PATH=ROOT/".ai-bridge/assurance-snapshots.json"
 DEPTH_PAGE=ROOT/"docs/_build/html/verification-depth-map.html"
+HEALTH_PAGE=ROOT/"docs/_build/html/verification-health-map.html"
+SPEC_MAP_PAGE=ROOT/"docs/_build/html/specification-map.html"
+ALLURE_REPORT_PAGE=ROOT/"docs/_build/html/test-results/index.html"
 MUTATION_PAGE=ROOT/"docs/_build/html/mutation-analysis.html"
 ASSURANCE_PAGE=ROOT/"docs/_build/html/verification-assurance.html"
 SPEC_HEALTH_PAGE=ROOT/"docs/_build/html/specification-health.html"
@@ -59,6 +63,8 @@ SUPPRESSIONS_PATH=ROOT/".ai-bridge/mutation-suppressions.json"
 MUTATION_SEMANTICS_VERSION="p21-local-2"
 MUTATION_ADAPTER_VERSION="p34-local-2"
 PROTOTYPE_BUILD_VERSION="p34-local-1"
+MTE_VENDOR_PATH=ROOT/".ai-bridge/vendor/mutation-testing-elements-3.9.0/mutation-test-elements.js.gz"
+MTE_VENDOR_SHA256="751fb010242b0b44e32d84fe7fe0b9ff1da182823b94f59f5c52b001fcfc163b"
 MUTATION_CONFIG={
   "process_isolation":"forkserver",
   "forkserver_warmup":"collect",
@@ -100,6 +106,69 @@ SHARED_SCOPE_DIAGNOSTICS={
     ),
   },
 }
+UNATTRIBUTED_SCOPE_DIAGNOSTICS=[
+  {
+    "contract_id":"REQ_ROUTE_ATTEMPT_LIMIT",
+    "source_path":"src/llm_router/_internal/runtime/routes.py",
+    "scope":"ordered_routes",
+    "score":85.7,
+    "fresh":False,
+    "stale_reasons":["shared_scope_not_uniquely_attributable"],
+    "shared_with":["TREQ_ROUTE_ORDER"],
+    "reason":(
+      "ordered_routes implements both REQ_ROUTE_ATTEMPT_LIMIT and TREQ_ROUTE_ORDER; "
+      "the retained mutation result is diagnostic only and cannot be uniquely attributed."
+    ),
+  },
+  {
+    "contract_id":"REQ_CONFIG_INSTALLATION_COHERENCE",
+    "source_path":"src/llm_router/_internal/config/state.py",
+    "scope":"install_config",
+    "score":17.4,
+    "fresh":False,
+    "stale_reasons":["shared_scope_not_uniquely_attributable"],
+    "shared_with":["TREQ_CONFIG_CACHE_INVALIDATION"],
+    "reason":(
+      "install_config shares implementation ownership with TREQ_CONFIG_CACHE_INVALIDATION "
+      "and includes unrelated logging mutations; the retained result is diagnostic only."
+    ),
+  },
+]
+def bootstrap_strength_state():
+    return {
+      "schema_version":"verification-test-strength-spike-5",
+      "engine":{
+        "name":"mutmut",
+        "version":package_version("mutmut"),
+        "thresholds":MUTATION_CONFIG["thresholds"],
+      },
+      "contracts":{
+        contract_id:{
+          "contract_id":contract_id,
+          "source_path":spec["source"],
+          "scope_kind":spec["kind"],
+          "scope":spec["scope"],
+          "linked_test_count":len(spec["tests"]),
+          "score":None,
+          "state":"na",
+          "killed":0,
+          "survived":0,
+          "valid_mutants":0,
+          "fresh":False,
+          "stale_reasons":["not_measured"],
+          "report_url":None,
+          "allure_url":f"test-results/index.html?tags=TF_SCOPE__{contract_id}",
+        }
+        for contract_id,spec in CONTRACTS.items()
+      },
+      "unattributed":[dict(row) for row in UNATTRIBUTED_SCOPE_DIAGNOSTICS],
+    }
+
+STRENGTH=(
+  json.loads(STRENGTH_PATH.read_text())
+  if STRENGTH_PATH.exists()
+  else bootstrap_strength_state()
+)
 STATUS={"killed":"Killed","survived":"Survived","timeout":"Timeout","suspicious":"RuntimeError","skipped":"Ignored","untested":"NoCoverage","no tests":"NoCoverage"}
 
 def utc_now():
@@ -525,9 +594,9 @@ def triage_contract(campaign,contract_id):
 
     baseline_score=baseline_result.get("score")
     current_score=current_result.get("score")
-    baseline_adapter=baseline.get("adapter") or {}
+    baseline_adapter=(baseline or {}).get("adapter") or {}
     current_adapter=campaign.get("adapter") or {}
-    baseline_engine=baseline.get("engine") or {}
+    baseline_engine=(baseline or {}).get("engine") or {}
     current_engine=campaign.get("engine") or {}
     comparable=bool(
       baseline_available
@@ -683,16 +752,10 @@ def run_mutmut(spec):
     write_config(spec)
     env=os.environ.copy()
     env["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"]="YES"
-    mutmut_executable=shutil.which("mutmut")
-    if mutmut_executable:
-        command=[mutmut_executable,"run","--max-children",str(MUTATION_CONFIG["max_children"])]
-    else:
-        env.pop("VIRTUAL_ENV",None)
-        env.pop("UV_RUN_RECURSION_DEPTH",None)
-        command=[
-          "uv","run","--with","mutmut","mutmut","run",
-          "--max-children",str(MUTATION_CONFIG["max_children"]),
-        ]
+    command=[
+      sys.executable,"-m","mutmut","run",
+      "--max-children",str(MUTATION_CONFIG["max_children"]),
+    ]
     completed=subprocess.run(
       command,
       cwd=ROOT,
@@ -1163,6 +1226,532 @@ def patch_depth_boundary_model(t):
     rep("</section>","<!-- DEPTH-P30-BOUNDARY-MODEL -->\n</section>")
     return t
 
+# TERNFORGE-P34-CLEAN-MAPS-START
+NORMATIVE_MAP_TYPES = {"goal", "feature", "req", "treq"}
+NORMATIVE_MAP_LABELS = {
+    "goal": "Goal",
+    "feature": "Capability",
+    "req": "Requirement",
+    "treq": "Technical requirement",
+}
+
+
+def assurance_map_graph():
+    needs = current_needs()
+    nodes = {
+        need_id: need
+        for need_id, need in needs.items()
+        if str(need.get("type") or "").lower() in NORMATIVE_MAP_TYPES
+    }
+    parent = {}
+    children = defaultdict(list)
+    for need_id, need in nodes.items():
+        for candidate in need.get("derives") or []:
+            if candidate in nodes:
+                parent[need_id] = candidate
+                children[candidate].append(need_id)
+                break
+    roots = [need_id for need_id in nodes if need_id not in parent]
+
+    ordered = []
+    seen = set()
+
+    def visit(need_id):
+        if need_id in seen:
+            return
+        seen.add(need_id)
+        ordered.append(need_id)
+        for child_id in children.get(need_id) or []:
+            visit(child_id)
+
+    for need_id in roots:
+        visit(need_id)
+    for need_id in nodes:
+        visit(need_id)
+
+    weights = {}
+
+    def weight(need_id):
+        if need_id in weights:
+            return weights[need_id]
+        child_ids = children.get(need_id) or []
+        weights[need_id] = sum(weight(child_id) for child_id in child_ids) if child_ids else 1
+        return weights[need_id]
+
+    for need_id in ordered:
+        weight(need_id)
+
+    descendants = {}
+
+    def collect(need_id):
+        result = {need_id}
+        for child_id in children.get(need_id) or []:
+            result.update(collect(child_id))
+        return result
+
+    for need_id in ordered:
+        descendants[need_id] = collect(need_id)
+
+    return needs, nodes, parent, children, ordered, weights, descendants
+
+
+def map_test_rows(needs):
+    rows = []
+    for need in needs.values():
+        if need.get("type") != "testcase" or not need.get("nodeid"):
+            continue
+        verifies = []
+        for value in need.get("verifies") or []:
+            verifies.extend(re.findall(r"T?REQ_[A-Z0-9_]+", str(value)))
+        rows.append({
+            "nodeid": str(need.get("nodeid") or ""),
+            "title": str(need.get("title") or need.get("case_name") or need.get("nodeid") or ""),
+            "result": str(need.get("result") or "unknown").lower(),
+            "verification_kind": str(need.get("verification_kind") or "unknown").lower(),
+            "verifies": list(dict.fromkeys(verifies)),
+        })
+    return rows
+
+
+def map_contract_test_index(test_rows):
+    index = defaultdict(list)
+    for row in test_rows:
+        for contract_id in row.get("verifies") or []:
+            index[contract_id].append(row)
+    return index
+
+
+def map_rows_for_scope(scope_ids, direct_index):
+    seen = set()
+    rows = []
+    for contract_id in scope_ids:
+        for row in direct_index.get(contract_id) or []:
+            nodeid = row.get("nodeid")
+            if nodeid in seen:
+                continue
+            seen.add(nodeid)
+            rows.append(row)
+    return rows
+
+
+def map_status(rows):
+    if not rows:
+        return "none"
+    results = [str(row.get("result") or "unknown").lower() for row in rows]
+    if any(result in {"failed", "error", "broken"} for result in results):
+        return "failed"
+    if any(result != "passed" for result in results):
+        return "attention"
+    return "passed"
+
+
+def portal_map_shell(title, article_html):
+    if not SPEC_MAP_PAGE.exists():
+        raise RuntimeError(
+            "clean map generation requires docs/_build/html/specification-map.html from DocOps"
+        )
+    text = SPEC_MAP_PAGE.read_text()
+    text = re.sub(
+        r"<title>Specification map(.*?)</title>",
+        lambda match: f"<title>{html_escape(title)}{match.group(1)}</title>",
+        text,
+        count=1,
+        flags=re.DOTALL,
+    )
+    text = re.sub(
+        r'<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Specification map</span></li>',
+        f'<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">{html_escape(title)}</span></li>',
+        text,
+        count=1,
+    )
+    text = text.replace(
+        'id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar"',
+        'id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide"',
+        1,
+    )
+    text, count = re.subn(
+        r'<article class="bd-article">.*?</article>',
+        '<article class="bd-article">' + article_html + '</article>',
+        text,
+        count=1,
+        flags=re.DOTALL,
+    )
+    if count != 1:
+        raise RuntimeError(f"could not replace Specification Map article for {title}")
+    return text
+
+
+def health_map_payload():
+    needs, nodes, parent, _children, ordered, weights, descendants = assurance_map_graph()
+    tests = map_test_rows(needs)
+    direct = map_contract_test_index(tests)
+    contract_ids = {
+        need_id
+        for need_id, need in nodes.items()
+        if str(need.get("type") or "").lower() in {"req", "treq"}
+    }
+    items = []
+    for need_id in ordered:
+        need = nodes[need_id]
+        scope_ids = descendants[need_id] & contract_ids
+        rows = map_rows_for_scope(scope_ids, direct)
+        by_kind = defaultdict(lambda: {"passed": 0, "total": 0})
+        for row in rows:
+            kind = row.get("verification_kind") or "unknown"
+            by_kind[kind]["total"] += 1
+            by_kind[kind]["passed"] += int(row.get("result") == "passed")
+        status = map_status(rows)
+        issue = next((row for row in rows if row.get("result") != "passed"), None)
+        items.append({
+            "id": need_id,
+            "label": str(need.get("title") or need_id),
+            "kind": NORMATIVE_MAP_LABELS.get(str(need.get("type") or "").lower(), str(need.get("type") or "")),
+            "parent": parent.get(need_id) or "__PRODUCT_INTENT__",
+            "value": weights[need_id],
+            "status": status,
+            "passed": sum(row.get("result") == "passed" for row in rows),
+            "total": len(rows),
+            "by_kind": dict(sorted(by_kind.items())),
+            "issue": (issue or {}).get("title"),
+            "href": f"test-results/index.html?tags=TF_SCOPE__{need_id}",
+            "persistent_label": str(need.get("type") or "").lower() in {"goal", "feature"},
+        })
+
+    layer_totals = defaultdict(lambda: {"passed": 0, "total": 0})
+    for row in tests:
+        kind = row.get("verification_kind") or "unknown"
+        layer_totals[kind]["total"] += 1
+        layer_totals[kind]["passed"] += int(row.get("result") == "passed")
+    scope_items = [item for item in items if item["kind"] in {"Requirement", "Technical requirement"}]
+    generated_at = str((DEPTH.get("source_run") or {}).get("generated_at") or "")
+    return {
+        "root": {
+            "id": "__PRODUCT_INTENT__",
+            "label": "Product / System",
+            "value": sum(weights[root_id] for root_id in ordered if root_id not in parent),
+            "status": map_status(tests),
+            "passed": sum(row.get("result") == "passed" for row in tests),
+            "total": len(tests),
+            "href": "test-results/index.html",
+        },
+        "items": items,
+        "summary": {
+            "passed": sum(row.get("result") == "passed" for row in tests),
+            "total": len(tests),
+            "healthy_scopes": sum(item["status"] == "passed" for item in scope_items),
+            "scopes": len(scope_items),
+            "issues": sum(item["status"] != "passed" for item in scope_items),
+            "layers": dict(sorted(layer_totals.items())),
+            "generated_at": generated_at,
+        },
+    }
+
+
+def render_health_map_page():
+    payload = health_map_payload()
+    template = r'''<section id="verification-health-map">
+<h1>Verification Health Map<a class="headerlink" href="#verification-health-map" title="Link to this heading">#</a></h1>
+<p class="tf-map-intro">Raw retained test health by specification scope. Green means all linked retained tests pass; red means a failure; amber means incomplete/unknown execution; gray means no retained test evidence. Click a scope to inspect its Allure executions.</p>
+<style id="tf-health-map-style">
+.tf-map-intro{max-width:78rem;margin:.15rem 0 .75rem;color:var(--pst-color-text-muted)}
+.tf-health-status{display:grid;grid-template-columns:minmax(150px,.8fr) minmax(120px,.65fr) minmax(100px,.5fr) minmax(320px,2.5fr);gap:.55rem;align-items:stretch;margin:.6rem 0 .8rem}
+.tf-health-stat{border:1px solid var(--pst-color-border);border-radius:.55rem;background:var(--pst-color-surface);padding:.58rem .72rem;min-width:0}
+.tf-health-stat small{display:block;color:var(--pst-color-text-muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.045em}.tf-health-stat strong{display:block;font-size:1.18rem;line-height:1.3;margin-top:.08rem}.tf-health-stat em{font-style:normal;font-size:.76rem;color:var(--pst-color-text-muted)}
+.tf-health-layers{display:flex;gap:.3rem;height:2.75rem;margin-top:.18rem}.tf-health-layer{flex:1;min-width:0;border-radius:.35rem;text-decoration:none!important;color:#fff!important;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:.2rem .35rem;overflow:hidden}.tf-health-layer span{font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.tf-health-layer b{font-size:.7rem}
+.tf-health-layer.passed{background:#2f8f5b}.tf-health-layer.failed{background:#c2413b}.tf-health-layer.attention{background:#d49a32}.tf-health-layer.none{background:#667085}
+.tf-health-map-shell{border:1px solid var(--pst-color-border);border-radius:.6rem;background:var(--pst-color-surface);padding:.35rem;min-height:520px}.tf-health-map{width:100%;min-height:520px}
+@media(max-width:900px){.tf-health-status{grid-template-columns:1fr 1fr}.tf-health-stat.layers{grid-column:1/-1}.tf-health-map-shell,.tf-health-map{min-height:430px}}
+</style>
+<div class="tf-health-status" id="tf-health-status"></div>
+<div class="tf-health-map-shell"><div id="tf-health-map" class="tf-health-map"></div></div>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script>
+(()=>{
+const model=__MODEL__;
+const COLORS={passed:"#2f8f5b",failed:"#c2413b",attention:"#d49a32",none:"#667085"};
+const escapeHtml=value=>String(value??"").replace(/[&<>\"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#39;"}[ch]));
+const summary=model.summary;
+const layerHtml=Object.entries(summary.layers).map(([kind,row])=>{const state=row.total===0?"none":row.passed===row.total?"passed":"failed";const tag="TF_LAYER__"+kind.toUpperCase().replace(/[^A-Z0-9]+/g,"_");return `<a class="tf-health-layer ${state}" href="test-results/index.html?tags=${encodeURIComponent(tag)}" title="${escapeHtml(kind)} · ${row.passed}/${row.total} passed · click → Allure"><span>${escapeHtml(kind)}</span><b>${row.passed}/${row.total}</b></a>`}).join("");
+document.getElementById("tf-health-status").innerHTML=`<div class="tf-health-stat"><small>Overall</small><strong>${summary.passed}/${summary.total} PASS</strong><em>retained executions</em></div><div class="tf-health-stat"><small>Scopes</small><strong>${summary.healthy_scopes}/${summary.scopes}</strong><em>REQ/TREQ healthy</em></div><div class="tf-health-stat"><small>Issues</small><strong>${summary.issues}</strong><em>failing / incomplete scopes</em></div><div class="tf-health-stat layers"><small>Layers</small><div class="tf-health-layers">${layerHtml}</div></div>`;
+const root=model.root;
+const rows=[root,...model.items];
+const ids=rows.map(r=>r.id), labels=rows.map(r=>r.label), parents=rows.map(r=>r.id===root.id?"":r.parent), values=rows.map(r=>r.value), colors=rows.map(r=>COLORS[r.status]||COLORS.none);
+const text=rows.map(r=>r.id===root.id||r.persistent_label?r.label:"");
+const custom=rows.map(r=>{const layers=r.by_kind?Object.entries(r.by_kind).map(([k,v])=>`${k}: ${v.passed}/${v.total}`).join(" · "):"";const issue=r.issue?`<br><b>First issue</b> · ${escapeHtml(r.issue)}`:"";return [`${escapeHtml(r.kind||"Overview")}`,`${Number(r.passed||0)}/${Number(r.total||0)} passed`,escapeHtml(layers),issue,r.href||root.href];});
+const data=[{type:"treemap",ids,labels,parents,values,branchvalues:"total",text,textinfo:"text",textfont:{size:14},marker:{colors,line:{width:2,color:"rgba(255,255,255,.72)"}},customdata:custom,hovertemplate:"<b>%{label}</b><br>%{customdata[0]} · %{customdata[1]}<br>%{customdata[2]}%{customdata[3]}<br><b>Click → Allure</b><extra></extra>",pathbar:{visible:false},sort:false}];
+const element=document.getElementById("tf-health-map");
+const layout={margin:{t:8,l:8,r:8,b:8},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{family:"system-ui,-apple-system,BlinkMacSystemFont,sans-serif"},uirevision:"ternforge-verification-health-map"};
+const config={responsive:true,displayModeBar:false,displaylogo:false};
+function size(){element.style.height=Math.max(430,window.innerHeight-element.getBoundingClientRect().top-20)+"px"}
+function render(){if(!element||typeof Plotly==="undefined")return;size();layout.font.color=getComputedStyle(document.body).color;Plotly.newPlot(element,data,layout,config);element.on("plotly_treemapclick",event=>{const point=event?.points?.[0];const href=point?.customdata?.[4];if(href)window.location.href=href;return false});window.addEventListener("resize",()=>{size();Plotly.Plots.resize(element)})}
+if(typeof Plotly!=="undefined")render();else document.querySelector('script[src*="plotly"]')?.addEventListener("load",render,{once:true});
+})();
+</script>
+</section>'''
+    article = template.replace("__MODEL__", stable_json(payload))
+    HEALTH_PAGE.write_text(portal_map_shell("Verification Health Map", article))
+
+
+def depth_map_payload():
+    _needs, nodes, parent, _children, ordered, weights, descendants = assurance_map_graph()
+    contract_rows = {row["contract_id"]: row for row in DEPTH.get("contracts") or []}
+    contract_ids = set(contract_rows)
+    direct_tests = defaultdict(list)
+    for row in DEPTH.get("tests") or []:
+        for contract_id in row.get("verifies") or []:
+            direct_tests[contract_id].append(row)
+    reach_order = ["none", "component", "component_integration", "system", "system_integration"]
+    boundary_order = ["no_evidence", "none", "substitute", "replay", "direct"]
+    reach_rank = {value: index for index, value in enumerate(reach_order)}
+    boundary_rank = {value: index for index, value in enumerate(boundary_order)}
+
+    contract_metrics = {}
+    for contract_id in contract_ids:
+        scope_contracts = descendants.get(contract_id, {contract_id}) & contract_ids
+        tests = []
+        seen = set()
+        for scoped_id in scope_contracts:
+            for row in direct_tests.get(scoped_id) or []:
+                nodeid = row.get("nodeid")
+                if nodeid in seen:
+                    continue
+                seen.add(nodeid)
+                tests.append(row)
+        contract = contract_rows[contract_id]
+        reach = str(contract.get("system_reach") or "none")
+        boundary = max(
+            (str(row.get("boundary_mode") or "none") for row in tests),
+            key=lambda value: boundary_rank.get(value, -1),
+            default="no_evidence",
+        )
+        qualifiers = defaultdict(int)
+        for row in tests:
+            key = (
+                str(row.get("boundary_mode") or "none"),
+                str(row.get("representation_fidelity") or "none"),
+            )
+            qualifiers[key] += 1
+        strength = (STRENGTH.get("contracts") or {}).get(contract_id) or {}
+        score = strength.get("score")
+        strength_state = "na"
+        if isinstance(score, (int, float)):
+            strength_state = "high" if score >= 80 else "moderate" if score >= 60 else "low"
+        triage = strength.get("triage") or {}
+        examples = list(strength.get("survivor_examples") or [])
+        contract_metrics[contract_id] = {
+            "reach": reach,
+            "boundary": boundary,
+            "qualifiers": [
+                {"boundary": key[0], "representation": key[1], "tests": count}
+                for key, count in sorted(qualifiers.items())
+            ],
+            "strength": {
+                "state": strength_state,
+                "score": score,
+                "killed": int(strength.get("killed") or 0),
+                "survived": int(strength.get("survived") or 0),
+                "fresh": strength.get("fresh"),
+                "new": int(triage.get("new_unresolved_survivors") or 0),
+                "debt": int(triage.get("existing_survivors") or triage.get("unresolved_survivors") or 0),
+                "delta": triage.get("score_delta"),
+                "example": str((examples[0] if examples else {}).get("summary") or ""),
+            },
+        }
+
+    def branch_floor(scope_ids, key, order, ranks):
+        values = [contract_metrics[contract_id][key] for contract_id in scope_ids if contract_id in contract_metrics]
+        if not values:
+            return order[0]
+        return min(values, key=lambda value: ranks.get(value, -1))
+
+    items = []
+    for need_id in ordered:
+        need = nodes[need_id]
+        scope_contracts = descendants[need_id] & contract_ids
+        if need_id in contract_metrics:
+            metrics = contract_metrics[need_id]
+        else:
+            metrics = {
+                "reach": branch_floor(scope_contracts, "reach", reach_order, reach_rank),
+                "boundary": branch_floor(scope_contracts, "boundary", boundary_order, boundary_rank),
+                "qualifiers": [],
+                "strength": {"state": "na", "score": None, "killed": 0, "survived": 0, "fresh": None, "new": 0, "debt": 0, "delta": None, "example": ""},
+            }
+        items.append({
+            "id": need_id,
+            "label": str(need.get("title") or need_id),
+            "kind": NORMATIVE_MAP_LABELS.get(str(need.get("type") or "").lower(), str(need.get("type") or "")),
+            "parent": parent.get(need_id) or "__PRODUCT_INTENT__",
+            "value": weights[need_id],
+            "persistent_label": str(need.get("type") or "").lower() in {"goal", "feature"},
+            **metrics,
+        })
+
+    contract_values = list(contract_metrics.values())
+    def distribution(key, order):
+        return {value: sum(row[key] == value for row in contract_values) for value in order}
+    strength_distribution = {
+        state: sum(row["strength"]["state"] == state for row in contract_values)
+        for state in ("na", "low", "moderate", "high")
+    }
+    return {
+        "root": {
+            "id": "__PRODUCT_INTENT__",
+            "label": "Product / System",
+            "value": sum(weights[root_id] for root_id in ordered if root_id not in parent),
+        },
+        "items": items,
+        "summary": {
+            "reach": distribution("reach", reach_order),
+            "boundary": distribution("boundary", boundary_order),
+            "strength": strength_distribution,
+            "contracts": len(contract_metrics),
+            "measured": sum(row["strength"]["state"] != "na" for row in contract_values),
+        },
+    }
+
+
+def render_depth_map_page():
+    payload = depth_map_payload()
+    template = r'''<section id="verification-depth-map">
+<h1>Verification Depth Map<a class="headerlink" href="#verification-depth-map" title="Link to this heading">#</a></h1>
+<p class="tf-map-intro">One specification treemap, three selectable projections: standard ISTQB <strong>Test Level</strong>, observed <strong>Boundary Reality</strong>, and mutation-based <strong>Test Strength</strong>. Boundary Reality is an exposure mode, not a universal weak→strong score. <strong>Representation Fidelity</strong> now qualifies each concrete evidence path together with producer/M&amp;S credibility rather than acting as a separate map axis.</p>
+<style id="tf-depth-map-style">
+.tf-map-intro{max-width:82rem;margin:.15rem 0 .75rem;color:var(--pst-color-text-muted)}
+.tf-depth-status{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55rem;margin:.6rem 0 .8rem}.tf-depth-dimension{border:1px solid var(--pst-color-border);border-radius:.55rem;background:var(--pst-color-surface);color:inherit;text-align:left;padding:.58rem .68rem;cursor:pointer;min-width:0}.tf-depth-dimension.active{outline:2px solid var(--pst-color-primary);outline-offset:-2px}.tf-depth-dimension>span{display:flex;justify-content:space-between;gap:.35rem;font-size:.76rem;font-weight:700}.tf-depth-direction{font-style:normal;color:var(--pst-color-text-muted);font-weight:500}.tf-depth-dimension>strong{display:block;margin:.12rem 0 .38rem;font-size:1rem}.tf-depth-rail{display:flex;height:1.28rem;border-radius:.3rem;overflow:hidden;background:var(--pst-color-border)}.tf-depth-rail span{display:flex;align-items:center;justify-content:center;min-width:8px;color:#fff;font-size:.62rem;font-weight:700;overflow:hidden}.tf-depth-note{display:block;color:var(--pst-color-text-muted);font-size:.68rem;margin-top:.32rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ternforge-verification-depth-map-shell{border:1px solid var(--pst-color-border);border-radius:.6rem;background:var(--pst-color-surface);padding:.35rem;min-height:500px}.ternforge-verification-depth-map{width:100%;min-height:500px}.tf-depth-credibility{margin-top:.65rem;border:1px solid var(--pst-color-border);border-radius:.5rem;padding:.5rem .7rem;background:var(--pst-color-surface)}.tf-depth-credibility summary{cursor:pointer;font-weight:700}.tf-depth-credibility p{margin:.45rem 0 .1rem;color:var(--pst-color-text-muted)}
+@media(max-width:900px){.tf-depth-status{grid-template-columns:1fr}.ternforge-verification-depth-map-shell,.ternforge-verification-depth-map{min-height:430px}}
+</style>
+<div class="tf-depth-status">
+<button class="tf-depth-dimension active" type="button" data-depth-mode="reach"><span>Test Level <em class="tf-depth-direction">component → system</em></span><strong id="tf-reach-headline">Loading</strong><div class="tf-depth-rail" id="tf-reach-rail"></div><small class="tf-depth-note">Observed test-object reach</small></button>
+<button class="tf-depth-dimension" type="button" data-depth-mode="boundary"><span>Boundary Reality <em class="tf-depth-direction">local → live</em></span><strong id="tf-boundary-headline">Loading</strong><div class="tf-depth-rail" id="tf-boundary-rail"></div><small class="tf-depth-note">Exposure mode; Assurance Target decides sufficiency</small></button>
+<button class="tf-depth-dimension" type="button" data-depth-mode="strength"><span>Test Strength <em class="tf-depth-direction">measured mutation sensitivity</em></span><strong id="tf-strength-headline">Loading</strong><div class="tf-depth-rail" id="tf-strength-rail"></div><small class="tf-depth-note">Current snapshot · click measured contract → changes / history</small></button>
+</div>
+<div class="ternforge-verification-depth-map-shell"><div id="ternforge-verification-depth-map" class="ternforge-verification-depth-map"></div></div>
+<details class="tf-depth-credibility"><summary>Evidence Producer Credibility / Representation qualifiers</summary><p><strong>Same-path representation qualifiers</strong> remain attached to each concrete Boundary Reality observation. Producer qualification and M&amp;S validation are orthogonal trust gates; inspect <a href="evidence-producers.html">Evidence Producers</a> for the producer-level proof.</p></details>
+<!-- DEPTH-P30-BOUNDARY-MODEL -->
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script>
+(()=>{
+const model=__MODEL__;
+const REACH={none:{rank:-1,label:"No evidence",short:"—",color:"#667085"},component:{rank:0,label:"Component",short:"Comp",color:"#d49a32"},component_integration:{rank:1,label:"Component integration",short:"C.Int",color:"#3b82f6"},system:{rank:2,label:"System",short:"Sys",color:"#14b8a6"},system_integration:{rank:3,label:"System integration",short:"S.Int",color:"#2f8f5b"}};
+const BOUNDARY={no_evidence:{rank:-1,label:"No evidence",short:"—",color:"#667085"},none:{rank:0,label:"Local only",short:"Local",color:"#d49a32"},substitute:{rank:1,label:"Substitute",short:"Sub",color:"#3b82f6"},replay:{rank:2,label:"Replay",short:"Replay",color:"#14b8a6"},direct:{rank:3,label:"Direct live",short:"Live",color:"#2f8f5b"}};
+const STRENGTH={na:{rank:-1,label:"N/A / unmeasured",short:"N/A",color:"#667085"},low:{rank:0,label:"Low <60%",short:"Low",color:"#c2413b"},moderate:{rank:1,label:"Moderate 60–79.9%",short:"Mod",color:"#d49a32"},high:{rank:2,label:"High ≥80%",short:"High",color:"#2f8f5b"}};
+const REACH_ORDER=["none","component","component_integration","system","system_integration"];
+const BOUNDARY_ORDER=["no_evidence","none","substitute","replay","direct"];
+const STRENGTH_ORDER=["na","low","moderate","high"];
+const escapeHtml=value=>String(value??"").replace(/[&<>\"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#39;"}[ch]));
+const root=model.root, rows=[{...root,kind:"Overview",reach:"none",boundary:"no_evidence",qualifiers:[],strength:{state:"na"},persistent_label:true},...model.items];
+const element=document.getElementById("ternforge-verification-depth-map");let mode="reach";
+function dict(){return mode==="reach"?REACH:mode==="boundary"?BOUNDARY:STRENGTH}
+function order(){return mode==="reach"?REACH_ORDER:mode==="boundary"?BOUNDARY_ORDER:STRENGTH_ORDER}
+function key(row){return mode==="reach"?row.reach:mode==="boundary"?row.boundary:row.strength?.state||"na"}
+function rail(id,dist,definitions,keys){const el=document.getElementById(id);const total=Object.values(dist).reduce((a,b)=>a+Number(b||0),0)||1;el.innerHTML=keys.map(k=>{const count=Number(dist[k]||0);const width=Math.max(8,100*count/total);return `<span style="width:${width}%;background:${definitions[k].color}" title="${escapeHtml(definitions[k].label)} · ${count} contracts">${count?definitions[k].short+" "+count:""}</span>`}).join("")}
+function strongest(dist,definitions,keys){for(let i=keys.length-1;i>=0;i--){if(Number(dist[keys[i]]||0)>0)return definitions[keys[i]].label}return "No evidence"}
+rail("tf-reach-rail",model.summary.reach,REACH,REACH_ORDER);rail("tf-boundary-rail",model.summary.boundary,BOUNDARY,BOUNDARY_ORDER);rail("tf-strength-rail",model.summary.strength,STRENGTH,STRENGTH_ORDER);
+document.getElementById("tf-reach-headline").textContent="Max · "+strongest(model.summary.reach,REACH,REACH_ORDER);document.getElementById("tf-boundary-headline").textContent="Max observed · "+strongest(model.summary.boundary,BOUNDARY,BOUNDARY_ORDER);document.getElementById("tf-strength-headline").textContent=model.summary.measured+" / "+model.summary.contracts+" measured";
+function hover(row){if(row.id===root.id)return `<b>${escapeHtml(row.label)}</b><br>Product / System overview`;
+ if(mode==="reach")return `<b>${escapeHtml(row.label)}</b><br>${escapeHtml(row.kind)} · <b>Test Level</b> · ${escapeHtml(REACH[row.reach]?.label||row.reach)}<br><b>Click → Traceability</b>`;
+ if(mode==="boundary"){const qualifiers=(row.qualifiers||[]).map(q=>`${BOUNDARY[q.boundary]?.label||q.boundary} · ${String(q.representation||"").replaceAll("_"," ")} · ${q.tests} test${q.tests===1?"":"s"}`).join("<br>");return `<b>${escapeHtml(row.label)}</b><br>${escapeHtml(row.kind)} · <b>Boundary Reality</b> · ${escapeHtml(BOUNDARY[row.boundary]?.label||row.boundary)}<br><span>Exposure mode only · the Assurance Target decides whether live interaction is required.</span>${qualifiers?"<br><b>Same-path representation qualifiers</b><br>"+escapeHtml(qualifiers).replaceAll("&lt;br&gt;","<br>"):""}<br><b>Click → Traceability</b>`}
+ const fact=row.strength||{};if(fact.state==="na")return `<b>${escapeHtml(row.label)}</b><br>${escapeHtml(row.kind)} · <b>Test Strength</b> · N/A / unmeasured`;
+ const delta=fact.delta===null||fact.delta===undefined?"Δ n/a":`Δ ${Number(fact.delta)>=0?"+":""}${Number(fact.delta).toFixed(1)} pp`;const missed=fact.example?`<br><b>Missed example</b> · ${escapeHtml(fact.example)}`:"";return `<b>${escapeHtml(row.label)}</b><br>${escapeHtml(row.kind)} · <b>Test Strength</b> · ${Number(fact.score).toFixed(1)}% · ${escapeHtml(STRENGTH[fact.state].label)}<br>${fact.killed} killed · ${fact.survived} survived<br><b>${fact.fresh===false?"STALE":"Fresh"}</b> · New ${fact.new} · Debt ${fact.debt} · ${delta}${missed}<br><b>Click → changes / history</b>`}
+function target(row){if(row.id===root.id)return null;if(mode==="strength"){return row.strength?.state!=="na"?"mutation-analysis.html#mutation-"+row.id.toLowerCase():null}return "traceability-reader.html#review-"+row.id}
+function render(){const definitions=dict();const ids=rows.map(r=>r.id),labels=rows.map(r=>r.label),parents=rows.map(r=>r.id===root.id?"":r.parent),values=rows.map(r=>r.value),colors=rows.map(r=>definitions[key(r)]?.color||"#667085"),text=rows.map(r=>r.id===root.id||r.persistent_label?r.label:"");const custom=rows.map(r=>[hover(r),target(r)]);const data=[{type:"treemap",ids,labels,parents,values,branchvalues:"total",text,textinfo:"text",textfont:{size:14},marker:{colors,line:{width:2,color:"rgba(255,255,255,.72)"}},customdata:custom,hovertemplate:"%{customdata[0]}<extra></extra>",pathbar:{visible:false},sort:false}];const layout={margin:{t:8,l:8,r:8,b:8},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{family:"system-ui,-apple-system,BlinkMacSystemFont,sans-serif",color:getComputedStyle(document.body).color},uirevision:"ternforge-verification-depth-map-"+mode};const config={responsive:true,displayModeBar:false,displaylogo:false};element.style.height=Math.max(430,window.innerHeight-element.getBoundingClientRect().top-20)+"px";Plotly.react(element,data,layout,config).then(()=>{element.removeAllListeners?.("plotly_treemapclick");element.on("plotly_treemapclick",event=>{const href=event?.points?.[0]?.customdata?.[1];if(href)window.location.href=href;return false})})}
+document.querySelectorAll(".tf-depth-dimension").forEach(button=>button.addEventListener("click",()=>{mode=button.dataset.depthMode;document.querySelectorAll(".tf-depth-dimension").forEach(node=>node.classList.toggle("active",node===button));render()}));window.addEventListener("resize",()=>{element.style.height=Math.max(430,window.innerHeight-element.getBoundingClientRect().top-20)+"px";Plotly.Plots.resize(element)});if(typeof Plotly!=="undefined")render();else document.querySelector('script[src*="plotly"]')?.addEventListener("load",render,{once:true});
+})();
+</script>
+</section>'''
+    article = template.replace("__MODEL__", stable_json(payload))
+    DEPTH_PAGE.write_text(portal_map_shell("Verification Depth Map", article))
+
+
+def patch_allure_scope_tags():
+    if not ALLURE_REPORT_PAGE.exists():
+        return
+    needs, nodes, parent, _children, _ordered, _weights, _descendants = assurance_map_graph()
+    tests = map_test_rows(needs)
+    test_by_nodeid = {row["nodeid"]: row for row in tests}
+    scope_tags = {}
+    for nodeid, row in test_by_nodeid.items():
+        tags = set()
+        for contract_id in row.get("verifies") or []:
+            current = contract_id
+            while current in nodes:
+                tags.add("TF_SCOPE__" + current)
+                current = parent.get(current)
+                if not current:
+                    break
+        kind = str(row.get("verification_kind") or "unknown").upper()
+        tags.add("TF_LAYER__" + re.sub(r"[^A-Z0-9]+", "_", kind).strip("_"))
+        scope_tags[nodeid] = sorted(tags)
+
+    report_ids = {}
+    for nodeid, rows in allure_monitor_index().items():
+        if len(rows) != 1 or not rows[0].get("uuid"):
+            continue
+        report_ids[nodeid] = hashlib.md5(str(rows[0]["uuid"]).encode()).hexdigest()
+
+    text = ALLURE_REPORT_PAGE.read_text()
+
+    def embedded(name):
+        match = re.search(r'd\("' + re.escape(name) + r'","([A-Za-z0-9+/=]+)"\)', text)
+        if not match:
+            return None, None
+        try:
+            payload = json.loads(__import__("base64").b64decode(match.group(1)))
+        except Exception:
+            return match, None
+        return match, payload
+
+    replacements = []
+    all_tags = set()
+    for nodeid, tags in scope_tags.items():
+        report_id = report_ids.get(nodeid)
+        if not report_id:
+            continue
+        name = f"data/test-results/{report_id}.json"
+        match, payload = embedded(name)
+        if not match or payload is None:
+            continue
+        labels = list(payload.get("labels") or [])
+        existing = {(str(row.get("name") or ""), str(row.get("value") or "")) for row in labels}
+        for tag in tags:
+            all_tags.add(tag)
+            if ("tag", tag) not in existing:
+                labels.append({"name": "tag", "value": tag})
+        payload["labels"] = labels
+        grouped = dict(payload.get("groupedLabels") or {})
+        grouped_tags = list(grouped.get("tag") or [])
+        for tag in tags:
+            if tag not in grouped_tags:
+                grouped_tags.append(tag)
+        grouped["tag"] = grouped_tags
+        payload["groupedLabels"] = grouped
+        encoded = __import__("base64").b64encode(
+            json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode()
+        ).decode()
+        replacements.append((match.span(1), encoded))
+
+    filters_match, filters = embedded("widgets/tree-filters.json")
+    if filters_match and filters is not None:
+        filters["tags"] = sorted(set(filters.get("tags") or []) | all_tags)
+        encoded = __import__("base64").b64encode(
+            json.dumps(filters, separators=(",", ":"), ensure_ascii=False).encode()
+        ).decode()
+        replacements.append((filters_match.span(1), encoded))
+
+    for (start, end), encoded in sorted(replacements, reverse=True):
+        text = text[:start] + encoded + text[end:]
+    ALLURE_REPORT_PAGE.write_text(text)
+
+
+def regenerate_verification_maps():
+    patch_allure_scope_tags()
+    render_health_map_page()
+    render_depth_map_page()
+# TERNFORGE-P34-CLEAN-MAPS-END
+
+
 def patch_depth_page():
     if not DEPTH_PAGE.exists():
         return
@@ -1615,7 +2204,7 @@ def patch_navigation_text(text,current=None):
       "\n",text,flags=re.DOTALL
     )
     nav_prefix=text.split('<main id="main-content"',1)[0]
-    has_native_depth="Verification Depth Map" in nav_prefix
+    has_native_depth='href="verification-depth-map.html"' in nav_prefix
     health_pattern=re.compile(
       r'(<li class="nav-item[^"]*">\s*<a class="nav-link nav-internal" href="(?:verification-health-map\.html|#)">\s*Verification Health Map\s*</a>\s*</li>)'
     )
@@ -1714,7 +2303,8 @@ def mutation_history_section(summary,feedback):
                 candidate=HISTORY_DIR/f"{campaign_id}.json"
             provenance=(
               f"mutation-results/campaign-history/{html_escape(candidate.name)}"
-              if candidate.exists() else "#"
+              if candidate.exists()
+              else "mutation-results/operator-feedback.json"
             )
             current=""
         new_count=int(row.get("new_unresolved_survivors") or 0)
@@ -1742,7 +2332,7 @@ def mutation_history_section(summary,feedback):
         )
     return f"""<section id="mutation-history">
 <h2>Recent changes<a class="headerlink" href="#mutation-history" title="Link to this heading">#</a></h2>
-<p><small>Most recent retained mutation campaigns.</small></p>
+<p><small>Most recent retained mutation campaign summaries. The current campaign links to raw provenance; older summary-only rows link to the retained operator-feedback record.</small></p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead><tr><th>Signal</th><th>Run scope</th><th>Duration</th><th>Evidence</th></tr></thead>
 <tbody>{''.join(rows) if rows else '<tr><td colspan="4">No retained campaigns yet.</td></tr>'}</tbody>
@@ -2451,57 +3041,57 @@ def probe_invalid_config_runtime_isolation():
             process.kill()
 
 def assurance_history_rows(contract_id=None):
-    paths=sorted(HISTORY_DIR.glob("*.json"))
-    if CAMPAIGN_PATH.exists():
-        paths.append(CAMPAIGN_PATH)
-    rows=[]
-    seen=set()
-    for path in paths:
-        try:
-            campaign=json.loads(path.read_text())
-        except Exception:
-            continue
-        run_id=str(campaign.get("run_id") or campaign.get("campaign_id") or path.stem)
-        if run_id in seen:
-            continue
-        campaign_contracts=campaign.get("contracts") or {}
-        if contract_id:
-            selected=campaign_contracts.get(contract_id) or {}
-            selected_score=(selected.get("result") or {}).get("score")
-            scores=[float(selected_score)] if selected_score is not None else []
-        else:
-            scores=[
-              (contract.get("result") or {}).get("score")
-              for contract in campaign_contracts.values()
-            ]
-            scores=[float(score) for score in scores if score is not None]
+    """Project the retained assurance snapshot registry into the DVC journal."""
+    payload=json.loads(ASSURANCE_SNAPSHOTS_PATH.read_text())
+    snapshots=list(payload.get("snapshots") or [])
+    if contract_id:
+        snapshots=[
+          row for row in snapshots
+          if row.get("contract_id")==contract_id and row.get("test_strength") is not None
+        ]
+        groups=[
+          (
+            str(row.get("checkpoint") or ""),
+            str(row.get("captured_at") or ""),
+            [row],
+          )
+          for row in snapshots
+        ]
+    else:
+        by_checkpoint=defaultdict(list)
+        captured_at={}
+        for row in snapshots:
+            if row.get("test_strength") is None:
+                continue
+            checkpoint=str(row.get("checkpoint") or "")
+            by_checkpoint[checkpoint].append(row)
+            captured_at[checkpoint]=max(
+              str(row.get("captured_at") or ""),
+              captured_at.get(checkpoint,""),
+            )
+        groups=[
+          (checkpoint,captured_at.get(checkpoint,""),rows)
+          for checkpoint,rows in by_checkpoint.items()
+        ]
+    projected=[]
+    for checkpoint,captured_at,rows in groups:
+        scores=[float(row["test_strength"]) for row in rows]
         if not scores:
             continue
-        seen.add(run_id)
-        new=debt=resolved=0
-        triage_contracts=(
-          [campaign_contracts.get(contract_id) or {}]
-          if contract_id else campaign_contracts.values()
-        )
-        for contract in triage_contracts:
-            triage=(contract.get("result") or {}).get("triage") or {}
-            new+=int(triage.get("new_unresolved_survivors") or 0)
-            debt+=int(triage.get("existing_survivors") or 0)
-            resolved+=int(triage.get("resolved_survivors") or 0)
-        rows.append({
-          "finished_at":campaign.get("finished_at") or "",
-          "run_id":run_id,
-          "mode":campaign.get("mode") or "unknown",
+        projected.append({
+          "finished_at":captured_at,
+          "run_id":checkpoint,
+          "mode":"assurance-snapshot",
           "measured_contracts":len(scores),
           "mutation_sensitivity":round(sum(scores)/len(scores),1),
-          "new_survivors":new,
-          "survivor_debt":debt,
-          "resolved_survivors":resolved,
+          "new_survivors":sum(int(row.get("new_survivors") or 0) for row in rows),
+          "survivor_debt":sum(int(row.get("survivor_debt") or 0) for row in rows),
+          "resolved_survivors":sum(int(row.get("resolved_survivors") or 0) for row in rows),
         })
-    rows.sort(key=lambda row:(row["finished_at"],row["run_id"]))
-    for index,row in enumerate(rows,1):
+    projected.sort(key=lambda row:(row["finished_at"],row["run_id"]))
+    for index,row in enumerate(projected,1):
         row["step"]=index
-    return rows
+    return projected
 
 
 def build_dvc_assurance_history(rows,*,subdir=None,title="Assurance history · Test Strength",metric="mean requirement Test Strength for the contracts measured by each retained mutation campaign"):
@@ -2747,18 +3337,21 @@ def build_fault_model_facts():
       {"id":"runtime","label":"Runtime / dependency","kind":"fault-injection-engine",**runtime},
       {"id":"implementation","label":"Implementation","kind":"mutation-engine",**implementation},
     ]
-    history=build_dvc_assurance_history(assurance_history_rows())
+    history=build_dvc_assurance_history(
+      assurance_history_rows(),
+      metric="retained assurance-snapshot Test Strength across measured contracts",
+    )
     contract_history=build_dvc_assurance_history(
       assurance_history_rows("REQ_INVALID_CONFIGURATION_ERRORS"),
       subdir="REQ_INVALID_CONFIGURATION_ERRORS",
       title="REQ_INVALID_CONFIGURATION_ERRORS · Test Strength history",
-      metric="retained mutmut Test Strength for REQ_INVALID_CONFIGURATION_ERRORS",
+      metric="retained assurance-snapshot Test Strength for REQ_INVALID_CONFIGURATION_ERRORS",
     )
     rate_limit_history=build_dvc_assurance_history(
       assurance_history_rows("TREQ_RATE_LIMIT_STATE"),
       subdir="TREQ_RATE_LIMIT_STATE",
       title="TREQ_RATE_LIMIT_STATE · covered-mutant Test Strength history",
-      metric="retained mutmut covered-mutant Test Strength for TREQ_RATE_LIMIT_STATE",
+      metric="retained assurance-snapshot covered-mutant Test Strength for TREQ_RATE_LIMIT_STATE",
     )
     req_spec=probe_invalid_config_specification_fault()
     req_spec.update({
@@ -5594,6 +6187,18 @@ def ensure_root_favicon():
 
 def integrate_mutation_portal(summary,feedback):
     ensure_root_favicon()
+    if not MTE_VENDOR_PATH.exists():
+        raise RuntimeError("pinned Mutation Testing Elements 3.9.0 asset is missing")
+    mte_bytes=gzip.decompress(MTE_VENDOR_PATH.read_bytes())
+    if hashlib.sha256(mte_bytes).hexdigest()!=MTE_VENDOR_SHA256:
+        raise RuntimeError("pinned Mutation Testing Elements 3.9.0 asset digest mismatch")
+    mte_target=ROOT/"docs/_build/html/_static/mutation-test-elements.js"
+    mte_target.parent.mkdir(parents=True,exist_ok=True)
+    mte_target.write_bytes(mte_bytes)
+    if ASSURANCE_SNAPSHOTS_PATH.exists():
+        (ROOT/"docs/_build/html/assurance-snapshots.json").write_bytes(
+          ASSURANCE_SNAPSHOTS_PATH.read_bytes()
+        )
     write_mutation_analysis_page(summary,feedback)
     patch_contract_evidence_view()
     subprocess.run(
@@ -5716,6 +6321,7 @@ def refresh_freshness(campaign):
       "mutation_semantics_version":MUTATION_SEMANTICS_VERSION,
     }
     CAMPAIGN_PATH.write_text(json.dumps(campaign,indent=2))
+    regenerate_verification_maps()
     patch_depth_page()
     integrate_mutation_portal(summary,feedback)
     return summary
