@@ -990,11 +990,80 @@ def main() -> None:
     video_input_page = (HTML / "contract-evidence-video-input.html").read_text()
     structured_schema_page = (HTML / "contract-evidence-structured-schema-contract.html").read_text()
     content_normalization_page = (HTML / "contract-evidence-multimodal-content-normalization.html").read_text()
+    upper_assurance_pages = {
+        "Feature fallback": (HTML / "assurance-feat-route-fallback.html").read_text(),
+        "Feature rate limit": (HTML / "assurance-feat-rate-limit-routing.html").read_text(),
+        "Goal routing": (HTML / "assurance-goal-routing-reliability.html").read_text(),
+        "Product / System": (HTML / "assurance-product-system.html").read_text(),
+    }
     spec_page = (HTML / "specification-health.html").read_text()
     health_page = (HTML / "verification-health-map.html").read_text()
     depth_page = (HTML / "verification-depth-map.html").read_text()
     trace_reader_page = (HTML / "traceability-reader.html").read_text()
     verification_page = (HTML / "verification.html").read_text()
+
+    canonical_monitor_style = re.search(
+        r'<style id="tf-requirement-monitor-style">(.*?)</style>',
+        sticky_route_page,
+        flags=re.DOTALL,
+    )
+    check(
+        canonical_monitor_style is not None,
+        "canonical REQ Contract Evidence page exposes the shared monitor style",
+    )
+    canonical_style_text = canonical_monitor_style.group(1) if canonical_monitor_style else ""
+    for name, page in upper_assurance_pages.items():
+        style = re.search(
+            r'<style id="tf-requirement-monitor-style">(.*?)</style>',
+            page,
+            flags=re.DOTALL,
+        )
+        script = re.search(
+            r'<script id="tf-requirement-monitor-script">(.*?)</script>',
+            page,
+            flags=re.DOTALL,
+        )
+        check(
+            style is not None and style.group(1).startswith(canonical_style_text),
+            f"{name}: upper assurance extends the canonical REQ monitor CSS without replacing it",
+        )
+        check(
+            page.count('id="tf-requirement-monitor-style"') == 1
+            and page.count('id="tf-requirement-monitor-script"') == 1,
+            f"{name}: upper assurance keeps one canonical monitor style/script pair",
+        )
+        check(
+            script is not None
+            and "syncSticky" in script.group(1)
+            and "nav-flash" in script.group(1)
+            and "document.querySelectorAll" in script.group(1),
+            f"{name}: sticky layout and navigation flash follow the canonical REQ interaction pattern",
+        )
+        check(
+            "upper-gate-grid" not in page,
+            f"{name}: retired narrative upper-gate layout is absent",
+        )
+        check(
+            'class="verdict"' in page
+            and 'class="domain-strip with-support"' in page
+            and 'class="section-head"' in page
+            and 'class="panel history"' in page,
+            f"{name}: verdict, domain strip, sections, and History use canonical Contract Evidence structure",
+        )
+    for name in ("Feature fallback", "Goal routing"):
+        page = upper_assurance_pages[name]
+        check(
+            'class="fault-layout"' in page
+            and "data-upper=" in page
+            and 'class="inspector"' in page
+            and "classList.toggle('selected'" in page,
+            f"{name}: active upper criteria use canonical tile → selected inspector interaction",
+        )
+    for name in ("Feature rate limit", "Product / System"):
+        check(
+            'class="fault-tile na"' in upper_assurance_pages[name],
+            f"{name}: undeclared upper Targets use canonical disabled N/A tiles",
+        )
 
     check(
         mutation_page.count('id="mutation-') >= 2,

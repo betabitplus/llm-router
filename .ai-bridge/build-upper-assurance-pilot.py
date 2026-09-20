@@ -21,7 +21,7 @@ RUN_INPUTS = ROOT / "test-results/evidence-run-inputs.json"
 OUT_DIR = ROOT / "docs/_build/html"
 QUALIFICATION = OUT_DIR / "evidence-confidence-qualification.json"
 FACTS_OUT = OUT_DIR / "upper-assurance-facts.json"
-SHELL = OUT_DIR / "verification-assurance.html"
+SHELL = OUT_DIR / "contract-evidence-route-sticky-start.html"
 
 OUTPUTS = {
     "FEAT_ROUTE_FALLBACK": OUT_DIR / "assurance-feat-route-fallback.html",
@@ -652,109 +652,144 @@ def card(label: str, state: dict, href: str) -> str:
 
 
 def support_section(section_id: str, title: str, state: dict, profile_url: str) -> str:
-    children = state["children"]
-    rows = []
-    for row in children:
-        rows.append(
-            f'<div class="signal-card {reqmon.status_class(row["status"])}-signal">'
-            '<div class="signal-head">'
-            f'<strong><a href="{esc(row["url"])}">{esc(row["id"])} ↗</a></strong>'
+    tiles = []
+    for row in state["children"]:
+        tiles.append(
+            f'<a class="fault-tile upper-child-tile {reqmon.status_class(row["status"])}" '
+            f'href="{esc(row["url"])}">'
+            '<div class="tile-head">'
+            f"<strong>{esc(row['id'])}</strong>"
             f'<span class="status {reqmon.status_class(row["status"])}">{esc(reqmon.status_label(row["status"]))}</span>'
             "</div>"
             f'<div class="coverage-summary"><small>{esc(row["title"])}</small></div>'
-            "</div>"
+            "</a>"
         )
-    return (
-        f'<section class="section" id="{esc(section_id)}">'
-        f'<div class="section-head"><h3>{esc(title)}</h3>'
-        f'<a class="section-link" href="{esc(profile_url)}">Profile ↗</a></div>'
-        '<div class="panel" style="padding:.55rem"><div class="signal-grid">'
-        + "".join(rows)
-        + "</div></div></section>"
-    )
-
-
-def direct_section(section_id: str, title: str, state: dict, profile_url: str) -> str:
-    if state["status"] == "N/A":
-        content = (
-            '<div class="signal-card na-signal"><div class="signal-head">'
-            '<strong>No declared Target</strong><span class="status na">N/A</span>'
-            '</div><div class="coverage-summary"><small>'
-            "Section is reserved; no criterion is required by the current Assurance Profile."
-            "</small></div></div>"
-        )
-    else:
-        cards = []
-        for criterion in state["criteria"]:
-            scenario = next(
-                (
-                    row.get("gherkin_scenario")
-                    for row in criterion["rows"]
-                    if row.get("gherkin_scenario")
-                ),
-                criterion["id"],
-            )
-            execution_status = criterion["execution_status"]
-            producer_state = criterion["producer_qualification"]
-            freshness_state = criterion["freshness"]
-            producer_rows = producer_state["producers"]
-            freshness_rows = freshness_state["checks"]
-            producer_actual = sum(row["status"] == "MET" for row in producer_rows)
-            freshness_actual = sum(row["status"] == "MET" for row in freshness_rows)
-            bdd_url = living_spec_url(criterion["rows"])
-            scenario_markup = (
-                f'<a href="{esc(bdd_url)}">{esc(scenario)} ↗</a>'
-                if bdd_url
-                else esc(scenario)
-            )
-            cards.append(
-                f'<div class="signal-card {reqmon.status_class(criterion["status"])}-signal">'
-                '<div class="signal-head">'
-                f"<strong>{scenario_markup}</strong>"
-                f'<span class="status {reqmon.status_class(criterion["status"])}">{esc(reqmon.status_label(criterion["status"]))}</span>'
-                "</div>"
-                f'<div class="coverage-summary"><small>{esc(criterion["success_criterion"])}</small></div>'
-                '<div class="upper-gate-grid">'
-                f'<div class="signal-card {reqmon.status_class(execution_status)}-signal">'
-                '<div class="signal-head"><strong>Execution</strong>'
-                f'<span class="status {reqmon.status_class(execution_status)}">{esc(reqmon.status_label(execution_status))}</span></div>'
-                '<div class="metric-values">'
-                f"<div><span>Actual</span><strong>{criterion['passed_executions']} / {criterion['actual_executions']} pass</strong></div>"
-                f"<div><span>Target</span><strong>{criterion['required_executions']} required</strong></div>"
-                "</div></div>"
-                f'<div class="signal-card {reqmon.status_class(producer_state["status"])}-signal">'
-                '<div class="signal-head"><strong>Producer qualification</strong>'
-                f'<span class="status {reqmon.status_class(producer_state["status"])}">{esc(reqmon.status_label(producer_state["status"]))}</span></div>'
-                '<div class="metric-values">'
-                f"<div><span>Actual</span><strong>{producer_actual} / {len(producer_rows)} qualified</strong></div>"
-                f"<div><span>Target</span><strong>{len(producer_rows)} / {len(producer_rows)} qualified</strong></div>"
-                "</div></div>"
-                f'<div class="signal-card {reqmon.status_class(freshness_state["status"])}-signal">'
-                '<div class="signal-head"><strong>Freshness</strong>'
-                f'<span class="status {reqmon.status_class(freshness_state["status"])}">{esc(reqmon.status_label(freshness_state["status"]))}</span></div>'
-                '<div class="metric-values">'
-                f"<div><span>Actual</span><strong>{freshness_actual} / {len(freshness_rows)} current</strong></div>"
-                f"<div><span>Target</span><strong>{len(freshness_rows)} / {len(freshness_rows)} current</strong></div>"
-                "</div></div>"
-                "</div></div>"
-            )
-        content = "".join(cards)
     return (
         f'<section class="section" id="{esc(section_id)}">'
         f'<div class="section-head"><h3>{esc(title)}</h3>'
         f'<div class="section-links"><a class="section-link" href="{esc(profile_url)}">Profile ↗</a>'
         '<a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div></div>'
-        '<div class="panel" style="padding:.55rem"><div class="signal-grid">'
-        + content
+        '<div class="panel upper-support-panel"><div class="fault-grid upper-support-grid">'
+        + "".join(tiles)
         + "</div></div></section>"
     )
+
+
+def criterion_inspector(criterion: dict, profile_url: str) -> str:
+    execution_status = criterion["execution_status"]
+    producer_state = criterion["producer_qualification"]
+    freshness_state = criterion["freshness"]
+    producer_rows = producer_state["producers"]
+    freshness_rows = freshness_state["checks"]
+    producer_actual = sum(row["status"] == "MET" for row in producer_rows)
+    freshness_actual = sum(row["status"] == "MET" for row in freshness_rows)
+    bdd_url = living_spec_url(criterion["rows"])
+    bdd_link = f'<a href="{esc(bdd_url)}">BDD evidence ↗</a>' if bdd_url else ""
+    execution = (
+        f'<div class="signal-card {reqmon.status_class(execution_status)}-signal">'
+        '<div class="signal-head"><strong>Execution</strong>'
+        f'<span class="status {reqmon.status_class(execution_status)}">{esc(reqmon.status_label(execution_status))}</span></div>'
+        '<div class="metric-values">'
+        f"<div><span>Actual</span><strong>{criterion['passed_executions']} / {criterion['actual_executions']} pass</strong></div>"
+        f"<div><span>Target</span><strong>{criterion['required_executions']} required</strong></div>"
+        "</div></div>"
+    )
+    producer = (
+        f'<div class="signal-card {reqmon.status_class(producer_state["status"])}-signal">'
+        '<div class="signal-head"><strong>Producer qualification</strong>'
+        f'<span class="status {reqmon.status_class(producer_state["status"])}">{esc(reqmon.status_label(producer_state["status"]))}</span></div>'
+        '<div class="metric-values">'
+        f"<div><span>Actual</span><strong>{producer_actual} / {len(producer_rows)} qualified</strong></div>"
+        f"<div><span>Target</span><strong>{len(producer_rows)} / {len(producer_rows)} qualified</strong></div>"
+        "</div></div>"
+    )
+    freshness = (
+        f'<div class="signal-card {reqmon.status_class(freshness_state["status"])}-signal">'
+        '<div class="signal-head"><strong>Freshness</strong>'
+        f'<span class="status {reqmon.status_class(freshness_state["status"])}">{esc(reqmon.status_label(freshness_state["status"]))}</span></div>'
+        '<div class="metric-values">'
+        f"<div><span>Actual</span><strong>{freshness_actual} / {len(freshness_rows)} current</strong></div>"
+        f"<div><span>Target</span><strong>{len(freshness_rows)} / {len(freshness_rows)} current</strong></div>"
+        "</div></div>"
+    )
+    return (
+        '<div class="inspector-head">'
+        '<div><span class="eyebrow">Selected assurance criterion</span>'
+        f"<h3>{esc(criterion['id'])}</h3></div>"
+        f'<span class="status big {reqmon.status_class(criterion["status"])}">{esc(reqmon.status_label(criterion["status"]))}</span></div>'
+        '<div class="signal-grid">'
+        '<div class="signal-group primary-group"><div class="signal-group-head"><strong>Required evidence</strong></div>'
+        f"{execution}</div>"
+        '<div class="signal-group path-properties"><div class="signal-group-head"><strong>Evidence confidence</strong></div>'
+        f'<div class="confidence-grid">{producer}{freshness}</div></div></div>'
+        '<div class="drilldowns">'
+        f'{bdd_link}<a href="{esc(profile_url)}">Assurance profile ↗</a>'
+        '<a href="upper-assurance-facts.json">Raw facts ↗</a></div>'
+    )
+
+
+def direct_section(
+    section_id: str,
+    title: str,
+    state: dict,
+    profile_url: str,
+) -> tuple[str, dict[str, str], str | None]:
+    if state["status"] == "N/A":
+        markup = (
+            f'<section class="section" id="{esc(section_id)}">'
+            f'<div class="section-head"><h3>{esc(title)}</h3>'
+            f'<div class="section-links"><a class="section-link" href="{esc(profile_url)}">Profile ↗</a>'
+            '<a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div></div>'
+            '<div class="fault-layout no-inspector"><div class="fault-grid">'
+            '<div class="fault-tile na" aria-disabled="true">'
+            '<div class="tile-head"><strong>Target</strong><span class="status na">N/A</span></div>'
+            '<div class="na-center">N/A</div></div></div></div></section>'
+        )
+        return markup, {}, None
+
+    inspectors = {
+        criterion["id"]: criterion_inspector(criterion, profile_url)
+        for criterion in state["criteria"]
+    }
+    default = next(iter(inspectors))
+    tiles = []
+    for criterion in state["criteria"]:
+        execution_status = criterion["execution_status"]
+        confidence_states = (
+            criterion["producer_qualification"]["status"],
+            criterion["freshness"]["status"],
+        )
+        confidence_actual = sum(value == "MET" for value in confidence_states)
+        tiles.append(
+            f'<button class="fault-tile upper-criterion-tile {reqmon.status_class(criterion["status"])}" '
+            f'type="button" data-upper="{esc(criterion["id"])}" data-upper-inspector="upper-inspector-{esc(section_id)}">'
+            '<div class="tile-head">'
+            f"<strong>{esc(criterion['id'])}</strong>"
+            f'<span class="status {reqmon.status_class(criterion["status"])}">{esc(reqmon.status_label(criterion["status"]))}</span></div>'
+            '<div class="tile-metrics">'
+            f'<div class="{reqmon.status_class(execution_status)}"><span>Execution</span>'
+            f"<strong>{criterion['passed_executions']}</strong><i>/ {criterion['required_executions']}</i></div>"
+            f'<div class="{reqmon.status_class(reqmon.combine(list(confidence_states)))}"><span>Confidence</span>'
+            f"<strong>{confidence_actual}</strong><i>/ 2</i></div>"
+            "</div></button>"
+        )
+    markup = (
+        f'<section class="section" id="{esc(section_id)}">'
+        f'<div class="section-head"><h3>{esc(title)}</h3>'
+        f'<div class="section-links"><a class="section-link" href="{esc(profile_url)}">Profile ↗</a>'
+        '<a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div></div>'
+        '<div class="fault-layout"><div class="fault-grid">'
+        + "".join(tiles)
+        + f'</div><aside class="inspector" id="upper-inspector-{esc(section_id)}">{inspectors[default]}</aside></div></section>'
+    )
+    return markup, inspectors, default
 
 
 def history_section(section_id: str, status: str) -> str:
     return (
         f'<section class="section" id="{esc(section_id)}"><div class="section-head">'
-        '<h3>History</h3></div><div class="panel history"><strong>Current</strong>'
-        '<div class="history-line">'
+        '<h3>History</h3><a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div>'
+        '<div class="panel history"><strong>Current</strong><div class="history-line">'
         f'<i class="history-point {reqmon.status_class(status)}"></i></div>'
         f'<span class="status {reqmon.status_class(status)}">{esc(reqmon.status_label(status))}</span>'
         "</div></section>"
@@ -763,13 +798,12 @@ def history_section(section_id: str, status: str) -> str:
 
 def render_page(
     *,
-    title: str,
+    page_title: str,
     entity_id: str,
     entity: dict,
     labels: tuple[tuple[str, str], ...],
     profile_url: str,
     output: Path,
-    kicker: str,
 ) -> None:
     source = SHELL.read_text()
     style_match = re.search(
@@ -778,7 +812,7 @@ def render_page(
         flags=re.DOTALL,
     )
     if style_match is None:
-        raise RuntimeError("Canonical Requirement monitor style is missing from shell")
+        raise RuntimeError("Canonical Contract Evidence style is missing from shell")
     source = re.sub(
         r'<style id="tf-requirement-monitor-style">.*?</style>',
         "",
@@ -798,6 +832,8 @@ def render_page(
     }
     cards = [card(label, entity[key], section_ids[key]) for label, key in labels]
     sections = []
+    upper_inspectors: dict[str, str] = {}
+    upper_defaults: list[tuple[str, str]] = []
     for label, key in labels:
         state = entity[key]
         if state.get("children") is not None:
@@ -805,23 +841,33 @@ def render_page(
                 support_section(section_ids[key], label, state, profile_url)
             )
         else:
-            sections.append(direct_section(section_ids[key], label, state, profile_url))
+            markup, inspectors, default = direct_section(
+                section_ids[key],
+                label,
+                state,
+                profile_url,
+            )
+            sections.append(markup)
+            upper_inspectors.update(inspectors)
+            if default is not None:
+                upper_defaults.append((section_ids[key], default))
     history_id = f"ua-{entity_id.lower().replace('_', '-')}-history"
     sections.append(history_section(history_id, entity["status"]))
 
     monitor = (
         '<div id="tf-requirement-monitor">'
         '<header class="verdict"><div class="verdict-main"><div>'
-        f'<div class="kicker">{esc(kicker)}</div><h2>{esc(entity_id)}</h2></div>'
+        '<div class="kicker">Assurance status</div>'
+        f"<h2>{esc(entity_id)}</h2></div>"
         f'<div class="overall {reqmon.status_class(entity["status"])}">{esc(reqmon.status_label(entity["status"]))}</div>'
-        '</div><div class="domain-strip">'
+        '</div><div class="domain-strip with-support">'
         + "".join(cards)
         + "</div></header>"
         + "".join(sections)
         + "</div>"
     )
     article = (
-        f'<section id="assurance-{esc(entity_id.lower())}"><h1>{esc(title)}'
+        f'<section id="assurance-{esc(entity_id.lower())}"><h1>{esc(page_title)}'
         f'<a class="headerlink" href="#assurance-{esc(entity_id.lower())}" title="Link to this heading">#</a></h1>'
         f"{monitor}</section>"
     )
@@ -834,36 +880,58 @@ def render_page(
     )
     if count != 1:
         raise RuntimeError("Could not replace upper-assurance article body")
+
     extra_style = style_match.group(0).replace(
         "</style>",
-        "#tf-requirement-monitor .domain-strip{grid-template-columns:repeat(3,minmax(0,1fr))}"
-        "#tf-requirement-monitor .signal-card a{color:inherit;text-decoration:none}"
-        "#tf-requirement-monitor .signal-card a:hover{text-decoration:underline}"
-        "#tf-requirement-monitor .upper-gate-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.32rem;margin-top:.45rem}"
-        "#tf-requirement-monitor .upper-gate-grid>.signal-card{box-shadow:none}"
-        "@media(max-width:900px){#tf-requirement-monitor .upper-gate-grid{grid-template-columns:1fr}}"
+        "#tf-requirement-monitor .upper-support-panel{padding:.55rem}"
+        "#tf-requirement-monitor .upper-child-tile{display:block;min-height:0;text-decoration:none}"
+        "#tf-requirement-monitor .upper-child-tile.unknown{border-color:color-mix(in srgb,var(--amber) 45%,var(--line))}"
+        "#tf-requirement-monitor .upper-child-tile:hover{outline:2px solid color-mix(in srgb,var(--blue) 55%,transparent);outline-offset:1px}"
+        "@media(max-width:760px){#tf-requirement-monitor .domain-strip.with-support{grid-template-columns:1fr}}"
         "</style>",
     )
     source = source.replace("</head>", extra_style + "\n</head>", 1)
+
+    default_js = "".join(
+        f"selectUpper(document.querySelector('[data-upper=\\\"{criterion}\\\"]'));"
+        for _, criterion in upper_defaults
+    )
+    script = f"""<script id="tf-requirement-monitor-script">
+(()=>{{const root=document.querySelector('#tf-requirement-monitor');if(!root)return;const upperInspectors={json.dumps(upper_inspectors, ensure_ascii=False)};function syncSticky(){{const header=document.querySelector('.bd-header');const top=header?.getBoundingClientRect().bottom||0;root.style.setProperty('--sticky-top',top+'px')}}function selectUpper(button){{if(!button)return;const key=button.dataset.upper;const inspectorId=button.dataset.upperInspector;const value=upperInspectors[key];const inspector=root.querySelector('#'+inspectorId);if(!value||!inspector)return;inspector.innerHTML=value;root.querySelectorAll('[data-upper-inspector="'+inspectorId+'"]').forEach(item=>item.classList.toggle('selected',item===button));}}root.querySelectorAll('[data-upper]').forEach(button=>button.addEventListener('click',()=>selectUpper(button)));let flashTimer;function flashTarget(hash){{if(!hash||!hash.startsWith('#'))return;const target=root.querySelector(hash);if(!target||!target.classList.contains('section'))return;root.querySelectorAll('.section.nav-flash').forEach(node=>node.classList.remove('nav-flash'));void target.offsetWidth;target.classList.add('nav-flash');clearTimeout(flashTimer);flashTimer=setTimeout(()=>target.classList.remove('nav-flash'),1700);}}document.querySelectorAll('a[href^="#ua-"]').forEach(link=>link.addEventListener('click',()=>requestAnimationFrame(()=>flashTarget(link.getAttribute('href')))));window.addEventListener('hashchange',()=>flashTarget(location.hash));window.addEventListener('resize',syncSticky);syncSticky();{default_js}if(location.hash)requestAnimationFrame(()=>flashTarget(location.hash));}})();
+</script>"""
+    source = source.replace("</body>", script + "\n</body>", 1)
+
+    source = source.replace(
+        '<span class="ellipsis">Contract Evidence</span>',
+        f'<span class="ellipsis">{esc(page_title)}</span>',
+    )
+    source = re.sub(
+        r"<title>.*?— llm-router documentation</title>",
+        f"<title>{esc(page_title)} — llm-router documentation</title>",
+        source,
+        count=1,
+    )
     toc = "".join(
         f'<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#{esc(section_ids[key])}">{esc(label)}</a></li>'
         for label, key in labels
     ) + (
         f'<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#{esc(history_id)}">History</a></li>'
     )
-    source = re.sub(
-        r'(<nav class="bd-toc-nav page-toc"><ul class="visible nav section-nav flex-column">).*?(</ul></nav>)',
-        lambda match: match.group(1) + toc + match.group(2),
+    secondary = (
+        '<div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">'
+        '<div class="sidebar-secondary-item"><div class="tocsection onthispage"><i class="fa-solid fa-list"></i> On this page</div>'
+        '<nav class="bd-toc-nav page-toc"><ul class="visible nav section-nav flex-column">'
+        f"{toc}</ul></nav></div></div></div>"
+    )
+    source, sidebar_count = re.subn(
+        r'<div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc">.*?</div></div>\s*</div>\s*<footer class="bd-footer-content">',
+        secondary + '\n</div>\n<footer class="bd-footer-content">',
         source,
         count=1,
         flags=re.DOTALL,
     )
-    source = re.sub(
-        r"<title>.*?— llm-router documentation</title>",
-        f"<title>{esc(title)} — llm-router documentation</title>",
-        source,
-        count=1,
-    )
+    if sidebar_count != 1:
+        raise RuntimeError("Could not replace canonical secondary sidebar")
     output.write_text(source)
 
 
@@ -873,40 +941,36 @@ def build() -> None:
     profile_url = "assurance-profiles/routing.html"
 
     render_page(
-        title="Capability Assurance · Route fallback",
+        page_title="Capability Assurance",
         entity_id="FEAT_ROUTE_FALLBACK",
         entity=facts["features"]["FEAT_ROUTE_FALLBACK"],
         labels=SECTION_LABELS["FEAT_ROUTE_FALLBACK"],
         profile_url=profile_url,
         output=OUTPUTS["FEAT_ROUTE_FALLBACK"],
-        kicker="Capability assurance",
     )
     render_page(
-        title="Capability Assurance · Rate-limit-aware routing",
+        page_title="Capability Assurance",
         entity_id="FEAT_RATE_LIMIT_ROUTING",
         entity=facts["features"]["FEAT_RATE_LIMIT_ROUTING"],
         labels=SECTION_LABELS["FEAT_RATE_LIMIT_ROUTING"],
         profile_url=profile_url,
         output=OUTPUTS["FEAT_RATE_LIMIT_ROUTING"],
-        kicker="Capability assurance",
     )
     render_page(
-        title="Outcome Assurance · Routing reliability",
+        page_title="Outcome Assurance",
         entity_id="GOAL_ROUTING_RELIABILITY",
         entity=facts["goal"],
         labels=SECTION_LABELS["GOAL_ROUTING_RELIABILITY"],
         profile_url=profile_url,
         output=OUTPUTS["GOAL_ROUTING_RELIABILITY"],
-        kicker="Outcome assurance",
     )
     render_page(
-        title="Product / System Assurance",
+        page_title="Product / System Assurance",
         entity_id="PRODUCT_SYSTEM",
         entity=facts["product_system"],
         labels=SECTION_LABELS["PRODUCT_SYSTEM"],
         profile_url=profile_url,
         output=OUTPUTS["PRODUCT_SYSTEM"],
-        kicker="Whole-product assurance",
     )
 
     for output in OUTPUTS.values():
