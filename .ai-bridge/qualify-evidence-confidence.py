@@ -46,6 +46,7 @@ def environment() -> dict[str, str | None]:
         "assurance_adapter_sha256": sha256_file(ROOT / ".ai-bridge/build-mutation-report-prototype.py"),
         "requirement_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-requirement-monitor.py"),
         "upper_assurance_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-upper-assurance-pilot.py"),
+        "assurance_monitor_ui_sha256": sha256_file(ROOT / ".ai-bridge/assurance_monitor_ui.py"),
         "qualification_harness_sha256": sha256_file(Path(__file__)),
         "trace_bridge_sha256": sha256_file(ROOT / "tests/conftest.py"),
     }

@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import hashlib
-import html
 import importlib.util
 import json
 import re
@@ -38,7 +37,15 @@ if REQMON_SPEC is None or REQMON_SPEC.loader is None:
 reqmon = importlib.util.module_from_spec(REQMON_SPEC)
 REQMON_SPEC.loader.exec_module(reqmon)
 
-STATUS_ORDER = ("NOT MET", "UNKNOWN", "MET", "N/A")
+UI_SPEC = importlib.util.spec_from_file_location(
+    "assurance_monitor_ui", ROOT / ".ai-bridge/assurance_monitor_ui.py"
+)
+if UI_SPEC is None or UI_SPEC.loader is None:
+    raise RuntimeError("Could not load assurance monitor UI helpers")
+ui = importlib.util.module_from_spec(UI_SPEC)
+UI_SPEC.loader.exec_module(ui)
+
+esc = ui.esc
 UPPER_HELP = {
     "requirement_support": "Checks that every Requirement needed by this capability is independently proven.",
     "capability_integration": "Checks that the Requirements inside this capability work correctly together.",
@@ -74,10 +81,6 @@ SECTION_LABELS = {
         ("Operational validation", "operational_validation"),
     ),
 }
-
-
-def esc(value: object) -> str:
-    return html.escape(str(value), quote=True)
 
 
 def living_spec_url(rows: list[dict]) -> str | None:
@@ -662,10 +665,12 @@ def card(label: str, state: dict, href: str, help_text: str) -> str:
             if criteria
             else "no target"
         )
-    return (
-        f'<a class="domain" href="#{esc(href)}"><strong>{esc(label)} {reqmon.help_tip(help_text, focusable=False)}</strong>'
-        f'<span class="status {reqmon.status_class(status)}">{esc(reqmon.status_label(status))}</span>'
-        f'<span class="domain-meta">{esc(meta)}</span></a>'
+    return ui.domain_card(
+        label=label,
+        status=status,
+        href=f"#{href}",
+        meta=meta,
+        help_text=help_text,
     )
 
 
@@ -678,23 +683,24 @@ def support_section(
     cards = []
     for row in state["children"]:
         cards.append(
-            f'<a class="signal-card {reqmon.status_class(row["status"])}-signal technical-support-card" '
-            f'href="{esc(row["url"])}">'
-            '<div class="signal-head">'
-            f"<strong>{esc(row['id'])}</strong>"
-            f'<span class="status {reqmon.status_class(row["status"])}">{esc(reqmon.status_label(row["status"]))}</span>'
-            "</div>"
-            f'<div class="coverage-summary"><small>{esc(row["title"])}</small></div>'
-            "</a>"
+            ui.technical_support_card(
+                item_id=row["id"],
+                title=row["title"],
+                status=row["status"],
+                href=row["url"],
+            )
         )
     return (
         f'<section class="section" id="{esc(section_id)}">'
-        f'<div class="section-head"><h3>{esc(title)}</h3>'
-        f'<div class="section-links"><a class="section-link" href="{esc(profile_url)}">Profile ↗</a>'
-        '<a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div></div>'
-        '<div class="panel technical-support-panel"><div class="signal-grid">'
-        + "".join(cards)
-        + "</div></div></section>"
+        + ui.section_head(
+            title=title,
+            links=(
+                ("Profile ↗", profile_url),
+                ("Raw ↗", "upper-assurance-facts.json"),
+            ),
+        )
+        + ui.support_panel("".join(cards))
+        + "</section>"
     )
 
 
@@ -715,7 +721,7 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
     actual_executions = int(criterion["actual_executions"])
     required_executions = int(criterion["required_executions"])
     passed_executions = int(criterion["passed_executions"])
-    scenario_card = reqmon.coverage_card(
+    scenario_card = ui.coverage_card(
         {
             "semantic_actual": passed_executions,
             "failed_count": max(0, actual_executions - passed_executions),
@@ -735,9 +741,9 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
     producer_actual_values = sorted(
         {str(row.get("actual") or "UNKNOWN").upper() for row in producer_rows}
     )
-    producer = reqmon.lane(
+    producer = ui.lane(
         f"Producer qualification · {len(producer_rows)} producers",
-        reqmon.PRODUCER,
+        ui.PRODUCER,
         producer_actual_values,
         "QUALIFIED",
         producer_state["status"],
@@ -754,9 +760,9 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
             for row in freshness_rows
         }
     )
-    freshness = reqmon.lane(
+    freshness = ui.lane(
         "Freshness",
-        reqmon.FRESHNESS,
+        ui.FRESHNESS,
         freshness_actual_values,
         "CURRENT",
         freshness_state["status"],
@@ -766,22 +772,36 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
         "inputs",
     )
     bdd_url = living_spec_url(criterion["rows"])
-    bdd_link = f'<a href="{esc(bdd_url)}">BDD evidence ↗</a>' if bdd_url else ""
+    links = []
+    if bdd_url:
+        links.append(("BDD evidence ↗", bdd_url))
+    links.extend(
+        (
+            ("Assurance profile ↗", profile_url),
+            ("Raw facts ↗", "upper-assurance-facts.json"),
+        )
+    )
+    signals = (
+        ui.signal_group(
+            title="Required evidence",
+            body=scenario_card,
+            class_name="primary-group",
+        )
+        + ui.signal_group(
+            title="Retained path properties",
+            body=ui.confidence_subgroup(producer + freshness),
+            class_name="path-properties",
+            scope=f"{actual_executions}/{required_executions} paths",
+        )
+    )
     return (
-        '<div class="inspector-head">'
-        '<div><span class="eyebrow">Selected assurance scenario</span>'
-        f"<h3>{esc(scenario)}</h3></div>"
-        f'<span class="status big {reqmon.status_class(criterion["status"])}">{esc(reqmon.status_label(criterion["status"]))}</span></div>'
-        '<div class="signal-grid">'
-        '<div class="signal-group primary-group"><div class="signal-group-head"><strong>Required evidence</strong></div>'
-        f"{scenario_card}</div>"
-        '<div class="signal-group path-properties"><div class="signal-group-head"><strong>Retained path properties</strong>'
-        f'<span class="group-scope">{actual_executions}/{required_executions} paths</span></div>'
-        '<div class="confidence-subgroup"><div class="subgroup-head"><strong>Evidence confidence</strong></div>'
-        f'<div class="confidence-grid">{producer}{freshness}</div></div></div></div>'
-        '<div class="drilldowns">'
-        f'{bdd_link}<a href="{esc(profile_url)}">Assurance profile ↗</a>'
-        '<a href="upper-assurance-facts.json">Raw facts ↗</a></div>'
+        ui.inspector_head(
+            eyebrow="Selected assurance scenario",
+            title=scenario,
+            status=criterion["status"],
+        )
+        + f'<div class="signal-grid">{signals}</div>'
+        + ui.drilldowns(tuple(links))
     )
 
 
@@ -794,13 +814,16 @@ def direct_section(
     if state["status"] == "N/A":
         markup = (
             f'<section class="section" id="{esc(section_id)}">'
-            f'<div class="section-head"><h3>{esc(title)}</h3>'
-            f'<div class="section-links"><a class="section-link" href="{esc(profile_url)}">Profile ↗</a>'
-            '<a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div></div>'
-            '<div class="fault-layout no-inspector"><div class="fault-grid">'
-            '<div class="fault-tile na" aria-disabled="true">'
-            '<div class="tile-head"><strong>Target</strong><span class="status na">N/A</span></div>'
-            '<div class="na-center">N/A</div></div></div></div></section>'
+            + ui.section_head(
+                title=title,
+                links=(
+                    ("Profile ↗", profile_url),
+                    ("Raw ↗", "upper-assurance-facts.json"),
+                ),
+            )
+            + '<div class="fault-layout no-inspector"><div class="fault-grid">'
+            + ui.na_fault_tile()
+            + "</div></div></section>"
         )
         return markup, {}, None
 
@@ -823,39 +846,33 @@ def direct_section(
             criterion["id"],
         )
         tiles.append(
-            f'<button class="fault-tile {reqmon.status_class(criterion["status"])}" '
+            f'<button class="fault-tile {ui.status_class(criterion["status"])}" '
             f'type="button" data-upper="{esc(criterion["id"])}" data-upper-inspector="upper-inspector-{esc(section_id)}">'
             '<div class="tile-head">'
             f"<strong>{esc(scenario)}</strong>"
-            f'<span class="status {reqmon.status_class(criterion["status"])}">{esc(reqmon.status_label(criterion["status"]))}</span></div>'
+            f'<span class="status {ui.status_class(criterion["status"])}">{esc(ui.status_label(criterion["status"]))}</span></div>'
             '<div class="tile-metrics">'
-            f'<div class="{reqmon.status_class(execution_status)}"><span>Scenarios</span>'
+            f'<div class="{ui.status_class(execution_status)}"><span>Scenarios</span>'
             f"<strong>{criterion['passed_executions']}</strong><i>/ {criterion['required_executions']}</i></div>"
-            f'<div class="{reqmon.status_class(criterion["producer_qualification"]["status"])}"><span>Producers</span>'
+            f'<div class="{ui.status_class(criterion["producer_qualification"]["status"])}"><span>Producers</span>'
             f"<strong>{producer_actual}</strong><i>/ {len(producer_rows)}</i></div>"
             "</div></button>"
         )
     markup = (
         f'<section class="section" id="{esc(section_id)}">'
-        f'<div class="section-head"><h3>{esc(title)}</h3>'
-        f'<div class="section-links"><a class="section-link" href="{esc(profile_url)}">Profile ↗</a>'
-        '<a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div></div>'
-        '<div class="fault-layout"><div class="fault-grid">'
+        + ui.section_head(
+            title=title,
+            links=(
+                ("Profile ↗", profile_url),
+                ("Raw ↗", "upper-assurance-facts.json"),
+            ),
+        )
+        + '<div class="fault-layout"><div class="fault-grid">'
         + "".join(tiles)
         + f'</div><aside class="inspector" id="upper-inspector-{esc(section_id)}">{inspectors[default]}</aside></div></section>'
     )
     return markup, inspectors, default
 
-
-def history_section(section_id: str, status: str) -> str:
-    return (
-        f'<section class="section" id="{esc(section_id)}"><div class="section-head">'
-        '<h3>History</h3><a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div>'
-        '<div class="panel history"><strong>Current</strong><div class="history-line">'
-        f'<i class="history-point {reqmon.status_class(status)}"></i></div>'
-        f'<span class="status {reqmon.status_class(status)}">{esc(reqmon.status_label(status))}</span>'
-        "</div></section>"
-    )
 
 
 def render_page(
@@ -868,13 +885,6 @@ def render_page(
     output: Path,
 ) -> None:
     source = SHELL.read_text()
-    style_match = re.search(
-        r'<style id="tf-requirement-monitor-style">.*?</style>',
-        source,
-        flags=re.DOTALL,
-    )
-    if style_match is None:
-        raise RuntimeError("Canonical Contract Evidence style is missing from shell")
     source = re.sub(
         r'<style id="tf-requirement-monitor-style">.*?</style>',
         "",
@@ -922,17 +932,24 @@ def render_page(
             if default is not None:
                 upper_defaults.append((section_ids[key], default))
     history_id = f"ua-{entity_id.lower().replace('_', '-')}-history"
-    sections.append(history_section(history_id, entity["status"]))
+    sections.append(
+        ui.history_section(
+            section_id=history_id,
+            status=entity["status"],
+            link_href="upper-assurance-facts.json",
+            link_label="Raw ↗",
+        )
+    )
 
     monitor = (
         '<div id="tf-requirement-monitor">'
-        '<header class="verdict"><div class="verdict-main"><div>'
-        '<div class="kicker">Assurance status</div>'
-        f"<h2>{esc(entity_id)}</h2></div>"
-        f'<div class="overall {reqmon.status_class(entity["status"])}">{esc(reqmon.status_label(entity["status"]))}</div>'
-        '</div><div class="domain-strip with-support">'
-        + "".join(cards)
-        + "</div></header>"
+        + ui.verdict_header(
+            kicker="Assurance status",
+            entity_id=entity_id,
+            status=entity["status"],
+            domain_cards="".join(cards),
+            domain_strip_class="domain-strip with-support",
+        )
         + "".join(sections)
         + "</div>"
     )
@@ -951,15 +968,27 @@ def render_page(
     if count != 1:
         raise RuntimeError("Could not replace upper-assurance article body")
 
-    source = source.replace("</head>", style_match.group(0) + "\n</head>", 1)
+    source = source.replace("</head>", ui.MONITOR_STYLE + "\n</head>", 1)
 
     default_js = "".join(
         f"selectUpper(document.querySelector('[data-upper=\\\"{criterion}\\\"]'));"
         for _, criterion in upper_defaults
     )
-    script = f"""<script id="tf-requirement-monitor-script">
-(()=>{{const root=document.querySelector('#tf-requirement-monitor');if(!root)return;const upperInspectors={json.dumps(upper_inspectors, ensure_ascii=False)};function syncSticky(){{const header=document.querySelector('.bd-header');const top=header?.getBoundingClientRect().bottom||0;root.style.setProperty('--sticky-top',top+'px')}}function selectUpper(button){{if(!button)return;const key=button.dataset.upper;const inspectorId=button.dataset.upperInspector;const value=upperInspectors[key];const inspector=root.querySelector('#'+inspectorId);if(!value||!inspector)return;inspector.innerHTML=value;root.querySelectorAll('[data-upper-inspector="'+inspectorId+'"]').forEach(item=>item.classList.toggle('selected',item===button));}}root.querySelectorAll('[data-upper]').forEach(button=>button.addEventListener('click',()=>selectUpper(button)));let flashTimer;function flashTarget(hash){{if(!hash||!hash.startsWith('#'))return;const target=root.querySelector(hash);if(!target||!target.classList.contains('section'))return;root.querySelectorAll('.section.nav-flash').forEach(node=>node.classList.remove('nav-flash'));void target.offsetWidth;target.classList.add('nav-flash');clearTimeout(flashTimer);flashTimer=setTimeout(()=>target.classList.remove('nav-flash'),1700);}}document.querySelectorAll('a[href^="#ua-"]').forEach(link=>link.addEventListener('click',()=>requestAnimationFrame(()=>flashTarget(link.getAttribute('href')))));window.addEventListener('hashchange',()=>flashTarget(location.hash));window.addEventListener('resize',syncSticky);syncSticky();{default_js}if(location.hash)requestAnimationFrame(()=>flashTarget(location.hash));}})();
-</script>"""
+    setup_js = f"const upperInspectors={json.dumps(upper_inspectors, ensure_ascii=False)};"
+    bind_js = (
+        "function selectUpper(button){if(!button)return;const key=button.dataset.upper;"
+        "const inspectorId=button.dataset.upperInspector;const value=upperInspectors[key];"
+        "const inspector=root.querySelector('#'+inspectorId);if(!value||!inspector)return;"
+        "inspector.innerHTML=value;root.querySelectorAll('[data-upper-inspector=\"'+inspectorId+'\"]')"
+        ".forEach(item=>item.classList.toggle('selected',item===button));}"
+        "root.querySelectorAll('[data-upper]').forEach(button=>button.addEventListener('click',()=>selectUpper(button)));"
+    )
+    script = ui.monitor_script(
+        setup_js=setup_js,
+        bind_js=bind_js,
+        nav_selector='a[href^="#ua-"]',
+        init_js=default_js,
+    )
     source = source.replace("</body>", script + "\n</body>", 1)
 
     source = source.replace(

@@ -1012,6 +1012,71 @@ def main() -> None:
         "canonical REQ Contract Evidence page exposes the shared monitor style",
     )
     canonical_style_text = canonical_monitor_style.group(1) if canonical_monitor_style else ""
+    ui_source = (BRIDGE / "assurance_monitor_ui.py").read_text()
+    requirement_renderer_source = (BRIDGE / "build-requirement-monitor.py").read_text()
+    upper_renderer_source = (BRIDGE / "build-upper-assurance-pilot.py").read_text()
+    assurance_adapter_source = (BRIDGE / "build-mutation-report-prototype.py").read_text()
+    check(
+        "MONITOR_STYLE =" in ui_source
+        and "function syncSticky" in ui_source
+        and "function flashTarget" in ui_source
+        and "def coverage_card(" in ui_source
+        and "def lane(" in ui_source
+        and "def technical_support_card(" in ui_source
+        and "def domain_card(" in ui_source
+        and "def history_section(" in ui_source
+        and "def inspector_head(" in ui_source
+        and "def signal_group(" in ui_source
+        and "def confidence_subgroup(" in ui_source
+        and "def drilldowns(" in ui_source
+        and "def section_head(" in ui_source
+        and "def verdict_header(" in ui_source
+        and "def support_panel(" in ui_source,
+        "shared assurance monitor UI owns canonical CSS, behavior, and reusable components",
+    )
+    check(
+        all(
+            token not in source
+            for source in (requirement_renderer_source, upper_renderer_source)
+            for token in (
+                "#tf-requirement-monitor",
+                "function syncSticky",
+                "function flashTarget",
+                "def coverage_card(",
+                "def lane(",
+                'class="inspector-head"',
+                'class="signal-group ',
+                'class="drilldowns"',
+                'class="section-head"',
+                'class="verdict"',
+                "technical-support-panel",
+            )
+        )
+        and "ui.MONITOR_STYLE" in requirement_renderer_source
+        and "ui.MONITOR_STYLE" in upper_renderer_source
+        and "ui.monitor_script(" in requirement_renderer_source
+        and "ui.monitor_script(" in upper_renderer_source
+        and "ui.inspector_head(" in requirement_renderer_source
+        and "ui.inspector_head(" in upper_renderer_source
+        and "ui.section_head(" in requirement_renderer_source
+        and "ui.section_head(" in upper_renderer_source
+        and "ui.verdict_header(" in requirement_renderer_source
+        and "ui.verdict_header(" in upper_renderer_source,
+        "REQ/TREQ and upper renderers consume one shared monitor design system",
+    )
+    check(
+        "tf-p34-" not in assurance_adapter_source
+        and "tf-contract-shell" not in assurance_adapter_source
+        and "TERNFORGE-P33-ASSURANCE-EVIDENCE-START" not in assurance_adapter_source
+        and "requirement_monitor_block(" not in assurance_adapter_source,
+        "superseded parallel Contract Evidence renderers are absent from the active evidence builder",
+    )
+    check(
+        "def metric(" not in requirement_renderer_source
+        and "metric-card" not in requirement_renderer_source
+        and "STATUS_ORDER" not in upper_renderer_source,
+        "dead presentation helpers are removed from active monitor renderers",
+    )
     for name, page in upper_assurance_pages.items():
         style = re.search(
             r'<style id="tf-requirement-monitor-style">(.*?)</style>',
@@ -3236,6 +3301,7 @@ def main() -> None:
         "assurance-targets.json",
         "assurance-snapshots.json",
         "build-mutation-report-prototype.py",
+        "assurance_monitor_ui.py",
         "build-requirement-monitor.py",
         "build-upper-assurance-pilot.py",
         "qualify-evidence-confidence.py",
@@ -3315,6 +3381,7 @@ def main() -> None:
     ]
     approved_pilot_sources = {
         ".ai-bridge/build-mutation-report-prototype.py",
+        ".ai-bridge/assurance_monitor_ui.py",
         ".ai-bridge/build-requirement-monitor.py",
         ".ai-bridge/build-upper-assurance-pilot.py",
         ".ai-bridge/monitor-readiness.md",

@@ -1,11 +1,25 @@
 from __future__ import annotations
 
-import html
+import importlib.util
 import json
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+UI_SPEC = importlib.util.spec_from_file_location(
+    "assurance_monitor_ui", ROOT / ".ai-bridge/assurance_monitor_ui.py"
+)
+if UI_SPEC is None or UI_SPEC.loader is None:
+    raise RuntimeError("Could not load assurance monitor UI helpers")
+ui = importlib.util.module_from_spec(UI_SPEC)
+UI_SPEC.loader.exec_module(ui)
+
+esc = ui.esc
+help_tip = ui.help_tip
+status_class = ui.status_class
+status_label = ui.status_label
+lane = ui.lane
+coverage_card = ui.coverage_card
 FACTS = ROOT / "docs/_build/html/requirement-monitor-facts.json"
 CANONICAL_OUT = ROOT / "docs/_build/html/verification-assurance.html"
 PRIMARY_CONTRACT_ID = "REQ_INVALID_CONFIGURATION_ERRORS"
@@ -32,8 +46,8 @@ BOUNDARIES = [
 ]
 REPRESENTATION = ["Synthetic / abstract", "Surrogate / simulated", "Representative", "Actual", "UNKNOWN"]
 PROVENANCE = ["COMPLETE", "INCOMPLETE", "UNKNOWN"]
-PRODUCER = ["QUALIFIED", "NOT QUALIFIED", "UNKNOWN"]
-FRESHNESS = ["CURRENT", "STALE", "UNKNOWN"]
+PRODUCER = ui.PRODUCER
+FRESHNESS = ui.FRESHNESS
 FAULT_GROUP_HELP = {
     "Implementation": "Checks that small code mistakes—wrong comparisons, limits, branches, returns, or exception paths—are caught.",
     "Runtime / dependency": "Checks that dependency failures—timeouts, disconnects, unavailability, or malformed replies—cannot change the required behavior.",
@@ -43,22 +57,6 @@ FAULT_GROUP_HELP = {
 }
 MS_LEVELS = ["N/A", "L0", "L1", "L2", "L3", "L4", "UNKNOWN", "NOT DECLARED"]
 
-
-def esc(value: object) -> str:
-    return html.escape(str(value), quote=True)
-
-
-def help_tip(text: str, *, focusable: bool = True) -> str:
-    tabindex = ' tabindex="0"' if focusable else ""
-    return f'<span class="help"{tabindex}>?<span class="help-tip">{esc(text)}</span></span>'
-
-
-def status_class(status: str) -> str:
-    return {"MET": "met", "NOT MET": "not-met", "UNKNOWN": "unknown", "N/A": "na"}.get(status, "unknown")
-
-
-def status_label(status: str) -> str:
-    return {"MET": "PASS", "NOT MET": "FAIL", "UNKNOWN": "UNKNOWN", "N/A": "N/A"}.get(status, status)
 
 
 def combine(statuses: list[str]) -> str:
@@ -365,130 +363,6 @@ def cell_state(contract: dict, target: dict) -> dict:
     }
 
 
-def marker(actual: bool, target: bool) -> str:
-    if actual and target:
-        return '<span class="marker both">ACTUAL = TARGET</span>'
-    result = []
-    if actual:
-        result.append('<span class="marker actual">ACTUAL</span>')
-    if target:
-        result.append('<span class="marker target">TARGET</span>')
-    return "".join(result)
-
-
-def scope_count(matched: int, total: int, status: str, label: str = "paths") -> str:
-    shown_label = label
-    if total == 1 and label == "paths":
-        shown_label = "path"
-    elif total == 1 and label == "evidence paths":
-        shown_label = "evidence path"
-    elif total == 1 and label == "model paths":
-        shown_label = "model path"
-    if status == "N/A":
-        return f'<span class="scope-count na"><b>{total}</b><small>{esc(shown_label)}</small></span>'
-    return f'<span class="scope-count {status_class(status)}"><b>{matched}/{total}</b><small>{esc(shown_label)}</small></span>'
-
-
-def state_option_label(signal: str, option: str) -> str:
-    if signal == "M&S validation":
-        return {
-            "N/A": "N/A",
-            "L0": "L0",
-            "L1": "L1",
-            "L2": "L2",
-            "L3": "L3",
-            "L4": "L4",
-            "UNKNOWN": "UNKNOWN",
-            "NOT DECLARED": "NOT DECLARED",
-        }.get(option, option)
-    return option
-
-
-def lane(
-    label: str,
-    options: list[str],
-    actual_values: list[str],
-    target: str,
-    status: str,
-    tip: str,
-    matched: int,
-    total: int,
-    scope_label: str = "paths",
-    extra_class: str = "",
-) -> str:
-    actual_set = set(actual_values)
-    cells = []
-    for option in options:
-        is_actual = option in actual_set
-        is_target = option == target
-        selected = " selected" if is_actual or is_target else ""
-        display = state_option_label(label, option)
-        if status == "N/A" and option == "N/A":
-            option_marker = '<span class="marker inactive">INACTIVE</span>'
-        else:
-            option_marker = marker(is_actual, is_target)
-        cells.append(f'<span class="state-option{selected}"><span>{esc(display)}</span>{option_marker}</span>')
-    class_name = f"signal-card {status_class(status)}-signal {extra_class}".strip()
-    return (
-        f'<div class="{esc(class_name)}">'
-        f'<div class="signal-head"><strong>{esc(label)} <span class="help" tabindex="0">?<span class="help-tip">{esc(tip)}</span></span></strong>'
-        f'<span class="signal-rule">{scope_count(matched, total, status, scope_label)}<span class="status {status_class(status)}">{esc(status_label(status))}</span></span></div>'
-        f'<div class="state-lane">{"".join(cells)}</div></div>'
-    )
-
-
-def metric(label: str, actual: str, target: str, status: str, tip: str = "", rule: str | None = None, subject: str = "items") -> str:
-    help_html = f' <span class="help" tabindex="0">?<span class="help-tip">{esc(tip)}</span></span>' if tip else ""
-    return (
-        f'<div class="signal-card metric-card {status_class(status)}-signal">'
-        f'<div class="signal-head"><strong>{esc(label)}{help_html}</strong><span class="signal-rule"><span class="status {status_class(status)}">{esc(status_label(status))}</span></span></div>'
-        '<div class="metric-values">'
-        f'<div><span>Actual</span><strong>{esc(actual)}</strong></div>'
-        f'<div><span>Target</span><strong>{esc(target)}</strong></div>'
-        '</div></div>'
-    )
-
-
-def coverage_card(
-    state: dict,
-    *,
-    label: str = "Semantic coverage",
-    subject: str = "criteria",
-    subject_singular: str | None = None,
-    retained_subject: str = "paths",
-    retained_subject_singular: str | None = None,
-    tip: str = "Checks that every required behavior has the exact evidence path or paths declared by the profile.",
-) -> str:
-    segments = (
-        '<span class="coverage-segment pass"></span>' * state["semantic_actual"]
-        + '<span class="coverage-segment fail"></span>' * state["failed_count"]
-        + '<span class="coverage-segment missing"></span>' * state["missing_count"]
-    )
-    subject_one = subject_singular or {"criteria": "criterion"}.get(subject, subject)
-    retained_one = retained_subject_singular or {"paths": "path"}.get(
-        retained_subject, retained_subject
-    )
-    shown_subject = subject_one if state["required_count"] == 1 else subject
-    pass_subject = subject_one if state["semantic_actual"] == 1 else subject
-    fail_subject = subject_one if state["failed_count"] == 1 else subject
-    missing_subject = subject_one if state["missing_count"] == 1 else subject
-    shown_retained = retained_one if state["required_path_count"] == 1 else retained_subject
-    return (
-        f'<div class="signal-card coverage-card {status_class(state["semantic_status"])}-signal">'
-        f'<div class="signal-head"><strong>{esc(label)} {help_tip(tip)}</strong>'
-        f'<span class="status {status_class(state["semantic_status"])}">{esc(status_label(state["semantic_status"]))}</span></div>'
-        '<div class="coverage-summary">'
-        f'<strong>{state["semantic_actual"]}<span>/</span>{state["required_count"]}</strong><small>{esc(shown_subject)} passing</small>'
-        '</div>'
-        f'<div class="coverage-strip">{segments}</div>'
-        '<div class="coverage-counts">'
-        f'<span class="pass">{state["semantic_actual"]} {esc(pass_subject)} pass</span>'
-        f'<span class="fail">{state["failed_count"]} {esc(fail_subject)} fail</span>'
-        f'<span class="missing">{state["missing_count"]} {esc(missing_subject)} missing</span>'
-        f'<span>{state["retained_count"]}/{state["required_path_count"]} {esc(shown_retained)} retained</span>'
-        f'</div></div>'
-    )
-
 
 def cell_inspector(state: dict) -> str:
     coverage = coverage_card(state)
@@ -548,23 +422,37 @@ def cell_inspector(state: dict) -> str:
         ),
     ])
     signals = (
-        '<div class="signal-group primary-group"><div class="signal-group-head"><strong>Required evidence</strong></div>'
-        f'{coverage}</div>'
-        '<div class="signal-group path-properties"><div class="signal-group-head"><strong>Retained path properties</strong>'
-        f'<span class="group-scope">{state["retained_count"]}/{state["required_path_count"]} paths</span></div>'
-        f'<div class="representation-stack">{representation}<div class="dependent-wrap">{ms}</div></div>'
-        '<div class="confidence-subgroup"><div class="subgroup-head"><strong>Evidence confidence</strong></div>'
-        f'<div class="confidence-grid">{confidence}</div></div></div>'
+        ui.signal_group(
+            title="Required evidence",
+            body=coverage,
+            class_name="primary-group",
+        )
+        + ui.signal_group(
+            title="Retained path properties",
+            body=(
+                f'<div class="representation-stack">{representation}'
+                f'<div class="dependent-wrap">{ms}</div></div>'
+                + ui.confidence_subgroup(confidence)
+            ),
+            class_name="path-properties",
+            scope=f'{state["retained_count"]}/{state["required_path_count"]} paths',
+        )
     )
     return (
-        '<div class="inspector-head">'
-        f'<div><span class="eyebrow">Selected verification cell</span><h3>{esc(state["level_label"])} × {esc(state["boundary_label"])}</h3></div>'
-        f'<span class="status big {status_class(state["overall"])}">{esc(status_label(state["overall"]))}</span></div>'
-        f'<div class="signal-grid">{signals}</div>'
-        f'<div class="drilldowns"><a href="{esc(CONTRACT_URL)}">Requirement ↗</a>'
-        f'<a href="{esc(PROFILE_URL)}">Verification profile ↗</a>'
-        f'<a href="{esc(MODEL_URL)}">Test model ↗</a>'
-        '<a href="requirement-monitor-facts.json">Raw facts ↗</a></div>'
+        ui.inspector_head(
+            eyebrow="Selected verification cell",
+            title=f'{state["level_label"]} × {state["boundary_label"]}',
+            status=state["overall"],
+        )
+        + f'<div class="signal-grid">{signals}</div>'
+        + ui.drilldowns(
+            (
+                ("Requirement ↗", CONTRACT_URL),
+                ("Verification profile ↗", PROFILE_URL),
+                ("Test model ↗", MODEL_URL),
+                ("Raw facts ↗", "requirement-monitor-facts.json"),
+            )
+        )
     )
 
 
@@ -697,9 +585,11 @@ def fault_inspector(state: dict) -> str:
         + "</div>"
     )
     sections = [
-        '<div class="signal-group fault-class-group"><div class="signal-group-head"><strong>Fault classes</strong></div>'
-        + class_chain
-        + "</div>"
+        ui.signal_group(
+            title="Fault classes",
+            body=class_chain,
+            class_name="fault-class-group",
+        )
     ]
     if state.get("mutation"):
         cards = []
@@ -726,23 +616,31 @@ def fault_inspector(state: dict) -> str:
                 + "</div></div>"
             )
         sections.append(
-            '<div class="signal-group mutation-group"><div class="signal-group-head"><strong>Mutation checks</strong></div>'
-            f'<div class="mutation-grid">{"".join(cards)}</div></div>'
+            ui.signal_group(
+                title="Mutation checks",
+                body=f'<div class="mutation-grid">{"".join(cards)}</div>',
+                class_name="mutation-group",
+            )
         )
     fault_profile_url = PROFILE_URL.split("#", 1)[0] + "#fault-applicability"
     links = [
-        f'<a href="{esc(fault_profile_url)}">Verification profile ↗</a>',
-        '<a href="test-plan.html#test-plan-fault-model">Fault model ↗</a>',
-        f'<a href="{esc(str(state.get("raw_url") or "requirement-monitor-facts.json"))}">Raw facts ↗</a>',
+        ("Verification profile ↗", fault_profile_url),
+        ("Fault model ↗", "test-plan.html#test-plan-fault-model"),
+        (
+            "Raw facts ↗",
+            str(state.get("raw_url") or "requirement-monitor-facts.json"),
+        ),
     ]
     if state["label"] == "Implementation" and MUTATION_URL:
-        links.insert(2, f'<a href="{esc(MUTATION_URL)}">Mutation analysis ↗</a>')
+        links.insert(2, ("Mutation analysis ↗", MUTATION_URL))
     return (
-        '<div class="inspector-head">'
-        f'<div><span class="eyebrow">Selected fault group</span><h3>{esc(state["label"])}</h3></div>'
-        f'<span class="status big {status_class(state["status"])}">{esc(status_label(state["status"]))}</span></div>'
-        f'<div class="signal-grid fault-signals">{"".join(sections)}</div>'
-        f'<div class="drilldowns">{"".join(links)}</div>'
+        ui.inspector_head(
+            eyebrow="Selected fault group",
+            title=state["label"],
+            status=state["status"],
+        )
+        + f'<div class="signal-grid fault-signals">{"".join(sections)}</div>'
+        + ui.drilldowns(tuple(links))
     )
 
 
@@ -928,81 +826,126 @@ def render_current() -> None:
     fault_layout_class = "fault-layout" if default_fault is not None else "fault-layout no-inspector"
 
     contract_key = CONTRACT_ID.lower()
-    coverage_card = (
-        f'<a class="domain" href="#ce-coverage-{contract_key}">'
-        "<strong>Verification coverage</strong>"
-        f'<span class="status {status_class(cell_domain)}">{esc(status_label(cell_domain))}</span>'
-        f'<span class="domain-meta">{esc(domain_meta(cell_statuses))}</span></a>'
+    coverage_domain_card = ui.domain_card(
+        label="Verification coverage",
+        status=cell_domain,
+        href=f"#ce-coverage-{contract_key}",
+        meta=domain_meta(cell_statuses),
     )
-    fault_card = (
-        f'<a class="domain" href="#ce-faults-{contract_key}">'
-        "<strong>Fault model</strong>"
-        f'<span class="status {status_class(fault_domain)}">{esc(status_label(fault_domain))}</span>'
-        f'<span class="domain-meta">{esc(domain_meta(fault_statuses))}</span></a>'
+    fault_domain_card = ui.domain_card(
+        label="Fault model",
+        status=fault_domain,
+        href=f"#ce-faults-{contract_key}",
+        meta=domain_meta(fault_statuses),
     )
     technical_support_section = ""
     domain_strip_class = "domain-strip"
-    technical_support_card = ""
+    technical_support_domain_card = ""
     if technical_support_rows:
         domain_strip_class += " with-support"
-        technical_support_card = (
-            f'<a class="domain" href="#ce-technical-support-{contract_key}">'
-            "<strong>Technical support</strong>"
-            f'<span class="status {status_class(technical_support_status)}">'
-            f"{esc(status_label(technical_support_status))}</span>"
-            f'<span class="domain-meta">{sum(row["status"] == "MET" for row in technical_support_rows)} '
-            f'/ {len(technical_support_rows)} pass</span></a>'
+        technical_support_domain_card = ui.domain_card(
+            label="Technical support",
+            status=technical_support_status,
+            href=f"#ce-technical-support-{contract_key}",
+            meta=(
+                f'{sum(row["status"] == "MET" for row in technical_support_rows)} '
+                f'/ {len(technical_support_rows)} pass'
+            ),
         )
         technical_cards = []
         for row in technical_support_rows:
             technical_cards.append(
-                f'<a class="signal-card {status_class(row["status"])}-signal technical-support-card" '
-                f'href="{esc(row["href"])}">'
-                '<div class="signal-head">'
-                f'<strong>{esc(row["id"])}</strong>'
-                f'<span class="status {status_class(row["status"])}">'
-                f"{esc(status_label(row['status']))}</span></div>"
-                f'<div class="coverage-summary"><small>{esc(row["title"])}</small></div>'
-                '<div class="metric-values">'
-                f'<div><span>Verification</span><strong>{esc(status_label(row["coverage"]))}</strong></div>'
-                f'<div><span>Fault model</span><strong>{esc(status_label(row["fault"]))}</strong></div>'
-                "</div></a>"
+                ui.technical_support_card(
+                    item_id=row["id"],
+                    title=row["title"],
+                    status=row["status"],
+                    href=row["href"],
+                    metrics=(
+                        ("Verification", status_label(row["coverage"])),
+                        ("Fault model", status_label(row["fault"])),
+                    ),
+                )
             )
         technical_support_section = (
             f'<section class="section" id="ce-technical-support-{contract_key}">'
-            '<div class="section-head"><h3>Technical support</h3>'
-            f'<div class="section-links"><a class="section-link" href="{esc(PROFILE_URL)}">Profile ↗</a>'
-            '<a class="section-link" href="requirement-monitor-facts.json">Raw ↗</a></div></div>'
-            '<div class="panel technical-support-panel"><div class="signal-grid">'
-            f'{"".join(technical_cards)}</div></div></section>'
+            + ui.section_head(
+                title="Technical support",
+                links=(
+                    ("Profile ↗", PROFILE_URL),
+                    ("Raw ↗", "requirement-monitor-facts.json"),
+                ),
+            )
+            + ui.support_panel("".join(technical_cards))
+            + "</section>"
         )
 
+    history_section = ui.history_section(
+        section_id=f"ce-history-{contract_key}",
+        status=overall,
+        link_href="assurance-snapshots.json",
+        link_label="History ↗",
+    )
+    verdict_header = ui.verdict_header(
+        kicker="Verification status",
+        entity_id=CONTRACT_ID,
+        status=overall,
+        domain_cards=(
+            coverage_domain_card + fault_domain_card + technical_support_domain_card
+        ),
+        domain_strip_class=domain_strip_class,
+    )
+    coverage_section_head = ui.section_head(
+        title="Verification matrix",
+        links=(
+            (f"{contract_noun} ↗", CONTRACT_URL),
+            ("Profile ↗", PROFILE_URL),
+            ("Raw ↗", "requirement-monitor-facts.json"),
+        ),
+    )
+    fault_section_head = ui.section_head(
+        title="Fault model",
+        links=(
+            ("Profile ↗", PROFILE_URL),
+            ("Model ↗", "test-plan.html#test-plan-fault-model"),
+            ("Raw ↗", "requirement-monitor-facts.json"),
+        ),
+    )
+
     monitor = f"""<div id="tf-requirement-monitor">
-<header class="verdict"><div class="verdict-main"><div><div class="kicker">Verification status</div><h2>{esc(CONTRACT_ID)}</h2></div><div class="overall {status_class(overall)}">{esc(status_label(overall))}</div></div><div class="{domain_strip_class}">{coverage_card}{fault_card}{technical_support_card}</div></header>
-<section class="section" id="ce-coverage-{contract_key}"><div class="section-head"><h3>Verification matrix</h3><div class="section-links"><a class="section-link" href="{esc(CONTRACT_URL)}">{esc(contract_noun)} ↗</a><a class="section-link" href="{esc(PROFILE_URL)}">Profile ↗</a><a class="section-link" href="requirement-monitor-facts.json">Raw ↗</a></div></div><div class="dashboard-layout"><div class="panel matrix-wrap"><table><thead><tr><th>Test level</th>{''.join(f'<th>{esc(label)}</th>' for _, label in BOUNDARIES)}</tr></thead><tbody>{''.join(matrix_rows)}</tbody></table></div><aside class="inspector" id="cell-inspector">{cell_inspectors[default_cell]}</aside></div></section>
-<section class="section" id="ce-faults-{contract_key}"><div class="section-head"><h3>Fault model</h3><div class="section-links"><a class="section-link" href="{esc(PROFILE_URL)}">Profile ↗</a><a class="section-link" href="test-plan.html#test-plan-fault-model">Model ↗</a><a class="section-link" href="requirement-monitor-facts.json">Raw ↗</a></div></div><div class="{fault_layout_class}"><div class="fault-grid">{''.join(fault_tiles)}</div>{fault_inspector_markup}</div></section>
+{verdict_header}
+<section class="section" id="ce-coverage-{contract_key}">{coverage_section_head}<div class="dashboard-layout"><div class="panel matrix-wrap"><table><thead><tr><th>Test level</th>{''.join(f'<th>{esc(label)}</th>' for _, label in BOUNDARIES)}</tr></thead><tbody>{''.join(matrix_rows)}</tbody></table></div><aside class="inspector" id="cell-inspector">{cell_inspectors[default_cell]}</aside></div></section>
+<section class="section" id="ce-faults-{contract_key}">{fault_section_head}<div class="{fault_layout_class}"><div class="fault-grid">{''.join(fault_tiles)}</div>{fault_inspector_markup}</div></section>
 {technical_support_section}
-<section class="section" id="ce-history-{contract_key}"><div class="section-head"><h3>History</h3><a class="section-link" href="assurance-snapshots.json">History ↗</a></div><div class="panel history"><strong>Current</strong><div class="history-line"><i class="history-point {status_class(overall)}"></i></div><span class="status {status_class(overall)}">{esc(status_label(overall))}</span></div></section>
+{history_section}
 </div>"""
 
-    style = """<style id="tf-requirement-monitor-style">
-.bd-article-container{overflow:visible!important}
-#tf-requirement-monitor{--surface:var(--pst-color-surface);--surface2:color-mix(in srgb,var(--pst-color-surface) 88%,var(--pst-color-background));--text:var(--pst-color-text-base);--muted:var(--pst-color-text-muted);--line:var(--pst-color-border);--green:#2e9d58;--red:#d24b4b;--amber:var(--pst-color-warning);--blue:var(--pst-color-primary);--shadow:0 .35rem 1rem color-mix(in srgb,#000 9%,transparent);--sticky-top:var(--pst-header-height,4rem);color:var(--text);font-size:.86rem;line-height:1.35}
-#tf-requirement-monitor *{box-sizing:border-box}#tf-requirement-monitor button{font:inherit;color:inherit}#tf-requirement-monitor a{color:inherit}.tf-exp-badge{display:inline-block;margin-left:.45rem;padding:.12rem .28rem;border:1px solid var(--pst-color-border);border-radius:.25rem;color:var(--pst-color-text-muted);font-size:.55rem;font-weight:800;letter-spacing:.06em;vertical-align:.18rem}
-#tf-requirement-monitor .verdict{position:sticky;top:var(--sticky-top);z-index:24;margin:.35rem 0 1rem;padding:.75rem .85rem;background:color-mix(in srgb,var(--pst-color-background) 94%,transparent);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:.45rem;box-shadow:var(--shadow)}#tf-requirement-monitor .verdict-main{display:flex;align-items:center;justify-content:space-between;gap:1rem}#tf-requirement-monitor .kicker,#tf-requirement-monitor .eyebrow{font-size:.62rem;font-weight:800;letter-spacing:.075em;text-transform:uppercase;color:var(--muted)}#tf-requirement-monitor h2{font-size:1rem;margin:.1rem 0 0}#tf-requirement-monitor h3{font-size:.86rem;letter-spacing:.04em;text-transform:uppercase;margin:0}#tf-requirement-monitor .overall{font-size:.92rem;font-weight:900;padding:.42rem .65rem;border-radius:.45rem;border:1px solid var(--line);background:var(--surface);color:var(--muted)}#tf-requirement-monitor .overall.not-met{border-color:color-mix(in srgb,var(--red) 65%,var(--line));background:color-mix(in srgb,var(--red) 9%,var(--surface));color:var(--red)}#tf-requirement-monitor .overall.met{border-color:color-mix(in srgb,var(--green) 60%,var(--line));background:color-mix(in srgb,var(--green) 8%,var(--surface));color:var(--green)}#tf-requirement-monitor .overall.unknown{border-color:color-mix(in srgb,var(--amber) 60%,var(--line));background:color-mix(in srgb,var(--amber) 8%,var(--surface));color:var(--amber)}
-#tf-requirement-monitor .domain-strip{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;margin-top:.55rem}#tf-requirement-monitor .domain-strip.with-support{grid-template-columns:repeat(3,minmax(0,1fr))}#tf-requirement-monitor .domain{display:grid;grid-template-columns:1fr auto;gap:.12rem .5rem;align-items:center;padding:.45rem .55rem;border:1px solid var(--line);border-radius:.4rem;background:var(--surface);text-decoration:none}#tf-requirement-monitor .domain:hover{border-color:var(--blue)}#tf-requirement-monitor .domain strong{font-size:.67rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}#tf-requirement-monitor .domain-meta{grid-column:1/-1;font-size:.58rem;color:var(--muted)}#tf-requirement-monitor .status{font-size:.63rem;font-weight:900;letter-spacing:.02em;white-space:nowrap}#tf-requirement-monitor .status.met{color:var(--green)}#tf-requirement-monitor .status.not-met{color:var(--red)}#tf-requirement-monitor .status.unknown{color:var(--amber)}#tf-requirement-monitor .status.na{color:var(--muted)}#tf-requirement-monitor .status.big{font-size:.72rem}
-#tf-requirement-monitor .section{position:relative;margin-top:1rem;scroll-margin-top:calc(var(--sticky-top) + 8.7rem);border-radius:.55rem}#tf-requirement-monitor .section.nav-flash{animation:tf-destination-flash 1.6s ease-out}@keyframes tf-destination-flash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--blue) 0%,transparent)}16%{box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 72%,transparent)}68%{box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 42%,transparent)}100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--blue) 0%,transparent)}}@media(prefers-reduced-motion:reduce){#tf-requirement-monitor .section.nav-flash{animation:tf-destination-flash-reduced .8s linear}}@keyframes tf-destination-flash-reduced{0%,70%{box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 58%,transparent)}100%{box-shadow:0 0 0 0 transparent}}#tf-requirement-monitor .section-head{display:flex;align-items:end;justify-content:space-between;gap:1rem;margin-bottom:.45rem}#tf-requirement-monitor .section-links{display:flex;gap:.55rem}#tf-requirement-monitor .section-link,#tf-requirement-monitor .drilldowns a{font-size:.62rem;color:var(--muted);text-decoration:none}#tf-requirement-monitor .section-link:hover,#tf-requirement-monitor .drilldowns a:hover{color:var(--text)}#tf-requirement-monitor .dashboard-layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(19rem,.88fr);gap:.55rem;align-items:start}#tf-requirement-monitor .panel,#tf-requirement-monitor .inspector{border:1px solid var(--line);border-radius:.5rem;background:var(--surface);box-shadow:var(--shadow)}
-#tf-requirement-monitor .matrix-wrap{overflow-x:auto;padding:.38rem}#tf-requirement-monitor table{border-collapse:separate;border-spacing:.25rem;width:100%;margin:0}#tf-requirement-monitor th{font-size:.61rem;color:var(--muted);font-weight:700;text-align:left;white-space:nowrap;padding:.1rem}#tf-requirement-monitor thead th{text-align:center}#tf-requirement-monitor thead th:first-child{text-align:left}#tf-requirement-monitor td{padding:0}#tf-requirement-monitor .matrix-cell{width:100%;height:3.3rem;min-width:5.7rem;padding:.35rem .4rem;border:1px solid var(--line);border-radius:.4rem;background:var(--surface2);text-align:left}#tf-requirement-monitor button.matrix-cell{cursor:pointer}#tf-requirement-monitor button.matrix-cell:hover,#tf-requirement-monitor button.matrix-cell.selected{outline:2px solid color-mix(in srgb,var(--blue) 55%,transparent);outline-offset:1px}#tf-requirement-monitor .matrix-cell.not-met{border-color:color-mix(in srgb,var(--red) 58%,var(--line));background:color-mix(in srgb,var(--red) 7%,var(--surface))}#tf-requirement-monitor .matrix-cell.unknown{border-color:color-mix(in srgb,var(--amber) 58%,var(--line));background:color-mix(in srgb,var(--amber) 6%,var(--surface))}#tf-requirement-monitor .matrix-cell.met{border-color:color-mix(in srgb,var(--green) 55%,var(--line));background:color-mix(in srgb,var(--green) 6%,var(--surface))}#tf-requirement-monitor .matrix-cell.na{display:grid;place-items:center;border-color:transparent;background:color-mix(in srgb,var(--surface2) 45%,transparent);color:var(--muted);text-align:center}#tf-requirement-monitor .cell-status{display:block;margin-bottom:.22rem}#tf-requirement-monitor .cell-values{display:grid;grid-template-columns:1fr 1fr;gap:.3rem}#tf-requirement-monitor .cell-values small{display:block;font-size:.5rem;color:var(--muted);text-transform:uppercase}#tf-requirement-monitor .cell-values strong{font-size:.82rem}
-#tf-requirement-monitor .technical-support-panel{padding:.55rem}#tf-requirement-monitor .technical-support-card{display:block;text-decoration:none}#tf-requirement-monitor .technical-support-card:hover{border-color:var(--blue)}#tf-requirement-monitor .inspector{padding:.55rem}#tf-requirement-monitor .inspector-head{display:flex;align-items:start;justify-content:space-between;gap:.7rem;margin-bottom:.5rem}#tf-requirement-monitor .signal-grid{display:grid;grid-template-columns:1fr;gap:.48rem}#tf-requirement-monitor .signal-group{display:grid;gap:.28rem;padding:.38rem;border:1px solid color-mix(in srgb,var(--line) 82%,transparent);border-radius:.46rem;background:color-mix(in srgb,var(--surface2) 54%,transparent)}#tf-requirement-monitor .signal-group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.45rem;padding:0 .04rem .26rem;border-bottom:1px solid color-mix(in srgb,var(--line) 72%,transparent)}#tf-requirement-monitor .signal-group-head>strong,#tf-requirement-monitor .signal-group-head>div>strong{font-size:.57rem;letter-spacing:.065em;text-transform:uppercase;color:var(--muted)}#tf-requirement-monitor .group-scope{font-size:.52rem;font-weight:800;color:var(--muted);white-space:nowrap}#tf-requirement-monitor .representation-stack{display:grid;gap:.22rem}#tf-requirement-monitor .dependent-wrap{margin-left:.72rem;padding-left:.5rem;border-left:2px solid color-mix(in srgb,var(--line) 78%,transparent)}#tf-requirement-monitor .dependent-signal{background:color-mix(in srgb,var(--surface2) 38%,transparent);border-style:dashed}#tf-requirement-monitor .confidence-subgroup{display:grid;gap:.28rem;margin-top:.12rem;padding-top:.38rem;border-top:1px solid color-mix(in srgb,var(--line) 72%,transparent)}#tf-requirement-monitor .subgroup-head strong{font-size:.57rem;letter-spacing:.065em;text-transform:uppercase;color:var(--muted)}#tf-requirement-monitor .confidence-grid{display:grid;gap:.28rem}#tf-requirement-monitor .signal-card{border:1px solid var(--line);border-radius:.4rem;background:var(--surface2);padding:.38rem .42rem}#tf-requirement-monitor .signal-card.met-signal{border-color:color-mix(in srgb,var(--green) 42%,var(--line))}#tf-requirement-monitor .signal-card.not-met-signal{border-color:color-mix(in srgb,var(--red) 50%,var(--line))}#tf-requirement-monitor .signal-card.unknown-signal{border-color:color-mix(in srgb,var(--amber) 45%,var(--line))}#tf-requirement-monitor .signal-card.na-signal{background:color-mix(in srgb,var(--surface2) 35%,transparent);border-style:dashed;padding:.34rem .4rem}#tf-requirement-monitor .na-signal .signal-head strong{color:var(--muted)}#tf-requirement-monitor .na-signal .state-option{color:color-mix(in srgb,var(--muted) 78%,transparent);border-color:color-mix(in srgb,var(--line) 70%,transparent);background:color-mix(in srgb,var(--surface) 70%,transparent)}#tf-requirement-monitor .na-signal .state-option.selected{color:var(--muted);border-color:color-mix(in srgb,var(--muted) 55%,var(--line))}#tf-requirement-monitor .signal-head{display:flex;align-items:center;justify-content:space-between;gap:.45rem;font-size:.67rem}#tf-requirement-monitor .signal-rule{display:flex;align-items:center;gap:.35rem}#tf-requirement-monitor .scope-count{display:inline-flex;align-items:baseline;gap:.16rem;padding:.1rem .24rem;border:1px solid var(--line);border-radius:.28rem;background:var(--surface);white-space:nowrap}#tf-requirement-monitor .scope-count b{font-size:.55rem}#tf-requirement-monitor .scope-count small{font-size:.44rem;color:var(--muted)}#tf-requirement-monitor .scope-count.met{border-color:color-mix(in srgb,var(--green) 42%,var(--line))}#tf-requirement-monitor .scope-count.not-met{border-color:color-mix(in srgb,var(--red) 48%,var(--line))}#tf-requirement-monitor .scope-count.unknown{border-color:color-mix(in srgb,var(--amber) 46%,var(--line))}#tf-requirement-monitor .coverage-summary{display:flex;align-items:baseline;gap:.38rem;margin-top:.28rem}#tf-requirement-monitor .coverage-summary>strong{font-size:1.08rem;line-height:1}#tf-requirement-monitor .coverage-summary>strong span{font-size:.7rem;color:var(--muted);margin:0 .05rem}#tf-requirement-monitor .coverage-summary small{font-size:.52rem;color:var(--muted)}#tf-requirement-monitor .coverage-strip{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:.18rem;margin-top:.34rem}#tf-requirement-monitor .coverage-segment{height:.28rem;border-radius:999px;background:var(--line)}#tf-requirement-monitor .coverage-segment.pass{background:var(--green)}#tf-requirement-monitor .coverage-segment.fail{background:var(--red)}#tf-requirement-monitor .coverage-segment.missing{background:transparent;border:1px dashed var(--red)}#tf-requirement-monitor .coverage-counts{display:flex;gap:.45rem;margin-top:.25rem;font-size:.48rem;font-weight:700;color:var(--muted)}#tf-requirement-monitor .coverage-counts .pass{color:var(--green)}#tf-requirement-monitor .coverage-counts .fail,#tf-requirement-monitor .coverage-counts .missing{color:var(--red)}#tf-requirement-monitor .metric-values{display:grid;grid-template-columns:1fr 1fr;gap:.28rem;margin-top:.32rem}#tf-requirement-monitor .metric-values div{padding:.28rem .32rem;border-radius:.3rem;background:var(--surface)}#tf-requirement-monitor .metric-values span{display:block;font-size:.49rem;color:var(--muted);text-transform:uppercase}#tf-requirement-monitor .metric-values strong{display:block;font-size:.78rem;margin-top:.05rem}#tf-requirement-monitor .state-lane{display:flex;gap:.22rem;flex-wrap:wrap;margin-top:.32rem}#tf-requirement-monitor .state-option{display:inline-flex;align-items:center;gap:.22rem;padding:.2rem .3rem;border:1px solid var(--line);border-radius:.3rem;background:var(--surface);font-size:.55rem;color:var(--muted)}#tf-requirement-monitor .state-option.selected{color:var(--text);border-color:var(--blue)}#tf-requirement-monitor .marker{font-size:.43rem;font-weight:900;padding:.08rem .16rem;border-radius:.2rem;white-space:nowrap}#tf-requirement-monitor .marker.both{background:color-mix(in srgb,var(--blue) 13%,var(--surface));color:var(--blue)}#tf-requirement-monitor .marker.actual{background:color-mix(in srgb,var(--green) 12%,var(--surface));color:var(--green)}#tf-requirement-monitor .marker.target{background:color-mix(in srgb,var(--blue) 12%,var(--surface));color:var(--blue)}#tf-requirement-monitor .marker.inactive{background:color-mix(in srgb,var(--muted) 12%,var(--surface));color:var(--muted)}
-#tf-requirement-monitor .help{position:relative;display:inline-grid;place-items:center;width:.82rem;height:.82rem;border:1px solid var(--line);border-radius:50%;font-size:.5rem;color:var(--muted);cursor:help;vertical-align:.08rem;text-transform:none;letter-spacing:normal}#tf-requirement-monitor .help-tip{position:absolute;z-index:50;left:50%;bottom:1rem;transform:translateX(-50%);width:15rem;max-width:calc(100vw - 2rem);padding:.36rem .42rem;border:1px solid color-mix(in srgb,var(--line) 82%,var(--text));border-radius:.3rem;background:var(--pst-color-background);box-shadow:0 .45rem 1.4rem rgba(0,0,0,.28);font-size:.55rem;font-weight:600;color:var(--text);line-height:1.35;text-transform:none;letter-spacing:normal;opacity:0;visibility:hidden;pointer-events:none}#tf-requirement-monitor .help:hover .help-tip,#tf-requirement-monitor .help:focus .help-tip{opacity:1;visibility:visible}#tf-requirement-monitor .signal-group-head>.help .help-tip{left:auto;right:0;transform:none}#tf-requirement-monitor .tile-metrics .help{display:inline-grid;font-size:.5rem;color:var(--muted)}#tf-requirement-monitor .tile-metrics .help-tip{font-size:.55rem;color:var(--text)}#tf-requirement-monitor .drilldowns{display:flex;justify-content:flex-end;gap:.55rem;margin-top:.45rem;padding-top:.4rem;border-top:1px solid var(--line)}
-#tf-requirement-monitor .fault-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(19rem,.95fr);gap:.55rem;align-items:start}#tf-requirement-monitor .fault-layout.no-inspector{grid-template-columns:1fr}#tf-requirement-monitor .fault-layout.no-inspector .fault-grid{grid-template-columns:repeat(5,minmax(0,1fr))}#tf-requirement-monitor .fault-grid{display:grid;grid-template-columns:1fr 1fr;gap:.38rem}#tf-requirement-monitor .fault-tile{min-height:5.3rem;padding:.48rem;border:1px solid var(--line);border-radius:.42rem;background:var(--surface);text-align:left}#tf-requirement-monitor button.fault-tile{cursor:pointer}#tf-requirement-monitor button.fault-tile:hover,#tf-requirement-monitor button.fault-tile.selected{outline:2px solid color-mix(in srgb,var(--blue) 55%,transparent);outline-offset:1px}#tf-requirement-monitor .fault-tile.not-met{border-color:color-mix(in srgb,var(--red) 55%,var(--line))}#tf-requirement-monitor .fault-tile.met{border-color:color-mix(in srgb,var(--green) 50%,var(--line))}#tf-requirement-monitor .fault-tile.na{background:color-mix(in srgb,var(--surface2) 45%,transparent);color:var(--muted);border-style:dashed}#tf-requirement-monitor .tile-head{display:flex;align-items:start;justify-content:space-between;gap:.4rem;font-size:.61rem}#tf-requirement-monitor .tile-metrics{display:grid;grid-template-columns:1fr 1fr;gap:.28rem;margin-top:.5rem}#tf-requirement-monitor .tile-metrics div{padding:.28rem .32rem;border-radius:.3rem;background:var(--surface2)}#tf-requirement-monitor .tile-metrics span{display:block;font-size:.49rem;color:var(--muted)}#tf-requirement-monitor .tile-metrics strong{font-size:.72rem}#tf-requirement-monitor .tile-metrics i{font-size:.49rem;color:var(--muted);font-style:normal;margin-left:.16rem}#tf-requirement-monitor .tile-metrics .not-met strong{color:var(--red)}#tf-requirement-monitor .na-center{display:flex;align-items:center;justify-content:center;gap:.4rem;height:3rem;font-size:.61rem;color:var(--muted)}#tf-requirement-monitor .fault-signals{grid-template-columns:1fr}#tf-requirement-monitor .fault-chain{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:.28rem}#tf-requirement-monitor .fault-chain>i{align-self:center;color:var(--muted);font-style:normal;font-weight:800}#tf-requirement-monitor .fault-stage{display:grid;grid-template-columns:1fr auto;gap:.12rem .35rem;align-items:center;padding:.36rem .42rem;border:1px solid var(--line);border-radius:.38rem;background:var(--surface)}#tf-requirement-monitor .fault-stage>span{font-size:.5rem;color:var(--muted)}#tf-requirement-monitor .fault-stage>strong{font-size:.82rem}#tf-requirement-monitor .fault-stage>small{grid-column:1/-1;font-size:.47rem;color:var(--muted)}#tf-requirement-monitor .fault-stage>.status{justify-self:end}#tf-requirement-monitor .fault-stage.met{border-color:color-mix(in srgb,var(--green) 42%,var(--line))}#tf-requirement-monitor .fault-stage.not-met{border-color:color-mix(in srgb,var(--red) 50%,var(--line))}#tf-requirement-monitor .fault-stage.unknown{border-color:color-mix(in srgb,var(--amber) 45%,var(--line))}#tf-requirement-monitor .mutation-grid{display:grid;gap:.32rem}#tf-requirement-monitor .mutation-chain{padding:.34rem;border:1px solid var(--line);border-radius:.4rem;background:color-mix(in srgb,var(--surface2) 52%,transparent)}#tf-requirement-monitor .mutation-chain-head{margin:0 0 .28rem .05rem}#tf-requirement-monitor .mutation-chain-head strong{font-size:.55rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-#tf-requirement-monitor .history{display:flex;align-items:center;gap:.55rem;padding:.55rem .65rem}#tf-requirement-monitor .history-line{flex:1;height:2px;background:var(--line);position:relative}#tf-requirement-monitor .history-point{position:absolute;right:0;top:50%;transform:translate(50%,-50%);width:.5rem;height:.5rem;border-radius:50%;background:var(--muted);box-shadow:0 0 0 .22rem color-mix(in srgb,var(--muted) 12%,transparent)}#tf-requirement-monitor .history-point.not-met{background:var(--red);box-shadow:0 0 0 .22rem color-mix(in srgb,var(--red) 12%,transparent)}#tf-requirement-monitor .history-point.met{background:var(--green);box-shadow:0 0 0 .22rem color-mix(in srgb,var(--green) 12%,transparent)}#tf-requirement-monitor .history-point.unknown{background:var(--amber);box-shadow:0 0 0 .22rem color-mix(in srgb,var(--amber) 12%,transparent)}#tf-requirement-monitor .history strong{font-size:.67rem}
-@media(max-width:1200px){#tf-requirement-monitor .dashboard-layout,#tf-requirement-monitor .fault-layout{grid-template-columns:1fr}#tf-requirement-monitor .confidence-grid{grid-template-columns:repeat(3,minmax(0,1fr))}#tf-requirement-monitor .fault-grid,#tf-requirement-monitor .fault-layout.no-inspector .fault-grid{grid-template-columns:repeat(3,1fr)}#tf-requirement-monitor .fault-tile:nth-child(3n+1) .tile-metrics .help-tip{left:0;transform:none}}@media(max-width:760px){#tf-requirement-monitor .domain-strip,#tf-requirement-monitor .domain-strip.with-support{grid-template-columns:1fr}#tf-requirement-monitor .confidence-grid{grid-template-columns:1fr}#tf-requirement-monitor .fault-grid,#tf-requirement-monitor .fault-layout.no-inspector .fault-grid{grid-template-columns:1fr 1fr}#tf-requirement-monitor .fault-signals{grid-template-columns:1fr}#tf-requirement-monitor .fault-tile:nth-child(odd) .tile-metrics .help-tip{left:0;transform:none}}
-</style>"""
+    style = ui.MONITOR_STYLE
 
-    script = f"""<script id="tf-requirement-monitor-script">
-(()=>{{const root=document.querySelector('#tf-requirement-monitor');if(!root)return;const cellInspectors={json.dumps(cell_inspectors, ensure_ascii=False)};const faultInspectors={json.dumps(fault_inspectors, ensure_ascii=False)};function syncSticky(){{const header=document.querySelector('.bd-header');const top=header?.getBoundingClientRect().bottom||0;root.style.setProperty('--sticky-top',top+'px')}}function selectCell(key){{const value=cellInspectors[key];if(!value)return;root.querySelector('#cell-inspector').innerHTML=value;root.querySelectorAll('[data-cell]').forEach(button=>button.classList.toggle('selected',button.dataset.cell===key));}}function selectFault(key){{const value=faultInspectors[key];if(!value)return;root.querySelector('#fault-inspector').innerHTML=value;root.querySelectorAll('[data-fault]').forEach(button=>button.classList.toggle('selected',button.dataset.fault===key));}}root.querySelectorAll('[data-cell]').forEach(button=>button.addEventListener('click',()=>selectCell(button.dataset.cell)));root.querySelectorAll('[data-fault]').forEach(button=>button.addEventListener('click',()=>selectFault(button.dataset.fault)));let flashTimer;function flashTarget(hash){{if(!hash||!hash.startsWith('#'))return;const target=root.querySelector(hash);if(!target||!target.classList.contains('section'))return;root.querySelectorAll('.section.nav-flash').forEach(node=>node.classList.remove('nav-flash'));void target.offsetWidth;target.classList.add('nav-flash');clearTimeout(flashTimer);flashTimer=setTimeout(()=>target.classList.remove('nav-flash'),1700);}}document.querySelectorAll('a[href="#ce-coverage-{contract_key}"],a[href="#ce-faults-{contract_key}"],a[href="#ce-technical-support-{contract_key}"],a[href="#ce-history-{contract_key}"]').forEach(link=>link.addEventListener('click',()=>requestAnimationFrame(()=>flashTarget(link.getAttribute('href')))));window.addEventListener('hashchange',()=>flashTarget(location.hash));window.addEventListener('resize',syncSticky);syncSticky();selectCell({json.dumps(default_cell)});selectFault({json.dumps(default_fault)});if(location.hash)requestAnimationFrame(()=>flashTarget(location.hash));}})();
-</script>"""
+    setup_js = (
+        f"const cellInspectors={json.dumps(cell_inspectors, ensure_ascii=False)};"
+        f"const faultInspectors={json.dumps(fault_inspectors, ensure_ascii=False)};"
+    )
+    bind_js = (
+        "function selectCell(key){const value=cellInspectors[key];if(!value)return;"
+        "root.querySelector('#cell-inspector').innerHTML=value;"
+        "root.querySelectorAll('[data-cell]').forEach(button=>button.classList.toggle('selected',button.dataset.cell===key));}"
+        "function selectFault(key){const value=faultInspectors[key];if(!value)return;"
+        "root.querySelector('#fault-inspector').innerHTML=value;"
+        "root.querySelectorAll('[data-fault]').forEach(button=>button.classList.toggle('selected',button.dataset.fault===key));}"
+        "root.querySelectorAll('[data-cell]').forEach(button=>button.addEventListener('click',()=>selectCell(button.dataset.cell)));"
+        "root.querySelectorAll('[data-fault]').forEach(button=>button.addEventListener('click',()=>selectFault(button.dataset.fault)));"
+    )
+    nav_selector = (
+        f'a[href="#ce-coverage-{contract_key}"],a[href="#ce-faults-{contract_key}"],'
+        f'a[href="#ce-technical-support-{contract_key}"],a[href="#ce-history-{contract_key}"]'
+    )
+    init_js = f"selectCell({json.dumps(default_cell)});selectFault({json.dumps(default_fault)});"
+    script = ui.monitor_script(
+        setup_js=setup_js,
+        bind_js=bind_js,
+        nav_selector=nav_selector,
+        init_js=init_js,
+    )
 
     source = CANONICAL_OUT.read_text()
     source = re.sub(
