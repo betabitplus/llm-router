@@ -645,15 +645,20 @@ def card(label: str, state: dict, href: str, help_text: str) -> str:
     meta = ""
     if state.get("children") is not None:
         children = state["children"]
+        subject = {
+            "Requirement support": "requirements",
+            "Capability support": "capabilities",
+            "Goal support": "goals",
+        }.get(label, "items")
         meta = (
-            f"{sum(row['status'] == 'MET' for row in children)} / {len(children)} pass"
+            f"{sum(row['status'] == 'MET' for row in children)} / {len(children)} {subject} pass"
             if children
-            else "no children"
+            else f"no {subject}"
         )
     elif state.get("criteria") is not None:
         criteria = state["criteria"]
         meta = (
-            f"{sum(row['status'] == 'MET' for row in criteria)} / {len(criteria)} pass"
+            f"{sum(row['status'] == 'MET' for row in criteria)} / {len(criteria)} scenarios pass"
             if criteria
             else "no target"
         )
@@ -702,43 +707,45 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
     freshness_rows = freshness_state["checks"]
     producer_actual = sum(row["status"] == "MET" for row in producer_rows)
     freshness_actual = sum(row["status"] == "MET" for row in freshness_rows)
+    scenario = next(
+        (
+            str(row.get("gherkin_scenario") or "").strip()
+            for row in criterion["rows"]
+            if row.get("gherkin_scenario")
+        ),
+        criterion["id"],
+    )
     bdd_url = living_spec_url(criterion["rows"])
     bdd_link = f'<a href="{esc(bdd_url)}">BDD evidence ↗</a>' if bdd_url else ""
-    execution = (
-        f'<div class="signal-card {reqmon.status_class(execution_status)}-signal">'
-        '<div class="signal-head"><strong>Execution</strong>'
-        f'<span class="status {reqmon.status_class(execution_status)}">{esc(reqmon.status_label(execution_status))}</span></div>'
-        '<div class="metric-values">'
-        f"<div><span>Actual</span><strong>{criterion['passed_executions']} / {criterion['actual_executions']} pass</strong></div>"
-        f"<div><span>Target</span><strong>{criterion['required_executions']} required</strong></div>"
-        "</div></div>"
+    scenario_card = reqmon.metric(
+        "Scenario coverage",
+        f'{criterion["passed_executions"]}/{criterion["actual_executions"]} scenarios passed',
+        f'{criterion["required_executions"]} scenario required',
+        execution_status,
+        "Checks that the declared assurance scenario passes.",
     )
-    producer = (
-        f'<div class="signal-card {reqmon.status_class(producer_state["status"])}-signal">'
-        f'<div class="signal-head"><strong>Producer qualification {reqmon.help_tip("Checks that evidence-producing tools cannot silently turn bad verification into green evidence.", focusable=False)}</strong>'
-        f'<span class="status {reqmon.status_class(producer_state["status"])}">{esc(reqmon.status_label(producer_state["status"]))}</span></div>'
-        '<div class="metric-values">'
-        f"<div><span>Actual</span><strong>{producer_actual} / {len(producer_rows)} qualified</strong></div>"
-        f"<div><span>Target</span><strong>{len(producer_rows)} / {len(producer_rows)} qualified</strong></div>"
-        "</div></div>"
+    producer = reqmon.metric(
+        "Producer qualification",
+        f"{producer_actual}/{len(producer_rows)} producers qualified",
+        f"{len(producer_rows)} producers required",
+        producer_state["status"],
+        "Checks that every evidence producer used by this proof is qualified for its role.",
     )
-    freshness = (
-        f'<div class="signal-card {reqmon.status_class(freshness_state["status"])}-signal">'
-        f'<div class="signal-head"><strong>Freshness {reqmon.help_tip("Checks that this evidence still matches the current tests and assurance profile.", focusable=False)}</strong>'
-        f'<span class="status {reqmon.status_class(freshness_state["status"])}">{esc(reqmon.status_label(freshness_state["status"]))}</span></div>'
-        '<div class="metric-values">'
-        f"<div><span>Actual</span><strong>{freshness_actual} / {len(freshness_rows)} current</strong></div>"
-        f"<div><span>Target</span><strong>{len(freshness_rows)} / {len(freshness_rows)} current</strong></div>"
-        "</div></div>"
+    freshness = reqmon.metric(
+        "Freshness",
+        f"{freshness_actual}/{len(freshness_rows)} inputs current",
+        f"{len(freshness_rows)} inputs current",
+        freshness_state["status"],
+        "Checks that the retained test source and Assurance Profile still match the current files.",
     )
     return (
         '<div class="inspector-head">'
-        '<div><span class="eyebrow">Selected assurance criterion</span>'
-        f"<h3>{esc(criterion['id'])}</h3></div>"
+        '<div><span class="eyebrow">Assurance scenario</span>'
+        f"<h3>{esc(scenario)}</h3></div>"
         f'<span class="status big {reqmon.status_class(criterion["status"])}">{esc(reqmon.status_label(criterion["status"]))}</span></div>'
         '<div class="signal-grid">'
         '<div class="signal-group primary-group"><div class="signal-group-head"><strong>Required evidence</strong></div>'
-        f"{execution}</div>"
+        f"{scenario_card}</div>"
         '<div class="signal-group path-properties"><div class="signal-group-head"><strong>Evidence confidence</strong></div>'
         f'<div class="confidence-grid">{producer}{freshness}</div></div></div>'
         '<div class="drilldowns">'
@@ -775,22 +782,27 @@ def direct_section(
     tiles = []
     for criterion in state["criteria"]:
         execution_status = criterion["execution_status"]
-        confidence_states = (
-            criterion["producer_qualification"]["status"],
-            criterion["freshness"]["status"],
+        producer_rows = criterion["producer_qualification"]["producers"]
+        producer_actual = sum(row["status"] == "MET" for row in producer_rows)
+        scenario = next(
+            (
+                str(row.get("gherkin_scenario") or "").strip()
+                for row in criterion["rows"]
+                if row.get("gherkin_scenario")
+            ),
+            criterion["id"],
         )
-        confidence_actual = sum(value == "MET" for value in confidence_states)
         tiles.append(
             f'<button class="fault-tile upper-criterion-tile {reqmon.status_class(criterion["status"])}" '
             f'type="button" data-upper="{esc(criterion["id"])}" data-upper-inspector="upper-inspector-{esc(section_id)}">'
             '<div class="tile-head">'
-            f"<strong>{esc(criterion['id'])}</strong>"
+            f"<strong>{esc(scenario)}</strong>"
             f'<span class="status {reqmon.status_class(criterion["status"])}">{esc(reqmon.status_label(criterion["status"]))}</span></div>'
             '<div class="tile-metrics">'
-            f'<div class="{reqmon.status_class(execution_status)}"><span>Execution</span>'
+            f'<div class="{reqmon.status_class(execution_status)}"><span>Scenarios</span>'
             f"<strong>{criterion['passed_executions']}</strong><i>/ {criterion['required_executions']}</i></div>"
-            f'<div class="{reqmon.status_class(reqmon.combine(list(confidence_states)))}"><span>Confidence</span>'
-            f"<strong>{confidence_actual}</strong><i>/ 2</i></div>"
+            f'<div class="{reqmon.status_class(criterion["producer_qualification"]["status"])}"><span>Producers</span>'
+            f"<strong>{producer_actual}</strong><i>/ {len(producer_rows)}</i></div>"
             "</div></button>"
         )
     markup = (

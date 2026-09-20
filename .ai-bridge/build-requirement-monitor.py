@@ -291,6 +291,11 @@ def cell_state(contract: dict, target: dict) -> dict:
         else "UNKNOWN"
         for row in rows
     ]
+    producer_ids = sorted({
+        producer_id
+        for row in rows
+        for producer_id in (row.get("producer_ids") or [])
+    })
     producer_status = quantified_status(producer_values, "QUALIFIED", producer_rule)
     producer_matched = sum(1 for value in producer_values if value == "QUALIFIED")
 
@@ -346,6 +351,7 @@ def cell_state(contract: dict, target: dict) -> dict:
         "producer_status": producer_status,
         "producer_rule": producer_rule,
         "producer_matched": producer_matched,
+        "producer_count": len(producer_ids),
         "freshness_actual_values": ordered_values(set(freshness_values), FRESHNESS),
         "freshness_status": freshness_status,
         "freshness_rule": freshness_rule,
@@ -374,6 +380,8 @@ def scope_count(matched: int, total: int, status: str, label: str = "paths") -> 
     shown_label = label
     if total == 1 and label == "paths":
         shown_label = "path"
+    elif total == 1 and label == "evidence paths":
+        shown_label = "evidence path"
     elif total == 1 and label == "model paths":
         shown_label = "model path"
     if status == "N/A":
@@ -500,14 +508,15 @@ def cell_inspector(state: dict) -> str:
             state["retained_count"],
         ),
         lane(
-            "Producer qualification",
+            f'Producer qualification · {state["producer_count"]} producers',
             PRODUCER,
             state["producer_actual_values"],
             "QUALIFIED",
             state["producer_status"],
-            "Checks that evidence-producing tools cannot silently turn bad verification into green evidence.",
+            "Checks that every evidence producer used by this proof is qualified for its role.",
             state["producer_matched"],
             state["retained_count"],
+            "evidence paths",
         ),
         lane(
             "Freshness",

@@ -1094,15 +1094,32 @@ def main() -> None:
         "Contract Evidence tooltips avoid failure-condition jargon and stale technical prose",
     )
     check(
-        "Checks that evidence-producing tools cannot silently turn bad verification into green evidence."
+        "Checks that every evidence producer used by this proof is qualified for its role."
         in sticky_route_page
-        and "Checks that evidence-producing tools cannot silently turn bad verification into green evidence."
+        and "Checks that every evidence producer used by this proof is qualified for its role."
         in upper_assurance_pages["Feature fallback"],
         "REQ and upper assurance use the same plain-language evidence-producer explanation",
     )
     check(
         all(page.count('class="help-tip"') >= 5 for page in upper_assurance_pages.values()),
         "all upper assurance pages explain their non-obvious monitor signals with tooltips",
+    )
+    check(
+        "Producer qualification · 8 producers" in sticky_route_page
+        and "<b>1/1</b><small>evidence path</small>" in sticky_route_page,
+        "REQ Producer qualification distinguishes producer entities from the evidence-path gate",
+    )
+    goal_page = upper_assurance_pages["Goal routing"]
+    check(
+        "0 / 2 capabilities pass" in goal_page
+        and "1 / 1 scenarios pass" in goal_page
+        and "Scenario coverage" in goal_page
+        and "1/1 scenarios passed" in goal_page
+        and "5/5 producers qualified" in goal_page
+        and "2/2 inputs current" in goal_page
+        and ">Execution<" not in goal_page
+        and ">Confidence<" not in goal_page,
+        "upper assurance names the counted entities instead of exposing ambiguous execution/confidence ratios",
     )
 
     check(
@@ -2420,7 +2437,7 @@ def main() -> None:
     check(
         "Checks that the evidence uses the required kind of target: synthetic, surrogate, representative, or actual."
         in assurance_page
-        and "Checks that evidence-producing tools cannot silently turn bad verification into green evidence."
+        and "Checks that every evidence producer used by this proof is qualified for its role."
         in assurance_page
         and "Checks that any surrogate or model used as evidence is validated strongly enough for this target."
         in assurance_page,
