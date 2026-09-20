@@ -148,7 +148,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Parent verification profile → <verification-profile-req-multi-round-tool-execution>`
+{ref}`Verification profile → <verification-profile-treq-tool-registry>`
 
 ```{needlist}
 :filter: "'TREQ_TOOL_REGISTRY' in derives or 'TREQ_TOOL_REGISTRY' in implements or 'TREQ_TOOL_REGISTRY' in verifies"

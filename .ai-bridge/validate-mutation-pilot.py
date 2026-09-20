@@ -98,6 +98,13 @@ def main() -> None:
         HTML / "contract-evidence-tool-choice.html",
         HTML / "contract-evidence-multi-round-tool-execution.html",
         HTML / "contract-evidence-tool-runtime-safety.html",
+        HTML / "contract-evidence-tool-registry.html",
+        HTML / "assurance-feat-tool-selection.html",
+        HTML / "assurance-feat-tool-execution.html",
+        HTML / "assurance-goal-tool-orchestration.html",
+        ROOT / "docs/assurance-profiles/tools.md",
+        HTML / "assurance-profiles/tools.html",
+        HTML / "specifications/_generated/tools/assurance.html",
         HTML / "contract-evidence-sync-route-fallback.html",
         HTML / "contract-evidence-route-timeout-fallback.html",
         HTML / "contract-evidence-route-attempt-limit.html",
@@ -866,20 +873,24 @@ def main() -> None:
         for row in (tool_multi.get("target") or {}).get("coverage") or []
     }
     tool_multi_actual = tool_multi.get("coverage_actual") or {}
-    call_shapes = tool_multi_actual.get("VC_TOOL_REGISTRY_CALL_SHAPES") or []
     replay_multi = tool_multi_actual.get("VC_TOOL_MULTI_ROUND_REPLAY_FAMILIES") or []
     local_multi = tool_multi_actual.get("VC_TOOL_MULTI_ROUND_OPENAI_LOCAL") or []
     check(
-        tool_multi_targets.get(("component", "none"), {}).get("item_path_counts")
-            == {
-                "VC_TOOL_REGISTRY_CALL_SHAPES": 2,
-                "VC_TOOL_REGISTRY_DUPLICATE_REJECTION": 1,
-                "VC_TOOL_REGISTRY_SCHEMA_EXECUTION": 1,
-            }
-        and len(call_shapes) == 2
+        set(tool_multi_targets) == {
+            ("system_integration", "replay"),
+            ("system_integration", "substitute"),
+        }
+        and tool_multi_targets[("system_integration", "replay")].get("item_path_counts")
+            == {"VC_TOOL_MULTI_ROUND_REPLAY_FAMILIES": 4}
+        and tool_multi_targets[("system_integration", "substitute")].get("item_path_counts")
+            == {"VC_TOOL_MULTI_ROUND_OPENAI_LOCAL": 1}
+        and (tool_multi.get("target") or {}).get("required_treqs")
+            == ["TREQ_TOOL_REGISTRY"]
+        and set(tool_multi_actual)
+            == {"VC_TOOL_MULTI_ROUND_REPLAY_FAMILIES", "VC_TOOL_MULTI_ROUND_OPENAI_LOCAL"}
         and len(replay_multi) == 4
         and len(local_multi) == 1,
-        "Multi-round Contract Evidence preserves criterion cardinality 2/1/1 plus four Replay paths and one Substitute path",
+        "Multi-round parent owns only provider-facing workflow criteria and delegates registry proof to TREQ_TOOL_REGISTRY",
     )
     check(
         all(
@@ -897,6 +908,38 @@ def main() -> None:
             for row in local_multi
         ),
         "Multi-round Actual keeps Replay and Substitute evidence as distinct same-path classifications",
+    )
+
+    tool_registry = (monitor_facts.get("contracts") or {}).get("TREQ_TOOL_REGISTRY") or {}
+    registry_targets = {
+        (row.get("level"), row.get("boundary")): row
+        for row in (tool_registry.get("target") or {}).get("coverage") or []
+    }
+    registry_actual = tool_registry.get("coverage_actual") or {}
+    check(
+        registry_targets.get(("component", "none"), {}).get("item_path_counts")
+            == {
+                "VC_TOOL_REGISTRY_CALL_SHAPES": 2,
+                "VC_TOOL_REGISTRY_DUPLICATE_REJECTION": 1,
+                "VC_TOOL_REGISTRY_SCHEMA_EXECUTION": 1,
+            }
+        and set(registry_actual)
+            == {
+                "VC_TOOL_REGISTRY_CALL_SHAPES",
+                "VC_TOOL_REGISTRY_DUPLICATE_REJECTION",
+                "VC_TOOL_REGISTRY_SCHEMA_EXECUTION",
+            }
+        and len(registry_actual["VC_TOOL_REGISTRY_CALL_SHAPES"]) == 2
+        and len(registry_actual["VC_TOOL_REGISTRY_DUPLICATE_REJECTION"]) == 1
+        and len(registry_actual["VC_TOOL_REGISTRY_SCHEMA_EXECUTION"]) == 1
+        and all(
+            row.get("level") == "component"
+            and row.get("boundary") == "none"
+            and row.get("representation") == "actual"
+            for rows in registry_actual.values()
+            for row in rows
+        ),
+        "TREQ_TOOL_REGISTRY owns the exact 1/1/2 local registry denominator as first-class Contract Evidence",
     )
 
     tool_runtime = (monitor_facts.get("contracts") or {}).get("REQ_TOOL_RUNTIME_SAFETY") or {}
@@ -1062,6 +1105,7 @@ def main() -> None:
     tool_choice_page = (HTML / "contract-evidence-tool-choice.html").read_text()
     tool_multi_page = (HTML / "contract-evidence-multi-round-tool-execution.html").read_text()
     tool_runtime_page = (HTML / "contract-evidence-tool-runtime-safety.html").read_text()
+    tool_registry_page = (HTML / "contract-evidence-tool-registry.html").read_text()
     sync_route_page = (HTML / "contract-evidence-sync-route-fallback.html").read_text()
     timeout_route_page = (HTML / "contract-evidence-route-timeout-fallback.html").read_text()
     attempt_limit_page = (HTML / "contract-evidence-route-attempt-limit.html").read_text()
@@ -1101,6 +1145,9 @@ def main() -> None:
         "Goal sessions": (HTML / "assurance-goal-session-continuity.html").read_text(),
         "Feature data safety": (HTML / "assurance-feat-sensitive-data-protection.html").read_text(),
         "Goal data safety": (HTML / "assurance-goal-data-safety.html").read_text(),
+        "Feature tool selection": (HTML / "assurance-feat-tool-selection.html").read_text(),
+        "Feature tool execution": (HTML / "assurance-feat-tool-execution.html").read_text(),
+        "Goal tools": (HTML / "assurance-goal-tool-orchestration.html").read_text(),
         "Product / System": (HTML / "assurance-product-system.html").read_text(),
     }
     spec_page = (HTML / "specification-health.html").read_text()
@@ -1296,8 +1343,11 @@ def main() -> None:
         "Goal developer": upper_assurance_pages["Goal developer"],
         "Goal sessions": upper_assurance_pages["Goal sessions"],
         "Goal data safety": upper_assurance_pages["Goal data safety"],
+        "Goal tools": upper_assurance_pages["Goal tools"],
         "Feature sessions": upper_assurance_pages["Feature sessions"],
         "Feature data safety": upper_assurance_pages["Feature data safety"],
+        "Feature tool selection": upper_assurance_pages["Feature tool selection"],
+        "Feature tool execution": upper_assurance_pages["Feature tool execution"],
         "Feature fallback": upper_assurance_pages["Feature fallback"],
         "Feature public API": upper_assurance_pages["Feature public API"],
         "REQ sticky route": sticky_route_page,
@@ -1311,6 +1361,10 @@ def main() -> None:
         "TREQ VCR auth": vcr_auth_redaction_page,
         "TREQ VCR request": vcr_request_redaction_page,
         "TREQ VCR response": vcr_response_redaction_page,
+        "REQ tool choice": tool_choice_page,
+        "REQ tool multi-round": tool_multi_page,
+        "TREQ tool registry": tool_registry_page,
+        "REQ tool runtime": tool_runtime_page,
     }
     for name, page in hierarchy_nav_pages.items():
         nav = re.search(
@@ -1331,13 +1385,14 @@ def main() -> None:
             f"{name}: hierarchy navigation contains navigation only, without assurance status",
         )
     check(
-        "<span>Goals</span><b>4</b>" in upper_assurance_pages["Product / System"]
+        "<span>Goals</span><b>5</b>" in upper_assurance_pages["Product / System"]
         and '<details class="tf-assurance-next">' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-routing-reliability.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-developer-usability.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-session-continuity.html"' in upper_assurance_pages["Product / System"]
-        and 'href="assurance-goal-data-safety.html"' in upper_assurance_pages["Product / System"],
-        "Product / System navigation exposes all four onboarded Goals through one compact dropdown",
+        and 'href="assurance-goal-data-safety.html"' in upper_assurance_pages["Product / System"]
+        and 'href="assurance-goal-tool-orchestration.html"' in upper_assurance_pages["Product / System"],
+        "Product / System navigation exposes all five onboarded Goals through one compact dropdown",
     )
     check(
         "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal routing"]
@@ -1364,6 +1419,26 @@ def main() -> None:
         and 'href="assurance-feat-sensitive-data-protection.html"' in upper_assurance_pages["Goal data safety"]
         and '<details class="tf-assurance-next">' not in upper_assurance_pages["Goal data safety"],
         "Data Safety Goal navigation uses one direct next-level link for its single capability",
+    )
+    check(
+        "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal tools"]
+        and '<details class="tf-assurance-next">' in upper_assurance_pages["Goal tools"]
+        and 'href="assurance-feat-tool-selection.html"' in upper_assurance_pages["Goal tools"]
+        and 'href="assurance-feat-tool-execution.html"' in upper_assurance_pages["Goal tools"],
+        "Tool Orchestration Goal navigation exposes both capabilities through the shared dropdown",
+    )
+    check(
+        "<span>Requirements</span><b>1</b>" in upper_assurance_pages["Feature tool selection"]
+        and 'href="contract-evidence-tool-choice.html"' in upper_assurance_pages["Feature tool selection"]
+        and '<details class="tf-assurance-next">' not in upper_assurance_pages["Feature tool selection"],
+        "Tool Selection Feature navigation uses one direct Requirement link",
+    )
+    check(
+        "<span>Requirements</span><b>2</b>" in upper_assurance_pages["Feature tool execution"]
+        and '<details class="tf-assurance-next">' in upper_assurance_pages["Feature tool execution"]
+        and 'href="contract-evidence-multi-round-tool-execution.html"' in upper_assurance_pages["Feature tool execution"]
+        and 'href="contract-evidence-tool-runtime-safety.html"' in upper_assurance_pages["Feature tool execution"],
+        "Tool Execution Feature navigation exposes both direct Requirements",
     )
     check(
         "<span>Requirements</span><b>1</b>" in upper_assurance_pages["Feature data safety"]
@@ -1416,6 +1491,13 @@ def main() -> None:
         and 'href="contract-evidence-vcr-response-content-redaction.html"' in security_page,
         "Data Safety Requirement navigation exposes all four first-class Technical requirements",
     )
+    check(
+        "Tool orchestration" in tool_multi_page
+        and "Tool execution" in tool_multi_page
+        and "<span>Technical support</span><b>1</b>" in tool_multi_page
+        and 'href="contract-evidence-tool-registry.html"' in tool_multi_page,
+        "Multi-round Tool Requirement navigation exposes first-class Tool Registry technical support",
+    )
     session_serialization_nav = re.search(
         r'<nav class="tf-assurance-nav".*?</nav>',
         session_serialization_page,
@@ -1460,6 +1542,9 @@ def main() -> None:
         "Goal sessions": "Outcome Assurance",
         "Feature data safety": "Capability Assurance",
         "Goal data safety": "Outcome Assurance",
+        "Feature tool selection": "Capability Assurance",
+        "Feature tool execution": "Capability Assurance",
+        "Goal tools": "Outcome Assurance",
         "Product / System": "Product / System Assurance",
     }
     for name, page in upper_assurance_pages.items():
@@ -1507,7 +1592,14 @@ def main() -> None:
             and 'class="panel history"' in page,
             f"{name}: verdict, domain strip, sections, and History use canonical Contract Evidence structure",
         )
-    for name in ("Feature fallback", "Goal routing", "Feature sessions", "Goal sessions"):
+    for name in (
+        "Feature fallback",
+        "Goal routing",
+        "Feature sessions",
+        "Goal sessions",
+        "Feature tool execution",
+        "Goal tools",
+    ):
         page = upper_assurance_pages[name]
         check(
             'class="fault-layout"' in page
@@ -1525,6 +1617,8 @@ def main() -> None:
         "Goal sessions",
         "Feature data safety",
         "Goal data safety",
+        "Feature tool selection",
+        "Feature tool execution",
         "Product / System",
     ):
         check(
@@ -3803,6 +3897,19 @@ def main() -> None:
             for contract_id, href in routing_trace_routes.items()
         ),
         "Traceability Reader routes Routing REQ/TREQ contracts to their accepted first-class Contract Evidence pages",
+    )
+    tool_trace_routes = {
+        "REQ_TOOL_CHOICE": "contract-evidence-tool-choice.html#ce-coverage-req_tool_choice",
+        "REQ_MULTI_ROUND_TOOL_EXECUTION": "contract-evidence-multi-round-tool-execution.html#ce-coverage-req_multi_round_tool_execution",
+        "TREQ_TOOL_REGISTRY": "contract-evidence-tool-registry.html#ce-coverage-treq_tool_registry",
+        "REQ_TOOL_RUNTIME_SAFETY": "contract-evidence-tool-runtime-safety.html#ce-coverage-req_tool_runtime_safety",
+    }
+    check(
+        all(
+            f'"{contract_id}": "{href}"' in trace_reader_page
+            for contract_id, href in tool_trace_routes.items()
+        ),
+        "Traceability Reader routes Tool Orchestration REQ/TREQ contracts to first-class Contract Evidence pages",
     )
     resilience_trace_routes = {
         "REQ_PROVIDER_RETRY": "contract-evidence-provider-retry.html#ce-coverage-req_provider_retry",

@@ -86,10 +86,10 @@ No blocking mutation threshold is selected; the required deterministic fault cla
 
 ## Profile · REQ_MULTI_ROUND_TOOL_EXECUTION
 
-**Verification intent.** Prove the internal registry contracts required to execute tools,
-then prove provider-facing multi-round workflows across every provider-adapter family that
-currently declares tool support. The workflow must feed tool results back into subsequent
-provider turns and terminate with the expected final structured response.
+**Verification intent.** Prove provider-facing multi-round workflows across every
+provider-adapter family that currently declares tool support. The workflow must feed tool
+results back into subsequent provider turns and terminate with the expected final
+response. Internal registry semantics are owned by the derived Technical requirement.
 
 **Models:** {ref}`Tool execution <test-plan-tool-execution-model>`
 
@@ -97,29 +97,93 @@ provider turns and terminate with the expected final structured response.
 
 | Test level         | Boundary   | Representation | M&S target |          Target |
 | ------------------ | ---------- | -------------- | ---------- | --------------: |
-| Component          | Local      | Actual         | —          |  **3 criteria** |
 | System Integration | Replay     | Surrogate      | L0         | **1 criterion** |
 | System Integration | Substitute | Surrogate      | L0         | **1 criterion** |
 
-**Coverage basis.** Component coverage owns the derived ToolRegistry semantics.
-Replay coverage requires QwenChat, AI Studio, Gemini WebAPI, and Google GenAI retained
-workflows. The Substitute cell requires an OpenAI-compatible local-boundary workflow and
-also proves that the first tool result is returned to the second provider turn and both
-tool results are returned before the final turn.
+**Coverage basis.** Replay coverage requires QwenChat, AI Studio, Gemini WebAPI, and
+Google GenAI retained workflows. The Substitute cell requires an OpenAI-compatible
+local-boundary workflow and proves that the first tool result is returned to the second
+provider turn and both tool results are returned before the final turn.
 
-**Representation basis.** Component paths execute the actual ToolRegistry. Replay and
-Substitute paths execute actual llm-router/provider-adapter code but use retained or
-scripted external participants; they therefore remain Surrogate at L0.
+**Representation basis.** Replay and Substitute paths execute actual
+llm-router/provider-adapter code but use retained or scripted external participants; they
+therefore remain Surrogate at L0.
 
 ### Verification criteria
 
-| Criterion                              | Contract                                        | Test level         | Boundary   | Required paths | Required path IDs                                           | Success criterion                                                                                                    |
-| -------------------------------------- | ----------------------------------------------- | ------------------ | ---------- | -------------: | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `VC_TOOL_REGISTRY_SCHEMA_EXECUTION`    | {need}`[[id]] <TREQ_TOOL_REGISTRY>`             | Component          | Local      |              1 | —                                                           | Callable schema derivation matches the Python signature and execution preserves arguments/results.                   |
-| `VC_TOOL_REGISTRY_DUPLICATE_REJECTION` | {need}`[[id]] <TREQ_TOOL_REGISTRY>`             | Component          | Local      |              1 | —                                                           | Duplicate tool names are rejected deterministically.                                                                 |
-| `VC_TOOL_REGISTRY_CALL_SHAPES`         | {need}`[[id]] <TREQ_TOOL_REGISTRY>`             | Component          | Local      |              2 | `openai-function` · `google-function`                       | Both retained supported provider tool-call shapes normalize into the same callable contract.                         |
-| `VC_TOOL_MULTI_ROUND_REPLAY_FAMILIES`  | {need}`[[id]] <REQ_MULTI_ROUND_TOOL_EXECUTION>` | System Integration | Replay     |              4 | `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI` | QwenChat, AI Studio, Gemini WebAPI, and Google GenAI complete their retained multi-round workflows with tool traces. |
-| `VC_TOOL_MULTI_ROUND_OPENAI_LOCAL`     | {need}`[[id]] <REQ_MULTI_ROUND_TOOL_EXECUTION>` | System Integration | Substitute |              1 | `OpenAI-compatible`                                         | OpenAI-compatible executes add then multiply, round-trips each tool result, and terminates with final result 84.     |
+| Criterion                             | Contract                                        | Test level         | Boundary   | Required paths | Required path IDs                                           | Success criterion                                                                                                    |
+| ------------------------------------- | ----------------------------------------------- | ------------------ | ---------- | -------------: | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `VC_TOOL_MULTI_ROUND_REPLAY_FAMILIES` | {need}`[[id]] <REQ_MULTI_ROUND_TOOL_EXECUTION>` | System Integration | Replay     |              4 | `QwenChat` · `AI Studio` · `Gemini WebAPI` · `Google GenAI` | QwenChat, AI Studio, Gemini WebAPI, and Google GenAI complete their retained multi-round workflows with tool traces. |
+| `VC_TOOL_MULTI_ROUND_OPENAI_LOCAL`    | {need}`[[id]] <REQ_MULTI_ROUND_TOOL_EXECUTION>` | System Integration | Substitute |              1 | `OpenAI-compatible`                                         | OpenAI-compatible executes add then multiply, round-trips each tool result, and terminates with final result 84.     |
+
+### Evidence aggregation
+
+| Signal                 | Rule | Applies to                                                         |
+| ---------------------- | ---- | ------------------------------------------------------------------ |
+| Semantic coverage      | ALL  | required verification criteria and each criterion's declared paths |
+| Representation         | ALL  | retained evidence for satisfied criteria                           |
+| Provenance             | ALL  | retained evidence for satisfied criteria                           |
+| Producer qualification | ALL  | retained evidence for satisfied criteria; every required producer  |
+| Freshness              | ALL  | retained evidence for satisfied criteria                           |
+| M&S validation         | ALL  | applicable surrogate/model evidence                                |
+
+### Required technical support
+
+| Technical requirement                                                   | Target |
+| ----------------------------------------------------------------------- | ------ |
+| {need}`Tool registry preserves callable contracts <TREQ_TOOL_REGISTRY>` | PASS   |
+
+### Fault applicability
+
+| REQUIRED                                                                        | OPTIONAL | N/A                                                                                                                               |
+| ------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `interface.unexpected-interaction` · `spec.wrong-outcome` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| `spec.missing-partition` · `spec.wrong-ordering-boundary`                       | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass`               |
+
+#### Fault-group rationale
+
+| Group                 | Why                                                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Multi-round execution is a state machine; skipping or terminating a branch can lose a required tool round or final response.                           |
+| Runtime / dependency  | Availability/timeout recovery belongs to provider retry/routing contracts rather than the semantic tool-result round trip.                             |
+| Interface / protocol  | An extra or missing provider turn changes the required workflow; provider tool-call parsing and schema normalization belong to the ToolRegistry TREQ.  |
+| Architecture          | Internal registry layering is owned by the Technical requirement rather than duplicated on the parent product claim.                                   |
+| Specification / model | Required provider-family partitions, add→multiply ordering, intermediate-result propagation, and final outcome are all part of the normative behavior. |
+
+No blocking mutation threshold is selected; required deterministic fault classes remain
+blocking.
+
+(verification-profile-treq-tool-registry)=
+
+## Profile · TREQ_TOOL_REGISTRY
+
+**Verification intent.** Prove that the internal tool registry preserves callable
+contracts before orchestration begins: Python signatures become stable tool schemas,
+duplicate names are rejected, supported provider call shapes normalize consistently, and
+the resulting callable executes with preserved arguments/results.
+
+**Models:** {ref}`Tool execution <test-plan-tool-execution-model>`
+
+### Required coverage
+
+| Test level | Boundary | Representation | M&S target |         Target |
+| ---------- | -------- | -------------- | ---------- | -------------: |
+| Component  | Local    | Actual         | —          | **3 criteria** |
+
+**Coverage basis.** Schema/execution, duplicate rejection, and provider-call
+normalization are independent registry obligations. The call-shape criterion requires the
+OpenAI-function and Google-function input partitions.
+
+**Representation basis.** All paths execute the actual ToolRegistry and parser locally;
+no external participant or model substitute is involved.
+
+### Verification criteria
+
+| Criterion                              | Contract                            | Test level | Boundary | Required paths | Required path IDs                     | Success criterion                                                                                  |
+| -------------------------------------- | ----------------------------------- | ---------- | -------- | -------------: | ------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `VC_TOOL_REGISTRY_SCHEMA_EXECUTION`    | {need}`[[id]] <TREQ_TOOL_REGISTRY>` | Component  | Local    |              1 | —                                     | Callable schema derivation matches the Python signature and execution preserves arguments/results. |
+| `VC_TOOL_REGISTRY_DUPLICATE_REJECTION` | {need}`[[id]] <TREQ_TOOL_REGISTRY>` | Component  | Local    |              1 | —                                     | Duplicate tool names are rejected deterministically.                                               |
+| `VC_TOOL_REGISTRY_CALL_SHAPES`         | {need}`[[id]] <TREQ_TOOL_REGISTRY>` | Component  | Local    |              2 | `openai-function` · `google-function` | Both supported provider tool-call shapes normalize into the same callable contract.                |
 
 ### Evidence aggregation
 
@@ -134,23 +198,24 @@ scripted external participants; they therefore remain Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                       | OPTIONAL | N/A                                                                                                                               |
-| -------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.payload-schema` · `interface.unexpected-interaction`                          | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
-| `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `interface.error-status` · `architecture.forbidden-edge`                                                                          |
+| REQUIRED                                                                       | OPTIONAL                            | N/A                                                                                                                    |
+| ------------------------------------------------------------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `interface.payload-schema` · `architecture.layer-bypass` | `impl.comparison` · `impl.boundary` | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
+| `spec.wrong-outcome` · `spec.missing-partition`                                | —                                   | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `spec.wrong-ordering-boundary`                    |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Implementation        | Multi-round execution is a state machine; skipping or terminating a branch can lose a required tool round or final response.                           |
-| Runtime / dependency  | Availability/timeout recovery belongs to provider retry/routing contracts rather than the semantic tool-result round trip.                             |
-| Interface / protocol  | Tool results must be returned in the next provider turn with the expected shape and without an extra/unaccounted turn in the required workflow.        |
-| Architecture          | Provider tool calls must pass through the required ToolRegistry normalization/execution boundary before results are returned to the provider.          |
-| Specification / model | Required provider-family partitions, add→multiply ordering, intermediate-result propagation, and final outcome are all part of the normative behavior. |
+| Group                 | Why                                                                                                                               |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Registry construction, parsing, and execution branches determine whether the callable contract is preserved.                      |
+| Runtime / dependency  | The registry is a local translation/execution boundary; provider availability and latency are outside this Technical requirement. |
+| Interface / protocol  | Supported provider call payloads must normalize into one provider-neutral call shape; HTTP status behavior is unrelated.          |
+| Architecture          | Orchestration must pass provider tool calls through the central registry normalization/execution boundary rather than bypass it.  |
+| Specification / model | Wrong schema/execution behavior or omission of a supported call-shape partition directly violates the registry contract.          |
 
-No blocking mutation threshold is selected here. The retained mutmut Test Strength for {need}`TREQ_TOOL_REGISTRY`
-remains diagnostic under the project Test Plan; required deterministic fault classes above are blocking.
+No blocking mutation threshold is selected. The retained ToolRegistry mutation score
+remains diagnostic under the project Test Plan; deterministic required fault classes stay
+blocking.
 
 (verification-profile-req-tool-runtime-safety)=
 
