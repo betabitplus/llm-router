@@ -1014,6 +1014,7 @@ def main() -> None:
     )
     canonical_style_text = canonical_monitor_style.group(1) if canonical_monitor_style else ""
     domain_source = (BRIDGE / "assurance_monitor_domain.py").read_text()
+    registry_source = (BRIDGE / "assurance_monitor_registry.py").read_text()
     ui_source = (BRIDGE / "assurance_monitor_ui.py").read_text()
     requirement_renderer_source = (BRIDGE / "build-requirement-monitor.py").read_text()
     upper_renderer_source = (BRIDGE / "build-upper-assurance-pilot.py").read_text()
@@ -1026,7 +1027,6 @@ def main() -> None:
                 "def cell_state(",
                 "def fault_state(",
                 "def contract_domain_state(",
-                "def contract_slug(",
                 "PRODUCER =",
                 "FRESHNESS =",
                 "REPRESENTATION =",
@@ -1035,6 +1035,20 @@ def main() -> None:
             )
         ),
         "shared assurance domain owns status algebra, vocabularies, and contract-state projection",
+    )
+    check(
+        all(
+            token in registry_source
+            for token in (
+                "PAGE_SPECS = (",
+                "def contract_slug(",
+                "def monitor_urls(",
+                "def normalize_needs_graph(",
+                "def navigation_spec(",
+                "Product / System",
+            )
+        ),
+        "shared assurance registry owns monitor page declarations, URLs, and hierarchy projection",
     )
     check(
         "PRODUCER =" not in ui_source
@@ -1061,6 +1075,8 @@ def main() -> None:
         and "def verdict_header(" in ui_source
         and "def support_panel(" in ui_source
         and "def metric_tile(" in ui_source
+        and "def assurance_navigation(" in ui_source
+        and "ASSURANCE_NAV_STYLE =" in ui_source
         and "def render_monitor_shell(" in ui_source,
         "shared assurance monitor UI owns canonical CSS, behavior, and reusable components",
     )
@@ -1114,11 +1130,19 @@ def main() -> None:
                 "def fault_state(",
                 "def contract_domain_state(",
                 "def contract_slug(",
+                "def navigation_spec(",
+                "def assurance_navigation(",
             )
         )
         and "assurance_monitor_domain.py" in requirement_renderer_source
         and "assurance_monitor_domain.py" in upper_renderer_source
         and "domain.contract_domain_state(" in upper_renderer_source
+        and "assurance_monitor_registry.py" in requirement_renderer_source
+        and "assurance_monitor_registry.py" in upper_renderer_source
+        and "registry.navigation_spec(" in requirement_renderer_source
+        and "registry.navigation_spec(" in upper_renderer_source
+        and "ui.assurance_navigation(" in requirement_renderer_source
+        and "ui.assurance_navigation(" in upper_renderer_source
         and "build-requirement-monitor.py" not in upper_renderer_source
         and "reqmon." not in upper_renderer_source,
         "REQ/TREQ and upper renderers share domain semantics without importing one another",
@@ -1137,20 +1161,96 @@ def main() -> None:
         "dead presentation helpers are removed from active monitor renderers",
     )
     check(
-        "PAGE_SPECS = (" in upper_renderer_source
-        and "FEATURE_SECTION_LABELS = (" in upper_renderer_source
+        "PAGE_SPECS = (" in registry_source
+        and "FEATURE_SECTION_LABELS = (" in registry_source
+        and "PAGE_SPECS = registry.PAGE_SPECS" in upper_renderer_source
         and "for spec in PAGE_SPECS:" in upper_renderer_source
         and upper_renderer_source.count("render_page(") == 2
         and 'for feature_id in ("FEAT_' not in upper_renderer_source
         and 'goal_id = "GOAL_' not in upper_renderer_source
         and '"goals": goals' in upper_renderer_source,
-        "upper assurance onboarding, facts, and pages are driven by one declarative registry",
+        "upper assurance onboarding, navigation, and pages are driven by one declarative registry",
     )
     check(
         "<title>Technical Assurance &#8212; llm-router" in route_order_page
         and '<span class="ellipsis">Technical Assurance</span>' in route_order_page,
         "TREQ monitor shell exposes Technical Assurance consistently in title and breadcrumb",
     )
+    hierarchy_nav_pages = {
+        "Product / System": upper_assurance_pages["Product / System"],
+        "Goal routing": upper_assurance_pages["Goal routing"],
+        "Feature fallback": upper_assurance_pages["Feature fallback"],
+        "REQ sticky route": sticky_route_page,
+        "TREQ route order": route_order_page,
+        "REQ rate limit": rate_limit_page,
+        "REQ provider retry": provider_retry_page,
+    }
+    for name, page in hierarchy_nav_pages.items():
+        nav = re.search(
+            r'<nav class="tf-assurance-nav".*?</nav>',
+            page,
+            flags=re.DOTALL,
+        )
+        nav_text = nav.group(0) if nav else ""
+        check(
+            nav is not None
+            and page.count('class="tf-assurance-nav"') == 1
+            and nav.start() < page.index('<div id="tf-requirement-monitor">')
+            and nav_text.count('aria-current="page"') == 1,
+            f"{name}: hierarchy navigation is a single surface separate from the monitor",
+        )
+        check(
+            all(token not in nav_text for token in ("PASS", "FAIL", "UNKNOWN", "N/A")),
+            f"{name}: hierarchy navigation contains navigation only, without assurance status",
+        )
+    check(
+        "<span>Goals</span><b>1</b>" in upper_assurance_pages["Product / System"]
+        and 'href="assurance-goal-routing-reliability.html"' in upper_assurance_pages["Product / System"],
+        "Product / System navigation exposes the onboarded Goal as one direct next-level link",
+    )
+    check(
+        "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal routing"]
+        and '<details class="tf-assurance-next">' in upper_assurance_pages["Goal routing"]
+        and 'href="assurance-feat-route-fallback.html"' in upper_assurance_pages["Goal routing"]
+        and 'href="assurance-feat-rate-limit-routing.html"' in upper_assurance_pages["Goal routing"],
+        "Goal navigation exposes both monitored capabilities through one compact dropdown",
+    )
+    check(
+        "<span>Requirements</span><b>4</b>" in upper_assurance_pages["Feature fallback"]
+        and 'href="contract-evidence-route-sticky-start.html"' in upper_assurance_pages["Feature fallback"],
+        "Feature navigation exposes monitored Requirements through the shared next-level dropdown",
+    )
+    check(
+        "Product / System" in sticky_route_page
+        and "Routing reliability" in sticky_route_page
+        and "Route fallback" in sticky_route_page
+        and "Route sticky start" in sticky_route_page
+        and "<span>Technical support</span><b>1</b>" in sticky_route_page
+        and 'href="contract-evidence-route-order.html"' in sticky_route_page,
+        "Requirement navigation shows full ancestry and one direct Technical support child",
+    )
+    route_order_nav = re.search(
+        r'<nav class="tf-assurance-nav".*?</nav>',
+        route_order_page,
+        flags=re.DOTALL,
+    )
+    check(
+        route_order_nav is not None
+        and "Route order" in route_order_nav.group(0)
+        and "tf-assurance-next" not in route_order_nav.group(0),
+        "leaf TREQ navigation keeps ancestry without inventing a next-level control",
+    )
+    check(
+        "<span>Technical support</span><b>3</b>" in rate_limit_page
+        and '<details class="tf-assurance-next">' in rate_limit_page,
+        "Requirement navigation uses a compact dropdown when several Technical requirements exist",
+    )
+    check(
+        'href="requirements/resilience.html#GOAL_RESILIENT_EXECUTION"' in provider_retry_page
+        and 'href="requirements/resilience.html#FEAT_PROVIDER_RETRY"' in provider_retry_page,
+        "non-onboarded upper ancestors fall back to normative Requirement pages without broken monitor links",
+    )
+
     expected_upper_titles = {
         "Feature fallback": "Capability Assurance",
         "Feature rate limit": "Capability Assurance",
@@ -1186,6 +1286,7 @@ def main() -> None:
         check(
             script is not None
             and "syncSticky" in script.group(1)
+            and "syncAssurancePath" in script.group(1)
             and "nav-flash" in script.group(1)
             and "document.querySelectorAll" in script.group(1),
             f"{name}: sticky layout and navigation flash follow the canonical REQ interaction pattern",
@@ -3388,6 +3489,7 @@ def main() -> None:
         "assurance-snapshots.json",
         "build-mutation-report-prototype.py",
         "assurance_monitor_domain.py",
+        "assurance_monitor_registry.py",
         "assurance_monitor_ui.py",
         "build-requirement-monitor.py",
         "build-upper-assurance-pilot.py",
@@ -3469,6 +3571,7 @@ def main() -> None:
     approved_pilot_sources = {
         ".ai-bridge/build-mutation-report-prototype.py",
         ".ai-bridge/assurance_monitor_domain.py",
+        ".ai-bridge/assurance_monitor_registry.py",
         ".ai-bridge/assurance_monitor_ui.py",
         ".ai-bridge/build-requirement-monitor.py",
         ".ai-bridge/build-upper-assurance-pilot.py",

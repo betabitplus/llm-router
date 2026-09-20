@@ -11,7 +11,6 @@ import re
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from pathlib import Path
-from typing import NamedTuple
 
 ROOT = Path(__file__).resolve().parents[1]
 PROFILE = ROOT / "docs/assurance-profiles/routing.md"
@@ -39,6 +38,14 @@ if UI_SPEC is None or UI_SPEC.loader is None:
 ui = importlib.util.module_from_spec(UI_SPEC)
 UI_SPEC.loader.exec_module(ui)
 
+REGISTRY_SPEC = importlib.util.spec_from_file_location(
+    "assurance_monitor_registry", ROOT / ".ai-bridge/assurance_monitor_registry.py"
+)
+if REGISTRY_SPEC is None or REGISTRY_SPEC.loader is None:
+    raise RuntimeError("Could not load assurance monitor registry")
+registry = importlib.util.module_from_spec(REGISTRY_SPEC)
+REGISTRY_SPEC.loader.exec_module(registry)
+
 esc = ui.esc
 
 UPPER_HELP = {
@@ -54,63 +61,7 @@ UPPER_HELP = {
 }
 
 
-FEATURE_SECTION_LABELS = (
-    ("Requirement support", "requirement_support"),
-    ("Capability integration", "capability_integration"),
-    ("Capability validation", "capability_validation"),
-)
-GOAL_SECTION_LABELS = (
-    ("Capability support", "capability_support"),
-    ("Cross-capability integration", "cross_capability_integration"),
-    ("Outcome validation", "outcome_validation"),
-)
-PRODUCT_SECTION_LABELS = (
-    ("Goal support", "goal_support"),
-    ("Cross-goal integration", "cross_goal_integration"),
-    ("Operational validation", "operational_validation"),
-)
-
-
-class PageSpec(NamedTuple):
-    """Declarative contract for one generated upper-assurance monitor page."""
-
-    entity_id: str
-    page_title: str
-    facts_path: tuple[str, ...]
-    output: str
-    labels: tuple[tuple[str, str], ...]
-
-
-PAGE_SPECS = (
-    PageSpec(
-        entity_id="FEAT_ROUTE_FALLBACK",
-        page_title="Capability Assurance",
-        facts_path=("features", "FEAT_ROUTE_FALLBACK"),
-        output="assurance-feat-route-fallback.html",
-        labels=FEATURE_SECTION_LABELS,
-    ),
-    PageSpec(
-        entity_id="FEAT_RATE_LIMIT_ROUTING",
-        page_title="Capability Assurance",
-        facts_path=("features", "FEAT_RATE_LIMIT_ROUTING"),
-        output="assurance-feat-rate-limit-routing.html",
-        labels=FEATURE_SECTION_LABELS,
-    ),
-    PageSpec(
-        entity_id="GOAL_ROUTING_RELIABILITY",
-        page_title="Outcome Assurance",
-        facts_path=("goals", "GOAL_ROUTING_RELIABILITY"),
-        output="assurance-goal-routing-reliability.html",
-        labels=GOAL_SECTION_LABELS,
-    ),
-    PageSpec(
-        entity_id="PRODUCT_SYSTEM",
-        page_title="Product / System Assurance",
-        facts_path=("product_system",),
-        output="assurance-product-system.html",
-        labels=PRODUCT_SECTION_LABELS,
-    ),
-)
+PAGE_SPECS = registry.PAGE_SPECS
 OUTPUTS = {spec.entity_id: OUT_DIR / spec.output for spec in PAGE_SPECS}
 
 
@@ -545,7 +496,7 @@ def build_facts() -> dict:
                 "id": req_id,
                 "title": graph[req_id]["title"],
                 "status": effective_req(req_id)["status"],
-                "url": f"contract-evidence-{domain.contract_slug(req_id)}.html",
+                "url": f"contract-evidence-{registry.contract_slug(req_id)}.html",
                 "technical_support": effective_req(req_id)["treqs"],
             }
             for req_id in requirement_ids
@@ -915,6 +866,7 @@ def render_page(
     labels: tuple[tuple[str, str], ...],
     profile_url: str,
     output: Path,
+    navigation: str,
 ) -> None:
     section_ids = {
         key: f"ua-{entity_id.lower().replace('_', '-')}-{key.replace('_', '-')}"
@@ -1001,6 +953,7 @@ def render_page(
         monitor=monitor,
         script=script,
         toc_items=tuple(toc_items),
+        navigation=navigation,
     )
     output.write_text(source)
 
@@ -1009,11 +962,19 @@ def build() -> None:
     facts = build_facts()
     FACTS_OUT.write_text(json.dumps(facts, indent=2, sort_keys=True) + "\n")
     profile_url = "assurance-profiles/routing.html"
+    graph = parse_need_graph()
+    req_facts = json.loads(REQ_FACTS.read_text())
+    monitor_url_map = registry.monitor_urls(
+        set((req_facts.get("contracts") or {}).keys())
+    )
 
     for spec in PAGE_SPECS:
         entity = facts
         for key in spec.facts_path:
             entity = entity[key]
+        navigation = ui.assurance_navigation(
+            registry.navigation_spec(graph, spec.entity_id, monitor_url_map)
+        )
         render_page(
             page_title=spec.page_title,
             entity_id=spec.entity_id,
@@ -1021,6 +982,7 @@ def build() -> None:
             labels=spec.labels,
             profile_url=profile_url,
             output=OUTPUTS[spec.entity_id],
+            navigation=navigation,
         )
 
     for output in OUTPUTS.values():

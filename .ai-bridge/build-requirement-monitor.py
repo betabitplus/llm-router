@@ -21,6 +21,14 @@ if DOMAIN_SPEC is None or DOMAIN_SPEC.loader is None:
 domain = importlib.util.module_from_spec(DOMAIN_SPEC)
 DOMAIN_SPEC.loader.exec_module(domain)
 
+REGISTRY_SPEC = importlib.util.spec_from_file_location(
+    "assurance_monitor_registry", ROOT / ".ai-bridge/assurance_monitor_registry.py"
+)
+if REGISTRY_SPEC is None or REGISTRY_SPEC.loader is None:
+    raise RuntimeError("Could not load assurance monitor registry")
+registry = importlib.util.module_from_spec(REGISTRY_SPEC)
+REGISTRY_SPEC.loader.exec_module(registry)
+
 esc = ui.esc
 help_tip = ui.help_tip
 status_class = ui.status_class
@@ -31,7 +39,7 @@ coverage_card = ui.coverage_card
 combine = domain.combine
 cell_state = domain.cell_state
 fault_state = domain.fault_state
-contract_slug = domain.contract_slug
+contract_slug = registry.contract_slug
 contract_domain_state = domain.contract_domain_state
 REPRESENTATION = domain.REPRESENTATION
 PROVENANCE = domain.PROVENANCE
@@ -39,6 +47,7 @@ PRODUCER = domain.PRODUCER
 FRESHNESS = domain.FRESHNESS
 MS_LEVELS = domain.MS_LEVELS
 FACTS = ROOT / "docs/_build/html/requirement-monitor-facts.json"
+NEEDS = ROOT / "docs/_build/html/needs.json"
 CANONICAL_OUT = ROOT / "docs/_build/html/verification-assurance.html"
 PRIMARY_CONTRACT_ID = "REQ_INVALID_CONFIGURATION_ERRORS"
 
@@ -578,6 +587,15 @@ def render_current() -> None:
             )
         )
     toc_items.append(("History", f"#ce-history-{CONTRACT_ID.lower()}"))
+    needs_payload = json.loads(NEEDS.read_text())
+    needs_version = needs_payload["current_version"]
+    needs = needs_payload["versions"][needs_version]["needs"]
+    navigation_spec = registry.navigation_spec(
+        registry.normalize_needs_graph(needs),
+        CONTRACT_ID,
+        registry.monitor_urls(set((data.get("contracts") or {}).keys())),
+    )
+    navigation = ui.assurance_navigation(navigation_spec)
     source = ui.render_monitor_shell(
         CANONICAL_OUT.read_text(),
         page_title=page_title,
@@ -585,6 +603,7 @@ def render_current() -> None:
         monitor=monitor,
         script=script,
         toc_items=tuple(toc_items),
+        navigation=navigation,
     )
     OUT.write_text(source)
     OUT.with_name("verification-assurance-experiment.html").unlink(missing_ok=True)

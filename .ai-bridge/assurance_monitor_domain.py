@@ -453,15 +453,6 @@ def fault_state(contract: dict, group: dict, policy: dict) -> dict:
     }
 
 
-def contract_slug(contract_id: str) -> str:
-    slug = contract_id.lower()
-    for prefix in ("treq_", "req_"):
-        if slug.startswith(prefix):
-            slug = slug.removeprefix(prefix)
-            break
-    return slug.replace("_", "-")
-
-
 def contract_domain_state(contract: dict, policy: dict) -> dict:
     """Return direct Verification/Fault/Overall state for one first-class contract."""
     coverage_states = [
