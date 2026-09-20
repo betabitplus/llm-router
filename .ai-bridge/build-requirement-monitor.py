@@ -34,6 +34,13 @@ REPRESENTATION = ["Synthetic / abstract", "Surrogate / simulated", "Representati
 PROVENANCE = ["COMPLETE", "INCOMPLETE", "UNKNOWN"]
 PRODUCER = ["QUALIFIED", "NOT QUALIFIED", "UNKNOWN"]
 FRESHNESS = ["CURRENT", "STALE", "UNKNOWN"]
+FAULT_GROUP_HELP = {
+    "Implementation": "Checks that small code mistakes—wrong comparisons, limits, branches, returns, or exception paths—are caught.",
+    "Runtime / dependency": "Checks that dependency failures—timeouts, disconnects, unavailability, or malformed replies—cannot change the required behavior.",
+    "Interface / protocol": "Checks that wrong external calls, error statuses, or malformed payloads are caught at the boundary.",
+    "Architecture": "Checks that code cannot bypass a required layer or depend on a forbidden layer.",
+    "Specification / model": "Checks that tests catch the wrong result, a missing case, or the wrong ordering or boundary rule.",
+}
 MS_LEVELS = ["N/A", "L0", "L1", "L2", "L3", "L4", "UNKNOWN", "NOT DECLARED"]
 
 
@@ -514,17 +521,17 @@ def cell_inspector(state: dict) -> str:
         ),
     ])
     signals = (
-        f'<div class="signal-group primary-group"><div class="signal-group-head"><strong>Required evidence {help_tip("Checks that the required behavior is covered by retained passing evidence.", focusable=False)}</strong></div>'
+        '<div class="signal-group primary-group"><div class="signal-group-head"><strong>Required evidence</strong></div>'
         f'{coverage}</div>'
-        f'<div class="signal-group path-properties"><div class="signal-group-head"><strong>Retained path properties {help_tip("Checks that each retained path has the right representation and evidence-quality properties.", focusable=False)}</strong>'
+        '<div class="signal-group path-properties"><div class="signal-group-head"><strong>Retained path properties</strong>'
         f'<span class="group-scope">{state["retained_count"]}/{state["required_path_count"]} paths</span></div>'
         f'<div class="representation-stack">{representation}<div class="dependent-wrap">{ms}</div></div>'
-        f'<div class="confidence-subgroup"><div class="subgroup-head"><strong>Evidence confidence {help_tip("Checks that the result belongs to the right run, comes from qualified tools, and is still current.", focusable=False)}</strong></div>'
+        '<div class="confidence-subgroup"><div class="subgroup-head"><strong>Evidence confidence</strong></div>'
         f'<div class="confidence-grid">{confidence}</div></div></div>'
     )
     return (
         '<div class="inspector-head">'
-        f'<div><span class="eyebrow">Selected verification cell {help_tip("Shows what must be proven on this Test level × Boundary path and whether the retained evidence really proves it.")}</span><h3>{esc(state["level_label"])} × {esc(state["boundary_label"])}</h3></div>'
+        f'<div><span class="eyebrow">Selected verification cell</span><h3>{esc(state["level_label"])} × {esc(state["boundary_label"])}</h3></div>'
         f'<span class="status big {status_class(state["overall"])}">{esc(status_label(state["overall"]))}</span></div>'
         f'<div class="signal-grid">{signals}</div>'
         f'<div class="drilldowns"><a href="{esc(CONTRACT_URL)}">Requirement ↗</a>'
@@ -634,13 +641,12 @@ def fault_state(contract: dict, group: dict, policy: dict) -> dict:
     }
 
 
-def fault_stage(label: str, value: str, status: str | None = None, target: str | None = None, tip: str = "") -> str:
-    help_html = help_tip(tip) if tip else ""
+def fault_stage(label: str, value: str, status: str | None = None, target: str | None = None) -> str:
     status_html = f'<span class="status {status_class(status)}">{esc(status_label(status))}</span>' if status else ""
     target_html = f"<small>{esc(target)}</small>" if target else ""
     return (
         f'<div class="fault-stage {status_class(status) if status else "neutral"}">'
-        f'<span>{esc(label)} {help_html}</span>'
+        f'<span>{esc(label)}</span>'
         f'<strong>{esc(value)}</strong>{target_html}{status_html}</div>'
     )
 
@@ -654,19 +660,17 @@ def fault_inspector(state: dict) -> str:
             "Challenged",
             f'{state["exercised"]}/{state["required"]}',
             state["class_status"],
-            tip="Checks that every required failure mode is actually triggered by a test.",
         )
         + "<i>→</i>"
         + fault_stage(
             "Detected",
             f'{state["detected"]}/{state["exercised"]}' if state["exercised"] else "0/0",
             state["detection_status"],
-            tip="Checks that the test notices the triggered failure and rejects the wrong behavior.",
         )
         + "</div>"
     )
     sections = [
-        f'<div class="signal-group fault-class-group"><div class="signal-group-head"><strong>Fault classes {help_tip("Shows which required failure modes are triggered and caught.", focusable=False)}</strong></div>'
+        '<div class="signal-group fault-class-group"><div class="signal-group-head"><strong>Fault classes</strong></div>'
         + class_chain
         + "</div>"
     ]
@@ -684,7 +688,6 @@ def fault_inspector(state: dict) -> str:
                     f'{item["reached"]}/{item["generated"]}',
                     item["reach_status"],
                     target=f'{item["reach"]:.1f}% · ≥ {item["reach_target"]:.0f}%',
-                    tip=f'Checks that {item["label"]} tests actually execute enough of the generated code faults.',
                 )
                 + "<i>→</i>"
                 + fault_stage(
@@ -692,12 +695,11 @@ def fault_inspector(state: dict) -> str:
                     f'{item["killed"]}/{item["reached"]}' if item["reached"] else "0/0",
                     item["sensitivity_status"],
                     target=f'{item["sensitivity"]:.1f}% · ≥ {item["sensitivity_target"]:.0f}%',
-                    tip=f'Checks that {item["label"]} tests catch enough of the code faults they actually execute.',
                 )
                 + "</div></div>"
             )
         sections.append(
-            f'<div class="signal-group mutation-group"><div class="signal-group-head"><strong>Mutation checks {help_tip("Checks whether tests execute generated code faults and catch the ones they execute.", focusable=False)}</strong></div>'
+            '<div class="signal-group mutation-group"><div class="signal-group-head"><strong>Mutation checks</strong></div>'
             f'<div class="mutation-grid">{"".join(cards)}</div></div>'
         )
     fault_profile_url = PROFILE_URL.split("#", 1)[0] + "#fault-applicability"
@@ -710,7 +712,7 @@ def fault_inspector(state: dict) -> str:
         links.insert(2, f'<a href="{esc(MUTATION_URL)}">Mutation analysis ↗</a>')
     return (
         '<div class="inspector-head">'
-        f'<div><span class="eyebrow">Selected fault group {help_tip("Shows whether tests actively trigger and catch the required failures in this group.")}</span><h3>{esc(state["label"])}</h3></div>'
+        f'<div><span class="eyebrow">Selected fault group</span><h3>{esc(state["label"])}</h3></div>'
         f'<span class="status big {status_class(state["status"])}">{esc(status_label(state["status"]))}</span></div>'
         f'<div class="signal-grid fault-signals">{"".join(sections)}</div>'
         f'<div class="drilldowns">{"".join(links)}</div>'
@@ -839,18 +841,12 @@ def render_current() -> None:
         for boundary, _ in BOUNDARIES:
             state = cells.get(f"{level}|{boundary}")
             if not state:
-                na_tip = help_tip(f"No proof is required on this Test level × Boundary path for this {contract_noun}.", focusable=False)
-                row.append(f'<td><div class="matrix-cell na" aria-disabled="true"><span>N/A {na_tip}</span></div></td>')
+                row.append('<td><div class="matrix-cell na" aria-disabled="true"><span>N/A</span></div></td>')
             else:
-                cell_tip = help_tip(
-                    "Checks this Test level × Boundary path against its declared criteria and retained evidence. "
-                    + state["boundary_summary"],
-                    focusable=False,
-                )
                 row.append(
                     '<td>'
                     f'<button class="matrix-cell {status_class(state["overall"])}" type="button" data-cell="{esc(state["key"])}">'
-                    f'<span class="cell-status status {status_class(state["overall"])}">{esc(status_label(state["overall"]))} {cell_tip}</span>'
+                    f'<span class="cell-status status {status_class(state["overall"])}">{esc(status_label(state["overall"]))}</span>'
                     '<span class="cell-values">'
                     f'<span><small>Passing</small><strong>{state["semantic_actual"]}</strong></span>'
                     f'<span><small>Required</small><strong>{state["required_count"]}</strong></span>'
@@ -860,11 +856,11 @@ def render_current() -> None:
 
     fault_tiles = []
     for key, state in faults.items():
+        group_help = FAULT_GROUP_HELP[state["label"]]
         if state["status"] == "N/A":
-            tip = f"No failure modes from this group are required for this {contract_noun}."
             fault_tiles.append(
                 '<div class="fault-tile na" aria-disabled="true">'
-                f'<div class="tile-head"><strong>{esc(state["label"])} {help_tip(tip, focusable=False)}</strong><span class="status na">N/A</span></div>'
+                f'<div class="tile-head"><strong>{esc(state["label"])} {help_tip(group_help, focusable=False)}</strong><span class="status na">N/A</span></div>'
                 '<div class="na-center">N/A</div></div>'
             )
             continue
@@ -884,16 +880,12 @@ def render_current() -> None:
                     f'≥{component_sensitivity["sensitivity_target"]:.0f}%'
                 )
                 secondary_status = component_sensitivity["sensitivity_status"]
-        tip = "Checks that this fault group is exercised, detected, and mutation-tested where required."
-        classes_tip = help_tip("Checks how many required failure modes are actually triggered by tests.", focusable=False)
-        secondary_tip_text = "Checks that Component tests catch enough of the code faults they execute." if secondary_label == "C sensitivity" else "Checks that triggered failure modes are actually caught by the test oracle."
-        secondary_tip = help_tip(secondary_tip_text, focusable=False)
         fault_tiles.append(
             f'<button class="fault-tile {status_class(state["status"])}" type="button" data-fault="{key}">'
-            f'<div class="tile-head"><strong>{esc(state["label"])} {help_tip(tip, focusable=False)}</strong><span class="status {status_class(state["status"])}">{esc(status_label(state["status"]))}</span></div>'
+            f'<div class="tile-head"><strong>{esc(state["label"])} {help_tip(group_help, focusable=False)}</strong><span class="status {status_class(state["status"])}">{esc(status_label(state["status"]))}</span></div>'
             '<div class="tile-metrics">'
-            f'<div><span>Classes {classes_tip}</span><strong>{state["exercised"]}</strong><i>/ {state["required"]}</i></div>'
-            f'<div class="{status_class(secondary_status)}"><span>{esc(secondary_label)} {secondary_tip}</span><strong>{esc(secondary_actual)}</strong><i>{esc(secondary_target)}</i></div>'
+            f'<div><span>Classes</span><strong>{state["exercised"]}</strong><i>/ {state["required"]}</i></div>'
+            f'<div class="{status_class(secondary_status)}"><span>{esc(secondary_label)}</span><strong>{esc(secondary_actual)}</strong><i>{esc(secondary_target)}</i></div>'
             '</div></button>'
         )
 
@@ -908,28 +900,16 @@ def render_current() -> None:
     )
     fault_layout_class = "fault-layout" if default_fault is not None else "fault-layout no-inspector"
 
-    overall_help_text = (
-        "Combines verification, fault-model, and required Technical requirement checks into one contract status."
-        if technical_support_rows
-        else "Combines the required verification and fault-model checks into one contract status."
-    )
-    overall_help = help_tip(overall_help_text)
-    coverage_help = help_tip("Checks that every required verification path has the right evidence and trustworthy path properties.", focusable=False)
-    fault_domain_help = help_tip("Checks that required failure modes are deliberately triggered and caught, with mutation checks where required.", focusable=False)
-    matrix_help = help_tip("Shows where proof is required across Test level × Boundary; click a required cell to inspect its evidence.")
-    fault_help = help_tip(f"Shows whether tests actively exercise and catch the required failure modes for this {contract_noun}.")
-    history_help = help_tip(f"Shows whether this {contract_noun}'s assurance status changed across retained runs.")
-
     contract_key = CONTRACT_ID.lower()
     coverage_card = (
         f'<a class="domain" href="#ce-coverage-{contract_key}">'
-        f"<strong>Verification coverage {coverage_help}</strong>"
+        "<strong>Verification coverage</strong>"
         f'<span class="status {status_class(cell_domain)}">{esc(status_label(cell_domain))}</span>'
         f'<span class="domain-meta">{esc(domain_meta(cell_statuses))}</span></a>'
     )
     fault_card = (
         f'<a class="domain" href="#ce-faults-{contract_key}">'
-        f"<strong>Fault model {fault_domain_help}</strong>"
+        "<strong>Fault model</strong>"
         f'<span class="status {status_class(fault_domain)}">{esc(status_label(fault_domain))}</span>'
         f'<span class="domain-meta">{esc(domain_meta(fault_statuses))}</span></a>'
     )
@@ -938,13 +918,9 @@ def render_current() -> None:
     technical_support_card = ""
     if technical_support_rows:
         domain_strip_class += " with-support"
-        technical_support_help = help_tip(
-            "Checks that every required child Technical requirement is independently proven.",
-            focusable=False,
-        )
         technical_support_card = (
             f'<a class="domain" href="#ce-technical-support-{contract_key}">'
-            f"<strong>Technical support {technical_support_help}</strong>"
+            "<strong>Technical support</strong>"
             f'<span class="status {status_class(technical_support_status)}">'
             f"{esc(status_label(technical_support_status))}</span>"
             f'<span class="domain-meta">{sum(row["status"] == "MET" for row in technical_support_rows)} '
@@ -967,7 +943,7 @@ def render_current() -> None:
             )
         technical_support_section = (
             f'<section class="section" id="ce-technical-support-{contract_key}">'
-            f'<div class="section-head"><h3>Technical support {help_tip("Shows the independently proven child Technical requirements required by this Requirement.")}</h3>'
+            '<div class="section-head"><h3>Technical support</h3>'
             f'<div class="section-links"><a class="section-link" href="{esc(PROFILE_URL)}">Profile ↗</a>'
             '<a class="section-link" href="requirement-monitor-facts.json">Raw ↗</a></div></div>'
             '<div class="panel technical-support-panel"><div class="signal-grid">'
@@ -975,11 +951,11 @@ def render_current() -> None:
         )
 
     monitor = f"""<div id="tf-requirement-monitor">
-<header class="verdict"><div class="verdict-main"><div><div class="kicker">Verification status {overall_help}</div><h2>{esc(CONTRACT_ID)}</h2></div><div class="overall {status_class(overall)}">{esc(status_label(overall))}</div></div><div class="{domain_strip_class}">{coverage_card}{fault_card}{technical_support_card}</div></header>
-<section class="section" id="ce-coverage-{contract_key}"><div class="section-head"><h3>Verification matrix {matrix_help}</h3><div class="section-links"><a class="section-link" href="{esc(CONTRACT_URL)}">{esc(contract_noun)} ↗</a><a class="section-link" href="{esc(PROFILE_URL)}">Profile ↗</a><a class="section-link" href="requirement-monitor-facts.json">Raw ↗</a></div></div><div class="dashboard-layout"><div class="panel matrix-wrap"><table><thead><tr><th>Test level</th>{''.join(f'<th>{esc(label)}</th>' for _, label in BOUNDARIES)}</tr></thead><tbody>{''.join(matrix_rows)}</tbody></table></div><aside class="inspector" id="cell-inspector">{cell_inspectors[default_cell]}</aside></div></section>
-<section class="section" id="ce-faults-{contract_key}"><div class="section-head"><h3>Fault model {fault_help}</h3><div class="section-links"><a class="section-link" href="{esc(PROFILE_URL)}">Profile ↗</a><a class="section-link" href="test-plan.html#test-plan-fault-model">Model ↗</a><a class="section-link" href="requirement-monitor-facts.json">Raw ↗</a></div></div><div class="{fault_layout_class}"><div class="fault-grid">{''.join(fault_tiles)}</div>{fault_inspector_markup}</div></section>
+<header class="verdict"><div class="verdict-main"><div><div class="kicker">Verification status</div><h2>{esc(CONTRACT_ID)}</h2></div><div class="overall {status_class(overall)}">{esc(status_label(overall))}</div></div><div class="{domain_strip_class}">{coverage_card}{fault_card}{technical_support_card}</div></header>
+<section class="section" id="ce-coverage-{contract_key}"><div class="section-head"><h3>Verification matrix</h3><div class="section-links"><a class="section-link" href="{esc(CONTRACT_URL)}">{esc(contract_noun)} ↗</a><a class="section-link" href="{esc(PROFILE_URL)}">Profile ↗</a><a class="section-link" href="requirement-monitor-facts.json">Raw ↗</a></div></div><div class="dashboard-layout"><div class="panel matrix-wrap"><table><thead><tr><th>Test level</th>{''.join(f'<th>{esc(label)}</th>' for _, label in BOUNDARIES)}</tr></thead><tbody>{''.join(matrix_rows)}</tbody></table></div><aside class="inspector" id="cell-inspector">{cell_inspectors[default_cell]}</aside></div></section>
+<section class="section" id="ce-faults-{contract_key}"><div class="section-head"><h3>Fault model</h3><div class="section-links"><a class="section-link" href="{esc(PROFILE_URL)}">Profile ↗</a><a class="section-link" href="test-plan.html#test-plan-fault-model">Model ↗</a><a class="section-link" href="requirement-monitor-facts.json">Raw ↗</a></div></div><div class="{fault_layout_class}"><div class="fault-grid">{''.join(fault_tiles)}</div>{fault_inspector_markup}</div></section>
 {technical_support_section}
-<section class="section" id="ce-history-{contract_key}"><div class="section-head"><h3>History {history_help}</h3><a class="section-link" href="assurance-snapshots.json">History ↗</a></div><div class="panel history"><strong>Current</strong><div class="history-line"><i class="history-point {status_class(overall)}"></i></div><span class="status {status_class(overall)}">{esc(status_label(overall))}</span></div></section>
+<section class="section" id="ce-history-{contract_key}"><div class="section-head"><h3>History</h3><a class="section-link" href="assurance-snapshots.json">History ↗</a></div><div class="panel history"><strong>Current</strong><div class="history-line"><i class="history-point {status_class(overall)}"></i></div><span class="status {status_class(overall)}">{esc(status_label(overall))}</span></div></section>
 </div>"""
 
     style = """<style id="tf-requirement-monitor-style">

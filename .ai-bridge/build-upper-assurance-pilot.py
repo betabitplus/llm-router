@@ -706,7 +706,7 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
     bdd_link = f'<a href="{esc(bdd_url)}">BDD evidence ↗</a>' if bdd_url else ""
     execution = (
         f'<div class="signal-card {reqmon.status_class(execution_status)}-signal">'
-        f'<div class="signal-head"><strong>Execution {reqmon.help_tip("Checks that the required scenario actually ran and passed.", focusable=False)}</strong>'
+        '<div class="signal-head"><strong>Execution</strong>'
         f'<span class="status {reqmon.status_class(execution_status)}">{esc(reqmon.status_label(execution_status))}</span></div>'
         '<div class="metric-values">'
         f"<div><span>Actual</span><strong>{criterion['passed_executions']} / {criterion['actual_executions']} pass</strong></div>"
@@ -733,13 +733,13 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
     )
     return (
         '<div class="inspector-head">'
-        f'<div><span class="eyebrow">Selected assurance criterion {reqmon.help_tip("Shows the upper-level behavior being proven and the evidence gates that support it.")}</span>'
+        '<div><span class="eyebrow">Selected assurance criterion</span>'
         f"<h3>{esc(criterion['id'])}</h3></div>"
         f'<span class="status big {reqmon.status_class(criterion["status"])}">{esc(reqmon.status_label(criterion["status"]))}</span></div>'
         '<div class="signal-grid">'
-        f'<div class="signal-group primary-group"><div class="signal-group-head"><strong>Required evidence {reqmon.help_tip("Checks that the declared scenario ran enough times and passed.", focusable=False)}</strong></div>'
+        '<div class="signal-group primary-group"><div class="signal-group-head"><strong>Required evidence</strong></div>'
         f"{execution}</div>"
-        f'<div class="signal-group path-properties"><div class="signal-group-head"><strong>Evidence confidence {reqmon.help_tip("Checks that the result comes from trusted producers and is still current.", focusable=False)}</strong></div>'
+        '<div class="signal-group path-properties"><div class="signal-group-head"><strong>Evidence confidence</strong></div>'
         f'<div class="confidence-grid">{producer}{freshness}</div></div></div>'
         '<div class="drilldowns">'
         f'{bdd_link}<a href="{esc(profile_url)}">Assurance profile ↗</a>'
@@ -762,7 +762,7 @@ def direct_section(
             '<a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div></div>'
             '<div class="fault-layout no-inspector"><div class="fault-grid">'
             '<div class="fault-tile na" aria-disabled="true">'
-            f'<div class="tile-head"><strong>Target {reqmon.help_tip("No upper-level check is required here by the current Assurance Profile.", focusable=False)}</strong><span class="status na">N/A</span></div>'
+            '<div class="tile-head"><strong>Target</strong><span class="status na">N/A</span></div>'
             '<div class="na-center">N/A</div></div></div></div></section>'
         )
         return markup, {}, None
@@ -787,9 +787,9 @@ def direct_section(
             f"<strong>{esc(criterion['id'])}</strong>"
             f'<span class="status {reqmon.status_class(criterion["status"])}">{esc(reqmon.status_label(criterion["status"]))}</span></div>'
             '<div class="tile-metrics">'
-            f'<div class="{reqmon.status_class(execution_status)}"><span>Execution {reqmon.help_tip("Checks that the required scenario actually ran and passed.", focusable=False)}</span>'
+            f'<div class="{reqmon.status_class(execution_status)}"><span>Execution</span>'
             f"<strong>{criterion['passed_executions']}</strong><i>/ {criterion['required_executions']}</i></div>"
-            f'<div class="{reqmon.status_class(reqmon.combine(list(confidence_states)))}"><span>Confidence {reqmon.help_tip("Checks that the evidence comes from trusted producers and is still current.", focusable=False)}</span>'
+            f'<div class="{reqmon.status_class(reqmon.combine(list(confidence_states)))}"><span>Confidence</span>'
             f"<strong>{confidence_actual}</strong><i>/ 2</i></div>"
             "</div></button>"
         )
@@ -808,7 +808,7 @@ def direct_section(
 def history_section(section_id: str, status: str) -> str:
     return (
         f'<section class="section" id="{esc(section_id)}"><div class="section-head">'
-        f'<h3>History {reqmon.help_tip("Shows whether this assurance status changed across retained runs.")}</h3><a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div>'
+        '<h3>History</h3><a class="section-link" href="upper-assurance-facts.json">Raw ↗</a></div>'
         '<div class="panel history"><strong>Current</strong><div class="history-line">'
         f'<i class="history-point {reqmon.status_class(status)}"></i></div>'
         f'<span class="status {reqmon.status_class(status)}">{esc(reqmon.status_label(status))}</span>'
@@ -887,7 +887,7 @@ def render_page(
     monitor = (
         '<div id="tf-requirement-monitor">'
         '<header class="verdict"><div class="verdict-main"><div>'
-        f'<div class="kicker">Assurance status {reqmon.help_tip("Combines child support and any declared integration or validation checks into one status.")}</div>'
+        '<div class="kicker">Assurance status</div>'
         f"<h2>{esc(entity_id)}</h2></div>"
         f'<div class="overall {reqmon.status_class(entity["status"])}">{esc(reqmon.status_label(entity["status"]))}</div>'
         '</div><div class="domain-strip with-support">'

@@ -5574,8 +5574,7 @@ def requirement_monitor_block(monitor_json):
       '<div class="tf-p34-links"><a href="'+esc(c.contract_url)+'">Requirement ↗</a><a href="'+esc(c.target.source_url)+'">Verification profile ↗</a><a href="test-plan.html#test-plan-configuration-validation-model">Test model ↗</a><a href="requirement-monitor-facts.json">Raw facts ↗</a></div></div>';
   }
   function testCoverageHtml(c,selected){
-    const help="Shows where proof is required across Test level × Boundary. Click a required cell to compare Actual with Target.";
-    return '<section class="tf-p34-section" id="ce-coverage-'+esc(c.id.toLowerCase())+'"><div class="tf-p34-section-head"><h3><span class="tf-p34-signal-name">1. Test Coverage'+helpButton(help)+'</span></h3><small>click a required cell for Actual / Target</small></div>'+
+    return '<section class="tf-p34-section" id="ce-coverage-'+esc(c.id.toLowerCase())+'"><div class="tf-p34-section-head"><h3><span class="tf-p34-signal-name">1. Test Coverage</span></h3><small>click a required cell for Actual / Target</small></div>'+
       '<div class="tf-p34-matrix-host">'+matrixHtml(c,selected)+'</div><div class="tf-p34-cell-detail">'+coverageDetailHtml(c,selected)+'</div></section>';
   }
   function faultDetectionText(c,group,stats){
@@ -5593,7 +5592,7 @@ def requirement_monitor_block(monitor_json):
       const stats=faultGroupStats(c,group);
       const disabled=!stats.required.length;
       if(disabled){
-        return '<button type="button" class="tf-p34-fault-tab '+statusClass(stats.status)+'" disabled aria-disabled="true"><strong>'+esc(group.label)+' · N/A</strong><span>No required fault classes</span></button>';
+        return '<button type="button" class="tf-p34-fault-tab '+statusClass(stats.status)+'" disabled aria-disabled="true"><strong>'+esc(group.label)+' · N/A</strong></button>';
       }
       const coverage=stats.exercised.length+' / '+stats.required.length;
       return '<button type="button" class="tf-p34-fault-tab '+statusClass(stats.status)+(index===selected?' is-selected':'')+'" data-fault-tab="'+index+'"><strong>'+esc(group.label)+' · '+esc(statusLabel(stats.status))+'</strong><span>Coverage '+esc(coverage)+'</span><span>Detection '+esc(faultDetectionText(c,group,stats))+'</span></button>';
@@ -5614,19 +5613,17 @@ def requirement_monitor_block(monitor_json):
       return '<div class="tf-p34-fault-class"><code>'+esc(item.id)+'</code><span>'+esc(stateLabel)+'</span><span class="tf-p34-status '+statusClass(status)+'">'+esc(actualText)+'</span><span>'+action+'</span></div>';
     }).join('');
   }
-  function faultMetricHelp(label){
-    return ({
-      "Required fault classes exercised":"Checks how many required failure modes are actually triggered by tests.",
-      "Exercised classes detected":"Checks that triggered failure modes are actually caught by the test oracle.",
-      "Component Mutation Reach":"Checks that Component tests execute enough of the generated code faults.",
-      "System Mutation Reach":"Checks that System tests execute enough of the generated code faults.",
-      "Component Mutation Sensitivity":"Checks that Component tests catch enough of the code faults they actually execute.",
-      "System Mutation Sensitivity":"Checks that System tests catch enough of the code faults they actually execute.",
-      "Retained mutmut Test Strength":"Shows the retained mutation score for context; it does not control PASS or FAIL here.",
-    })[label]||"";
-  }
   function metricRow(label,actual,target,status){
-    return '<tr><th><span class="tf-p34-signal-name">'+esc(label)+helpButton(faultMetricHelp(label))+'</span></th><td>'+esc(actual)+'</td><td>'+esc(target)+'</td><td><span class="tf-p34-status '+statusClass(status)+'">'+esc(statusLabel(status))+'</span></td></tr>';
+    return '<tr><th><span class="tf-p34-signal-name">'+esc(label)+'</span></th><td>'+esc(actual)+'</td><td>'+esc(target)+'</td><td><span class="tf-p34-status '+statusClass(status)+'">'+esc(statusLabel(status))+'</span></td></tr>';
+  }
+  function faultGroupHelp(label){
+    return ({
+      "Implementation":"Checks that small code mistakes—wrong comparisons, limits, branches, returns, or exception paths—are caught.",
+      "Runtime / dependency":"Checks that dependency failures—timeouts, disconnects, unavailability, or malformed replies—cannot change the required behavior.",
+      "Interface / protocol":"Checks that wrong external calls, error statuses, or malformed payloads are caught at the boundary.",
+      "Architecture":"Checks that code cannot bypass a required layer or depend on a forbidden layer.",
+      "Specification / model":"Checks that tests catch the wrong result, a missing case, or the wrong ordering or boundary rule.",
+    })[label]||"";
   }
   function faultDetailHtml(c,index){
     const group=(c.target.fault_groups||[])[index];
@@ -5654,16 +5651,14 @@ def requirement_monitor_block(monitor_json):
         metricRow('Exercised classes detected',String(detected),String(stats.exercised.length),detected===stats.exercised.length?'MET':'NOT MET')+
         '</tbody></table>';
     }
-    const groupHelp="Requirement-selected "+group.label+" fault checks.";
-    return '<div class="tf-p34-panel"><div class="tf-p34-panel-head"><h4><span class="tf-p34-signal-name">'+esc(group.label)+helpButton(groupHelp)+'</span></h4><span class="tf-p34-status '+statusClass(stats.status)+'">'+esc(statusLabel(stats.status))+'</span></div>'+
+    return '<div class="tf-p34-panel"><div class="tf-p34-panel-head"><h4><span class="tf-p34-signal-name">'+esc(group.label)+helpButton(faultGroupHelp(group.label))+'</span></h4><span class="tf-p34-status '+statusClass(stats.status)+'">'+esc(statusLabel(stats.status))+'</span></div>'+
       metrics+'<div class="tf-p34-fault-classes">'+faultClassRows(c,group)+'</div>'+
       '<div class="tf-p34-links"><a href="'+esc(c.contract_url)+'">Requirement ↗</a><a href="'+esc(c.target.source_url)+'#fault-applicability">Verification profile ↗</a><a href="test-plan.html#test-plan-fault-model">Fault model ↗</a><a href="mutation-analysis.html#mutation-'+esc(c.id.toLowerCase())+'">Mutation Analysis ↗</a><a href="'+esc(c.fault_actual.raw_url)+'">Raw fault facts ↗</a></div></div>';
   }
   function faultHtml(c,selected){
     const requiredTotal=(c.target.fault_groups||[]).flatMap(g=>g.items||[]).filter(i=>i.state==="required").length;
     const exercisedTotal=(c.target.fault_groups||[]).flatMap(g=>g.items||[]).filter(i=>i.state==="required"&&c.fault_actual.classes[i.id]?.exercised).length;
-    const help="Requirement-selected fault checks; N/A means this group has no required fault classes for this Requirement.";
-    return '<section class="tf-p34-section" id="ce-faults-'+esc(c.id.toLowerCase())+'"><div class="tf-p34-section-head"><h3><span class="tf-p34-signal-name">2. Fault-based Testing'+helpButton(help)+'</span></h3><small>'+exercisedTotal+' of '+requiredTotal+' required classes exercised</small></div>'+
+    return '<section class="tf-p34-section" id="ce-faults-'+esc(c.id.toLowerCase())+'"><div class="tf-p34-section-head"><h3><span class="tf-p34-signal-name">2. Fault-based Testing</span></h3><small>'+exercisedTotal+' of '+requiredTotal+' required classes exercised</small></div>'+
       '<div class="tf-p34-fault-tabs-host">'+faultTabsHtml(c,selected)+'</div><div class="tf-p34-fault-detail">'+faultDetailHtml(c,selected)+'</div></section>';
   }
   function historyHtml(c){

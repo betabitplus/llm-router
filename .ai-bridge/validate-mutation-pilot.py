@@ -1078,6 +1078,12 @@ def main() -> None:
         "escapes the expected oracle",
         "verification article",
         "intended-use pedigree",
+        "Checks this Test level",
+        "Checks how many required failure modes",
+        "Checks that this fault group",
+        "Shows where proof is required across Test level",
+        "Combines verification",
+        "Combines child support",
     )
     check(
         all(
@@ -2598,12 +2604,12 @@ def main() -> None:
         check(
             '<div class="overall not-met">FAIL</div>' in page
             and re.search(
-                rf"Verification coverage .*?</strong><span class=\"status {coverage_class}\">{coverage_label}</span>",
+                rf"<strong>Verification coverage</strong><span class=\"status {coverage_class}\">{coverage_label}</span>",
                 page,
                 flags=re.DOTALL,
             )
             and re.search(
-                r"Fault model .*?</strong><span class=\"status not-met\">FAIL</span>",
+                r"<strong>Fault model</strong><span class=\"status not-met\">FAIL</span>",
                 page,
                 flags=re.DOTALL,
             )
@@ -2622,11 +2628,17 @@ def main() -> None:
         )),
         "canonical Fault model renders all project Test Model groups",
     )
+    fault_group_help = (
+        "Checks that small code mistakes—wrong comparisons, limits, branches, returns, or exception paths—are caught.",
+        "Checks that dependency failures—timeouts, disconnects, unavailability, or malformed replies—cannot change the required behavior.",
+        "Checks that wrong external calls, error statuses, or malformed payloads are caught at the boundary.",
+        "Checks that code cannot bypass a required layer or depend on a forbidden layer.",
+        "Checks that tests catch the wrong result, a missing case, or the wrong ordering or boundary rule.",
+    )
     check(
-        "No failure modes from this group are required for this Requirement."
-        in assurance_page
+        all(assurance_page.count(text) == 1 for text in fault_group_help)
         and "EXTRA" not in assurance_page,
-        "N/A fault groups use plain language and do not surface non-blocking optional evidence",
+        "each Fault model group has one distinct plain-language explanation",
     )
     check(
         all(label in assurance_page for label in (
