@@ -705,8 +705,6 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
     freshness_state = criterion["freshness"]
     producer_rows = producer_state["producers"]
     freshness_rows = freshness_state["checks"]
-    producer_actual = sum(row["status"] == "MET" for row in producer_rows)
-    freshness_actual = sum(row["status"] == "MET" for row in freshness_rows)
     scenario = next(
         (
             str(row.get("gherkin_scenario") or "").strip()
@@ -715,39 +713,71 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
         ),
         criterion["id"],
     )
-    bdd_url = living_spec_url(criterion["rows"])
-    bdd_link = f'<a href="{esc(bdd_url)}">BDD evidence ↗</a>' if bdd_url else ""
-    scenario_card = reqmon.metric(
-        "Scenario coverage",
-        f'{criterion["passed_executions"]}/{criterion["actual_executions"]} scenarios passed',
-        f'{criterion["required_executions"]} scenario required',
-        execution_status,
-        "Checks that the declared assurance scenario passes.",
+    actual_executions = int(criterion["actual_executions"])
+    required_executions = int(criterion["required_executions"])
+    passed_executions = int(criterion["passed_executions"])
+    scenario_card = reqmon.coverage_card(
+        {
+            "semantic_actual": passed_executions,
+            "failed_count": max(0, actual_executions - passed_executions),
+            "missing_count": max(0, required_executions - actual_executions),
+            "semantic_status": execution_status,
+            "required_count": required_executions,
+            "retained_count": actual_executions,
+            "required_path_count": required_executions,
+        },
+        label="Scenario coverage",
+        subject="scenarios",
+        retained_subject="scenario runs",
+        tip="Checks that the declared assurance scenario passes.",
     )
-    producer = reqmon.metric(
+    producer_actual_values = sorted(
+        {str(row.get("actual") or "UNKNOWN").upper() for row in producer_rows}
+    )
+    producer = reqmon.lane(
         "Producer qualification",
-        f"{producer_actual}/{len(producer_rows)} producers qualified",
-        f"{len(producer_rows)} producers required",
+        reqmon.PRODUCER,
+        producer_actual_values,
+        "QUALIFIED",
         producer_state["status"],
         "Checks that every evidence producer used by this proof is qualified for its role.",
+        sum(row["status"] == "MET" for row in producer_rows),
+        len(producer_rows),
+        "producers",
     )
-    freshness = reqmon.metric(
+    freshness_actual_values = sorted(
+        {
+            "CURRENT"
+            if row["status"] == "MET"
+            else ("STALE" if row["status"] == "NOT MET" else "UNKNOWN")
+            for row in freshness_rows
+        }
+    )
+    freshness = reqmon.lane(
         "Freshness",
-        f"{freshness_actual}/{len(freshness_rows)} inputs current",
-        f"{len(freshness_rows)} inputs current",
+        reqmon.FRESHNESS,
+        freshness_actual_values,
+        "CURRENT",
         freshness_state["status"],
         "Checks that the retained test source and Assurance Profile still match the current files.",
+        sum(row["status"] == "MET" for row in freshness_rows),
+        len(freshness_rows),
+        "inputs",
     )
+    bdd_url = living_spec_url(criterion["rows"])
+    bdd_link = f'<a href="{esc(bdd_url)}">BDD evidence ↗</a>' if bdd_url else ""
     return (
         '<div class="inspector-head">'
-        '<div><span class="eyebrow">Assurance scenario</span>'
+        '<div><span class="eyebrow">Selected assurance scenario</span>'
         f"<h3>{esc(scenario)}</h3></div>"
         f'<span class="status big {reqmon.status_class(criterion["status"])}">{esc(reqmon.status_label(criterion["status"]))}</span></div>'
         '<div class="signal-grid">'
         '<div class="signal-group primary-group"><div class="signal-group-head"><strong>Required evidence</strong></div>'
         f"{scenario_card}</div>"
-        '<div class="signal-group path-properties"><div class="signal-group-head"><strong>Evidence confidence</strong></div>'
-        f'<div class="confidence-grid">{producer}{freshness}</div></div></div>'
+        '<div class="signal-group path-properties"><div class="signal-group-head"><strong>Retained evidence properties</strong>'
+        f'<span class="group-scope">{actual_executions}/{required_executions} scenario runs</span></div>'
+        '<div class="confidence-subgroup"><div class="subgroup-head"><strong>Evidence confidence</strong></div>'
+        f'<div class="confidence-grid">{producer}{freshness}</div></div></div></div>'
         '<div class="drilldowns">'
         f'{bdd_link}<a href="{esc(profile_url)}">Assurance profile ↗</a>'
         '<a href="upper-assurance-facts.json">Raw facts ↗</a></div>'

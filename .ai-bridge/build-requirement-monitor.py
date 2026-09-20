@@ -449,7 +449,14 @@ def metric(label: str, actual: str, target: str, status: str, tip: str = "", rul
     )
 
 
-def coverage_card(state: dict) -> str:
+def coverage_card(
+    state: dict,
+    *,
+    label: str = "Semantic coverage",
+    subject: str = "criteria",
+    retained_subject: str = "paths",
+    tip: str = "Checks that every required behavior has the exact evidence path or paths declared by the profile.",
+) -> str:
     segments = (
         '<span class="coverage-segment pass"></span>' * state["semantic_actual"]
         + '<span class="coverage-segment fail"></span>' * state["failed_count"]
@@ -457,17 +464,17 @@ def coverage_card(state: dict) -> str:
     )
     return (
         f'<div class="signal-card coverage-card {status_class(state["semantic_status"])}-signal">'
-        f'<div class="signal-head"><strong>Semantic coverage {help_tip("Checks that every required behavior has the exact evidence path or paths declared by the profile.")}</strong>'
+        f'<div class="signal-head"><strong>{esc(label)} {help_tip(tip)}</strong>'
         f'<span class="status {status_class(state["semantic_status"])}">{esc(status_label(state["semantic_status"]))}</span></div>'
         '<div class="coverage-summary">'
-        f'<strong>{state["semantic_actual"]}<span>/</span>{state["required_count"]}</strong><small>criteria passing</small>'
+        f'<strong>{state["semantic_actual"]}<span>/</span>{state["required_count"]}</strong><small>{esc(subject)} passing</small>'
         '</div>'
         f'<div class="coverage-strip">{segments}</div>'
         '<div class="coverage-counts">'
-        f'<span class="pass">{state["semantic_actual"]} criteria pass</span>'
-        f'<span class="fail">{state["failed_count"]} criteria fail</span>'
-        f'<span class="missing">{state["missing_count"]} criteria missing</span>'
-        f'<span>{state["retained_count"]}/{state["required_path_count"]} paths retained</span>'
+        f'<span class="pass">{state["semantic_actual"]} {esc(subject)} pass</span>'
+        f'<span class="fail">{state["failed_count"]} {esc(subject)} fail</span>'
+        f'<span class="missing">{state["missing_count"]} {esc(subject)} missing</span>'
+        f'<span>{state["retained_count"]}/{state["required_path_count"]} {esc(retained_subject)} retained</span>'
         f'</div></div>'
     )
 

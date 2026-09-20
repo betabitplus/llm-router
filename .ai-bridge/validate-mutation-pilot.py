@@ -1113,13 +1113,18 @@ def main() -> None:
     check(
         "0 / 2 capabilities pass" in goal_page
         and "1 / 1 scenarios pass" in goal_page
+        and "Selected assurance scenario" in goal_page
         and "Scenario coverage" in goal_page
-        and "1/1 scenarios passed" in goal_page
-        and "5/5 producers qualified" in goal_page
-        and "2/2 inputs current" in goal_page
+        and '<div class="signal-card coverage-card met-signal">' in goal_page
+        and "<b>5/5</b><small>producers</small>" in goal_page
+        and "<b>2/2</b><small>inputs</small>" in goal_page
+        and goal_page.count('class="state-lane"') >= 4
+        and 'class="marker both">ACTUAL = TARGET' in goal_page
+        and "Retained evidence properties" in goal_page
+        and "Evidence confidence" in goal_page
         and ">Execution<" not in goal_page
         and ">Confidence<" not in goal_page,
-        "upper assurance names the counted entities instead of exposing ambiguous execution/confidence ratios",
+        "upper assurance reuses the canonical REQ coverage-card and state-lane inspector pattern",
     )
 
     check(
