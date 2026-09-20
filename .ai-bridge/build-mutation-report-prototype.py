@@ -3880,6 +3880,7 @@ def current_evidence_qualification_environment():
       "requirement_monitor_sha256":sha256_file(ROOT/".ai-bridge/build-requirement-monitor.py"),
       "upper_assurance_monitor_sha256":sha256_file(ROOT/".ai-bridge/build-upper-assurance-pilot.py"),
       "assurance_monitor_ui_sha256":sha256_file(ROOT/".ai-bridge/assurance_monitor_ui.py"),
+      "assurance_monitor_domain_sha256":sha256_file(ROOT/".ai-bridge/assurance_monitor_domain.py"),
       "qualification_harness_sha256":sha256_file(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
       "trace_bridge_sha256":sha256_file(ROOT/"tests/conftest.py"),
     }

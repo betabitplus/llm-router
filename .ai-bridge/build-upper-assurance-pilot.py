@@ -11,6 +11,7 @@ import re
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from pathlib import Path
+from typing import NamedTuple
 
 ROOT = Path(__file__).resolve().parents[1]
 PROFILE = ROOT / "docs/assurance-profiles/routing.md"
@@ -20,22 +21,15 @@ RUN_INPUTS = ROOT / "test-results/evidence-run-inputs.json"
 OUT_DIR = ROOT / "docs/_build/html"
 QUALIFICATION = OUT_DIR / "evidence-confidence-qualification.json"
 FACTS_OUT = OUT_DIR / "upper-assurance-facts.json"
-SHELL = OUT_DIR / "contract-evidence-route-sticky-start.html"
+SHELL = OUT_DIR / "verification-assurance.html"
 
-OUTPUTS = {
-    "FEAT_ROUTE_FALLBACK": OUT_DIR / "assurance-feat-route-fallback.html",
-    "FEAT_RATE_LIMIT_ROUTING": OUT_DIR / "assurance-feat-rate-limit-routing.html",
-    "GOAL_ROUTING_RELIABILITY": OUT_DIR / "assurance-goal-routing-reliability.html",
-    "PRODUCT_SYSTEM": OUT_DIR / "assurance-product-system.html",
-}
-
-REQMON_SPEC = importlib.util.spec_from_file_location(
-    "requirement_monitor", ROOT / ".ai-bridge/build-requirement-monitor.py"
+DOMAIN_SPEC = importlib.util.spec_from_file_location(
+    "assurance_monitor_domain", ROOT / ".ai-bridge/assurance_monitor_domain.py"
 )
-if REQMON_SPEC is None or REQMON_SPEC.loader is None:
-    raise RuntimeError("Could not load requirement monitor helpers")
-reqmon = importlib.util.module_from_spec(REQMON_SPEC)
-REQMON_SPEC.loader.exec_module(reqmon)
+if DOMAIN_SPEC is None or DOMAIN_SPEC.loader is None:
+    raise RuntimeError("Could not load assurance monitor domain helpers")
+domain = importlib.util.module_from_spec(DOMAIN_SPEC)
+DOMAIN_SPEC.loader.exec_module(domain)
 
 UI_SPEC = importlib.util.spec_from_file_location(
     "assurance_monitor_ui", ROOT / ".ai-bridge/assurance_monitor_ui.py"
@@ -46,6 +40,7 @@ ui = importlib.util.module_from_spec(UI_SPEC)
 UI_SPEC.loader.exec_module(ui)
 
 esc = ui.esc
+
 UPPER_HELP = {
     "requirement_support": "Checks that every Requirement needed by this capability is independently proven.",
     "capability_integration": "Checks that the Requirements inside this capability work correctly together.",
@@ -59,28 +54,64 @@ UPPER_HELP = {
 }
 
 
-SECTION_LABELS = {
-    "FEAT_ROUTE_FALLBACK": (
-        ("Requirement support", "requirement_support"),
-        ("Capability integration", "capability_integration"),
-        ("Capability validation", "capability_validation"),
+FEATURE_SECTION_LABELS = (
+    ("Requirement support", "requirement_support"),
+    ("Capability integration", "capability_integration"),
+    ("Capability validation", "capability_validation"),
+)
+GOAL_SECTION_LABELS = (
+    ("Capability support", "capability_support"),
+    ("Cross-capability integration", "cross_capability_integration"),
+    ("Outcome validation", "outcome_validation"),
+)
+PRODUCT_SECTION_LABELS = (
+    ("Goal support", "goal_support"),
+    ("Cross-goal integration", "cross_goal_integration"),
+    ("Operational validation", "operational_validation"),
+)
+
+
+class PageSpec(NamedTuple):
+    """Declarative contract for one generated upper-assurance monitor page."""
+
+    entity_id: str
+    page_title: str
+    facts_path: tuple[str, ...]
+    output: str
+    labels: tuple[tuple[str, str], ...]
+
+
+PAGE_SPECS = (
+    PageSpec(
+        entity_id="FEAT_ROUTE_FALLBACK",
+        page_title="Capability Assurance",
+        facts_path=("features", "FEAT_ROUTE_FALLBACK"),
+        output="assurance-feat-route-fallback.html",
+        labels=FEATURE_SECTION_LABELS,
     ),
-    "FEAT_RATE_LIMIT_ROUTING": (
-        ("Requirement support", "requirement_support"),
-        ("Capability integration", "capability_integration"),
-        ("Capability validation", "capability_validation"),
+    PageSpec(
+        entity_id="FEAT_RATE_LIMIT_ROUTING",
+        page_title="Capability Assurance",
+        facts_path=("features", "FEAT_RATE_LIMIT_ROUTING"),
+        output="assurance-feat-rate-limit-routing.html",
+        labels=FEATURE_SECTION_LABELS,
     ),
-    "GOAL_ROUTING_RELIABILITY": (
-        ("Capability support", "capability_support"),
-        ("Cross-capability integration", "cross_capability_integration"),
-        ("Outcome validation", "outcome_validation"),
+    PageSpec(
+        entity_id="GOAL_ROUTING_RELIABILITY",
+        page_title="Outcome Assurance",
+        facts_path=("goals", "GOAL_ROUTING_RELIABILITY"),
+        output="assurance-goal-routing-reliability.html",
+        labels=GOAL_SECTION_LABELS,
     ),
-    "PRODUCT_SYSTEM": (
-        ("Goal support", "goal_support"),
-        ("Cross-goal integration", "cross_goal_integration"),
-        ("Operational validation", "operational_validation"),
+    PageSpec(
+        entity_id="PRODUCT_SYSTEM",
+        page_title="Product / System Assurance",
+        facts_path=("product_system",),
+        output="assurance-product-system.html",
+        labels=PRODUCT_SECTION_LABELS,
     ),
-}
+)
+OUTPUTS = {spec.entity_id: OUT_DIR / spec.output for spec in PAGE_SPECS}
 
 
 def living_spec_url(rows: list[dict]) -> str | None:
@@ -137,7 +168,7 @@ def producer_gate(target: dict, qualification: dict) -> dict:
                 "status": status,
             }
         )
-    return {"status": reqmon.combine(statuses), "producers": rows}
+    return {"status": domain.combine(statuses), "producers": rows}
 
 
 def freshness_gate(rows: list[dict], run_inputs: dict) -> dict:
@@ -198,7 +229,7 @@ def freshness_gate(rows: list[dict], run_inputs: dict) -> dict:
 
     statuses = [check["status"] for check in checks]
     return {
-        "status": reqmon.combine(statuses) if statuses else "UNKNOWN",
+        "status": domain.combine(statuses) if statuses else "UNKNOWN",
         "checks": checks,
     }
 
@@ -410,7 +441,7 @@ def criterion_state(
     )
     producer_qualification = producer_gate(target, qualification)
     freshness = freshness_gate(rows, run_inputs)
-    status = reqmon.combine(
+    status = domain.combine(
         [execution_status, producer_qualification["status"], freshness["status"]]
     )
     return {
@@ -444,26 +475,8 @@ def direct_section_state(
         for target in section["criteria"]
     ]
     return {
-        "status": reqmon.combine([row["status"] for row in criteria]),
+        "status": domain.combine([row["status"] for row in criteria]),
         "criteria": criteria,
-    }
-
-
-def contract_status(contract: dict, policy: dict) -> dict:
-    coverage_states = [
-        reqmon.cell_state(contract, target)["overall"]
-        for target in contract["target"].get("coverage", [])
-    ]
-    fault_states = [
-        reqmon.fault_state(contract, group, policy)["status"]
-        for group in contract["target"].get("fault_groups", [])
-    ]
-    coverage = reqmon.combine(coverage_states)
-    fault = reqmon.combine(fault_states)
-    return {
-        "coverage": coverage,
-        "fault": fault,
-        "overall": reqmon.combine([coverage, fault]),
     }
 
 
@@ -488,7 +501,7 @@ def build_facts() -> dict:
 
     contract_direct: dict[str, dict] = {}
     for contract_id, contract in contracts.items():
-        contract_direct[contract_id] = contract_status(contract, policy)
+        contract_direct[contract_id] = domain.contract_domain_state(contract, policy)
 
     def effective_req(req_id: str) -> dict:
         direct = contract_direct.get(req_id)
@@ -506,15 +519,22 @@ def build_facts() -> dict:
             for child_id in treqs
         ]
         return {
-            "status": reqmon.combine(
+            "status": domain.combine(
                 [direct["overall"], *[row["status"] for row in treq_rows]]
             ),
             "direct": direct["overall"],
             "treqs": treq_rows,
         }
 
+    feature_ids = tuple(
+        spec.entity_id for spec in PAGE_SPECS if str(spec.entity_id).startswith("FEAT_")
+    )
+    goal_ids = tuple(
+        spec.entity_id for spec in PAGE_SPECS if str(spec.entity_id).startswith("GOAL_")
+    )
+
     features: dict[str, dict] = {}
-    for feature_id in ("FEAT_ROUTE_FALLBACK", "FEAT_RATE_LIMIT_ROUTING"):
+    for feature_id in feature_ids:
         requirement_ids = [
             child_id
             for child_id in graph[feature_id]["children"]
@@ -525,12 +545,12 @@ def build_facts() -> dict:
                 "id": req_id,
                 "title": graph[req_id]["title"],
                 "status": effective_req(req_id)["status"],
-                "url": f"contract-evidence-{reqmon.contract_slug(req_id)}.html",
+                "url": f"contract-evidence-{domain.contract_slug(req_id)}.html",
                 "technical_support": effective_req(req_id)["treqs"],
             }
             for req_id in requirement_ids
         ]
-        support = reqmon.combine([row["status"] for row in children])
+        support = domain.combine([row["status"] for row in children])
         direct_sections = {
             key: direct_section_state(
                 profile[feature_id][key],
@@ -540,7 +560,7 @@ def build_facts() -> dict:
             )
             for key in ("capability_integration", "capability_validation")
         }
-        overall = reqmon.combine(
+        overall = domain.combine(
             [support, *[section["status"] for section in direct_sections.values()]]
         )
         features[feature_id] = {
@@ -551,45 +571,50 @@ def build_facts() -> dict:
             **direct_sections,
         }
 
-    goal_id = "GOAL_ROUTING_RELIABILITY"
-    feature_rows = [
-        {
-            "id": feature_id,
-            "title": features[feature_id]["title"],
-            "status": features[feature_id]["status"],
-            "url": OUTPUTS[feature_id].name,
+    goals: dict[str, dict] = {}
+    for goal_id in goal_ids:
+        feature_rows = [
+            {
+                "id": feature_id,
+                "title": features[feature_id]["title"],
+                "status": features[feature_id]["status"],
+                "url": OUTPUTS[feature_id].name,
+            }
+            for feature_id in graph[goal_id]["children"]
+            if feature_id in features
+        ]
+        capability_support = domain.combine([row["status"] for row in feature_rows])
+        goal_direct = {
+            key: direct_section_state(
+                profile[goal_id][key],
+                actual,
+                run_inputs=run_inputs,
+                qualification=qualification,
+            )
+            for key in ("cross_capability_integration", "outcome_validation")
         }
-        for feature_id in graph[goal_id]["children"]
-        if feature_id in features
-    ]
-    capability_support = reqmon.combine([row["status"] for row in feature_rows])
-    goal_direct = {
-        key: direct_section_state(
-            profile[goal_id][key],
-            actual,
-            run_inputs=run_inputs,
-            qualification=qualification,
+        goal = {
+            "id": goal_id,
+            "title": graph[goal_id]["title"],
+            "capability_support": {
+                "status": capability_support,
+                "children": feature_rows,
+            },
+            **goal_direct,
+        }
+        goal["status"] = domain.combine(
+            [capability_support, *[value["status"] for value in goal_direct.values()]]
         )
-        for key in ("cross_capability_integration", "outcome_validation")
-    }
-    goal = {
-        "id": goal_id,
-        "title": graph[goal_id]["title"],
-        "capability_support": {"status": capability_support, "children": feature_rows},
-        **goal_direct,
-    }
-    goal["status"] = reqmon.combine(
-        [capability_support, *[value["status"] for value in goal_direct.values()]]
-    )
+        goals[goal_id] = goal
 
     all_goal_ids = sorted(
         node_id for node_id, node in graph.items() if node.get("type") == "goal"
     )
     goal_rows = []
     for current_id in all_goal_ids:
-        if current_id == goal_id:
-            status = goal["status"]
-            url = OUTPUTS[goal_id].name
+        if current_id in goals:
+            status = goals[current_id]["status"]
+            url = OUTPUTS[current_id].name
         else:
             status = "UNKNOWN"
             url = graph[current_id]["url"]
@@ -601,7 +626,7 @@ def build_facts() -> dict:
                 "url": url,
             }
         )
-    goal_support = reqmon.combine([row["status"] for row in goal_rows])
+    goal_support = domain.combine([row["status"] for row in goal_rows])
     system_direct = {
         key: direct_section_state(
             profile["PRODUCT_SYSTEM"][key],
@@ -617,7 +642,7 @@ def build_facts() -> dict:
         "goal_support": {"status": goal_support, "children": goal_rows},
         **system_direct,
     }
-    system["status"] = reqmon.combine(
+    system["status"] = domain.combine(
         [goal_support, *[value["status"] for value in system_direct.values()]]
     )
 
@@ -638,7 +663,7 @@ def build_facts() -> dict:
         "declared_criteria": sorted(declared),
         "actual_criteria": sorted(actual),
         "features": features,
-        "goal": goal,
+        "goals": goals,
         "product_system": system,
     }
 
@@ -743,7 +768,7 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
     )
     producer = ui.lane(
         f"Producer qualification · {len(producer_rows)} producers",
-        ui.PRODUCER,
+        domain.PRODUCER,
         producer_actual_values,
         "QUALIFIED",
         producer_state["status"],
@@ -762,7 +787,7 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
     )
     freshness = ui.lane(
         "Freshness",
-        ui.FRESHNESS,
+        domain.FRESHNESS,
         freshness_actual_values,
         "CURRENT",
         freshness_state["status"],
@@ -781,18 +806,15 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
             ("Raw facts ↗", "upper-assurance-facts.json"),
         )
     )
-    signals = (
-        ui.signal_group(
-            title="Required evidence",
-            body=scenario_card,
-            class_name="primary-group",
-        )
-        + ui.signal_group(
-            title="Retained path properties",
-            body=ui.confidence_subgroup(producer + freshness),
-            class_name="path-properties",
-            scope=f"{actual_executions}/{required_executions} paths",
-        )
+    signals = ui.signal_group(
+        title="Required evidence",
+        body=scenario_card,
+        class_name="primary-group",
+    ) + ui.signal_group(
+        title="Retained path properties",
+        body=ui.confidence_subgroup(producer + freshness),
+        class_name="path-properties",
+        scope=f"{actual_executions}/{required_executions} paths",
     )
     return (
         ui.inspector_head(
@@ -846,17 +868,28 @@ def direct_section(
             criterion["id"],
         )
         tiles.append(
-            f'<button class="fault-tile {ui.status_class(criterion["status"])}" '
-            f'type="button" data-upper="{esc(criterion["id"])}" data-upper-inspector="upper-inspector-{esc(section_id)}">'
-            '<div class="tile-head">'
-            f"<strong>{esc(scenario)}</strong>"
-            f'<span class="status {ui.status_class(criterion["status"])}">{esc(ui.status_label(criterion["status"]))}</span></div>'
-            '<div class="tile-metrics">'
-            f'<div class="{ui.status_class(execution_status)}"><span>Scenarios</span>'
-            f"<strong>{criterion['passed_executions']}</strong><i>/ {criterion['required_executions']}</i></div>"
-            f'<div class="{ui.status_class(criterion["producer_qualification"]["status"])}"><span>Producers</span>'
-            f"<strong>{producer_actual}</strong><i>/ {len(producer_rows)}</i></div>"
-            "</div></button>"
+            ui.metric_tile(
+                title=scenario,
+                status=criterion["status"],
+                data_attrs=(
+                    ("upper", criterion["id"]),
+                    ("upper-inspector", f"upper-inspector-{section_id}"),
+                ),
+                metrics=(
+                    (
+                        "Scenarios",
+                        str(criterion["passed_executions"]),
+                        f"/ {criterion['required_executions']}",
+                        execution_status,
+                    ),
+                    (
+                        "Producers",
+                        str(producer_actual),
+                        f"/ {len(producer_rows)}",
+                        criterion["producer_qualification"]["status"],
+                    ),
+                ),
+            )
         )
     markup = (
         f'<section class="section" id="{esc(section_id)}">'
@@ -874,7 +907,6 @@ def direct_section(
     return markup, inspectors, default
 
 
-
 def render_page(
     *,
     page_title: str,
@@ -884,20 +916,6 @@ def render_page(
     profile_url: str,
     output: Path,
 ) -> None:
-    source = SHELL.read_text()
-    source = re.sub(
-        r'<style id="tf-requirement-monitor-style">.*?</style>',
-        "",
-        source,
-        flags=re.DOTALL,
-    )
-    source = re.sub(
-        r'<script id="tf-requirement-monitor-script">.*?</script>',
-        "",
-        source,
-        flags=re.DOTALL,
-    )
-
     section_ids = {
         key: f"ua-{entity_id.lower().replace('_', '-')}-{key.replace('_', '-')}"
         for _, key in labels
@@ -953,28 +971,13 @@ def render_page(
         + "".join(sections)
         + "</div>"
     )
-    article = (
-        f'<section id="assurance-{esc(entity_id.lower())}"><h1>{esc(page_title)}'
-        f'<a class="headerlink" href="#assurance-{esc(entity_id.lower())}" title="Link to this heading">#</a></h1>'
-        f"{monitor}</section>"
-    )
-    source, count = re.subn(
-        r'(<article class="bd-article">).*?(</article>)',
-        lambda match: match.group(1) + article + match.group(2),
-        source,
-        count=1,
-        flags=re.DOTALL,
-    )
-    if count != 1:
-        raise RuntimeError("Could not replace upper-assurance article body")
-
-    source = source.replace("</head>", ui.MONITOR_STYLE + "\n</head>", 1)
-
     default_js = "".join(
         f"selectUpper(document.querySelector('[data-upper=\\\"{criterion}\\\"]'));"
         for _, criterion in upper_defaults
     )
-    setup_js = f"const upperInspectors={json.dumps(upper_inspectors, ensure_ascii=False)};"
+    setup_js = (
+        f"const upperInspectors={json.dumps(upper_inspectors, ensure_ascii=False)};"
+    )
     bind_js = (
         "function selectUpper(button){if(!button)return;const key=button.dataset.upper;"
         "const inspectorId=button.dataset.upperInspector;const value=upperInspectors[key];"
@@ -989,39 +992,16 @@ def render_page(
         nav_selector='a[href^="#ua-"]',
         init_js=default_js,
     )
-    source = source.replace("</body>", script + "\n</body>", 1)
-
-    source = source.replace(
-        '<span class="ellipsis">Contract Evidence</span>',
-        f'<span class="ellipsis">{esc(page_title)}</span>',
+    toc_items = [(label, f"#{section_ids[key]}") for label, key in labels]
+    toc_items.append(("History", f"#{history_id}"))
+    source = ui.render_monitor_shell(
+        SHELL.read_text(),
+        page_title=page_title,
+        assurance_id=entity_id.lower(),
+        monitor=monitor,
+        script=script,
+        toc_items=tuple(toc_items),
     )
-    source = re.sub(
-        r"<title>.*?— llm-router documentation</title>",
-        f"<title>{esc(page_title)} — llm-router documentation</title>",
-        source,
-        count=1,
-    )
-    toc = "".join(
-        f'<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#{esc(section_ids[key])}">{esc(label)}</a></li>'
-        for label, key in labels
-    ) + (
-        f'<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#{esc(history_id)}">History</a></li>'
-    )
-    secondary = (
-        '<div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">'
-        '<div class="sidebar-secondary-item"><div class="tocsection onthispage"><i class="fa-solid fa-list"></i> On this page</div>'
-        '<nav class="bd-toc-nav page-toc"><ul class="visible nav section-nav flex-column">'
-        f"{toc}</ul></nav></div></div></div>"
-    )
-    source, sidebar_count = re.subn(
-        r'<div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc">.*?</div></div>\s*</div>\s*<footer class="bd-footer-content">',
-        secondary + '\n</div>\n<footer class="bd-footer-content">',
-        source,
-        count=1,
-        flags=re.DOTALL,
-    )
-    if sidebar_count != 1:
-        raise RuntimeError("Could not replace canonical secondary sidebar")
     output.write_text(source)
 
 
@@ -1030,38 +1010,18 @@ def build() -> None:
     FACTS_OUT.write_text(json.dumps(facts, indent=2, sort_keys=True) + "\n")
     profile_url = "assurance-profiles/routing.html"
 
-    render_page(
-        page_title="Capability Assurance",
-        entity_id="FEAT_ROUTE_FALLBACK",
-        entity=facts["features"]["FEAT_ROUTE_FALLBACK"],
-        labels=SECTION_LABELS["FEAT_ROUTE_FALLBACK"],
-        profile_url=profile_url,
-        output=OUTPUTS["FEAT_ROUTE_FALLBACK"],
-    )
-    render_page(
-        page_title="Capability Assurance",
-        entity_id="FEAT_RATE_LIMIT_ROUTING",
-        entity=facts["features"]["FEAT_RATE_LIMIT_ROUTING"],
-        labels=SECTION_LABELS["FEAT_RATE_LIMIT_ROUTING"],
-        profile_url=profile_url,
-        output=OUTPUTS["FEAT_RATE_LIMIT_ROUTING"],
-    )
-    render_page(
-        page_title="Outcome Assurance",
-        entity_id="GOAL_ROUTING_RELIABILITY",
-        entity=facts["goal"],
-        labels=SECTION_LABELS["GOAL_ROUTING_RELIABILITY"],
-        profile_url=profile_url,
-        output=OUTPUTS["GOAL_ROUTING_RELIABILITY"],
-    )
-    render_page(
-        page_title="Product / System Assurance",
-        entity_id="PRODUCT_SYSTEM",
-        entity=facts["product_system"],
-        labels=SECTION_LABELS["PRODUCT_SYSTEM"],
-        profile_url=profile_url,
-        output=OUTPUTS["PRODUCT_SYSTEM"],
-    )
+    for spec in PAGE_SPECS:
+        entity = facts
+        for key in spec.facts_path:
+            entity = entity[key]
+        render_page(
+            page_title=spec.page_title,
+            entity_id=spec.entity_id,
+            entity=entity,
+            labels=spec.labels,
+            profile_url=profile_url,
+            output=OUTPUTS[spec.entity_id],
+        )
 
     for output in OUTPUTS.values():
         print(output)

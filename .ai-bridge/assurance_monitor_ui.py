@@ -1,13 +1,11 @@
 """Shared Contract Evidence / Assurance monitor presentation system."""
 
-# ruff: noqa: D103, E501, FBT001, PLR0913, PLR0917
+# ruff: noqa: D103, E501, EM101, FBT001, PLR0913, PLR0917, TRY003
 
 from __future__ import annotations
 
 import html
-
-PRODUCER = ["QUALIFIED", "NOT QUALIFIED", "UNKNOWN"]
-FRESHNESS = ["CURRENT", "STALE", "UNKNOWN"]
+import re
 
 
 def esc(value: object) -> str:
@@ -235,7 +233,7 @@ def signal_group(
 def confidence_subgroup(body: str) -> str:
     return (
         '<div class="confidence-subgroup"><div class="subgroup-head">'
-        '<strong>Evidence confidence</strong></div>'
+        "<strong>Evidence confidence</strong></div>"
         f'<div class="confidence-grid">{body}</div></div>'
     )
 
@@ -263,12 +261,37 @@ def section_head(*, title: str, links: tuple[tuple[str, str], ...]) -> str:
     )
 
 
-def na_fault_tile(label: str = "Target") -> str:
+def na_fault_tile(label: str = "Target", *, help_text: str | None = None) -> str:
+    help_html = f" {help_tip(help_text, focusable=False)}" if help_text else ""
     return (
         '<div class="fault-tile na" aria-disabled="true">'
-        f'<div class="tile-head"><strong>{esc(label)}</strong>'
+        f'<div class="tile-head"><strong>{esc(label)}{help_html}</strong>'
         '<span class="status na">N/A</span></div>'
         '<div class="na-center">N/A</div></div>'
+    )
+
+
+def metric_tile(
+    *,
+    title: str,
+    status: str,
+    data_attrs: tuple[tuple[str, str], ...],
+    metrics: tuple[tuple[str, str, str, str | None], ...],
+    help_text: str | None = None,
+) -> str:
+    attrs = "".join(f' data-{esc(name)}="{esc(value)}"' for name, value in data_attrs)
+    help_html = f" {help_tip(help_text, focusable=False)}" if help_text else ""
+    metric_html = "".join(
+        (f'<div class="{status_class(metric_status)}">' if metric_status else "<div>")
+        + f"<span>{esc(label)}</span><strong>{esc(actual)}</strong>"
+        + f"<i>{esc(target)}</i></div>"
+        for label, actual, target, metric_status in metrics
+    )
+    return (
+        f'<button class="fault-tile {status_class(status)}" type="button"{attrs}>'
+        f'<div class="tile-head"><strong>{esc(title)}{help_html}</strong>'
+        f'<span class="status {status_class(status)}">{esc(status_label(status))}</span></div>'
+        f'<div class="tile-metrics">{metric_html}</div></button>'
     )
 
 
@@ -293,6 +316,98 @@ def support_panel(cards: str) -> str:
         '<div class="panel technical-support-panel"><div class="signal-grid">'
         f"{cards}</div></div>"
     )
+
+
+def render_monitor_shell(
+    source: str,
+    *,
+    page_title: str,
+    assurance_id: str,
+    monitor: str,
+    script: str,
+    toc_items: tuple[tuple[str, str], ...],
+) -> str:
+    source = re.sub(
+        r"<!-- TERNFORGE-P34-REQUIREMENT-MONITOR-START -->.*?<!-- TERNFORGE-P34-REQUIREMENT-MONITOR-END -->",
+        "",
+        source,
+        flags=re.DOTALL,
+    )
+    source = re.sub(
+        r'<style id="tf-requirement-monitor-style">.*?</style>',
+        "",
+        source,
+        flags=re.DOTALL,
+    )
+    source = re.sub(
+        r'<script id="tf-requirement-monitor-script">.*?</script>',
+        "",
+        source,
+        flags=re.DOTALL,
+    )
+    article = (
+        f'<section id="assurance-{esc(assurance_id)}">'
+        f"<h1>{esc(page_title)}"
+        f'<a class="headerlink" href="#assurance-{esc(assurance_id)}" '
+        f'title="Link to this heading">#</a></h1>{monitor}</section>'
+    )
+    source, article_count = re.subn(
+        r'(<article class="bd-article">).*?(</article>)',
+        lambda match: match.group(1) + article + match.group(2),
+        source,
+        count=1,
+        flags=re.DOTALL,
+    )
+    if article_count != 1:
+        raise RuntimeError("Could not replace assurance monitor article body")
+
+    source = source.replace("</head>", MONITOR_STYLE + "\n</head>", 1)
+    source = source.replace("</body>", script + "\n</body>", 1)
+
+    source, breadcrumb_count = re.subn(
+        r'(<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">).*?(</span></li>)',
+        lambda match: match.group(1) + esc(page_title) + match.group(2),
+        source,
+        count=1,
+        flags=re.DOTALL,
+    )
+    if breadcrumb_count != 1:
+        raise RuntimeError("Could not replace assurance monitor breadcrumb")
+
+    source, title_count = re.subn(
+        r"(<title>).*?(?= (?:&#8212;|—) llm-router)",
+        lambda match: match.group(1) + esc(page_title),
+        source,
+        count=1,
+        flags=re.DOTALL,
+    )
+    if title_count != 1:
+        raise RuntimeError("Could not replace assurance monitor document title")
+
+    toc = "".join(
+        f'<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" '
+        f'href="{esc(href)}">{esc(label)}</a></li>'
+        for label, href in toc_items
+    )
+    secondary = (
+        '<div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc">'
+        '<div class="sidebar-secondary-items sidebar-secondary__inner">'
+        '<div class="sidebar-secondary-item"><div class="tocsection onthispage">'
+        '<i class="fa-solid fa-list"></i> On this page</div>'
+        '<nav class="bd-toc-nav page-toc">'
+        '<ul class="visible nav section-nav flex-column">'
+        f"{toc}</ul></nav></div></div></div>"
+    )
+    source, sidebar_count = re.subn(
+        r'<div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc">.*?</div></div>\s*</div>\s*<footer class="bd-footer-content">',
+        secondary + '\n</div>\n<footer class="bd-footer-content">',
+        source,
+        count=1,
+        flags=re.DOTALL,
+    )
+    if sidebar_count != 1:
+        raise RuntimeError("Could not replace assurance monitor secondary sidebar")
+    return source
 
 
 def monitor_script(

@@ -972,6 +972,7 @@ def main() -> None:
     timeout_route_page = (HTML / "contract-evidence-route-timeout-fallback.html").read_text()
     attempt_limit_page = (HTML / "contract-evidence-route-attempt-limit.html").read_text()
     sticky_route_page = (HTML / "contract-evidence-route-sticky-start.html").read_text()
+    route_order_page = (HTML / "contract-evidence-route-order.html").read_text()
     rate_limit_page = (HTML / "contract-evidence-rate-limit-routing.html").read_text()
     provider_retry_page = (HTML / "contract-evidence-provider-retry.html").read_text()
     structured_repair_page = (HTML / "contract-evidence-structured-output-repair.html").read_text()
@@ -1012,10 +1013,37 @@ def main() -> None:
         "canonical REQ Contract Evidence page exposes the shared monitor style",
     )
     canonical_style_text = canonical_monitor_style.group(1) if canonical_monitor_style else ""
+    domain_source = (BRIDGE / "assurance_monitor_domain.py").read_text()
     ui_source = (BRIDGE / "assurance_monitor_ui.py").read_text()
     requirement_renderer_source = (BRIDGE / "build-requirement-monitor.py").read_text()
     upper_renderer_source = (BRIDGE / "build-upper-assurance-pilot.py").read_text()
     assurance_adapter_source = (BRIDGE / "build-mutation-report-prototype.py").read_text()
+    check(
+        all(
+            token in domain_source
+            for token in (
+                "def combine(",
+                "def cell_state(",
+                "def fault_state(",
+                "def contract_domain_state(",
+                "def contract_slug(",
+                "PRODUCER =",
+                "FRESHNESS =",
+                "REPRESENTATION =",
+                "PROVENANCE =",
+                "MS_LEVELS =",
+            )
+        ),
+        "shared assurance domain owns status algebra, vocabularies, and contract-state projection",
+    )
+    check(
+        "PRODUCER =" not in ui_source
+        and "FRESHNESS =" not in ui_source
+        and "REPRESENTATION =" not in ui_source
+        and "PROVENANCE =" not in ui_source
+        and "MS_LEVELS =" not in ui_source,
+        "shared monitor UI is presentation-only and does not own assurance semantics",
+    )
     check(
         "MONITOR_STYLE =" in ui_source
         and "function syncSticky" in ui_source
@@ -1031,7 +1059,9 @@ def main() -> None:
         and "def drilldowns(" in ui_source
         and "def section_head(" in ui_source
         and "def verdict_header(" in ui_source
-        and "def support_panel(" in ui_source,
+        and "def support_panel(" in ui_source
+        and "def metric_tile(" in ui_source
+        and "def render_monitor_shell(" in ui_source,
         "shared assurance monitor UI owns canonical CSS, behavior, and reusable components",
     )
     check(
@@ -1050,10 +1080,14 @@ def main() -> None:
                 'class="section-head"',
                 'class="verdict"',
                 "technical-support-panel",
+                "pst-secondary-sidebar",
+                "breadcrumb-item active",
+                '<article class="bd-article">',
+                "tf-requirement-monitor-style",
             )
         )
-        and "ui.MONITOR_STYLE" in requirement_renderer_source
-        and "ui.MONITOR_STYLE" in upper_renderer_source
+        and "ui.render_monitor_shell(" in requirement_renderer_source
+        and "ui.render_monitor_shell(" in upper_renderer_source
         and "ui.monitor_script(" in requirement_renderer_source
         and "ui.monitor_script(" in upper_renderer_source
         and "ui.inspector_head(" in requirement_renderer_source
@@ -1061,8 +1095,33 @@ def main() -> None:
         and "ui.section_head(" in requirement_renderer_source
         and "ui.section_head(" in upper_renderer_source
         and "ui.verdict_header(" in requirement_renderer_source
-        and "ui.verdict_header(" in upper_renderer_source,
-        "REQ/TREQ and upper renderers consume one shared monitor design system",
+        and "ui.verdict_header(" in upper_renderer_source
+        and "ui.metric_tile(" in requirement_renderer_source
+        and "ui.metric_tile(" in upper_renderer_source
+        and "ui.na_fault_tile(" in requirement_renderer_source
+        and "ui.na_fault_tile(" in upper_renderer_source
+        and 'SHELL = OUT_DIR / "verification-assurance.html"' in upper_renderer_source
+        and "contract-evidence-route-sticky-start.html" not in upper_renderer_source,
+        "REQ/TREQ and upper renderers consume one shared monitor design system and canonical shell",
+    )
+    check(
+        all(
+            token not in source
+            for source in (requirement_renderer_source, upper_renderer_source)
+            for token in (
+                "def combine(",
+                "def cell_state(",
+                "def fault_state(",
+                "def contract_domain_state(",
+                "def contract_slug(",
+            )
+        )
+        and "assurance_monitor_domain.py" in requirement_renderer_source
+        and "assurance_monitor_domain.py" in upper_renderer_source
+        and "domain.contract_domain_state(" in upper_renderer_source
+        and "build-requirement-monitor.py" not in upper_renderer_source
+        and "reqmon." not in upper_renderer_source,
+        "REQ/TREQ and upper renderers share domain semantics without importing one another",
     )
     check(
         "tf-p34-" not in assurance_adapter_source
@@ -1077,7 +1136,34 @@ def main() -> None:
         and "STATUS_ORDER" not in upper_renderer_source,
         "dead presentation helpers are removed from active monitor renderers",
     )
+    check(
+        "PAGE_SPECS = (" in upper_renderer_source
+        and "FEATURE_SECTION_LABELS = (" in upper_renderer_source
+        and "for spec in PAGE_SPECS:" in upper_renderer_source
+        and upper_renderer_source.count("render_page(") == 2
+        and 'for feature_id in ("FEAT_' not in upper_renderer_source
+        and 'goal_id = "GOAL_' not in upper_renderer_source
+        and '"goals": goals' in upper_renderer_source,
+        "upper assurance onboarding, facts, and pages are driven by one declarative registry",
+    )
+    check(
+        "<title>Technical Assurance &#8212; llm-router" in route_order_page
+        and '<span class="ellipsis">Technical Assurance</span>' in route_order_page,
+        "TREQ monitor shell exposes Technical Assurance consistently in title and breadcrumb",
+    )
+    expected_upper_titles = {
+        "Feature fallback": "Capability Assurance",
+        "Feature rate limit": "Capability Assurance",
+        "Goal routing": "Outcome Assurance",
+        "Product / System": "Product / System Assurance",
+    }
     for name, page in upper_assurance_pages.items():
+        expected_title = expected_upper_titles[name]
+        check(
+            f"<title>{expected_title} &#8212; llm-router" in page
+            and f'<span class="ellipsis">{expected_title}</span>' in page,
+            f"{name}: document title and breadcrumb match the rendered assurance surface",
+        )
         style = re.search(
             r'<style id="tf-requirement-monitor-style">(.*?)</style>',
             page,
@@ -3301,6 +3387,7 @@ def main() -> None:
         "assurance-targets.json",
         "assurance-snapshots.json",
         "build-mutation-report-prototype.py",
+        "assurance_monitor_domain.py",
         "assurance_monitor_ui.py",
         "build-requirement-monitor.py",
         "build-upper-assurance-pilot.py",
@@ -3381,6 +3468,7 @@ def main() -> None:
     ]
     approved_pilot_sources = {
         ".ai-bridge/build-mutation-report-prototype.py",
+        ".ai-bridge/assurance_monitor_domain.py",
         ".ai-bridge/assurance_monitor_ui.py",
         ".ai-bridge/build-requirement-monitor.py",
         ".ai-bridge/build-upper-assurance-pilot.py",

@@ -47,6 +47,7 @@ def environment() -> dict[str, str | None]:
         "requirement_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-requirement-monitor.py"),
         "upper_assurance_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-upper-assurance-pilot.py"),
         "assurance_monitor_ui_sha256": sha256_file(ROOT / ".ai-bridge/assurance_monitor_ui.py"),
+        "assurance_monitor_domain_sha256": sha256_file(ROOT / ".ai-bridge/assurance_monitor_domain.py"),
         "qualification_harness_sha256": sha256_file(Path(__file__)),
         "trace_bridge_sha256": sha256_file(ROOT / "tests/conftest.py"),
     }
@@ -461,7 +462,10 @@ def external_controls() -> tuple[dict[str, dict[str, object]], dict[str, object]
 
 def internal_controls() -> dict[str, dict[str, object]]:
     adapter = runpy.run_path(str(ROOT / ".ai-bridge/build-mutation-report-prototype.py"), run_name="evidence_confidence_adapter")
-    monitor = runpy.run_path(str(ROOT / ".ai-bridge/build-requirement-monitor.py"), run_name="evidence_confidence_monitor")
+    domain = runpy.run_path(
+        str(ROOT / ".ai-bridge/assurance_monitor_domain.py"),
+        run_name="evidence_confidence_monitor_domain",
+    )
     upper = runpy.run_path(
         str(ROOT / ".ai-bridge/build-upper-assurance-pilot.py"),
         run_name="evidence_confidence_upper_monitor",
@@ -585,9 +589,9 @@ def internal_controls() -> dict[str, dict[str, object]]:
         and specialized_binding_control_ok
     )
 
-    quantified_status = monitor["quantified_status"]
-    combine = monitor["combine"]
-    cell_state = monitor["cell_state"]
+    quantified_status = domain["quantified_status"]
+    combine = domain["combine"]
+    cell_state = domain["cell_state"]
     projection_ok = (
         quantified_status(["QUALIFIED", "UNKNOWN"], "QUALIFIED", "ALL") == "UNKNOWN"
         and quantified_status(["QUALIFIED", "NOT QUALIFIED"], "QUALIFIED", "ALL") == "NOT MET"
@@ -709,7 +713,7 @@ def internal_controls() -> dict[str, dict[str, object]]:
         and surrogate_l2_over_l0["ms_matched"] == 1
     )
 
-    fault_state = monitor["fault_state"]
+    fault_state = domain["fault_state"]
     implementation_group = {
         "label": "Implementation",
         "items": [{"id": "impl.control-flow", "state": "required"}],
