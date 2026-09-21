@@ -54,11 +54,9 @@ ASSURANCE_TARGETS_PATH=ROOT/".ai-bridge/assurance-targets.json"
 ASSURANCE_SNAPSHOTS_PATH=ROOT/".ai-bridge/assurance-snapshots.json"
 DEPTH_PAGE=ROOT/"docs/_build/html/verification-depth-map.html"
 HEALTH_PAGE=ROOT/"docs/_build/html/verification-health-map.html"
-SPEC_MAP_PAGE=ROOT/"docs/_build/html/specification-map.html"
 ALLURE_REPORT_PAGE=ROOT/"docs/_build/html/test-results/index.html"
 MUTATION_PAGE=ROOT/"docs/_build/html/mutation-analysis.html"
 ASSURANCE_PAGE=ROOT/"docs/_build/html/verification-assurance.html"
-SPEC_HEALTH_PAGE=ROOT/"docs/_build/html/specification-health.html"
 SUPPRESSIONS_PATH=ROOT/".ai-bridge/mutation-suppressions.json"
 MUTATION_SEMANTICS_VERSION="p21-local-2"
 MUTATION_ADAPTER_VERSION="p34-local-2"
@@ -1359,30 +1357,48 @@ def map_status(rows):
     return "passed"
 
 
-def portal_map_shell(title, article_html):
-    if not SPEC_MAP_PAGE.exists():
+def portal_map_shell(shell_path, title, article_html):
+    if not shell_path.exists():
         raise RuntimeError(
-            "clean map generation requires docs/_build/html/specification-map.html from DocOps"
+            f"clean map generation requires the native Sphinx shell at {shell_path.relative_to(ROOT)}"
         )
-    text = SPEC_MAP_PAGE.read_text()
+    text = shell_path.read_text()
     text = re.sub(
-        r"<title>Specification map(.*?)</title>",
-        lambda match: f"<title>{html_escape(title)}{match.group(1)}</title>",
+        r"<title>.*?( &#8212; .*?</title>)",
+        lambda match: f"<title>{html_escape(title)}{match.group(1)}",
         text,
         count=1,
         flags=re.DOTALL,
     )
     text = re.sub(
-        r'<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Specification map</span></li>',
-        f'<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">{html_escape(title)}</span></li>',
+        r'(<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">).*?(</span></li>)',
+        lambda match: match.group(1) + html_escape(title) + match.group(2),
         text,
         count=1,
+        flags=re.DOTALL,
     )
+    focus_layout = """<style id="tf-map-focus-layout">
+.bd-page-width{max-width:100%}
+.bd-main .bd-content .bd-article-container{max-width:100%}
+@media (max-width:959.98px){
+  #pst-primary-sidebar.pst-squeeze{width:75%;overflow:auto}
+  #pst-primary-sidebar.pst-squeeze .sidebar-primary-item:not(.pst-sidebar-collapse){
+    opacity:1;
+    visibility:visible;
+  }
+}
+</style>"""
     text = text.replace(
         'id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar"',
-        'id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide"',
+        'id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar pst-squeeze"',
         1,
     )
+    text = text.replace(
+        'id="pst-collapse-sidebar-button" aria-expanded="true"',
+        'id="pst-collapse-sidebar-button" aria-expanded="false"',
+        1,
+    )
+    text = text.replace("</head>", focus_layout + "\n</head>", 1)
     text, count = re.subn(
         r'<article class="bd-article">.*?</article>',
         '<article class="bd-article">' + article_html + '</article>',
@@ -1391,7 +1407,7 @@ def portal_map_shell(title, article_html):
         flags=re.DOTALL,
     )
     if count != 1:
-        raise RuntimeError(f"could not replace Specification Map article for {title}")
+        raise RuntimeError(f"could not replace native map article for {title}")
     return text
 
 
@@ -1503,7 +1519,7 @@ if(typeof Plotly!=="undefined")render();else document.querySelector('script[src*
 </script>
 </section>'''
     article = template.replace("__MODEL__", stable_json(payload))
-    HEALTH_PAGE.write_text(portal_map_shell("Verification Health Map", article))
+    HEALTH_PAGE.write_text(portal_map_shell(HEALTH_PAGE, "Verification Health Map", article))
 
 
 def depth_map_payload():
@@ -1676,7 +1692,7 @@ document.querySelectorAll(".tf-depth-dimension").forEach(button=>button.addEvent
 </script>
 </section>'''
     article = template.replace("__MODEL__", stable_json(payload))
-    DEPTH_PAGE.write_text(portal_map_shell("Verification Depth Map", article))
+    DEPTH_PAGE.write_text(portal_map_shell(DEPTH_PAGE, "Verification Depth Map", article))
 
 
 def patch_allure_scope_tags():
@@ -6090,7 +6106,11 @@ def patch_traceability_contract_evidence_links():
     )
     text=text.replace(
       'For the contract-by-contract runtime proof path, open\n<a class="reference internal" href="verification-assurance.html"><span class="doc">Verification assurance map</span></a>. For a one-screen overview of the same specification,',
-      "For contract-level proof, use the <strong>Contract evidence</strong> link on the Requirement / TREQ you are reviewing. For a one-screen overview of the same specification,"
+      "For contract-level proof, use the <strong>Contract evidence</strong> link on the Requirement / TREQ you are reviewing. For retained execution health,"
+    )
+    text=text.replace(
+      'open <a class="reference internal" href="specification-map.html"><span class="doc">Specification map</span></a>.',
+      'open <a class="reference internal" href="verification-health-map.html"><span class="doc">Verification Health Map</span></a>.',
     )
     monitor_path=ROOT/"docs/_build/html/requirement-monitor-facts.json"
     monitor=json.loads(monitor_path.read_text()) if monitor_path.exists() else {"contracts":{}}
@@ -6318,26 +6338,29 @@ def patch_living_semantic_pages():
 
 
 
-def patch_specification_health_mutation(summary):
-    if not SPEC_HEALTH_PAGE.exists():
-        return
-    text=SPEC_HEALTH_PAGE.read_text()
-    text=re.sub(
-      r"<!-- TERNFORGE-P22-MEASUREMENT-START -->.*?<!-- TERNFORGE-P22-MEASUREMENT-END -->",
-      "",text,flags=re.DOTALL
-    )
-    total=int(summary.get("total_contracts") or 0)
-    measured=int(summary.get("measured_contracts") or 0)
-    block=f"""<!-- TERNFORGE-P22-MEASUREMENT-START -->
-<div class="admonition note">
-<p class="admonition-title">Mutation measurement coverage</p>
-<p><strong>{measured}/{total}</strong> Requirement/TREQ contracts currently have objectively attributable Test Strength measurement · {int(summary.get('fresh_measured_contracts') or 0)} fresh · {int(summary.get('stale_measured_contracts') or 0)} stale · {max(total-measured,0)} N/A/unmeasured · {len(STRENGTH.get('unattributed') or [])} shared-scope diagnostic(s).</p>
-<p>This is coverage of mutation evidence, not a global mutation score. <a href="verification-depth-map.html">Open Test Strength on Verification Depth Map</a>.</p>
-</div>
-<!-- TERNFORGE-P22-MEASUREMENT-END -->"""
-    text,count=re.subn(r"(<h1>Specification health.*?</h1>)",lambda m:m.group(1)+"\n"+block,text,count=1,flags=re.DOTALL)
-    if count:
-        SPEC_HEALTH_PAGE.write_text(text)
+def patch_legacy_overview_links():
+    """Keep legacy DocOps overview routes out of the normal portal reading flow."""
+    html_root = ROOT / "docs/_build/html"
+    legacy_pages = {
+        html_root / "specification-map.html",
+        html_root / "specification-health.html",
+    }
+    for path in html_root.rglob("*.html"):
+        if path in legacy_pages:
+            continue
+        text = path.read_text()
+        original = text
+        text = text.replace("specification-map.html", "verification-health-map.html")
+        text = text.replace("specification-health.html", "verification-health-map.html")
+        text = re.sub(
+            r'(<a[^>]*href="[^"]*verification-health-map\.html"[^>]*>\s*(?:<span class="doc">)?)(?:Specification map|Specification health|Release health)(?=(?:</span>)?</a>)',
+            lambda match: match.group(1) + "Verification Health Map",
+            text,
+            flags=re.IGNORECASE,
+        )
+        if text != original:
+            path.write_text(text)
+
 
 def patch_portal_navigation():
     pages={
@@ -6346,7 +6369,6 @@ def patch_portal_navigation():
       ROOT/"docs/_build/html/verification-health-map.html":None,
       DEPTH_PAGE:"depth",
       ASSURANCE_PAGE:None,
-      SPEC_HEALTH_PAGE:None,
       MUTATION_PAGE:"mutation",
     }
     for path,current in pages.items():
@@ -6397,7 +6419,7 @@ def integrate_mutation_portal(summary,feedback):
     patch_verification_contract_evidence_path()
     patch_evidence_trust_need_anchors()
     patch_living_semantic_pages()
-    patch_specification_health_mutation(summary)
+    patch_legacy_overview_links()
     patch_portal_navigation()
 
 def refresh_freshness(campaign):

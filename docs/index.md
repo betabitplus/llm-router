@@ -28,13 +28,13 @@ it, down to the contracts it creates, or sideways through the nearby idea links 
 each product branch. Use dense traceability only when you need forensic detail.
 :::
 
-:::{grid-item-card} 3. See release health at a glance
-:link: specification-map
+:::{grid-item-card} 3. See verification health at a glance
+:link: verification-health-map
 :link-type: doc
 
-Use the one-screen specification map for the whole release picture. Hover a region
-for its human title and health reason; open the canonical contract only when you
-need details.
+Use the Verification Health Map for the whole retained execution picture. Hover a
+region for its test-health breakdown; open the linked executions only when you need
+details.
 :::
 
 ::::
@@ -152,8 +152,8 @@ and debugging, but they are **not required stops** in the normal semantic flow.
 
 requirements/index
 traceability-reader
-specification-map
-specification-health
+verification-health-map
+verification-depth-map
 experiments/index
 decisions/index
 specifications

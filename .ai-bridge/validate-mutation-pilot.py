@@ -204,7 +204,6 @@ def main() -> None:
         HTML / "favicon.ico",
         BRIDGE / "assurance-targets.json",
         BRIDGE / "assurance-snapshots.json",
-        HTML / "specification-health.html",
         HTML / "verification-health-map.html",
         HTML / "_static/mutation-test-elements.js",
         BRIDGE / "mutation-testing-platform-extraction-manifest.md",
@@ -1462,7 +1461,6 @@ def main() -> None:
         "Goal rich output": (HTML / "assurance-goal-rich-input-output.html").read_text(),
         "Product / System": (HTML / "assurance-product-system.html").read_text(),
     }
-    spec_page = (HTML / "specification-health.html").read_text()
     health_page = (HTML / "verification-health-map.html").read_text()
     depth_page = (HTML / "verification-depth-map.html").read_text()
     trace_reader_page = (HTML / "traceability-reader.html").read_text()
@@ -4870,16 +4868,41 @@ def main() -> None:
           'if(label==="Evidence producers:"' in sample_living,
           "Living semantic projection removes boundary/producer details from the visible semantic narrative")
 
-    check("TERNFORGE-P22-MEASUREMENT-START" in spec_page,
-          "Specification Health has mutation measurement coverage")
-    check("Open Test Strength on Verification Depth Map" in spec_page,
-          "Specification Health routes mutation coverage to the overview map")
+    index_page = (HTML / "index.html").read_text()
     for name, text in {
         "Health": health_page,
         "Depth": depth_page,
-        "Specification Health": spec_page,
     }.items():
         check('href="mutation-analysis.html"' in text, f"{name}: portal navigation links Mutation Analysis")
+    check(
+        'href="verification-health-map.html"' in index_page
+        and 'href="verification-depth-map.html"' in index_page
+        and "Verification Health Map" in index_page
+        and "Verification Depth Map" in index_page,
+        "portal navigation exposes Verification Health Map and Verification Depth Map as native documents",
+    )
+    check(
+        'href="specification-map.html"' not in index_page
+        and 'href="specification-health.html"' not in index_page,
+        "portal navigation no longer exposes legacy Specification Map/Health pages",
+    )
+    for name, text in {
+        "Health": health_page,
+        "Depth": depth_page,
+    }.items():
+        check(
+            'id="tf-map-focus-layout"' in text
+            and 'bd-sidebar-primary bd-sidebar pst-squeeze' in text
+            and 'id="pst-collapse-sidebar-button" aria-expanded="false"' in text
+            and '.bd-page-width{max-width:100%}' in text
+            and '.bd-main .bd-content .bd-article-container{max-width:100%}' in text,
+            f"{name}: map uses native collapsed primary-sidebar rail and full-width article layout",
+        )
+        check(
+            'id="pst-secondary-sidebar"' not in text
+            and 'sidebar-toggle secondary-toggle' not in text,
+            f"{name}: useless secondary sidebar is removed at the page level",
+        )
 
     measurement_contract_ids = {row["contract_id"] for row in depth_facts.get("contracts") or []}
     check(len(measurement_contract_ids) == 63,
@@ -4962,7 +4985,6 @@ def main() -> None:
         "docs/_build/html/assurance-targets.json",
         "docs/_build/html/assurance-snapshots.json",
         "docs/_build/html/favicon.ico",
-        "docs/_build/html/specification-health.html",
         "docs/_build/html/verification-health-map.html",
         "docs/_build/html/test-plan.html",
         "docs/_build/html/_static/mutation-test-elements.js",
@@ -5014,6 +5036,8 @@ def main() -> None:
         "docs/index.md",
         "docs/README.md",
         "docs/test-plan.md",
+        "docs/verification-health-map.md",
+        "docs/verification-depth-map.md",
         "docs/assurance-profiles/",
         "docs/experiments/index.md",
         "docs/requirements/configuration.md",
