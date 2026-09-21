@@ -27,12 +27,12 @@ Level A owns the display semantics. `docs/test-plan.md` contains only llm-router
 
 ## Verification-criterion contract
 
-The Verification Profile declares fourteen stable criteria for `REQ_INVALID_CONFIGURATION_ERRORS`:
+The Invalid Configuration hierarchy declares fourteen stable criteria without collapsing Technical requirements into the parent:
 
-- Component: 13 criteria derived from the complete set of configuration-validity Technical requirements selected by this parent contract, with 16 declared retained paths where multi-partition criteria require more than one path.
-- System: 1 criterion / 1 retained path for the parent public rejection Requirement.
+- Parent `REQ_INVALID_CONFIGURATION_ERRORS`: 1 System criterion / 1 retained path for the public pre-provider rejection claim.
+- Thirteen derived `TREQ_CONFIG_*` contracts: 13 Component criteria / 16 retained paths for the concrete configuration-validity constraints, each with its own Verification Profile, Fault Model, and Contract Evidence page.
 
-Current execution satisfies **13/13 Component criteria · 16/16 paths** and **1/1 System criterion · 1/1 path**. This does **not** make the Requirement green: its explicitly required Fault Model classes are a separate blocking target and currently remain incomplete, so **Verification Coverage = PASS · Fault Model = FAIL · Overall = FAIL**.
+Current execution satisfies the parent **1/1 System criterion · 1/1 path** and the child set **13/13 Component criteria · 16/16 paths**. This does **not** make the hierarchy green: the parent and child contracts keep independent blocking Fault Model targets, and missing child-specific challenges remain red instead of inheriting the parent mutation/fault campaign.
 
 The profile parser now fails closed when a Required Coverage count disagrees with the criterion table, a criterion ID is duplicated, a Fault applicability table is absent, any project fault class is missing/duplicated/unknown, or a fault-group rationale is omitted. Missing fault authoring can therefore no longer silently become `N/A`.
 

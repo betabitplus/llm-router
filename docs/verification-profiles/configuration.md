@@ -143,10 +143,10 @@ No blocking mutation threshold is selected; the required deterministic fault cla
 
 ## Profile · REQ_CONFIG_INSTALLATION_COHERENCE
 
-**Verification intent.** Install a distinct replacement snapshot through the public configuration
-API, prove that subsequent runtime construction captures that replacement snapshot, and directly
-verify the derived cache-invalidation contract that prevents stale provider objects from surviving
-the transition.
+**Verification intent.** Install a distinct replacement snapshot through the public
+configuration API, prove that subsequent runtime construction captures that replacement,
+and prove a real post-install request observes replacement-derived behavior. Cache
+invalidation is owned separately by the derived Technical requirement.
 
 **Models:** {ref}`Configuration activation <test-plan-config-activation-model>`
 
@@ -154,18 +154,17 @@ the transition.
 
 | Test level         | Boundary   | Representation | M&S target |          Target |
 | ------------------ | ---------- | -------------- | ---------- | --------------: |
-| Component          | Local      | Actual         | —          |  **3 criteria** |
+| Component          | Local      | Actual         | —          |  **2 criteria** |
 | System Integration | Substitute | Surrogate      | L0         | **1 criterion** |
 
-**Coverage basis.** The Component cell requires public replacement round-trip, runtime snapshot
-capture, and the derived cache-invalidation criterion. The System-integration cell must then prove
-that a public request created after installation exhibits a replacement-derived runtime effect,
-rather than merely holding a reference to the new snapshot.
+**Coverage basis.** Component coverage requires public replacement round-trip and
+post-install runtime snapshot capture. System-integration coverage proves that a request
+constructed after installation exhibits replacement-derived behavior at the provider
+observation boundary. Cache invalidation has its own Technical-requirement denominator.
 
-**Representation basis.** Component paths execute the actual llm-router implementation without a
-material external surrogate. The System-integration path uses a scripted provider only as an
-observation boundary for the replacement-derived request; provider behavior itself is not the claim,
-so Surrogate/L0 is sufficient.
+**Representation basis.** Component paths execute the actual llm-router implementation.
+The System-integration path uses a scripted provider only as an observation boundary for
+the replacement-derived request, so Surrogate/L0 is sufficient.
 
 ### Verification criteria
 
@@ -173,8 +172,72 @@ so Surrogate/L0 is sufficient.
 | ---------------------------------------- | -------------------------------------------------- | ------------------ | ---------- | -------------: | ---------------------------------------------------------------------------------------------------------- |
 | `VC_CONFIG_INSTALLATION_ROUND_TRIP`      | {need}`[[id]] <REQ_CONFIG_INSTALLATION_COHERENCE>` | Component          | Local      |              1 | Installing a distinct valid snapshot makes that exact snapshot active via public API.                      |
 | `VC_CONFIG_INSTALLATION_RUNTIME_CAPTURE` | {need}`[[id]] <REQ_CONFIG_INSTALLATION_COHERENCE>` | Component          | Local      |              1 | Runtime construction after installation captures the newly active snapshot.                                |
-| `VC_CONFIG_CACHE_INVALIDATION`           | {need}`[[id]] <TREQ_CONFIG_CACHE_INVALIDATION>`    | Component          | Local      |              1 | Installing a replacement configuration clears registered configuration-dependent adapter caches.           |
 | `VC_CONFIG_INSTALLATION_RUNTIME_EFFECT`  | {need}`[[id]] <REQ_CONFIG_INSTALLATION_COHERENCE>` | System Integration | Substitute |              1 | A public request created after installation exhibits a replacement-derived value at the provider boundary. |
+
+### Evidence aggregation
+
+| Signal                 | Rule | Applies to                                                         |
+| ---------------------- | ---- | ------------------------------------------------------------------ |
+| Semantic coverage      | ALL  | required verification criteria and each criterion's declared paths |
+| Representation         | ALL  | retained evidence for satisfied criteria                           |
+| Provenance             | ALL  | retained evidence for satisfied criteria                           |
+| Producer qualification | ALL  | retained evidence for satisfied criteria; every required producer  |
+| Freshness              | ALL  | retained evidence for satisfied criteria                           |
+| M&S validation         | ALL  | applicable surrogate/model evidence                                |
+
+### Required technical support
+
+| Technical requirement                                                                   | Target |
+| --------------------------------------------------------------------------------------- | ------ |
+| {need}`Configuration-dependent caches are invalidated <TREQ_CONFIG_CACHE_INVALIDATION>` | PASS   |
+
+### Fault applicability
+
+| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                               |
+| -------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow`                                                              | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| `architecture.layer-bypass`                                                      | —        | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge`        |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | —                                                                                                                                 |
+
+#### Fault-group rationale
+
+| Group                 | Why                                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Installation must perform the active-state replacement and subsequent runtime capture rather than returning early. |
+| Runtime / dependency  | Remote dependency behavior is not needed to prove that replacement configuration becomes locally effective.        |
+| Interface / protocol  | The provider boundary is only an observation point; provider protocol failures are outside this contract.          |
+| Architecture          | Bypassing the required configuration-state transition can leave subsequent runtime construction on stale state.    |
+| Specification / model | Distinct replacement, post-install ordering, and observable runtime effect are normative state semantics.          |
+
+No blocking mutation threshold is selected.
+
+(verification-profile-treq-config-cache-invalidation)=
+
+## Profile · TREQ_CONFIG_CACHE_INVALIDATION
+
+**Verification intent.** Prove that installing a replacement active configuration
+invalidates registered adapter caches whose values depend on configuration-derived
+state.
+
+**Models:** {ref}`Configuration activation <test-plan-config-activation-model>`
+
+### Required coverage
+
+| Test level | Boundary | Representation | M&S target |          Target |
+| ---------- | -------- | -------------- | ---------- | --------------: |
+| Component  | Local    | Actual         | —          | **1 criterion** |
+
+**Coverage basis.** Cache invalidation is one direct technical side-effect obligation
+independent of public configuration round-trip and runtime-observation evidence.
+
+**Representation basis.** The retained test executes actual install_config and the real
+registered cache invalidation mechanism locally.
+
+### Verification criteria
+
+| Criterion                      | Contract                                        | Test level | Boundary | Required paths | Success criterion                                                                                |
+| ------------------------------ | ----------------------------------------------- | ---------- | -------- | -------------: | ------------------------------------------------------------------------------------------------ |
+| `VC_CONFIG_CACHE_INVALIDATION` | {need}`[[id]] <TREQ_CONFIG_CACHE_INVALIDATION>` | Component  | Local    |              1 | Installing a replacement configuration clears registered configuration-dependent adapter caches. |
 
 ### Evidence aggregation
 
@@ -189,20 +252,19 @@ so Surrogate/L0 is sufficient.
 
 ### Fault applicability
 
-| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                               |
-| -------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow`                                                              | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
-| `architecture.layer-bypass`                                                      | —        | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge`        |
-| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | —                                                                                                                                 |
+| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                                                                                                                            |
+| -------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `impl.control-flow` · `architecture.layer-bypass`                                | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `architecture.forbidden-edge`                                                                                                                                                                                                  |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                            |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Implementation        | Installation must perform the state replacement and invalidation path rather than returning early or skipping required work.   |
-| Runtime / dependency  | Remote dependency behavior is not needed to prove that a replacement configuration becomes locally effective.                  |
-| Interface / protocol  | The System-integration provider boundary is an observation point; provider protocol failures are not part of this contract.    |
-| Architecture          | Bypassing the required configuration-state/cache transition can leave stale runtime behavior even when the public API returns. |
-| Specification / model | Distinct replacement, post-install ordering, cache invalidation, and observable runtime effect are normative state semantics.  |
+| Group                 | Why                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------ |
+| Implementation        | Skipping the registered invalidation callbacks leaves stale adapter instances reachable.               |
+| Runtime / dependency  | Cache invalidation is a local state transition independent of provider runtime behavior.               |
+| Interface / protocol  | No provider protocol interaction is required to invalidate local caches.                               |
+| Architecture          | Bypassing the registered cache-invalidation transition can preserve configuration-derived stale state. |
+| Specification / model | Missing invalidation, wrong post-install state, or wrong transition ordering violates the TREQ.        |
 
-No blocking mutation threshold is selected; the required deterministic fault classes remain blocking.
+No blocking mutation threshold is selected.

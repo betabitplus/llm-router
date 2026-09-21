@@ -16,5 +16,6 @@ security
 tools
 resilience
 providers
+configuration
 product-system
 ```

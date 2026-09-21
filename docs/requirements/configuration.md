@@ -108,7 +108,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{doc}`Verification profile → <../verification-profiles/invalid-configuration>`
+{ref}`Verification profile → <verification-profile-req-invalid-configuration-errors>`
 
 ```{needlist}
 :filter: "'REQ_INVALID_CONFIGURATION_ERRORS' in derives or 'REQ_INVALID_CONFIGURATION_ERRORS' in implements or 'REQ_INVALID_CONFIGURATION_ERRORS' in verifies"
@@ -133,6 +133,8 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
+{ref}`Verification profile → <verification-profile-treq-config-provider-identity>`
+
 ```{needlist}
 :filter: "'TREQ_CONFIG_PROVIDER_IDENTITY' in derives or 'TREQ_CONFIG_PROVIDER_IDENTITY' in implements or 'TREQ_CONFIG_PROVIDER_IDENTITY' in verifies"
 ```
@@ -153,6 +155,8 @@ Contracts in this capability:
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-treq-config-model-declaration>`
 
 ```{needlist}
 :filter: "'TREQ_CONFIG_MODEL_DECLARATION' in derives or 'TREQ_CONFIG_MODEL_DECLARATION' in implements or 'TREQ_CONFIG_MODEL_DECLARATION' in verifies"
@@ -175,6 +179,8 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
+{ref}`Verification profile → <verification-profile-treq-config-required-base-url>`
+
 ```{needlist}
 :filter: "'TREQ_CONFIG_REQUIRED_BASE_URL' in derives or 'TREQ_CONFIG_REQUIRED_BASE_URL' in implements or 'TREQ_CONFIG_REQUIRED_BASE_URL' in verifies"
 ```
@@ -195,6 +201,8 @@ Contracts in this capability:
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-treq-config-attempt-timeout>`
 
 ```{needlist}
 :filter: "'TREQ_CONFIG_ATTEMPT_TIMEOUT' in derives or 'TREQ_CONFIG_ATTEMPT_TIMEOUT' in implements or 'TREQ_CONFIG_ATTEMPT_TIMEOUT' in verifies"
@@ -217,6 +225,8 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
+{ref}`Verification profile → <verification-profile-treq-config-retry-attempts>`
+
 ```{needlist}
 :filter: "'TREQ_CONFIG_RETRY_ATTEMPTS' in derives or 'TREQ_CONFIG_RETRY_ATTEMPTS' in implements or 'TREQ_CONFIG_RETRY_ATTEMPTS' in verifies"
 ```
@@ -237,6 +247,8 @@ Contracts in this capability:
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-treq-config-retry-wait-bounds>`
 
 ```{needlist}
 :filter: "'TREQ_CONFIG_RETRY_WAIT_BOUNDS' in derives or 'TREQ_CONFIG_RETRY_WAIT_BOUNDS' in implements or 'TREQ_CONFIG_RETRY_WAIT_BOUNDS' in verifies"
@@ -259,6 +271,8 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
+{ref}`Verification profile → <verification-profile-treq-config-route-attempt-limit>`
+
 ```{needlist}
 :filter: "'TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT' in derives or 'TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT' in implements or 'TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT' in verifies"
 ```
@@ -279,6 +293,8 @@ Contracts in this capability:
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-treq-config-fallback-shuffle-min-routes>`
 
 ```{needlist}
 :filter: "'TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES' in derives or 'TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES' in implements or 'TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES' in verifies"
@@ -301,6 +317,8 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
+{ref}`Verification profile → <verification-profile-treq-config-tool-round-limit>`
+
 ```{needlist}
 :filter: "'TREQ_CONFIG_TOOL_ROUND_LIMIT' in derives or 'TREQ_CONFIG_TOOL_ROUND_LIMIT' in implements or 'TREQ_CONFIG_TOOL_ROUND_LIMIT' in verifies"
 ```
@@ -321,6 +339,8 @@ Contracts in this capability:
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-treq-config-structured-output-attempts>`
 
 ```{needlist}
 :filter: "'TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS' in derives or 'TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS' in implements or 'TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS' in verifies"
@@ -343,6 +363,8 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
+{ref}`Verification profile → <verification-profile-treq-config-default-provider-declaration>`
+
 ```{needlist}
 :filter: "'TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION' in derives or 'TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION' in implements or 'TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION' in verifies"
 ```
@@ -364,6 +386,8 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
+{ref}`Verification profile → <verification-profile-treq-config-default-model-mapping>`
+
 ```{needlist}
 :filter: "'TREQ_CONFIG_DEFAULT_MODEL_MAPPING' in derives or 'TREQ_CONFIG_DEFAULT_MODEL_MAPPING' in implements or 'TREQ_CONFIG_DEFAULT_MODEL_MAPPING' in verifies"
 ```
@@ -384,6 +408,8 @@ Contracts in this capability:
 ```
 
 ::::{dropdown} Follow this contract to proof
+
+{ref}`Verification profile → <verification-profile-treq-config-model-provider-references>`
 
 ```{needlist}
 :filter: "'TREQ_CONFIG_MODEL_PROVIDER_REFERENCES' in derives or 'TREQ_CONFIG_MODEL_PROVIDER_REFERENCES' in implements or 'TREQ_CONFIG_MODEL_PROVIDER_REFERENCES' in verifies"
@@ -452,7 +478,7 @@ Contracts in this capability:
 
 ::::{dropdown} Follow this contract to proof
 
-{ref}`Parent verification profile → <verification-profile-req-config-installation-coherence>`
+{ref}`Verification profile → <verification-profile-treq-config-cache-invalidation>`
 
 ```{needlist}
 :filter: "'TREQ_CONFIG_CACHE_INVALIDATION' in derives or 'TREQ_CONFIG_CACHE_INVALIDATION' in implements or 'TREQ_CONFIG_CACHE_INVALIDATION' in verifies"

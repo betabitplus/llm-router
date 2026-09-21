@@ -95,6 +95,25 @@ def main() -> None:
         HTML / "contract-evidence-request-override-precedence.html",
         HTML / "contract-evidence-credential-resolution.html",
         HTML / "contract-evidence-config-installation-coherence.html",
+        HTML / "contract-evidence-config-cache-invalidation.html",
+        HTML / "contract-evidence-config-provider-identity.html",
+        HTML / "contract-evidence-config-model-declaration.html",
+        HTML / "contract-evidence-config-required-base-url.html",
+        HTML / "contract-evidence-config-attempt-timeout.html",
+        HTML / "contract-evidence-config-retry-attempts.html",
+        HTML / "contract-evidence-config-retry-wait-bounds.html",
+        HTML / "contract-evidence-config-route-attempt-limit.html",
+        HTML / "contract-evidence-config-fallback-shuffle-min-routes.html",
+        HTML / "contract-evidence-config-tool-round-limit.html",
+        HTML / "contract-evidence-config-structured-output-attempts.html",
+        HTML / "contract-evidence-config-default-provider-declaration.html",
+        HTML / "contract-evidence-config-default-model-mapping.html",
+        HTML / "contract-evidence-config-model-provider-references.html",
+        HTML / "assurance-feat-configuration-precedence.html",
+        HTML / "assurance-goal-configuration-predictability.html",
+        ROOT / "docs/assurance-profiles/configuration.md",
+        HTML / "assurance-profiles/configuration.html",
+        HTML / "specifications/_generated/configuration/assurance.html",
         HTML / "contract-evidence-tool-choice.html",
         HTML / "contract-evidence-multi-round-tool-execution.html",
         HTML / "contract-evidence-tool-runtime-safety.html",
@@ -235,6 +254,10 @@ def main() -> None:
     configuration_source = (ROOT / "docs/requirements/configuration.md").read_text()
     verification_profile_source = (ROOT / "docs/verification-profiles/invalid-configuration.md").read_text()
     verification_profile_html = (HTML / "verification-profiles/invalid-configuration.html").read_text()
+    configuration_profile_source = (ROOT / "docs/verification-profiles/configuration.md").read_text()
+    configuration_assurance_profile_source = (
+        ROOT / "docs/assurance-profiles/configuration.md"
+    ).read_text()
     routing_requirements_source = (ROOT / "docs/requirements/routing.md").read_text()
     routing_profile_source = (ROOT / "docs/verification-profiles/routing.md").read_text()
     resilience_requirements_source = (ROOT / "docs/requirements/resilience.md").read_text()
@@ -659,18 +682,36 @@ def main() -> None:
 
     check(all(token in verification_profile_source for token in (
         "## Profile · REQ_INVALID_CONFIGURATION_ERRORS",
-        "### Required coverage",
-        "### Verification criteria",
-        "VC_CONFIG_PROVIDER_IDENTITY",
-        "VC_CONFIG_MODEL_DECLARATION",
-        "VC_CONFIG_REQUIRED_BASE_URL",
-        "VC_CONFIG_ATTEMPT_TIMEOUT",
-        "VC_CONFIG_RETRY_ATTEMPTS",
+        "## Profile · TREQ_CONFIG_PROVIDER_IDENTITY",
+        "## Profile · TREQ_CONFIG_MODEL_DECLARATION",
+        "## Profile · TREQ_CONFIG_REQUIRED_BASE_URL",
+        "## Profile · TREQ_CONFIG_ATTEMPT_TIMEOUT",
+        "## Profile · TREQ_CONFIG_RETRY_ATTEMPTS",
+        "## Profile · TREQ_CONFIG_RETRY_WAIT_BOUNDS",
+        "## Profile · TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT",
+        "## Profile · TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES",
+        "## Profile · TREQ_CONFIG_TOOL_ROUND_LIMIT",
+        "## Profile · TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS",
+        "## Profile · TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION",
+        "## Profile · TREQ_CONFIG_DEFAULT_MODEL_MAPPING",
+        "## Profile · TREQ_CONFIG_MODEL_PROVIDER_REFERENCES",
         "VC_INVALID_CONFIGURATION_PUBLIC_REJECTION",
-        "### Evidence aggregation",
+        "### Required technical support",
         "### Fault applicability",
         "### Blocking mutation checks",
-    )), "dedicated Verification Profile owns contract-specific verification design")
+    )), "Invalid Configuration profile splits the parent public rejection claim from all thirteen first-class Technical requirements")
+    check(
+        "## Profile · REQ_CONFIG_INSTALLATION_COHERENCE" in configuration_profile_source
+        and "## Profile · TREQ_CONFIG_CACHE_INVALIDATION" in configuration_profile_source
+        and "### Required technical support" in configuration_profile_source,
+        "Configuration activation profile splits cache invalidation into first-class Technical support",
+    )
+    check(all(token in configuration_assurance_profile_source for token in (
+        "## Feature · FEAT_CONFIGURATION_PRECEDENCE",
+        "## Goal · GOAL_CONFIGURATION_PREDICTABILITY",
+        "AC_CONFIGURATION_EFFECTIVE_VIEW_COMPOSITION",
+        "ACV_CONFIGURATION_POST_INSTALL_REJECTION",
+    )), "Configuration Assurance Profile owns the distinct cross-Requirement composition and post-install validation Targets")
     check(
         "coverage_item(id)" in pyproject_source
         and "coverage_path(id_or_selector)" in pyproject_source
@@ -769,31 +810,62 @@ def main() -> None:
         "retained evidence run binds JUnit, Allure, coverage and input snapshot by digest",
     )
     monitor_contract = (monitor_facts.get("contracts") or {}).get("REQ_INVALID_CONFIGURATION_ERRORS") or {}
-    current_paths = [
+    invalid_child_ids = (
+        "TREQ_CONFIG_PROVIDER_IDENTITY",
+        "TREQ_CONFIG_MODEL_DECLARATION",
+        "TREQ_CONFIG_REQUIRED_BASE_URL",
+        "TREQ_CONFIG_ATTEMPT_TIMEOUT",
+        "TREQ_CONFIG_RETRY_ATTEMPTS",
+        "TREQ_CONFIG_RETRY_WAIT_BOUNDS",
+        "TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT",
+        "TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES",
+        "TREQ_CONFIG_TOOL_ROUND_LIMIT",
+        "TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS",
+        "TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION",
+        "TREQ_CONFIG_DEFAULT_MODEL_MAPPING",
+        "TREQ_CONFIG_MODEL_PROVIDER_REFERENCES",
+    )
+    parent_paths = [
         row
         for rows in (monitor_contract.get("coverage_actual") or {}).values()
         for row in rows
     ]
-    check(len(current_paths) == 17, "Requirement monitor retains all 17 current Invalid Configuration coverage paths")
+    child_paths = [
+        row
+        for contract_id in invalid_child_ids
+        for rows in (
+            (monitor_facts.get("contracts") or {}).get(contract_id, {}).get(
+                "coverage_actual", {}
+            )
+        ).values()
+        for row in rows
+    ]
+    current_paths = parent_paths + child_paths
+    check(
+        len(parent_paths) == 1
+        and len(child_paths) == 16
+        and len(current_paths) == 17,
+        "Invalid Configuration evidence keeps one parent public path plus sixteen child-TREQ validation paths",
+    )
     check(
         len({row.get("run_id") for row in current_paths}) == 1 and
         all(row.get("run_id") == evidence_provenance.get("run_id") for row in current_paths),
-        "all current Requirement evidence paths belong to the same retained execution run",
+        "all current parent/TREQ Invalid Configuration evidence paths belong to the same retained execution run",
     )
     check(
         all(row.get("provenance") == "COMPLETE" and row.get("provenance_scope") == "full_chain"
             for row in current_paths),
-        "all current Requirement evidence paths have full-chain provenance",
+        "all current parent/TREQ Invalid Configuration evidence paths have full-chain provenance",
     )
     check(
         all(row.get("producer_qualification") == "QUALIFIED" and
             row.get("producer_qualification_scope") == "full_chain"
             for row in current_paths),
-        "all current Requirement evidence paths have a fully qualified producer chain",
+        "all current parent/TREQ Invalid Configuration evidence paths have a fully qualified producer chain",
     )
     check(
         all(row.get("freshness") == "CURRENT" for row in current_paths),
-        "all current Requirement evidence paths belong to the current retained verification inputs",
+        "all current parent/TREQ Invalid Configuration evidence paths belong to the current retained verification inputs",
     )
     check(
         all(row.get("source_sha256") and row.get("source_sha256") == row.get("current_source_sha256")
@@ -1024,11 +1096,12 @@ def main() -> None:
 
     check(all(token in readiness for token in (
         "P34 MONITOR CUTOVER COMPLETE",
+        "Parent `REQ_INVALID_CONFIGURATION_ERRORS`: 1 System criterion / 1 retained path",
         "13/13 Component criteria · 16/16 paths",
-        "Verification Coverage = PASS · Fault Model = FAIL · Overall = FAIL",
+        "missing child-specific challenges remain red instead of inheriting the parent mutation/fault campaign",
         "compatibility-only `.ai-bridge/assurance-targets.json`",
         "Test Coverage → Fault-based Testing → History",
-    )), "monitor readiness ledger records the completed P34 target/actual cutover")
+    )), "monitor readiness ledger records the completed P34 target/actual cutover and first-class Configuration ownership")
     check("Test plan" in test_plan_html and "Reusable Test Models" in test_plan_html,
           "generated Test Plan page renders the project-wide strategy")
 
@@ -1160,6 +1233,22 @@ def main() -> None:
     override_page = (HTML / "contract-evidence-request-override-precedence.html").read_text()
     credential_page = (HTML / "contract-evidence-credential-resolution.html").read_text()
     install_page = (HTML / "contract-evidence-config-installation-coherence.html").read_text()
+    config_treq_pages = {
+        "TREQ_CONFIG_CACHE_INVALIDATION": (HTML / "contract-evidence-config-cache-invalidation.html").read_text(),
+        "TREQ_CONFIG_PROVIDER_IDENTITY": (HTML / "contract-evidence-config-provider-identity.html").read_text(),
+        "TREQ_CONFIG_MODEL_DECLARATION": (HTML / "contract-evidence-config-model-declaration.html").read_text(),
+        "TREQ_CONFIG_REQUIRED_BASE_URL": (HTML / "contract-evidence-config-required-base-url.html").read_text(),
+        "TREQ_CONFIG_ATTEMPT_TIMEOUT": (HTML / "contract-evidence-config-attempt-timeout.html").read_text(),
+        "TREQ_CONFIG_RETRY_ATTEMPTS": (HTML / "contract-evidence-config-retry-attempts.html").read_text(),
+        "TREQ_CONFIG_RETRY_WAIT_BOUNDS": (HTML / "contract-evidence-config-retry-wait-bounds.html").read_text(),
+        "TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT": (HTML / "contract-evidence-config-route-attempt-limit.html").read_text(),
+        "TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES": (HTML / "contract-evidence-config-fallback-shuffle-min-routes.html").read_text(),
+        "TREQ_CONFIG_TOOL_ROUND_LIMIT": (HTML / "contract-evidence-config-tool-round-limit.html").read_text(),
+        "TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS": (HTML / "contract-evidence-config-structured-output-attempts.html").read_text(),
+        "TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION": (HTML / "contract-evidence-config-default-provider-declaration.html").read_text(),
+        "TREQ_CONFIG_DEFAULT_MODEL_MAPPING": (HTML / "contract-evidence-config-default-model-mapping.html").read_text(),
+        "TREQ_CONFIG_MODEL_PROVIDER_REFERENCES": (HTML / "contract-evidence-config-model-provider-references.html").read_text(),
+    }
     tool_choice_page = (HTML / "contract-evidence-tool-choice.html").read_text()
     tool_multi_page = (HTML / "contract-evidence-multi-round-tool-execution.html").read_text()
     tool_runtime_page = (HTML / "contract-evidence-tool-runtime-safety.html").read_text()
@@ -1231,6 +1320,8 @@ def main() -> None:
         "Feature async execution": (HTML / "assurance-feat-async-execution.html").read_text(),
         "Feature public response": (HTML / "assurance-feat-public-response-contract.html").read_text(),
         "Goal provider portability": (HTML / "assurance-goal-provider-portability.html").read_text(),
+        "Feature configuration": (HTML / "assurance-feat-configuration-precedence.html").read_text(),
+        "Goal configuration": (HTML / "assurance-goal-configuration-predictability.html").read_text(),
         "Product / System": (HTML / "assurance-product-system.html").read_text(),
     }
     spec_page = (HTML / "specification-health.html").read_text()
@@ -1429,6 +1520,8 @@ def main() -> None:
         "Goal tools": upper_assurance_pages["Goal tools"],
         "Goal resilience": upper_assurance_pages["Goal resilience"],
         "Goal provider portability": upper_assurance_pages["Goal provider portability"],
+        "Goal configuration": upper_assurance_pages["Goal configuration"],
+        "Feature configuration": upper_assurance_pages["Feature configuration"],
         "Feature sessions": upper_assurance_pages["Feature sessions"],
         "Feature data safety": upper_assurance_pages["Feature data safety"],
         "Feature tool selection": upper_assurance_pages["Feature tool selection"],
@@ -1459,6 +1552,11 @@ def main() -> None:
         "REQ response normalization": response_normalization_page,
         "TREQ usage normalization": usage_normalization_page,
         "REQ provider error": provider_error_page,
+        "REQ config override": override_page,
+        "REQ config invalid": assurance_page,
+        "REQ config credential": credential_page,
+        "REQ config installation": install_page,
+        **{f"Config {contract_id}": page for contract_id, page in config_treq_pages.items()},
         "REQ session persistence": session_persistence_page,
         "TREQ session serialization": session_serialization_page,
         "REQ data safety": security_page,
@@ -1490,7 +1588,7 @@ def main() -> None:
             f"{name}: hierarchy navigation contains navigation only, without assurance status",
         )
     check(
-        "<span>Goals</span><b>7</b>" in upper_assurance_pages["Product / System"]
+        "<span>Goals</span><b>8</b>" in upper_assurance_pages["Product / System"]
         and '<details class="tf-assurance-next">' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-routing-reliability.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-developer-usability.html"' in upper_assurance_pages["Product / System"]
@@ -1498,8 +1596,9 @@ def main() -> None:
         and 'href="assurance-goal-data-safety.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-tool-orchestration.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-resilient-execution.html"' in upper_assurance_pages["Product / System"]
-        and 'href="assurance-goal-provider-portability.html"' in upper_assurance_pages["Product / System"],
-        "Product / System navigation exposes all seven onboarded Goals through one compact dropdown",
+        and 'href="assurance-goal-provider-portability.html"' in upper_assurance_pages["Product / System"]
+        and 'href="assurance-goal-configuration-predictability.html"' in upper_assurance_pages["Product / System"],
+        "Product / System navigation exposes all eight onboarded Goals through one compact dropdown",
     )
     check(
         "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal routing"]
@@ -1548,6 +1647,21 @@ def main() -> None:
         and 'href="assurance-feat-async-execution.html"' in upper_assurance_pages["Goal provider portability"]
         and 'href="assurance-feat-public-response-contract.html"' in upper_assurance_pages["Goal provider portability"],
         "Provider Portability Goal navigation exposes all three capabilities through the shared dropdown",
+    )
+    check(
+        "<span>Capabilities</span><b>1</b>" in upper_assurance_pages["Goal configuration"]
+        and 'href="assurance-feat-configuration-precedence.html"' in upper_assurance_pages["Goal configuration"]
+        and '<details class="tf-assurance-next">' not in upper_assurance_pages["Goal configuration"],
+        "Configuration Goal navigation uses one direct next-level link for its single capability",
+    )
+    check(
+        "<span>Requirements</span><b>4</b>" in upper_assurance_pages["Feature configuration"]
+        and '<details class="tf-assurance-next">' in upper_assurance_pages["Feature configuration"]
+        and 'href="contract-evidence-request-override-precedence.html"' in upper_assurance_pages["Feature configuration"]
+        and 'href="verification-assurance.html"' in upper_assurance_pages["Feature configuration"]
+        and 'href="contract-evidence-credential-resolution.html"' in upper_assurance_pages["Feature configuration"]
+        and 'href="contract-evidence-config-installation-coherence.html"' in upper_assurance_pages["Feature configuration"],
+        "Configuration Feature navigation exposes all four direct Requirements",
     )
     check(
         "<span>Requirements</span><b>1</b>" in upper_assurance_pages["Feature provider interoperability"]
@@ -1625,6 +1739,18 @@ def main() -> None:
         and "<span>Technical support</span><b>1</b>" in sticky_route_page
         and 'href="contract-evidence-route-order.html"' in sticky_route_page,
         "Requirement navigation shows full ancestry and one direct Technical support child",
+    )
+    check(
+        "<span>Technical support</span><b>1</b>" in install_page
+        and 'href="contract-evidence-config-cache-invalidation.html"' in install_page,
+        "Configuration installation navigation exposes first-class cache invalidation Technical support",
+    )
+    check(
+        "<span>Technical support</span><b>13</b>" in assurance_page
+        and '<details class="tf-assurance-next">' in assurance_page
+        and 'href="contract-evidence-config-provider-identity.html"' in assurance_page
+        and 'href="contract-evidence-config-model-provider-references.html"' in assurance_page,
+        "Invalid Configuration navigation exposes all thirteen first-class validation Technical requirements",
     )
     check(
         "<span>Technical support</span><b>5</b>" in provider_adapter_page
@@ -1731,6 +1857,8 @@ def main() -> None:
         "Feature async execution": "Capability Assurance",
         "Feature public response": "Capability Assurance",
         "Goal provider portability": "Outcome Assurance",
+        "Feature configuration": "Capability Assurance",
+        "Goal configuration": "Outcome Assurance",
         "Product / System": "Product / System Assurance",
     }
     for name, page in upper_assurance_pages.items():
@@ -1788,6 +1916,7 @@ def main() -> None:
         "Goal resilience",
         "Feature public response",
         "Goal provider portability",
+        "Feature configuration",
     ):
         page = upper_assurance_pages[name]
         check(
@@ -1813,6 +1942,7 @@ def main() -> None:
         "Feature provider interoperability",
         "Feature async execution",
         "Feature public response",
+        "Goal configuration",
         "Product / System",
     ):
         check(
@@ -1969,6 +2099,30 @@ def main() -> None:
         and session_outcome["producer_qualification"]["status"] == "MET"
         and session_outcome["freshness"]["status"] == "MET",
         "Session Goal keeps proven restored continuity green while red capability support blocks overall PASS",
+    )
+    config_feature_facts = upper_facts["features"]["FEAT_CONFIGURATION_PRECEDENCE"]
+    config_goal_facts = upper_facts["goals"]["GOAL_CONFIGURATION_PREDICTABILITY"]
+    config_integration = config_feature_facts["capability_integration"]["criteria"][0]
+    config_validation = config_feature_facts["capability_validation"]["criteria"][0]
+    check(
+        config_feature_facts["requirement_support"]["status"] == "NOT MET"
+        and config_feature_facts["capability_integration"]["status"] == "MET"
+        and config_feature_facts["capability_validation"]["status"] == "MET"
+        and config_feature_facts["status"] == "NOT MET"
+        and config_integration["id"] == "AC_CONFIGURATION_EFFECTIVE_VIEW_COMPOSITION"
+        and config_integration["passed_executions"] == 1
+        and config_integration["required_executions"] == 1
+        and config_validation["id"] == "ACV_CONFIGURATION_POST_INSTALL_REJECTION"
+        and config_validation["passed_executions"] == 1
+        and config_validation["required_executions"] == 1,
+        "Configuration Feature keeps both cross-Requirement proofs green while red child support blocks overall PASS",
+    )
+    check(
+        config_goal_facts["capability_support"]["status"] == "NOT MET"
+        and config_goal_facts["cross_capability_integration"]["status"] == "N/A"
+        and config_goal_facts["outcome_validation"]["status"] == "N/A"
+        and config_goal_facts["status"] == "NOT MET",
+        "Configuration Goal stays blocked by capability support without inventing duplicate Goal-level evidence",
     )
 
     goal_page = upper_assurance_pages["Goal routing"]
@@ -2454,6 +2608,7 @@ def main() -> None:
         "REQ_INVALID_CONFIGURATION_ERRORS": assurance_page,
         "REQ_CREDENTIAL_RESOLUTION": credential_page,
         "REQ_CONFIG_INSTALLATION_COHERENCE": install_page,
+        **config_treq_pages,
         "REQ_TOOL_CHOICE": tool_choice_page,
         "REQ_MULTI_ROUND_TOOL_EXECUTION": tool_multi_page,
         "REQ_TOOL_RUNTIME_SAFETY": tool_runtime_page,
@@ -3562,13 +3717,22 @@ def main() -> None:
     check("data-cell=" in assurance_page and 'id="cell-inspector"' in assurance_page,
           "canonical matrix cells switch the accepted cell inspector")
     check(
-        all(label in assurance_page for label in (
-            "Required evidence", "Semantic coverage", "criteria passing",
-            "13 criteria pass", "0 criteria fail", "0 criteria missing",
-            "Retained path properties", "16/16 paths retained",
-            "Evidence confidence",
-        )),
-        "canonical Invalid Configuration Component × Local inspector renders compact aggregate counts for all 13 criteria and 16 retained paths",
+        all(
+            label in assurance_page
+            for label in (
+                "Required evidence",
+                "Semantic coverage",
+                "1<span>/</span>1",
+                "criterion passing",
+                "1 criterion pass",
+                "0 criteria fail",
+                "0 criteria missing",
+                "Retained path properties",
+                "1/1 path retained",
+                "Evidence confidence",
+            )
+        ),
+        "canonical Invalid Configuration parent inspector renders exactly its one System×Local public rejection path",
     )
     check(
         "Representation" in assurance_page
@@ -3647,26 +3811,75 @@ def main() -> None:
         for row in contract_monitor["target"]["coverage"]
         for item in row.get("items") or []
     }
-    check(declared_criteria == {
-        "VC_CONFIG_PROVIDER_IDENTITY", "VC_CONFIG_MODEL_DECLARATION",
-        "VC_CONFIG_REQUIRED_BASE_URL", "VC_CONFIG_ATTEMPT_TIMEOUT",
-        "VC_CONFIG_RETRY_ATTEMPTS", "VC_CONFIG_RETRY_WAIT_BOUNDS",
-        "VC_CONFIG_ROUTE_ATTEMPT_LIMIT", "VC_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES",
-        "VC_CONFIG_TOOL_ROUND_LIMIT", "VC_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS",
-        "VC_CONFIG_DEFAULT_PROVIDER_DECLARATION", "VC_CONFIG_DEFAULT_MODEL_MAPPING",
-        "VC_CONFIG_MODEL_PROVIDER_REFERENCES", "VC_INVALID_CONFIGURATION_PUBLIC_REJECTION",
-    }, "canonical monitor facts retain all fourteen declared Invalid Configuration criteria")
+    check(
+        declared_criteria == {"VC_INVALID_CONFIGURATION_PUBLIC_REJECTION"},
+        "Invalid Configuration parent monitor owns only its public rejection criterion",
+    )
+    check(
+        (contract_monitor.get("target") or {}).get("required_treqs")
+        == list(invalid_child_ids),
+        "Invalid Configuration parent requires all thirteen validation Technical requirements",
+    )
     invalid_targets = {
         (row["level"], row["boundary"]): row
         for row in contract_monitor["target"]["coverage"]
     }
     check(
-        invalid_targets[("component", "none")]["declared_count"] == 13
-        and sum(invalid_targets[("component", "none")]["item_path_counts"].values()) == 16
+        set(invalid_targets) == {("system", "none")}
         and invalid_targets[("system", "none")]["declared_count"] == 1
         and sum(invalid_targets[("system", "none")]["item_path_counts"].values()) == 1,
-        "canonical monitor facts retain the Component 13 criteria / 16 paths plus System 1 / 1 denominator",
+        "Invalid Configuration parent denominator is exactly one System×Local public rejection path",
     )
+    invalid_child_expected = {
+        "TREQ_CONFIG_PROVIDER_IDENTITY": ("VC_CONFIG_PROVIDER_IDENTITY", 1),
+        "TREQ_CONFIG_MODEL_DECLARATION": ("VC_CONFIG_MODEL_DECLARATION", 1),
+        "TREQ_CONFIG_REQUIRED_BASE_URL": ("VC_CONFIG_REQUIRED_BASE_URL", 1),
+        "TREQ_CONFIG_ATTEMPT_TIMEOUT": ("VC_CONFIG_ATTEMPT_TIMEOUT", 1),
+        "TREQ_CONFIG_RETRY_ATTEMPTS": ("VC_CONFIG_RETRY_ATTEMPTS", 1),
+        "TREQ_CONFIG_RETRY_WAIT_BOUNDS": ("VC_CONFIG_RETRY_WAIT_BOUNDS", 2),
+        "TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT": ("VC_CONFIG_ROUTE_ATTEMPT_LIMIT", 1),
+        "TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES": (
+            "VC_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES", 1
+        ),
+        "TREQ_CONFIG_TOOL_ROUND_LIMIT": ("VC_CONFIG_TOOL_ROUND_LIMIT", 1),
+        "TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS": (
+            "VC_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS", 1
+        ),
+        "TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION": (
+            "VC_CONFIG_DEFAULT_PROVIDER_DECLARATION", 1
+        ),
+        "TREQ_CONFIG_DEFAULT_MODEL_MAPPING": ("VC_CONFIG_DEFAULT_MODEL_MAPPING", 2),
+        "TREQ_CONFIG_MODEL_PROVIDER_REFERENCES": (
+            "VC_CONFIG_MODEL_PROVIDER_REFERENCES", 2
+        ),
+    }
+    for contract_id, (criterion_id, path_count) in invalid_child_expected.items():
+        child = monitor_facts["contracts"][contract_id]
+        child_cells = (child.get("target") or {}).get("coverage") or []
+        check(
+            len(child_cells) == 1
+            and child_cells[0].get("level") == "component"
+            and child_cells[0].get("boundary") == "none"
+            and child_cells[0].get("item_path_counts") == {criterion_id: path_count}
+            and (child.get("target") or {}).get("required_treqs") == [],
+            f"{contract_id}: first-class Component×Local target preserves its independently authored denominator",
+        )
+        rows = (child.get("coverage_actual") or {}).get(criterion_id) or []
+        check(
+            len(rows) == path_count
+            and all(
+                row.get("result") == "passed"
+                and row.get("provenance") == "COMPLETE"
+                and row.get("producer_qualification") == "QUALIFIED"
+                and row.get("freshness") == "CURRENT"
+                for row in rows
+            ),
+            f"{contract_id}: Actual retains exactly the current qualified TREQ paths",
+        )
+        check(
+            not ((child.get("fault_actual") or {}).get("retained_challenges") or {}),
+            f"{contract_id}: missing contract-specific fault challenges remain explicit instead of inheriting parent credit",
+        )
 
     override_monitor = monitor_facts["contracts"]["REQ_REQUEST_OVERRIDE_PRECEDENCE"]
     credential_monitor = monitor_facts["contracts"]["REQ_CREDENTIAL_RESOLUTION"]
@@ -3699,11 +3912,11 @@ def main() -> None:
         for row in install_monitor["target"]["coverage"]
     }
     check(
-        install_targets[("component", "none")]["declared_count"] == 3
+        install_targets[("component", "none")]["declared_count"] == 2
         and install_targets[("system_integration", "substitute")]["declared_count"] == 1
         and install_targets[("system_integration", "substitute")]["representation"] == "surrogate_simulated"
         and install_targets[("system_integration", "substitute")]["ms_validation_target"] == "L0",
-        "configuration-installation profile requires Component state evidence plus a System-integration Substitute/Surrogate/L0 runtime-effect path",
+        "configuration-installation parent owns two state criteria plus the System-integration runtime-effect path",
     )
     expected_actual = {
         "REQ_REQUEST_OVERRIDE_PRECEDENCE": {
@@ -3721,10 +3934,15 @@ def main() -> None:
         "REQ_CONFIG_INSTALLATION_COHERENCE": {
             "VC_CONFIG_INSTALLATION_ROUND_TRIP",
             "VC_CONFIG_INSTALLATION_RUNTIME_CAPTURE",
-            "VC_CONFIG_CACHE_INVALIDATION",
             "VC_CONFIG_INSTALLATION_RUNTIME_EFFECT",
         },
+        "TREQ_CONFIG_CACHE_INVALIDATION": {"VC_CONFIG_CACHE_INVALIDATION"},
     }
+    check(
+        (install_monitor.get("target") or {}).get("required_treqs")
+        == ["TREQ_CONFIG_CACHE_INVALIDATION"],
+        "Configuration installation parent exposes cache invalidation only as Technical Support",
+    )
     for contract_id, criteria in expected_actual.items():
         rows = monitor_facts["contracts"][contract_id]["coverage_actual"]
         check(set(rows) == criteria, f"{contract_id}: every declared criterion has retained evidence")
@@ -4157,16 +4375,25 @@ def main() -> None:
               for contract_id in current_by_contract),
           "each target has an explicit P31 history-start event without requiring later snapshots to repeat it")
     component_fault = contract_monitor["fault_actual"]["groups"]["component_local"]
+    model_declaration_contract = monitor_facts["contracts"][
+        "TREQ_CONFIG_MODEL_DECLARATION"
+    ]
     component_target = next(
         row
-        for row in contract_monitor["target"]["coverage"]
+        for row in model_declaration_contract["target"]["coverage"]
         if row["level"] == "component" and row["boundary"] == "none"
     )
     check(
         component_fault["sensitivity"] == 93.5
         and "VC_CONFIG_MODEL_DECLARATION" in component_target["items"]
-        and len(contract_monitor["coverage_actual"].get("VC_CONFIG_MODEL_DECLARATION") or []) == 1,
-        "canonical monitor facts retain the current Component sensitivity and executed model-declaration criterion",
+        and len(
+            model_declaration_contract["coverage_actual"].get(
+                "VC_CONFIG_MODEL_DECLARATION"
+            )
+            or []
+        )
+        == 1,
+        "parent mutation history and first-class model-declaration TREQ retain their distinct current facts",
     )
 
     history = fault_model.get("history") or {}
@@ -4209,13 +4436,33 @@ def main() -> None:
     check("No evidence combines System/System integration reach with a Direct live external interaction." not in assurance_page and
           "No direct live external interaction is retained for this contract." not in assurance_page,
           "old generic gap inference is removed")
+    configuration_trace_routes = {
+        "REQ_REQUEST_OVERRIDE_PRECEDENCE": "contract-evidence-request-override-precedence.html#ce-coverage-req_request_override_precedence",
+        "REQ_CREDENTIAL_RESOLUTION": "contract-evidence-credential-resolution.html#ce-coverage-req_credential_resolution",
+        "REQ_CONFIG_INSTALLATION_COHERENCE": "contract-evidence-config-installation-coherence.html#ce-coverage-req_config_installation_coherence",
+        "REQ_INVALID_CONFIGURATION_ERRORS": "verification-assurance.html#ce-coverage-req_invalid_configuration_errors",
+        "TREQ_CONFIG_CACHE_INVALIDATION": "contract-evidence-config-cache-invalidation.html#ce-coverage-treq_config_cache_invalidation",
+        "TREQ_CONFIG_PROVIDER_IDENTITY": "contract-evidence-config-provider-identity.html#ce-coverage-treq_config_provider_identity",
+        "TREQ_CONFIG_MODEL_DECLARATION": "contract-evidence-config-model-declaration.html#ce-coverage-treq_config_model_declaration",
+        "TREQ_CONFIG_REQUIRED_BASE_URL": "contract-evidence-config-required-base-url.html#ce-coverage-treq_config_required_base_url",
+        "TREQ_CONFIG_ATTEMPT_TIMEOUT": "contract-evidence-config-attempt-timeout.html#ce-coverage-treq_config_attempt_timeout",
+        "TREQ_CONFIG_RETRY_ATTEMPTS": "contract-evidence-config-retry-attempts.html#ce-coverage-treq_config_retry_attempts",
+        "TREQ_CONFIG_RETRY_WAIT_BOUNDS": "contract-evidence-config-retry-wait-bounds.html#ce-coverage-treq_config_retry_wait_bounds",
+        "TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT": "contract-evidence-config-route-attempt-limit.html#ce-coverage-treq_config_route_attempt_limit",
+        "TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES": "contract-evidence-config-fallback-shuffle-min-routes.html#ce-coverage-treq_config_fallback_shuffle_min_routes",
+        "TREQ_CONFIG_TOOL_ROUND_LIMIT": "contract-evidence-config-tool-round-limit.html#ce-coverage-treq_config_tool_round_limit",
+        "TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS": "contract-evidence-config-structured-output-attempts.html#ce-coverage-treq_config_structured_output_attempts",
+        "TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION": "contract-evidence-config-default-provider-declaration.html#ce-coverage-treq_config_default_provider_declaration",
+        "TREQ_CONFIG_DEFAULT_MODEL_MAPPING": "contract-evidence-config-default-model-mapping.html#ce-coverage-treq_config_default_model_mapping",
+        "TREQ_CONFIG_MODEL_PROVIDER_REFERENCES": "contract-evidence-config-model-provider-references.html#ce-coverage-treq_config_model_provider_references",
+    }
     check(
         "TERNFORGE-P27-TRACE-EVIDENCE-START" in trace_reader_page
-        and "contract-evidence-request-override-precedence.html#ce-coverage-req_request_override_precedence" in trace_reader_page
-        and "contract-evidence-credential-resolution.html#ce-coverage-req_credential_resolution" in trace_reader_page
-        and "contract-evidence-config-installation-coherence.html#ce-coverage-req_config_installation_coherence" in trace_reader_page
-        and "verification-assurance.html#ce-coverage-req_invalid_configuration_errors" in trace_reader_page,
-        "Traceability Reader routes profiled Configuration contracts to their real Contract Evidence pages",
+        and all(
+            f'"{contract_id}": "{href}"' in trace_reader_page
+            for contract_id, href in configuration_trace_routes.items()
+        ),
+        "Traceability Reader routes all Configuration REQ/TREQ contracts to their first-class Contract Evidence pages",
     )
     routing_trace_routes = {
         "REQ_SYNC_ROUTE_FALLBACK": "contract-evidence-sync-route-fallback.html#ce-coverage-req_sync_route_fallback",
@@ -4388,7 +4635,7 @@ def main() -> None:
     check("llm-router P34" in manifest and
           "Current portal build: **P34**" in manifest and
           "1. Test Coverage → 2. Fault-based Testing → 3. History" in manifest and
-          "Component semantic coverage **13/13 PASS · 16/16 paths**" in manifest and
+          "collectively **13/13 criteria PASS · 16/16 paths**" in manifest and
           "old custom Assurance Target/Profile registry is compatibility-only" in manifest,
           "manifest active checkpoint matches the current P34 Requirement monitor")
     check("all feature development happens inside" in manifest,
@@ -4511,6 +4758,7 @@ def main() -> None:
         "docs/requirements/structured_output.md",
         "docs/verification-profiles/",
         "features/configuration/overrides.feature",
+        "features/configuration/assurance.feature",
         "features/tools/",
         "features/routing/",
         "features/resilience/",
@@ -4545,6 +4793,7 @@ def main() -> None:
         "tests/llm_router/bdd/providers/",
         "tests/llm_router/bdd/responses/test_public_contract.py",
         "tests/llm_router/bdd/configuration/test_overrides.py",
+        "tests/llm_router/bdd/configuration/test_configuration_assurance.py",
         "tests/llm_router/bdd/execution/test_async.py",
         "tests/llm_router/bdd/routing/",
         "tests/llm_router/bdd/tools/",
