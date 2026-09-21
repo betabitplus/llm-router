@@ -114,6 +114,11 @@ def main() -> None:
         ROOT / "docs/assurance-profiles/configuration.md",
         HTML / "assurance-profiles/configuration.html",
         HTML / "specifications/_generated/configuration/assurance.html",
+        HTML / "assurance-feat-structured-output.html",
+        HTML / "assurance-goal-rich-input-output.html",
+        ROOT / "docs/assurance-profiles/structured-output.md",
+        HTML / "assurance-profiles/structured-output.html",
+        HTML / "specifications/_generated/structured-output/assurance.html",
         HTML / "contract-evidence-tool-choice.html",
         HTML / "contract-evidence-multi-round-tool-execution.html",
         HTML / "contract-evidence-tool-runtime-safety.html",
@@ -290,6 +295,9 @@ def main() -> None:
     ).read_text()
     structured_requirements_source = (ROOT / "docs/requirements/structured_output.md").read_text()
     structured_profile_source = (ROOT / "docs/verification-profiles/structured-output.md").read_text()
+    structured_assurance_profile_source = (
+        ROOT / "docs/assurance-profiles/structured-output.md"
+    ).read_text()
     all_requirements_source = "\n".join(
         path.read_text()
         for path in sorted((ROOT / "docs/requirements").glob("*.md"))
@@ -679,6 +687,13 @@ def main() -> None:
         "VC_CONTENT_PRE_PROVIDER_REJECTION",
         "### Fault applicability",
     )), "Rich input/output Verification Profiles own independent coverage targets and explicit Fault Models")
+    check(all(token in structured_assurance_profile_source for token in (
+        "## Feature · FEAT_STRUCTURED_OUTPUT",
+        "## Goal · GOAL_RICH_INPUT_OUTPUT",
+        "AC_RICH_SCHEMA_MEDIA_COMPOSITION",
+        "ACV_RICH_INVALID_SCHEMA_PRE_PROVIDER",
+        "AOV_RICH_PROVIDER_SWAP_EQUIVALENCE",
+    )), "Rich input/output Assurance Profile owns composition, pre-provider validation, and provider-swap outcome Targets")
 
     check(all(token in verification_profile_source for token in (
         "## Profile · REQ_INVALID_CONFIGURATION_ERRORS",
@@ -1322,6 +1337,8 @@ def main() -> None:
         "Goal provider portability": (HTML / "assurance-goal-provider-portability.html").read_text(),
         "Feature configuration": (HTML / "assurance-feat-configuration-precedence.html").read_text(),
         "Goal configuration": (HTML / "assurance-goal-configuration-predictability.html").read_text(),
+        "Feature rich output": (HTML / "assurance-feat-structured-output.html").read_text(),
+        "Goal rich output": (HTML / "assurance-goal-rich-input-output.html").read_text(),
         "Product / System": (HTML / "assurance-product-system.html").read_text(),
     }
     spec_page = (HTML / "specification-health.html").read_text()
@@ -1522,6 +1539,8 @@ def main() -> None:
         "Goal provider portability": upper_assurance_pages["Goal provider portability"],
         "Goal configuration": upper_assurance_pages["Goal configuration"],
         "Feature configuration": upper_assurance_pages["Feature configuration"],
+        "Goal rich output": upper_assurance_pages["Goal rich output"],
+        "Feature rich output": upper_assurance_pages["Feature rich output"],
         "Feature sessions": upper_assurance_pages["Feature sessions"],
         "Feature data safety": upper_assurance_pages["Feature data safety"],
         "Feature tool selection": upper_assurance_pages["Feature tool selection"],
@@ -1588,7 +1607,7 @@ def main() -> None:
             f"{name}: hierarchy navigation contains navigation only, without assurance status",
         )
     check(
-        "<span>Goals</span><b>8</b>" in upper_assurance_pages["Product / System"]
+        "<span>Goals</span><b>9</b>" in upper_assurance_pages["Product / System"]
         and '<details class="tf-assurance-next">' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-routing-reliability.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-developer-usability.html"' in upper_assurance_pages["Product / System"]
@@ -1597,8 +1616,9 @@ def main() -> None:
         and 'href="assurance-goal-tool-orchestration.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-resilient-execution.html"' in upper_assurance_pages["Product / System"]
         and 'href="assurance-goal-provider-portability.html"' in upper_assurance_pages["Product / System"]
-        and 'href="assurance-goal-configuration-predictability.html"' in upper_assurance_pages["Product / System"],
-        "Product / System navigation exposes all eight onboarded Goals through one compact dropdown",
+        and 'href="assurance-goal-configuration-predictability.html"' in upper_assurance_pages["Product / System"]
+        and 'href="assurance-goal-rich-input-output.html"' in upper_assurance_pages["Product / System"],
+        "Product / System navigation exposes all nine onboarded Goals through one compact dropdown",
     )
     check(
         "<span>Capabilities</span><b>2</b>" in upper_assurance_pages["Goal routing"]
@@ -1653,6 +1673,23 @@ def main() -> None:
         and 'href="assurance-feat-configuration-precedence.html"' in upper_assurance_pages["Goal configuration"]
         and '<details class="tf-assurance-next">' not in upper_assurance_pages["Goal configuration"],
         "Configuration Goal navigation uses one direct next-level link for its single capability",
+    )
+    check(
+        "<span>Capabilities</span><b>1</b>" in upper_assurance_pages["Goal rich output"]
+        and 'href="assurance-feat-structured-output.html"' in upper_assurance_pages["Goal rich output"]
+        and '<details class="tf-assurance-next">' not in upper_assurance_pages["Goal rich output"],
+        "Rich input/output Goal navigation uses one direct next-level link for its single capability",
+    )
+    check(
+        "<span>Requirements</span><b>6</b>" in upper_assurance_pages["Feature rich output"]
+        and '<details class="tf-assurance-next">' in upper_assurance_pages["Feature rich output"]
+        and 'href="contract-evidence-structured-text-output.html"' in upper_assurance_pages["Feature rich output"]
+        and 'href="contract-evidence-document-input.html"' in upper_assurance_pages["Feature rich output"]
+        and 'href="contract-evidence-image-input.html"' in upper_assurance_pages["Feature rich output"]
+        and 'href="contract-evidence-video-input.html"' in upper_assurance_pages["Feature rich output"]
+        and 'href="contract-evidence-structured-schema-contract.html"' in upper_assurance_pages["Feature rich output"]
+        and 'href="contract-evidence-multimodal-content-normalization.html"' in upper_assurance_pages["Feature rich output"],
+        "Rich input/output Feature navigation exposes all six direct Requirements",
     )
     check(
         "<span>Requirements</span><b>4</b>" in upper_assurance_pages["Feature configuration"]
@@ -1859,6 +1896,8 @@ def main() -> None:
         "Goal provider portability": "Outcome Assurance",
         "Feature configuration": "Capability Assurance",
         "Goal configuration": "Outcome Assurance",
+        "Feature rich output": "Capability Assurance",
+        "Goal rich output": "Outcome Assurance",
         "Product / System": "Product / System Assurance",
     }
     for name, page in upper_assurance_pages.items():
@@ -1917,6 +1956,8 @@ def main() -> None:
         "Feature public response",
         "Goal provider portability",
         "Feature configuration",
+        "Feature rich output",
+        "Goal rich output",
     ):
         page = upper_assurance_pages[name]
         check(
@@ -1943,6 +1984,7 @@ def main() -> None:
         "Feature async execution",
         "Feature public response",
         "Goal configuration",
+        "Goal rich output",
         "Product / System",
     ):
         check(
@@ -2123,6 +2165,36 @@ def main() -> None:
         and config_goal_facts["outcome_validation"]["status"] == "N/A"
         and config_goal_facts["status"] == "NOT MET",
         "Configuration Goal stays blocked by capability support without inventing duplicate Goal-level evidence",
+    )
+    rich_feature_facts = upper_facts["features"]["FEAT_STRUCTURED_OUTPUT"]
+    rich_goal_facts = upper_facts["goals"]["GOAL_RICH_INPUT_OUTPUT"]
+    rich_integration = rich_feature_facts["capability_integration"]["criteria"][0]
+    rich_validation = rich_feature_facts["capability_validation"]["criteria"][0]
+    rich_outcome = rich_goal_facts["outcome_validation"]["criteria"][0]
+    check(
+        rich_feature_facts["requirement_support"]["status"] == "NOT MET"
+        and rich_feature_facts["capability_integration"]["status"] == "MET"
+        and rich_feature_facts["capability_validation"]["status"] == "MET"
+        and rich_feature_facts["status"] == "NOT MET"
+        and rich_integration["id"] == "AC_RICH_SCHEMA_MEDIA_COMPOSITION"
+        and rich_integration["passed_executions"] == 1
+        and rich_integration["required_executions"] == 1
+        and rich_validation["id"] == "ACV_RICH_INVALID_SCHEMA_PRE_PROVIDER"
+        and rich_validation["passed_executions"] == 1
+        and rich_validation["required_executions"] == 1,
+        "Rich input/output Feature keeps composition and pre-provider validation green while red Requirement support blocks overall PASS",
+    )
+    check(
+        rich_goal_facts["capability_support"]["status"] == "NOT MET"
+        and rich_goal_facts["cross_capability_integration"]["status"] == "N/A"
+        and rich_goal_facts["outcome_validation"]["status"] == "MET"
+        and rich_goal_facts["status"] == "NOT MET"
+        and rich_outcome["id"] == "AOV_RICH_PROVIDER_SWAP_EQUIVALENCE"
+        and rich_outcome["passed_executions"] == 1
+        and rich_outcome["required_executions"] == 1
+        and rich_outcome["producer_qualification"]["status"] == "MET"
+        and rich_outcome["freshness"]["status"] == "MET",
+        "Rich input/output Goal keeps provider-swap outcome green while red capability support blocks overall PASS",
     )
 
     goal_page = upper_assurance_pages["Goal routing"]

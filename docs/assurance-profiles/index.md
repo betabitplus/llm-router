@@ -17,5 +17,6 @@ tools
 resilience
 providers
 configuration
+structured-output
 product-system
 ```
