@@ -1244,6 +1244,7 @@ def main() -> None:
     check(len(feedback.get("families") or []) >= 1, "operator feedback has retained diagnostic families")
 
     mutation_page = (HTML / "mutation-analysis.html").read_text()
+    evidence_trust_page = (HTML / "evidence-trust.html").read_text()
     assurance_page = (HTML / "verification-assurance.html").read_text()
     override_page = (HTML / "contract-evidence-request-override-precedence.html").read_text()
     credential_page = (HTML / "contract-evidence-credential-resolution.html").read_text()
@@ -1997,6 +1998,21 @@ def main() -> None:
         for path in sorted(HTML.glob("contract-evidence-*.html"))
     }
     monitor_copy_pages.update(upper_assurance_pages)
+    monitor_local_link_issues: list[tuple[str, str]] = []
+    for monitor_name, monitor_page in monitor_copy_pages.items():
+        for href in re.findall(r'href="([^"]+)"', monitor_page):
+            target = href.split("#", 1)[0].split("?", 1)[0]
+            if (
+                not target
+                or target.startswith(("http://", "https://", "mailto:", "javascript:"))
+            ):
+                continue
+            if not (HTML / target).exists():
+                monitor_local_link_issues.append((monitor_name, href))
+    check(
+        not monitor_local_link_issues,
+        f"all Contract/upper monitor local link targets exist: {monitor_local_link_issues}",
+    )
     banned_tooltip_phrases = (
         "Fails when",
         "Fails if",
@@ -2215,6 +2231,22 @@ def main() -> None:
         "upper assurance reuses the canonical REQ coverage-card and state-lane inspector pattern",
     )
 
+    assurance_title_suffix=re.search(
+        r"<title>.*?( &#8212; llm-router [^<]+)</title>",
+        assurance_page,
+        flags=re.DOTALL,
+    )
+    mutation_title_suffix=re.search(
+        r"<title>Mutation Analysis( &#8212; llm-router [^<]+)</title>",
+        mutation_page,
+        flags=re.DOTALL,
+    )
+    check(
+        assurance_title_suffix is not None
+        and mutation_title_suffix is not None
+        and mutation_title_suffix.group(1) == assurance_title_suffix.group(1),
+        "Mutation Analysis title inherits the current portal documentation version",
+    )
     check(
         mutation_page.count('id="mutation-') >= 2,
         "Mutation Analysis exposes the measured contract work queue anchors",
@@ -2261,6 +2293,30 @@ def main() -> None:
           "Mutation Analysis keeps shared-scope diagnostics behind a compact disclosure")
     check('id="mutation-operator-feedback"' in mutation_page and "Run cost / mutation diagnostics" in mutation_page,
           "Mutation Analysis keeps operator diagnostics behind a compact disclosure")
+    mutation_toc_match=re.search(
+        r'<nav class="bd-toc-nav page-toc">.*?</nav>',
+        mutation_page,
+        flags=re.DOTALL,
+    )
+    mutation_toc=mutation_toc_match.group(0) if mutation_toc_match else ""
+    check(
+        (
+            not mutation_toc
+            or all(
+                f'href="#{anchor}"' in mutation_toc
+                for anchor in (
+                    "mutation-work-queue",
+                    "mutation-history",
+                    "mutation-unattributed",
+                    "mutation-operator-feedback",
+                )
+            )
+        )
+        and 'href="#ce-' not in mutation_page
+        and 'id="tf-requirement-monitor-style"' not in mutation_page
+        and 'id="tf-requirement-monitor-script"' not in mutation_page,
+        "Mutation Analysis has no leaked Contract Evidence TOC/runtime assets and any local TOC is mutation-specific",
+    )
     check(
         'id="mutation-unattributed"' in mutation_page
         and "2 shared-scope diagnostics" in mutation_page
@@ -2298,6 +2354,25 @@ def main() -> None:
     check("Assurance Target / Verification Profile" not in mutation_page and
           "Guarantee Frontier" not in mutation_page,
           "Mutation Analysis may link outward but does not duplicate Contract Evidence semantics")
+    trust_need_ids=set(
+        re.findall(r'href="#((?:PRODUCER|QUAL)_[A-Z0-9_]+)"', evidence_trust_page)
+    )
+    check(
+        trust_need_ids
+        and all(f'id="{need_id}"' in evidence_trust_page for need_id in trust_need_ids),
+        "Evidence Trust materializes stable anchors for every producer/qualification deep-link",
+    )
+    hidden_registry_links=[]
+    hidden_registry_pattern=re.compile(
+        r'href="[^"]*evidence-producers\.html#(?:PRODUCER|QUAL)_[A-Z0-9_]+"'
+    )
+    for generated_page in HTML.rglob("*.html"):
+        if hidden_registry_pattern.search(generated_page.read_text()):
+            hidden_registry_links.append(str(generated_page.relative_to(HTML)))
+    check(
+        not hidden_registry_links,
+        f"generated portal routes hidden producer registry deep-links through visible Evidence Trust: {hidden_registry_links}",
+    )
     for contract_id in measured:
         wrapper=(RESULTS / contract_id / "index.html").read_text()
         check("verification-assurance.html" not in wrapper,

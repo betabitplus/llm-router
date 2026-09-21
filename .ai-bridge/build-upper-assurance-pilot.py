@@ -76,7 +76,8 @@ def living_spec_url(rows: list[dict]) -> str | None:
     if not feature.startswith("features/") or not feature.endswith(".feature"):
         return None
     relative = feature.removeprefix("features/").removesuffix(".feature")
-    return f"specifications/_generated/{relative}.html"
+    living_spec_slug = relative.replace("_", "-")
+    return f"specifications/_generated/{living_spec_slug}.html"
 
 
 def sha256_file(path: Path) -> str | None:
@@ -502,7 +503,10 @@ def build_facts() -> dict:
                 "id": req_id,
                 "title": graph[req_id]["title"],
                 "status": effective_req(req_id)["status"],
-                "url": f"contract-evidence-{registry.contract_slug(req_id)}.html",
+                "url": registry.CONTRACT_MONITOR_OVERRIDES.get(
+                    req_id,
+                    f"contract-evidence-{registry.contract_slug(req_id)}.html",
+                ),
                 "technical_support": effective_req(req_id)["treqs"],
             }
             for req_id in requirement_ids

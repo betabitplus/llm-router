@@ -2354,6 +2354,18 @@ def write_mutation_analysis_page(summary,feedback):
       r"<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-START -->.*?<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-END -->",
       "",template,flags=re.DOTALL,
     )
+    template=re.sub(
+      r'<style id="tf-requirement-monitor-style">.*?</style>',
+      "",
+      template,
+      flags=re.DOTALL,
+    )
+    template=re.sub(
+      r'<script id="tf-requirement-monitor-script">.*?</script>',
+      "",
+      template,
+      flags=re.DOTALL,
+    )
     measured=[]
     for contract_id,fact in STRENGTH.get("contracts",{}).items():
         if fact.get("score") is None:
@@ -2422,7 +2434,28 @@ def write_mutation_analysis_page(summary,feedback):
 </article>
 """
     text=re.sub(r'<article class="bd-article">.*?</article>',article,template,count=1,flags=re.DOTALL)
-    text=re.sub(r"<title>.*?</title>","<title>Mutation Analysis &#8212; llm-router 0.24.1 documentation</title>",text,count=1,flags=re.DOTALL)
+    mutation_toc=(
+      '<nav class="bd-toc-nav page-toc"><ul class="visible nav section-nav flex-column">'
+      '<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mutation-work-queue">Changes &amp; debt</a></li>'
+      '<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mutation-history">Recent changes</a></li>'
+      '<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mutation-unattributed">Why some contracts are N/A</a></li>'
+      '<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mutation-operator-feedback">Operator feedback</a></li>'
+      '</ul></nav>'
+    )
+    text=re.sub(
+      r'<nav class="bd-toc-nav page-toc">.*?</nav>',
+      mutation_toc,
+      text,
+      count=1,
+      flags=re.DOTALL,
+    )
+    text=re.sub(
+      r"<title>.*?(?= &#8212;)",
+      "<title>Mutation Analysis",
+      text,
+      count=1,
+      flags=re.DOTALL,
+    )
     text=re.sub(
       r'<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">.*?</span></li>',
       '<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Mutation Analysis</span></li>',
@@ -6026,6 +6059,50 @@ def patch_verification_contract_evidence_path():
         trust.write_text(text)
 
 
+def patch_evidence_trust_need_anchors():
+    """Route hidden producer/qualification IDs to visible Evidence Trust anchors."""
+    trust_path=ROOT/"docs/_build/html/evidence-trust.html"
+    if not trust_path.exists():
+        return
+    trust=trust_path.read_text()
+    need_id_pattern=r"(?:PRODUCER|QUAL)_[A-Z0-9_]+"
+    trust=re.sub(
+      rf'href="evidence-producers\.html#({need_id_pattern})"',
+      lambda match:f'href="#{match.group(1)}"',
+      trust,
+    )
+    trust_ids=sorted(set(re.findall(rf'href="#({need_id_pattern})"',trust)))
+    for need_id in trust_ids:
+        if f'id="{need_id}"' in trust:
+            continue
+        trust,count=re.subn(
+          rf'(<a class="reference external" href="#{re.escape(need_id)}")',
+          f'<span id="{need_id}" class="tf-need-anchor-alias" aria-hidden="true"></span>\\1',
+          trust,
+          count=1,
+        )
+        if count!=1:
+            raise RuntimeError(f"unable to materialize Evidence Trust anchor {need_id}")
+    trust_path.write_text(trust)
+
+    generated_root=ROOT/"docs/_build/html"
+    producer_link=re.compile(
+      rf'href="(?:(?:\.\./)*)evidence-producers\.html#({need_id_pattern})"'
+    )
+    for path in generated_root.rglob("*.html"):
+        if path==trust_path:
+            continue
+        text=path.read_text()
+        if not producer_link.search(text):
+            continue
+        relative=os.path.relpath(trust_path,path.parent).replace(os.sep,"/")
+        text=producer_link.sub(
+          lambda match:f'href="{relative}#{match.group(1)}"',
+          text,
+        )
+        path.write_text(text)
+
+
 def patch_living_semantic_pages():
     pages=sorted((ROOT/"docs/_build/html/specifications/_generated").glob("**/*.html"))
     block=r"""<!-- TERNFORGE-P28-LIVING-SEMANTICS-START -->
@@ -6207,6 +6284,7 @@ def integrate_mutation_portal(summary,feedback):
     )
     patch_traceability_contract_evidence_links()
     patch_verification_contract_evidence_path()
+    patch_evidence_trust_need_anchors()
     patch_living_semantic_pages()
     patch_specification_health_mutation(summary)
     patch_portal_navigation()
