@@ -21,7 +21,7 @@ import zlib
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from html import escape as html_escape
-from importlib.metadata import version as package_version
+from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 from typing import Any
 
@@ -63,6 +63,7 @@ SUPPRESSIONS_PATH=ROOT/".ai-bridge/mutation-suppressions.json"
 MUTATION_SEMANTICS_VERSION="p21-local-2"
 MUTATION_ADAPTER_VERSION="p34-local-2"
 PROTOTYPE_BUILD_VERSION="p34-local-1"
+MUTMUT_VERSION="3.8.0"
 MTE_VENDOR_PATH=ROOT/".ai-bridge/vendor/mutation-testing-elements-3.9.0/mutation-test-elements.js.gz"
 MTE_VENDOR_SHA256="751fb010242b0b44e32d84fe7fe0b9ff1da182823b94f59f5c52b001fcfc163b"
 MUTATION_CONFIG={
@@ -134,12 +135,23 @@ UNATTRIBUTED_SCOPE_DIAGNOSTICS=[
     ),
   },
 ]
+def installed_mutmut_version():
+    try:
+        return package_version("mutmut")
+    except PackageNotFoundError:
+        return None
+
+
+def mutation_engine_version():
+    return installed_mutmut_version() or MUTMUT_VERSION
+
+
 def bootstrap_strength_state():
     return {
       "schema_version":"verification-test-strength-spike-5",
       "engine":{
         "name":"mutmut",
-        "version":package_version("mutmut"),
+        "version":mutation_engine_version(),
         "thresholds":MUTATION_CONFIG["thresholds"],
       },
       "contracts":{
@@ -400,7 +412,7 @@ def resolve_diff_scope(base_ref):
     return selection
 
 def contract_fingerprints(contract_id,spec,mutmut_version=None):
-    mutmut_version=mutmut_version or package_version("mutmut")
+    mutmut_version=mutmut_version or mutation_engine_version()
     source_fp=sha256_text(scope_source(spec))
     tests_payload=[{"nodeid":nodeid,"source":test_source(nodeid)} for nodeid in spec["tests"]]
     tests_fp=sha256_text(stable_json(tests_payload))
@@ -442,7 +454,7 @@ def relevant_allure_run_fingerprint():
 
 def build_campaign_inputs(mode,base_ref,contract_ids=None,mutmut_version=None):
     ids=list(CONTRACTS.keys()) if contract_ids is None else list(contract_ids)
-    mutmut_version=mutmut_version or package_version("mutmut")
+    mutmut_version=mutmut_version or mutation_engine_version()
     contracts={cid:contract_fingerprints(cid,CONTRACTS[cid],mutmut_version) for cid in ids}
     head=git_sha()
     base=git_sha(base_ref) if base_ref else None
@@ -752,8 +764,10 @@ def run_mutmut(spec):
     write_config(spec)
     env=os.environ.copy()
     env["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"]="YES"
+    mutmut_executable=shutil.which("mutmut")
     command=[
-      sys.executable,"-m","mutmut","run",
+      *( [mutmut_executable] if mutmut_executable else [sys.executable,"-m","mutmut"] ),
+      "run",
       "--max-children",str(MUTATION_CONFIG["max_children"]),
     ]
     completed=subprocess.run(
@@ -4688,6 +4702,94 @@ def current_input_snapshot(snapshot):
     return "STALE",f"verification inputs changed since the retained run: {sample}{more}",current_digest
 
 
+def evidence_input_paths(snapshot,nodeid,contract_id,source_path,gherkin_feature,registry):
+    paths=set(str(value) for value in (snapshot.get("explicit_inputs") or []) if value)
+    if source_path:
+        paths.add(str(source_path))
+    paths.update(
+      path for path in current_context_files(nodeid)
+      if str(path).startswith("src/")
+    )
+    contract=registry.get(contract_id) or {}
+    if contract.get("source_path"):
+        paths.add(str(contract["source_path"]))
+    profile_path,_=verification_profile_source(contract_id)
+    if profile_path:
+        paths.add(str(profile_path.relative_to(ROOT)))
+    feature=str(gherkin_feature or "").strip()
+    if feature:
+        if not feature.startswith("features/"):
+            feature="features/"+feature
+        paths.add(feature)
+    test_path=ROOT/source_path if source_path else None
+    retained=dict(snapshot.get("inputs") or {})
+    if test_path is not None:
+        cassette_dir=test_path.parent/"cassettes"/test_path.stem
+        cassette_prefix=str(cassette_dir.relative_to(ROOT)).rstrip("/")+"/"
+        paths.update(
+          str(path.relative_to(ROOT))
+          for path in cassette_dir.rglob("*")
+          if path.is_file()
+        )
+        paths.update(path for path in retained if path.startswith(cassette_prefix))
+        for parent in [test_path.parent,*test_path.parents]:
+            if parent==ROOT:
+                break
+            conftest=parent/"conftest.py"
+            relative=str(conftest.relative_to(ROOT))
+            if conftest.is_file() or relative in retained:
+                paths.add(relative)
+    support_root=ROOT/"tests/llm_router/support"
+    paths.update(
+      str(path.relative_to(ROOT))
+      for path in support_root.rglob("*.py")
+      if path.is_file()
+    )
+    data_root=ROOT/"tests/llm_router/data"
+    paths.update(
+      str(path.relative_to(ROOT))
+      for path in data_root.rglob("*")
+      if path.is_file() and "__pycache__" not in path.parts
+    )
+    paths.update(
+      path for path in retained
+      if path.startswith("tests/llm_router/support/")
+      or path=="tests/llm_router/bdd/_support.py"
+      or path.startswith("tests/llm_router/data/")
+    )
+    return sorted(paths)
+
+
+def evidence_input_state(snapshot,paths):
+    retained=dict(snapshot.get("inputs") or {})
+    if not retained:
+        return "UNKNOWN","retained run input snapshot is missing",None,[]
+    if not paths:
+        return "UNKNOWN","no relevant verification inputs could be resolved",None,[]
+    current={}
+    changed=[]
+    unknown=[]
+    for relative in sorted(set(paths)):
+        path=ROOT/relative
+        current_sha=sha256_file(path) if path.is_file() else None
+        retained_sha=retained.get(relative)
+        current[relative]=current_sha
+        if retained_sha is None:
+            unknown.append(relative)
+        elif current_sha!=retained_sha:
+            changed.append(relative)
+    digest=sha256_text(stable_json(current))
+    if unknown:
+        sample=", ".join(unknown[:3])
+        more=f" (+{len(unknown)-3} more)" if len(unknown)>3 else ""
+        return "STALE",f"relevant input was not captured by the retained run: {sample}{more}",digest,sorted(set(unknown+changed))
+    if changed:
+        sample=", ".join(changed[:3])
+        more=f" (+{len(changed)-3} more)" if len(changed)>3 else ""
+        return "STALE",f"relevant verification input changed since the retained run: {sample}{more}",digest,changed
+    return "CURRENT","all inputs relevant to this evidence still match the retained run",digest,[]
+
+
 CORE_EXECUTION_PRODUCERS={
   "PRODUCER_PYTEST",
   "PRODUCER_PY_TESTKIT",
@@ -5446,7 +5548,7 @@ def junit_monitor_actual():
     allure_index=allure_monitor_index()
     depth_run_current,depth_run_basis=depth_run_artifacts_current(allure_index)
     run_inputs=load_evidence_run_inputs()
-    input_state,input_basis,current_input_digest=current_input_snapshot(run_inputs)
+    _,_,current_input_digest=current_input_snapshot(run_inputs)
     manifest=evidence_run_manifest(root,allure_index)
     suite_start_ms,suite_end_ms,_=junit_suite_window(root)
     qualification=load_evidence_qualification()
@@ -5487,6 +5589,12 @@ def junit_monitor_actual():
         retained_source_path=props.get("source_path") or ""
         retained_source_sha=props.get("source_sha256") or ""
         snapshot_source_sha=snapshot_inputs.get(source_path)
+        relevant_inputs=evidence_input_paths(
+          run_inputs,nodeid,criterion_contract,source_path,props.get("gherkin_feature"),registry
+        )
+        input_state,input_basis,relevant_input_digest,changed_inputs=evidence_input_state(
+          run_inputs,relevant_inputs
+        )
         traceability_complete=bool(
           requirement_id
           and criterion_contract==requirement_id
@@ -5587,6 +5695,9 @@ def junit_monitor_actual():
           "producer_ids":full_producer_chain,
           "freshness":freshness,
           "freshness_basis":freshness_basis,
+          "freshness_input_count":len(relevant_inputs),
+          "freshness_changed_inputs":changed_inputs,
+          "freshness_input_sha256":relevant_input_digest,
           "run_id":manifest.get("run_id"),
           "source_path":source_path or None,
           "source_sha256":retained_source_sha or None,
@@ -6405,14 +6516,14 @@ def refresh_freshness(campaign):
     return summary
 
 def build_contract(contract_id,spec,campaign):
-    from mutmut.__main__ import status_by_exit_code  # ty: ignore[unresolved-import]
-    from mutmut.mutation.data import (  # ty: ignore[unresolved-import]
-        SourceFileMutationData,
-    )
     phase="P23"
     contract_started=time.monotonic()
     print(f"[{phase}] running {contract_id}",flush=True)
     run_mutmut(spec)
+    from mutmut.__main__ import status_by_exit_code  # ty: ignore[unresolved-import]
+    from mutmut.mutation.data import (  # ty: ignore[unresolved-import]
+        SourceFileMutationData,
+    )
     source_rel=spec["source"]
     source=ROOT/source_rel
     line_coverage=coverage_by_test(spec)
@@ -6436,6 +6547,11 @@ def build_contract(contract_id,spec,campaign):
         if covered:
             mutant["coveredBy"]=covered
         mutants.append(mutant)
+    if not mutants:
+        raise RuntimeError(
+          f"{contract_id}: mutation engine produced no mutants for required scope "
+          f"{spec['kind']} {spec['scope']}"
+        )
     records=[mutant_record(contract_id,spec,mutant) for mutant in mutants]
     killed=sum(m["status"]=="Killed" for m in mutants)
     survived=sum(m["status"]=="Survived" for m in mutants)
@@ -6538,7 +6654,7 @@ def new_campaign(mode,base_ref):
       "started_at":started_at,
       "finished_at":None,
       "duration_seconds":None,
-      "engine":{"name":"mutmut","version":package_version("mutmut")},
+      "engine":{"name":"mutmut","version":mutation_engine_version()},
       "adapter":{"name":"ternforge-local-mutmut-report-adapter","version":MUTATION_ADAPTER_VERSION,"mutation_semantics_version":MUTATION_SEMANTICS_VERSION},
       "mutation_config":MUTATION_CONFIG,
       "mutation_config_fingerprint":inputs["mutation_config_fingerprint"],
@@ -6579,6 +6695,26 @@ def current_campaign_or_die():
         raise SystemExit("no retained campaign.json")
     return json.loads(CAMPAIGN_PATH.read_text())
 
+
+def ensure_mutmut_overlay():
+    if installed_mutmut_version() is not None:
+        return
+    if os.environ.get("TERNFORGE_MUTATION_OVERLAY") == "1":
+        raise RuntimeError("mutmut bootstrap overlay did not expose the mutation engine")
+    env=os.environ.copy()
+    env["TERNFORGE_MUTATION_OVERLAY"]="1"
+    command=[
+      "uv","run","--with",f"mutmut=={MUTMUT_VERSION}",
+      "python",str(Path(__file__).resolve()),*sys.argv[1:],
+    ]
+    print(
+      f"[P21] bootstrapping isolated mutmut {MUTMUT_VERSION} overlay",
+      flush=True,
+    )
+    completed=subprocess.run(command,cwd=ROOT,env=env)
+    raise SystemExit(completed.returncode)
+
+
 def main():
     args=parse_args()
     OUT.mkdir(parents=True,exist_ok=True)
@@ -6610,6 +6746,7 @@ def main():
         print(f"[P21] triage: {summary['new_unresolved_survivors']} new unresolved · {summary['unresolved_survivors']} unresolved · {summary['suppressed_survivors']} suppressed · {summary['resolved_survivors']} resolved",flush=True)
         return
 
+    ensure_mutmut_overlay()
     validate_contract_scope_attribution()
     validate_linked_test_nodeids()
     deattribute_shared_scope_strength()

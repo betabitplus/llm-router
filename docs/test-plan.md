@@ -4,12 +4,12 @@
 
 ## Project decisions
 
-| Decision                      |                    Value | Effect                                                                       |
-| ----------------------------- | -----------------------: | ---------------------------------------------------------------------------- |
-| Mutation Reach floor          |                **≥ 80%** | blocking when a Requirement selects mutation                                 |
-| Mutation Sensitivity floor    |                **≥ 80%** | blocking when a Requirement selects mutation                                 |
-| Evidence freshness            | **current retained run** | retained verification evidence must belong to the current retained execution |
-| Retained mutmut Test Strength |           **diagnostic** | non-blocking unless a Requirement explicitly overrides it                    |
+| Decision                      |                       Value | Effect                                                                                                                                          |
+| ----------------------------- | --------------------------: | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mutation Reach floor          |                   **≥ 80%** | blocking when a Requirement selects mutation                                                                                                    |
+| Mutation Sensitivity floor    |                   **≥ 80%** | blocking when a Requirement selects mutation                                                                                                    |
+| Evidence freshness            | **relevant inputs current** | retained evidence is valid only while its own code/test/profile/Gherkin/harness inputs still match; stale required evidence must be revalidated |
+| Retained mutmut Test Strength |              **diagnostic** | non-blocking unless a Requirement explicitly overrides it                                                                                       |
 
 (test-plan-test-models)=
 

@@ -12,10 +12,13 @@ import xml.etree.ElementTree as ET
 from collections import defaultdict
 from pathlib import Path
 
+from coverage import CoverageData
+
 ROOT = Path(__file__).resolve().parents[1]
 REQ_FACTS = ROOT / "docs/_build/html/requirement-monitor-facts.json"
 JUNIT = ROOT / "test-results/pytest-junit.xml"
 RUN_INPUTS = ROOT / "test-results/evidence-run-inputs.json"
+COVERAGE_DB = ROOT / "test-results/.coverage"
 OUT_DIR = ROOT / "docs/_build/html"
 QUALIFICATION = OUT_DIR / "evidence-confidence-qualification.json"
 FACTS_OUT = OUT_DIR / "upper-assurance-facts.json"
@@ -84,6 +87,116 @@ def sha256_file(path: Path) -> str | None:
     return hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
 
 
+def coverage_context_files(nodeid: str) -> list[str]:
+    if not COVERAGE_DB.exists():
+        return []
+    data = CoverageData(basename=str(COVERAGE_DB))
+    data.read()
+    data.set_query_context(f"{nodeid}|run")
+    result = []
+    for measured in data.measured_files():
+        if not (data.lines(measured) or []):
+            continue
+        path = Path(measured)
+        try:
+            relative = str(path.resolve().relative_to(ROOT.resolve()))
+        except ValueError:
+            continue
+        if relative.startswith("src/"):
+            result.append(relative)
+    return sorted(set(result))
+
+
+def upper_evidence_input_paths(
+    target: dict,
+    row: dict,
+    run_inputs: dict,
+    nodes: dict[str, dict],
+) -> list[str]:
+    retained = run_inputs.get("inputs") or {}
+    paths = {str(value) for value in (run_inputs.get("explicit_inputs") or []) if value}
+    source_path = str(row.get("source_path") or "").strip()
+    if source_path:
+        paths.add(source_path)
+        test_path = ROOT / source_path
+        cassette_dir = test_path.parent / "cassettes" / test_path.stem
+        cassette_prefix = str(cassette_dir.relative_to(ROOT)).rstrip("/") + "/"
+        paths.update(
+            str(path.relative_to(ROOT))
+            for path in cassette_dir.rglob("*")
+            if path.is_file()
+        )
+        paths.update(path for path in retained if path.startswith(cassette_prefix))
+        for parent in [test_path.parent, *test_path.parents]:
+            if parent == ROOT:
+                break
+            conftest = parent / "conftest.py"
+            relative = str(conftest.relative_to(ROOT))
+            if conftest.is_file() or relative in retained:
+                paths.add(relative)
+    paths.update(coverage_context_files(str(row.get("nodeid") or "")))
+
+    profile_path = str(target.get("profile_path") or "").strip()
+    if profile_path:
+        paths.add(profile_path)
+    owner = nodes.get(str(target.get("owner_id") or "")) or {}
+    if owner.get("source"):
+        paths.add(str(owner["source"]))
+    feature = str(row.get("gherkin_feature") or "").strip()
+    if feature:
+        if not feature.startswith("features/"):
+            feature = "features/" + feature
+        paths.add(feature)
+
+    support_root = ROOT / "tests/llm_router/support"
+    paths.update(
+        str(path.relative_to(ROOT))
+        for path in support_root.rglob("*.py")
+        if path.is_file()
+    )
+    data_root = ROOT / "tests/llm_router/data"
+    paths.update(
+        str(path.relative_to(ROOT))
+        for path in data_root.rglob("*")
+        if path.is_file() and "__pycache__" not in path.parts
+    )
+    paths.update(
+        path
+        for path in retained
+        if path.startswith("tests/llm_router/support/")
+        or path == "tests/llm_router/bdd/_support.py"
+        or path.startswith("tests/llm_router/data/")
+    )
+    return sorted(paths)
+
+
+def upper_evidence_freshness(
+    target: dict,
+    row: dict,
+    run_inputs: dict,
+    nodes: dict[str, dict],
+) -> dict:
+    retained = run_inputs.get("inputs") or {}
+    paths = upper_evidence_input_paths(target, row, run_inputs, nodes)
+    changed = []
+    missing = []
+    for relative in paths:
+        retained_sha = retained.get(relative)
+        current_sha = sha256_file(ROOT / relative)
+        if retained_sha is None:
+            missing.append(relative)
+        elif current_sha != retained_sha:
+            changed.append(relative)
+    unresolved = sorted(set(missing + changed))
+    return {
+        "kind": "evidence_inputs",
+        "nodeid": row.get("nodeid"),
+        "input_count": len(paths),
+        "changed_inputs": unresolved,
+        "status": "NOT MET" if unresolved else "MET",
+    }
+
+
 def required_producers(target: dict) -> list[str]:
     producers = [
         "PRODUCER_PYTEST",
@@ -123,62 +236,11 @@ def producer_gate(target: dict, qualification: dict) -> dict:
 
 
 def freshness_gate(target: dict, rows: list[dict], run_inputs: dict) -> dict:
-    retained_inputs = run_inputs.get("inputs") or {}
-    checks = []
-    profile_rel = str(target.get("profile_path") or "").strip()
-    profile_path = ROOT / profile_rel if profile_rel else None
-    profile_retained = retained_inputs.get(profile_rel) if profile_rel else None
-    profile_current = sha256_file(profile_path) if profile_path is not None else None
-    if profile_retained is None:
-        profile_status = "UNKNOWN"
-    elif profile_current == profile_retained:
-        profile_status = "MET"
-    else:
-        profile_status = "NOT MET"
-    checks.append(
-        {
-            "kind": "assurance_profile",
-            "path": profile_rel,
-            "retained_sha256": profile_retained,
-            "current_sha256": profile_current,
-            "status": profile_status,
-        }
-    )
-
-    for row in rows:
-        source_path = str(row.get("source_path") or "").strip()
-        junit_sha = row.get("source_sha256")
-        if not source_path:
-            checks.append(
-                {
-                    "kind": "test_source",
-                    "path": None,
-                    "retained_sha256": None,
-                    "current_sha256": None,
-                    "status": "UNKNOWN",
-                }
-            )
-            continue
-        source = ROOT / source_path
-        snapshot_sha = retained_inputs.get(source_path)
-        current_sha = sha256_file(source)
-        if snapshot_sha is None or junit_sha is None or current_sha is None:
-            status = "UNKNOWN"
-        elif snapshot_sha == junit_sha == current_sha:
-            status = "MET"
-        else:
-            status = "NOT MET"
-        checks.append(
-            {
-                "kind": "test_source",
-                "path": source_path,
-                "junit_sha256": junit_sha,
-                "retained_sha256": snapshot_sha,
-                "current_sha256": current_sha,
-                "status": status,
-            }
-        )
-
+    nodes = parse_need_graph()
+    checks = [
+        upper_evidence_freshness(target, row, run_inputs, nodes)
+        for row in rows
+    ]
     statuses = [check["status"] for check in checks]
     return {
         "status": domain.combine(statuses) if statuses else "UNKNOWN",
@@ -311,6 +373,7 @@ def parse_profiles() -> dict[str, dict]:
                         "representation": row.get("Representation", ""),
                         "required_executions": required,
                         "success_criterion": row.get("Success criterion", ""),
+                        "owner_id": spec.entity_id,
                         "profile_path": source,
                         "profile_url": spec.profile_url,
                     }
@@ -736,17 +799,19 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
             for row in freshness_rows
         }
     )
-    freshness = ui.lane(
-        "Freshness",
-        domain.FRESHNESS,
-        freshness_actual_values,
-        "CURRENT",
-        freshness_state["status"],
-        "Checks that the retained test source and Assurance Profile still match the current files.",
-        sum(row["status"] == "MET" for row in freshness_rows),
-        len(freshness_rows),
-        "inputs",
-    )
+    freshness = ""
+    if freshness_state["status"] != "MET":
+        freshness = ui.lane(
+            "Freshness",
+            domain.FRESHNESS,
+            freshness_actual_values,
+            "CURRENT",
+            freshness_state["status"],
+            "Checks that retained evidence still matches every input relevant to this proof.",
+            sum(row["status"] == "MET" for row in freshness_rows),
+            len(freshness_rows),
+            "evidence paths",
+        )
     bdd_url = living_spec_url(criterion["rows"])
     links = []
     if bdd_url:

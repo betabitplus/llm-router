@@ -58,6 +58,8 @@ def pytest_sessionstart(session: pytest.Session) -> None:
         "src/llm_router/**/*.py",
         "tests/**/*.py",
         "tests/**/*.feature",
+        "tests/**/cassettes/**/*",
+        "tests/llm_router/data/**/*",
         "features/**/*.feature",
         "docs/requirements/**/*.md",
         "docs/verification-profiles/**/*.md",

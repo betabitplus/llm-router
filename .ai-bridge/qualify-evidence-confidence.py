@@ -790,19 +790,26 @@ def internal_controls() -> dict[str, dict[str, object]]:
         "method": "pytest-bdd",
         "boundary": "Substitute",
         "required_executions": 1,
+        "owner_id": "GOAL_ROUTING_RELIABILITY",
         "profile_path": str(upper_profile.relative_to(ROOT)),
     }
     upper_source_sha = sha256_file(upper_test_source)
     upper_profile_sha = sha256_file(upper_profile)
     upper_row = {
+        "nodeid": "qualification::upper_assurance_control",
         "result": "passed",
         "source_path": str(upper_test_source.relative_to(ROOT)),
         "source_sha256": upper_source_sha,
     }
+    upper_nodes = upper["parse_need_graph"]()
+    upper_input_paths = upper["upper_evidence_input_paths"](
+        upper_target, upper_row, {"inputs": {}}, upper_nodes
+    )
     upper_run_inputs = {
         "inputs": {
-            str(upper_profile.relative_to(ROOT)): upper_profile_sha,
-            str(upper_test_source.relative_to(ROOT)): upper_source_sha,
+            relative: sha256_file(ROOT / relative)
+            for relative in upper_input_paths
+            if (ROOT / relative).is_file()
         }
     }
     upper_producer_ids = (
@@ -873,7 +880,7 @@ def internal_controls() -> dict[str, dict[str, object]]:
         and upper_unknown_producer["status"] == "UNKNOWN"
         and upper_bad_producer["status"] == "NOT MET"
         and upper_stale_source["status"] == "NOT MET"
-        and upper_missing_profile["status"] == "UNKNOWN"
+        and upper_missing_profile["status"] == "NOT MET"
     )
 
     return {

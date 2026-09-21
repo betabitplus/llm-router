@@ -219,10 +219,10 @@ A short-lived attempt was made to start future extraction before the llm-router 
 ### Candidate `py-testkit` ownership — later, not now
 
 - Generic future responsibility: mutation executor boundary, stable mutant fingerprinting, standard Mutation Testing Report Schema 2.0 production, linked-test-only attribution, and direct execution timing.
-- Spike finding: adding mutmut directly to the normal testkit dependency graph conflicts with the existing DocOps/click range; an isolated `uv --with mutmut==3.8.0 --with coverage... --with pytest...` execution overlay worked without polluting normal consumers.
-- Spike finding: mutmut 3.8 reads its config during import, so a future executor must prepare temporary config **before** the isolated worker starts and restore repository state in a parent-owned `finally`.
+- Spike finding: adding mutmut directly to the normal testkit dependency graph conflicts with the existing DocOps/click range. The active llm-router pilot therefore keeps mutmut out of normal dependencies; when the engine is absent, `.ai-bridge/build-mutation-report-prototype.py` relaunches itself in an isolated `uv run --with mutmut==3.8.0` overlay while preserving the project environment.
+- Spike finding confirmed in the active pilot: mutmut 3.8 reads its config during import, so the runner prepares temporary config before importing engine internals and restores repository state in a parent-owned `finally`.
 - Historical spike proof worth retaining: the extracted prototype reproduced the then-current three llm-router scores exactly (61/41 = 59.8%, 51/49 = 51.0%, 28/3 = 90.3%) while keeping report tests/`coveredBy` inside declared linked tests. The Invalid Configuration contract has since expanded to a 16-test mutation-linked scope and now measures 84/26 = 76.4%; future extraction must reproduce the current denominator rather than treating the historical spike score as canonical.
-- **Current status:** no py-testkit mutation implementation is retained; the premature local branch is deleted. Continue using `.ai-bridge/build-mutation-report-prototype.py` inside llm-router.
+- **Current status:** no py-testkit mutation implementation is retained; the premature local branch is deleted. The llm-router-local runner now owns isolated engine bootstrap plus full/diff execution for the remainder of the pilot.
 
 ### Candidate `ternforge-infra-ci` ownership — later, not now
 

@@ -251,6 +251,52 @@ def main() -> None:
     generated_targets = load(HTML / "assurance-targets.json")
     assurance_snapshots = load(BRIDGE / "assurance-snapshots.json")
     generated_assurance_snapshots = load(HTML / "assurance-snapshots.json")
+
+    stale_required = []
+    for contract_id, contract in (monitor_facts.get("contracts") or {}).items():
+        target = contract.get("target") or {}
+        required_items = {
+            item_id
+            for cell in target.get("coverage") or []
+            for item_id in cell.get("items") or []
+        }
+        for item_id in required_items:
+            for row in (contract.get("coverage_actual") or {}).get(item_id, []):
+                if row.get("freshness") != "CURRENT":
+                    stale_required.append(
+                        f"{contract_id}:{item_id}:{row.get('nodeid') or 'unknown'}"
+                    )
+        if target.get("mutation"):
+            mutation_fact = (strength.get("contracts") or {}).get(contract_id) or {}
+            if mutation_fact.get("fresh") is False:
+                stale_required.append(f"{contract_id}:mutation")
+
+    for collection_name in ("features", "goals"):
+        for entity_id, entity in (upper_facts.get(collection_name) or {}).items():
+            for section in entity.values():
+                if not isinstance(section, dict):
+                    continue
+                for criterion in section.get("criteria") or []:
+                    if criterion.get("rows") and (criterion.get("freshness") or {}).get(
+                        "status"
+                    ) != "MET":
+                        stale_required.append(f"{entity_id}:{criterion.get('id')}")
+    product = upper_facts.get("product_system") or {}
+    for section in product.values():
+        if not isinstance(section, dict):
+            continue
+        for criterion in section.get("criteria") or []:
+            if criterion.get("rows") and (criterion.get("freshness") or {}).get(
+                "status"
+            ) != "MET":
+                stale_required.append(f"PRODUCT_SYSTEM:{criterion.get('id')}")
+
+    check(
+        not stale_required,
+        "required retained evidence is fresh"
+        + (f"; stale={', '.join(stale_required[:8])}" if stale_required else ""),
+    )
+
     manifest = (BRIDGE / "mutation-testing-platform-extraction-manifest.md").read_text()
     ownership = (BRIDGE / "system-level-ownership.md").read_text()
     readiness = (BRIDGE / "monitor-readiness.md").read_text()
@@ -349,7 +395,7 @@ def main() -> None:
         "Mutation Reach floor",
         "Mutation Sensitivity floor",
         "Evidence freshness",
-        "current retained run",
+        "relevant inputs current",
         "Retained mutmut Test Strength",
         "impl.comparison",
         "interface.unexpected-interaction",
@@ -813,6 +859,26 @@ def main() -> None:
         "retained execution records an exact run-start verification-input snapshot",
     )
     check(
+        {"tests/**/cassettes/**/*", "tests/llm_router/data/**/*"}
+        <= set(evidence_run_inputs.get("input_scope") or []),
+        "retained input snapshot includes replay cassettes and test data used by evidence",
+    )
+    retained_rows = [
+        row
+        for contract in (monitor_facts.get("contracts") or {}).values()
+        for bindings in (contract.get("coverage_actual") or {}).values()
+        for row in bindings
+    ]
+    check(
+        all(
+            isinstance(row.get("freshness_input_count"), int)
+            and isinstance(row.get("freshness_changed_inputs"), list)
+            and bool(row.get("freshness_input_sha256"))
+            for row in retained_rows
+        ),
+        "each retained Requirement/TREQ evidence path records per-evidence freshness inputs",
+    )
+    check(
         evidence_provenance.get("schema") == "ternforge-evidence-run-provenance-1" and
         bool(evidence_provenance.get("run_id")) and
         all(bool(((evidence_provenance.get("subjects") or {}).get(name) or {}).get(key))
@@ -1127,12 +1193,53 @@ def main() -> None:
     )
     check(adapter.get("mutation_semantics_version") == "p21-local-2",
           "mutation semantics compatibility version remains explicit")
-    check(campaign.get("mode") == "full", "retained pilot campaign is full audit")
+    check(
+        campaign.get("mode") in {"full", "diff"},
+        "retained pilot campaign uses a supported full/diff mode",
+    )
     check(bool(campaign.get("run_id")), "retained pilot campaign has unique run_id")
     check(bool(campaign.get("baseline_run_id")), "retained pilot campaign has baseline_run_id")
     check(campaign.get("run_id") != campaign.get("baseline_run_id"), "run_id is not self-baseline")
     check(bool(campaign.get("finished_at")), "retained pilot campaign finished")
     check(float(campaign.get("duration_seconds") or 0) > 0, "retained pilot campaign has runtime")
+
+    history_runs = [
+        load(path)
+        for path in sorted((RESULTS / "campaign-history").glob("*.json"))
+    ]
+    retained_runs = [*history_runs, campaign]
+    retained_runs_by_id = {
+        row.get("run_id"): row for row in retained_runs if row.get("run_id")
+    }
+    measured_ids = {"REQ_INVALID_CONFIGURATION_ERRORS", "TREQ_TOOL_REGISTRY"}
+    check(
+        any(
+            row.get("mode") == "full"
+            and set(row.get("selected_contracts") or []) == measured_ids
+            and bool(row.get("finished_at"))
+            for row in retained_runs
+        ),
+        "retained mutation history contains a completed full baseline for every uniquely attributable contract",
+    )
+    if campaign.get("mode") == "diff":
+        selected = set(campaign.get("selected_contracts") or [])
+        skipped = set(campaign.get("skipped_contracts") or [])
+        scope_resolution = campaign.get("scope_resolution") or {}
+        check(
+            bool(selected)
+            and selected <= measured_ids
+            and skipped == measured_ids - selected,
+            "latest diff campaign selects only changed uniquely attributable contracts and skips the rest",
+        )
+        check(
+            bool(campaign.get("base_sha"))
+            and all(
+                (scope_resolution.get(contract_id) or {}).get("selected") is True
+                and bool((scope_resolution.get(contract_id) or {}).get("reasons"))
+                for contract_id in selected
+            ),
+            "latest diff campaign retains its base SHA and objective change-selection reasons",
+        )
 
     check(
         summary.get("total_contracts") == 63,
@@ -1157,11 +1264,24 @@ def main() -> None:
     else:
         check(True, "no suppression ledger remains in current clean pilot state")
 
-    measured = campaign.get("contracts") or {}
-    check(set(measured) == {
-        "REQ_INVALID_CONFIGURATION_ERRORS",
-        "TREQ_TOOL_REGISTRY",
-    }, "current full audit measures only uniquely attributable pilot contracts")
+    strength_contracts = strength.get("contracts") or {}
+    check(
+        set(strength_contracts) == measured_ids,
+        "retained Test Strength facts contain only the two uniquely attributable pilot contracts",
+    )
+    measured = {}
+    for contract_id, strength_row in strength_contracts.items():
+        owner_run = retained_runs_by_id.get(strength_row.get("run_id"))
+        check(
+            owner_run is not None,
+            f"{contract_id}: retained Test Strength run_id resolves to a retained campaign",
+        )
+        owner_contract = (owner_run.get("contracts") or {}).get(contract_id)
+        check(
+            owner_contract is not None,
+            f"{contract_id}: retained owner campaign contains the measured contract",
+        )
+        measured[contract_id] = owner_contract
 
     for contract_id, contract in measured.items():
         result = contract.get("result") or {}
@@ -2221,11 +2341,11 @@ def main() -> None:
         and "Scenario coverage" in goal_page
         and '<div class="signal-card coverage-card met-signal">' in goal_page
         and "<b>5/5</b><small>producers</small>" in goal_page
-        and "<b>2/2</b><small>inputs</small>" in goal_page
-        and goal_page.count('class="state-lane"') >= 4
+        and goal_page.count('class="state-lane"') >= 2
         and 'class="marker both">ACTUAL = TARGET' in goal_page
         and "Retained path properties" in goal_page
         and "Evidence confidence" in goal_page
+        and "Freshness" not in goal_page
         and ">Execution<" not in goal_page
         and ">Confidence<" not in goal_page,
         "upper assurance reuses the canonical REQ coverage-card and state-lane inspector pattern",
@@ -3892,10 +4012,11 @@ def main() -> None:
     )
     check(
         all(label in assurance_page for label in (
-            "Provenance", "Producer qualification", "Freshness",
-            "COMPLETE", "QUALIFIED", "CURRENT",
-        )),
-        "canonical retained-path confidence signals are present",
+            "Provenance", "Producer qualification", "COMPLETE", "QUALIFIED",
+        ))
+        and "Freshness" not in assurance_page
+        and "CURRENT" not in assurance_page,
+        "canonical confidence signals stay visible while healthy Freshness stays hidden",
     )
     check(
         "Checks that the evidence uses the required kind of target: synthetic, surrogate, representative, or actual."
@@ -4886,6 +5007,7 @@ def main() -> None:
         ".ai-bridge/build-requirement-monitor.py",
         ".ai-bridge/build-upper-assurance-pilot.py",
         ".ai-bridge/monitor-readiness.md",
+        ".ai-bridge/system-level-ownership.md",
         ".ai-bridge/mutation-testing-platform-extraction-manifest.md",
         ".ai-bridge/qualify-evidence-confidence.py",
         ".ai-bridge/validate-mutation-pilot.py",

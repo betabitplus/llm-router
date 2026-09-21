@@ -106,41 +106,43 @@ def cell_inspector(state: dict) -> str:
         "model paths",
         "dependent-signal",
     )
-    confidence = "".join(
-        [
-            lane(
-                "Provenance",
-                PROVENANCE,
-                state["provenance_actual_values"],
-                "COMPLETE",
-                state["provenance_status"],
-                "Checks that each result belongs to the exact test, run, source version, and artifact it claims.",
-                state["provenance_matched"],
-                state["retained_count"],
-            ),
-            lane(
-                f"Producer qualification · {state['producer_count']} producers",
-                PRODUCER,
-                state["producer_actual_values"],
-                "QUALIFIED",
-                state["producer_status"],
-                "Checks that every evidence producer used by this proof is qualified for its role.",
-                state["producer_matched"],
-                state["retained_count"],
-                "evidence paths",
-            ),
+    confidence_parts = [
+        lane(
+            "Provenance",
+            PROVENANCE,
+            state["provenance_actual_values"],
+            "COMPLETE",
+            state["provenance_status"],
+            "Checks that each result belongs to the exact test, run, source version, and artifact it claims.",
+            state["provenance_matched"],
+            state["retained_count"],
+        ),
+        lane(
+            f"Producer qualification · {state['producer_count']} producers",
+            PRODUCER,
+            state["producer_actual_values"],
+            "QUALIFIED",
+            state["producer_status"],
+            "Checks that every evidence producer used by this proof is qualified for its role.",
+            state["producer_matched"],
+            state["retained_count"],
+            "evidence paths",
+        ),
+    ]
+    if state["freshness_status"] != "MET":
+        confidence_parts.append(
             lane(
                 "Freshness",
                 FRESHNESS,
                 state["freshness_actual_values"],
                 "CURRENT",
                 state["freshness_status"],
-                "Checks that the evidence still matches the current code, tests, Gherkin, and verification policy.",
+                "Checks that retained evidence still matches every input relevant to this proof.",
                 state["freshness_matched"],
                 state["retained_count"],
-            ),
-        ]
-    )
+            )
+        )
+    confidence = "".join(confidence_parts)
     signals = ui.signal_group(
         title="Required evidence",
         body=coverage,
