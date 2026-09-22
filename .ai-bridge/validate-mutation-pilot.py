@@ -4886,21 +4886,124 @@ def main() -> None:
         and 'href="specification-health.html"' not in index_page,
         "portal navigation no longer exposes legacy Specification Map/Health pages",
     )
+    health_model_match = re.search(r"const model=(\{.*?\});\nconst LEVEL_COLORS=", health_page, flags=re.DOTALL)
+    check(health_model_match is not None, "Verification Health Map embeds its layered health model")
+    health_model = json.loads(health_model_match.group(1)) if health_model_match else {}
+    health_layers = (health_model.get("summary") or {}).get("layers") or {}
+    check(
+        tuple(health_layers) == ("assurance", "coverage", "evidence", "execution", "faults", "overall")
+        or set(health_layers) == {"overall", "execution", "coverage", "faults", "evidence", "assurance"},
+        "Verification Health Map exposes Overall, Execution, Coverage, Faults, Evidence, and Assurance layers",
+    )
+    health_rows = {
+        row.get("id"): row
+        for row in [health_model.get("root") or {}, *(health_model.get("items") or [])]
+        if row.get("id")
+    }
+    invalid_config_health = health_rows.get("REQ_INVALID_CONFIGURATION_ERRORS") or {}
+    check(
+        ((invalid_config_health.get("layers") or {}).get("execution") or {}).get("status") == "passed"
+        and ((invalid_config_health.get("layers") or {}).get("overall") or {}).get("status") == "failed",
+        "Health Map distinguishes passing execution from failing canonical assurance for REQ_INVALID_CONFIGURATION_ERRORS",
+    )
+    invalid_layers = invalid_config_health.get("layers") or {}
+    check(
+        any(metric.get("label") == "Tests" and int(metric.get("total") or 0) > 0
+            for metric in ((invalid_layers.get("execution") or {}).get("metrics") or []))
+        and any(metric.get("label") == "Fault groups" and int(metric.get("total") or 0) > 0
+                for metric in ((invalid_layers.get("faults") or {}).get("metrics") or []))
+        and any(metric.get("label") == "TREQ support" and int(metric.get("total") or 0) > 0
+                for metric in ((invalid_layers.get("assurance") or {}).get("metrics") or [])),
+        "Verification Health Map exposes numeric drilldown metrics in cell hover data",
+    )
+    check(
+        "data-health-mode" in health_page
+        and "Plotly.react(element,data,layout,config)" in health_page,
+        "Verification Health Map switches one treemap between health layers",
+    )
+    check(
+        "Click → monitor" not in health_page
+        and "Select a health layer." not in health_page
+        and 'class="tf-health-help"' in health_page
+        and "Shows whether the retained tests and assurance scenarios passed." in health_page,
+        "Verification Health Map keeps instructions out of cells and explains layers only through compact help tooltips",
+    )
+    check(
+        'id="tf-health-tooltip"' in health_page
+        and "#tf-health-map .hoverlayer{display:none!important}" in health_page
+        and "tf-lineage" in health_page
+        and "tf-level-" in health_page
+        and "tf-hierarchy-overlay" not in health_page
+        and "getBoundingClientRect()" in health_page
+        and "showTimer=setTimeout" in health_page,
+        "Verification Health Map keeps stable cell-anchored hover and lineage highlighting without the rejected hierarchy overlay",
+    )
+    check(
+        'return level==="goal"||level==="feature"?row.label:"";' in health_page
+        and "fittedMapLabel" in health_page
+        and "textNode.getComputedTextLength()<=available" in health_page
+        and 'textNode.setAttribute("transform","translate(0,0)")' in health_page
+        and "const textBox=textNode.getBBox();" in health_page
+        and 'const labelInsetX=level==="goal"?12:8;' in health_page
+        and 'const labelInsetY=level==="goal"?10:7;' in health_page
+        and "const dx=box.x+labelInsetX-textBox.x;" in health_page
+        and "const dy=box.y+labelInsetY-textBox.y;" in health_page
+        and "g.tf-level-product text.slicetext" in health_page
+        and "g.tf-level-requirement text.slicetext" in health_page
+        and "g.tf-level-treq text.slicetext" in health_page
+        and 'levelTag(row)+" · "+row.label' not in health_page,
+        "Verification Health Map restores the accepted fixed-size Goal/Feature label geometry while compensating for the new Goal gutter",
+    )
+    check(
+        "#tf-health-map g.tf-level-goal text.slicetext,#tf-health-map g.tf-level-feature text.slicetext{font-size:13.5px!important;font-weight:700!important" in health_page
+        and "#tf-health-map g.tf-level-product>path.surface{fill:transparent!important;stroke:var(--tf-border-strong)!important;stroke-width:1.5px!important" in health_page
+        and "#tf-health-map g.tf-level-goal>path.surface{stroke:var(--pst-color-surface)!important;stroke-width:1.5px!important" in health_page
+        and "#tf-health-map g.tf-level-feature>path.surface{stroke-width:1.25px!important;stroke-opacity:.68!important}" in health_page
+        and "#tf-health-map g.tf-hover-node:not(.tf-level-goal):not(.tf-level-feature)>path.surface{stroke-width:4.5px!important" in health_page
+        and "const BASE_TILING_PAD_PX=2,GOAL_GAP_PX=12,FEATURE_GAP_PX=8;" in health_page
+        and "const GOAL_INSET_PX=(GOAL_GAP_PX-BASE_TILING_PAD_PX)/2;" in health_page
+        and "const FEATURE_INSET_PX=(FEATURE_GAP_PX-BASE_TILING_PAD_PX)/2;" in health_page
+        and "function hierarchyBox(item,geometry)" in health_page
+        and "function roundedRectPath(box,radius)" in health_page
+        and "applyHierarchyGeometry(node,item,geometry)" in health_page
+        and 'item.level==="goal"?10:item.level==="feature"?8:item.level==="product"?10:4' in health_page
+        and "const LEVEL_COLORS={" in health_page
+        and 'product:{passed:"#071908",failed:"#210608",na:"#161616"}' in health_page
+        and 'goal:{passed:"#022d0d",failed:"#3a070a",na:"#262626"}' in health_page
+        and 'feature:{passed:"#044317",failed:"#5a0d12",na:"#393939"}' in health_page
+        and 'requirement:{passed:"#0e6027",failed:"#8c171d",na:"#525252"}' in health_page
+        and 'treq:{passed:"#198038",failed:"#c21f25",na:"#6f6f6f"}' in health_page
+        and "--tf-success:#24a148" in health_page
+        and "--tf-danger:#c21f25" in health_page
+        and "--tf-duration-fast:120ms" in health_page
+        and "--tf-duration-medium:180ms" in health_page
+        and "cubic-bezier(.2,0,0,1)" in health_page
+        and "prefers-reduced-motion:reduce" in health_page
+        and "tf-level-frame-goal" not in health_page
+        and "tf-level-frame-feature" not in health_page
+        and "tf-level-keyline" not in health_page
+        and "tiling:{pad:BASE_TILING_PAD_PX}" in health_page
+        and "stroke-width:14px" not in health_page
+        and "stroke-width:8px" not in health_page
+        and "cornerradius:4" in health_page
+        and "rgba(255,255,255,.28)" in health_page,
+        "Verification Health Map uses real Goal/Feature geometry gaps, rounded containers, and the coherent assurance design-system scale",
+    )
     for name, text in {
         "Health": health_page,
         "Depth": depth_page,
     }.items():
         check(
             'id="tf-map-focus-layout"' in text
-            and 'bd-sidebar-primary bd-sidebar pst-squeeze' in text
+            and "bd-sidebar-primary bd-sidebar pst-squeeze" in text
             and 'id="pst-collapse-sidebar-button" aria-expanded="false"' in text
-            and '.bd-page-width{max-width:100%}' in text
-            and '.bd-main .bd-content .bd-article-container{max-width:100%}' in text,
+            and ".bd-page-width{max-width:100%}" in text
+            and ".bd-main .bd-content .bd-article-container{max-width:100%}" in text,
             f"{name}: map uses native collapsed primary-sidebar rail and full-width article layout",
         )
         check(
             'id="pst-secondary-sidebar"' not in text
-            and 'sidebar-toggle secondary-toggle' not in text,
+            and "sidebar-toggle secondary-toggle" not in text,
             f"{name}: useless secondary sidebar is removed at the page level",
         )
 

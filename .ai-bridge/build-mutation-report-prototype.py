@@ -5,6 +5,7 @@ import ast
 import binascii
 import gzip
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -54,6 +55,8 @@ ASSURANCE_TARGETS_PATH=ROOT/".ai-bridge/assurance-targets.json"
 ASSURANCE_SNAPSHOTS_PATH=ROOT/".ai-bridge/assurance-snapshots.json"
 DEPTH_PAGE=ROOT/"docs/_build/html/verification-depth-map.html"
 HEALTH_PAGE=ROOT/"docs/_build/html/verification-health-map.html"
+REQ_MONITOR_FACTS_PATH=ROOT/"docs/_build/html/requirement-monitor-facts.json"
+UPPER_ASSURANCE_FACTS_PATH=ROOT/"docs/_build/html/upper-assurance-facts.json"
 ALLURE_REPORT_PAGE=ROOT/"docs/_build/html/test-results/index.html"
 MUTATION_PAGE=ROOT/"docs/_build/html/mutation-analysis.html"
 ASSURANCE_PAGE=ROOT/"docs/_build/html/verification-assurance.html"
@@ -71,6 +74,22 @@ MUTATION_CONFIG={
   "max_children":4,
   "thresholds":{"low":60,"high":80},
 }
+
+ASSURANCE_DOMAIN_SPEC=importlib.util.spec_from_file_location(
+  "health_map_assurance_domain",ROOT/".ai-bridge/assurance_monitor_domain.py"
+)
+if ASSURANCE_DOMAIN_SPEC is None or ASSURANCE_DOMAIN_SPEC.loader is None:
+    raise RuntimeError("Could not load assurance monitor domain helpers")
+ASSURANCE_DOMAIN=importlib.util.module_from_spec(ASSURANCE_DOMAIN_SPEC)
+ASSURANCE_DOMAIN_SPEC.loader.exec_module(ASSURANCE_DOMAIN)
+
+ASSURANCE_REGISTRY_SPEC=importlib.util.spec_from_file_location(
+  "health_map_assurance_registry",ROOT/".ai-bridge/assurance_monitor_registry.py"
+)
+if ASSURANCE_REGISTRY_SPEC is None or ASSURANCE_REGISTRY_SPEC.loader is None:
+    raise RuntimeError("Could not load assurance monitor registry")
+ASSURANCE_REGISTRY=importlib.util.module_from_spec(ASSURANCE_REGISTRY_SPEC)
+ASSURANCE_REGISTRY_SPEC.loader.exec_module(ASSURANCE_REGISTRY)
 # __APPEND__
 CONTRACTS={
 "REQ_INVALID_CONFIGURATION_ERRORS":{"source":"src/llm_router/_internal/config/validation.py","kind":"function","scope":"validate_config","tests":[
@@ -1401,7 +1420,7 @@ def portal_map_shell(shell_path, title, article_html):
     text = text.replace("</head>", focus_layout + "\n</head>", 1)
     text, count = re.subn(
         r'<article class="bd-article">.*?</article>',
-        '<article class="bd-article">' + article_html + '</article>',
+        '<article class="bd-article">' + article_html + "</article>",
         text,
         count=1,
         flags=re.DOTALL,
@@ -1411,116 +1430,728 @@ def portal_map_shell(shell_path, title, article_html):
     return text
 
 
-def health_map_payload():
-    needs, nodes, parent, _children, ordered, weights, descendants = assurance_map_graph()
-    tests = map_test_rows(needs)
-    direct = map_contract_test_index(tests)
-    contract_ids = {
-        need_id
-        for need_id, need in nodes.items()
-        if str(need.get("type") or "").lower() in {"req", "treq"}
-    }
-    items = []
-    for need_id in ordered:
-        need = nodes[need_id]
-        scope_ids = descendants[need_id] & contract_ids
-        rows = map_rows_for_scope(scope_ids, direct)
-        by_kind = defaultdict(lambda: {"passed": 0, "total": 0})
-        for row in rows:
-            kind = row.get("verification_kind") or "unknown"
-            by_kind[kind]["total"] += 1
-            by_kind[kind]["passed"] += int(row.get("result") == "passed")
-        status = map_status(rows)
-        issue = next((row for row in rows if row.get("result") != "passed"), None)
-        items.append({
-            "id": need_id,
-            "label": str(need.get("title") or need_id),
-            "kind": NORMATIVE_MAP_LABELS.get(str(need.get("type") or "").lower(), str(need.get("type") or "")),
-            "parent": parent.get(need_id) or "__PRODUCT_INTENT__",
-            "value": weights[need_id],
-            "status": status,
-            "passed": sum(row.get("result") == "passed" for row in rows),
-            "total": len(rows),
-            "by_kind": dict(sorted(by_kind.items())),
-            "issue": (issue or {}).get("title"),
-            "href": f"test-results/index.html?tags=TF_SCOPE__{need_id}",
-            "persistent_label": str(need.get("type") or "").lower() in {"goal", "feature"},
-        })
+def health_layer_status(status):
+    value=str(status or "UNKNOWN").upper().replace("_"," ")
+    if value in {"MET","PASSED","PASS"}:
+        return "passed"
+    if value in {"N/A","NA"}:
+        return "na"
+    return "failed"
 
-    layer_totals = defaultdict(lambda: {"passed": 0, "total": 0})
-    for row in tests:
-        kind = row.get("verification_kind") or "unknown"
-        layer_totals[kind]["total"] += 1
-        layer_totals[kind]["passed"] += int(row.get("result") == "passed")
-    scope_items = [item for item in items if item["kind"] in {"Requirement", "Technical requirement"}]
-    generated_at = str((DEPTH.get("source_run") or {}).get("generated_at") or "")
+
+def health_metric(label, statuses):
+    normalized=[status for status in statuses if health_layer_status(status)!="na"]
     return {
-        "root": {
-            "id": "__PRODUCT_INTENT__",
-            "label": "Product / System",
-            "value": sum(weights[root_id] for root_id in ordered if root_id not in parent),
-            "status": map_status(tests),
-            "passed": sum(row.get("result") == "passed" for row in tests),
-            "total": len(tests),
-            "href": "test-results/index.html",
-        },
-        "items": items,
-        "summary": {
-            "passed": sum(row.get("result") == "passed" for row in tests),
-            "total": len(tests),
-            "healthy_scopes": sum(item["status"] == "passed" for item in scope_items),
-            "scopes": len(scope_items),
-            "issues": sum(item["status"] != "passed" for item in scope_items),
-            "layers": dict(sorted(layer_totals.items())),
-            "generated_at": generated_at,
-        },
+      "label":label,
+      "passed":sum(health_layer_status(status)=="passed" for status in normalized),
+      "total":len(normalized),
     }
 
+
+def merge_health_metrics(results):
+    merged={}
+    order=[]
+    for result in results:
+        for metric in result.get("metrics") or []:
+            label=metric["label"]
+            if label not in merged:
+                merged[label]={"label":label,"passed":0,"total":0}
+                order.append(label)
+            merged[label]["passed"]+=int(metric.get("passed") or 0)
+            merged[label]["total"]+=int(metric.get("total") or 0)
+    return [merged[label] for label in order if merged[label]["total"]]
+
+
+def health_layer_result(statuses, *, href, label, detail="", applicable=True, metrics=None):
+    metrics=list(metrics or [])
+    if not applicable:
+        return {"status":"na","label":label,"detail":detail,"href":href,"passed":0,"total":0,"metrics":[]}
+    normalized=[status for status in statuses if health_layer_status(status)!="na"]
+    passed=sum(health_layer_status(status)=="passed" for status in normalized)
+    total=len(normalized)
+    status="passed" if total and passed==total else "failed"
+    return {
+      "status":status,
+      "label":label,
+      "detail":detail or f"{passed}/{total} checks pass",
+      "href":href,
+      "passed":passed,
+      "total":total,
+      "metrics":metrics,
+    }
+
+
+def upper_section_anchor(entity_id, key):
+    return f"ua-{entity_id.lower().replace('_','-')}-{key.replace('_','-')}"
+
+
+def health_map_payload():
+    needs,nodes,parent,_children,ordered,weights,descendants=assurance_map_graph()
+    tests=map_test_rows(needs)
+    direct_tests=map_contract_test_index(tests)
+    req_facts=json.loads(REQ_MONITOR_FACTS_PATH.read_text())
+    upper_facts=json.loads(UPPER_ASSURANCE_FACTS_PATH.read_text())
+    contracts=req_facts.get("contracts") or {}
+    policy=req_facts.get("policy") or {}
+    contract_ids=set(contracts)
+    monitor_urls=ASSURANCE_REGISTRY.monitor_urls(contract_ids)
+
+    contract_layers={}
+    contract_direct={}
+    for contract_id,contract in contracts.items():
+        cells=[
+          ASSURANCE_DOMAIN.cell_state(contract,target)
+          for target in (contract.get("target") or {}).get("coverage",[])
+        ]
+        faults=[
+          ASSURANCE_DOMAIN.fault_state(contract,group,policy)
+          for group in (contract.get("target") or {}).get("fault_groups",[])
+        ]
+        direct_state=ASSURANCE_DOMAIN.contract_domain_state(contract,policy)
+        contract_direct[contract_id]=direct_state
+        base=monitor_urls.get(contract_id) or ""
+        coverage_href=base+f"#ce-coverage-{contract_id.lower()}"
+        fault_href=base+f"#ce-faults-{contract_id.lower()}"
+        coverage_statuses=[cell["semantic_status"] for cell in cells]
+        evidence_parts={
+          "Representation":[cell["representation_status"] for cell in cells if cell["representation_status"]!="N/A"],
+          "Provenance":[cell["provenance_status"] for cell in cells if cell["provenance_status"]!="N/A"],
+          "Producers":[cell["producer_status"] for cell in cells if cell["producer_status"]!="N/A"],
+          "Freshness":[cell["freshness_status"] for cell in cells if cell["freshness_status"]!="N/A"],
+          "M&S":[cell["ms_status"] for cell in cells if cell["ms_status"]!="N/A"],
+        }
+        evidence_statuses=[status for statuses in evidence_parts.values() for status in statuses]
+        fault_statuses=[fault["status"] for fault in faults if fault["status"]!="N/A"]
+        contract_layers[contract_id]={
+          "coverage":health_layer_result(
+            coverage_statuses,
+            href=coverage_href,
+            label="Coverage",
+            metrics=[health_metric("Targets",coverage_statuses)],
+          ),
+          "faults":health_layer_result(
+            fault_statuses,
+            href=fault_href,
+            label="Faults",
+            applicable=bool(fault_statuses),
+            metrics=[health_metric("Fault groups",fault_statuses)],
+          ),
+          "evidence":health_layer_result(
+            evidence_statuses,
+            href=coverage_href,
+            label="Evidence",
+            applicable=bool(evidence_statuses),
+            metrics=[health_metric(label,statuses) for label,statuses in evidence_parts.items() if statuses],
+          ),
+        }
+
+    def effective_contract_overall(contract_id):
+        direct=contract_direct.get(contract_id,{}).get("overall","UNKNOWN")
+        required_treqs=list(((contracts.get(contract_id) or {}).get("target") or {}).get("required_treqs") or [])
+        if not required_treqs:
+            return direct
+        child=[contract_direct.get(child_id,{}).get("overall","UNKNOWN") for child_id in required_treqs]
+        return ASSURANCE_DOMAIN.combine([direct,*child])
+
+    upper_by_id={}
+    for entity in (upper_facts.get("features") or {}).values():
+        upper_by_id[entity["id"]]=entity
+    for entity in (upper_facts.get("goals") or {}).values():
+        upper_by_id[entity["id"]]=entity
+    product=upper_facts.get("product_system") or {}
+    if product:
+        upper_by_id["__PRODUCT_INTENT__"]=product
+
+    def upper_direct_checks(entity_id, signal):
+        entity=upper_by_id.get(entity_id) or {}
+        if entity_id=="__PRODUCT_INTENT__":
+            keys=("cross_goal_integration","operational_validation")
+        elif entity_id.startswith("GOAL_"):
+            keys=("cross_capability_integration","outcome_validation")
+        elif entity_id.startswith("FEAT_"):
+            keys=("capability_integration","capability_validation")
+        else:
+            return []
+        checks=[]
+        page_id="PRODUCT_SYSTEM" if entity_id=="__PRODUCT_INTENT__" else entity_id
+        page=monitor_urls.get(page_id) or ""
+        for key in keys:
+            section=entity.get(key) or {}
+            if section.get("status")=="N/A":
+                continue
+            href=page+"#"+upper_section_anchor(page_id,key)
+            for criterion in section.get("criteria") or []:
+                if signal=="execution":
+                    statuses=[criterion.get("execution_status","UNKNOWN")]
+                    label="Scenario execution"
+                elif signal=="coverage":
+                    statuses=[criterion.get("execution_status","UNKNOWN")]
+                    label="Required assurance scenario"
+                elif signal=="evidence":
+                    statuses=[
+                      criterion.get("producer_qualification",{}).get("status","UNKNOWN"),
+                      criterion.get("freshness",{}).get("status","UNKNOWN"),
+                    ]
+                    label="Assurance evidence trust"
+                else:
+                    continue
+                checks.append({"statuses":statuses,"href":href,"label":label})
+        return checks
+
+    all_upper_ids=set(upper_by_id)-{"__PRODUCT_INTENT__"}
+
+    def scoped_contracts(need_id):
+        if need_id=="__PRODUCT_INTENT__":
+            return set(contract_ids)
+        return descendants.get(need_id,{need_id}) & contract_ids
+
+    def scoped_upper_ids(need_id):
+        if need_id=="__PRODUCT_INTENT__":
+            return set(all_upper_ids)|{"__PRODUCT_INTENT__"}
+        ids={need_id} if need_id in upper_by_id else set()
+        ids|=(descendants.get(need_id,{need_id}) & all_upper_ids)
+        return ids
+
+    def first_href(results, fallback):
+        failed=next((row["href"] for row in results if row["status"]=="failed" and row.get("href")),None)
+        return failed or next((row["href"] for row in results if row.get("href")),fallback)
+
+    def aggregate_contract_layer(scope_ids,key,fallback):
+        results=[contract_layers[cid][key] for cid in sorted(scope_ids) if cid in contract_layers]
+        statuses=[row["status"] for row in results if row["status"]!="na"]
+        return health_layer_result(
+          statuses,
+          href=first_href(results,fallback),
+          label={"coverage":"Coverage","faults":"Faults","evidence":"Evidence"}[key],
+          applicable=bool(statuses),
+          metrics=merge_health_metrics(results),
+        )
+
+    def aggregate_execution(need_id,scope_ids,fallback):
+        rows=map_rows_for_scope(scope_ids,direct_tests)
+        checks=[{"status":health_layer_status(row.get("result")),"href":fallback} for row in rows]
+        upper_checks=[]
+        for upper_id in sorted(scoped_upper_ids(need_id)):
+            for check in upper_direct_checks(upper_id,"execution"):
+                status=health_layer_result(check["statuses"],href=check["href"],label=check["label"])
+                upper_checks.append(status)
+        statuses=[row["status"] for row in checks]+[row["status"] for row in upper_checks]
+        test_statuses=[row["status"] for row in checks]
+        scenario_statuses=[row["status"] for row in upper_checks]
+        metrics=[]
+        if test_statuses:
+            metrics.append(health_metric("Tests",test_statuses))
+        if scenario_statuses:
+            metrics.append(health_metric("Scenarios",scenario_statuses))
+        return health_layer_result(
+          statuses,
+          href=first_href([*checks,*upper_checks],fallback),
+          label="Execution",
+          applicable=bool(statuses),
+          metrics=metrics,
+        )
+
+    def aggregate_coverage(need_id,scope_ids,fallback):
+        contract_results=[contract_layers[cid]["coverage"] for cid in sorted(scope_ids) if cid in contract_layers]
+        scenario_results=[]
+        for upper_id in sorted(scoped_upper_ids(need_id)):
+            for check in upper_direct_checks(upper_id,"coverage"):
+                scenario_results.append(health_layer_result(
+                  check["statuses"],
+                  href=check["href"],
+                  label=check["label"],
+                  metrics=[health_metric("Scenarios",check["statuses"])],
+                ))
+        results=[*contract_results,*scenario_results]
+        statuses=[row["status"] for row in results if row["status"]!="na"]
+        return health_layer_result(
+          statuses,
+          href=first_href(results,fallback),
+          label="Coverage",
+          applicable=bool(statuses),
+          metrics=[*merge_health_metrics(contract_results),*merge_health_metrics(scenario_results)],
+        )
+
+    def assurance_layer(need_id,fallback):
+        if need_id.startswith("TREQ_"):
+            return health_layer_result([],href=fallback,label="Assurance",applicable=False)
+        if need_id.startswith("REQ_"):
+            required=list(((contracts.get(need_id) or {}).get("target") or {}).get("required_treqs") or [])
+            if not required:
+                return health_layer_result([],href=fallback,label="Technical support",applicable=False)
+            statuses=[contract_direct.get(cid,{}).get("overall","UNKNOWN") for cid in required]
+            return health_layer_result(
+              statuses,
+              href=fallback+f"#ce-technical-support-{need_id.lower()}",
+              label="Assurance",
+              metrics=[health_metric("TREQ support",statuses)],
+            )
+        entity=upper_by_id.get(need_id) or {}
+        if not entity:
+            return health_layer_result([],href=fallback,label="System assurance",applicable=False)
+        if need_id=="__PRODUCT_INTENT__":
+            keys=("goal_support","cross_goal_integration","operational_validation")
+            page_id="PRODUCT_SYSTEM"
+        elif need_id.startswith("GOAL_"):
+            keys=("capability_support","cross_capability_integration","outcome_validation")
+            page_id=need_id
+        else:
+            keys=("requirement_support","capability_integration","capability_validation")
+            page_id=need_id
+        rows=[]
+        metric_labels={keys[0]:"Support",keys[1]:"Integration",keys[2]:"Validation"}
+        metrics=[]
+        for key in keys:
+            state=entity.get(key) or {}
+            if state.get("status")=="N/A":
+                continue
+            row_status=health_layer_status(state.get("status"))
+            rows.append({
+              "status":row_status,
+              "href":fallback+"#"+upper_section_anchor(page_id,key),
+            })
+            members=state.get("children") or state.get("criteria") or []
+            member_statuses=[
+              member.get("status") or member.get("execution_status") or "UNKNOWN"
+              for member in members
+            ]
+            if not member_statuses:
+                member_statuses=[state.get("status","UNKNOWN")]
+            metrics.append(health_metric(metric_labels[key],member_statuses))
+        return health_layer_result(
+          [row["status"] for row in rows],
+          href=first_href(rows,fallback),
+          label="Assurance",
+          applicable=bool(rows),
+          metrics=metrics,
+        )
+
+    def canonical_overall(need_id,fallback):
+        if need_id in contracts:
+            status=effective_contract_overall(need_id)
+        else:
+            status=(upper_by_id.get(need_id) or {}).get("status","UNKNOWN")
+        return health_layer_result(
+          [status],
+          href=fallback,
+          label="Overall",
+        )
+
+    def item_for(need_id,need,parent_id,value,persistent_label):
+        scope=scoped_contracts(need_id)
+        page_id="PRODUCT_SYSTEM" if need_id=="__PRODUCT_INTENT__" else need_id
+        fallback=monitor_urls.get(page_id) or "assurance-product-system.html"
+        execution=aggregate_execution(need_id,scope,fallback)
+        coverage=aggregate_coverage(need_id,scope,fallback)
+        faults=aggregate_contract_layer(scope,"faults",fallback)
+        evidence=aggregate_contract_layer(scope,"evidence",fallback)
+        # Upper-level producer/freshness gates are part of evidence trust too.
+        upper_evidence=[]
+        for upper_id in sorted(scoped_upper_ids(need_id)):
+            for check in upper_direct_checks(upper_id,"evidence"):
+                upper_evidence.append(health_layer_result(
+                  check["statuses"],
+                  href=check["href"],
+                  label=check["label"],
+                  metrics=[
+                    health_metric("Producers",[check["statuses"][0]]),
+                    health_metric("Freshness",[check["statuses"][1]]),
+                  ],
+                ))
+        if upper_evidence:
+            statuses=[evidence["status"]] if evidence["status"]!="na" else []
+            statuses.extend(row["status"] for row in upper_evidence if row["status"]!="na")
+            evidence_inputs=([evidence] if evidence["status"]!="na" else [])+upper_evidence
+            evidence=health_layer_result(
+              statuses,
+              href=first_href(evidence_inputs,fallback),
+              label="Evidence",
+              metrics=merge_health_metrics(evidence_inputs),
+            )
+        assurance=assurance_layer(need_id,fallback)
+        overall=canonical_overall(need_id,fallback)
+        overall_metrics=[]
+        if coverage["status"]!="na":
+            overall_metrics.append({
+              "label":"Coverage",
+              "passed":sum(metric["passed"] for metric in coverage.get("metrics") or []),
+              "total":sum(metric["total"] for metric in coverage.get("metrics") or []),
+            })
+        if faults["status"]!="na":
+            overall_metrics.extend(faults.get("metrics") or [])
+        if evidence["status"]!="na":
+            overall_metrics.append({
+              "label":"Evidence",
+              "passed":sum(metric["passed"] for metric in evidence.get("metrics") or []),
+              "total":sum(metric["total"] for metric in evidence.get("metrics") or []),
+            })
+        if assurance["status"]!="na":
+            overall_metrics.extend(assurance.get("metrics") or [])
+        overall["metrics"]=[metric for metric in overall_metrics if metric["total"]]
+        layers={
+          "overall":overall,
+          "execution":execution,
+          "coverage":coverage,
+          "faults":faults,
+          "evidence":evidence,
+          "assurance":assurance,
+        }
+        return {
+          "id":need_id,
+          "label":"Product / System" if need_id=="__PRODUCT_INTENT__" else str(need.get("title") or need_id),
+          "kind":"Product / System" if need_id=="__PRODUCT_INTENT__" else NORMATIVE_MAP_LABELS.get(str(need.get("type") or "").lower(),str(need.get("type") or "")),
+          "parent":parent_id,
+          "value":value,
+          "layers":layers,
+          "persistent_label":persistent_label,
+        }
+
+    items=[
+      item_for(
+        need_id,
+        nodes[need_id],
+        parent.get(need_id) or "__PRODUCT_INTENT__",
+        weights[need_id],
+        str(nodes[need_id].get("type") or "").lower() in {"goal","feature"},
+      )
+      for need_id in ordered
+    ]
+    root=item_for(
+      "__PRODUCT_INTENT__",
+      {},
+      "",
+      sum(weights[root_id] for root_id in ordered if root_id not in parent),
+      True,
+    )
+    rows=[root,*items]
+    layer_summary={}
+    for key,label in (
+      ("overall","Overall"),
+      ("execution","Execution"),
+      ("coverage","Coverage"),
+      ("faults","Faults"),
+      ("evidence","Evidence"),
+      ("assurance","Assurance"),
+    ):
+        applicable=[row["layers"][key] for row in rows if row["layers"][key]["status"]!="na"]
+        passed=sum(row["status"]=="passed" for row in applicable)
+        layer_summary[key]={
+          "label":label,
+          "status":"passed" if applicable and passed==len(applicable) else "failed",
+          "passed":passed,
+          "total":len(applicable),
+        }
+    generated_at=str((DEPTH.get("source_run") or {}).get("generated_at") or "")
+    return {"root":root,"items":items,"summary":{"layers":layer_summary,"generated_at":generated_at}}
 
 def render_health_map_page():
-    payload = health_map_payload()
-    template = r'''<section id="verification-health-map">
+    payload=health_map_payload()
+    template=r"""<section id="verification-health-map">
 <h1>Verification Health Map<a class="headerlink" href="#verification-health-map" title="Link to this heading">#</a></h1>
-<p class="tf-map-intro">Raw retained test health by specification scope. Green means all linked retained tests pass; red means a failure; amber means incomplete/unknown execution; gray means no retained test evidence. Click a scope to inspect its Allure executions.</p>
 <style id="tf-health-map-style">
-.tf-map-intro{max-width:78rem;margin:.15rem 0 .75rem;color:var(--pst-color-text-muted)}
-.tf-health-status{display:grid;grid-template-columns:minmax(150px,.8fr) minmax(120px,.65fr) minmax(100px,.5fr) minmax(320px,2.5fr);gap:.55rem;align-items:stretch;margin:.6rem 0 .8rem}
-.tf-health-stat{border:1px solid var(--pst-color-border);border-radius:.55rem;background:var(--pst-color-surface);padding:.58rem .72rem;min-width:0}
-.tf-health-stat small{display:block;color:var(--pst-color-text-muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.045em}.tf-health-stat strong{display:block;font-size:1.18rem;line-height:1.3;margin-top:.08rem}.tf-health-stat em{font-style:normal;font-size:.76rem;color:var(--pst-color-text-muted)}
-.tf-health-layers{display:flex;gap:.3rem;height:2.75rem;margin-top:.18rem}.tf-health-layer{flex:1;min-width:0;border-radius:.35rem;text-decoration:none!important;color:#fff!important;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:.2rem .35rem;overflow:hidden}.tf-health-layer span{font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.tf-health-layer b{font-size:.7rem}
-.tf-health-layer.passed{background:#2f8f5b}.tf-health-layer.failed{background:#c2413b}.tf-health-layer.attention{background:#d49a32}.tf-health-layer.none{background:#667085}
-.tf-health-map-shell{border:1px solid var(--pst-color-border);border-radius:.6rem;background:var(--pst-color-surface);padding:.35rem;min-height:520px}.tf-health-map{width:100%;min-height:520px}
-@media(max-width:900px){.tf-health-status{grid-template-columns:1fr 1fr}.tf-health-stat.layers{grid-column:1/-1}.tf-health-map-shell,.tf-health-map{min-height:430px}}
+#verification-health-map{--tf-radius-sm:6px;--tf-radius-md:10px;--tf-duration-fast:120ms;--tf-duration-medium:180ms;--tf-ease:cubic-bezier(.2,0,0,1);--tf-success:#24a148;--tf-danger:#c21f25;--tf-neutral:#6f6f6f;--tf-layer:color-mix(in srgb,var(--pst-color-surface) 97%,var(--pst-color-text-base) 3%);--tf-layer-hover:color-mix(in srgb,var(--pst-color-surface) 92%,var(--pst-color-text-base) 8%);--tf-border:color-mix(in srgb,var(--pst-color-border) 72%,transparent);--tf-border-strong:color-mix(in srgb,var(--pst-color-text-base) 30%,var(--pst-color-border))}
+.tf-health-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.5rem;margin:.6rem 0 .8rem}
+.tf-health-tab{border:1px solid var(--tf-border);border-radius:var(--tf-radius-sm);background:var(--tf-layer);color:inherit;text-align:left;padding:.58rem .68rem;cursor:pointer;min-width:0;transition:border-color var(--tf-duration-fast) var(--tf-ease),background var(--tf-duration-fast) var(--tf-ease),box-shadow var(--tf-duration-fast) var(--tf-ease)}
+.tf-health-tab:hover{background:var(--tf-layer-hover);border-color:var(--tf-border-strong)}
+.tf-health-tab.active{border-color:var(--tf-border-strong);background:var(--tf-layer-hover);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pst-color-text-base) 8%,transparent)}
+.tf-health-tab:focus-visible{outline:2px solid var(--pst-color-primary);outline-offset:2px}
+.tf-health-tab-head{display:flex;align-items:center;gap:.35rem;min-width:0}
+.tf-health-tab-title{font-size:.76rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tf-health-help{position:relative;display:inline-grid;place-items:center;flex:0 0 auto;width:1rem;height:1rem;border:1px solid var(--pst-color-border);border-radius:50%;font-size:.66rem;font-weight:700;color:var(--pst-color-text-muted)}
+.tf-health-help::after{content:attr(data-tip);position:absolute;z-index:30;left:50%;bottom:calc(100% + .45rem);transform:translateX(-50%);width:max-content;max-width:19rem;padding:.42rem .55rem;border:1px solid var(--pst-color-border);border-radius:.4rem;background:var(--pst-color-surface);color:var(--pst-color-text-base);font-size:.72rem;font-weight:500;line-height:1.3;box-shadow:0 .25rem .8rem rgba(0,0,0,.18);opacity:0;visibility:hidden;pointer-events:none;white-space:normal}
+.tf-health-help:hover::after{opacity:1;visibility:visible}
+.tf-health-tab>strong{display:block;margin:.1rem 0 .02rem;font-size:1rem;line-height:1.25}
+.tf-health-tab>small{display:block;color:var(--pst-color-text-muted);font-size:.68rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tf-health-tab.passed>strong{color:var(--tf-success)}.tf-health-tab.failed>strong{color:var(--tf-danger)}
+.tf-health-map-shell{position:relative;border:1px solid var(--tf-border);border-radius:var(--tf-radius-md);background:var(--tf-layer);padding:.55rem;min-height:520px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06)}
+.tf-health-map{width:100%;min-height:520px}
+#tf-health-map .hoverlayer{display:none!important}
+#tf-health-map g.slice>path.surface{transition:filter var(--tf-duration-fast) var(--tf-ease),stroke-width var(--tf-duration-fast) var(--tf-ease),stroke-opacity var(--tf-duration-fast) var(--tf-ease)}
+#tf-health-map g.tf-level-product>path.surface{fill:transparent!important;stroke:var(--tf-border-strong)!important;stroke-width:1.5px!important;stroke-opacity:.72!important}
+#tf-health-map g.tf-level-goal>path.surface{stroke:var(--pst-color-surface)!important;stroke-width:1.5px!important;stroke-opacity:.72!important}
+#tf-health-map g.tf-level-feature>path.surface{stroke-width:1.25px!important;stroke-opacity:.68!important}
+#tf-health-map g.tf-level-requirement>path.surface{stroke-width:1.6px!important;stroke-opacity:.58!important}
+#tf-health-map g.tf-level-treq>path.surface{stroke-width:1px!important;stroke-opacity:.38!important}
+#tf-health-map g.tf-level-goal text.slicetext,#tf-health-map g.tf-level-feature text.slicetext{font-size:13.5px!important;font-weight:700!important;fill:#fff!important}
+#tf-health-map g.tf-level-product text.slicetext,#tf-health-map g.tf-level-requirement text.slicetext,#tf-health-map g.tf-level-treq text.slicetext{display:none!important}
+#tf-health-map g.tf-lineage:not(.tf-level-goal)>path.surface{stroke:var(--pst-color-primary)!important;stroke-opacity:1!important;filter:brightness(1.05)}
+#tf-health-map g.tf-lineage.tf-level-goal>path.surface{filter:brightness(1.05)}
+#tf-health-map g.tf-hover-node:not(.tf-level-goal):not(.tf-level-feature)>path.surface{stroke-width:4.5px!important;filter:brightness(1.1)}
+#tf-health-map g.tf-hover-node.tf-level-goal>path.surface,#tf-health-map g.tf-hover-node.tf-level-feature>path.surface{filter:brightness(1.1)}
+.tf-health-tooltip{position:fixed;z-index:1200;min-width:220px;max-width:320px;padding:.68rem .76rem;border:1px solid var(--tf-border-strong);border-radius:var(--tf-radius-md);background:color-mix(in srgb,var(--pst-color-surface) 96%,var(--pst-color-text-base) 4%);color:var(--pst-color-text-base);box-shadow:0 10px 28px rgba(0,0,0,.22);opacity:0;visibility:hidden;transform:translateY(4px) scale(.985);transition:opacity var(--tf-duration-medium) var(--tf-ease),transform var(--tf-duration-medium) var(--tf-ease),visibility var(--tf-duration-medium) linear;pointer-events:none;text-align:left}
+.tf-health-tooltip.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.tf-health-tooltip-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.42rem}
+.tf-health-tooltip-kind{font-size:.64rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase;color:var(--pst-color-text-muted)}
+.tf-health-tooltip-status{font-size:.69rem;font-weight:800}
+.tf-health-tooltip-status.passed{color:var(--tf-success)}.tf-health-tooltip-status.failed{color:var(--tf-danger)}.tf-health-tooltip-status.na{color:var(--tf-neutral)}
+.tf-health-tooltip-title{font-size:.82rem;font-weight:720;line-height:1.28;margin-bottom:.52rem}
+.tf-health-tooltip-metrics{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:1rem;row-gap:.2rem;padding-top:.46rem;border-top:1px solid color-mix(in srgb,var(--pst-color-border) 72%,transparent);font-size:.73rem;line-height:1.3}
+.tf-health-tooltip-metrics .value{font-variant-numeric:tabular-nums;font-weight:700;text-align:right}
+@media(prefers-reduced-motion:reduce){.tf-health-tab,#tf-health-map g.slice>path.surface,.tf-health-tooltip{transition:none!important}}
+@media(max-width:1100px){.tf-health-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.tf-health-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.tf-health-map-shell,.tf-health-map{min-height:430px}}
 </style>
-<div class="tf-health-status" id="tf-health-status"></div>
-<div class="tf-health-map-shell"><div id="tf-health-map" class="tf-health-map"></div></div>
+<div class="tf-health-tabs" id="tf-health-tabs"></div>
+<div class="tf-health-map-shell">
+  <div id="tf-health-map" class="tf-health-map"></div>
+  <div id="tf-health-tooltip" class="tf-health-tooltip" role="tooltip" aria-hidden="true"></div>
+</div>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <script>
 (()=>{
 const model=__MODEL__;
-const COLORS={passed:"#2f8f5b",failed:"#c2413b",attention:"#d49a32",none:"#667085"};
+const LEVEL_COLORS={
+ product:{passed:"#071908",failed:"#210608",na:"#161616"},
+ goal:{passed:"#022d0d",failed:"#3a070a",na:"#262626"},
+ feature:{passed:"#044317",failed:"#5a0d12",na:"#393939"},
+ requirement:{passed:"#0e6027",failed:"#8c171d",na:"#525252"},
+ treq:{passed:"#198038",failed:"#c21f25",na:"#6f6f6f"}
+};
 const escapeHtml=value=>String(value??"").replace(/[&<>\"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#39;"}[ch]));
-const summary=model.summary;
-const layerHtml=Object.entries(summary.layers).map(([kind,row])=>{const state=row.total===0?"none":row.passed===row.total?"passed":"failed";const tag="TF_LAYER__"+kind.toUpperCase().replace(/[^A-Z0-9]+/g,"_");return `<a class="tf-health-layer ${state}" href="test-results/index.html?tags=${encodeURIComponent(tag)}" title="${escapeHtml(kind)} · ${row.passed}/${row.total} passed · click → Allure"><span>${escapeHtml(kind)}</span><b>${row.passed}/${row.total}</b></a>`}).join("");
-document.getElementById("tf-health-status").innerHTML=`<div class="tf-health-stat"><small>Overall</small><strong>${summary.passed}/${summary.total} PASS</strong><em>retained executions</em></div><div class="tf-health-stat"><small>Scopes</small><strong>${summary.healthy_scopes}/${summary.scopes}</strong><em>REQ/TREQ healthy</em></div><div class="tf-health-stat"><small>Issues</small><strong>${summary.issues}</strong><em>failing / incomplete scopes</em></div><div class="tf-health-stat layers"><small>Layers</small><div class="tf-health-layers">${layerHtml}</div></div>`;
-const root=model.root;
-const rows=[root,...model.items];
-const ids=rows.map(r=>r.id), labels=rows.map(r=>r.label), parents=rows.map(r=>r.id===root.id?"":r.parent), values=rows.map(r=>r.value), colors=rows.map(r=>COLORS[r.status]||COLORS.none);
-const text=rows.map(r=>r.id===root.id||r.persistent_label?r.label:"");
-const custom=rows.map(r=>{const layers=r.by_kind?Object.entries(r.by_kind).map(([k,v])=>`${k}: ${v.passed}/${v.total}`).join(" · "):"";const issue=r.issue?`<br><b>First issue</b> · ${escapeHtml(r.issue)}`:"";return [`${escapeHtml(r.kind||"Overview")}`,`${Number(r.passed||0)}/${Number(r.total||0)} passed`,escapeHtml(layers),issue,r.href||root.href];});
-const data=[{type:"treemap",ids,labels,parents,values,branchvalues:"total",text,textinfo:"text",textfont:{size:14},marker:{colors,line:{width:2,color:"rgba(255,255,255,.72)"}},customdata:custom,hovertemplate:"<b>%{label}</b><br>%{customdata[0]} · %{customdata[1]}<br>%{customdata[2]}%{customdata[3]}<br><b>Click → Allure</b><extra></extra>",pathbar:{visible:false},sort:false}];
+const root=model.root,rows=[root,...model.items];
+const rowById=new Map(rows.map(row=>[row.id,row]));
+const childIds=new Set(rows.filter(row=>row.parent).map(row=>row.parent));
+const BASE_TILING_PAD_PX=2,GOAL_GAP_PX=12,FEATURE_GAP_PX=8;
+const GOAL_INSET_PX=(GOAL_GAP_PX-BASE_TILING_PAD_PX)/2;
+const FEATURE_INSET_PX=(FEATURE_GAP_PX-BASE_TILING_PAD_PX)/2;
+const MODE_ORDER=["overall","execution","coverage","faults","evidence","assurance"];
+const MODE_TIPS={
+ overall:"Shows whether the node passes all required assurance checks.",
+ execution:"Shows whether the retained tests and assurance scenarios passed.",
+ coverage:"Shows whether all required proof targets are covered.",
+ faults:"Shows whether all required fault checks pass.",
+ evidence:"Shows whether the retained evidence is traceable, qualified, and current.",
+ assurance:"Shows whether support, integration, and validation checks pass."
+};
 const element=document.getElementById("tf-health-map");
-const layout={margin:{t:8,l:8,r:8,b:8},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{family:"system-ui,-apple-system,BlinkMacSystemFont,sans-serif"},uirevision:"ternforge-verification-health-map"};
-const config={responsive:true,displayModeBar:false,displaylogo:false};
+const tabs=document.getElementById("tf-health-tabs");
+const tooltip=document.getElementById("tf-health-tooltip");
+let mode="overall";
+let showTimer=null,hideTimer=null,hoveredId=null;
+function statusLabel(value){return value==="passed"?"PASS":value==="failed"?"FAIL":"N/A"}
+function levelKey(row){
+ if(!row||row.id===root.id)return "product";
+ if(row.id.startsWith("GOAL_"))return "goal";
+ if(row.id.startsWith("FEAT_"))return "feature";
+ if(row.id.startsWith("TREQ_"))return "treq";
+ return "requirement";
+}
+function levelTag(row){
+ return {product:"PRODUCT",goal:"GOAL",feature:"FEATURE",requirement:"REQ",treq:"TREQ"}[levelKey(row)];
+}
+function renderTabs(){
+ tabs.innerHTML=MODE_ORDER.map(key=>{const row=model.summary.layers[key];const tip=MODE_TIPS[key];return '<button class="tf-health-tab '+row.status+' '+(key===mode?'active':'')+'" type="button" data-health-mode="'+key+'"><span class="tf-health-tab-head"><span class="tf-health-tab-title">'+escapeHtml(row.label)+'</span><span class="tf-health-help" aria-label="'+escapeHtml(tip)+'" data-tip="'+escapeHtml(tip)+'">?</span></span><strong>'+statusLabel(row.status)+'</strong><small>'+row.passed+'/'+row.total+' nodes pass</small></button>'}).join('');
+ tabs.querySelectorAll('[data-health-mode]').forEach(button=>button.addEventListener('click',()=>{mode=button.dataset.healthMode;hideTooltip(true);clearHighlight();renderTabs();render()}));
+}
+function current(row){return row.layers?.[mode]||{status:"na",label:model.summary.layers[mode]?.label||mode,detail:"Not applicable",href:null,metrics:[]}}
+function target(row){const layer=current(row);return layer.status==="na"?null:layer.href}
+function nodeText(row){
+ const level=levelKey(row);
+ return level==="goal"||level==="feature"?row.label:"";
+}
+function fittedMapLabel(row,node,textNode){
+ const level=levelKey(row);
+ if(level!=="goal"&&level!=="feature")return "";
+ const box=node.querySelector("path.surface")?.getBBox();
+ const width=box?.width||0,height=box?.height||0;
+ if(height<20||width<32)return "";
+ const available=Math.max(0,width-(level==="goal"?28:18)),label=String(row.label||"");
+ textNode.textContent=label;
+ if(textNode.getComputedTextLength()<=available)return label;
+ let lo=1,hi=label.length,best="";
+ while(lo<=hi){
+   const mid=Math.floor((lo+hi)/2),candidate=label.slice(0,mid).trimEnd()+"…";
+   textNode.textContent=candidate;
+   if(textNode.getComputedTextLength()<=available){best=candidate;lo=mid+1}else{hi=mid-1}
+ }
+ return best;
+}
+function hierarchyAncestor(id,level,geometry){
+ let current=geometry.get(id);
+ while(current){
+   if(current.level===level)return current.id;
+   current=geometry.get(current.parent);
+ }
+ return null;
+}
+function insetBox(box,container,inset){
+ const sx=Math.max(.01,(container.width-(2*inset))/container.width);
+ const sy=Math.max(.01,(container.height-(2*inset))/container.height);
+ return {
+   x:container.x+inset+((box.x-container.x)*sx),
+   y:container.y+inset+((box.y-container.y)*sy),
+   width:box.width*sx,
+   height:box.height*sy,
+ };
+}
+function roundedRectPath(box,radius){
+ const r=Math.max(0,Math.min(radius,box.width/2,box.height/2));
+ const x=box.x,y=box.y,x2=x+box.width,y2=y+box.height;
+ return `M${x+r},${y}H${x2-r}Q${x2},${y} ${x2},${y+r}V${y2-r}Q${x2},${y2} ${x2-r},${y2}H${x+r}Q${x},${y2} ${x},${y2-r}V${y+r}Q${x},${y} ${x+r},${y}Z`;
+}
+function hierarchyBox(item,geometry){
+ let box={...item.box};
+ const goalId=hierarchyAncestor(item.id,"goal",geometry);
+ if(goalId){
+   const goalBox=geometry.get(goalId).box;
+   box=insetBox(box,goalBox,GOAL_INSET_PX);
+ }
+ const featureId=hierarchyAncestor(item.id,"feature",geometry);
+ if(featureId){
+   let featureBox={...geometry.get(featureId).box};
+   if(goalId)featureBox=insetBox(featureBox,geometry.get(goalId).box,GOAL_INSET_PX);
+   box=insetBox(box,featureBox,FEATURE_INSET_PX);
+ }
+ return box;
+}
+function applyHierarchyGeometry(node,item,geometry){
+ const surface=node.querySelector("path.surface");
+ if(!surface)return null;
+ const box=hierarchyBox(item,geometry);
+ const radius=item.level==="goal"?10:item.level==="feature"?8:item.level==="product"?10:4;
+ surface.setAttribute("d",roundedRectPath(box,radius));
+ return box;
+}
+function tooltipHtml(row){
+ const layer=current(row),status=statusLabel(layer.status);
+ const metrics=(layer.metrics||[]).map(metric=>
+   '<span>'+escapeHtml(metric.label)+'</span><span class="value">'+Number(metric.passed||0)+' / '+Number(metric.total||0)+'</span>'
+ ).join('');
+ return '<div class="tf-health-tooltip-head"><span class="tf-health-tooltip-kind">'+levelTag(row)+'</span><span class="tf-health-tooltip-status '+layer.status+'">'+status+'</span></div>'+
+   '<div class="tf-health-tooltip-title">'+escapeHtml(row.label)+'</div>'+
+   (metrics?'<div class="tf-health-tooltip-metrics">'+metrics+'</div>':'');
+}
+function clearHighlight(){
+ element.querySelectorAll("g.slice.tf-lineage,g.slice.tf-hover-node").forEach(node=>{
+   node.classList.remove("tf-lineage","tf-hover-node");
+ });
+}
+function lineage(id){
+ const ids=new Set();
+ let currentId=id;
+ while(currentId){
+   ids.add(currentId);
+   currentId=rowById.get(currentId)?.parent||null;
+ }
+ return ids;
+}
+function highlight(id){
+ clearHighlight();
+ const ids=lineage(id);
+ element.querySelectorAll("g.slice").forEach(node=>{
+   const nodeId=node.dataset.nodeId;
+   if(ids.has(nodeId))node.classList.add("tf-lineage");
+   if(nodeId===id)node.classList.add("tf-hover-node");
+ });
+}
+function decorateSlices(){
+ const geometry=new Map();
+ element.querySelectorAll("g.slice").forEach(node=>{
+   const data=node.__data__||{};
+   const id=data.id||data.data?.id;
+   const row=rowById.get(id);
+   if(!row)return;
+   const level=levelKey(row),surface=node.querySelector("path.surface");
+   const x0=Number(data._x0),x1=Number(data._x1),y0=Number(data._y0),y1=Number(data._y1);
+   const fallback=surface?.getBBox();
+   const box=Number.isFinite(x0)&&Number.isFinite(x1)&&Number.isFinite(y0)&&Number.isFinite(y1)
+     ?{x:x0,y:y0,width:x1-x0,height:y1-y0}
+     :fallback&&{x:fallback.x,y:fallback.y,width:fallback.width,height:fallback.height};
+   if(!box)return;
+   node.dataset.nodeId=id;
+   node.dataset.level=level;
+   node.classList.add("tf-level-"+level);
+   geometry.set(id,{id,level,parent:row.parent||null,box});
+ });
+ element.querySelectorAll("g.slice").forEach(node=>{
+   const id=node.dataset.nodeId,row=rowById.get(id),item=geometry.get(id);
+   if(!row||!item)return;
+   const level=item.level,box=applyHierarchyGeometry(node,item,geometry);
+   if(!box)return;
+   const textNode=node.querySelector("text.slicetext");
+   if(textNode){
+     textNode.setAttribute("transform","translate(0,0)");
+     const label=fittedMapLabel(row,node,textNode);
+     textNode.textContent=label;
+     if(label){
+       const textBox=textNode.getBBox();
+       const labelInsetX=level==="goal"?12:8;
+       const labelInsetY=level==="goal"?10:7;
+       const dx=box.x+labelInsetX-textBox.x;
+       const dy=box.y+labelInsetY-textBox.y;
+       textNode.setAttribute("transform","translate("+dx+","+dy+")");
+     }
+     textNode.setAttribute("data-unformatted",label);
+   }
+ });
+}
+function placeTooltip(bbox){
+ const gap=12,pad=10;
+ tooltip.style.left="0px";tooltip.style.top="0px";
+ const rect=tooltip.getBoundingClientRect();
+ let left=bbox.x1+gap;
+ if(left+rect.width>window.innerWidth-pad)left=bbox.x0-rect.width-gap;
+ left=Math.max(pad,Math.min(left,window.innerWidth-rect.width-pad));
+ let top=bbox.y0+Math.min(8,Math.max(0,(bbox.y1-bbox.y0-rect.height)/2));
+ if(top+rect.height>window.innerHeight-pad)top=window.innerHeight-rect.height-pad;
+ top=Math.max(pad,top);
+ tooltip.style.left=Math.round(left)+"px";
+ tooltip.style.top=Math.round(top)+"px";
+}
+function showTooltip(row,bbox){
+ clearTimeout(hideTimer);
+ if(hoveredId===row.id&&tooltip.classList.contains("visible"))return;
+ clearTimeout(showTimer);
+ showTimer=setTimeout(()=>{
+   hoveredId=row.id;
+   tooltip.innerHTML=tooltipHtml(row);
+   tooltip.setAttribute("aria-hidden","false");
+   tooltip.classList.add("visible");
+   placeTooltip(bbox);
+ },110);
+}
+function hideTooltip(immediate=false){
+ clearTimeout(showTimer);clearTimeout(hideTimer);
+ const hide=()=>{hoveredId=null;tooltip.classList.remove("visible");tooltip.setAttribute("aria-hidden","true")};
+ if(immediate)hide();else hideTimer=setTimeout(hide,75);
+}
 function size(){element.style.height=Math.max(430,window.innerHeight-element.getBoundingClientRect().top-20)+"px"}
-function render(){if(!element||typeof Plotly==="undefined")return;size();layout.font.color=getComputedStyle(document.body).color;Plotly.newPlot(element,data,layout,config);element.on("plotly_treemapclick",event=>{const point=event?.points?.[0];const href=point?.customdata?.[4];if(href)window.location.href=href;return false});window.addEventListener("resize",()=>{size();Plotly.Plots.resize(element)})}
+function render(){
+ if(!element||typeof Plotly==="undefined")return;
+ size();
+ const ids=rows.map(r=>r.id),labels=rows.map(r=>r.label),parents=rows.map(r=>r.id===root.id?"":r.parent),values=rows.map(r=>r.value);
+ const colors=rows.map(r=>{const level=levelKey(r),status=current(r).status;return LEVEL_COLORS[level]?.[status]||LEVEL_COLORS[level]?.na||LEVEL_COLORS.treq.na});
+ const text=rows.map(nodeText);
+ const custom=rows.map(r=>[r.id,target(r)]);
+ const data=[{type:"treemap",ids,labels,parents,values,branchvalues:"total",text,textinfo:"text",textfont:{size:18},tiling:{pad:BASE_TILING_PAD_PX},marker:{colors,cornerradius:4,line:{width:1,color:"rgba(255,255,255,.28)"}},customdata:custom,hovertemplate:"<extra></extra>",pathbar:{visible:false},sort:false}];
+ const layout={margin:{t:8,l:8,r:8,b:8},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{family:"system-ui,-apple-system,BlinkMacSystemFont,sans-serif",color:getComputedStyle(document.body).color},uirevision:"ternforge-verification-health-map-"+mode};
+ const config={responsive:true,displayModeBar:false,displaylogo:false};
+ Plotly.react(element,data,layout,config).then(()=>{
+   decorateSlices();
+   element.removeAllListeners?.("plotly_treemapclick");
+   element.removeAllListeners?.("plotly_hover");
+   element.removeAllListeners?.("plotly_unhover");
+   element.on("plotly_treemapclick",event=>{const href=event?.points?.[0]?.customdata?.[1];if(href)window.location.href=href;return false});
+   element.on("plotly_hover",event=>{
+     const point=event?.points?.[0],row=rowById.get(point?.id);
+     if(!row)return;
+     const slice=[...element.querySelectorAll("g.slice")].find(node=>node.dataset.nodeId===row.id);
+     const rect=slice?.querySelector("path.surface")?.getBoundingClientRect();
+     if(!rect)return;
+     highlight(row.id);
+     showTooltip(row,{x0:rect.left,x1:rect.right,y0:rect.top,y1:rect.bottom});
+   });
+   element.on("plotly_unhover",()=>{clearHighlight();hideTooltip(false)});
+ });
+}
+window.addEventListener("resize",()=>{size();Promise.resolve(Plotly.Plots.resize(element)).then(decorateSlices)});
+renderTabs();
 if(typeof Plotly!=="undefined")render();else document.querySelector('script[src*="plotly"]')?.addEventListener("load",render,{once:true});
 })();
 </script>
-</section>'''
-    article = template.replace("__MODEL__", stable_json(payload))
-    HEALTH_PAGE.write_text(portal_map_shell(HEALTH_PAGE, "Verification Health Map", article))
-
+</section>"""
+    article=template.replace("__MODEL__",stable_json(payload))
+    HEALTH_PAGE.write_text(portal_map_shell(HEALTH_PAGE,"Verification Health Map",article))
 
 def depth_map_payload():
     _needs, nodes, parent, _children, ordered, weights, descendants = assurance_map_graph()
@@ -1643,7 +2274,7 @@ def depth_map_payload():
 
 def render_depth_map_page():
     payload = depth_map_payload()
-    template = r'''<section id="verification-depth-map">
+    template = r"""<section id="verification-depth-map">
 <h1>Verification Depth Map<a class="headerlink" href="#verification-depth-map" title="Link to this heading">#</a></h1>
 <p class="tf-map-intro">One specification treemap, three selectable projections: standard ISTQB <strong>Test Level</strong>, observed <strong>Boundary Reality</strong>, and mutation-based <strong>Test Strength</strong>. Boundary Reality is an exposure mode, not a universal weak→strong score. <strong>Representation Fidelity</strong> now qualifies each concrete evidence path together with producer/M&amp;S credibility rather than acting as a separate map axis.</p>
 <style id="tf-depth-map-style">
@@ -1690,7 +2321,7 @@ function render(){const definitions=dict();const ids=rows.map(r=>r.id),labels=ro
 document.querySelectorAll(".tf-depth-dimension").forEach(button=>button.addEventListener("click",()=>{mode=button.dataset.depthMode;document.querySelectorAll(".tf-depth-dimension").forEach(node=>node.classList.toggle("active",node===button));render()}));window.addEventListener("resize",()=>{element.style.height=Math.max(430,window.innerHeight-element.getBoundingClientRect().top-20)+"px";Plotly.Plots.resize(element)});if(typeof Plotly!=="undefined")render();else document.querySelector('script[src*="plotly"]')?.addEventListener("load",render,{once:true});
 })();
 </script>
-</section>'''
+</section>"""
     article = template.replace("__MODEL__", stable_json(payload))
     DEPTH_PAGE.write_text(portal_map_shell(DEPTH_PAGE, "Verification Depth Map", article))
 
@@ -1777,7 +2408,6 @@ def patch_allure_scope_tags():
 
 def regenerate_verification_maps():
     patch_allure_scope_tags()
-    render_health_map_page()
     render_depth_map_page()
 # TERNFORGE-P34-CLEAN-MAPS-END
 
@@ -6415,6 +7045,11 @@ def integrate_mutation_portal(summary,feedback):
       [sys.executable,str(ROOT/".ai-bridge/build-requirement-monitor.py")],
       cwd=ROOT,check=True,
     )
+    subprocess.run(
+      [sys.executable,str(ROOT/".ai-bridge/build-upper-assurance-pilot.py")],
+      cwd=ROOT,check=True,
+    )
+    render_health_map_page()
     patch_traceability_contract_evidence_links()
     patch_verification_contract_evidence_path()
     patch_evidence_trust_need_anchors()
