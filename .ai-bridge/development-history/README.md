@@ -5,7 +5,7 @@
 ## Передача работы
 
 **Новый владелец начинает с [HANDOFF.md](HANDOFF.md).**
-Там собраны текущая ментальная модель, ownership, ключевые invariants, роли views, UX-правила, сознательно отвергнутые подходы и checklist перед изменениями. История 001–039 нужна уже как объяснение, **почему** эти решения появились и как они менялись.
+Там собраны текущая ментальная модель, ownership, ключевые invariants, роли views, UX-правила, сознательно отвергнутые подходы и checklist перед изменениями. История 001–040 нужна уже как объяснение, **почему** эти решения появились и как они менялись.
 
 ## Что сохраняем
 
@@ -72,3 +72,4 @@
 37. [037 — Health Map: толстая рамка не равна настоящему gap](entries/037-2026-09-22-health-map-real-gaps-vs-stroke.md)
 38. [038 — Health Map: real geometric hierarchy принята](entries/038-2026-09-22-health-map-geometric-hierarchy-shipped.md)
 39. [039 — Health Map v2 и ревизия честности монитора](entries/039-2026-09-23-health-map-v2-monitor-honesty-audit.md)
+40. [040 — Health Map: лента слоёв по критичности и таблица всех слоёв](entries/040-2026-09-24-health-map-layer-strip-severity-table.md)

@@ -5371,6 +5371,25 @@ def main() -> None:
         and 'aria-describedby="tf-health-tip-' in health_page,
         "layer cards show the verdict, the number of red marks, a mini-map, and one-sentence help",
     )
+    check(
+        "function layerOrder(){" in health_page
+        and ".sort((a,b)=>failingOf(b)-failingOf(a))" in health_page
+        and 'passing:rest.filter(key=>verdictOf(key)==="passed")' in health_page
+        and 'class="tf-health-group pinned"' in health_page
+        and ".tf-health-group.failed+.tf-health-group.passed::before" in health_page
+        and 'data-health-scroll="1"' in health_page
+        and "grid-template-columns:repeat(6,minmax(0,1fr))" not in health_page,
+        "layer strip stays one scrollable row: Overall first, failing layers by red marks, passing layers in their order behind a pass line, and the scroll edges count hidden failing layers",
+    )
+    check(
+        '<div class="tf-health-table" id="tf-health-table" role="dialog" aria-label="All health layers" hidden>' in health_page
+        and 'aria-controls="tf-health-table"' in health_page
+        and 'role="listbox"' in health_page
+        and 'data-health-row="' in health_page
+        and "function pick(key,leaf,pointer){" in health_page
+        and "entry.link.focus()" in health_page,
+        "the all-layers table stays hidden until asked for; a row opens its layer's map and a contract cell opens that contract on the map",
+    )
     layer_tips = re.findall(r'\["(\w+)","[^"]+","([^"]+)"\]', health_page)
     check(
         len(layer_tips) == len(health_layer_keys)

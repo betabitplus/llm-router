@@ -2109,21 +2109,48 @@ def render_health_map_page():
     template=r"""<section id="verification-health-map">
 <h1>Verification Health Map<a class="headerlink" href="#verification-health-map" title="Link to this heading">#</a></h1>
 <style id="tf-health-map-style">
-#verification-health-map{--tf-radius-sm:6px;--tf-radius-md:10px;--tf-duration-fast:120ms;--tf-duration-medium:180ms;--tf-ease:cubic-bezier(.2,0,0,1);--tf-hm-pass:#8ed3a2;--tf-hm-fail:#dc3f47;--tf-hm-na:#dde0e5;--tf-hm-pass-ink:#1f7a3f;--tf-hm-fail-ink:#c42b34;--tf-hm-pass-hover:color-mix(in srgb,var(--tf-hm-pass) 91%,#000);--tf-hm-fail-hover:color-mix(in srgb,var(--tf-hm-fail) 90%,#000);--tf-hm-na-hover:color-mix(in srgb,var(--tf-hm-na) 92%,#000);--tf-hm-goal:color-mix(in srgb,var(--pst-color-text-base) 4.5%,var(--pst-color-background));--tf-hm-feature:var(--pst-color-background);--tf-hm-raised:color-mix(in srgb,var(--pst-color-text-base) 8%,var(--pst-color-background));--tf-hm-line:color-mix(in srgb,var(--pst-color-text-base) 13%,transparent);--tf-hm-line-strong:color-mix(in srgb,var(--pst-color-text-base) 28%,transparent);--tf-hm-lineage:color-mix(in srgb,var(--pst-color-text-base) 40%,transparent);--tf-hm-selected:color-mix(in srgb,var(--pst-color-text-base) 55%,transparent);--tf-hm-ring:color-mix(in srgb,var(--pst-color-text-base) 78%,transparent)}
-html[data-theme=dark] #verification-health-map{--tf-hm-pass:#22603a;--tf-hm-fail:#e5484d;--tf-hm-na:#2f353d;--tf-hm-pass-ink:#5fcf85;--tf-hm-fail-ink:#ff6b70;--tf-hm-pass-hover:color-mix(in srgb,var(--tf-hm-pass) 84%,#fff);--tf-hm-fail-hover:color-mix(in srgb,var(--tf-hm-fail) 86%,#fff);--tf-hm-na-hover:color-mix(in srgb,var(--tf-hm-na) 84%,#fff);--tf-hm-goal:color-mix(in srgb,var(--pst-color-text-base) 5%,var(--pst-color-background));--tf-hm-feature:color-mix(in srgb,var(--pst-color-text-base) 10%,var(--pst-color-background));--tf-hm-raised:color-mix(in srgb,var(--pst-color-text-base) 10%,var(--pst-color-background));--tf-hm-ring:color-mix(in srgb,var(--pst-color-text-base) 92%,transparent)}
+#verification-health-map{--tf-radius-sm:6px;--tf-radius-md:10px;--tf-duration-fast:120ms;--tf-duration-medium:180ms;--tf-ease:cubic-bezier(.2,0,0,1);--tf-hm-pass:#8ed3a2;--tf-hm-fail:#dc3f47;--tf-hm-na:#dde0e5;--tf-hm-pass-ink:#1f7a3f;--tf-hm-fail-ink:#c42b34;--tf-hm-pass-hover:color-mix(in srgb,var(--tf-hm-pass) 91%,#000);--tf-hm-fail-hover:color-mix(in srgb,var(--tf-hm-fail) 90%,#000);--tf-hm-na-hover:color-mix(in srgb,var(--tf-hm-na) 92%,#000);--tf-hm-na-strong:color-mix(in srgb,var(--tf-hm-na) 86%,#000);--tf-hm-goal:color-mix(in srgb,var(--pst-color-text-base) 4.5%,var(--pst-color-background));--tf-hm-feature:var(--pst-color-background);--tf-hm-raised:color-mix(in srgb,var(--pst-color-text-base) 8%,var(--pst-color-background));--tf-hm-line:color-mix(in srgb,var(--pst-color-text-base) 13%,transparent);--tf-hm-line-strong:color-mix(in srgb,var(--pst-color-text-base) 28%,transparent);--tf-hm-lineage:color-mix(in srgb,var(--pst-color-text-base) 40%,transparent);--tf-hm-selected:color-mix(in srgb,var(--pst-color-text-base) 55%,transparent);--tf-hm-ring:color-mix(in srgb,var(--pst-color-text-base) 78%,transparent)}
+html[data-theme=dark] #verification-health-map{--tf-hm-pass:#22603a;--tf-hm-fail:#e5484d;--tf-hm-na:#2f353d;--tf-hm-pass-ink:#5fcf85;--tf-hm-fail-ink:#ff6b70;--tf-hm-pass-hover:color-mix(in srgb,var(--tf-hm-pass) 84%,#fff);--tf-hm-fail-hover:color-mix(in srgb,var(--tf-hm-fail) 86%,#fff);--tf-hm-na-hover:color-mix(in srgb,var(--tf-hm-na) 84%,#fff);--tf-hm-na-strong:color-mix(in srgb,var(--tf-hm-na) 78%,#fff);--tf-hm-goal:color-mix(in srgb,var(--pst-color-text-base) 5%,var(--pst-color-background));--tf-hm-feature:color-mix(in srgb,var(--pst-color-text-base) 10%,var(--pst-color-background));--tf-hm-raised:color-mix(in srgb,var(--pst-color-text-base) 10%,var(--pst-color-background));--tf-hm-ring:color-mix(in srgb,var(--pst-color-text-base) 92%,transparent)}
 .tf-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.tf-health-layers{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.5rem;margin:.6rem 0 .55rem}
-@media(max-width:1180px){.tf-health-layers{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:560px){.tf-health-layers{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.tf-health-tab{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto auto;column-gap:.55rem;align-items:center;min-width:0;padding:.5rem .55rem .5rem .7rem;border:1px solid var(--tf-hm-line);border-radius:var(--tf-radius-md);background:var(--tf-hm-goal);color:inherit;font:inherit;text-align:left;cursor:pointer;transition:border-color var(--tf-duration-medium) var(--tf-ease),background-color var(--tf-duration-medium) var(--tf-ease)}
+.tf-health-layerbar{position:relative;margin:.6rem 0 .55rem}
+.tf-health-scroller{padding:3px 0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none}
+.tf-health-scroller::-webkit-scrollbar{display:none}
+.tf-health-layers{position:relative;display:flex;align-items:flex-end;gap:8px;width:max-content;min-width:100%}
+.tf-health-group{position:relative;display:flex;flex:1 0 auto;flex-direction:column;gap:5px;min-width:0}
+.tf-health-group-cards{display:flex;gap:8px}
+.tf-health-group-cards>.tf-health-tab{flex:1 0 206px}
+.tf-health-group-head{display:flex;align-items:center;height:20px;min-width:0;font-size:.64rem;font-weight:750;letter-spacing:.06em;text-transform:uppercase}
+.tf-health-group-head::after{content:"";flex:1 1 auto;height:1px;background:currentColor;opacity:.38}
+.tf-health-group.pinned .tf-health-group-head::after{content:none}
+.tf-health-group-label{position:sticky;left:var(--tf-label-left,0px);z-index:1;display:inline-flex;align-items:center;gap:.35rem;padding-right:.5rem;background:var(--pst-color-background);white-space:nowrap}
+.tf-health-group.failed .tf-health-group-head{color:var(--tf-hm-fail-ink)}
+.tf-health-group.passed .tf-health-group-head{color:var(--tf-hm-pass-ink)}
+.tf-health-group.failed+.tf-health-group.passed{margin-left:12px}
+.tf-health-group.failed+.tf-health-group.passed::before{content:"";position:absolute;top:0;bottom:2px;left:-11px;width:1px;background:linear-gradient(transparent,var(--tf-hm-line-strong) 16%,var(--tf-hm-line-strong) 84%,transparent)}
+.tf-health-pin .tf-health-group.pinned{position:sticky;left:0;z-index:3;margin-right:-8px;padding-right:8px;background:var(--pst-color-background)}
+.tf-health-edge{position:absolute;top:28px;bottom:3px;z-index:4;display:flex;align-items:center;width:72px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity var(--tf-duration-medium) var(--tf-ease),visibility var(--tf-duration-medium) linear}
+.tf-health-edge.left{left:var(--tf-pin,0px);justify-content:flex-start;background:linear-gradient(90deg,var(--pst-color-background) 38%,transparent)}
+.tf-health-edge.right{right:0;justify-content:flex-end;background:linear-gradient(270deg,var(--pst-color-background) 38%,transparent)}
+.tf-health-edge.on{opacity:1;visibility:visible}
+.tf-health-edge button{pointer-events:auto;display:inline-flex;align-items:center;gap:.4rem;height:26px;padding:0 .55rem;border:1px solid var(--tf-hm-line-strong);border-radius:999px;background:var(--tf-hm-raised);color:var(--pst-color-text-muted);font:inherit;font-size:.72rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.14);transition:border-color var(--tf-duration-fast) var(--tf-ease),color var(--tf-duration-fast) var(--tf-ease)}
+.tf-health-edge button:hover{border-color:var(--tf-hm-selected);color:var(--pst-color-text-base)}
+.tf-health-edge-note{display:inline-flex;align-items:center;gap:.25rem}
+.tf-health-edge-note.failed{color:var(--tf-hm-fail-ink)}.tf-health-edge-note.passed{color:var(--tf-hm-pass-ink)}
+.tf-health-table-toggle{position:absolute;top:3px;left:0;z-index:5;display:inline-flex;align-items:center;gap:.4rem;height:20px;padding:0 .45rem 0 .5rem;border:1px solid var(--tf-hm-line);border-radius:6px;background:var(--pst-color-background);box-shadow:8px 0 0 var(--pst-color-background);color:var(--pst-color-text-muted);font:inherit;font-size:.68rem;font-weight:650;white-space:nowrap;cursor:pointer;transition:border-color var(--tf-duration-medium) var(--tf-ease),color var(--tf-duration-medium) var(--tf-ease)}
+.tf-health-table-toggle:hover{border-color:var(--tf-hm-line-strong);color:var(--pst-color-text-base)}
+.tf-health-table-toggle[aria-expanded=true]{border-color:var(--tf-hm-selected);background:var(--tf-hm-raised);color:var(--pst-color-text-base)}
+.tf-health-table-toggle:focus-visible{outline:2px solid var(--tf-hm-ring);outline-offset:2px}
+.tf-health-chevron{font-size:.6rem;transition:transform var(--tf-duration-medium) var(--tf-ease)}
+.tf-health-table-toggle[aria-expanded=true] .tf-health-chevron{transform:rotate(180deg)}
+.tf-health-tab{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto auto;column-gap:.5rem;align-items:center;min-width:0;padding:.5rem .45rem .5rem .7rem;border:1px solid var(--tf-hm-line);border-radius:var(--tf-radius-md);background:var(--tf-hm-goal);color:inherit;font:inherit;text-align:left;cursor:pointer;transition:border-color var(--tf-duration-medium) var(--tf-ease),background-color var(--tf-duration-medium) var(--tf-ease)}
 .tf-health-tab:hover{border-color:var(--tf-hm-line-strong)}
 .tf-health-tab[aria-selected=true]{border-color:var(--tf-hm-selected);background:var(--tf-hm-raised)}
-.tf-health-tab:focus-visible{outline:2px solid var(--tf-hm-ring);outline-offset:2px}
+.tf-health-tab:focus-visible{outline:2px solid var(--tf-hm-ring);outline-offset:-2px}
 .tf-health-tab-title{min-width:0;font-size:.78rem;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tf-health-tab-status{display:flex;align-items:center;gap:.4rem;min-width:0}
-.tf-health-help{position:relative;display:inline-grid;place-items:center;flex:0 0 auto;width:1rem;height:1rem;border:1px solid var(--tf-hm-line-strong);border-radius:50%;font-size:.64rem;font-weight:700;color:var(--pst-color-text-muted)}
-.tf-health-help::after{content:attr(data-tip);position:absolute;z-index:30;left:50%;bottom:calc(100% + .5rem);width:max-content;max-width:16rem;padding:.4rem .55rem;border:1px solid var(--tf-hm-line-strong);border-radius:.45rem;background:var(--pst-color-surface);color:var(--pst-color-text-base);font-size:.72rem;font-weight:500;line-height:1.35;letter-spacing:0;text-align:left;white-space:normal;box-shadow:0 6px 18px rgba(0,0,0,.16);opacity:0;visibility:hidden;transform:translate(-50%,3px);transition:opacity var(--tf-duration-fast) var(--tf-ease),transform var(--tf-duration-fast) var(--tf-ease),visibility var(--tf-duration-fast) linear;pointer-events:none}
-.tf-health-help:hover::after{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.tf-health-help{display:inline-grid;place-items:center;flex:0 0 auto;width:1rem;height:1rem;border:1px solid var(--tf-hm-line-strong);border-radius:50%;font-size:.64rem;font-weight:700;color:var(--pst-color-text-muted);cursor:help}
+.tf-health-hint{position:fixed;z-index:1250;max-width:16rem;padding:.4rem .55rem;border:1px solid var(--tf-hm-line-strong);border-radius:.45rem;background:var(--pst-color-surface);color:var(--pst-color-text-base);font-size:.72rem;font-weight:500;line-height:1.35;box-shadow:0 6px 18px rgba(0,0,0,.16);opacity:0;visibility:hidden;transform:translateY(3px);transition:opacity var(--tf-duration-fast) var(--tf-ease),transform var(--tf-duration-fast) var(--tf-ease),visibility var(--tf-duration-fast) linear;pointer-events:none}
+.tf-health-hint.visible{opacity:1;visibility:visible;transform:none}
 .tf-health-verdict{font-size:.78rem;font-weight:700;letter-spacing:.02em}
 .tf-health-verdict.failed{color:var(--tf-hm-fail-ink)}.tf-health-verdict.passed{color:var(--tf-hm-pass-ink)}
 .tf-health-count{min-width:0;font-size:.72rem;color:var(--pst-color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2186,9 +2213,55 @@ html[data-theme=dark] #verification-health-map{--tf-hm-pass:#22603a;--tf-hm-fail
 .tf-health-chip.passed{color:var(--tf-hm-pass-ink);background:color-mix(in srgb,var(--tf-hm-pass) 24%,transparent)}
 .tf-health-go{margin-top:.45rem;color:var(--pst-color-text-muted)}
 .tf-health-go b{font-weight:650;color:var(--pst-color-text-base)}
-@media(prefers-reduced-motion:reduce){.tf-health-tab,.tf-health-help::after,.tf-health-map,.tf-health-map rect,.tf-health-dot,.tf-health-ring,.tf-health-tooltip{animation:none!important;transition:none!important}}
+.tf-health-table{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:40;display:grid;gap:.55rem;max-height:min(72vh,640px);overflow:auto;padding:.7rem .8rem .65rem;border:1px solid var(--tf-hm-line-strong);border-radius:var(--tf-radius-md);background:color-mix(in srgb,var(--pst-color-surface) 97%,var(--pst-color-text-base) 3%);box-shadow:0 18px 44px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.08);container-type:inline-size;animation:tf-health-drop var(--tf-duration-medium) var(--tf-ease) both}
+.tf-health-table[hidden]{display:none}
+@keyframes tf-health-drop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.tf-health-table-head{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem 1rem}
+.tf-health-table-title{font-size:.8rem;font-weight:700}
+.tf-health-table-legend{display:flex;flex-wrap:wrap;align-items:center;gap:.25rem .9rem;font-size:.7rem;color:var(--pst-color-text-muted)}
+.tf-health-table-legend>span{display:inline-flex;align-items:center;gap:.35rem}
+.tf-health-table-close{display:inline-grid;place-items:center;width:24px;height:24px;margin-left:auto;padding:0;border:1px solid transparent;border-radius:6px;background:none;color:var(--pst-color-text-muted);font:inherit;font-size:1rem;line-height:1;cursor:pointer}
+.tf-health-table-close:hover{border-color:var(--tf-hm-line-strong);color:var(--pst-color-text-base)}
+.tf-health-table-close:focus-visible{outline:2px solid var(--tf-hm-ring);outline-offset:1px}
+.tf-health-rows{position:relative;display:grid;gap:2px}
+.tf-health-rows-group{display:grid;gap:2px}
+.tf-health-rows-label{display:flex;align-items:center;gap:.35rem;margin:.5rem 0 .15rem;padding:0 8px;font-size:.64rem;font-weight:750;letter-spacing:.06em;text-transform:uppercase}
+.tf-health-rows-label::after{content:"";flex:1 1 auto;height:1px;background:currentColor;opacity:.38}
+.tf-health-rows-label.failed{color:var(--tf-hm-fail-ink)}.tf-health-rows-label.passed{color:var(--tf-hm-pass-ink)}
+.tf-health-row{display:grid;grid-template-columns:var(--tf-row-head,250px) minmax(0,1fr);align-items:center;column-gap:14px;min-width:0;padding:4px 8px;border:1px solid transparent;border-radius:8px;outline:none;cursor:pointer;transition:border-color var(--tf-duration-fast) var(--tf-ease),background-color var(--tf-duration-fast) var(--tf-ease)}
+.tf-health-row:hover{border-color:var(--tf-hm-line);background:var(--tf-hm-goal)}
+.tf-health-row[aria-selected=true]{border-color:var(--tf-hm-selected);background:var(--tf-hm-raised)}
+.tf-health-row:focus-visible{box-shadow:0 0 0 2px var(--tf-hm-ring)}
+.tf-health-row-head{display:grid;grid-template-columns:minmax(0,1fr) auto 3.6rem;align-items:center;column-gap:.55rem;min-width:0;font-size:.76rem}
+.tf-health-row-name{min-width:0;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tf-health-row .tf-health-verdict{font-size:.72rem}
+.tf-health-row-count{font-size:.7rem;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;color:var(--pst-color-text-muted)}
+.tf-health-row-count b{color:var(--pst-color-text-base);font-weight:700}
+.tf-health-row-strip{display:block;width:100%;height:16px}
+#verification-health-map .tf-health-row-strip .tf-health-tile.na,#verification-health-map .tf-health-table .tf-health-swatch.na{fill:var(--tf-hm-na-strong);background:var(--tf-hm-na-strong)}
+.tf-health-band{position:absolute;top:0;bottom:0;border-radius:3px;background:color-mix(in srgb,var(--tf-hm-ring) 14%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--tf-hm-ring) 65%,transparent);opacity:0;pointer-events:none;transition:opacity var(--tf-duration-fast) var(--tf-ease)}
+.tf-health-band.visible{opacity:1}
+.tf-health-table-foot{min-height:2.7em;font-size:.72rem;line-height:1.35;color:var(--pst-color-text-muted)}
+.tf-health-table-foot b{font-weight:650;color:var(--pst-color-text-base)}
+.tf-health-mark{white-space:nowrap}
+.tf-health-mark.failed{color:var(--tf-hm-fail-ink)}.tf-health-mark.passed{color:var(--tf-hm-pass-ink)}
+@container (max-width:760px){.tf-health-row{--tf-row-head:176px}.tf-health-row-word{display:none}}
+@container (max-width:600px){.tf-health-table-legend{order:3;flex-basis:100%}}
+@container (max-width:480px){.tf-health-row{--tf-row-head:118px}.tf-health-row-count{display:none}.tf-health-row-head{grid-template-columns:minmax(0,1fr) auto}}
+@media(prefers-reduced-motion:reduce){.tf-health-tab,.tf-health-hint,.tf-health-edge,.tf-health-edge button,.tf-health-table,.tf-health-table-toggle,.tf-health-chevron,.tf-health-row,.tf-health-band,.tf-health-map,.tf-health-map rect,.tf-health-dot,.tf-health-ring,.tf-health-tooltip{animation:none!important;transition:none!important}}
 </style>
-<div class="tf-health-layers" id="tf-health-tabs" role="tablist" aria-label="Health layer"></div>
+<div class="tf-health-layerbar" id="tf-health-layerbar">
+<div class="tf-health-scroller" id="tf-health-scroller"><div class="tf-health-layers" id="tf-health-tabs" role="tablist" aria-label="Health layer"></div></div>
+<div class="tf-health-edge left" aria-hidden="true"><button type="button" tabindex="-1" data-health-scroll="-1"></button></div>
+<div class="tf-health-edge right" aria-hidden="true"><button type="button" tabindex="-1" data-health-scroll="1"></button></div>
+<button type="button" class="tf-health-table-toggle" id="tf-health-table-toggle" aria-expanded="false" aria-controls="tf-health-table" aria-haspopup="dialog" data-tip="Every layer as one row, every contract as one column. A row opens its map."><i class="fa-solid fa-table-list" aria-hidden="true"></i>All layers<i class="fa-solid fa-chevron-down tf-health-chevron" aria-hidden="true"></i></button>
+<div class="tf-health-table" id="tf-health-table" role="dialog" aria-label="All health layers" hidden>
+<div class="tf-health-table-head"><span class="tf-health-table-title">All layers</span><span class="tf-health-table-legend" aria-hidden="true"><span><i class="tf-health-swatch passed"></i>Pass</span><span><i class="tf-health-swatch failed"></i>Fail</span><span><i class="tf-health-swatch na"></i>N/A</span><span><i class="tf-health-swatch own"></i>Goal or capability fails its own check</span></span><button type="button" class="tf-health-table-close" aria-label="Close">&times;</button></div>
+<div class="tf-health-rows" id="tf-health-rows" role="listbox" aria-label="Health layer"></div>
+<div class="tf-health-table-foot" id="tf-health-table-foot"></div>
+</div>
+</div>
+<div id="tf-health-hint" class="tf-health-hint" role="tooltip" aria-hidden="true"></div>
 <div class="tf-health-legend" aria-hidden="true"><span><i class="tf-health-swatch passed"></i>Pass</span><span><i class="tf-health-swatch failed"></i>Fail</span><span><i class="tf-health-swatch na"></i>N/A: no checks</span><span><i class="tf-health-swatch own"></i>Goal or capability fails its own check</span><span><svg class="tf-health-glyph" viewBox="0 0 21 12"><rect width="5" height="12" rx="1.5"/><rect x="7" width="6" height="5" rx="1.5"/><rect x="15" width="6" height="5" rx="1.5"/><rect x="7" y="7" width="6" height="5" rx="1.5"/><rect x="15" y="7" width="6" height="5" rx="1.5"/></svg>Requirement and its technical requirements</span></div>
 <div class="tf-health-map-wrap" id="tf-health-map-wrap"><svg class="tf-health-map" id="tf-health-map" role="group" aria-label="Verification health by goal, capability, and contract"></svg></div>
 <div id="tf-health-tooltip" class="tf-health-tooltip" role="tooltip" aria-hidden="true"></div>
@@ -2231,6 +2304,10 @@ const children=new Map();
 model.items.forEach(row=>{if(!children.has(row.parent))children.set(row.parent,[]);children.get(row.parent).push(row)});
 const svg=document.getElementById("tf-health-map"),wrap=document.getElementById("tf-health-map-wrap");
 const tabs=document.getElementById("tf-health-tabs"),tooltip=document.getElementById("tf-health-tooltip");
+const bar=document.getElementById("tf-health-layerbar"),scroller=document.getElementById("tf-health-scroller"),hint=document.getElementById("tf-health-hint");
+const tableToggle=document.getElementById("tf-health-table-toggle"),table=document.getElementById("tf-health-table");
+const rowsBox=document.getElementById("tf-health-rows"),tableFoot=document.getElementById("tf-health-table-foot");
+const edges={left:bar.querySelector(".tf-health-edge.left"),right:bar.querySelector(".tf-health-edge.right")};
 const NS="http://www.w3.org/2000/svg",measure=document.createElement("canvas").getContext("2d");
 let mode="overall",width=0,height=0,entries=[],entryById=new Map(),ring=null,showTimer=null,hideTimer=null,hoveredId=null,frame=0,pendingForce=false;
 const compact=new Set();
@@ -2401,9 +2478,16 @@ function hideTooltip(immediate){
  const hide=()=>{hoveredId=null;clearHighlight();ring?.classList.remove("visible");tooltip.classList.remove("visible");tooltip.setAttribute("aria-hidden","true")};
  if(immediate)hide();else hideTimer=setTimeout(hide,90);
 }
+// After a pick in the layer table the map sits under a still pointer: hover waits until the pointer moves.
+function holdsHover(event){
+ if(!hoverHold)return false;
+ if(Math.hypot(event.clientX-hoverHold.x,event.clientY-hoverHold.y)<6)return true;
+ hoverHold=null;
+ return false;
+}
 function bind(entry){
- entry.link.addEventListener("pointerenter",()=>showTooltip(entry,false));
- entry.link.addEventListener("pointerleave",()=>hideTooltip(false));
+ entry.link.addEventListener("pointerenter",event=>{if(!holdsHover(event))showTooltip(entry,false)});
+ entry.link.addEventListener("pointerleave",event=>{if(!holdsHover(event))hideTooltip(false)});
  entry.link.addEventListener("focus",()=>showTooltip(entry,true));
  entry.link.addEventListener("blur",()=>hideTooltip(true));
 }
@@ -2467,30 +2551,42 @@ function thumbnail(key){
  });
  return'<svg class="tf-health-thumb" viewBox="0 0 '+width+" "+height+'" aria-hidden="true" focusable="false">'+out+"</svg>";
 }
+const layerByKey=new Map(LAYERS.map(layer=>[layer[0],layer]));
+const summaryOf=key=>model.summary.layers[key]||{};
+const verdictOf=key=>summaryOf(key).status==="passed"?"passed":"failed";
+const failingOf=key=>Number(summaryOf(key).failing||0);
+// Overall stays first; failing layers follow, most red marks first; passing layers keep their default order.
+function layerOrder(){
+ const[first,...rest]=LAYERS.map(layer=>layer[0]);
+ return{first,failing:rest.filter(key=>verdictOf(key)==="failed").sort((a,b)=>failingOf(b)-failingOf(a)),passing:rest.filter(key=>verdictOf(key)==="passed")};
+}
+function visualOrder(){const order=layerOrder();return[order.first,...order.failing,...order.passing]}
+function tabHtml(key){
+ const[,label,tip]=layerByKey.get(key),summary=summaryOf(key),failing=Number(summary.failing||0),applicable=Number(summary.applicable||0);
+ const verdict=verdictOf(key);
+ const count=failing?"<b>"+failing+"</b> of "+applicable+" fail":"all "+applicable+" pass";
+ const name=label+": "+word(verdict)+", "+(failing?failing+" of "+applicable+" fail":"all "+applicable+" pass");
+ return'<button type="button" role="tab" class="tf-health-tab" id="tf-health-tab-'+key+'" data-health-mode="'+key+'" aria-label="'+escapeHtml(name)+'" aria-controls="tf-health-map" aria-describedby="tf-health-tip-'+key+'">'
+   +'<span class="tf-health-tab-title">'+label+"</span>"
+   +thumbnail(key)
+   +'<span class="tf-health-tab-status"><span class="tf-health-verdict '+verdict+'"><i class="fa-solid '+(verdict==="passed"?"fa-circle-check":"fa-circle-xmark")+'" aria-hidden="true"></i> '+word(verdict)+'</span><span class="tf-health-help" aria-hidden="true" data-tip="'+escapeHtml(tip)+'">?</span></span>'
+   +'<span class="tf-health-count">'+count+"</span>"
+   +'<span class="tf-sr-only" id="tf-health-tip-'+key+'">'+escapeHtml(tip)+"</span></button>";
+}
+function groupHtml(kind,keys){
+ if(!keys.length)return"";
+ const failed=kind==="failed";
+ return'<div class="tf-health-group '+kind+'" role="none" style="flex-grow:'+keys.length+'">'
+   +'<div class="tf-health-group-head" aria-hidden="true"><span class="tf-health-group-label"><i class="fa-solid '+(failed?"fa-circle-xmark":"fa-circle-check")+'"></i>'+(failed?"Failing":"Passing")+" · "+keys.length+"</span></div>"
+   +'<div class="tf-health-group-cards" role="none">'+keys.map(tabHtml).join("")+"</div></div>";
+}
 function buildTabs(){
- tabs.innerHTML=LAYERS.map(([key,label,tip])=>{
-   const summary=model.summary.layers[key]||{},failing=Number(summary.failing||0),applicable=Number(summary.applicable||0);
-   const verdict=summary.status==="passed"?"passed":"failed";
-   const count=failing?"<b>"+failing+"</b> of "+applicable+" fail":"all "+applicable+" pass";
-   const name=label+": "+word(verdict)+", "+(failing?failing+" of "+applicable+" fail":"all "+applicable+" pass");
-   return'<button type="button" role="tab" class="tf-health-tab" id="tf-health-tab-'+key+'" data-health-mode="'+key+'" aria-label="'+escapeHtml(name)+'" aria-controls="tf-health-map" aria-describedby="tf-health-tip-'+key+'">'
-     +'<span class="tf-health-tab-title">'+label+"</span>"
-     +thumbnail(key)
-     +'<span class="tf-health-tab-status"><span class="tf-health-verdict '+verdict+'"><i class="fa-solid '+(verdict==="passed"?"fa-circle-check":"fa-circle-xmark")+'" aria-hidden="true"></i> '+word(verdict)+'</span><span class="tf-health-help" aria-hidden="true" data-tip="'+escapeHtml(tip)+'">?</span></span>'
-     +'<span class="tf-health-count">'+count+"</span>"
-     +'<span class="tf-sr-only" id="tf-health-tip-'+key+'">'+escapeHtml(tip)+"</span></button>";
- }).join("");
- tabs.querySelectorAll("[data-health-mode]").forEach(button=>{
-   button.addEventListener("click",()=>select(button.dataset.healthMode,false));
-   button.addEventListener("keydown",event=>{
-     const keys=LAYERS.map(layer=>layer[0]),index=keys.indexOf(button.dataset.healthMode);
-     const next={ArrowRight:index+1,ArrowLeft:index-1,Home:0,End:keys.length-1}[event.key];
-     if(next===undefined)return;
-     event.preventDefault();
-     select(keys[(next+keys.length)%keys.length],true);
-   });
- });
+ const order=layerOrder(),left=scroller.scrollLeft;
+ tabs.innerHTML='<div class="tf-health-group pinned" role="none" style="flex-grow:1"><div class="tf-health-group-head" aria-hidden="true"></div><div class="tf-health-group-cards" role="none">'+tabHtml(order.first)+"</div></div>"
+   +groupHtml("failed",order.failing)+groupHtml("passed",order.passing);
+ scroller.scrollLeft=left;
  syncTabs();
+ syncBar();
 }
 function syncTabs(){
  tabs.querySelectorAll("[data-health-mode]").forEach(button=>{
@@ -2501,7 +2597,141 @@ function syncTabs(){
 }
 function select(key,focus){
  if(key!==mode){mode=key;hideTooltip(true);syncTabs();paint(true)}
- if(focus)document.getElementById("tf-health-tab-"+key)?.focus();
+ const tab=document.getElementById("tf-health-tab-"+key);
+ if(!tab)return;
+ reveal(tab);
+ if(focus)tab.focus({preventScroll:true});
+}
+const motion=()=>window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
+let pinWidth=0,edgeFrame=0,hintTarget=null,hoverHold=null;
+function reveal(tab){
+ if(pinWidth&&tab.closest(".pinned"))return;
+ const view=scroller.getBoundingClientRect(),box=tab.getBoundingClientRect(),room=64;
+ const left=box.left-view.left,right=box.right-view.left;
+ const delta=left<pinWidth+room?left-pinWidth-room:right>view.width-room?right-view.width+room:0;
+ if(delta)scroller.scrollBy({left:delta,behavior:motion()});
+}
+// Overall is pinned only when the strip scrolls and there is room left for other layers.
+function syncBar(){
+ const pinned=scroller.scrollWidth>scroller.clientWidth+1&&scroller.clientWidth>=600;
+ bar.classList.toggle("tf-health-pin",pinned);
+ const first=tabs.querySelector(".tf-health-group.pinned");
+ pinWidth=pinned&&first?Math.round(first.getBoundingClientRect().width):0;
+ bar.style.setProperty("--tf-pin",pinWidth+"px");
+ // Group names stick next to the pinned Overall, or next to the table toggle when Overall scrolls away.
+ bar.style.setProperty("--tf-label-left",(pinWidth||Math.round(tableToggle.getBoundingClientRect().width)+10)+"px");
+ updateEdges();
+}
+function edgeNote(counts,side){
+ const arrow='<i class="fa-solid fa-chevron-'+side+'" aria-hidden="true"></i>';
+ const note=counts.failed?'<span class="tf-health-edge-note failed"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>'+counts.failed+"</span>"
+   :counts.passed?'<span class="tf-health-edge-note passed"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>'+counts.passed+"</span>":"";
+ return side==="left"?arrow+note:note+arrow;
+}
+function edgeTip(counts,side){
+ const where=side==="left"?"to the left":"to the right";
+ if(counts.failed)return counts.failed+(counts.failed===1?" failing layer ":" failing layers ")+where;
+ return counts.passed?"Only passing layers "+where:"";
+}
+// Each scroll edge counts the layers it hides, failing first: red until the pass line is in view.
+function updateEdges(){
+ const view=scroller.getBoundingClientRect(),at=scroller.scrollLeft,max=scroller.scrollWidth-scroller.clientWidth;
+ const hidden={left:{failed:0,passed:0},right:{failed:0,passed:0}};
+ tabs.querySelectorAll("[data-health-mode]").forEach(tab=>{
+   if(pinWidth&&tab.closest(".pinned"))return;
+   const box=tab.getBoundingClientRect(),middle=box.left+box.width/2-view.left;
+   const side=middle<pinWidth?"left":middle>view.width?"right":"";
+   if(side)hidden[side][verdictOf(tab.dataset.healthMode)]++;
+ });
+ Object.entries(edges).forEach(([side,node])=>{
+   const on=side==="left"?at>1:at<max-1,button=node.firstElementChild;
+   node.classList.toggle("on",on);
+   button.innerHTML=edgeNote(hidden[side],side);
+   button.dataset.tip=on?edgeTip(hidden[side],side):"";
+ });
+}
+function showHint(target){
+ hintTarget=target;
+ hint.textContent=target.dataset.tip;
+ hint.setAttribute("aria-hidden","false");
+ const box=target.getBoundingClientRect(),size=hint.getBoundingClientRect();
+ const left=Math.max(8,Math.min(window.innerWidth-size.width-8,box.left+box.width/2-size.width/2));
+ let top=box.top-size.height-8;
+ if(top<8)top=box.bottom+8;
+ hint.style.left=Math.round(left)+"px";
+ hint.style.top=Math.round(top)+"px";
+ hint.classList.add("visible");
+}
+function hideHint(){hintTarget=null;hint.classList.remove("visible");hint.setAttribute("aria-hidden","true")}
+// The all-layers table: one row per layer in strip order, one column per contract in tree order.
+const CELL=10,FOOT_IDLE="Pick a row to open its map. Each column is one contract, grouped by goal: point at it to compare layers.";
+let tableUnits=0;
+const tableLeaves=[],tableGroups=[];
+function tableColumns(){
+ if(tableLeaves.length)return;
+ const walk=row=>{
+   const start=tableUnits;
+   if(row.level==="requirement"||row.level==="treq"){tableLeaves.push({row,x:tableUnits});tableUnits+=CELL}
+   (children.get(row.id)||[]).forEach((child,index)=>{if(index&&child.level==="feature")tableUnits+=4;walk(child)});
+   if(row.level==="goal"||row.level==="feature")tableGroups.push({row,start,end:tableUnits});
+ };
+ (children.get(root.id)||[]).forEach((goal,index)=>{if(index)tableUnits+=14;walk(goal)});
+}
+function stripSvg(key){
+ let out="";
+ tableLeaves.forEach((leaf,index)=>{out+='<rect data-leaf="'+index+'" x="'+(leaf.x+1)+'" y="2" width="'+(CELL-2)+'" height="12" class="tf-health-tile '+status(leaf.row,key)+'"/>'});
+ tableGroups.forEach(group=>{
+   if(status(group.row,key)!=="failed")return;
+   const goal=group.row.level==="goal";
+   out+='<rect x="'+(group.start-(goal?4:2))+'" y="'+(goal?.5:1.5)+'" width="'+(group.end-group.start+(goal?8:4))+'" height="'+(goal?15:13)+'" rx="2" fill="none" class="tf-health-own-failed" vector-effect="non-scaling-stroke"/>';
+ });
+ return'<svg class="tf-health-row-strip" viewBox="0 0 '+tableUnits+' 16" preserveAspectRatio="none" aria-hidden="true" focusable="false">'+out+"</svg>";
+}
+function rowHtml(key){
+ const label=layerByKey.get(key)[1],applicable=Number(summaryOf(key).applicable||0),verdict=verdictOf(key),failing=failingOf(key),selected=key===mode;
+ const name=label+": "+word(verdict)+", "+(failing?failing+" of "+applicable+" fail":"all "+applicable+" pass");
+ return'<div class="tf-health-row" role="option" data-health-row="'+key+'" aria-selected="'+selected+'" tabindex="'+(selected?0:-1)+'" aria-label="'+escapeHtml(name)+'">'
+   +'<span class="tf-health-row-head"><span class="tf-health-row-name">'+label+'</span><span class="tf-health-verdict '+verdict+'"><i class="fa-solid '+(verdict==="passed"?"fa-circle-check":"fa-circle-xmark")+'" aria-hidden="true"></i><span class="tf-health-row-word"> '+word(verdict)+"</span></span>"
+   +'<span class="tf-health-row-count">'+(failing?"<b>"+failing+"</b>/"+applicable:"all "+applicable)+"</span></span>"
+   +stripSvg(key)+"</div>";
+}
+function rowsGroup(kind,keys){
+ if(!keys.length)return"";
+ const failed=kind==="failed";
+ return'<div class="tf-health-rows-group" role="group" aria-label="'+(failed?"Failing":"Passing")+' layers">'
+   +'<div class="tf-health-rows-label '+kind+'" aria-hidden="true"><i class="fa-solid '+(failed?"fa-circle-xmark":"fa-circle-check")+'"></i>'+(failed?"Failing":"Passing")+" · "+keys.length+"</div>"
+   +keys.map(rowHtml).join("")+"</div>";
+}
+function resetFoot(){
+ tableFoot.textContent=FOOT_IDLE;
+ rowsBox.querySelector(".tf-health-band")?.classList.remove("visible");
+}
+function renderTable(){
+ tableColumns();
+ const order=layerOrder();
+ rowsBox.innerHTML=rowHtml(order.first)+rowsGroup("failed",order.failing)+rowsGroup("passed",order.passing)+'<div class="tf-health-band" aria-hidden="true"></div>';
+ resetFoot();
+}
+function openTable(){
+ renderTable();
+ hideHint();
+ table.hidden=false;
+ tableToggle.setAttribute("aria-expanded","true");
+ rowsBox.querySelector('[aria-selected="true"]')?.focus({preventScroll:true});
+}
+function closeTable(returnFocus){
+ if(table.hidden)return;
+ table.hidden=true;
+ tableToggle.setAttribute("aria-expanded","false");
+ if(returnFocus)tableToggle.focus({preventScroll:true});
+}
+// A row opens its layer; a contract cell also puts that contract under the map's ring and hover card.
+function pick(key,leaf,pointer){
+ hoverHold=pointer?{x:pointer.clientX,y:pointer.clientY}:null;
+ closeTable(false);
+ select(key,!leaf);
+ const entry=leaf&&entryById.get(leaf.row.id);
+ if(entry)entry.link.focus();
 }
 function headerHeight(node){
  const kind=node.data.kind;
@@ -2539,7 +2769,68 @@ function scheduleLayout(force){
  if(frame)return;
  frame=requestAnimationFrame(()=>{frame=0;const next=pendingForce;pendingForce=false;layout(next)});
 }
-document.addEventListener("keydown",event=>{if(event.key==="Escape")hideTooltip(true)});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"){hideTooltip(true);closeTable(true)}});
+tabs.addEventListener("click",event=>{const button=event.target.closest("[data-health-mode]");if(button)select(button.dataset.healthMode,false)});
+tabs.addEventListener("keydown",event=>{
+ const button=event.target.closest("[data-health-mode]");
+ if(!button)return;
+ const keys=visualOrder(),index=keys.indexOf(button.dataset.healthMode);
+ const next={ArrowRight:index+1,ArrowLeft:index-1,Home:0,End:keys.length-1}[event.key];
+ if(next===undefined)return;
+ event.preventDefault();
+ select(keys[(next+keys.length)%keys.length],true);
+});
+scroller.addEventListener("scroll",()=>{hideHint();if(!edgeFrame)edgeFrame=requestAnimationFrame(()=>{edgeFrame=0;updateEdges()})},{passive:true});
+bar.addEventListener("click",event=>{
+ const button=event.target.closest("[data-health-scroll]");
+ if(button)scroller.scrollBy({left:Number(button.dataset.healthScroll)*Math.max(180,(scroller.clientWidth-pinWidth)*.8),behavior:motion()});
+});
+bar.addEventListener("pointerover",event=>{
+ const target=event.target.closest("[data-tip]");
+ if(target&&target.dataset.tip&&!table.contains(target)){if(target!==hintTarget)showHint(target)}
+ else if(hintTarget)hideHint();
+});
+bar.addEventListener("pointerleave",hideHint);
+window.addEventListener("scroll",hideHint,{passive:true});
+tableToggle.addEventListener("click",()=>{if(table.hidden)openTable();else closeTable(false)});
+table.querySelector(".tf-health-table-close").addEventListener("click",()=>closeTable(true));
+table.addEventListener("focusout",event=>{if(event.relatedTarget&&!table.contains(event.relatedTarget)&&event.relatedTarget!==tableToggle)closeTable(false)});
+document.addEventListener("pointerdown",event=>{if(!table.hidden&&!table.contains(event.target)&&!tableToggle.contains(event.target))closeTable(false)});
+rowsBox.addEventListener("click",event=>{
+ const row=event.target.closest("[data-health-row]");
+ if(!row)return;
+ const cell=event.target.closest("[data-leaf]");
+ pick(row.dataset.healthRow,cell?tableLeaves[Number(cell.dataset.leaf)]:null,event.detail?event:null);
+});
+rowsBox.addEventListener("keydown",event=>{
+ const row=event.target.closest("[data-health-row]");
+ if(!row)return;
+ if(event.key==="Enter"||event.key===" "){event.preventDefault();pick(row.dataset.healthRow,null);return}
+ const list=[...rowsBox.querySelectorAll("[data-health-row]")],index=list.indexOf(row);
+ const next={ArrowDown:index+1,ArrowUp:index-1,Home:0,End:list.length-1}[event.key];
+ if(next===undefined)return;
+ event.preventDefault();
+ const target=list[Math.max(0,Math.min(list.length-1,next))];
+ list.forEach(item=>{item.tabIndex=item===target?0:-1});
+ target.focus();
+});
+rowsBox.addEventListener("pointermove",event=>{
+ const strip=rowsBox.querySelector(".tf-health-row-strip"),band=rowsBox.querySelector(".tf-health-band");
+ if(!strip||!band)return;
+ const box=strip.getBoundingClientRect(),outer=rowsBox.getBoundingClientRect(),unit=(event.clientX-box.left)/box.width*tableUnits;
+ const leaf=event.clientX>=box.left&&event.clientX<=box.right?tableLeaves.find(item=>unit>=item.x-1&&unit<item.x+CELL+1):null;
+ if(!leaf)return resetFoot();
+ const scale=box.width/tableUnits;
+ band.style.left=(box.left-outer.left+leaf.x*scale-1)+"px";
+ band.style.width=(CELL*scale+2)+"px";
+ band.classList.add("visible");
+ tableFoot.innerHTML="<b>"+escapeHtml(leaf.row.short||leaf.row.label)+"</b> · "+escapeHtml(leaf.row.id)+": "+visualOrder().map(key=>{
+   const value=status(leaf.row,key);
+   return'<span class="tf-health-mark '+value+'">'+escapeHtml(layerByKey.get(key)[1])+" "+(value==="failed"?"✕":value==="passed"?"✓":"–")+"</span>";
+ }).join(" · ");
+});
+rowsBox.addEventListener("pointerleave",resetFoot);
+new ResizeObserver(()=>syncBar()).observe(scroller);
 window.addEventListener("resize",()=>scheduleLayout(false));
 new ResizeObserver(()=>scheduleLayout(false)).observe(wrap);
 layout(true);
