@@ -163,6 +163,13 @@ Generic Test Levels, status semantics и reusable platform vocabulary не до�
 
 Семантика живёт в Requirement/Test Plan; детали — в contextual drill-down.
 
+Дополнительные UI-инварианты, сформировавшиеся на этом monitor-е:
+
+- пользовательский status vocabulary — **PASS / FAIL / N/A / UNKNOWN**; `N/A` приглушён, некликабелен и не блокирует overall;
+- один signal — одно представление: count сравнивается с count, percentage с percentage; не дублировать одно состояние одновременно как count + percent + summary;
+- tooltip объясняет конкретный signal одним коротким предложением, а не превращается в документацию;
+- hash/anchor должен вести ровно к названной секции; общий verdict лучше держать sticky/pinned, чем ломать смысл anchor искусственными scroll-offset hacks.
+
 ## Verification matrix
 
 Coverage cell должна показывать **overall evidence status**, а не один count.

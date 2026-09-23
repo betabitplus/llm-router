@@ -6,6 +6,7 @@
 ## Главное
 
 - Sphinx/Needs/EXP/portal логика выросла из пилота и была выделена в отдельный репозиторий **`ternforge-tooling-docops`**.
+- DocOps сознательно задуман **language-agnostic**: generic docs/assurance machinery должна со временем работать и для non-Python/infra repos, поэтому ownership не привязан к `py-*`.
 - Зафиксировали ownership:
   - **Template** — минимальная consumer wiring;
   - **DocOps** — Sphinx extensions, graph/presentation/build logic;

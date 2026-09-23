@@ -12,6 +12,7 @@
 - EXP нужен для вопросов, которые нельзя честно доказать обычным deterministic test: исследование provider behavior, capability, ограничения и т.п.
 - Эксперимент должен иметь явный provenance и сохранять воспроизводимые артефакты.
 - Принята идея **standalone experiment capsule**: собственный код, inputs/assets, notebook/report/artifacts и изолированное `uv` окружение.
+- Один EXP = одна самодостаточная capsule/mini-repo: без зависимости от evolving production `src` и shared experiment helpers; локальное дублирование предпочтительнее скрытой общей зависимости, способной сломать старый experiment.
 - Идеи отдельного VREC и автоматического «EXP устарел из-за любого source change» отвергнуты как слишком грубые.
 
 ## Требования пользователя
