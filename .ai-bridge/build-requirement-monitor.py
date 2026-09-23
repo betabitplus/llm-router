@@ -100,7 +100,9 @@ def cell_inspector(state: dict) -> str:
         state["ms_actual_values"],
         state["ms_target"],
         state["ms_status"],
-        "Checks that any surrogate or model used as evidence is validated strongly enough for this target.",
+        "Target L0: this target does not require a validated model, so nothing is judged."
+        if state["ms_target"] == "L0"
+        else "Checks that any surrogate or model used as evidence is validated strongly enough for this target.",
         state["ms_matched"],
         state["ms_applicable_count"],
         "model paths",
@@ -150,7 +152,9 @@ def cell_inspector(state: dict) -> str:
     ) + ui.signal_group(
         title="Retained path properties",
         body=(
-            f'<div class="representation-stack">{representation}'
+            ui.no_retained_evidence()
+            if not state["retained_count"]
+            else f'<div class="representation-stack">{representation}'
             f'<div class="dependent-wrap">{ms}</div></div>'
             + ui.confidence_subgroup(confidence)
         ),
@@ -206,15 +210,31 @@ def fault_inspector(state: dict) -> str:
             "Detected",
             f"{state['detected']}/{state['exercised']}"
             if state["exercised"]
-            else "0/0",
+            else "—",
             state["detection_status"],
         )
         + "</div>"
     )
+    class_rows = []
+    for row in state.get("classes") or []:
+        survivors = " · ".join(
+            f"{Path(str(item.get('source') or '')).name}:{item.get('line')} {item.get('description')}"
+            for item in row.get("survivors") or []
+        )
+        class_rows.append(
+            f'<li class="fault-class-row {status_class(row["status"])}">'
+            f'<code>{esc(row["id"])}</code><span class="fc-state">{esc(row["state"])}</span>'
+            + (f'<p>{esc(row["basis"])}</p>' if row.get("basis") else "")
+            + (f"<small>Not caught: {esc(survivors)}</small>" if survivors else "")
+            + "</li>"
+        )
+    class_list = (
+        f'<ul class="fault-class-list">{"".join(class_rows)}</ul>' if class_rows else ""
+    )
     sections = [
         ui.signal_group(
             title="Fault classes",
-            body=class_chain,
+            body=class_chain + class_list,
             class_name="fault-class-group",
         )
     ]
@@ -327,7 +347,8 @@ def render_current() -> None:
         state = cell_state(contract, coverage_target)
         cells[state["key"]] = state
     cell_statuses = [state["overall"] for state in cells.values()]
-    cell_domain = combine(cell_statuses)
+    linked = domain.linked_tests_state(contract)
+    cell_domain = combine(cell_statuses + [linked["status"]])
 
     faults = {}
     for index, group in enumerate(contract["target"]["fault_groups"]):
@@ -400,8 +421,12 @@ def render_current() -> None:
             )
             continue
         secondary_label = "Detection"
-        secondary_actual = f"{state['detection_actual']:.0f}%"
-        secondary_target = "100%"
+        secondary_actual = (
+            "—"
+            if state["detection_actual"] is None
+            else f"{state['detection_actual']:.0f}%"
+        )
+        secondary_target = "" if state["detection_actual"] is None else "100%"
         secondary_status = state["detection_status"]
         if state["label"] == "Implementation":
             component_sensitivity = next(
@@ -456,6 +481,35 @@ def render_current() -> None:
     fault_layout_class = (
         "fault-layout" if default_fault is not None else "fault-layout no-inspector"
     )
+
+    linked_note = ""
+    if linked["rows"]:
+        failed_count = len(linked["failed"])
+        names = " · ".join(
+            f"{str(row['nodeid']).split('::')[-1]} ({row.get('result')})"
+            for row in linked["rows"]
+        )
+        count = len(linked["rows"])
+        if failed_count:
+            headline = (
+                f"{failed_count} of {count} linked tests outside the profile failed, so coverage fails."
+                if count != 1
+                else "A linked test outside the profile failed, so coverage fails."
+            )
+        elif count == 1:
+            headline = (
+                "1 linked test verifies this contract outside its required cases. "
+                "It passes but counts for no case until the profile names one."
+            )
+        else:
+            headline = (
+                f"{count} linked tests verify this contract outside its required cases. "
+                "They pass but count for no case until the profile names one."
+            )
+        linked_note = (
+            f'<div class="linked-note {"not-met" if failed_count else "na"}">'
+            f"<strong>{esc(headline)}</strong><small>{esc(names)}</small></div>"
+        )
 
     contract_key = CONTRACT_ID.lower()
     coverage_domain_card = ui.domain_card(
@@ -545,7 +599,7 @@ def render_current() -> None:
 
     monitor = f"""<div id="tf-requirement-monitor">
 {verdict_header}
-<section class="section" id="ce-coverage-{contract_key}">{coverage_section_head}<div class="dashboard-layout"><div class="panel matrix-wrap"><table><thead><tr><th>Test level</th>{"".join(f"<th>{esc(label)}</th>" for _, label in BOUNDARIES)}</tr></thead><tbody>{"".join(matrix_rows)}</tbody></table></div><aside class="inspector" id="cell-inspector">{cell_inspectors[default_cell]}</aside></div></section>
+<section class="section" id="ce-coverage-{contract_key}">{coverage_section_head}<div class="dashboard-layout"><div class="panel matrix-wrap"><table><thead><tr><th>Test level</th>{"".join(f"<th>{esc(label)}</th>" for _, label in BOUNDARIES)}</tr></thead><tbody>{"".join(matrix_rows)}</tbody></table>{linked_note}</div><aside class="inspector" id="cell-inspector">{cell_inspectors[default_cell]}</aside></div></section>
 <section class="section" id="ce-faults-{contract_key}">{fault_section_head}<div class="{fault_layout_class}"><div class="fault-grid">{"".join(fault_tiles)}</div>{fault_inspector_markup}</div></section>
 {technical_support_section}
 {history_section}

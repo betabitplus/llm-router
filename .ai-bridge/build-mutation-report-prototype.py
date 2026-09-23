@@ -57,6 +57,7 @@ DEPTH_PAGE=ROOT/"docs/_build/html/verification-depth-map.html"
 HEALTH_PAGE=ROOT/"docs/_build/html/verification-health-map.html"
 REQ_MONITOR_FACTS_PATH=ROOT/"docs/_build/html/requirement-monitor-facts.json"
 UPPER_ASSURANCE_FACTS_PATH=ROOT/"docs/_build/html/upper-assurance-facts.json"
+EVIDENCE_CLASSIFICATION_PATH=ROOT/"docs/_build/html/evidence-classification-facts.json"
 ALLURE_REPORT_PAGE=ROOT/"docs/_build/html/test-results/index.html"
 MUTATION_PAGE=ROOT/"docs/_build/html/mutation-analysis.html"
 ASSURANCE_PAGE=ROOT/"docs/_build/html/verification-assurance.html"
@@ -67,6 +68,8 @@ PROTOTYPE_BUILD_VERSION="p34-local-1"
 MUTMUT_VERSION="3.8.0"
 MTE_VENDOR_PATH=ROOT/".ai-bridge/vendor/mutation-testing-elements-3.9.0/mutation-test-elements.js.gz"
 MTE_VENDOR_SHA256="751fb010242b0b44e32d84fe7fe0b9ff1da182823b94f59f5c52b001fcfc163b"
+D3_HIERARCHY_VENDOR_PATH=ROOT/".ai-bridge/vendor/d3-hierarchy-3.1.2/d3-hierarchy.min.js"
+D3_HIERARCHY_VENDOR_SHA256="a8771380454be89ec5ffe9a6396ba7c247081e348ae740dc9cb9629abd4c0e43"
 MUTATION_CONFIG={
   "process_isolation":"forkserver",
   "forkserver_warmup":"collect",
@@ -90,6 +93,16 @@ if ASSURANCE_REGISTRY_SPEC is None or ASSURANCE_REGISTRY_SPEC.loader is None:
     raise RuntimeError("Could not load assurance monitor registry")
 ASSURANCE_REGISTRY=importlib.util.module_from_spec(ASSURANCE_REGISTRY_SPEC)
 ASSURANCE_REGISTRY_SPEC.loader.exec_module(ASSURANCE_REGISTRY)
+
+IMPL_FAULTS_SPEC=importlib.util.spec_from_file_location(
+  "implementation_faults",ROOT/".ai-bridge/implementation_faults.py"
+)
+if IMPL_FAULTS_SPEC is None or IMPL_FAULTS_SPEC.loader is None:
+    raise RuntimeError("Could not load implementation fault helpers")
+IMPL_FAULTS=importlib.util.module_from_spec(IMPL_FAULTS_SPEC)
+IMPL_FAULTS_SPEC.loader.exec_module(IMPL_FAULTS)
+IMPL_FAULT_DIR=ROOT/"test-results/implementation-faults"
+IMPL_FAULT_CAMPAIGN_PATH=IMPL_FAULT_DIR/"campaign.json"
 # __APPEND__
 CONTRACTS={
 "REQ_INVALID_CONFIGURATION_ERRORS":{"source":"src/llm_router/_internal/config/validation.py","kind":"function","scope":"validate_config","tests":[
@@ -740,6 +753,7 @@ def validate_linked_test_nodeids():
             *files,
           ],
           cwd=ROOT,
+          env=probe_env(),
           text=True,
           stdout=subprocess.PIPE,
           stderr=subprocess.STDOUT,
@@ -779,7 +793,7 @@ def write_config(spec):
 def run_mutmut(spec):
     shutil.rmtree(ROOT/"mutants",ignore_errors=True)
     write_config(spec)
-    env=os.environ.copy()
+    env=probe_env()
     env["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"]="YES"
     mutmut_executable=shutil.which("mutmut")
     command=[
@@ -1417,10 +1431,13 @@ def portal_map_shell(shell_path, title, article_html):
         'id="pst-collapse-sidebar-button" aria-expanded="false"',
         1,
     )
+    # Re-rendering an already generated page must not accumulate shell patches.
+    text = re.sub(r'<style id="tf-map-focus-layout">.*?</style>\n?', "", text, flags=re.DOTALL)
     text = text.replace("</head>", focus_layout + "\n</head>", 1)
+    # A callable replacement keeps backslashes in inlined scripts and JSON literal.
     text, count = re.subn(
         r'<article class="bd-article">.*?</article>',
-        '<article class="bd-article">' + article_html + "</article>",
+        lambda _match: '<article class="bd-article">' + article_html + "</article>",
         text,
         count=1,
         flags=re.DOTALL,
@@ -1485,6 +1502,25 @@ def upper_section_anchor(entity_id, key):
     return f"ua-{entity_id.lower().replace('_','-')}-{key.replace('_','-')}"
 
 
+def junit_test_bindings():
+    """Map each retained testcase to the verification criterion it was written for."""
+    if not JUNIT_PATH.exists():
+        return {}
+    bindings={}
+    for testcase in ET.parse(JUNIT_PATH).getroot().iter("testcase"):
+        props={
+          prop.attrib.get("name"):prop.attrib.get("value")
+          for prop in testcase.findall("./properties/property")
+        }
+        nodeid=f"{(testcase.attrib.get('classname') or '').replace('.','/')}.py::{testcase.attrib.get('name') or ''}"
+        bindings[nodeid]={
+          "coverage_item":(props.get("coverage_item") or "").strip(),
+          "assurance_item":(props.get("assurance_item") or "").strip(),
+          "fault_challenge":bool((props.get("fault_items") or "").strip()),
+        }
+    return bindings
+
+
 def health_map_payload():
     needs,nodes,parent,_children,ordered,weights,descendants=assurance_map_graph()
     tests=map_test_rows(needs)
@@ -1495,6 +1531,29 @@ def health_map_payload():
     policy=req_facts.get("policy") or {}
     contract_ids=set(contracts)
     monitor_urls=ASSURANCE_REGISTRY.monitor_urls(contract_ids)
+
+    # A test result belongs to the criterion it was written for. Goal/capability
+    # scenarios also `verify` Requirements for traceability, but their results are
+    # owned (and shown) by the goal or capability, not repeated on every Requirement.
+    criterion_owner={
+      criterion_id:owner
+      for contract in contracts.values()
+      for criterion_id,owner in ((contract.get("target") or {}).get("criterion_contracts") or {}).items()
+    }
+    bindings=junit_test_bindings()
+    owned_tests=defaultdict(list)
+    unbound_tests=defaultdict(int)
+    for contract_id,rows in direct_tests.items():
+        for row in rows:
+            binding=bindings.get(row.get("nodeid")) or {}
+            if binding.get("assurance_item"):
+                continue
+            owner=criterion_owner.get(binding.get("coverage_item") or "")
+            if owner and owner!=contract_id:
+                continue
+            owned_tests[contract_id].append(row)
+            if not owner and not binding.get("fault_challenge"):
+                unbound_tests[contract_id]+=1
 
     contract_layers={}
     contract_direct={}
@@ -1513,12 +1572,18 @@ def health_map_payload():
         coverage_href=base+f"#ce-coverage-{contract_id.lower()}"
         fault_href=base+f"#ce-faults-{contract_id.lower()}"
         coverage_statuses=[cell["semantic_status"] for cell in cells]
+        linked_state=ASSURANCE_DOMAIN.linked_tests_state(contract)
+        if linked_state["failed"]:
+            coverage_statuses.append(linked_state["status"])
+        # Evidence quality judges retained evidence only; a target with no retained
+        # evidence at all is a coverage gap, not untrustworthy evidence.
+        judged=[cell for cell in cells if cell["retained_count"]]
         evidence_parts={
-          "Representation":[cell["representation_status"] for cell in cells if cell["representation_status"]!="N/A"],
-          "Provenance":[cell["provenance_status"] for cell in cells if cell["provenance_status"]!="N/A"],
-          "Producers":[cell["producer_status"] for cell in cells if cell["producer_status"]!="N/A"],
-          "Freshness":[cell["freshness_status"] for cell in cells if cell["freshness_status"]!="N/A"],
-          "M&S":[cell["ms_status"] for cell in cells if cell["ms_status"]!="N/A"],
+          "Representation":[cell["representation_status"] for cell in judged if cell["representation_status"]!="N/A"],
+          "Provenance":[cell["provenance_status"] for cell in judged if cell["provenance_status"]!="N/A"],
+          "Producers":[cell["producer_status"] for cell in judged if cell["producer_status"]!="N/A"],
+          "Freshness":[cell["freshness_status"] for cell in judged if cell["freshness_status"]!="N/A"],
+          "M&S":[cell["ms_status"] for cell in judged if cell["ms_status"]!="N/A"],
         }
         evidence_statuses=[status for statuses in evidence_parts.values() for status in statuses]
         fault_statuses=[fault["status"] for fault in faults if fault["status"]!="N/A"]
@@ -1581,13 +1646,20 @@ def health_map_payload():
                 continue
             href=page+"#"+upper_section_anchor(page_id,key)
             for criterion in section.get("criteria") or []:
+                ran=[row for row in criterion.get("rows") or [] if row.get("result")!="skipped"]
                 if signal=="execution":
-                    statuses=[criterion.get("execution_status","UNKNOWN")]
+                    # Execution reports what actually ran; a scenario that never ran
+                    # is missing coverage, not a failed execution.
+                    if not ran:
+                        continue
+                    statuses=["MET" if all(row.get("result")=="passed" for row in ran) else "NOT MET"]
                     label="Scenario execution"
                 elif signal=="coverage":
                     statuses=[criterion.get("execution_status","UNKNOWN")]
                     label="Required assurance scenario"
                 elif signal=="evidence":
+                    if not ran:
+                        continue
                     statuses=[
                       criterion.get("producer_qualification",{}).get("status","UNKNOWN"),
                       criterion.get("freshness",{}).get("status","UNKNOWN"),
@@ -1628,7 +1700,7 @@ def health_map_payload():
         )
 
     def aggregate_execution(need_id,scope_ids,fallback):
-        rows=map_rows_for_scope(scope_ids,direct_tests)
+        rows=[row for row in map_rows_for_scope(scope_ids,owned_tests) if row.get("result")!="skipped"]
         checks=[{"status":health_layer_status(row.get("result")),"href":fallback} for row in rows]
         upper_checks=[]
         for upper_id in sorted(scoped_upper_ids(need_id)):
@@ -1660,7 +1732,7 @@ def health_map_payload():
                   check["statuses"],
                   href=check["href"],
                   label=check["label"],
-                  metrics=[health_metric("Scenarios",check["statuses"])],
+                  metrics=[health_metric("Required scenarios",check["statuses"])],
                 ))
         results=[*contract_results,*scenario_results]
         statuses=[row["status"] for row in results if row["status"]!="na"]
@@ -1737,6 +1809,147 @@ def health_map_payload():
           label="Overall",
         )
 
+    def own_layers(need_id,fallback):
+        """Checks that belong to this node itself; child verdicts are never repeated here."""
+        not_applicable=lambda label:health_layer_result([],href=fallback,label=label,applicable=False)
+        if need_id in contracts or need_id.startswith(("REQ_","TREQ_")):
+            layers=contract_layers.get(need_id) or {}
+            test_statuses=[
+              health_layer_status(row.get("result"))
+              for row in map_rows_for_scope({need_id},owned_tests)
+              if row.get("result")!="skipped"
+            ]
+            execution=health_layer_result(
+              test_statuses,
+              href=fallback,
+              label="Execution",
+              applicable=bool(test_statuses),
+              metrics=[health_metric("Tests",test_statuses)] if test_statuses else [],
+            )
+            direct=(contract_direct.get(need_id) or {}).get("overall","UNKNOWN")
+            return {
+              "overall":health_layer_result([direct],href=fallback,label="Overall"),
+              "execution":execution,
+              "coverage":{
+                **(layers.get("coverage") or health_layer_result(["UNKNOWN"],href=fallback,label="Coverage")),
+                "unbound_tests":unbound_tests.get(need_id,0),
+              },
+              "faults":layers.get("faults") or not_applicable("Faults"),
+              "evidence":layers.get("evidence") or not_applicable("Evidence"),
+              "assurance":not_applicable("Assurance"),
+            }
+        entity=upper_by_id.get(need_id)
+        if not entity:
+            missing=health_layer_result(
+              ["UNKNOWN"],href=fallback,label="Overall",
+              metrics=[{"label":"Assurance profile","passed":0,"total":1}],
+            )
+            return {
+              "overall":missing,
+              "execution":not_applicable("Execution"),
+              "coverage":not_applicable("Coverage"),
+              "faults":not_applicable("Faults"),
+              "evidence":not_applicable("Evidence"),
+              "assurance":{**missing,"label":"Assurance"},
+            }
+
+        def scenario_layer(signal,label,metric_label):
+            results=[
+              health_layer_result(check["statuses"],href=check["href"],label=check["label"])
+              for check in upper_direct_checks(need_id,signal)
+            ]
+            statuses=[row["status"] for row in results]
+            return health_layer_result(
+              statuses,
+              href=first_href(results,fallback),
+              label=label,
+              applicable=bool(statuses),
+              metrics=[health_metric(metric_label,statuses)] if statuses else [],
+            )
+
+        evidence_checks=upper_direct_checks(need_id,"evidence")
+        evidence_results=[
+          health_layer_result(check["statuses"],href=check["href"],label=check["label"])
+          for check in evidence_checks
+        ]
+        evidence=health_layer_result(
+          [row["status"] for row in evidence_results],
+          href=first_href(evidence_results,fallback),
+          label="Evidence",
+          applicable=bool(evidence_results),
+          metrics=[
+            health_metric("Producers",[check["statuses"][0] for check in evidence_checks]),
+            health_metric("Freshness",[check["statuses"][1] for check in evidence_checks]),
+          ] if evidence_checks else [],
+        )
+        if need_id=="__PRODUCT_INTENT__":
+            page_id="PRODUCT_SYSTEM"
+            keys=(("cross_goal_integration","Integration"),("operational_validation","Validation"))
+        elif need_id.startswith("GOAL_"):
+            page_id=need_id
+            keys=(("cross_capability_integration","Integration"),("outcome_validation","Validation"))
+        else:
+            page_id=need_id
+            keys=(("capability_integration","Integration"),("capability_validation","Validation"))
+        section_rows=[]
+        section_metrics=[]
+        for key,label in keys:
+            state=entity.get(key) or {}
+            if state.get("status")=="N/A":
+                continue
+            section_rows.append({
+              "status":health_layer_status(state.get("status")),
+              "href":fallback+"#"+upper_section_anchor(page_id,key),
+            })
+            members=state.get("criteria") or state.get("children") or []
+            member_statuses=[
+              member.get("status") or member.get("execution_status") or "UNKNOWN"
+              for member in members
+            ] or [state.get("status","UNKNOWN")]
+            section_metrics.append(health_metric(label,member_statuses))
+        assurance=health_layer_result(
+          [row["status"] for row in section_rows],
+          href=first_href(section_rows,fallback),
+          label="Assurance",
+          applicable=bool(section_rows),
+          metrics=section_metrics,
+        )
+        execution=scenario_layer("execution","Execution","Scenarios")
+        coverage=scenario_layer("coverage","Coverage","Required scenarios")
+        own_parts=[layer for layer in (execution,coverage,evidence,assurance) if layer["status"]!="na"]
+        overall=health_layer_result(
+          [layer["status"] for layer in own_parts],
+          href=first_href(own_parts,fallback),
+          label="Overall",
+          applicable=bool(own_parts),
+        )
+        return {
+          "overall":overall,
+          "execution":execution,
+          "coverage":coverage,
+          "faults":not_applicable("Faults"),
+          "evidence":evidence,
+          "assurance":assurance,
+        }
+
+    def map_level(need_id):
+        if need_id=="__PRODUCT_INTENT__":
+            return "product"
+        if need_id.startswith("GOAL_"):
+            return "goal"
+        if need_id.startswith("FEAT_"):
+            return "feature"
+        if need_id.startswith("TREQ_"):
+            return "treq"
+        return "requirement"
+
+    def short_label(need_id,title):
+        # Goal outcomes are long sentences; their authored IDs already carry a concise name.
+        if need_id.startswith("GOAL_"):
+            words=need_id.removeprefix("GOAL_").lower().split("_")
+            return " ".join(words).capitalize()
+        return title
+
     def item_for(need_id,need,parent_id,value,persistent_label):
         scope=scoped_contracts(need_id)
         page_id="PRODUCT_SYSTEM" if need_id=="__PRODUCT_INTENT__" else need_id
@@ -1796,13 +2009,17 @@ def health_map_payload():
           "evidence":evidence,
           "assurance":assurance,
         }
+        label="Product / System" if need_id=="__PRODUCT_INTENT__" else str(need.get("title") or need_id)
         return {
           "id":need_id,
-          "label":"Product / System" if need_id=="__PRODUCT_INTENT__" else str(need.get("title") or need_id),
+          "label":label,
+          "short":short_label(need_id,label),
+          "level":map_level(need_id),
           "kind":"Product / System" if need_id=="__PRODUCT_INTENT__" else NORMATIVE_MAP_LABELS.get(str(need.get("type") or "").lower(),str(need.get("type") or "")),
           "parent":parent_id,
           "value":value,
           "layers":layers,
+          "own":own_layers(need_id,fallback),
           "persistent_label":persistent_label,
         }
 
@@ -1824,334 +2041,519 @@ def health_map_payload():
       True,
     )
     rows=[root,*items]
-    layer_summary={}
-    for key,label in (
+    layer_keys=(
       ("overall","Overall"),
       ("execution","Execution"),
       ("coverage","Coverage"),
       ("faults","Faults"),
       ("evidence","Evidence"),
       ("assurance","Assurance"),
-    ):
+    )
+    row_children=defaultdict(list)
+    for row in items:
+        row_children[row["parent"]].append(row)
+
+    # False-green guard: a canonical FAIL must stay visible as at least one own mark in its branch.
+    # Assurance support is the children's canonical verdict, so it is attributed to their Overall marks.
+    def attribute_failures(row):
+        marked={}
+        child_marks=[attribute_failures(child) for child in row_children.get(row["id"],[])]
+        for key,label in layer_keys:
+            own=row["own"][key]
+            sources=("assurance","overall") if key=="assurance" else (key,)
+            marked[key]=own["status"]=="failed" or any(
+              marks[source] for marks in child_marks for source in sources
+            )
+            if row["layers"][key]["status"]=="failed" and not marked[key]:
+                row["own"][key]={
+                  **health_layer_result(
+                    ["UNKNOWN"],href=row["layers"][key].get("href"),label=label,
+                    metrics=[{"label":"Unattributed failure","passed":0,"total":1}],
+                  ),
+                  "unattributed":True,
+                }
+                marked[key]=True
+        return marked
+
+    attribute_failures(root)
+    layer_summary={}
+    for key,label in layer_keys:
         applicable=[row["layers"][key] for row in rows if row["layers"][key]["status"]!="na"]
         passed=sum(row["status"]=="passed" for row in applicable)
+        own_applicable=[row["own"][key] for row in rows if row["own"][key]["status"]!="na"]
         layer_summary[key]={
           "label":label,
-          "status":"passed" if applicable and passed==len(applicable) else "failed",
+          "status":root["layers"][key]["status"],
           "passed":passed,
           "total":len(applicable),
+          "failing":sum(row["status"]=="failed" for row in own_applicable),
+          "applicable":len(own_applicable),
         }
     generated_at=str((DEPTH.get("source_run") or {}).get("generated_at") or "")
     return {"root":root,"items":items,"summary":{"layers":layer_summary,"generated_at":generated_at}}
+
+def vendored_d3_hierarchy():
+    if not D3_HIERARCHY_VENDOR_PATH.exists():
+        raise RuntimeError("pinned d3-hierarchy 3.1.2 asset is missing")
+    source=D3_HIERARCHY_VENDOR_PATH.read_bytes()
+    if hashlib.sha256(source).hexdigest()!=D3_HIERARCHY_VENDOR_SHA256:
+        raise RuntimeError("pinned d3-hierarchy 3.1.2 asset digest mismatch")
+    text=source.decode("utf-8")
+    if "</script" in text.lower():
+        raise RuntimeError("pinned d3-hierarchy 3.1.2 asset cannot be inlined")
+    return text
+
 
 def render_health_map_page():
     payload=health_map_payload()
     template=r"""<section id="verification-health-map">
 <h1>Verification Health Map<a class="headerlink" href="#verification-health-map" title="Link to this heading">#</a></h1>
 <style id="tf-health-map-style">
-#verification-health-map{--tf-radius-sm:6px;--tf-radius-md:10px;--tf-duration-fast:120ms;--tf-duration-medium:180ms;--tf-ease:cubic-bezier(.2,0,0,1);--tf-success:#24a148;--tf-danger:#c21f25;--tf-neutral:#6f6f6f;--tf-layer:color-mix(in srgb,var(--pst-color-surface) 97%,var(--pst-color-text-base) 3%);--tf-layer-hover:color-mix(in srgb,var(--pst-color-surface) 92%,var(--pst-color-text-base) 8%);--tf-border:color-mix(in srgb,var(--pst-color-border) 72%,transparent);--tf-border-strong:color-mix(in srgb,var(--pst-color-text-base) 30%,var(--pst-color-border))}
-.tf-health-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.5rem;margin:.6rem 0 .8rem}
-.tf-health-tab{border:1px solid var(--tf-border);border-radius:var(--tf-radius-sm);background:var(--tf-layer);color:inherit;text-align:left;padding:.58rem .68rem;cursor:pointer;min-width:0;transition:border-color var(--tf-duration-fast) var(--tf-ease),background var(--tf-duration-fast) var(--tf-ease),box-shadow var(--tf-duration-fast) var(--tf-ease)}
-.tf-health-tab:hover{background:var(--tf-layer-hover);border-color:var(--tf-border-strong)}
-.tf-health-tab.active{border-color:var(--tf-border-strong);background:var(--tf-layer-hover);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pst-color-text-base) 8%,transparent)}
-.tf-health-tab:focus-visible{outline:2px solid var(--pst-color-primary);outline-offset:2px}
-.tf-health-tab-head{display:flex;align-items:center;gap:.35rem;min-width:0}
-.tf-health-tab-title{font-size:.76rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tf-health-help{position:relative;display:inline-grid;place-items:center;flex:0 0 auto;width:1rem;height:1rem;border:1px solid var(--pst-color-border);border-radius:50%;font-size:.66rem;font-weight:700;color:var(--pst-color-text-muted)}
-.tf-health-help::after{content:attr(data-tip);position:absolute;z-index:30;left:50%;bottom:calc(100% + .45rem);transform:translateX(-50%);width:max-content;max-width:19rem;padding:.42rem .55rem;border:1px solid var(--pst-color-border);border-radius:.4rem;background:var(--pst-color-surface);color:var(--pst-color-text-base);font-size:.72rem;font-weight:500;line-height:1.3;box-shadow:0 .25rem .8rem rgba(0,0,0,.18);opacity:0;visibility:hidden;pointer-events:none;white-space:normal}
-.tf-health-help:hover::after{opacity:1;visibility:visible}
-.tf-health-tab>strong{display:block;margin:.1rem 0 .02rem;font-size:1rem;line-height:1.25}
-.tf-health-tab>small{display:block;color:var(--pst-color-text-muted);font-size:.68rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tf-health-tab.passed>strong{color:var(--tf-success)}.tf-health-tab.failed>strong{color:var(--tf-danger)}
-.tf-health-map-shell{position:relative;border:1px solid var(--tf-border);border-radius:var(--tf-radius-md);background:var(--tf-layer);padding:.55rem;min-height:520px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06)}
-.tf-health-map{width:100%;min-height:520px}
-#tf-health-map .hoverlayer{display:none!important}
-#tf-health-map g.slice>path.surface{transition:filter var(--tf-duration-fast) var(--tf-ease),stroke-width var(--tf-duration-fast) var(--tf-ease),stroke-opacity var(--tf-duration-fast) var(--tf-ease)}
-#tf-health-map g.tf-level-product>path.surface{fill:transparent!important;stroke:var(--tf-border-strong)!important;stroke-width:1.5px!important;stroke-opacity:.72!important}
-#tf-health-map g.tf-level-goal>path.surface{stroke:var(--pst-color-surface)!important;stroke-width:1.5px!important;stroke-opacity:.72!important}
-#tf-health-map g.tf-level-feature>path.surface{stroke-width:1.25px!important;stroke-opacity:.68!important}
-#tf-health-map g.tf-level-requirement>path.surface{stroke-width:1.6px!important;stroke-opacity:.58!important}
-#tf-health-map g.tf-level-treq>path.surface{stroke-width:1px!important;stroke-opacity:.38!important}
-#tf-health-map g.tf-level-goal text.slicetext,#tf-health-map g.tf-level-feature text.slicetext{font-size:13.5px!important;font-weight:700!important;fill:#fff!important}
-#tf-health-map g.tf-level-product text.slicetext,#tf-health-map g.tf-level-requirement text.slicetext,#tf-health-map g.tf-level-treq text.slicetext{display:none!important}
-#tf-health-map g.tf-lineage:not(.tf-level-goal)>path.surface{stroke:var(--pst-color-primary)!important;stroke-opacity:1!important;filter:brightness(1.05)}
-#tf-health-map g.tf-lineage.tf-level-goal>path.surface{filter:brightness(1.05)}
-#tf-health-map g.tf-hover-node:not(.tf-level-goal):not(.tf-level-feature)>path.surface{stroke-width:4.5px!important;filter:brightness(1.1)}
-#tf-health-map g.tf-hover-node.tf-level-goal>path.surface,#tf-health-map g.tf-hover-node.tf-level-feature>path.surface{filter:brightness(1.1)}
-.tf-health-tooltip{position:fixed;z-index:1200;min-width:220px;max-width:320px;padding:.68rem .76rem;border:1px solid var(--tf-border-strong);border-radius:var(--tf-radius-md);background:color-mix(in srgb,var(--pst-color-surface) 96%,var(--pst-color-text-base) 4%);color:var(--pst-color-text-base);box-shadow:0 10px 28px rgba(0,0,0,.22);opacity:0;visibility:hidden;transform:translateY(4px) scale(.985);transition:opacity var(--tf-duration-medium) var(--tf-ease),transform var(--tf-duration-medium) var(--tf-ease),visibility var(--tf-duration-medium) linear;pointer-events:none;text-align:left}
-.tf-health-tooltip.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
-.tf-health-tooltip-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.42rem}
+#verification-health-map{--tf-radius-sm:6px;--tf-radius-md:10px;--tf-duration-fast:120ms;--tf-duration-medium:180ms;--tf-ease:cubic-bezier(.2,0,0,1);--tf-hm-pass:#8ed3a2;--tf-hm-fail:#dc3f47;--tf-hm-na:#dde0e5;--tf-hm-pass-ink:#1f7a3f;--tf-hm-fail-ink:#c42b34;--tf-hm-pass-hover:color-mix(in srgb,var(--tf-hm-pass) 91%,#000);--tf-hm-fail-hover:color-mix(in srgb,var(--tf-hm-fail) 90%,#000);--tf-hm-na-hover:color-mix(in srgb,var(--tf-hm-na) 92%,#000);--tf-hm-goal:color-mix(in srgb,var(--pst-color-text-base) 4.5%,var(--pst-color-background));--tf-hm-feature:var(--pst-color-background);--tf-hm-raised:color-mix(in srgb,var(--pst-color-text-base) 8%,var(--pst-color-background));--tf-hm-line:color-mix(in srgb,var(--pst-color-text-base) 13%,transparent);--tf-hm-line-strong:color-mix(in srgb,var(--pst-color-text-base) 28%,transparent);--tf-hm-lineage:color-mix(in srgb,var(--pst-color-text-base) 40%,transparent);--tf-hm-selected:color-mix(in srgb,var(--pst-color-text-base) 55%,transparent);--tf-hm-ring:color-mix(in srgb,var(--pst-color-text-base) 78%,transparent)}
+html[data-theme=dark] #verification-health-map{--tf-hm-pass:#22603a;--tf-hm-fail:#e5484d;--tf-hm-na:#2f353d;--tf-hm-pass-ink:#5fcf85;--tf-hm-fail-ink:#ff6b70;--tf-hm-pass-hover:color-mix(in srgb,var(--tf-hm-pass) 84%,#fff);--tf-hm-fail-hover:color-mix(in srgb,var(--tf-hm-fail) 86%,#fff);--tf-hm-na-hover:color-mix(in srgb,var(--tf-hm-na) 84%,#fff);--tf-hm-goal:color-mix(in srgb,var(--pst-color-text-base) 5%,var(--pst-color-background));--tf-hm-feature:color-mix(in srgb,var(--pst-color-text-base) 10%,var(--pst-color-background));--tf-hm-raised:color-mix(in srgb,var(--pst-color-text-base) 10%,var(--pst-color-background));--tf-hm-ring:color-mix(in srgb,var(--pst-color-text-base) 92%,transparent)}
+.tf-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.tf-health-layers{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.5rem;margin:.6rem 0 .55rem}
+@media(max-width:1180px){.tf-health-layers{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.tf-health-layers{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tf-health-tab{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto auto;column-gap:.55rem;align-items:center;min-width:0;padding:.5rem .55rem .5rem .7rem;border:1px solid var(--tf-hm-line);border-radius:var(--tf-radius-md);background:var(--tf-hm-goal);color:inherit;font:inherit;text-align:left;cursor:pointer;transition:border-color var(--tf-duration-medium) var(--tf-ease),background-color var(--tf-duration-medium) var(--tf-ease)}
+.tf-health-tab:hover{border-color:var(--tf-hm-line-strong)}
+.tf-health-tab[aria-selected=true]{border-color:var(--tf-hm-selected);background:var(--tf-hm-raised)}
+.tf-health-tab:focus-visible{outline:2px solid var(--tf-hm-ring);outline-offset:2px}
+.tf-health-tab-title{min-width:0;font-size:.78rem;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tf-health-tab-status{display:flex;align-items:center;gap:.4rem;min-width:0}
+.tf-health-help{position:relative;display:inline-grid;place-items:center;flex:0 0 auto;width:1rem;height:1rem;border:1px solid var(--tf-hm-line-strong);border-radius:50%;font-size:.64rem;font-weight:700;color:var(--pst-color-text-muted)}
+.tf-health-help::after{content:attr(data-tip);position:absolute;z-index:30;left:50%;bottom:calc(100% + .5rem);width:max-content;max-width:16rem;padding:.4rem .55rem;border:1px solid var(--tf-hm-line-strong);border-radius:.45rem;background:var(--pst-color-surface);color:var(--pst-color-text-base);font-size:.72rem;font-weight:500;line-height:1.35;letter-spacing:0;text-align:left;white-space:normal;box-shadow:0 6px 18px rgba(0,0,0,.16);opacity:0;visibility:hidden;transform:translate(-50%,3px);transition:opacity var(--tf-duration-fast) var(--tf-ease),transform var(--tf-duration-fast) var(--tf-ease),visibility var(--tf-duration-fast) linear;pointer-events:none}
+.tf-health-help:hover::after{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.tf-health-verdict{font-size:.78rem;font-weight:700;letter-spacing:.02em}
+.tf-health-verdict.failed{color:var(--tf-hm-fail-ink)}.tf-health-verdict.passed{color:var(--tf-hm-pass-ink)}
+.tf-health-count{min-width:0;font-size:.72rem;color:var(--pst-color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tf-health-count b{color:var(--pst-color-text-base);font-weight:700}
+.tf-health-thumb{grid-column:2;grid-row:1/span 3;display:block;width:76px;height:auto}
+.tf-health-legend{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem 1.1rem;margin:0 0 .6rem;font-size:.74rem;color:var(--pst-color-text-muted)}
+.tf-health-legend>span{display:inline-flex;align-items:center;gap:.4rem}
+.tf-health-swatch{display:inline-block;flex:0 0 auto;width:12px;height:12px;border-radius:3px}
+.tf-health-swatch.passed{background:var(--tf-hm-pass)}.tf-health-swatch.failed{background:var(--tf-hm-fail)}.tf-health-swatch.na{background:var(--tf-hm-na)}
+.tf-health-swatch.own{position:relative;border:1.5px solid var(--tf-hm-fail);border-radius:4px}
+.tf-health-swatch.own::after{content:"";position:absolute;left:2px;top:2px;width:5px;height:5px;border-radius:50%;background:var(--tf-hm-fail)}
+.tf-health-glyph{display:block;width:21px;height:12px;fill:color-mix(in srgb,var(--pst-color-text-muted) 70%,transparent)}
+.tf-health-map-wrap{position:relative;border-radius:14px}
+.tf-health-map-wrap.tf-health-product-failed{box-shadow:0 0 0 1.5px var(--tf-hm-fail)}
+.tf-health-map{display:block;width:100%;animation:tf-health-in 260ms var(--tf-ease) both}
+@keyframes tf-health-in{from{opacity:0}to{opacity:1}}
+.tf-health-map a,.tf-health-map a:hover{cursor:pointer;outline:none;text-decoration:none}
+.tf-health-map text{pointer-events:none}
+#verification-health-map .tf-health-goal{fill:var(--tf-hm-goal);stroke:var(--tf-hm-line);stroke-width:1;transition:stroke var(--tf-duration-medium) var(--tf-ease)}
+#verification-health-map .tf-health-feature{fill:var(--tf-hm-feature);stroke:var(--tf-hm-line);stroke-width:1;transition:stroke var(--tf-duration-medium) var(--tf-ease)}
+#verification-health-map .tf-health-tile{transition:fill 120ms var(--tf-ease)}
+#verification-health-map .tf-health-tile.passed{fill:var(--tf-hm-pass)}
+#verification-health-map .tf-health-tile.failed{fill:var(--tf-hm-fail)}
+#verification-health-map .tf-health-tile.na{fill:var(--tf-hm-na)}
+#verification-health-map .tf-health-tile.passed.tf-hover{fill:var(--tf-hm-pass-hover)}
+#verification-health-map .tf-health-tile.failed.tf-hover{fill:var(--tf-hm-fail-hover)}
+#verification-health-map .tf-health-tile.na.tf-hover{fill:var(--tf-hm-na-hover)}
+#verification-health-map .tf-health-own-failed{stroke:var(--tf-hm-fail);stroke-width:1.6}
+#verification-health-map .tf-health-map rect.tf-lineage:not(.tf-health-own-failed){stroke:var(--tf-hm-lineage)}
+.tf-health-dot{transition:opacity var(--tf-duration-medium) var(--tf-ease),fill var(--tf-duration-medium) var(--tf-ease)}
+#verification-health-map .tf-health-dot.passed{fill:var(--tf-hm-pass-ink)}
+#verification-health-map .tf-health-dot.failed{fill:var(--tf-hm-fail)}
+#verification-health-map .tf-health-dot.na{opacity:0}
+.tf-health-label-goal{font-size:13px;font-weight:650;fill:var(--pst-color-text-base)}
+.tf-health-label-feature{font-size:12px;font-weight:500;fill:var(--pst-color-text-muted)}
+.tf-health-ring{fill:none;stroke:var(--tf-hm-ring);stroke-width:1.5;opacity:0;pointer-events:none;transition:opacity 140ms var(--tf-ease),transform 150ms var(--tf-ease),width 150ms var(--tf-ease),height 150ms var(--tf-ease)}
+.tf-health-ring.visible{opacity:1}
+.tf-health-ring.instant{transition:opacity 140ms var(--tf-ease)}
+.tf-health-tooltip{position:fixed;z-index:1200;width:292px;max-width:calc(100vw - 20px);padding:.66rem .76rem .6rem;border:1px solid var(--tf-hm-line-strong);border-radius:var(--tf-radius-md);background:color-mix(in srgb,var(--pst-color-surface) 96%,var(--pst-color-text-base) 4%);color:var(--pst-color-text-base);box-shadow:0 12px 32px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.08);font-size:.75rem;line-height:1.35;text-align:left;opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity var(--tf-duration-medium) var(--tf-ease),transform var(--tf-duration-medium) var(--tf-ease),visibility var(--tf-duration-medium) linear,left 120ms var(--tf-ease),top 120ms var(--tf-ease);pointer-events:none}
+.tf-health-tooltip.visible{opacity:1;visibility:visible;transform:none}
+.tf-health-tooltip.instant{transition:opacity var(--tf-duration-medium) var(--tf-ease),transform var(--tf-duration-medium) var(--tf-ease),visibility var(--tf-duration-medium) linear}
+.tf-health-tooltip-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.3rem}
 .tf-health-tooltip-kind{font-size:.64rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase;color:var(--pst-color-text-muted)}
-.tf-health-tooltip-status{font-size:.69rem;font-weight:800}
-.tf-health-tooltip-status.passed{color:var(--tf-success)}.tf-health-tooltip-status.failed{color:var(--tf-danger)}.tf-health-tooltip-status.na{color:var(--tf-neutral)}
-.tf-health-tooltip-title{font-size:.82rem;font-weight:720;line-height:1.28;margin-bottom:.52rem}
-.tf-health-tooltip-metrics{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:1rem;row-gap:.2rem;padding-top:.46rem;border-top:1px solid color-mix(in srgb,var(--pst-color-border) 72%,transparent);font-size:.73rem;line-height:1.3}
-.tf-health-tooltip-metrics .value{font-variant-numeric:tabular-nums;font-weight:700;text-align:right}
-@media(prefers-reduced-motion:reduce){.tf-health-tab,#tf-health-map g.slice>path.surface,.tf-health-tooltip{transition:none!important}}
-@media(max-width:1100px){.tf-health-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:650px){.tf-health-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.tf-health-map-shell,.tf-health-map{min-height:430px}}
+.tf-health-pill{padding:.05rem .45rem;border-radius:999px;font-size:.66rem;font-weight:750;white-space:nowrap}
+.tf-health-pill.failed{color:var(--tf-hm-fail-ink);background:color-mix(in srgb,var(--tf-hm-fail) 16%,transparent)}
+.tf-health-pill.passed{color:var(--tf-hm-pass-ink);background:color-mix(in srgb,var(--tf-hm-pass) 24%,transparent)}
+.tf-health-pill.na{color:var(--pst-color-text-muted);background:color-mix(in srgb,var(--pst-color-text-base) 8%,transparent)}
+.tf-health-tooltip-title{font-size:.84rem;font-weight:650;line-height:1.28}
+.tf-health-tooltip-path{margin:.15rem 0 0;color:var(--pst-color-text-muted)}
+.tf-health-tooltip-rows{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.18rem 1rem;margin-top:.45rem;padding-top:.42rem;border-top:1px solid var(--tf-hm-line)}
+.tf-health-tooltip-rows .sub{grid-column:1/-1;margin-top:.12rem;font-size:.64rem;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--pst-color-text-muted)}
+.tf-health-tooltip-rows .sub:first-child{margin-top:0}
+.tf-health-tooltip-rows .note{grid-column:1/-1;color:var(--pst-color-text-muted)}
+.tf-health-tooltip-rows .value{font-weight:700;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.tf-health-tooltip-rows .value.failed{color:var(--tf-hm-fail-ink)}.tf-health-tooltip-rows .value.passed{color:var(--tf-hm-pass-ink)}
+.tf-health-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.25rem;margin-top:.45rem;padding-top:.45rem;border-top:1px solid var(--tf-hm-line)}
+.tf-health-chip{padding:.12rem .2rem;border:1px solid transparent;border-radius:5px;font-size:.64rem;font-weight:650;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--pst-color-text-muted);background:color-mix(in srgb,var(--pst-color-text-base) 6%,transparent)}
+.tf-health-chip.current{border-color:var(--tf-hm-selected)}
+.tf-health-chip.failed{color:var(--tf-hm-fail-ink);background:color-mix(in srgb,var(--tf-hm-fail) 16%,transparent)}
+.tf-health-chip.passed{color:var(--tf-hm-pass-ink);background:color-mix(in srgb,var(--tf-hm-pass) 24%,transparent)}
+.tf-health-go{margin-top:.45rem;color:var(--pst-color-text-muted)}
+.tf-health-go b{font-weight:650;color:var(--pst-color-text-base)}
+@media(prefers-reduced-motion:reduce){.tf-health-tab,.tf-health-help::after,.tf-health-map,.tf-health-map rect,.tf-health-dot,.tf-health-ring,.tf-health-tooltip{animation:none!important;transition:none!important}}
 </style>
-<div class="tf-health-tabs" id="tf-health-tabs"></div>
-<div class="tf-health-map-shell">
-  <div id="tf-health-map" class="tf-health-map"></div>
-  <div id="tf-health-tooltip" class="tf-health-tooltip" role="tooltip" aria-hidden="true"></div>
-</div>
-<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<div class="tf-health-layers" id="tf-health-tabs" role="tablist" aria-label="Health layer"></div>
+<div class="tf-health-legend" aria-hidden="true"><span><i class="tf-health-swatch passed"></i>Pass</span><span><i class="tf-health-swatch failed"></i>Fail</span><span><i class="tf-health-swatch na"></i>N/A: no checks</span><span><i class="tf-health-swatch own"></i>Goal or capability fails its own check</span><span><svg class="tf-health-glyph" viewBox="0 0 21 12"><rect width="5" height="12" rx="1.5"/><rect x="7" width="6" height="5" rx="1.5"/><rect x="15" width="6" height="5" rx="1.5"/><rect x="7" y="7" width="6" height="5" rx="1.5"/><rect x="15" y="7" width="6" height="5" rx="1.5"/></svg>Requirement and its technical requirements</span></div>
+<div class="tf-health-map-wrap" id="tf-health-map-wrap"><svg class="tf-health-map" id="tf-health-map" role="group" aria-label="Verification health by goal, capability, and contract"></svg></div>
+<div id="tf-health-tooltip" class="tf-health-tooltip" role="tooltip" aria-hidden="true"></div>
+<script>__D3_HIERARCHY__</script>
 <script>
 (()=>{
 const model=__MODEL__;
-const LEVEL_COLORS={
- product:{passed:"#071908",failed:"#210608",na:"#161616"},
- goal:{passed:"#022d0d",failed:"#3a070a",na:"#262626"},
- feature:{passed:"#044317",failed:"#5a0d12",na:"#393939"},
- requirement:{passed:"#0e6027",failed:"#8c171d",na:"#525252"},
- treq:{passed:"#198038",failed:"#c21f25",na:"#6f6f6f"}
+const LAYERS=[
+ ["overall","Overall","Final verdict: every required check together."],
+ ["execution","Execution","Did the tests and scenarios that ran pass?"],
+ ["coverage","Coverage","Does every required case have a passing test?"],
+ ["faults","Fault model","Do the tests catch the errors they should?"],
+ ["evidence","Evidence quality","Is the evidence realistic, traceable, qualified, up to date?"],
+ ["assurance","Assurance","Do goals and capabilities pass their integration and validation checks?"]
+];
+const METRIC_LABELS={
+ "Tests":"Tests passed",
+ "Scenarios":"Scenarios passed",
+ "Required scenarios":"Required scenarios passing",
+ "Targets":"Required cases covered",
+ "Fault groups":"Fault checks passed",
+ "Representation":"Right kind of target",
+ "Provenance":"Traceable to its run",
+ "Producers":"Made by qualified tools",
+ "Freshness":"Up to date",
+ "M&S":"Model validated",
+ "Integration":"Integration checks",
+ "Validation":"Validation checks",
+ "Unattributed failure":"Fails for an unclear reason",
+ "Assurance profile":"Assurance plan exists"
 };
-const escapeHtml=value=>String(value??"").replace(/[&<>\"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#39;"}[ch]));
+const KIND={product:"Product / System",goal:"Goal",feature:"Capability",requirement:"Requirement",treq:"Technical requirement"};
+const DESTINATION={product:"Product assurance",goal:"Outcome assurance",feature:"Capability assurance",requirement:"Contract evidence",treq:"Technical assurance"};
+const PAD={product:[14,0,0],goal:[8,30,8],feature:[5,24,6],cluster:[2,0,0]};
+const HEAD_UNITS={goal:1,feature:1.6};
+const RADIUS={goal:12,feature:8,leaf:3.5};
 const root=model.root,rows=[root,...model.items];
 const rowById=new Map(rows.map(row=>[row.id,row]));
-const childIds=new Set(rows.filter(row=>row.parent).map(row=>row.parent));
-const BASE_TILING_PAD_PX=2,GOAL_GAP_PX=12,FEATURE_GAP_PX=8;
-const GOAL_INSET_PX=(GOAL_GAP_PX-BASE_TILING_PAD_PX)/2;
-const FEATURE_INSET_PX=(FEATURE_GAP_PX-BASE_TILING_PAD_PX)/2;
-const MODE_ORDER=["overall","execution","coverage","faults","evidence","assurance"];
-const MODE_TIPS={
- overall:"Shows whether the node passes all required assurance checks.",
- execution:"Shows whether the retained tests and assurance scenarios passed.",
- coverage:"Shows whether all required proof targets are covered.",
- faults:"Shows whether all required fault checks pass.",
- evidence:"Shows whether the retained evidence is traceable, qualified, and current.",
- assurance:"Shows whether support, integration, and validation checks pass."
-};
-const element=document.getElementById("tf-health-map");
-const tabs=document.getElementById("tf-health-tabs");
-const tooltip=document.getElementById("tf-health-tooltip");
-let mode="overall";
-let showTimer=null,hideTimer=null,hoveredId=null;
-function statusLabel(value){return value==="passed"?"PASS":value==="failed"?"FAIL":"N/A"}
-function levelKey(row){
- if(!row||row.id===root.id)return "product";
- if(row.id.startsWith("GOAL_"))return "goal";
- if(row.id.startsWith("FEAT_"))return "feature";
- if(row.id.startsWith("TREQ_"))return "treq";
- return "requirement";
+const children=new Map();
+model.items.forEach(row=>{if(!children.has(row.parent))children.set(row.parent,[]);children.get(row.parent).push(row)});
+const svg=document.getElementById("tf-health-map"),wrap=document.getElementById("tf-health-map-wrap");
+const tabs=document.getElementById("tf-health-tabs"),tooltip=document.getElementById("tf-health-tooltip");
+const NS="http://www.w3.org/2000/svg",measure=document.createElement("canvas").getContext("2d");
+let mode="overall",width=0,height=0,entries=[],entryById=new Map(),ring=null,showTimer=null,hideTimer=null,hoveredId=null,frame=0,pendingForce=false;
+const compact=new Set();
+const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const status=(row,key=mode)=>row?.own?.[key]?.status||"na";
+const word=value=>value==="passed"?"PASS":value==="failed"?"FAIL":"N/A";
+const mark=value=>value==="failed"?"✕":"✓";
+const clip=(text,max)=>{text=String(text||"");if(text.length<=max)return text;const cut=text.slice(0,max);return cut.slice(0,Math.max(cut.lastIndexOf(" "),max-12)).trimEnd()+"…"};
+const isContainer=row=>row.level==="goal"||row.level==="feature"||row.level==="product";
+function build(row){
+ const kids=children.get(row.id)||[];
+ if(row.level==="requirement"&&kids.length)return{kind:"cluster",row,children:[{kind:"leaf",row},...kids.map(child=>({kind:"leaf",row:child}))]};
+ if(!kids.length)return{kind:"leaf",row};
+ return{kind:row.level,row,children:kids.map(build)};
 }
-function levelTag(row){
- return {product:"PRODUCT",goal:"GOAL",feature:"FEATURE",requirement:"REQ",treq:"TREQ"}[levelKey(row)];
+const hierarchy=d3.hierarchy(build(root)).sum(node=>node.kind==="leaf"?1:(HEAD_UNITS[node.kind]||0));
+const pad=(node,index)=>(PAD[node.data.kind]||[0,0,0])[index];
+function tile(parent,x0,y0,x1,y1){
+ const kids=parent.children,total=kids.reduce((sum,child)=>sum+child.value,0);
+ if(parent.data.kind!=="cluster")return d3.treemapBinary({children:kids,value:total},x0,y0,x1,y1);
+ const[self,...rest]=kids,split=x0+(x1-x0)*self.value/total;
+ Object.assign(self,{x0,y0,x1:split,y1});
+ if(rest.length)d3.treemapBinary({children:rest,value:total-self.value},split,y0,x1,y1);
 }
-function renderTabs(){
- tabs.innerHTML=MODE_ORDER.map(key=>{const row=model.summary.layers[key];const tip=MODE_TIPS[key];return '<button class="tf-health-tab '+row.status+' '+(key===mode?'active':'')+'" type="button" data-health-mode="'+key+'"><span class="tf-health-tab-head"><span class="tf-health-tab-title">'+escapeHtml(row.label)+'</span><span class="tf-health-help" aria-label="'+escapeHtml(tip)+'" data-tip="'+escapeHtml(tip)+'">?</span></span><strong>'+statusLabel(row.status)+'</strong><small>'+row.passed+'/'+row.total+' nodes pass</small></button>'}).join('');
- tabs.querySelectorAll('[data-health-mode]').forEach(button=>button.addEventListener('click',()=>{mode=button.dataset.healthMode;hideTooltip(true);clearHighlight();renderTabs();render()}));
+function element(tag,attrs,parent){
+ const node=document.createElementNS(NS,tag);
+ for(const key in attrs)node.setAttribute(key,attrs[key]);
+ parent?.appendChild(node);
+ return node;
 }
-function current(row){return row.layers?.[mode]||{status:"na",label:model.summary.layers[mode]?.label||mode,detail:"Not applicable",href:null,metrics:[]}}
-function target(row){const layer=current(row);return layer.status==="na"?null:layer.href}
-function nodeText(row){
- const level=levelKey(row);
- return level==="goal"||level==="feature"?row.label:"";
-}
-function fittedMapLabel(row,node,textNode){
- const level=levelKey(row);
- if(level!=="goal"&&level!=="feature")return "";
- const box=node.querySelector("path.surface")?.getBBox();
- const width=box?.width||0,height=box?.height||0;
- if(height<20||width<32)return "";
- const available=Math.max(0,width-(level==="goal"?28:18)),label=String(row.label||"");
- textNode.textContent=label;
- if(textNode.getComputedTextLength()<=available)return label;
- let lo=1,hi=label.length,best="";
- while(lo<=hi){
-   const mid=Math.floor((lo+hi)/2),candidate=label.slice(0,mid).trimEnd()+"…";
-   textNode.textContent=candidate;
-   if(textNode.getComputedTextLength()<=available){best=candidate;lo=mid+1}else{hi=mid-1}
+function box(node){return{x:node.x0,y:node.y0,width:Math.max(0,node.x1-node.x0),height:Math.max(0,node.y1-node.y0)}}
+function fitLabel(label,max,font){
+ measure.font=font;
+ const measureWidth=text=>measure.measureText(text).width;
+ if(measureWidth(label)<=max)return label;
+ const words=label.split(" ");
+ for(let count=words.length-1;count>0;count--){
+   const candidate=words.slice(0,count).join(" ")+"…";
+   if(candidate.length>=7&&measureWidth(candidate)<=max)return candidate;
  }
- return best;
+ return"";
 }
-function hierarchyAncestor(id,level,geometry){
- let current=geometry.get(id);
- while(current){
-   if(current.level===level)return current.id;
-   current=geometry.get(current.parent);
- }
- return null;
+function ancestors(row){
+ const out=[];
+ let current=rowById.get(row.parent);
+ while(current&&current.level!=="product"){out.unshift(current);current=rowById.get(current.parent)}
+ return out;
 }
-function insetBox(box,container,inset){
- const sx=Math.max(.01,(container.width-(2*inset))/container.width);
- const sy=Math.max(.01,(container.height-(2*inset))/container.height);
- return {
-   x:container.x+inset+((box.x-container.x)*sx),
-   y:container.y+inset+((box.y-container.y)*sy),
-   width:box.width*sx,
-   height:box.height*sy,
- };
+function contractsInside(row){
+ const out=[];
+ const walk=item=>{(children.get(item.id)||[]).forEach(child=>{if(child.level==="requirement"||child.level==="treq")out.push(child);walk(child)})};
+ walk(row);
+ return out;
 }
-function roundedRectPath(box,radius){
- const r=Math.max(0,Math.min(radius,box.width/2,box.height/2));
- const x=box.x,y=box.y,x2=x+box.width,y2=y+box.height;
- return `M${x+r},${y}H${x2-r}Q${x2},${y} ${x2},${y+r}V${y2-r}Q${x2},${y2} ${x2-r},${y2}H${x+r}Q${x},${y2} ${x},${y2-r}V${y+r}Q${x},${y} ${x+r},${y}Z`;
+function targetHref(row){
+ const own=row.own?.[mode],canonical=row.layers?.[mode],fallback=row.layers?.overall?.href;
+ if(isContainer(row))return own?.status==="failed"&&own.href?own.href:fallback;
+ if(own&&own.status!=="na"&&own.href)return own.href;
+ return canonical?.href||fallback;
 }
-function hierarchyBox(item,geometry){
- let box={...item.box};
- const goalId=hierarchyAncestor(item.id,"goal",geometry);
- if(goalId){
-   const goalBox=geometry.get(goalId).box;
-   box=insetBox(box,goalBox,GOAL_INSET_PX);
- }
- const featureId=hierarchyAncestor(item.id,"feature",geometry);
- if(featureId){
-   let featureBox={...geometry.get(featureId).box};
-   if(goalId)featureBox=insetBox(featureBox,geometry.get(goalId).box,GOAL_INSET_PX);
-   box=insetBox(box,featureBox,FEATURE_INSET_PX);
- }
- return box;
+function destination(row,href){
+ const anchor=String(href||"").split("#")[1]||"";
+ const section=anchor.includes("-faults-")?"Faults":anchor.includes("technical-support")?"Technical requirements":anchor.includes("-coverage-")?"Coverage":anchor.includes("validation")?"Validation":anchor.includes("integration")?"Integration":"";
+ return DESTINATION[row.level]+(section?" › "+section:"");
 }
-function applyHierarchyGeometry(node,item,geometry){
- const surface=node.querySelector("path.surface");
- if(!surface)return null;
- const box=hierarchyBox(item,geometry);
- const radius=item.level==="goal"?10:item.level==="feature"?8:item.level==="product"?10:4;
- surface.setAttribute("d",roundedRectPath(box,radius));
- return box;
+function ariaLabel(row){
+ const own=status(row);
+ return KIND[row.level]+": "+row.label+", "+(isContainer(row)?(own==="na"?"no own checks":"own checks "+(own==="failed"?"fail":"pass")):word(own));
 }
+function layerSummary(layer){
+ const metrics=(layer?.metrics||[]).filter(metric=>metric.total);
+ if(metrics.length===1)return metrics[0].passed+"/"+metrics[0].total;
+ return word(layer.status);
+}
+function valueCell(passed,total){return'<span class="value '+(passed<total?"failed":"passed")+'">'+passed+"/"+total+"</span>"}
 function tooltipHtml(row){
- const layer=current(row),status=statusLabel(layer.status);
- const metrics=(layer.metrics||[]).map(metric=>
-   '<span>'+escapeHtml(metric.label)+'</span><span class="value">'+Number(metric.passed||0)+' / '+Number(metric.total||0)+'</span>'
- ).join('');
- return '<div class="tf-health-tooltip-head"><span class="tf-health-tooltip-kind">'+levelTag(row)+'</span><span class="tf-health-tooltip-status '+layer.status+'">'+status+'</span></div>'+
-   '<div class="tf-health-tooltip-title">'+escapeHtml(row.label)+'</div>'+
-   (metrics?'<div class="tf-health-tooltip-metrics">'+metrics+'</div>':'');
-}
-function clearHighlight(){
- element.querySelectorAll("g.slice.tf-lineage,g.slice.tf-hover-node").forEach(node=>{
-   node.classList.remove("tf-lineage","tf-hover-node");
- });
-}
-function lineage(id){
- const ids=new Set();
- let currentId=id;
- while(currentId){
-   ids.add(currentId);
-   currentId=rowById.get(currentId)?.parent||null;
+ const own=row.own?.[mode]||{status:"na",metrics:[]},container=isContainer(row),path=ancestors(row);
+ let body="";
+ if(mode==="overall"){
+   const parts=LAYERS.slice(1).map(([key,label])=>{
+     const layer=row.own?.[key];
+     if(!layer||layer.status==="na")return"";
+     return'<span>'+label+'</span><span class="value '+layer.status+'">'+mark(layer.status)+" "+layerSummary(layer)+"</span>";
+   }).join("");
+   if(parts)body+='<div class="sub">'+(container?"Own checks by layer":"By layer")+"</div>"+parts;
+ }else{
+   const metrics=(own.metrics||[]).filter(metric=>metric.total);
+   if(metrics.length)body+='<div class="sub">'+(container?"Own checks":"Checks")+"</div>"+metrics.map(metric=>'<span>'+escapeHtml(METRIC_LABELS[metric.label]||metric.label)+"</span>"+valueCell(metric.passed,metric.total)).join("");
+   const unbound=Number(own.unbound_tests||0);
+   if(mode==="coverage"&&unbound)body+='<span class="note">'+unbound+(unbound===1?" linked test is":" linked tests are")+" not tied to a required case</span>";
  }
- return ids;
+ if(row.level==="requirement"&&(mode==="overall"||mode==="assurance")){
+   const support=(row.layers?.assurance?.metrics||[]).find(metric=>metric.label==="TREQ support"&&metric.total);
+   if(support)body+='<div class="sub">Technical requirements</div><span>Passing</span>'+valueCell(support.passed,support.total);
+ }
+ if(container){
+   const key=mode==="assurance"?"overall":mode;
+   const applicable=contractsInside(row).filter(item=>status(item,key)!=="na"),failing=applicable.filter(item=>status(item,key)==="failed");
+   body+='<div class="sub">Contracts inside</div><span>'+(mode==="assurance"?"Failing overall":"Failing")+'</span><span class="value '+(failing.length?"failed":"passed")+'">'+(applicable.length?failing.length+" of "+applicable.length:"none")+"</span>";
+ }
+ if(!body)body='<span class="note">No checks here</span>';
+ const pill=container?(own.status==="na"?"No own checks":own.status==="failed"?"Own checks fail":"Own checks pass"):word(own.status);
+ const strip=mode==="overall"?"":'<div class="tf-health-strip">'+LAYERS.map(([key,label])=>'<span class="tf-health-chip '+status(row,key)+(key===mode?" current":"")+'">'+label+"</span>").join("")+"</div>";
+ return'<div class="tf-health-tooltip-head"><span class="tf-health-tooltip-kind">'+KIND[row.level]+'</span><span class="tf-health-pill '+own.status+'">'+pill+"</span></div>"
+   +'<div class="tf-health-tooltip-title">'+escapeHtml(row.label)+"</div>"
+   +(path.length?'<div class="tf-health-tooltip-path">'+path.map(item=>escapeHtml(clip(item.short||item.label,42))).join(" › ")+"</div>":"")
+   +'<div class="tf-health-tooltip-rows">'+body+"</div>"
+   +strip
+   +'<div class="tf-health-go">Opens <b>'+escapeHtml(destination(row,targetHref(row)))+"</b></div>";
 }
-function highlight(id){
+function instantly(node,apply){
+ node.classList.add("instant");
+ apply();
+ node.getBoundingClientRect();
+ node.classList.remove("instant");
+}
+function moveRing(entry){
+ if(!ring)return;
+ const inset=entry.kind==="leaf"?1:1.25,area=entry.area;
+ const place=()=>{
+   ring.setAttribute("rx",Math.max(0,RADIUS[entry.kind]-inset));
+   ring.style.transform="translate("+(area.x+inset)+"px,"+(area.y+inset)+"px)";
+   ring.style.width=Math.max(0,area.width-2*inset)+"px";
+   ring.style.height=Math.max(0,area.height-2*inset)+"px";
+ };
+ const previous=ring.dataset.center?ring.dataset.center.split(",").map(Number):null;
+ const center=[area.x+area.width/2,area.y+area.height/2];
+ const near=previous&&Math.hypot(center[0]-previous[0],center[1]-previous[1])<240;
+ ring.dataset.center=center.join(",");
+ if(ring.classList.contains("visible")&&near)place();else instantly(ring,place);
+ ring.classList.add("visible");
+}
+function clearHighlight(){svg.querySelectorAll(".tf-hover,.tf-lineage").forEach(node=>node.classList.remove("tf-hover","tf-lineage"))}
+function highlight(entry){
  clearHighlight();
- const ids=lineage(id);
- element.querySelectorAll("g.slice").forEach(node=>{
-   const nodeId=node.dataset.nodeId;
-   if(ids.has(nodeId))node.classList.add("tf-lineage");
-   if(nodeId===id)node.classList.add("tf-hover-node");
- });
+ if(entry.kind==="leaf")entry.shape.classList.add("tf-hover");
+ ancestors(entry.row).forEach(item=>{const parent=entryById.get(item.id);if(parent&&parent.kind!=="leaf")parent.shape.classList.add("tf-lineage")});
+ moveRing(entry);
 }
-function decorateSlices(){
- const geometry=new Map();
- element.querySelectorAll("g.slice").forEach(node=>{
-   const data=node.__data__||{};
-   const id=data.id||data.data?.id;
-   const row=rowById.get(id);
-   if(!row)return;
-   const level=levelKey(row),surface=node.querySelector("path.surface");
-   const x0=Number(data._x0),x1=Number(data._x1),y0=Number(data._y0),y1=Number(data._y1);
-   const fallback=surface?.getBBox();
-   const box=Number.isFinite(x0)&&Number.isFinite(x1)&&Number.isFinite(y0)&&Number.isFinite(y1)
-     ?{x:x0,y:y0,width:x1-x0,height:y1-y0}
-     :fallback&&{x:fallback.x,y:fallback.y,width:fallback.width,height:fallback.height};
-   if(!box)return;
-   node.dataset.nodeId=id;
-   node.dataset.level=level;
-   node.classList.add("tf-level-"+level);
-   geometry.set(id,{id,level,parent:row.parent||null,box});
- });
- element.querySelectorAll("g.slice").forEach(node=>{
-   const id=node.dataset.nodeId,row=rowById.get(id),item=geometry.get(id);
-   if(!row||!item)return;
-   const level=item.level,box=applyHierarchyGeometry(node,item,geometry);
-   if(!box)return;
-   const textNode=node.querySelector("text.slicetext");
-   if(textNode){
-     textNode.setAttribute("transform","translate(0,0)");
-     const label=fittedMapLabel(row,node,textNode);
-     textNode.textContent=label;
-     if(label){
-       const textBox=textNode.getBBox();
-       const labelInsetX=level==="goal"?12:8;
-       const labelInsetY=level==="goal"?10:7;
-       const dx=box.x+labelInsetX-textBox.x;
-       const dy=box.y+labelInsetY-textBox.y;
-       textNode.setAttribute("transform","translate("+dx+","+dy+")");
-     }
-     textNode.setAttribute("data-unformatted",label);
-   }
- });
-}
-function placeTooltip(bbox){
- const gap=12,pad=10;
- tooltip.style.left="0px";tooltip.style.top="0px";
- const rect=tooltip.getBoundingClientRect();
- let left=bbox.x1+gap;
- if(left+rect.width>window.innerWidth-pad)left=bbox.x0-rect.width-gap;
- left=Math.max(pad,Math.min(left,window.innerWidth-rect.width-pad));
- let top=bbox.y0+Math.min(8,Math.max(0,(bbox.y1-bbox.y0-rect.height)/2));
- if(top+rect.height>window.innerHeight-pad)top=window.innerHeight-rect.height-pad;
- top=Math.max(pad,top);
+function placeTooltip(rect){
+ const gap=12,margin=10,size=tooltip.getBoundingClientRect();
+ let left=rect.right+gap;
+ if(left+size.width>window.innerWidth-margin)left=rect.left-size.width-gap;
+ left=Math.max(margin,Math.min(left,window.innerWidth-size.width-margin));
+ let top=rect.top+Math.min(8,Math.max(0,(rect.height-size.height)/2));
+ if(top+size.height>window.innerHeight-margin)top=window.innerHeight-size.height-margin;
  tooltip.style.left=Math.round(left)+"px";
- tooltip.style.top=Math.round(top)+"px";
+ tooltip.style.top=Math.round(Math.max(margin,top))+"px";
 }
-function showTooltip(row,bbox){
+function showTooltip(entry,immediate){
  clearTimeout(hideTimer);
- if(hoveredId===row.id&&tooltip.classList.contains("visible"))return;
+ highlight(entry);
+ if(hoveredId===entry.row.id&&tooltip.classList.contains("visible"))return;
  clearTimeout(showTimer);
- showTimer=setTimeout(()=>{
-   hoveredId=row.id;
-   tooltip.innerHTML=tooltipHtml(row);
+ const show=()=>{
+   const visible=tooltip.classList.contains("visible");
+   hoveredId=entry.row.id;
+   tooltip.innerHTML=tooltipHtml(entry.row);
    tooltip.setAttribute("aria-hidden","false");
+   const rect=entry.shape.getBoundingClientRect();
+   if(visible)placeTooltip(rect);else instantly(tooltip,()=>placeTooltip(rect));
    tooltip.classList.add("visible");
-   placeTooltip(bbox);
- },110);
+ };
+ if(immediate||tooltip.classList.contains("visible"))show();else showTimer=setTimeout(show,110);
 }
-function hideTooltip(immediate=false){
+function hideTooltip(immediate){
  clearTimeout(showTimer);clearTimeout(hideTimer);
- const hide=()=>{hoveredId=null;tooltip.classList.remove("visible");tooltip.setAttribute("aria-hidden","true")};
- if(immediate)hide();else hideTimer=setTimeout(hide,75);
+ const hide=()=>{hoveredId=null;clearHighlight();ring?.classList.remove("visible");tooltip.classList.remove("visible");tooltip.setAttribute("aria-hidden","true")};
+ if(immediate)hide();else hideTimer=setTimeout(hide,90);
 }
-function size(){element.style.height=Math.max(430,window.innerHeight-element.getBoundingClientRect().top-20)+"px"}
-function render(){
- if(!element||typeof Plotly==="undefined")return;
- size();
- const ids=rows.map(r=>r.id),labels=rows.map(r=>r.label),parents=rows.map(r=>r.id===root.id?"":r.parent),values=rows.map(r=>r.value);
- const colors=rows.map(r=>{const level=levelKey(r),status=current(r).status;return LEVEL_COLORS[level]?.[status]||LEVEL_COLORS[level]?.na||LEVEL_COLORS.treq.na});
- const text=rows.map(nodeText);
- const custom=rows.map(r=>[r.id,target(r)]);
- const data=[{type:"treemap",ids,labels,parents,values,branchvalues:"total",text,textinfo:"text",textfont:{size:18},tiling:{pad:BASE_TILING_PAD_PX},marker:{colors,cornerradius:4,line:{width:1,color:"rgba(255,255,255,.28)"}},customdata:custom,hovertemplate:"<extra></extra>",pathbar:{visible:false},sort:false}];
- const layout={margin:{t:8,l:8,r:8,b:8},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",font:{family:"system-ui,-apple-system,BlinkMacSystemFont,sans-serif",color:getComputedStyle(document.body).color},uirevision:"ternforge-verification-health-map-"+mode};
- const config={responsive:true,displayModeBar:false,displaylogo:false};
- Plotly.react(element,data,layout,config).then(()=>{
-   decorateSlices();
-   element.removeAllListeners?.("plotly_treemapclick");
-   element.removeAllListeners?.("plotly_hover");
-   element.removeAllListeners?.("plotly_unhover");
-   element.on("plotly_treemapclick",event=>{const href=event?.points?.[0]?.customdata?.[1];if(href)window.location.href=href;return false});
-   element.on("plotly_hover",event=>{
-     const point=event?.points?.[0],row=rowById.get(point?.id);
-     if(!row)return;
-     const slice=[...element.querySelectorAll("g.slice")].find(node=>node.dataset.nodeId===row.id);
-     const rect=slice?.querySelector("path.surface")?.getBoundingClientRect();
-     if(!rect)return;
-     highlight(row.id);
-     showTooltip(row,{x0:rect.left,x1:rect.right,y0:rect.top,y1:rect.bottom});
+function bind(entry){
+ entry.link.addEventListener("pointerenter",()=>showTooltip(entry,false));
+ entry.link.addEventListener("pointerleave",()=>hideTooltip(false));
+ entry.link.addEventListener("focus",()=>showTooltip(entry,true));
+ entry.link.addEventListener("blur",()=>hideTooltip(true));
+}
+function headerLabel(node,family){
+ const goal=node.data.kind==="goal",x=node.x0+(goal?11:9);
+ return fitLabel(node.data.row.short||node.data.row.label,node.x1-x-21,(goal?"650 13px ":"500 12px ")+family);
+}
+function draw(){
+ hideTooltip(true);
+ svg.replaceChildren();
+ entries=[];entryById=new Map();
+ const family=getComputedStyle(document.body).fontFamily;
+ hierarchy.eachBefore(node=>{
+   const kind=node.data.kind,row=node.data.row;
+   if(kind!=="goal"&&kind!=="feature"&&kind!=="leaf")return;
+   const area=box(node),link=element("a",{},svg);
+   const shape=element("rect",{...area,rx:RADIUS[kind],class:kind==="leaf"?"tf-health-tile na":"tf-health-"+kind},link);
+   let dot=null;
+   if(kind!=="leaf"&&!compact.has(row.id)){
+     const goal=kind==="goal",x=node.x0+(goal?11:9),y=node.y0+(goal?19.5:16.5);
+     dot=element("circle",{cx:x+3.5,cy:y-4.3,r:goal?4:3.5,class:"tf-health-dot na"},link);
+     const text=headerLabel(node,family);
+     if(text)element("text",{x:x+12,y,class:goal?"tf-health-label-goal":"tf-health-label-feature"},link).textContent=text;
+   }
+   const entry={row,kind,area,link,shape,dot};
+   entries.push(entry);
+   entryById.set(row.id,entry);
+   bind(entry);
+ });
+ ring=element("rect",{class:"tf-health-ring",width:0,height:0},svg);
+ paint();
+}
+function paint(animated){
+ const through=[];
+ for(const entry of entries){
+   const value=status(entry.row);
+   if(entry.kind==="leaf"){
+     // Red and green never blend directly: a changing tile passes through the neutral midpoint.
+     const neutral=animated&&entry.value&&entry.value!==value&&entry.value!=="na"&&value!=="na";
+     entry.shape.setAttribute("class","tf-health-tile "+(neutral?"na":value));
+     entry.value=value;
+     if(neutral)through.push(entry);
+   }else{
+     entry.shape.classList.toggle("tf-health-own-failed",value==="failed");
+     entry.dot?.setAttribute("class","tf-health-dot "+value);
+   }
+   entry.link.setAttribute("href",targetHref(entry.row));
+   entry.link.setAttribute("aria-label",ariaLabel(entry.row));
+ }
+ wrap.classList.toggle("tf-health-product-failed",status(root)==="failed");
+ if(through.length)setTimeout(()=>through.forEach(entry=>entry.shape.setAttribute("class","tf-health-tile "+entry.value)),120);
+}
+function thumbnail(key){
+ let out="";
+ hierarchy.eachBefore(node=>{
+   const kind=node.data.kind,row=node.data.row,area=box(node);
+   const geometry='x="'+area.x+'" y="'+area.y+'" width="'+area.width+'" height="'+area.height+'"';
+   if(kind==="goal")out+="<rect "+geometry+' rx="14" class="tf-health-goal'+(status(row,key)==="failed"?" tf-health-own-failed":"")+'" vector-effect="non-scaling-stroke"/>';
+   else if(kind==="feature"&&status(row,key)==="failed")out+="<rect "+geometry+' rx="10" fill="none" class="tf-health-own-failed" vector-effect="non-scaling-stroke"/>';
+   else if(kind==="leaf")out+="<rect "+geometry+' class="tf-health-tile '+status(row,key)+'"/>';
+ });
+ return'<svg class="tf-health-thumb" viewBox="0 0 '+width+" "+height+'" aria-hidden="true" focusable="false">'+out+"</svg>";
+}
+function buildTabs(){
+ tabs.innerHTML=LAYERS.map(([key,label,tip])=>{
+   const summary=model.summary.layers[key]||{},failing=Number(summary.failing||0),applicable=Number(summary.applicable||0);
+   const verdict=summary.status==="passed"?"passed":"failed";
+   const count=failing?"<b>"+failing+"</b> of "+applicable+" fail":"all "+applicable+" pass";
+   const name=label+": "+word(verdict)+", "+(failing?failing+" of "+applicable+" fail":"all "+applicable+" pass");
+   return'<button type="button" role="tab" class="tf-health-tab" id="tf-health-tab-'+key+'" data-health-mode="'+key+'" aria-label="'+escapeHtml(name)+'" aria-controls="tf-health-map" aria-describedby="tf-health-tip-'+key+'">'
+     +'<span class="tf-health-tab-title">'+label+"</span>"
+     +thumbnail(key)
+     +'<span class="tf-health-tab-status"><span class="tf-health-verdict '+verdict+'"><i class="fa-solid '+(verdict==="passed"?"fa-circle-check":"fa-circle-xmark")+'" aria-hidden="true"></i> '+word(verdict)+'</span><span class="tf-health-help" aria-hidden="true" data-tip="'+escapeHtml(tip)+'">?</span></span>'
+     +'<span class="tf-health-count">'+count+"</span>"
+     +'<span class="tf-sr-only" id="tf-health-tip-'+key+'">'+escapeHtml(tip)+"</span></button>";
+ }).join("");
+ tabs.querySelectorAll("[data-health-mode]").forEach(button=>{
+   button.addEventListener("click",()=>select(button.dataset.healthMode,false));
+   button.addEventListener("keydown",event=>{
+     const keys=LAYERS.map(layer=>layer[0]),index=keys.indexOf(button.dataset.healthMode);
+     const next={ArrowRight:index+1,ArrowLeft:index-1,Home:0,End:keys.length-1}[event.key];
+     if(next===undefined)return;
+     event.preventDefault();
+     select(keys[(next+keys.length)%keys.length],true);
    });
-   element.on("plotly_unhover",()=>{clearHighlight();hideTooltip(false)});
+ });
+ syncTabs();
+}
+function syncTabs(){
+ tabs.querySelectorAll("[data-health-mode]").forEach(button=>{
+   const active=button.dataset.healthMode===mode;
+   button.setAttribute("aria-selected",String(active));
+   button.tabIndex=active?0:-1;
  });
 }
-window.addEventListener("resize",()=>{size();Promise.resolve(Plotly.Plots.resize(element)).then(decorateSlices)});
-renderTabs();
-if(typeof Plotly!=="undefined")render();else document.querySelector('script[src*="plotly"]')?.addEventListener("load",render,{once:true});
+function select(key,focus){
+ if(key!==mode){mode=key;hideTooltip(true);syncTabs();paint(true)}
+ if(focus)document.getElementById("tf-health-tab-"+key)?.focus();
+}
+function headerHeight(node){
+ const kind=node.data.kind;
+ if((kind==="goal"||kind==="feature")&&compact.has(node.data.row.id))return pad(node,2);
+ return pad(node,1);
+}
+function computeLayout(){
+ d3.treemap().size([width,height]).tile(tile)
+   .paddingInner(node=>pad(node,0)).paddingTop(headerHeight)
+   .paddingRight(node=>pad(node,2)).paddingBottom(node=>pad(node,2)).paddingLeft(node=>pad(node,2))(hierarchy);
+}
+function layout(force){
+ const rect=wrap.getBoundingClientRect(),w=Math.round(rect.width);
+ const h=Math.round(Math.min(880,Math.max(460,window.innerHeight-(rect.top+window.scrollY)-20)));
+ if(!w||(!force&&w===width&&h===height))return;
+ width=w;height=h;
+ svg.setAttribute("viewBox","0 0 "+width+" "+height);
+ svg.setAttribute("width",width);
+ svg.setAttribute("height",height);
+ compact.clear();
+ computeLayout();
+ const family=getComputedStyle(document.body).fontFamily;
+ hierarchy.each(node=>{
+   const kind=node.data.kind;
+   if(kind!=="goal"&&kind!=="feature")return;
+   const room=node.y1-node.y0-pad(node,1)-pad(node,2);
+   if(!headerLabel(node,family)||room<(kind==="goal"?40:22))compact.add(node.data.row.id);
+ });
+ if(compact.size)computeLayout();
+ buildTabs();
+ draw();
+}
+function scheduleLayout(force){
+ pendingForce=pendingForce||force;
+ if(frame)return;
+ frame=requestAnimationFrame(()=>{frame=0;const next=pendingForce;pendingForce=false;layout(next)});
+}
+document.addEventListener("keydown",event=>{if(event.key==="Escape")hideTooltip(true)});
+window.addEventListener("resize",()=>scheduleLayout(false));
+new ResizeObserver(()=>scheduleLayout(false)).observe(wrap);
+layout(true);
+document.fonts?.ready?.then(()=>scheduleLayout(true));
 })();
 </script>
 </section>"""
-    article=template.replace("__MODEL__",stable_json(payload))
+    article=(
+      template
+      .replace("__D3_HIERARCHY__",vendored_d3_hierarchy())
+      .replace("__MODEL__",stable_json(payload))
+    )
     HEALTH_PAGE.write_text(portal_map_shell(HEALTH_PAGE,"Verification Health Map",article))
+
 
 def depth_map_payload():
     _needs, nodes, parent, _children, ordered, weights, descendants = assurance_map_graph()
@@ -3142,9 +3544,25 @@ def scope_line_range(spec):
     return int(node.lineno),int(getattr(node,"end_lineno",node.lineno))
 
 
+PROBE_SCRATCH_DIR=Path(tempfile.gettempdir())/"ternforge-probe-scratch"
+
+
+def probe_env(env=None):
+    """Keep probe pytest sessions from rewriting the retained run's input snapshot.
+
+    tests/conftest.py snapshots verification inputs at every session start; a probe
+    that runs pytest in the repository must write that snapshot elsewhere, or the
+    retained freshness baseline silently becomes "whatever is on disk now".
+    """
+    PROBE_SCRATCH_DIR.mkdir(parents=True,exist_ok=True)
+    result=dict(os.environ if env is None else env)
+    result["TERNFORGE_EVIDENCE_RUN_INPUTS"]=str(PROBE_SCRATCH_DIR/"probe-run-inputs.json")
+    return result
+
+
 def run_checked(command,*,cwd=ROOT,env=None):
     completed=subprocess.run(
-      command,cwd=cwd,env=env,text=True,
+      command,cwd=cwd,env=probe_env(env),text=True,
       stdout=subprocess.PIPE,stderr=subprocess.STDOUT
     )
     if completed.returncode:
@@ -3166,10 +3584,14 @@ def coverage_lines_for(nodeids,source_path):
 
 def gremlin_group_metrics(spec,nodeids,report):
     start,end=scope_line_range(spec)
-    rows=[
+    scoped=[
       row for row in report.get("results") or []
       if start<=int(row.get("line_number") or -1)<=end
     ]
+    # Mutants that break collection/import are invalid, as in the Implementation
+    # fault campaign: excluded from reach and sensitivity, reported separately.
+    rows=[row for row in scoped if row.get("status") not in IMPL_FAULTS.INVALID]
+    invalid_count=len(scoped)-len(rows)
     covered=coverage_lines_for(nodeids,spec["source"])
     coverage_by_test={nodeid:coverage_lines_for([nodeid],spec["source"]) for nodeid in nodeids}
     reached=[row for row in rows if int(row.get("line_number") or -1) in covered]
@@ -3217,6 +3639,7 @@ def gremlin_group_metrics(spec,nodeids,report):
       "sensitivity":round(100*len(killed)/len(reached),1) if reached else None,
       "overall_detection":round(100*len(killed)/len(rows),1) if rows else None,
       "families":families,
+      "invalid":invalid_count,
       "mutants":mutant_rows,
       "killed_ids":[str(row.get("gremlin_id") or "") for row in killed],
       "engine_metadata":"native pytest-gremlins operator metadata",
@@ -3255,17 +3678,19 @@ def implementation_line_reach(spec,nodeids):
 
 
 def gremlin_group_probe(spec,nodeids):
-    command=[
-      shutil.which("uv") or "uv","run","--with","pytest-gremlins","pytest","-q",
-      *nodeids,
-      "--gremlins",
-      f"--gremlin-targets={spec['source']}",
-      "--gremlin-report=json",
-      "--gremlin-operators=comparison,boundary,boolean,arithmetic,return",
-    ]
-    run_checked(command)
-    report_path=ROOT/"coverage/gremlins/gremlins.json"
-    return gremlin_group_metrics(spec,nodeids,json.loads(report_path.read_text()))
+    # Same qualified engine configuration as the Implementation fault campaign: every
+    # mutant runs through full pytest, never gremlins' fixture-less lightweight runner.
+    command=[*IMPL_FAULTS.engine_command(ROOT,list(nodeids),[spec["source"]]),"--no-cov"]
+    coverage_dir_existed=(ROOT/"coverage").exists()
+    try:
+        run_checked(command,env=IMPL_FAULTS.engine_env(PROBE_SCRATCH_DIR))
+        report=json.loads((ROOT/"coverage/gremlins/gremlins.json").read_text())
+    finally:
+        shutil.rmtree(ROOT/"coverage/gremlins",ignore_errors=True)
+        if not coverage_dir_existed:
+            shutil.rmtree(ROOT/"coverage",ignore_errors=True)
+        (ROOT/".coveragerc.gremlins").unlink(missing_ok=True)
+    return gremlin_group_metrics(spec,nodeids,report)
 
 
 def gherkin_mutation_metrics(payload):
@@ -3897,6 +4322,9 @@ def invalid_config_fault_probe_binding():
       "source_sha256":sha256_file(ROOT/contract["source_path"]),
       "probe_inputs":inputs,
       "probe_input_set_sha256":sha256_text(stable_json(inputs)),
+      # Facts produced by another mutation-engine configuration (for example the
+      # fixture-less lightweight runner) are not this probe's evidence.
+      "engine":IMPL_FAULTS.engine_configuration(),
     }
 
 
@@ -3918,6 +4346,7 @@ def specialized_fault_binding_current(contract_id, contract_fault):
       and binding.get("source_sha256")==current["source_sha256"]
       and binding.get("probe_input_set_sha256")==current["probe_input_set_sha256"]
       and binding.get("probe_inputs")==current["probe_inputs"]
+      and binding.get("engine")==current["engine"]
     )
 
 
@@ -5168,6 +5597,7 @@ def current_evidence_qualification_environment():
       "assurance_monitor_ui_sha256":sha256_file(ROOT/".ai-bridge/assurance_monitor_ui.py"),
       "assurance_monitor_domain_sha256":sha256_file(ROOT/".ai-bridge/assurance_monitor_domain.py"),
       "assurance_monitor_registry_sha256":sha256_file(ROOT/".ai-bridge/assurance_monitor_registry.py"),
+      "implementation_faults_sha256":sha256_file(ROOT/".ai-bridge/implementation_faults.py"),
       "qualification_harness_sha256":sha256_file(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
       "trace_bridge_sha256":sha256_file(ROOT/"tests/conftest.py"),
     }
@@ -5186,10 +5616,10 @@ def qualification_is_current(record):
     return bool(record) and record.get("environment")==current_evidence_qualification_environment()
 
 
-def producer_chain_status(producer_ids,qualification):
+def producer_chain_status(producer_ids,qualification,monitor_producer="PRODUCER_REQUIREMENT_MONITOR"):
     if not qualification_is_current(qualification):
         return "UNKNOWN", "qualification record is missing or does not match current tool/code fingerprints"
-    required=list(dict.fromkeys(list(producer_ids or [])+["PRODUCER_LLM_ROUTER_TRACE_BRIDGE","PRODUCER_ASSURANCE_ADAPTER","PRODUCER_REQUIREMENT_MONITOR"]))
+    required=list(dict.fromkeys(list(producer_ids or [])+["PRODUCER_LLM_ROUTER_TRACE_BRIDGE","PRODUCER_ASSURANCE_ADAPTER",monitor_producer]))
     producers=qualification.get("producers") or {}
     states=[str((producers.get(pid) or {}).get("status") or "UNKNOWN").upper() for pid in required]
     if any(state=="NOT QUALIFIED" for state in states):
@@ -5308,18 +5738,66 @@ def coverage_context_present(nodeid):
         return False
 
 
+SNAPSHOT_RUN_BINDING_WINDOW_SECONDS=(-300,60)
+
+
+def snapshot_run_binding(captured_at,suite_start_ms):
+    """The freshness baseline must be the retained run's own session-start snapshot.
+
+    tests/conftest.py writes it at pytest session start, so a snapshot captured far
+    from the retained JUnit suite start was written by some other pytest session and
+    cannot tell whether the retained evidence is still current.
+    """
+    if suite_start_ms is None:
+        return False,"the retained JUnit run has no start time"
+    try:
+        captured=datetime.fromisoformat(str(captured_at).replace("Z","+00:00"))
+        if captured.tzinfo is None:
+            captured=captured.replace(tzinfo=UTC)
+    except Exception:
+        return False,"the retained input snapshot has no capture time"
+    delta=(captured.timestamp()*1000-suite_start_ms)/1000
+    low,high=SNAPSHOT_RUN_BINDING_WINDOW_SECONDS
+    if low<=delta<=high:
+        return True,"the input snapshot was captured at the retained run's session start"
+    side="after" if delta>0 else "before"
+    return False,(
+      f"the input snapshot was captured {abs(delta):.0f}s {side} the retained run started, "
+      "so it is not that run's freshness baseline; re-run the retained test suite"
+    )
+
+
 def load_evidence_run_inputs():
     if not EVIDENCE_RUN_INPUTS_PATH.exists():
         return {}
     try:
-        return json.loads(EVIDENCE_RUN_INPUTS_PATH.read_text())
+        snapshot=json.loads(EVIDENCE_RUN_INPUTS_PATH.read_text())
     except Exception:
         return {}
+    suite_start_ms=None
+    if JUNIT_PATH.exists():
+        try:
+            suite_start_ms,_,_=junit_suite_window(ET.parse(JUNIT_PATH).getroot())
+        except Exception:
+            suite_start_ms=None
+    bound,basis=snapshot_run_binding(snapshot.get("captured_at"),suite_start_ms)
+    snapshot["_run_binding"]={"bound":bound,"basis":basis}
+    return snapshot
+
+
+def unbound_snapshot_basis(snapshot):
+    binding=(snapshot or {}).get("_run_binding") or {}
+    if binding and not binding.get("bound"):
+        return str(binding.get("basis") or "the input snapshot is not bound to the retained run")
+    return None
 
 
 def current_input_snapshot(snapshot):
     if not snapshot or not snapshot.get("inputs"):
         return "UNKNOWN","retained run input snapshot is missing",None
+    unbound=unbound_snapshot_basis(snapshot)
+    if unbound:
+        return "UNKNOWN",unbound,None
     paths=set()
     for pattern in snapshot.get("input_scope") or []:
         paths.update(path for path in ROOT.glob(str(pattern)) if path.is_file())
@@ -5410,6 +5888,9 @@ def evidence_input_state(snapshot,paths):
     retained=dict(snapshot.get("inputs") or {})
     if not retained:
         return "UNKNOWN","retained run input snapshot is missing",None,[]
+    unbound=unbound_snapshot_basis(snapshot)
+    if unbound:
+        return "UNKNOWN",unbound,None,[]
     if not paths:
         return "UNKNOWN","no relevant verification inputs could be resolved",None,[]
     current={}
@@ -5496,6 +5977,8 @@ def evidence_run_manifest(junit_root,allure_index):
         "captured_at":run_inputs.get("captured_at"),
         "input_set_sha256":run_inputs.get("input_set_sha256"),
         "count":len(run_inputs.get("inputs") or {}),
+        "run_bound":bool((run_inputs.get("_run_binding") or {}).get("bound")),
+        "run_binding_basis":(run_inputs.get("_run_binding") or {}).get("basis"),
       },
       "subjects":subjects,
       "builder":{
@@ -5555,45 +6038,90 @@ DEPTH_MS_ORDER=["na","l0","l1","l2","l3","l4"]
 DEPTH_TEST_EVIDENCE_KINDS={"unit","bdd","integration","property","e2e"}
 
 
-def depth_model_validation_records():
+def calibrating_experiment_state(needs,experiment_id):
+    need=needs.get(experiment_id) or {}
+    capsule_name=Path(str(need.get("docname") or "")).parent.name
+    capsules=sorted(ROOT.glob(f"experiments/*/{capsule_name}")) if capsule_name else []
+    if need.get("type")!="exp" or len(capsules)!=1:
+        return {"id":experiment_id,"valid":False,"errors":["calibrating capsule is not resolvable from the graph"]}
+    try:
+        from ternforge_docops._internal.experiments.report import validate_report
+        errors=list(validate_report(capsules[0]))
+    except Exception as exc:
+        errors=[f"capsule report validation could not run: {type(exc).__name__}"]
     return {
-      "PRODUCER_SCRIPTED_HTTP_SERVER":{
-        "title":"Scripted HTTP provider model",
-        "representation_fidelity":"surrogate_simulated",
-        "ms_validation":"l0",
-        "intended_use":"Provide deterministic provider-shaped HTTP interactions for adapter/router verification.",
-        "referent":None,
-        "basis":"The surrogate is implemented and its mechanics are qualified, but no structured conceptual-validation record ties each scripted provider behavior to a real referent/intended-use source. Therefore L1 is not claimed.",
-        "calibration":[],
-      },
-      "PRODUCER_VCR":{
-        "title":"VCR replay model",
-        "representation_fidelity":"surrogate_simulated",
-        "ms_validation":"l0",
-        "intended_use":"Replay previously captured provider HTTP interactions deterministically.",
-        "referent":"historical live-provider capture",
-        "basis":"The replay tool is qualified and cassettes originate from recorded interactions, but no structured per-cassette intended-use/conceptual-validation record exists. Therefore L1 is not claimed.",
-        "calibration":[],
-      },
-      "PRODUCER_GOOGLE_GENAI_FAKE_SDK":{
-        "title":"Google GenAI fake SDK model",
-        "representation_fidelity":"surrogate_simulated",
-        "ms_validation":"l2",
-        "intended_use":"Reproduce the Google GenAI SDK surface used by the adapter in-process.",
-        "referent":"live Google GenAI provider/SDK",
-        "basis":"Producer purpose and fake-SDK contracts are explicit; passing live capability experiment EXP_0002 is linked as calibration and compares important provider behaviors at some validation points. No complete intended-domain coverage record exists, so L3 is not claimed.",
-        "calibration":["EXP_0002"],
-      },
-      "PRODUCER_GEMINI_WEBAPI_FAKE_SDK":{
-        "title":"Gemini WebAPI fake SDK model",
-        "representation_fidelity":"surrogate_simulated",
-        "ms_validation":"l2",
-        "intended_use":"Reproduce the Gemini WebAPI client/provider surface used by the adapter in-process.",
-        "referent":"live Gemini WebAPI provider/client",
-        "basis":"Producer purpose and fake-SDK contracts are explicit; passing live capability experiment EXP_0003 is linked as calibration and compares important provider behaviors at some validation points. No complete intended-domain coverage record exists, so L3 is not claimed.",
-        "calibration":["EXP_0003"],
-      },
+      "id":experiment_id,
+      "title":need.get("title") or experiment_id,
+      "capsule":str(capsules[0].relative_to(ROOT)),
+      "valid":not errors,
+      "errors":errors,
     }
+
+
+MODEL_VALIDATION_CACHE={}
+
+
+def depth_model_validation_records():
+    """Derive M&S validation (NASA-STD-7009A validation factor) from the graph.
+
+    L2 needs a declared intended use plus at least one Engineering Experiment
+    that `calibrates` the model and whose captured capsule report is still
+    valid. Everything else stays L0; L1/L3/L4 have no structured source yet.
+    """
+    needs_path=ROOT/"docs/_build/html/needs.json"
+    key=sha256_text(needs_path.read_text()) if needs_path.exists() else ""
+    if key not in MODEL_VALIDATION_CACHE:
+        MODEL_VALIDATION_CACHE.clear()
+        MODEL_VALIDATION_CACHE[key]=derive_model_validation_records()
+    return json.loads(json.dumps(MODEL_VALIDATION_CACHE[key]))
+
+
+def derive_model_validation_records():
+    needs=current_needs()
+    records={}
+    for producer_id,need in sorted(needs.items()):
+        if need.get("type")!="producer" or need.get("producer_role")!="test-substitute":
+            continue
+        intended_use=str(need.get("producer_purpose") or "").strip()
+        experiments=[
+          calibrating_experiment_state(needs,experiment_id)
+          for experiment_id in sorted(need.get("calibrates_back") or [])
+        ]
+        valid=[row for row in experiments if row["valid"]]
+        if intended_use and valid:
+            level="l2"
+            basis=(
+              "Intended use is declared and "+", ".join(row["id"] for row in valid)
+              +" calibrates this model against the live referent with a current captured report. "
+              "No intended-domain coverage record exists, so L3 is not claimed."
+            )
+        elif not intended_use:
+            level="l0"
+            basis="No declared intended use, so no validation level above L0 can be claimed."
+        elif experiments:
+            level="l0"
+            basis=(
+              "Calibration is declared but its capsule report is not currently valid: "
+              +"; ".join(f"{row['id']}: {', '.join(row['errors'])}" for row in experiments)
+              +". Therefore L2 is not claimed."
+            )
+        else:
+            level="l0"
+            basis=(
+              "Tool mechanics can be qualified, but no Engineering Experiment calibrates this model "
+              "against a live referent. Therefore no validation level above L0 is claimed."
+            )
+        records[producer_id]={
+          "title":need.get("title") or producer_id,
+          "representation_fidelity":"surrogate_simulated",
+          "ms_validation":level,
+          "intended_use":intended_use or None,
+          "referent":", ".join(f"{row['id']} {row['title']}" for row in valid) or None,
+          "basis":basis,
+          "calibration":[row["id"] for row in valid],
+          "calibration_checks":experiments,
+        }
+    return records
 
 
 def current_needs():
@@ -6014,7 +6542,7 @@ def refresh_verification_depth_facts():
         "representation_fidelity_order":DEPTH_REPRESENTATION_ORDER,
         "representation_fidelity_semantics":"Synthetic/Abstract → Surrogate/Simulated → Representative → Actual. Representative means a non-live setup with explicit evidence that it represents the real target for this use; replay alone is not enough.",
         "ms_validation_order":DEPTH_MS_ORDER,
-        "ms_validation_semantics":"NASA-STD-7009A validation-factor projection. Generic substitute/replay evidence remains L0; only explicitly calibrated fake-SDK models reach L2 in this pilot.",
+        "ms_validation_semantics":"NASA-STD-7009A validation-factor projection derived from the graph: L2 requires a declared intended use and a calibrating Engineering Experiment with a current captured report; every other surrogate stays L0.",
       },
       "tests":tests,
       "contracts":contracts,
@@ -6371,6 +6899,53 @@ def junit_monitor_actual():
     }
 
 
+def evidence_classification_index():
+    """Classify every retained testcase once, from runtime facts, for all monitors."""
+    if not JUNIT_PATH.exists():
+        return {}
+    root=ET.parse(JUNIT_PATH).getroot()
+    allure_index=allure_monitor_index()
+    depth_run_current,depth_run_basis=depth_run_artifacts_current(allure_index)
+    qualification=load_evidence_qualification()
+    index={}
+    for testcase in root.iter("testcase"):
+        classname=testcase.attrib.get("classname") or ""
+        nodeid=f"{classname.replace('.','/')}.py::{testcase.attrib.get('name') or ''}"
+        result="passed"
+        if testcase.find("failure") is not None or testcase.find("error") is not None:
+            result="failed"
+        elif testcase.find("skipped") is not None:
+            result="skipped"
+        matches=allure_index.get(nodeid) or []
+        allure_row=matches[0] if len(matches)==1 else None
+        depth_state=current_depth_classification(nodeid,TEST_META.get(nodeid) or {},allure_row)
+        current=bool(depth_run_current and depth_state.get("current"))
+        producer_ids=list((allure_row or {}).get("producer_ids") or [])
+        chains={}
+        for monitor_producer in ("PRODUCER_REQUIREMENT_MONITOR","PRODUCER_UPPER_ASSURANCE_MONITOR"):
+            status,basis=producer_chain_status(producer_ids,qualification,monitor_producer)
+            chains[monitor_producer]={
+              "status":status,
+              "basis":basis,
+              "producer_ids":list(dict.fromkeys(producer_ids+[
+                "PRODUCER_LLM_ROUTER_TRACE_BRIDGE","PRODUCER_ASSURANCE_ADAPTER",monitor_producer,
+              ])),
+            }
+        index[nodeid]={
+          "result":result,
+          "classification_current":current,
+          "classification_basis":(
+            depth_state.get("basis") if current
+            else depth_run_basis+"; "+str(depth_state.get("basis") or "")
+          ),
+          "level":depth_state.get("level") if current else "unknown",
+          "boundary":depth_state.get("boundary") if current else "unknown",
+          "representation":depth_state.get("representation") if current else "unknown",
+          "producer_chains":chains,
+        }
+    return index
+
+
 def parse_fault_items(raw):
     if not raw:
         return []
@@ -6545,10 +7120,144 @@ def junit_fault_actual(policy):
     return result
 
 
+def implementation_fault_plans():
+    needs=current_needs()
+    scopes=IMPL_FAULTS.resolve_impl_scopes(ROOT,needs)
+    owners=IMPL_FAULTS.line_owners(scopes)
+    descendants=IMPL_FAULTS.descendants_map(needs)
+    test_rows=junit_depth_rows()
+    return {
+      contract_id:IMPL_FAULTS.contract_plan(contract_id,scopes,owners,descendants,test_rows)
+      for contract_id,need in sorted(needs.items())
+      if need.get("type") in {"req","treq"}
+    }
+
+
+def refresh_implementation_fault_campaign(contract_ids=None):
+    """Run pytest-gremlins for every contract whose own code can be challenged."""
+    plans=implementation_fault_plans()
+    inputs=IMPL_FAULTS.campaign_inputs(ROOT)
+    input_set_sha256=sha256_text(stable_json(inputs))
+    previous=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
+    contracts=dict(previous.get("contracts") or {}) if contract_ids else {}
+    started=time.monotonic()
+    asking=contracts_asking_for_implementation_classes()
+    selected=[
+      contract_id for contract_id,plan in plans.items()
+      if not plan.get("blocked")
+      and (not contract_ids or contract_id in contract_ids)
+      and contract_id in asking
+    ]
+    print(f"[IMPL] campaign: {len(selected)} contracts to challenge, {sum(bool(plan.get('blocked')) for plan in plans.values())} blocked",flush=True)
+    for index,contract_id in enumerate(selected,1):
+        plan=plans[contract_id]
+        raw_path=IMPL_FAULT_DIR/f"{contract_id}.gremlins.json"
+        raw_path.unlink(missing_ok=True)
+        run=IMPL_FAULTS.run_engine(ROOT,plan,raw_path)
+        contracts[contract_id]={
+          "fingerprint":IMPL_FAULTS.plan_fingerprint(plan,input_set_sha256),
+          "plan":plan,
+          "run":{
+            **{key:value for key,value in run.items() if key!="command"},
+            "report_path":str(raw_path.relative_to(ROOT)) if run["report_retained"] else None,
+            "report_sha256":sha256_file(raw_path) if run["report_retained"] else None,
+            "finished_at":utc_now(),
+          },
+        }
+        print(f"[IMPL] {index}/{len(selected)} {contract_id}: exit {run['returncode']} in {run['duration_seconds']}s",flush=True)
+        IMPL_FAULT_CAMPAIGN_PATH.write_text(json.dumps({
+          "schema":IMPL_FAULTS.SCHEMA,
+          "engine":{"name":"pytest-gremlins","version":IMPL_FAULTS.GREMLINS_VERSION,"operators":list(IMPL_FAULTS.OPERATORS)},
+          "class_by_operator":IMPL_FAULTS.CLASS_BY_OPERATOR,
+          "input_scope":list(IMPL_FAULTS.INPUT_SCOPE)+list(IMPL_FAULTS.EXPLICIT_INPUTS),
+          "input_set_sha256":input_set_sha256,
+          "head_sha":git_sha(),
+          "updated_at":utc_now(),
+          "contracts":contracts,
+        },indent=2,sort_keys=True)+"\n")
+    print(f"[IMPL] campaign finished in {round(time.monotonic()-started,1)}s",flush=True)
+
+
+def contracts_asking_for_implementation_classes(policy=None):
+    policy=policy or project_monitor_policy()
+    asking=set()
+    for contract_id,need in current_needs().items():
+        if need.get("type") not in {"req","treq"}:
+            continue
+        target=requirement_monitor_target(contract_id,policy) or {}
+        if any(
+          item.get("id") in IMPL_FAULTS.CLASSES and item.get("state") in {"required","optional"}
+          for group in target.get("fault_groups") or []
+          for item in group.get("items") or []
+        ):
+            asking.add(contract_id)
+    return asking
+
+
+def implementation_fault_actual():
+    """Current Implementation fault classes per contract, fail-closed."""
+    plans=implementation_fault_plans()
+    asking=contracts_asking_for_implementation_classes()
+    campaign=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
+    qualification=load_evidence_qualification()
+    producers_ok=qualification_is_current(qualification) and all(
+      str(((qualification.get("producers") or {}).get(producer_id) or {}).get("status") or "").upper()=="QUALIFIED"
+      for producer_id in IMPL_FAULTS.PRODUCERS
+    )
+    current_inputs=sha256_text(stable_json(IMPL_FAULTS.campaign_inputs(ROOT))) if campaign else None
+    result={}
+    for contract_id,plan in plans.items():
+        entry=(campaign.get("contracts") or {}).get(contract_id) or {}
+        run=entry.get("run") or {}
+        if contract_id not in asking:
+            classes=IMPL_FAULTS.blocked_classes("The verification profile does not ask for Implementation fault classes.")
+            state="not_applicable"
+        elif plan.get("blocked"):
+            classes=IMPL_FAULTS.blocked_classes(IMPL_FAULTS.blocked_basis(plan))
+            state="blocked"
+        elif not entry:
+            classes=IMPL_FAULTS.blocked_classes("The implementation fault campaign has not run for this contract yet.")
+            state="not_run"
+        elif entry.get("fingerprint")!=IMPL_FAULTS.plan_fingerprint(plan,current_inputs):
+            classes=IMPL_FAULTS.blocked_classes("Code, tests, or the contract's test set changed since the last campaign; its result is stale.")
+            state="stale"
+        elif run.get("returncode")!=0 or not run.get("report_path"):
+            classes=IMPL_FAULTS.blocked_classes("The mutation engine did not finish cleanly for this contract, so nothing is claimed.")
+            state="engine_error"
+        else:
+            report_path=ROOT/run["report_path"]
+            if not report_path.exists() or sha256_file(report_path)!=run.get("report_sha256"):
+                classes=IMPL_FAULTS.blocked_classes("The retained engine report is missing or altered, so nothing is claimed.")
+                state="report_mismatch"
+            else:
+                classes=IMPL_FAULTS.project_classes(plan,json.loads(report_path.read_text()),ROOT)
+                state="current"
+        if state=="current" and not producers_ok:
+            classes={
+              class_id:{**row,"exercised":False,"detected":False,"basis":"The mutation engine or its class mapping is not currently qualified, so its result is not trusted: "+row["basis"]}
+              for class_id,row in classes.items()
+            }
+            state="unqualified"
+        for row in classes.values():
+            row["source"]="implementation_fault_campaign"
+            row["campaign_state"]=state
+            row["producer_ids"]=list(IMPL_FAULTS.PRODUCERS)
+        result[contract_id]={
+          "state":state,
+          "classes":classes,
+          "shared_with":plan.get("shared_with") or [],
+          "scopes":plan.get("scopes") or [],
+          "tests":len(plan.get("tests") or []),
+          "tests_not_passing":plan.get("tests_not_passing") or [],
+        }
+    return result
+
+
 def requirement_monitor_model(base_model):
     policy=project_monitor_policy()
     junit_actual=junit_monitor_actual()
     junit_faults=junit_fault_actual(policy)
+    implementation_faults=implementation_fault_actual()
     fault_model=json.loads(ASSURANCE_FACTS_PATH.read_text()) if ASSURANCE_FACTS_PATH.exists() else {}
     result={
       "schema":"ternforge-requirement-monitor-p34-2",
@@ -6586,16 +7295,15 @@ def requirement_monitor_model(base_model):
         contract_fault=raw_contract_fault if specialized_probe_current else {}
         groups=list((contract_fault.get("groups") or {}).values())
         layers=contract_fault.get("layers") or {}
-        class_actual={}
         implementation=layers.get("implementation") or {}
-        native_families=set()
-        for group in groups:
-            native_families.update((group.get("families") or {}).keys())
-        if "comparison" in native_families:
-            class_actual["impl.comparison"]={"exercised":True,"detected":True}
-        if "boundary" in native_families:
-            class_actual["impl.boundary"]={"exercised":True,"detected":True}
-        class_actual["impl.control-flow"]={"exercised":False,"detected":False}
+        class_actual={}
+        # Implementation classes come from the generic mutation campaign for every
+        # contract; a class is detected only when all of its attributable faults are.
+        class_actual.update(
+          json.loads(json.dumps(
+            ((implementation_faults.get(contract_id) or {}).get("classes") or {})
+          ))
+        )
         layer_map={
           "runtime.latency-timeout":"runtime",
           "interface.unexpected-interaction":"interface",
@@ -6604,16 +7312,18 @@ def requirement_monitor_model(base_model):
         }
         for class_id,layer_id in layer_map.items():
             layer=layers.get(layer_id) or {}
+            if not layer:
+                continue
+            caught=bool(layer.get("detected"))
             class_actual[class_id]={
               "exercised":bool(layer.get("generated")),
-              "detected":bool(layer.get("detected")),
+              "detected":caught,
+              "source":"specialized_probe",
+              "basis":(
+                f"Specialized {str(layer.get('label') or layer_id).lower()} probe: "
+                f"the injected fault was {'caught' if caught else 'not caught'}."
+              ),
             }
-        for class_id in (
-          "runtime.unavailable-disconnect","runtime.malformed-response",
-          "interface.error-status","interface.payload-schema",
-          "architecture.layer-bypass","spec.missing-partition","spec.wrong-ordering-boundary",
-        ):
-            class_actual.setdefault(class_id,{"exercised":False,"detected":False})
 
         retained_classes=(junit_faults.get(contract_id) or {})
         for class_id,retained in retained_classes.items():
@@ -6626,11 +7336,24 @@ def requirement_monitor_model(base_model):
               and (not previous_exercised or previous.get("detected"))
               and (not retained_exercised or retained.get("detected"))
             )
+            declared=int(retained.get("declared_paths") or 0)
+            retained_basis=(
+              f"{int(retained.get('detected_paths') or 0)} of {declared} retained test "
+              "challenge(s) caught the injected fault."
+              if retained_exercised else
+              f"{declared} retained test challenge(s) declared, but no current run recorded the injected fault."
+            )
             class_actual[class_id]={
               **previous,
               **retained,
               "exercised":exercised,
               "detected":detected,
+              "basis":" ".join(
+                str(part) for part in (
+                  previous.get("basis") if previous_exercised else "",
+                  retained_basis,
+                ) if part
+              ),
               "sources":{
                 "specialized_probe":previous,
                 "retained_test_challenge":retained,
@@ -6641,7 +7364,11 @@ def requirement_monitor_model(base_model):
             for class_id in fault_group.get("classes") or []:
                 class_actual.setdefault(
                   class_id,
-                  {"exercised":False,"detected":False},
+                  {
+                    "exercised":False,
+                    "detected":False,
+                    "basis":"Not challenged: no retained test declares this fault class for this contract.",
+                  },
                 )
 
         target_criteria={item for cell in (target.get("coverage") or []) for item in (cell.get("items") or [])}
@@ -6666,6 +7393,28 @@ def requirement_monitor_model(base_model):
           },
           "history_url":((fault_model.get("contract_histories") or {}).get(contract_id) or {}).get("url"),
         }
+    # Tests that claim to verify a contract but serve none of the profile's cases
+    # (and are not goal/capability scenarios or fault challenges) are kept visible:
+    # a failing one must turn the contract red instead of being silently ignored.
+    bindings=junit_test_bindings()
+    criterion_owner={
+      criterion_id:owner
+      for contract in result["contracts"].values()
+      for criterion_id,owner in ((contract.get("target") or {}).get("criterion_contracts") or {}).items()
+    }
+    junit_rows=junit_depth_rows()
+    for contract_id,contract in result["contracts"].items():
+        linked=[]
+        for row in junit_rows:
+            if contract_id not in (row.get("verifies") or []):
+                continue
+            binding=bindings.get(row["nodeid"]) or {}
+            if binding.get("assurance_item") or binding.get("fault_challenge"):
+                continue
+            if criterion_owner.get(binding.get("coverage_item") or ""):
+                continue
+            linked.append({"nodeid":row["nodeid"],"result":row.get("result")})
+        contract["linked_outside_profile"]=linked
     return result
 
 
@@ -6694,6 +7443,16 @@ def patch_contract_evidence_view():
     monitor_model=requirement_monitor_model(model)
     (ASSURANCE_PAGE.parent/"requirement-monitor-facts.json").write_text(
         json.dumps(monitor_model,indent=2,sort_keys=True)+"\n"
+    )
+    EVIDENCE_CLASSIFICATION_PATH.write_text(
+        json.dumps(
+          {
+            "schema":"ternforge-evidence-classification-1",
+            "qualification_current":qualification_is_current(load_evidence_qualification()),
+            "testcases":evidence_classification_index(),
+          },
+          indent=2,sort_keys=True,
+        )+"\n"
     )
 
     # Contract Evidence is an assurance/confidence view. Execution health and
@@ -7334,13 +8093,15 @@ def parse_args():
     parser.add_argument("--base-ref",help="base git ref/SHA for diff campaigns")
     parser.add_argument("--refresh-freshness",action="store_true",help="recompute freshness/triage without running mutants")
     parser.add_argument("--refresh-assurance",action="store_true",help="rerun P33 fault-model probes and rebuild assurance history")
+    parser.add_argument("--refresh-implementation-faults",action="store_true",help="run the pytest-gremlins Implementation fault campaign for every attributable contract")
+    parser.add_argument("--contracts",nargs="*",help="limit --refresh-implementation-faults to these contracts")
     parser.add_argument("--suppress",nargs=2,metavar=("CONTRACT_ID","MUTANT_FINGERPRINT"),help="suppress one current surviving mutant")
     parser.add_argument("--unsuppress",nargs=2,metavar=("CONTRACT_ID","MUTANT_FINGERPRINT"),help="remove one mutation suppression")
     parser.add_argument("--reason",help="required suppression reason")
     parser.add_argument("--owner",help="optional suppression owner")
     parser.add_argument("--expires-at",help="optional ISO-8601 suppression expiry")
     args=parser.parse_args()
-    maintenance=bool(args.refresh_freshness or args.refresh_assurance or args.suppress or args.unsuppress)
+    maintenance=bool(args.refresh_freshness or args.refresh_assurance or args.refresh_implementation_faults or args.suppress or args.unsuppress)
     if args.mode=="diff" and not args.base_ref and not maintenance:
         parser.error("--base-ref is required for --mode diff")
     if args.suppress and not str(args.reason or "").strip():
@@ -7375,6 +8136,10 @@ def ensure_mutmut_overlay():
 def main():
     args=parse_args()
     OUT.mkdir(parents=True,exist_ok=True)
+    if args.refresh_implementation_faults:
+        IMPL_FAULT_DIR.mkdir(parents=True,exist_ok=True)
+        refresh_implementation_fault_campaign(set(args.contracts or []) or None)
+        return
     if args.refresh_freshness or args.refresh_assurance or args.suppress or args.unsuppress:
         campaign=current_campaign_or_die()
         if args.refresh_assurance:

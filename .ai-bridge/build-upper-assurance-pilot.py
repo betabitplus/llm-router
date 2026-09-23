@@ -21,6 +21,38 @@ RUN_INPUTS = ROOT / "test-results/evidence-run-inputs.json"
 COVERAGE_DB = ROOT / "test-results/.coverage"
 OUT_DIR = ROOT / "docs/_build/html"
 QUALIFICATION = OUT_DIR / "evidence-confidence-qualification.json"
+CLASSIFICATION = OUT_DIR / "evidence-classification-facts.json"
+RUN_PROVENANCE = OUT_DIR / "evidence-run-provenance.json"
+UPPER_MONITOR_PRODUCER = "PRODUCER_UPPER_ASSURANCE_MONITOR"
+LEVEL_KEYS = {
+    "component": "component",
+    "component integration": "component_integration",
+    "system": "system",
+    "system integration": "system_integration",
+    "acceptance": "acceptance",
+}
+BOUNDARY_KEYS = {
+    "local": "none",
+    "none": "none",
+    "substitute": "substitute",
+    "replay": "replay",
+    "direct": "direct",
+    "direct live": "direct",
+}
+REPRESENTATION_ORDER = [
+    "synthetic_abstract",
+    "surrogate_simulated",
+    "representative",
+    "actual",
+]
+REPRESENTATION_KEYS = {
+    "synthetic": "synthetic_abstract",
+    "synthetic / abstract": "synthetic_abstract",
+    "surrogate": "surrogate_simulated",
+    "surrogate / simulated": "surrogate_simulated",
+    "representative": "representative",
+    "actual": "actual",
+}
 FACTS_OUT = OUT_DIR / "upper-assurance-facts.json"
 SHELL = OUT_DIR / "verification-assurance.html"
 
@@ -178,6 +210,16 @@ def upper_evidence_freshness(
 ) -> dict:
     retained = run_inputs.get("inputs") or {}
     paths = upper_evidence_input_paths(target, row, run_inputs, nodes)
+    if run_inputs.get("unbound_basis"):
+        # A snapshot written by another pytest session cannot vouch for this run.
+        return {
+            "kind": "evidence_inputs",
+            "nodeid": row.get("nodeid"),
+            "input_count": len(paths),
+            "changed_inputs": [],
+            "basis": run_inputs["unbound_basis"],
+            "status": "UNKNOWN",
+        }
     changed = []
     missing = []
     for relative in paths:
@@ -197,22 +239,27 @@ def upper_evidence_freshness(
     }
 
 
-def required_producers(target: dict) -> list[str]:
-    producers = [
-        "PRODUCER_PYTEST",
-        "PRODUCER_PY_TESTKIT",
-        "PRODUCER_UPPER_ASSURANCE_MONITOR",
-    ]
-    if str(target.get("method") or "").strip().lower() == "pytest-bdd":
-        producers.append("PRODUCER_PYTEST_BDD")
-    if str(target.get("boundary") or "").strip().lower() == "substitute":
-        producers.append("PRODUCER_SCRIPTED_HTTP_SERVER")
-    return producers
+def observed_producers(rows: list[dict]) -> list[str]:
+    """Producers that actually took part in the retained evidence, never the Target's wish list."""
+    producers: list[str] = []
+    for row in rows:
+        producers.extend(row.get("producer_ids") or [])
+    if rows:
+        producers.extend(
+            [
+                "PRODUCER_LLM_ROUTER_TRACE_BRIDGE",
+                "PRODUCER_ASSURANCE_ADAPTER",
+                UPPER_MONITOR_PRODUCER,
+            ]
+        )
+    return list(dict.fromkeys(producers))
 
 
-def producer_gate(target: dict, qualification: dict) -> dict:
+def producer_gate(rows: list[dict], qualification: dict) -> dict:
     producers = qualification.get("producers") or {}
-    required = required_producers(target)
+    required = observed_producers(rows)
+    if not required:
+        return {"status": "N/A", "producers": []}
     rows = []
     statuses = []
     for producer_id in required:
@@ -233,6 +280,53 @@ def producer_gate(target: dict, qualification: dict) -> dict:
             }
         )
     return {"status": domain.combine(statuses), "producers": rows}
+
+
+def classification_gate(target: dict, rows: list[dict]) -> dict:
+    """Retained paths must run at the declared test level, boundary, and minimum realism."""
+    ran = [row for row in rows if row.get("result") != "skipped"]
+    if not ran:
+        return {"status": "N/A", "checks": []}
+    want_level = LEVEL_KEYS.get(str(target.get("test_level") or "").strip().lower())
+    want_boundary = BOUNDARY_KEYS.get(str(target.get("boundary") or "").strip().lower())
+    want_representation = REPRESENTATION_KEYS.get(
+        str(target.get("representation") or "").strip().lower()
+    )
+    checks = []
+    for row in ran:
+        if not row.get("classification_current"):
+            status = "UNKNOWN"
+        elif (
+            row.get("level") == want_level
+            and row.get("boundary") == want_boundary
+            and row.get("representation") in REPRESENTATION_ORDER
+            and want_representation in REPRESENTATION_ORDER
+            and REPRESENTATION_ORDER.index(row["representation"])
+            >= REPRESENTATION_ORDER.index(want_representation)
+        ):
+            status = "MET"
+        else:
+            status = "NOT MET"
+        checks.append(
+            {
+                "nodeid": row.get("nodeid"),
+                "status": status,
+                "actual": {
+                    "level": row.get("level"),
+                    "boundary": row.get("boundary"),
+                    "representation": row.get("representation"),
+                },
+                "target": {
+                    "level": want_level,
+                    "boundary": want_boundary,
+                    "representation": want_representation,
+                },
+            }
+        )
+    return {
+        "status": domain.combine([check["status"] for check in checks]),
+        "checks": checks,
+    }
 
 
 def freshness_gate(target: dict, rows: list[dict], run_inputs: dict) -> dict:
@@ -364,6 +458,15 @@ def parse_profiles() -> dict[str, dict]:
                     )
                 seen.add(criterion)
                 required = int(row.get("Required executions", "1").strip("* ") or "1")
+                for column, vocabulary in (
+                    ("Test level", LEVEL_KEYS),
+                    ("Boundary", BOUNDARY_KEYS),
+                    ("Representation", REPRESENTATION_KEYS),
+                ):
+                    if str(row.get(column, "")).strip().lower() not in vocabulary:
+                        raise RuntimeError(
+                            f"{spec.entity_id}/{criterion}: unknown {column} {row.get(column)!r}"
+                        )
                 criteria.append(
                     {
                         "id": criterion,
@@ -389,6 +492,11 @@ def junit_assurance_actual(declared: set[str]) -> dict[str, list[dict]]:
     actual: dict[str, list[dict]] = defaultdict(list)
     if not JUNIT.exists():
         return actual
+    classification = (
+        (json.loads(CLASSIFICATION.read_text()).get("testcases") or {})
+        if CLASSIFICATION.exists()
+        else {}
+    )
     root = ET.parse(JUNIT).getroot()
     for testcase in root.iter("testcase"):
         props = {
@@ -408,13 +516,32 @@ def junit_assurance_actual(declared: set[str]) -> dict[str, list[dict]]:
             result = "failed"
         elif testcase.find("skipped") is not None:
             result = "skipped"
+        nodeid = (
+            f"{(testcase.attrib.get('classname') or '').replace('.', '/')}.py::"
+            f"{testcase.attrib.get('name') or ''}"
+        )
+        facts = classification.get(nodeid) or {}
+        chain = (facts.get("producer_chains") or {}).get(UPPER_MONITOR_PRODUCER) or {}
         actual[criterion].append(
             {
-                "nodeid": (
-                    f"{(testcase.attrib.get('classname') or '').replace('.', '/')}.py::"
-                    f"{testcase.attrib.get('name') or ''}"
-                ),
+                "nodeid": nodeid,
                 "result": result,
+                "classification_current": bool(facts.get("classification_current")),
+                "classification_basis": facts.get("classification_basis")
+                or "no shared classification fact exists for this testcase",
+                "level": facts.get("level") or "unknown",
+                "boundary": facts.get("boundary") or "unknown",
+                "representation": facts.get("representation") or "unknown",
+                "producer_ids": [
+                    producer
+                    for producer in chain.get("producer_ids") or []
+                    if producer
+                    not in {
+                        "PRODUCER_LLM_ROUTER_TRACE_BRIDGE",
+                        "PRODUCER_ASSURANCE_ADAPTER",
+                        UPPER_MONITOR_PRODUCER,
+                    }
+                ],
                 "verifies": [
                     value.strip()
                     for value in (props.get("verifies") or "").split(",")
@@ -445,15 +572,22 @@ def criterion_state(
         if len(rows) >= required and passed >= required and failed == 0
         else "NOT MET"
     )
-    producer_qualification = producer_gate(target, qualification)
+    producer_qualification = producer_gate(rows, qualification)
     freshness = freshness_gate(target, rows, run_inputs)
+    classification = classification_gate(target, rows)
     status = domain.combine(
-        [execution_status, producer_qualification["status"], freshness["status"]]
+        [
+            execution_status,
+            classification["status"],
+            producer_qualification["status"],
+            freshness["status"],
+        ]
     )
     return {
         **target,
         "status": status,
         "execution_status": execution_status,
+        "classification": classification,
         "producer_qualification": producer_qualification,
         "freshness": freshness,
         "actual_executions": len(rows),
@@ -491,7 +625,9 @@ def profile_capture_facts(run_inputs: dict) -> dict[str, dict]:
     facts: dict[str, dict] = {}
     for profile_rel in sorted({spec.profile_source for spec in PAGE_SPECS}):
         current_sha = sha256_file(ROOT / profile_rel)
-        retained_sha = retained_inputs.get(profile_rel)
+        retained_sha = (
+            None if run_inputs.get("unbound_basis") else retained_inputs.get(profile_rel)
+        )
         facts[profile_rel] = {
             "captured_at_run_start": retained_sha is not None,
             "fresh": retained_sha is not None and retained_sha == current_sha,
@@ -508,9 +644,26 @@ def build_facts() -> dict:
     policy = req_data["policy"]
     contracts = req_data["contracts"]
     run_inputs = json.loads(RUN_INPUTS.read_text()) if RUN_INPUTS.exists() else {}
+    run_provenance = (
+        json.loads(RUN_PROVENANCE.read_text()) if RUN_PROVENANCE.exists() else {}
+    )
+    provenance_inputs = run_provenance.get("inputs") or {}
+    if not provenance_inputs.get("run_bound") or (
+        provenance_inputs.get("input_set_sha256") != run_inputs.get("input_set_sha256")
+    ):
+        run_inputs = {
+            **run_inputs,
+            "unbound_basis": provenance_inputs.get("run_binding_basis")
+            or "the input snapshot is not bound to the retained run",
+        }
     qualification = (
         json.loads(QUALIFICATION.read_text()) if QUALIFICATION.exists() else {}
     )
+    classification_facts = (
+        json.loads(CLASSIFICATION.read_text()) if CLASSIFICATION.exists() else {}
+    )
+    if not classification_facts.get("qualification_current"):
+        qualification = {}
 
     declared = {
         criterion["id"]
@@ -777,6 +930,25 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
         retained_subject_singular="path",
         tip="Checks that the declared assurance scenario passes.",
     )
+    classification_checks = (criterion.get("classification") or {}).get("checks") or []
+    classification = ui.lane(
+        "Test level × boundary × realism",
+        ["MATCH", "MISMATCH", "UNKNOWN"],
+        sorted(
+            {
+                "MATCH"
+                if check["status"] == "MET"
+                else ("MISMATCH" if check["status"] == "NOT MET" else "UNKNOWN")
+                for check in classification_checks
+            }
+        ),
+        "MATCH",
+        (criterion.get("classification") or {}).get("status", "N/A"),
+        "Checks that each retained path ran at the declared test level and boundary with at least the declared realism.",
+        sum(check["status"] == "MET" for check in classification_checks),
+        len(classification_checks),
+        "paths",
+    )
     producer_actual_values = sorted(
         {str(row.get("actual") or "UNKNOWN").upper() for row in producer_rows}
     )
@@ -828,7 +1000,11 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
         class_name="primary-group",
     ) + ui.signal_group(
         title="Retained path properties",
-        body=ui.confidence_subgroup(producer + freshness),
+        body=(
+            classification + ui.confidence_subgroup(producer + freshness)
+            if actual_executions
+            else ui.no_retained_evidence()
+        ),
         class_name="path-properties",
         scope=f"{actual_executions}/{required_executions} paths",
     )

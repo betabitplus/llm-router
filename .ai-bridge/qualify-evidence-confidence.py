@@ -49,6 +49,7 @@ def environment() -> dict[str, str | None]:
         "assurance_monitor_ui_sha256": sha256_file(ROOT / ".ai-bridge/assurance_monitor_ui.py"),
         "assurance_monitor_domain_sha256": sha256_file(ROOT / ".ai-bridge/assurance_monitor_domain.py"),
         "assurance_monitor_registry_sha256": sha256_file(ROOT / ".ai-bridge/assurance_monitor_registry.py"),
+        "implementation_faults_sha256": sha256_file(ROOT / ".ai-bridge/implementation_faults.py"),
         "qualification_harness_sha256": sha256_file(Path(__file__)),
         "trace_bridge_sha256": sha256_file(ROOT / "tests/conftest.py"),
     }
@@ -559,6 +560,8 @@ def internal_controls() -> dict[str, dict[str, object]]:
     stale_source_binding["source_sha256"] = "0" * 64
     stale_inputs_binding = json.loads(json.dumps(specialized_binding))
     stale_inputs_binding["probe_input_set_sha256"] = "0" * 64
+    stale_engine_binding = json.loads(json.dumps(specialized_binding))
+    stale_engine_binding["engine"] = {**stale_engine_binding["engine"], "mode": "lightweight runner"}
     specialized_binding_control_ok = (
         specialized_current(
             "REQ_INVALID_CONFIGURATION_ERRORS",
@@ -576,10 +579,25 @@ def internal_controls() -> dict[str, dict[str, object]]:
             "REQ_INVALID_CONFIGURATION_ERRORS",
             {"binding": stale_inputs_binding},
         )
+        and not specialized_current(
+            "REQ_INVALID_CONFIGURATION_ERRORS",
+            {"binding": stale_engine_binding},
+        )
+    )
+
+    snapshot_binding = adapter["snapshot_run_binding"]
+    run_start_ms = 1_790_000_000_000
+    snapshot_binding_ok = (
+        snapshot_binding("2026-09-21T14:13:19Z", run_start_ms)[0] is True
+        and snapshot_binding("2026-09-21T16:13:20Z", run_start_ms)[0] is False
+        and snapshot_binding("2026-09-20T14:13:20Z", run_start_ms)[0] is False
+        and snapshot_binding(None, run_start_ms)[0] is False
+        and snapshot_binding("2026-09-21T14:13:19Z", None)[0] is False
     )
 
     adapter_ok = (
-        good == {"coherent": True, "freshness": "CURRENT", "reason": "JUnit and exact Allure result agree and belong to the same retained execution window"}
+        snapshot_binding_ok
+        and good == {"coherent": True, "freshness": "CURRENT", "reason": "JUnit and exact Allure result agree and belong to the same retained execution window"}
         and mismatch.get("coherent") is False
         and mismatch.get("freshness") == "UNKNOWN"
         and stale.get("coherent") is False
@@ -703,6 +721,8 @@ def internal_controls() -> dict[str, dict[str, object]]:
     surrogate_target_l0 = dict(surrogate_target)
     surrogate_target_l0["ms_validation_target"] = "l0"
     surrogate_l2_over_l0 = cell_state(surrogate_contract, surrogate_target_l0)
+    surrogate_row["ms_validation"] = "l0"
+    surrogate_l0_over_l0 = cell_state(surrogate_contract, surrogate_target_l0)
     projection_ok = projection_ok and (
         surrogate_without_target["ms_status"] == "UNKNOWN"
         and surrogate_without_target["ms_applicable_count"] == 1
@@ -710,8 +730,20 @@ def internal_controls() -> dict[str, dict[str, object]]:
         and surrogate_l2["ms_matched"] == 1
         and surrogate_l0["ms_status"] == "NOT MET"
         and surrogate_l0["ms_matched"] == 0
-        and surrogate_l2_over_l0["ms_status"] == "MET"
-        and surrogate_l2_over_l0["ms_matched"] == 1
+        and surrogate_l2_over_l0["ms_status"] == "N/A"
+        and surrogate_l2_over_l0["ms_matched"] == 0
+        and surrogate_l0_over_l0["ms_status"] == "N/A"
+        and surrogate_l0_over_l0["ms_matched"] == 0
+    )
+
+    contract_domain_state = domain["contract_domain_state"]
+    linked_base = {"target": {"coverage": [], "fault_groups": []}, "coverage_actual": {}, "fault_actual": {"classes": {}, "groups": {}}}
+    linked_passing = contract_domain_state({**linked_base, "linked_outside_profile": [{"nodeid": "t.py::test_extra", "result": "passed"}]}, {})
+    linked_failing = contract_domain_state({**linked_base, "linked_outside_profile": [{"nodeid": "t.py::test_extra", "result": "failed"}]}, {})
+    projection_ok = projection_ok and (
+        linked_passing["coverage"] != "NOT MET"
+        and linked_failing["coverage"] == "NOT MET"
+        and linked_failing["overall"] == "NOT MET"
     )
 
     fault_state = domain["fault_state"]
@@ -788,7 +820,9 @@ def internal_controls() -> dict[str, dict[str, object]]:
     upper_target = {
         "id": "ASSURANCE_CONTROL",
         "method": "pytest-bdd",
+        "test_level": "System Integration",
         "boundary": "Substitute",
+        "representation": "Surrogate",
         "required_executions": 1,
         "owner_id": "GOAL_ROUTING_RELIABILITY",
         "profile_path": str(upper_profile.relative_to(ROOT)),
@@ -800,6 +834,16 @@ def internal_controls() -> dict[str, dict[str, object]]:
         "result": "passed",
         "source_path": str(upper_test_source.relative_to(ROOT)),
         "source_sha256": upper_source_sha,
+        "classification_current": True,
+        "level": "system_integration",
+        "boundary": "substitute",
+        "representation": "surrogate_simulated",
+        "producer_ids": [
+            "PRODUCER_PYTEST",
+            "PRODUCER_PY_TESTKIT",
+            "PRODUCER_PYTEST_BDD",
+            "PRODUCER_SCRIPTED_HTTP_SERVER",
+        ],
     }
     upper_nodes = upper["parse_need_graph"]()
     upper_input_paths = upper["upper_evidence_input_paths"](
@@ -818,6 +862,8 @@ def internal_controls() -> dict[str, dict[str, object]]:
         "PRODUCER_UPPER_ASSURANCE_MONITOR",
         "PRODUCER_PYTEST_BDD",
         "PRODUCER_SCRIPTED_HTTP_SERVER",
+        "PRODUCER_LLM_ROUTER_TRACE_BRIDGE",
+        "PRODUCER_ASSURANCE_ADAPTER",
     )
     upper_qualification = {
         "producers": {
@@ -871,6 +917,30 @@ def internal_controls() -> dict[str, dict[str, object]]:
         run_inputs=upper_missing_profile_inputs,
         qualification=upper_qualification,
     )
+    upper_wrong_level = upper_criterion_state(
+        upper_target,
+        [{**upper_row, "level": "component_integration"}],
+        run_inputs=upper_run_inputs,
+        qualification=upper_qualification,
+    )
+    upper_weaker_representation = upper_criterion_state(
+        {**upper_target, "representation": "Actual"},
+        [upper_row],
+        run_inputs=upper_run_inputs,
+        qualification=upper_qualification,
+    )
+    upper_unclassified = upper_criterion_state(
+        upper_target,
+        [{**upper_row, "classification_current": False}],
+        run_inputs=upper_run_inputs,
+        qualification=upper_qualification,
+    )
+    upper_unqualified_observed = upper_criterion_state(
+        upper_target,
+        [{**upper_row, "producer_ids": [*upper_row["producer_ids"], "PRODUCER_VCR"]}],
+        run_inputs=upper_run_inputs,
+        qualification=upper_qualification,
+    )
     upper_projection_ok = (
         upper_good["status"] == "MET"
         and upper_good["execution_status"] == "MET"
@@ -881,23 +951,27 @@ def internal_controls() -> dict[str, dict[str, object]]:
         and upper_bad_producer["status"] == "NOT MET"
         and upper_stale_source["status"] == "NOT MET"
         and upper_missing_profile["status"] == "NOT MET"
+        and upper_wrong_level["status"] == "NOT MET"
+        and upper_weaker_representation["status"] == "NOT MET"
+        and upper_unclassified["status"] == "UNKNOWN"
+        and upper_unqualified_observed["status"] == "UNKNOWN"
     )
 
     return {
         "PRODUCER_ASSURANCE_ADAPTER": {
             "status": "QUALIFIED" if adapter_ok else "NOT QUALIFIED",
             "intended_use": "join retained execution artifacts without accepting mismatched status or stale run membership",
-            "false_green_control": "status disagreement, out-of-run timestamps, stale/missing Requirement revision pins, and stale specialized fault-probe bindings must be rejected while coherent current evidence remains current",
+            "false_green_control": "status disagreement, out-of-run timestamps, a freshness snapshot not captured at the retained run's session start, stale/missing Requirement revision pins, and specialized fault-probe facts bound to other inputs or another mutation-engine configuration must be rejected while coherent current evidence remains current",
         },
         "PRODUCER_REQUIREMENT_MONITOR": {
             "status": "QUALIFIED" if projection_ok else "NOT QUALIFIED",
             "intended_use": "project Target versus Actual without converting missing or failed confidence evidence into green status",
-            "false_green_control": "UNKNOWN, NOT QUALIFIED, partial-scope trust, exact-cardinality violations, under-validated surrogate paths, and unselected or threshold-less mutation checks must never become a false PASS",
+            "false_green_control": "UNKNOWN, NOT QUALIFIED, partial-scope trust, exact-cardinality violations, under-validated surrogate paths, a vacuous L0 model-validation target, a failing test that verifies the contract outside its required cases, and unselected or threshold-less mutation checks must never become a false PASS",
         },
         "PRODUCER_UPPER_ASSURANCE_MONITOR": {
             "status": "QUALIFIED" if upper_projection_ok else "NOT QUALIFIED",
             "intended_use": "project Feature, Goal, and Product/System assurance from child status plus explicitly declared cross-contract and validation criteria",
-            "false_green_control": "missing execution, UNKNOWN or NOT QUALIFIED producers, stale test source, or missing/stale Assurance Profile provenance must never become a false PASS",
+            "false_green_control": "missing execution, UNKNOWN or NOT QUALIFIED observed producers, a path at the wrong test level/boundary or below the declared realism, unclassified paths, stale test source, or missing/stale Assurance Profile provenance must never become a false PASS",
         },
     }
 
@@ -968,11 +1042,249 @@ def project_sdk_controls() -> dict[str, dict[str, object]]:
     return result
 
 
+def implementation_fault_controls() -> dict[str, dict[str, object]]:
+    """Qualify the mutation engine and the Implementation fault-class projection."""
+    faults = runpy.run_path(
+        str(ROOT / ".ai-bridge/implementation_faults.py"),
+        run_name="evidence_confidence_implementation_faults",
+    )
+
+    # Scope resolution: decorators above or below the annotation, methods, statements.
+    source = (
+        "import dataclasses\n\n"
+        "@dataclasses.dataclass\n"
+        "# @impl Box, IMPL_BOX, [REQ_BOX[revision==1]]\n"
+        "class Box:\n"
+        "    size: int = 0\n\n"
+        "    # @impl Grow, IMPL_GROW, [REQ_GROW[revision==1]]\n"
+        "    @classmethod\n"
+        "    def grow(cls, value):\n"
+        "        return value + 1\n\n"
+        "# @impl Wiring, IMPL_WIRING, [REQ_WIRING[revision==1]]\n"
+        "REGISTRY = {'box': Box}\n"
+    )
+    lines = source.splitlines()
+    tree = __import__("ast").parse(source)
+    box = faults["annotated_node"](tree, lines, 4)
+    grow = faults["annotated_node"](tree, lines, 8)
+    wiring = faults["annotated_node"](tree, lines, 13)
+    resolution_ok = (
+        box is not None
+        and faults["scope_kind_and_name"](tree, box, 3) == ("class", "Box")
+        and grow is not None
+        and faults["scope_kind_and_name"](tree, grow, 9) == ("method", "Box.grow")
+        and wiring is not None
+        and faults["scope_kind_and_name"](tree, wiring, 14) == ("statement", "L14")
+    )
+
+    # Attribution: a parent owns lines it shares with its derived child; siblings and a
+    # contract nested inside a sibling's broader scope own nothing they share.
+    needs = {
+        "REQ_P": {"type": "req"},
+        "TREQ_C": {"type": "treq", "derives": ["REQ_P"]},
+        "REQ_S1": {"type": "req"},
+        "REQ_S2": {"type": "req"},
+        "REQ_A": {"type": "req"},
+        "REQ_B": {"type": "req"},
+    }
+    scopes = [
+        {"impl_id": "I1", "source": "m.py", "kind": "function", "qualname": "f", "start": 1, "end": 5, "owners": ["REQ_P", "TREQ_C"]},
+        {"impl_id": "I2", "source": "m.py", "kind": "function", "qualname": "g", "start": 10, "end": 12, "owners": ["REQ_S1", "REQ_S2"]},
+        {"impl_id": "I3", "source": "m.py", "kind": "class", "qualname": "K", "start": 20, "end": 30, "owners": ["REQ_A"]},
+        {"impl_id": "I4", "source": "m.py", "kind": "method", "qualname": "K.m", "start": 25, "end": 27, "owners": ["REQ_B"]},
+    ]
+    owners = faults["line_owners"](scopes)
+    descendants = faults["descendants_map"](needs)
+    tests = [
+        {"nodeid": "t.py::test_p", "result": "passed", "verifies": ["REQ_P"]},
+        {"nodeid": "t.py::test_c", "result": "passed", "verifies": ["TREQ_C"]},
+        {"nodeid": "t.py::test_c_failed", "result": "failed", "verifies": ["TREQ_C"]},
+        {"nodeid": "t.py::test_a", "result": "passed", "verifies": ["REQ_A"]},
+        {"nodeid": "t.py::test_b", "result": "passed", "verifies": ["REQ_B"]},
+        {"nodeid": "t.py::test_s1", "result": "passed", "verifies": ["REQ_S1"]},
+    ]
+    plan = lambda contract_id: faults["contract_plan"](contract_id, scopes, owners, descendants, tests)
+    parent, child, sibling, broad, nested = plan("REQ_P"), plan("TREQ_C"), plan("REQ_S1"), plan("REQ_A"), plan("REQ_B")
+    attribution_ok = (
+        parent.get("blocked") is None
+        and parent["attributable_lines"] == {"m.py": [1, 2, 3, 4, 5]}
+        and parent["tests"] == ["t.py::test_c", "t.py::test_p"]
+        and parent["tests_not_passing"] == ["t.py::test_c_failed"]
+        and child.get("blocked") == "shared_scope"
+        and child["shared_with"] == ["REQ_P"]
+        and sibling.get("blocked") == "shared_scope"
+        and broad.get("blocked") is None
+        and broad["attributable_lines"] == {"m.py": [20, 21, 22, 23, 24, 28, 29, 30]}
+        and nested.get("blocked") == "shared_scope"
+        and plan("REQ_UNKNOWN").get("blocked") == "no_impl_scope"
+    )
+
+    # Projection: every fault of a class must be caught; an unreached fault is not.
+    root = Path(tempfile.gettempdir()).resolve()
+    target = str(root / "m.py")
+    report = {"results": [
+        {"gremlin_id": "g1", "file_path": target, "line_number": 21, "operator": "comparison", "description": "> to >=", "status": "zapped", "selected_tests": ["t"]},
+        {"gremlin_id": "g2", "file_path": target, "line_number": 21, "operator": "boundary", "description": "boundary shift +/-1", "status": "survived", "selected_tests": []},
+        {"gremlin_id": "g3", "file_path": target, "line_number": 22, "operator": "boolean", "description": "and to or", "status": "survived", "selected_tests": ["t"]},
+        {"gremlin_id": "g4", "file_path": target, "line_number": 23, "operator": "return", "description": "return value to None", "status": "zapped", "selected_tests": ["t"]},
+        {"gremlin_id": "g5", "file_path": target, "line_number": 24, "operator": "return", "description": "return value to None", "status": "pardoned", "selected_tests": ["t"]},
+        {"gremlin_id": "g6", "file_path": target, "line_number": 26, "operator": "comparison", "description": "== to !=", "status": "survived", "selected_tests": ["t"]},
+        {"gremlin_id": "g7", "file_path": target, "line_number": 21, "operator": "arithmetic", "description": "+ to -", "status": "survived", "selected_tests": ["t"]},
+        {"gremlin_id": "g8", "file_path": target, "line_number": 29, "operator": "comparison", "description": "== to !=", "status": "error", "selected_tests": ["t"]},
+    ]}
+    classes = faults["project_classes"](broad, report, root)
+    all_caught = faults["project_classes"](
+        broad,
+        {"results": [dict(row, status="zapped", selected_tests=["t"]) for row in report["results"][:4]]},
+        root,
+    )
+    projection_ok = (
+        classes["impl.comparison"]["exercised"] is True
+        and classes["impl.comparison"]["detected"] is True
+        and classes["impl.comparison"]["judged"] == 1
+        and classes["impl.comparison"]["invalid"] == 1
+        and classes["impl.boundary"]["exercised"] is False
+        and classes["impl.boundary"]["detected"] is False
+        and classes["impl.boundary"]["unreached"] == 1
+        and classes["impl.control-flow"]["exercised"] is True
+        and classes["impl.control-flow"]["detected"] is False
+        and classes["impl.control-flow"]["judged"] == 2
+        and classes["impl.control-flow"]["pardoned"] == 1
+        and all(row["detected"] for row in all_caught.values())
+        and faults["blocked_classes"]("x")["impl.control-flow"] == {"exercised": False, "detected": False, "basis": "x"}
+    )
+
+    # Engine: the four native operator families exist, and a mutant counts as caught
+    # only when a real pytest run of the selected tests fails. The controls use
+    # fixtures, parametrization and a pytest-bdd scenario, because a runner that cannot
+    # execute those must never turn them into caught mutants.
+    engine_ok = False
+    engine_detail: dict[str, object] = {}
+    with tempfile.TemporaryDirectory(prefix="ternforge-gremlins-qualification-") as temp_dir:
+        tmp = Path(temp_dir)
+        (tmp / "pytest.ini").write_text("[pytest]\nbdd_features_base_dir = features\n")
+        (tmp / "features").mkdir()
+        (tmp / "control_target.py").write_text(
+            "def classify(value, enabled):\n"
+            "    if value > 10 and enabled:\n"
+            "        return 'big'\n"
+            "    return 'small'\n"
+        )
+        feature = (
+            "Feature: Control\n"
+            "  Scenario: Classify a big enabled value\n"
+            "    Given the value 11\n"
+            "    When it is classified while enabled\n"
+            "    Then the class is \"big\"\n"
+        )
+        (tmp / "features/control.feature").write_text(feature)
+        bdd_steps = (
+            "from pytest_bdd import given, parsers, scenario, then, when\n"
+            "from control_target import classify\n\n"
+            "@scenario('control.feature', 'Classify a big enabled value')\n"
+            "def test_bdd_classify():\n"
+            "    pass\n\n"
+            "@given(parsers.parse('the value {value:d}'), target_fixture='value')\n"
+            "def given_value(value):\n"
+            "    return value\n\n"
+            "@when('it is classified while enabled', target_fixture='result')\n"
+            "def classified(value):\n"
+            "    return classify(value, True)\n\n"
+        )
+        (tmp / "test_bdd_strong.py").write_text(
+            bdd_steps
+            + "@then(parsers.parse('the class is \"{expected}\"'))\n"
+            "def check(result, expected):\n"
+            "    assert result == expected\n"
+        )
+        (tmp / "test_bdd_weak.py").write_text(
+            bdd_steps
+            + "@then(parsers.parse('the class is \"{expected}\"'))\n"
+            "def check(result, expected):\n"
+            "    pass\n"
+        )
+        (tmp / "test_strong.py").write_text(
+            "import pytest\n"
+            "from control_target import classify\n\n"
+            "@pytest.mark.parametrize(('value', 'enabled', 'expected'), [(11, True, 'big'), (10, True, 'small'), (11, False, 'small')])\n"
+            "def test_strong(monkeypatch, value, enabled, expected):\n"
+            "    monkeypatch.setenv('TERNFORGE_CONTROL', '1')\n"
+            "    assert classify(value, enabled) == expected\n"
+        )
+        (tmp / "test_weak.py").write_text(
+            "import pytest\n"
+            "from control_target import classify\n\n"
+            "@pytest.mark.parametrize('value', [11, 10])\n"
+            "def test_weak(monkeypatch, value):\n"
+            "    monkeypatch.setenv('TERNFORGE_CONTROL', '1')\n"
+            "    classify(value, True)\n"
+            "    classify(value, False)\n"
+        )
+        suites = {
+            "strong": ["test_strong.py::test_strong[11-True-big]", "test_strong.py::test_strong[10-True-small]", "test_strong.py::test_strong[11-False-small]", "test_bdd_strong.py::test_bdd_classify"],
+            "weak": ["test_weak.py::test_weak[11]", "test_weak.py::test_weak[10]", "test_bdd_weak.py::test_bdd_classify"],
+        }
+        rows_by_suite: dict[str, list[dict]] = {}
+        returncodes: dict[str, int] = {}
+        tails: dict[str, str] = {}
+        for name, tests in suites.items():
+            completed = subprocess.run(
+                faults["engine_command"](tmp, tests, ["control_target.py"], project=ROOT, config="pytest.ini"),
+                cwd=tmp,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                timeout=900,
+                env=faults["engine_env"](tmp / "scratch"),
+            )
+            report_path = tmp / "coverage/gremlins/gremlins.json"
+            rows_by_suite[name] = list(json.loads(report_path.read_text())["results"]) if report_path.exists() else []
+            returncodes[name] = completed.returncode
+            tails[name] = completed.stdout[-1500:]
+            if report_path.exists():
+                report_path.unlink()
+        strong = rows_by_suite["strong"]
+        weak = rows_by_suite["weak"]
+        families = {str(row.get("operator")) for row in strong}
+        engine_ok = (
+            returncodes["strong"] == 0
+            and returncodes["weak"] == 0
+            and families == set(faults["OPERATORS"])
+            and bool(strong)
+            and all(row.get("status") == "zapped" and row.get("selected_tests") for row in strong)
+            and len(weak) == len(strong)
+            and not any(row.get("status") in faults["KILLED"] for row in weak)
+        )
+        engine_detail = {
+            "families": sorted(families),
+            "strong": {"faults": len(strong), "caught": sum(row.get("status") in faults["KILLED"] for row in strong)},
+            "weak": {"faults": len(weak), "caught": sum(row.get("status") in faults["KILLED"] for row in weak)},
+            "configuration": faults["engine_configuration"](),
+        }
+        if not engine_ok:
+            engine_detail["tails"] = tails
+
+    return {
+        "PRODUCER_PYTEST_GREMLINS": {
+            "status": "QUALIFIED" if engine_ok else "NOT QUALIFIED",
+            "intended_use": "generate comparison, boundary, boolean and return mutants on the declared target and report a mutant as caught only when a selected test fails",
+            "false_green_control": "parametrized, fixture-using and pytest-bdd tests that assert nothing must catch no mutant, while tests that pin the behavior must catch every generated mutant in all four families",
+            "control": engine_detail,
+        },
+        "PRODUCER_IMPLEMENTATION_FAULT_ADAPTER": {
+            "status": "QUALIFIED" if resolution_ok and attribution_ok and projection_ok else "NOT QUALIFIED",
+            "intended_use": "resolve @impl scopes from the graph, attribute each mutated line to one contract family, and project engine results onto Implementation fault classes",
+            "false_green_control": "a line shared with a non-derived contract, a failing test, an unreached or surviving mutant, or an unmapped operator must never make a class detected",
+        },
+    }
+
+
 def main() -> None:
     external, details = external_controls()
     internal = internal_controls()
     project_sdk = project_sdk_controls()
-    producers = {**external, **internal, **project_sdk}
+    implementation = implementation_fault_controls()
+    producers = {**external, **internal, **project_sdk, **implementation}
     payload = {
         "schema": "ternforge-evidence-producer-qualification-1",
         "qualified_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),

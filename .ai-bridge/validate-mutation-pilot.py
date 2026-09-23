@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import ast
+import hashlib
+import importlib.util
 import json
 import re
 import subprocess
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, cast
 
@@ -15,6 +18,16 @@ BRIDGE = ROOT / ".ai-bridge"
 
 def load(path: Path):
     return json.loads(path.read_text())
+
+
+def only_campaign_extras(contract: dict, challenged: set, expected: set) -> bool:
+    """Classes challenged beyond the declared retained challenges may only come from
+    the current Implementation fault campaign."""
+    classes = (contract.get("fault_actual") or {}).get("classes") or {}
+    return set(expected) <= set(challenged) and all(
+        class_id.startswith("impl.") and classes.get(class_id, {}).get("campaign_state") == "current"
+        for class_id in set(challenged) - set(expected)
+    )
 
 
 def check(condition: bool, message: str) -> None:
@@ -2332,13 +2345,27 @@ def main() -> None:
     )
 
     goal_page = upper_assurance_pages["Goal routing"]
+    routing_goal = upper_facts["goals"]["GOAL_ROUTING_RELIABILITY"]
+    routing_integration = routing_goal["cross_capability_integration"]["criteria"][0]
+    observed_chain = [
+        row.get("id") for row in routing_integration["producer_qualification"]["producers"]
+    ]
+    check(
+        observed_chain[:5]
+        == ["PRODUCER_PYTEST", "PRODUCER_PY_TESTKIT", "PRODUCER_ALLURE", "PRODUCER_PYTEST_BDD", "PRODUCER_SCRIPTED_HTTP_SERVER"]
+        and observed_chain[-3:]
+        == ["PRODUCER_LLM_ROUTER_TRACE_BRIDGE", "PRODUCER_ASSURANCE_ADAPTER", "PRODUCER_UPPER_ASSURANCE_MONITOR"]
+        and routing_integration["classification"]["status"] == "MET",
+        "upper assurance judges the producers that actually took part in the retained evidence and its test level/boundary/realism",
+    )
     check(
         "0 / 2 capabilities pass" in goal_page
         and "1 / 1 scenarios pass" in goal_page
         and "Selected assurance scenario" in goal_page
         and "Scenario coverage" in goal_page
         and '<div class="signal-card coverage-card met-signal">' in goal_page
-        and "<b>5/5</b><small>producers</small>" in goal_page
+        and f"<b>{len(observed_chain)}/{len(observed_chain)}</b><small>producers</small>" in goal_page
+        and "Test level × boundary × realism" in goal_page
         and goal_page.count('class="state-lane"') >= 2
         and 'class="marker both">ACTUAL = TARGET' in goal_page
         and "Retained path properties" in goal_page
@@ -3013,8 +3040,15 @@ def main() -> None:
             .get(class_id, {})
             .get("exercised")
         }
+        routing_classes = (routing_contract.get("fault_actual") or {}).get("classes") or {}
+        campaign_challenged = challenged_faults - set(expected_challenges)
         check(
-            challenged_faults == set(expected_challenges)
+            set(expected_challenges) <= challenged_faults
+            and all(
+                class_id.startswith("impl.")
+                and routing_classes[class_id].get("campaign_state") == "current"
+                for class_id in campaign_challenged
+            )
             and challenged_faults < required_faults,
             f"{contract_id}: partial Fault Model remains explicit instead of becoming false-green",
         )
@@ -3158,7 +3192,7 @@ def main() -> None:
             .get("exercised")
         }
         check(
-            challenged_faults == set(expected["faults"])
+            only_campaign_extras(contract, challenged_faults, set(expected["faults"]))
             and challenged_faults < required_faults,
             f"{contract_id}: partial Resilience Fault Model remains explicit instead of becoming false-green",
         )
@@ -3575,7 +3609,7 @@ def main() -> None:
             .get("exercised")
         }
         check(
-            challenged_faults == set(expected_faults)
+            only_campaign_extras(contract, challenged_faults, set(expected_faults))
             and challenged_faults < required_faults,
             f"{contract_id}: partial Provider Fault Model remains explicit instead of becoming false-green",
         )
@@ -3765,7 +3799,7 @@ def main() -> None:
             )
             check(
                 bool(required_faults)
-                and challenged_faults == set()
+                and only_campaign_extras(contract, challenged_faults, set())
                 and challenged_faults < required_faults,
                 f"{contract_id}: incomplete required Fault Model remains explicit instead of becoming false-green",
             )
@@ -4307,13 +4341,27 @@ def main() -> None:
         and "EXTRA" not in assurance_page,
         "each Fault model group has one distinct plain-language explanation",
     )
+    invalid_config_groups = (
+        (fault_model.get("contracts") or {}).get("REQ_INVALID_CONFIGURATION_ERRORS") or {}
+    ).get("groups") or {}
+    mutation_chain_labels = [
+        label
+        for group in invalid_config_groups.values()
+        for label in (
+            f"{int(group.get('reached') or 0)}/{int(group.get('generated') or 0)}",
+            f"{int(group.get('killed') or 0)}/{int(group.get('reached') or 0)}",
+        )
+    ]
     check(
-        all(label in assurance_page for label in (
+        len(mutation_chain_labels) == 4
+        and all(label in assurance_page for label in (
             "Fault classes", "Required", "Challenged", "Detected",
             "Mutation checks", "Generated", "Reached", "Killed",
-            "31/31", "29/31", "27/31", "27/27",
-        )),
-        "canonical fault detail renders the accepted dependent denominator chains",
+            *mutation_chain_labels,
+        ))
+        and "31/31" not in assurance_page
+        and "27/27" not in assurance_page,
+        "canonical fault detail renders the current retained mutation denominator chains, not the lightweight-runner numbers",
     )
     optional_faults = {
         item["id"]
@@ -4494,25 +4542,49 @@ def main() -> None:
     groups = invalid_config_faults.get("groups") or {}
     component_faults = groups.get("component_local") or {}
     system_faults = groups.get("system_local") or {}
-    check((component_faults.get("generated"), component_faults.get("reached"), component_faults.get("killed")) == (31, 31, 29) and
-          component_faults.get("mutation_reach") == 100.0 and component_faults.get("sensitivity") == 93.5 and
-          component_faults.get("system_reach") == "component" and component_faults.get("boundary_mode") == "none",
-          "Component×Local fault cell reflects the expanded validation-test denominator and current mutation detection")
-    check((system_faults.get("generated"), system_faults.get("reached"), system_faults.get("killed")) == (31, 27, 27) and
-          system_faults.get("mutation_reach") == 87.1 and system_faults.get("sensitivity") == 100.0 and
-          system_faults.get("system_reach") == "system" and system_faults.get("boundary_mode") == "none",
-          "System×Local fault cell uses canonical Depth classification and proves stronger detection")
-    check(set(component_faults.get("families") or {}) == {"boundary", "comparison"} and
-          component_faults.get("engine_metadata") == "native pytest-gremlins operator metadata",
-          "fault-family classifier uses engine-native pytest-gremlins metadata")
-    check((component_faults["families"]["boundary"]["sensitivity"],
-           component_faults["families"]["comparison"]["sensitivity"],
-           system_faults["families"]["boundary"]["sensitivity"],
-           system_faults["families"]["comparison"]["sensitivity"]) == (92.9, 94.1, 100.0, 100.0),
-          "native boundary/comparison families retain exact cross-depth sensitivities after coverage expansion")
+    def consistent_group(group: dict, reach_label: str) -> bool:
+        generated = int(group.get("generated") or 0)
+        reached = int(group.get("reached") or 0)
+        killed = int(group.get("killed") or 0)
+        mutants = group.get("mutants") or []
+        return (
+            generated > 0
+            and killed <= reached <= generated
+            and int(group.get("survived") or 0) == reached - killed
+            and group.get("mutation_reach") == round(100 * reached / generated, 1)
+            and group.get("sensitivity") == (round(100 * killed / reached, 1) if reached else None)
+            and isinstance(group.get("invalid"), int)
+            and len(mutants) == generated
+            and sum(bool(row.get("reached")) for row in mutants) == reached
+            and sum(bool(row.get("killed")) for row in mutants) == killed
+            and group.get("system_reach") == reach_label
+            and group.get("boundary_mode") == "none"
+        )
+
+    check(consistent_group(component_faults, "component"),
+          "Component×Local fault cell is an exact, internally consistent projection of the retained full-pytest mutation run")
+    check(consistent_group(system_faults, "system"),
+          "System×Local fault cell is an exact, internally consistent projection of the retained full-pytest mutation run")
+    check(int(component_faults.get("killed") or 0) < int(component_faults.get("reached") or 0)
+          and int(system_faults.get("killed") or 0) < int(system_faults.get("reached") or 0),
+          "surviving mutants stay visible instead of the former lightweight-runner kills")
+    check(set(component_faults.get("families") or {}) <= {"boundary", "comparison", "boolean", "return"}
+          and {"boundary", "comparison"} <= set(component_faults.get("families") or {})
+          and sum(int(row.get("generated") or 0) for row in (component_faults.get("families") or {}).values())
+          == int(component_faults.get("generated") or 0)
+          and component_faults.get("engine_metadata") == "native pytest-gremlins operator metadata",
+          "fault-family classifier uses engine-native pytest-gremlins metadata and partitions the whole denominator")
     overlap = invalid_config_faults.get("detection_overlap") or {}
+    implementation_layer = (invalid_config_faults.get("layers") or {}).get("implementation") or {}
+    detail_rows = implementation_layer.get("mutant_detail") or []
+    component_killed_ids = {row.get("gremlin_id") for row in detail_rows if row.get("component_killed")}
+    system_killed_ids = {row.get("gremlin_id") for row in detail_rows if row.get("system_killed")}
     check((overlap.get("mutant_universe"), overlap.get("detected_union"), overlap.get("corroborated"),
-           overlap.get("component_only"), overlap.get("system_only"), overlap.get("undetected")) == (31, 29, 27, 2, 0, 2),
+           overlap.get("component_only"), overlap.get("system_only")) ==
+          (max(int(component_faults.get("generated") or 0), int(system_faults.get("generated") or 0)),
+           len(component_killed_ids | system_killed_ids), len(component_killed_ids & system_killed_ids),
+           len(component_killed_ids - system_killed_ids), len(system_killed_ids - component_killed_ids))
+          and overlap.get("undetected") == int(overlap.get("mutant_universe") or 0) - int(overlap.get("detected_union") or 0),
           "fault-model overlap uses exact engine-native mutant IDs for unique/corroborated/undetected detection")
 
     req_layers = invalid_config_faults.get("layers") or {}
@@ -4541,23 +4613,28 @@ def main() -> None:
           float(req_layers["runtime"].get("elapsed_seconds")) < 1.0 and
           req_layers["runtime"].get("detected") == 1,
           "Toxiproxy proves provider degradation is irrelevant to the pre-provider claim")
-    check((req_layers["implementation"].get("generated"), req_layers["implementation"].get("detected")) == (31, 29),
-          "Requirement implementation fault layer is backed by the same 31-mutant universe with exact union detection")
+    check((req_layers["implementation"].get("generated"), req_layers["implementation"].get("detected"))
+          == (overlap.get("mutant_universe"), overlap.get("detected_union")),
+          "Requirement implementation fault layer is backed by the same mutant universe with exact union detection")
     implementation = req_layers["implementation"]
     impl_reach = implementation.get("implementation_reach") or {}
-    check((impl_reach.get("covered_statements"), impl_reach.get("executable_statements"), impl_reach.get("percent")) == (23, 24, 95.8) and
-          len(impl_reach.get("missing_statements") or []) == 1 and
+    check(int(impl_reach.get("covered_statements") or 0) <= int(impl_reach.get("executable_statements") or 0) and
+          int(impl_reach.get("executable_statements") or 0) > 0 and
+          impl_reach.get("percent") == round(100 * int(impl_reach.get("covered_statements") or 0) / int(impl_reach.get("executable_statements") or 1), 1) and
+          len(impl_reach.get("missing_statements") or []) == int(impl_reach.get("executable_statements") or 0) - int(impl_reach.get("covered_statements") or 0) and
           impl_reach.get("metric") == "implementation_statement_reach" and
           "coverage.py executable statements" in impl_reach.get("basis", ""),
-          "Implementation statement reach has an explicit honest 23/24 coverage.py denominator")
-    check(implementation.get("overall_detection") == 93.5,
+          "Implementation statement reach has an explicit coverage.py denominator")
+    check(implementation.get("overall_detection")
+          == round(100 * int(overlap.get("detected_union") or 0) / max(1, int(overlap.get("mutant_universe") or 0)), 1),
           "Overall Detection is retained as the secondary killed/generated metric")
     native_mutants = implementation.get("mutant_detail") or []
-    check(len(native_mutants) == 31 and len({row.get("gremlin_id") for row in native_mutants}) == 31,
-          "exact native mutant detail retains all 31 engine-native gremlin IDs without tuple-key collapse")
-    check(sum(bool(row.get("component_killed")) for row in native_mutants) == 29 and
-          sum(bool(row.get("system_killed")) for row in native_mutants) == 27 and
-          sum(bool(row.get("system_reached")) for row in native_mutants) == 27,
+    check(len(native_mutants) == overlap.get("mutant_universe")
+          and len({row.get("gremlin_id") for row in native_mutants}) == len(native_mutants),
+          "exact native mutant detail retains every engine-native gremlin ID without tuple-key collapse")
+    check(sum(bool(row.get("component_killed")) for row in native_mutants) == component_faults.get("killed") and
+          sum(bool(row.get("system_killed")) for row in native_mutants) == system_faults.get("killed") and
+          sum(bool(row.get("system_reached")) for row in native_mutants) == system_faults.get("reached"),
           "exact native mutant table agrees with Component/System killed and reached counts")
     check(all("covering_tests" in row for group in (component_faults, system_faults) for row in group.get("mutants") or []),
           "per-mutant retained facts include covering tests without inventing killing tests")
@@ -4592,15 +4669,14 @@ def main() -> None:
         "system-reach": system_faults.get("mutation_reach"),
         "system-sensitivity": system_faults.get("sensitivity"),
     }
-    check(current_actual == {
-        "component-reach": 100.0,
-        "component-sensitivity": 93.5,
-        "system-reach": 87.1,
-        "system-sensitivity": 100.0,
-    }, "current mutation-check actuals are stable")
+    unmet_mutation_checks = sorted(
+        name for name, value in current_actual.items() if float(value or 0.0) < 80.0
+    )
+    invalid_config_page = (HTML / "verification-assurance.html").read_text()
     check(
-        all(float(value or 0.0) >= 80.0 for value in current_actual.values()),
-        "all declared Invalid Configuration mutation Reach/Sensitivity thresholds are currently met",
+        all(value is not None for value in current_actual.values())
+        and (not unmet_mutation_checks or '<div class="overall not-met">FAIL</div>' in invalid_config_page),
+        f"Invalid Configuration mutation Reach/Sensitivity are judged against the 80% floor; unmet checks fail the monitor: {unmet_mutation_checks}",
     )
 
     check(assurance_snapshots == generated_assurance_snapshots,
@@ -4650,7 +4726,7 @@ def main() -> None:
         if row["level"] == "component" and row["boundary"] == "none"
     )
     check(
-        component_fault["sensitivity"] == 93.5
+        component_fault["sensitivity"] == component_faults.get("sensitivity")
         and "VC_CONFIG_MODEL_DECLARATION" in component_target["items"]
         and len(
             model_declaration_contract["coverage_actual"].get(
@@ -4886,13 +4962,13 @@ def main() -> None:
         and 'href="specification-health.html"' not in index_page,
         "portal navigation no longer exposes legacy Specification Map/Health pages",
     )
-    health_model_match = re.search(r"const model=(\{.*?\});\nconst LEVEL_COLORS=", health_page, flags=re.DOTALL)
+    health_model_match = re.search(r"const model=(\{.*?\});\nconst LAYERS=", health_page, flags=re.DOTALL)
     check(health_model_match is not None, "Verification Health Map embeds its layered health model")
     health_model = json.loads(health_model_match.group(1)) if health_model_match else {}
     health_layers = (health_model.get("summary") or {}).get("layers") or {}
+    health_layer_keys = ("overall", "execution", "coverage", "faults", "evidence", "assurance")
     check(
-        tuple(health_layers) == ("assurance", "coverage", "evidence", "execution", "faults", "overall")
-        or set(health_layers) == {"overall", "execution", "coverage", "faults", "evidence", "assurance"},
+        set(health_layers) == set(health_layer_keys),
         "Verification Health Map exposes Overall, Execution, Coverage, Faults, Evidence, and Assurance layers",
     )
     health_rows = {
@@ -4916,78 +4992,398 @@ def main() -> None:
                 for metric in ((invalid_layers.get("assurance") or {}).get("metrics") or [])),
         "Verification Health Map exposes numeric drilldown metrics in cell hover data",
     )
+
+    # Own marks: every node carries only the checks that belong to it; child verdicts are not repainted.
+    health_children: dict[str, list[dict[str, Any]]] = {}
+    for row in health_model.get("items") or []:
+        health_children.setdefault(str(row.get("parent") or ""), []).append(row)
+
+    def health_subtree(row: dict[str, Any]) -> list[dict[str, Any]]:
+        rows = [row]
+        for child in health_children.get(str(row.get("id")), []):
+            rows.extend(health_subtree(child))
+        return rows
+
+    def own_status(row: dict[str, Any], key: str) -> str:
+        return str(((row.get("own") or {}).get(key) or {}).get("status") or "")
+
+    def canonical_status(row: dict[str, Any], key: str) -> str:
+        return str(((row.get("layers") or {}).get(key) or {}).get("status") or "")
+
     check(
-        "data-health-mode" in health_page
-        and "Plotly.react(element,data,layout,config)" in health_page,
-        "Verification Health Map switches one treemap between health layers",
+        bool(health_rows)
+        and all(
+            own_status(row, key) in {"passed", "failed", "na"}
+            for row in health_rows.values()
+            for key in health_layer_keys
+        ),
+        "Verification Health Map gives every node an own PASS / FAIL / N/A status in every layer",
+    )
+    hidden_failures = [
+        (row_id, key)
+        for row_id, row in health_rows.items()
+        for key in health_layer_keys
+        if canonical_status(row, key) == "failed"
+        and not any(
+            own_status(item, source) == "failed"
+            for item in health_subtree(row)
+            for source in (("assurance", "overall") if key == "assurance" else (key,))
+        )
+    ]
+    check(
+        not hidden_failures,
+        f"Health Map never hides a canonical FAIL: every failing branch contains an own failure mark {hidden_failures[:5]}",
+    )
+    orphan_marks = []
+    for row_id, row in health_rows.items():
+        for key in health_layer_keys:
+            if own_status(row, key) != "failed":
+                continue
+            current: dict[str, Any] | None = row
+            while current:
+                if canonical_status(current, key) != "failed":
+                    orphan_marks.append((row_id, key, current.get("id")))
+                    break
+                current = health_rows.get(str(current.get("parent") or "")) if current.get("parent") else None
+    check(
+        not orphan_marks,
+        f"every own failure mark sits inside a canonically failing branch {orphan_marks[:5]}",
+    )
+    unattributed = [
+        (row_id, key)
+        for row_id, row in health_rows.items()
+        for key in health_layer_keys
+        if ((row.get("own") or {}).get(key) or {}).get("unattributed")
+    ]
+    check(
+        not unattributed,
+        f"all current Health Map failures are attributed to a concrete own check {unattributed[:5]}",
+    )
+    check(
+        all(
+            own_status(row, "faults") == "na"
+            for row in health_rows.values()
+            if row.get("level") in {"product", "goal", "feature"}
+        )
+        and all(
+            own_status(row, "assurance") == "na"
+            for row in health_rows.values()
+            if row.get("level") in {"requirement", "treq"}
+        ),
+        "fault groups belong to contracts and Assurance support stays with the children that cause it",
+    )
+    check(
+        all(
+            int((health_layers.get(key) or {}).get("failing", -1))
+            == sum(own_status(row, key) == "failed" for row in health_rows.values())
+            and (health_layers.get(key) or {}).get("status")
+            == canonical_status(health_model.get("root") or {}, key)
+            for key in health_layer_keys
+        ),
+        "layer cards count exactly the red marks on the map and keep the canonical system verdict",
+    )
+    # Each layer answers its own question: a missing scenario is a coverage gap (not a
+    # failed execution), absent evidence is not "untrustworthy" evidence, and a test
+    # result counts once, for the criterion it was written for.
+    upper_facts_for_map = json.loads((HTML / "upper-assurance-facts.json").read_text())
+    upper_entities = {
+        **{entity["id"]: entity for entity in (upper_facts_for_map.get("features") or {}).values()},
+        **{entity["id"]: entity for entity in (upper_facts_for_map.get("goals") or {}).values()},
+    }
+    execution_without_failed_run = [
+        entity_id
+        for entity_id, entity in upper_entities.items()
+        if own_status(health_rows.get(entity_id) or {}, "execution") == "failed"
+        and not any(
+            row.get("result") != "passed"
+            for section in entity.values()
+            if isinstance(section, dict)
+            for criterion in section.get("criteria") or []
+            for row in criterion.get("rows") or []
+        )
+    ]
+    tool_goal = health_rows.get("GOAL_TOOL_ORCHESTRATION") or {}
+    check(
+        not execution_without_failed_run
+        and own_status(tool_goal, "coverage") == "failed"
+        and own_status(tool_goal, "execution") != "failed",
+        f"Execution reports only scenarios that ran; a missing scenario stays a Coverage gap {execution_without_failed_run}",
+    )
+    monitor_facts_for_map = json.loads((HTML / "requirement-monitor-facts.json").read_text())
+    evidence_without_retained_rows = [
+        contract_id
+        for contract_id, contract in (monitor_facts_for_map.get("contracts") or {}).items()
+        if not any((contract.get("coverage_actual") or {}).values())
+        and own_status(health_rows.get(contract_id) or {}, "evidence") != "na"
+    ]
+    check(
+        not evidence_without_retained_rows,
+        f"Evidence quality judges only retained evidence; targets without evidence stay Coverage gaps {evidence_without_retained_rows}",
+    )
+    junit_bindings: dict[str, dict[str, str]] = {}
+    for testcase in ET.parse(ROOT / "test-results/pytest-junit.xml").getroot().iter("testcase"):
+        testcase_props = {
+            prop.attrib.get("name"): prop.attrib.get("value")
+            for prop in testcase.findall("./properties/property")
+        }
+        testcase_nodeid = (
+            f"{(testcase.attrib.get('classname') or '').replace('.', '/')}.py::"
+            f"{testcase.attrib.get('name') or ''}"
+        )
+        junit_bindings[testcase_nodeid] = {
+            "coverage_item": (testcase_props.get("coverage_item") or "").strip(),
+            "assurance_item": (testcase_props.get("assurance_item") or "").strip(),
+            "fault_challenge": "yes" if (testcase_props.get("fault_items") or "").strip() else "",
+        }
+    criterion_owners = {
+        criterion_id: owner
+        for contract in (monitor_facts_for_map.get("contracts") or {}).values()
+        for criterion_id, owner in ((contract.get("target") or {}).get("criterion_contracts") or {}).items()
+    }
+    needs_versions = json.loads((HTML / "needs.json").read_text()).get("versions") or {}
+    needs_current = next(iter(needs_versions.values()), {}).get("needs") or {}
+    linked_tests: dict[str, set[str]] = {}
+    for need in needs_current.values():
+        if need.get("type") != "testcase" or not need.get("nodeid"):
+            continue
+        for value in need.get("verifies") or []:
+            for linked_id in re.findall(r"T?REQ_[A-Z0-9_]+", str(value)):
+                linked_tests.setdefault(linked_id, set()).add(str(need["nodeid"]))
+    attribution_errors = []
+    for contract_id in monitor_facts_for_map.get("contracts") or {}:
+        owned = unbound_count = 0
+        for nodeid in linked_tests.get(contract_id, set()):
+            binding = junit_bindings.get(nodeid) or {}
+            owner = criterion_owners.get(binding.get("coverage_item") or "")
+            if binding.get("assurance_item") or (owner and owner != contract_id):
+                continue
+            owned += 1
+            unbound_count += 0 if owner or binding.get("fault_challenge") else 1
+        row = health_rows.get(contract_id) or {}
+        execution_metrics = ((row.get("own") or {}).get("execution") or {}).get("metrics") or []
+        shown = sum(int(metric.get("total") or 0) for metric in execution_metrics if metric.get("label") == "Tests")
+        shown_unbound = int((((row.get("own") or {}).get("coverage") or {}).get("unbound_tests")) or 0)
+        if shown != owned or shown_unbound != unbound_count:
+            attribution_errors.append((contract_id, shown, owned, shown_unbound, unbound_count))
+    check(
+        not attribution_errors,
+        f"each test result counts once, for the criterion it was written for; unbound linked tests are surfaced {attribution_errors[:3]}",
+    )
+    domain_spec = importlib.util.spec_from_file_location(
+        "validator_assurance_domain", BRIDGE / "assurance_monitor_domain.py"
+    )
+    assert domain_spec is not None and domain_spec.loader is not None
+    assurance_domain = importlib.util.module_from_spec(domain_spec)
+    domain_spec.loader.exec_module(assurance_domain)
+    unchallenged = assurance_domain.fault_state(
+        {"fault_actual": {"classes": {}, "groups": {}}, "target": {}},
+        {"label": "Architecture", "items": [{"id": "architecture.layer-bypass", "state": "required"}]},
+        {},
+    )
+    check(
+        unchallenged["status"] == "NOT MET"
+        and unchallenged["detection_status"] == "N/A"
+        and unchallenged["detection_actual"] is None
+        and "<span>Detection</span><strong>—</strong><i></i>"
+        in (HTML / "contract-evidence-config-cache-invalidation.html").read_text(),
+        "fault detection is undefined (—) when nothing was challenged, while the unchallenged group still fails",
+    )
+    # --- Infrastructure honesty audit (MAP-P20) ---------------------------------
+    adapter_source = (BRIDGE / "build-mutation-report-prototype.py").read_text()
+    impl_campaign_path = ROOT / "test-results/implementation-faults/campaign.json"
+    impl_campaign = load(impl_campaign_path) if impl_campaign_path.exists() else {}
+    class_map = impl_campaign.get("class_by_operator") or {}
+    check(
+        impl_campaign.get("engine", {}).get("name") == "pytest-gremlins"
+        and class_map.get("comparison") == "impl.comparison"
+        and class_map.get("boundary") == "impl.boundary"
+        and class_map.get("boolean") == "impl.control-flow"
+        and class_map.get("return") == "impl.control-flow",
+        "Implementation fault campaign is retained and maps native operator families onto all three Implementation classes",
+    )
+    full_pytest_plugin = BRIDGE / "pytest_plugins/gremlins_full_pytest.py"
+    check(
+        full_pytest_plugin.exists()
+        and "build_lightweight_command" in full_pytest_plugin.read_text()
+        and "IMPL_FAULTS.engine_command" in adapter_source
+        and '"--with","pytest-gremlins","pytest"' not in adapter_source,
+        "every gremlins run executes each mutant with full pytest, never the fixture-less lightweight runner",
+    )
+    check(
+        'class_actual["impl.control-flow"]={"exercised":False' not in adapter_source,
+        "impl.control-flow is measured, not hard-coded as unchallenged",
+    )
+    gremlins_qualification = (evidence_qualification.get("producers") or {}).get("PRODUCER_PYTEST_GREMLINS") or {}
+    gremlins_control = gremlins_qualification.get("control") or {}
+    gremlins_strong = gremlins_control.get("strong") or {}
+    check(
+        gremlins_qualification.get("status") == "QUALIFIED"
+        and ((evidence_qualification.get("producers") or {}).get("PRODUCER_IMPLEMENTATION_FAULT_ADAPTER") or {}).get("status") == "QUALIFIED"
+        and (gremlins_control.get("weak") or {}).get("caught") == 0
+        and int(gremlins_strong.get("faults") or 0) > 0
+        and gremlins_strong.get("caught") == gremlins_strong.get("faults"),
+        "mutation engine and class projection are qualified: assert-nothing fixture/param/BDD tests catch no mutant",
+    )
+    impl_rows = [
+        (contract_id, class_id, row)
+        for contract_id, contract in (monitor_facts.get("contracts") or {}).items()
+        for class_id, row in ((contract.get("fault_actual") or {}).get("classes") or {}).items()
+        if class_id.startswith("impl.")
+    ]
+    campaign_states = {}
+    for _, _, row in impl_rows:
+        campaign_states[row.get("campaign_state")] = campaign_states.get(row.get("campaign_state"), 0) + 1
+    check(
+        bool(impl_rows)
+        and all(row.get("campaign_state") and row.get("basis") for _, _, row in impl_rows)
+        and not set(campaign_states) - {"current", "blocked", "not_applicable"},
+        f"every Implementation class comes from a current campaign or an explained block: {campaign_states}",
+    )
+    false_detection = [
+        f"{contract_id}:{class_id}"
+        for contract_id, class_id, row in impl_rows
+        if row.get("detected")
+        and row.get("source") == "implementation_fault_campaign"
+        and not (int(row.get("judged") or 0) > 0 and row.get("killed") == row.get("judged"))
+    ]
+    check(not false_detection, f"an Implementation class is detected only when every attributable fault is caught: {false_detection[:4]}")
+    check(
+        any(class_id == "impl.control-flow" and row.get("exercised") for _, class_id, row in impl_rows),
+        "impl.control-flow is actually challenged for real contracts",
+    )
+    unexplained = [
+        f"{contract_id}:{class_id}"
+        for contract_id, contract in (monitor_facts.get("contracts") or {}).items()
+        for class_id, row in ((contract.get("fault_actual") or {}).get("classes") or {}).items()
+        if not row.get("basis")
+    ]
+    check(not unexplained, f"every fault class states why it is caught, missed, or not challenged: {unexplained[:4]}")
+    model_records = depth_facts.get("model_validation_records") or {}
+    check(
+        bool(model_records)
+        and "def derive_model_validation_records" in adapter_source
+        and all(row.get("ms_validation") in {"l0", "l2"} for row in model_records.values())
+        and all((row.get("ms_validation") == "l2") == bool(row.get("calibration")) for row in model_records.values()),
+        "M&S validation is derived from the graph: L2 exactly when a current calibrating experiment exists, otherwise L0",
+    )
+    l0_cells = []
+    for contract_id, contract in (monitor_facts.get("contracts") or {}).items():
+        for coverage_target in (contract.get("target") or {}).get("coverage") or []:
+            if str(coverage_target.get("ms_validation_target") or "").upper() == "L0":
+                state = assurance_domain.cell_state(contract, coverage_target)
+                l0_cells.append((contract_id, state["ms_status"], state["ms_applicable_count"]))
+    check(
+        bool(l0_cells) and all(status == "N/A" for _, status, _ in l0_cells),
+        "a vacuous L0 model-validation target is shown as not required, never as a pass",
+    )
+    run_inputs_binding = evidence_provenance.get("inputs") or {}
+    check(
+        run_inputs_binding.get("run_bound") is True
+        and "def snapshot_run_binding" in adapter_source
+        and "def probe_env" in adapter_source,
+        "the freshness baseline is the retained run's own session-start snapshot, and probes cannot overwrite it",
+    )
+    primary_monitor_page = (HTML / "verification-assurance.html").read_text()
+    check(
+        "fault-class-row" in primary_monitor_page
+        and "Not caught:" in primary_monitor_page
+        and "impl.control-flow" in primary_monitor_page,
+        "the fault inspector lists each required class with its state, plain reason, and surviving mutants",
+    )
+
+    goal_short_labels = {
+        row_id: row.get("short")
+        for row_id, row in health_rows.items()
+        if row.get("level") == "goal"
+    }
+    check(
+        bool(goal_short_labels)
+        and goal_short_labels.get("GOAL_ROUTING_RELIABILITY") == "Routing reliability"
+        and all(label and len(str(label)) <= 32 for label in goal_short_labels.values()),
+        "Goal containers use concise names derived from their authored IDs; full outcomes stay in hover",
+    )
+
+    d3_hierarchy_path = BRIDGE / "vendor/d3-hierarchy-3.1.2/d3-hierarchy.min.js"
+    d3_hierarchy_source = d3_hierarchy_path.read_text() if d3_hierarchy_path.exists() else ""
+    check(
+        d3_hierarchy_path.exists()
+        and hashlib.sha256(d3_hierarchy_path.read_bytes()).hexdigest()
+        == "a8771380454be89ec5ffe9a6396ba7c247081e348ae740dc9cb9629abd4c0e43"
+        and (BRIDGE / "vendor/d3-hierarchy-3.1.2/LICENSE").exists()
+        and d3_hierarchy_source in health_page,
+        "Verification Health Map inlines the pinned, licensed d3-hierarchy 3.1.2 layout verbatim",
+    )
+    check(
+        "plotly" not in health_page.lower()
+        and "cdn.plot.ly" not in health_page
+        and "data-health-mode" in health_page
+        and "d3.treemap().size([width,height]).tile(tile)" in health_page
+        and "d3.treemapBinary" in health_page,
+        "Verification Health Map renders one order-preserving d3-hierarchy treemap and switches it between layers without Plotly",
     )
     check(
         "Click → monitor" not in health_page
         and "Select a health layer." not in health_page
         and 'class="tf-health-help"' in health_page
-        and "Shows whether the retained tests and assurance scenarios passed." in health_page,
-        "Verification Health Map keeps instructions out of cells and explains layers only through compact help tooltips",
+        and '["execution","Execution","Did the tests and scenarios that ran pass?"]' in health_page
+        and '["faults","Fault model",' in health_page
+        and '["evidence","Evidence quality",' in health_page
+        and '" of "+applicable+" fail"' in health_page
+        and "function thumbnail(key)" in health_page
+        and 'aria-describedby="tf-health-tip-' in health_page,
+        "layer cards show the verdict, the number of red marks, a mini-map, and one-sentence help",
+    )
+    layer_tips = re.findall(r'\["(\w+)","[^"]+","([^"]+)"\]', health_page)
+    check(
+        len(layer_tips) == len(health_layer_keys)
+        and all(len(tip) <= 72 for _key, tip in layer_tips)
+        and "const METRIC_LABELS={" in health_page
+        and '"Fault groups":"Fault checks passed"' in health_page,
+        "layer help and hover labels use short plain-language sentences",
     )
     check(
         'id="tf-health-tooltip"' in health_page
-        and "#tf-health-map .hoverlayer{display:none!important}" in health_page
         and "tf-lineage" in health_page
-        and "tf-level-" in health_page
         and "tf-hierarchy-overlay" not in health_page
         and "getBoundingClientRect()" in health_page
-        and "showTimer=setTimeout" in health_page,
-        "Verification Health Map keeps stable cell-anchored hover and lineage highlighting without the rejected hierarchy overlay",
+        and "showTimer=setTimeout" in health_page
+        and 'link.addEventListener("focus"' in health_page
+        and "Opens <b>" in health_page
+        and "tf-health-strip" in health_page,
+        "Verification Health Map keeps cell-anchored hover and keyboard focus with lineage, a six-layer strip, and the click destination",
     )
     check(
-        'return level==="goal"||level==="feature"?row.label:"";' in health_page
-        and "fittedMapLabel" in health_page
-        and "textNode.getComputedTextLength()<=available" in health_page
-        and 'textNode.setAttribute("transform","translate(0,0)")' in health_page
-        and "const textBox=textNode.getBBox();" in health_page
-        and 'const labelInsetX=level==="goal"?12:8;' in health_page
-        and 'const labelInsetY=level==="goal"?10:7;' in health_page
-        and "const dx=box.x+labelInsetX-textBox.x;" in health_page
-        and "const dy=box.y+labelInsetY-textBox.y;" in health_page
-        and "g.tf-level-product text.slicetext" in health_page
-        and "g.tf-level-requirement text.slicetext" in health_page
-        and "g.tf-level-treq text.slicetext" in health_page
-        and 'levelTag(row)+" · "+row.label' not in health_page,
-        "Verification Health Map restores the accepted fixed-size Goal/Feature label geometry while compensating for the new Goal gutter",
+        'if(candidate.length>=7&&measureWidth(candidate)<=max)return candidate;' in health_page
+        and "fitLabel(node.data.row.short||node.data.row.label" in health_page
+        and 'if(kind!=="goal"&&kind!=="feature"&&kind!=="leaf")return;' in health_page
+        and 'if(!headerLabel(node,family)||room<(kind==="goal"?40:22))compact.add(node.data.row.id);' in health_page
+        and 'if(kind!=="leaf"&&!compact.has(row.id)){' in health_page
+        and "slicetext" not in health_page,
+        "only Goal and Capability containers carry labels, cut at whole words; a container without room gets a compact header instead of starving its tiles",
     )
     check(
-        "#tf-health-map g.tf-level-goal text.slicetext,#tf-health-map g.tf-level-feature text.slicetext{font-size:13.5px!important;font-weight:700!important" in health_page
-        and "#tf-health-map g.tf-level-product>path.surface{fill:transparent!important;stroke:var(--tf-border-strong)!important;stroke-width:1.5px!important" in health_page
-        and "#tf-health-map g.tf-level-goal>path.surface{stroke:var(--pst-color-surface)!important;stroke-width:1.5px!important" in health_page
-        and "#tf-health-map g.tf-level-feature>path.surface{stroke-width:1.25px!important;stroke-opacity:.68!important}" in health_page
-        and "#tf-health-map g.tf-hover-node:not(.tf-level-goal):not(.tf-level-feature)>path.surface{stroke-width:4.5px!important" in health_page
-        and "const BASE_TILING_PAD_PX=2,GOAL_GAP_PX=12,FEATURE_GAP_PX=8;" in health_page
-        and "const GOAL_INSET_PX=(GOAL_GAP_PX-BASE_TILING_PAD_PX)/2;" in health_page
-        and "const FEATURE_INSET_PX=(FEATURE_GAP_PX-BASE_TILING_PAD_PX)/2;" in health_page
-        and "function hierarchyBox(item,geometry)" in health_page
-        and "function roundedRectPath(box,radius)" in health_page
-        and "applyHierarchyGeometry(node,item,geometry)" in health_page
-        and 'item.level==="goal"?10:item.level==="feature"?8:item.level==="product"?10:4' in health_page
-        and "const LEVEL_COLORS={" in health_page
-        and 'product:{passed:"#071908",failed:"#210608",na:"#161616"}' in health_page
-        and 'goal:{passed:"#022d0d",failed:"#3a070a",na:"#262626"}' in health_page
-        and 'feature:{passed:"#044317",failed:"#5a0d12",na:"#393939"}' in health_page
-        and 'requirement:{passed:"#0e6027",failed:"#8c171d",na:"#525252"}' in health_page
-        and 'treq:{passed:"#198038",failed:"#c21f25",na:"#6f6f6f"}' in health_page
-        and "--tf-success:#24a148" in health_page
-        and "--tf-danger:#c21f25" in health_page
-        and "--tf-duration-fast:120ms" in health_page
-        and "--tf-duration-medium:180ms" in health_page
-        and "cubic-bezier(.2,0,0,1)" in health_page
+        "const PAD={product:[14,0,0],goal:[8,30,8],feature:[5,24,6],cluster:[2,0,0]};" in health_page
+        and "const RADIUS={goal:12,feature:8,leaf:3.5};" in health_page
+        and "#verification-health-map .tf-health-goal{fill:var(--tf-hm-goal)" in health_page
+        and "#verification-health-map .tf-health-feature{fill:var(--tf-hm-feature)" in health_page
+        and 'entry.shape.setAttribute("class","tf-health-tile "+entry.value)' in health_page
+        and "#verification-health-map .tf-health-own-failed{stroke:var(--tf-hm-fail);stroke-width:1.6}" in health_page
+        and "html[data-theme=dark] #verification-health-map{" in health_page
         and "prefers-reduced-motion:reduce" in health_page
-        and "tf-level-frame-goal" not in health_page
-        and "tf-level-frame-feature" not in health_page
-        and "tf-level-keyline" not in health_page
-        and "tiling:{pad:BASE_TILING_PAD_PX}" in health_page
+        and "LEVEL_COLORS" not in health_page
         and "stroke-width:14px" not in health_page
-        and "stroke-width:8px" not in health_page
-        and "cornerradius:4" in health_page
-        and "rgba(255,255,255,.28)" in health_page,
-        "Verification Health Map uses real Goal/Feature geometry gaps, rounded containers, and the coherent assurance design-system scale",
+        and "stroke-width:8px" not in health_page,
+        "Verification Health Map keeps hierarchy in neutral rounded geometry and status only on contracts and own-check marks",
+    )
+    health_section = health_page.split('<section id="verification-health-map">', 1)[-1].split("</section>", 1)[0]
+    check(
+        "pst-color-primary" not in health_section
+        and ".tf-health-ring{fill:none;stroke:var(--tf-hm-ring)" in health_section
+        and 'if(key!==mode){mode=key;hideTooltip(true);syncTabs();paint(true)}' in health_section
+        and "#verification-health-map .tf-health-tile{transition:fill" in health_section
+        and 'entry.shape.setAttribute("class","tf-health-tile "+(neutral?"na":value));' in health_section
+        and "@keyframes tf-health-in" in health_section,
+        "map interaction stays neutral (no accent hue); layer switches recolor in place and pass red↔green through neutral gray",
     )
     for name, text in {
         "Health": health_page,
@@ -5050,6 +5446,7 @@ def main() -> None:
         "assurance_monitor_ui.py",
         "build-requirement-monitor.py",
         "build-upper-assurance-pilot.py",
+        "implementation_faults.py",
         "qualify-evidence-confidence.py",
         "validate-mutation-pilot.py",
         "mutation-testing-integration-plan.md",
@@ -5063,7 +5460,10 @@ def main() -> None:
     actual_bridge_files = {path.name for path in BRIDGE.iterdir() if path.is_file()}
     check(actual_bridge_files == expected_bridge_files,
           f"only substantive active-pilot .ai-bridge files remain: {sorted(actual_bridge_files)}")
-    check(not (BRIDGE / "__pycache__").exists(), "no .ai-bridge __pycache__ debris remains")
+    check(
+        not (BRIDGE / "__pycache__").exists() and not (BRIDGE / "pytest_plugins/__pycache__").exists(),
+        "no .ai-bridge __pycache__ debris remains",
+    )
 
     generated_paths = [
         str(path.relative_to(ROOT))
@@ -5091,6 +5491,8 @@ def main() -> None:
         "docs/_build/html/verification-health-map.html",
         "docs/_build/html/test-plan.html",
         "docs/_build/html/_static/mutation-test-elements.js",
+        "docs/_build/html/evidence-classification-facts.json",
+        "test-results/implementation-faults/campaign.json",
     ]
     history_glob = "`docs/_build/html/mutation-results/campaign-history/*.json`"
     contract_evidence_glob = "`docs/_build/html/contract-evidence-*.html`"
@@ -5136,6 +5538,11 @@ def main() -> None:
         ".ai-bridge/mutation-testing-platform-extraction-manifest.md",
         ".ai-bridge/qualify-evidence-confidence.py",
         ".ai-bridge/validate-mutation-pilot.py",
+        ".ai-bridge/verification-health-map-local-prototype.md",
+        ".ai-bridge/implementation_faults.py",
+        ".ai-bridge/pytest_plugins/",
+        ".ai-bridge/vendor/",
+        ".ai-bridge/development-history/",
         "docs/index.md",
         "docs/README.md",
         "docs/test-plan.md",

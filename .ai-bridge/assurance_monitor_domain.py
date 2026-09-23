@@ -285,7 +285,11 @@ def cell_state(contract: dict, target: dict) -> dict:
         ms_status = "N/A"
     elif declared_ms_target:
         ms_target = ms_label(str(declared_ms_target))
-        ms_status, ms_matched = minimum_ms_status(ms_values, ms_target, ms_rule)
+        if ms_target == "L0":
+            # L0 means no validation evidence is required: nothing to judge, never a PASS.
+            ms_status, ms_matched = "N/A", 0
+        else:
+            ms_status, ms_matched = minimum_ms_status(ms_values, ms_target, ms_rule)
     else:
         ms_target = "NOT DECLARED"
         ms_status = "UNKNOWN"
@@ -362,12 +366,14 @@ def fault_state(contract: dict, group: dict, policy: dict) -> dict:
         and classes.get(item["id"], {}).get("detected")
     )
     class_status = "MET" if exercised == len(required) else "NOT MET"
-    detection_actual = (
-        100.0
-        if exercised and detected == exercised
-        else (0.0 if not exercised else detected * 100.0 / exercised)
+    # Detection is only defined for classes that were actually challenged: 0 of 0
+    # is "nothing tried yet", not "0% of faults caught".
+    detection_actual = detected * 100.0 / exercised if exercised else None
+    detection_status = (
+        "N/A"
+        if detection_actual is None
+        else ("MET" if detection_actual == 100.0 else "NOT MET")
     )
-    detection_status = "MET" if detection_actual == 100.0 else "NOT MET"
 
     mutation = []
     if group["label"] == "Implementation":
@@ -438,9 +444,24 @@ def fault_state(contract: dict, group: dict, policy: dict) -> dict:
         if selected
     ]
     overall = combine([class_status, detection_status] + mutation_statuses)
+    class_rows = []
+    for item in required:
+        actual = classes.get(item["id"], {}) or {}
+        challenged = bool(actual.get("exercised"))
+        caught = challenged and bool(actual.get("detected"))
+        class_rows.append(
+            {
+                "id": item["id"],
+                "state": "caught" if caught else ("missed" if challenged else "not challenged"),
+                "status": "MET" if caught else "NOT MET",
+                "basis": str(actual.get("basis") or ""),
+                "survivors": list(actual.get("survivors") or [])[:4],
+            }
+        )
     return {
         "label": group["label"],
         "status": overall,
+        "classes": class_rows,
         "required": len(required),
         "exercised": exercised,
         "detected": detected,
@@ -453,12 +474,24 @@ def fault_state(contract: dict, group: dict, policy: dict) -> dict:
     }
 
 
+def linked_tests_state(contract: dict) -> dict:
+    """Tests that verify the contract outside every required case of its profile.
+
+    They satisfy no case, but a failing one is evidence against the contract and
+    must never hide behind a passing matrix.
+    """
+    rows = list(contract.get("linked_outside_profile") or [])
+    failed = [row for row in rows if row.get("result") == "failed"]
+    return {"rows": rows, "failed": failed, "status": "NOT MET" if failed else "N/A"}
+
+
 def contract_domain_state(contract: dict, policy: dict) -> dict:
     """Return direct Verification/Fault/Overall state for one first-class contract."""
     coverage_states = [
         cell_state(contract, target)["overall"]
         for target in (contract.get("target") or {}).get("coverage", [])
     ]
+    coverage_states.append(linked_tests_state(contract)["status"])
     fault_states = [
         fault_state(contract, group, policy)["status"]
         for group in (contract.get("target") or {}).get("fault_groups", [])
