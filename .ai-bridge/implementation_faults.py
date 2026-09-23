@@ -43,14 +43,6 @@ KILLED = {"zapped", "timeout"}
 # Stryker's RuntimeError/CompileError): neither caught nor missed, and reported apart.
 INVALID = {"error"}
 PRODUCERS = ("PRODUCER_PYTEST_GREMLINS", "PRODUCER_IMPLEMENTATION_FAULT_ADAPTER")
-INPUT_SCOPE = (
-    "src/llm_router/**/*.py",
-    "tests/**/*.py",
-    "tests/**/cassettes/**/*",
-    "tests/llm_router/data/**/*",
-    "features/**/*.feature",
-)
-EXPLICIT_INPUTS = ("pyproject.toml", "uv.lock")
 
 
 def sha256_bytes(value: bytes) -> str:
@@ -347,18 +339,91 @@ def blocked_classes(basis: str) -> dict[str, dict]:
 
 # --- inputs and freshness ----------------------------------------------------------
 
+# Anything that can change any contract's result is a shared input. Product code is
+# deliberately shared: a mutant can push execution into code the unmutated run never
+# touched, so no per-contract subset of the source can prove a result still holds.
+SHARED_INPUT_SCOPE = (
+    "src/llm_router/**/*.py",
+    "tests/llm_router/data/**/*",
+    "examples/**/*.py",
+)
+SHARED_EXPLICIT_INPUTS = ("pyproject.toml", "uv.lock")
 
-def campaign_inputs(root: Path) -> dict[str, str]:
-    paths = set()
-    for pattern in INPUT_SCOPE:
-        paths.update(path for path in root.glob(pattern) if path.is_file() and "__pycache__" not in path.parts)
-    for relative in EXPLICIT_INPUTS:
+
+def _files(root: Path, pattern: str) -> set[Path]:
+    return {
+        path
+        for path in root.glob(pattern)
+        if path.is_file() and "__pycache__" not in path.parts
+    }
+
+
+def digest_map(root: Path, paths: set[str]) -> dict[str, str | None]:
+    return {
+        relative: (sha256_bytes((root / relative).read_bytes()) if (root / relative).is_file() else None)
+        for relative in sorted(paths)
+    }
+
+
+def shared_inputs(root: Path) -> dict[str, str | None]:
+    paths: set[Path] = set()
+    for pattern in SHARED_INPUT_SCOPE:
+        paths |= _files(root, pattern)
+    # Test support: every conftest, fixture and helper module (anything that is not a
+    # test module) can be imported by any test.
+    paths |= {path for path in _files(root, "tests/**/*.py") if not path.name.startswith("test_")}
+    for relative in SHARED_EXPLICIT_INPUTS:
         if (root / relative).is_file():
             paths.add(root / relative)
-    return {
-        str(path.relative_to(root)): sha256_bytes(path.read_bytes())
-        for path in sorted(paths, key=lambda value: value.as_posix())
-    }
+    return digest_map(root, {str(path.relative_to(root)) for path in paths})
+
+
+def _imported_test_modules(root: Path, test_file: str) -> set[str]:
+    """Test modules a test module imports (for example shared step definitions)."""
+    found: set[str] = set()
+    pending = [test_file]
+    while pending:
+        current = pending.pop()
+        if current in found or not (root / current).is_file():
+            continue
+        found.add(current)
+        tree = ast.parse((root / current).read_text())
+        package = Path(current).parent
+        for node in ast.walk(tree):
+            names: list[str] = []
+            if isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                if node.level:
+                    base = package
+                    for _ in range(node.level - 1):
+                        base = base.parent
+                    prefix = ".".join(base.parts)
+                    names = [f"{prefix}.{node.module}" if node.module else prefix]
+                    names += [f"{names[0]}.{alias.name}" for alias in node.names]
+                elif node.module:
+                    names = [node.module, *[f"{node.module}.{alias.name}" for alias in node.names]]
+            for name in names:
+                candidate = Path(*name.split(".")).with_suffix(".py")
+                if candidate.parts and candidate.parts[0] == "tests" and candidate.name.startswith("test_"):
+                    pending.append(str(candidate))
+    return found
+
+
+def contract_inputs(root: Path, plan: dict, test_rows: list[dict]) -> dict[str, str | None]:
+    """The contract's own test inputs: test modules, their Gherkin and their cassettes."""
+    rows = {row["nodeid"]: row for row in test_rows}
+    paths: set[str] = set()
+    for nodeid in plan.get("tests") or []:
+        test_file = nodeid.split("::", 1)[0]
+        for module in _imported_test_modules(root, test_file):
+            paths.add(module)
+            cassettes = Path(module).parent / "cassettes" / Path(module).stem
+            paths |= {str(path.relative_to(root)) for path in _files(root, f"{cassettes}/**/*")}
+        feature = str((rows.get(nodeid) or {}).get("gherkin_feature") or "").strip()
+        if feature:
+            paths.add(feature if feature.startswith("features/") else f"features/{feature}")
+    return digest_map(root, paths)
 
 
 def engine_configuration() -> dict:
@@ -366,23 +431,33 @@ def engine_configuration() -> dict:
     return {
         "engine": GREMLINS_VERSION,
         "mode": "full pytest per mutant",
+        "scope": "attributable @impl lines only",
+        "operators": list(OPERATORS),
         "plugin_sha256": sha256_bytes(plugin.read_bytes()) if plugin.exists() else None,
         "hermetic_options": list(HERMETIC_OPTIONS),
     }
 
 
-def plan_fingerprint(plan: dict, input_set_sha256: str) -> str:
-    return sha256_bytes(
-        stable_json(
-            {
-                "engine": engine_configuration(),
-                "operators": OPERATORS,
-                "attributable_lines": plan.get("attributable_lines"),
-                "tests": plan.get("tests"),
-                "inputs": input_set_sha256,
-            }
-        ).encode()
+def plan_key(plan: dict) -> dict:
+    return {"attributable_lines": plan.get("attributable_lines"), "tests": plan.get("tests")}
+
+
+def entry_state(entry: dict, plan: dict, shared_sha256: str, own_inputs: dict) -> tuple[str, str]:
+    """Is a retained campaign result still the result the engine would produce now?"""
+    if entry.get("engine") != engine_configuration():
+        return "stale", "the mutation engine configuration changed"
+    if entry.get("plan_key") != plan_key(plan):
+        return "stale", "the contract's code scope or its passing tests changed"
+    if entry.get("shared_inputs_sha256") != shared_sha256:
+        return "stale", "product code, shared test support or dependencies changed"
+    recorded = entry.get("inputs") or {}
+    changed = sorted(
+        path for path in set(recorded) | set(own_inputs) if recorded.get(path) != own_inputs.get(path)
     )
+    if changed:
+        more = f" (+{len(changed) - 3} more)" if len(changed) > 3 else ""
+        return "stale", "its tests changed: " + ", ".join(changed[:3]) + more
+    return "current", ""
 
 
 # --- engine run --------------------------------------------------------------------
@@ -396,14 +471,25 @@ HERMETIC_OPTIONS = (
 )
 
 
-def engine_env(scratch: Path, *, hermetic: bool = True) -> dict[str, str]:
+def engine_env(
+    scratch: Path,
+    *,
+    hermetic: bool = True,
+    scope: dict[str, list[int]] | None = None,
+) -> dict[str, str]:
     """Environment shared by the outer engine run and every per-mutant pytest run.
 
     PYTEST_ADDOPTS reaches the per-mutant subprocesses too, so each of them runs
     with full pytest (lightweight runner disabled), fixed order, and, for the
-    project suite, the same hermetic network rules as the retained run.
+    project suite, the same hermetic network rules as the retained run. A scope
+    keeps only the mutants on those source lines.
     """
     scratch.mkdir(parents=True, exist_ok=True)
+    scope_env: dict[str, str] = {}
+    if scope is not None:
+        scope_file = scratch / f"gremlin-scope-{sha256_bytes(stable_json(scope).encode())[:16]}.json"
+        scope_file.write_text(stable_json(scope))
+        scope_env["TERNFORGE_GREMLIN_SCOPE"] = str(scope_file)
     addopts = ["-p", "no:randomly", "-p", "no:cacheprovider", "-p", "gremlins_full_pytest"]
     if hermetic:
         addopts.extend(HERMETIC_OPTIONS)
@@ -415,6 +501,7 @@ def engine_env(scratch: Path, *, hermetic: bool = True) -> dict[str, str]:
         "TERNFORGE_EVIDENCE_RUN_INPUTS": str(scratch / "engine-run-inputs.json"),
         "OBJC_DISABLE_INITIALIZE_FORK_SAFETY": "YES",
         "PYTHONDONTWRITEBYTECODE": "1",
+        **scope_env,
     }
 
 
@@ -439,7 +526,10 @@ def run_engine(root: Path, plan: dict, raw_path: Path, timeout: int = 5400) -> d
     """Run pytest-gremlins for one contract in place and retain its JSON report."""
     report_dir = root / "coverage/gremlins"
     coverage_dir_existed = (root / "coverage").exists()
-    env = engine_env(Path(os.environ.get("TMPDIR", "/tmp")) / "ternforge-probe-scratch")
+    env = engine_env(
+        Path(os.environ.get("TMPDIR", "/tmp")) / "ternforge-probe-scratch",
+        scope=plan["attributable_lines"],
+    )
     command = [*engine_command(root, plan["tests"], plan["files"]), "--no-cov"]
     started = time.monotonic()
     shutil.rmtree(report_dir, ignore_errors=True)

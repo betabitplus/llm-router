@@ -5213,6 +5213,43 @@ def main() -> None:
         'class_actual["impl.control-flow"]={"exercised":False' not in adapter_source,
         "impl.control-flow is measured, not hard-coded as unchallenged",
     )
+    campaign_engine = impl_campaign.get("engine_configuration") or {}
+    campaign_entries = impl_campaign.get("contracts") or {}
+    out_of_scope = []
+    for contract_id, entry in campaign_entries.items():
+        allowed = {
+            (path, int(line))
+            for path, lines in ((entry.get("plan") or {}).get("attributable_lines") or {}).items()
+            for line in lines
+        }
+        report_path = ROOT / str((entry.get("run") or {}).get("report_path") or "")
+        rows = (load(report_path).get("results") or []) if report_path.is_file() else []
+        for row in rows:
+            try:
+                relative = str(Path(str(row.get("file_path"))).resolve().relative_to(ROOT.resolve()))
+            except ValueError:
+                relative = str(row.get("file_path"))
+            if (relative, int(row.get("line_number") or -1)) not in allowed:
+                out_of_scope.append(f"{contract_id}:{relative}:{row.get('line_number')}")
+    check(
+        campaign_engine.get("scope") == "attributable @impl lines only"
+        and bool(campaign_entries)
+        and not out_of_scope,
+        f"the campaign executes only mutants on each contract's attributable @impl lines: {out_of_scope[:4]}",
+    )
+    check(
+        all(
+            entry.get("engine") == campaign_engine
+            and entry.get("plan_key")
+            and entry.get("shared_inputs_sha256") == impl_campaign.get("shared_inputs_sha256")
+            and isinstance(entry.get("inputs"), dict)
+            and entry.get("inputs")
+            for entry in campaign_entries.values()
+        )
+        and "def retained_campaign_entry_state" in adapter_source
+        and '"--full"' in adapter_source,
+        "every retained contract result carries the engine, scope, tests and input digests it is reused against",
+    )
     gremlins_qualification = (evidence_qualification.get("producers") or {}).get("PRODUCER_PYTEST_GREMLINS") or {}
     gremlins_control = gremlins_qualification.get("control") or {}
     gremlins_strong = gremlins_control.get("strong") or {}
@@ -5220,9 +5257,10 @@ def main() -> None:
         gremlins_qualification.get("status") == "QUALIFIED"
         and ((evidence_qualification.get("producers") or {}).get("PRODUCER_IMPLEMENTATION_FAULT_ADAPTER") or {}).get("status") == "QUALIFIED"
         and (gremlins_control.get("weak") or {}).get("caught") == 0
+        and (gremlins_control.get("scoped") or {}).get("same_as_full_run") is True
         and int(gremlins_strong.get("faults") or 0) > 0
         and gremlins_strong.get("caught") == gremlins_strong.get("faults"),
-        "mutation engine and class projection are qualified: assert-nothing fixture/param/BDD tests catch no mutant",
+        "mutation engine and class projection are qualified: assert-nothing fixture/param/BDD tests catch no mutant, and a scoped run reproduces the full run",
     )
     impl_rows = [
         (contract_id, class_id, row)

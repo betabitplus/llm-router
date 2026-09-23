@@ -3681,9 +3681,13 @@ def gremlin_group_probe(spec,nodeids):
     # Same qualified engine configuration as the Implementation fault campaign: every
     # mutant runs through full pytest, never gremlins' fixture-less lightweight runner.
     command=[*IMPL_FAULTS.engine_command(ROOT,list(nodeids),[spec["source"]]),"--no-cov"]
+    start,end=scope_line_range(spec)
     coverage_dir_existed=(ROOT/"coverage").exists()
     try:
-        run_checked(command,env=IMPL_FAULTS.engine_env(PROBE_SCRATCH_DIR))
+        run_checked(
+          command,
+          env=IMPL_FAULTS.engine_env(PROBE_SCRATCH_DIR,scope={spec["source"]:list(range(start,end+1))}),
+        )
         report=json.loads((ROOT/"coverage/gremlins/gremlins.json").read_text())
     finally:
         shutil.rmtree(ROOT/"coverage/gremlins",ignore_errors=True)
@@ -7120,12 +7124,12 @@ def junit_fault_actual(policy):
     return result
 
 
-def implementation_fault_plans():
+def implementation_fault_plans(test_rows=None):
     needs=current_needs()
     scopes=IMPL_FAULTS.resolve_impl_scopes(ROOT,needs)
     owners=IMPL_FAULTS.line_owners(scopes)
     descendants=IMPL_FAULTS.descendants_map(needs)
-    test_rows=junit_depth_rows()
+    test_rows=junit_depth_rows() if test_rows is None else test_rows
     return {
       contract_id:IMPL_FAULTS.contract_plan(contract_id,scopes,owners,descendants,test_rows)
       for contract_id,need in sorted(needs.items())
@@ -7133,29 +7137,88 @@ def implementation_fault_plans():
     }
 
 
-def refresh_implementation_fault_campaign(contract_ids=None):
-    """Run pytest-gremlins for every contract whose own code can be challenged."""
-    plans=implementation_fault_plans()
-    inputs=IMPL_FAULTS.campaign_inputs(ROOT)
-    input_set_sha256=sha256_text(stable_json(inputs))
+def retained_campaign_entry_state(entry,plan,shared_sha256,test_rows):
+    """Current only when engine, scope, tests and every input still match, and the
+    retained engine report is the exact file the campaign recorded."""
+    run=entry.get("run") or {}
+    state,reason=IMPL_FAULTS.entry_state(
+      entry,plan,shared_sha256,IMPL_FAULTS.contract_inputs(ROOT,plan,test_rows)
+    )
+    if state!="current":
+        return state,reason
+    report_path=ROOT/str(run.get("report_path") or "")
+    if run.get("returncode")!=0 or not run.get("report_path"):
+        return "engine_error","the mutation engine did not finish cleanly"
+    if not report_path.is_file() or sha256_file(report_path)!=run.get("report_sha256"):
+        return "report_mismatch","the retained engine report is missing or altered"
+    return "current",""
+
+
+def refresh_implementation_fault_campaign(contract_ids=None,full=False):
+    """Run pytest-gremlins where the retained result is missing or no longer current.
+
+    Only mutants on each contract's attributable @impl lines are executed. A contract
+    is re-run when the engine, its scope, its passing tests, its own test inputs, or
+    any shared input (product code, test support, dependencies) changed; `full`
+    re-runs every contract regardless.
+    """
+    test_rows=junit_depth_rows()
+    plans=implementation_fault_plans(test_rows)
+    shared=IMPL_FAULTS.shared_inputs(ROOT)
+    shared_sha256=sha256_text(stable_json(shared))
     previous=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
-    contracts=dict(previous.get("contracts") or {}) if contract_ids else {}
     started=time.monotonic()
     asking=contracts_asking_for_implementation_classes()
-    selected=[
+    campaign_ids=[
       contract_id for contract_id,plan in plans.items()
-      if not plan.get("blocked")
-      and (not contract_ids or contract_id in contract_ids)
-      and contract_id in asking
+      if not plan.get("blocked") and contract_id in asking
     ]
-    print(f"[IMPL] campaign: {len(selected)} contracts to challenge, {sum(bool(plan.get('blocked')) for plan in plans.values())} blocked",flush=True)
+    contracts={
+      contract_id:entry
+      for contract_id,entry in (previous.get("contracts") or {}).items()
+      if contract_id in campaign_ids
+    }
+    selected=[]
+    for contract_id in campaign_ids:
+        if contract_ids and contract_id not in contract_ids:
+            continue
+        entry=contracts.get(contract_id)
+        state,_=(
+          retained_campaign_entry_state(entry,plans[contract_id],shared_sha256,test_rows)
+          if entry else ("not_run","")
+        )
+        if full or state!="current":
+            selected.append(contract_id)
+    print(
+      f"[IMPL] campaign: {len(selected)} to run, {len(campaign_ids)-len(selected)} still current, "
+      f"{sum(bool(plan.get('blocked')) for plan in plans.values())} blocked",
+      flush=True,
+    )
+
+    def write_campaign():
+        IMPL_FAULT_CAMPAIGN_PATH.write_text(json.dumps({
+          "schema":IMPL_FAULTS.SCHEMA,
+          "engine":{"name":"pytest-gremlins","version":IMPL_FAULTS.GREMLINS_VERSION,"operators":list(IMPL_FAULTS.OPERATORS)},
+          "engine_configuration":IMPL_FAULTS.engine_configuration(),
+          "class_by_operator":IMPL_FAULTS.CLASS_BY_OPERATOR,
+          "shared_input_scope":[*IMPL_FAULTS.SHARED_INPUT_SCOPE,"tests/**/*.py (support modules)",*IMPL_FAULTS.SHARED_EXPLICIT_INPUTS],
+          "shared_inputs_sha256":shared_sha256,
+          "head_sha":git_sha(),
+          "updated_at":utc_now(),
+          "last_full_run_at":utc_now() if full and not contract_ids else previous.get("last_full_run_at"),
+          "contracts":contracts,
+        },indent=2,sort_keys=True)+"\n")
+
     for index,contract_id in enumerate(selected,1):
         plan=plans[contract_id]
         raw_path=IMPL_FAULT_DIR/f"{contract_id}.gremlins.json"
         raw_path.unlink(missing_ok=True)
         run=IMPL_FAULTS.run_engine(ROOT,plan,raw_path)
         contracts[contract_id]={
-          "fingerprint":IMPL_FAULTS.plan_fingerprint(plan,input_set_sha256),
+          "engine":IMPL_FAULTS.engine_configuration(),
+          "plan_key":IMPL_FAULTS.plan_key(plan),
+          "shared_inputs_sha256":shared_sha256,
+          "inputs":IMPL_FAULTS.contract_inputs(ROOT,plan,test_rows),
           "plan":plan,
           "run":{
             **{key:value for key,value in run.items() if key!="command"},
@@ -7165,16 +7228,8 @@ def refresh_implementation_fault_campaign(contract_ids=None):
           },
         }
         print(f"[IMPL] {index}/{len(selected)} {contract_id}: exit {run['returncode']} in {run['duration_seconds']}s",flush=True)
-        IMPL_FAULT_CAMPAIGN_PATH.write_text(json.dumps({
-          "schema":IMPL_FAULTS.SCHEMA,
-          "engine":{"name":"pytest-gremlins","version":IMPL_FAULTS.GREMLINS_VERSION,"operators":list(IMPL_FAULTS.OPERATORS)},
-          "class_by_operator":IMPL_FAULTS.CLASS_BY_OPERATOR,
-          "input_scope":list(IMPL_FAULTS.INPUT_SCOPE)+list(IMPL_FAULTS.EXPLICIT_INPUTS),
-          "input_set_sha256":input_set_sha256,
-          "head_sha":git_sha(),
-          "updated_at":utc_now(),
-          "contracts":contracts,
-        },indent=2,sort_keys=True)+"\n")
+        write_campaign()
+    write_campaign()
     print(f"[IMPL] campaign finished in {round(time.monotonic()-started,1)}s",flush=True)
 
 
@@ -7196,15 +7251,16 @@ def contracts_asking_for_implementation_classes(policy=None):
 
 def implementation_fault_actual():
     """Current Implementation fault classes per contract, fail-closed."""
-    plans=implementation_fault_plans()
+    test_rows=junit_depth_rows()
+    plans=implementation_fault_plans(test_rows)
     asking=contracts_asking_for_implementation_classes()
     campaign=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
+    shared_sha256=sha256_text(stable_json(IMPL_FAULTS.shared_inputs(ROOT)))
     qualification=load_evidence_qualification()
     producers_ok=qualification_is_current(qualification) and all(
       str(((qualification.get("producers") or {}).get(producer_id) or {}).get("status") or "").upper()=="QUALIFIED"
       for producer_id in IMPL_FAULTS.PRODUCERS
     )
-    current_inputs=sha256_text(stable_json(IMPL_FAULTS.campaign_inputs(ROOT))) if campaign else None
     result={}
     for contract_id,plan in plans.items():
         entry=(campaign.get("contracts") or {}).get(contract_id) or {}
@@ -7218,20 +7274,14 @@ def implementation_fault_actual():
         elif not entry:
             classes=IMPL_FAULTS.blocked_classes("The implementation fault campaign has not run for this contract yet.")
             state="not_run"
-        elif entry.get("fingerprint")!=IMPL_FAULTS.plan_fingerprint(plan,current_inputs):
-            classes=IMPL_FAULTS.blocked_classes("Code, tests, or the contract's test set changed since the last campaign; its result is stale.")
-            state="stale"
-        elif run.get("returncode")!=0 or not run.get("report_path"):
-            classes=IMPL_FAULTS.blocked_classes("The mutation engine did not finish cleanly for this contract, so nothing is claimed.")
-            state="engine_error"
         else:
-            report_path=ROOT/run["report_path"]
-            if not report_path.exists() or sha256_file(report_path)!=run.get("report_sha256"):
-                classes=IMPL_FAULTS.blocked_classes("The retained engine report is missing or altered, so nothing is claimed.")
-                state="report_mismatch"
+            state,reason=retained_campaign_entry_state(entry,plan,shared_sha256,test_rows)
+            if state=="current":
+                classes=IMPL_FAULTS.project_classes(plan,json.loads((ROOT/run["report_path"]).read_text()),ROOT)
             else:
-                classes=IMPL_FAULTS.project_classes(plan,json.loads(report_path.read_text()),ROOT)
-                state="current"
+                classes=IMPL_FAULTS.blocked_classes(
+                  f"The last mutation result no longer counts ({reason}); re-run the campaign."
+                )
         if state=="current" and not producers_ok:
             classes={
               class_id:{**row,"exercised":False,"detected":False,"basis":"The mutation engine or its class mapping is not currently qualified, so its result is not trusted: "+row["basis"]}
@@ -8095,6 +8145,7 @@ def parse_args():
     parser.add_argument("--refresh-assurance",action="store_true",help="rerun P33 fault-model probes and rebuild assurance history")
     parser.add_argument("--refresh-implementation-faults",action="store_true",help="run the pytest-gremlins Implementation fault campaign for every attributable contract")
     parser.add_argument("--contracts",nargs="*",help="limit --refresh-implementation-faults to these contracts")
+    parser.add_argument("--full",action="store_true",help="with --refresh-implementation-faults: re-run every contract, not only stale ones")
     parser.add_argument("--suppress",nargs=2,metavar=("CONTRACT_ID","MUTANT_FINGERPRINT"),help="suppress one current surviving mutant")
     parser.add_argument("--unsuppress",nargs=2,metavar=("CONTRACT_ID","MUTANT_FINGERPRINT"),help="remove one mutation suppression")
     parser.add_argument("--reason",help="required suppression reason")
@@ -8138,7 +8189,7 @@ def main():
     OUT.mkdir(parents=True,exist_ok=True)
     if args.refresh_implementation_faults:
         IMPL_FAULT_DIR.mkdir(parents=True,exist_ok=True)
-        refresh_implementation_fault_campaign(set(args.contracts or []) or None)
+        refresh_implementation_fault_campaign(set(args.contracts or []) or None,full=args.full)
         return
     if args.refresh_freshness or args.refresh_assurance or args.suppress or args.unsuppress:
         campaign=current_campaign_or_die()

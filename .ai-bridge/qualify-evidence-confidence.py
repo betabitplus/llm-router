@@ -1154,6 +1154,46 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         and faults["blocked_classes"]("x")["impl.control-flow"] == {"exercised": False, "detected": False, "basis": "x"}
     )
 
+    # Reuse: a retained result counts only while engine, scope, tests and inputs match.
+    engine_now = faults["engine_configuration"]()
+    reuse_plan = {"attributable_lines": {"m.py": [21, 22]}, "tests": ["tests/x/test_a.py::test_one"]}
+    reuse_entry = {
+        "engine": engine_now,
+        "plan_key": faults["plan_key"](reuse_plan),
+        "shared_inputs_sha256": "shared",
+        "inputs": {"tests/x/test_a.py": "a"},
+    }
+    entry_state = faults["entry_state"]
+    reuse_ok = (
+        entry_state(reuse_entry, reuse_plan, "shared", {"tests/x/test_a.py": "a"}) == ("current", "")
+        and entry_state({**reuse_entry, "engine": {**engine_now, "plugin_sha256": "old"}}, reuse_plan, "shared", {"tests/x/test_a.py": "a"})[0] == "stale"
+        and entry_state(reuse_entry, {**reuse_plan, "tests": ["tests/x/test_a.py::test_two"]}, "shared", {"tests/x/test_a.py": "a"})[0] == "stale"
+        and entry_state(reuse_entry, reuse_plan, "changed", {"tests/x/test_a.py": "a"})[0] == "stale"
+        and entry_state(reuse_entry, reuse_plan, "shared", {"tests/x/test_a.py": "b"})[0] == "stale"
+        and entry_state(reuse_entry, reuse_plan, "shared", {"tests/x/test_a.py": "a", "features/x.feature": "f"})[0] == "stale"
+        and entry_state(reuse_entry, reuse_plan, "shared", {"tests/x/test_a.py": None})[0] == "stale"
+    )
+    with tempfile.TemporaryDirectory(prefix="ternforge-reuse-inputs-") as temp_dir:
+        tmp = Path(temp_dir)
+        (tmp / "tests/x/cassettes/test_a").mkdir(parents=True)
+        (tmp / "tests/x/test_a.py").write_text("from tests.x.test_b import step\n")
+        (tmp / "tests/x/test_b.py").write_text("def step():\n    pass\n")
+        (tmp / "tests/x/helpers.py").write_text("VALUE = 1\n")
+        (tmp / "tests/x/cassettes/test_a/one.yaml").write_text("interactions: []\n")
+        (tmp / "features").mkdir()
+        (tmp / "features/x.feature").write_text("Feature: X\n")
+        own = faults["contract_inputs"](
+            tmp,
+            reuse_plan,
+            [{"nodeid": "tests/x/test_a.py::test_one", "gherkin_feature": "features/x.feature"}],
+        )
+        shared = faults["shared_inputs"](tmp)
+        reuse_ok = reuse_ok and (
+            set(own) == {"tests/x/test_a.py", "tests/x/test_b.py", "tests/x/cassettes/test_a/one.yaml", "features/x.feature"}
+            and "tests/x/helpers.py" in shared
+            and "tests/x/test_a.py" not in shared
+        )
+
     # Engine: the four native operator families exist, and a mutant counts as caught
     # only when a real pytest run of the selected tests fails. The controls use
     # fixtures, parametrization and a pytest-bdd scenario, because a runner that cannot
@@ -1243,8 +1283,35 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             tails[name] = completed.stdout[-1500:]
             if report_path.exists():
                 report_path.unlink()
+        # Scope filter: only mutants on line 2 may run, each exactly as in the full run.
+        scoped_completed = subprocess.run(
+            faults["engine_command"](tmp, suites["strong"], ["control_target.py"], project=ROOT, config="pytest.ini"),
+            cwd=tmp,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=900,
+            env=faults["engine_env"](tmp / "scratch", scope={"control_target.py": [2]}),
+        )
+        scoped_report = tmp / "coverage/gremlins/gremlins.json"
+        scoped_rows = list(json.loads(scoped_report.read_text())["results"]) if scoped_report.exists() else []
+        if scoped_report.exists():
+            scoped_report.unlink()
         strong = rows_by_suite["strong"]
         weak = rows_by_suite["weak"]
+        full_on_line = {
+            str(row.get("gremlin_id")): str(row.get("status"))
+            for row in strong
+            if int(row.get("line_number") or -1) == 2
+        }
+        scoped_by_id = {str(row.get("gremlin_id")): str(row.get("status")) for row in scoped_rows}
+        scope_ok = (
+            scoped_completed.returncode == 0
+            and bool(full_on_line)
+            and len(full_on_line) < len(strong)
+            and scoped_by_id == full_on_line
+            and all(int(row.get("line_number") or -1) == 2 for row in scoped_rows)
+        )
         families = {str(row.get("operator")) for row in strong}
         engine_ok = (
             returncodes["strong"] == 0
@@ -1254,9 +1321,11 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and all(row.get("status") == "zapped" and row.get("selected_tests") for row in strong)
             and len(weak) == len(strong)
             and not any(row.get("status") in faults["KILLED"] for row in weak)
+            and scope_ok
         )
         engine_detail = {
             "families": sorted(families),
+            "scoped": {"faults": len(scoped_rows), "same_as_full_run": scoped_by_id == full_on_line and bool(full_on_line)},
             "strong": {"faults": len(strong), "caught": sum(row.get("status") in faults["KILLED"] for row in strong)},
             "weak": {"faults": len(weak), "caught": sum(row.get("status") in faults["KILLED"] for row in weak)},
             "configuration": faults["engine_configuration"](),
@@ -1268,13 +1337,13 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         "PRODUCER_PYTEST_GREMLINS": {
             "status": "QUALIFIED" if engine_ok else "NOT QUALIFIED",
             "intended_use": "generate comparison, boundary, boolean and return mutants on the declared target and report a mutant as caught only when a selected test fails",
-            "false_green_control": "parametrized, fixture-using and pytest-bdd tests that assert nothing must catch no mutant, while tests that pin the behavior must catch every generated mutant in all four families",
+            "false_green_control": "parametrized, fixture-using and pytest-bdd tests that assert nothing must catch no mutant, tests that pin the behavior must catch every generated mutant in all four families, and a scoped run must reproduce the full run's mutants on those lines exactly",
             "control": engine_detail,
         },
         "PRODUCER_IMPLEMENTATION_FAULT_ADAPTER": {
-            "status": "QUALIFIED" if resolution_ok and attribution_ok and projection_ok else "NOT QUALIFIED",
-            "intended_use": "resolve @impl scopes from the graph, attribute each mutated line to one contract family, and project engine results onto Implementation fault classes",
-            "false_green_control": "a line shared with a non-derived contract, a failing test, an unreached or surviving mutant, or an unmapped operator must never make a class detected",
+            "status": "QUALIFIED" if resolution_ok and attribution_ok and projection_ok and reuse_ok else "NOT QUALIFIED",
+            "intended_use": "resolve @impl scopes from the graph, attribute each mutated line to one contract family, project engine results onto Implementation fault classes, and reuse a retained result only while it is still current",
+            "false_green_control": "a line shared with a non-derived contract, a failing test, an unreached or surviving mutant, an unmapped operator, or a retained result whose engine, scope, tests or inputs changed must never make a class detected",
         },
     }
 
