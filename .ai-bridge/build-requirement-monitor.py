@@ -56,6 +56,7 @@ CONTRACT_ID = PRIMARY_CONTRACT_ID
 CONTRACT_URL = "requirements/configuration.html#REQ_INVALID_CONFIGURATION_ERRORS"
 PROFILE_URL = "verification-profiles/invalid-configuration.html"
 HEALTH_MAP_URL = "verification-health-map.html"
+DEPTH_MAP_URL = "verification-depth-map.html"
 MODEL_URL = "test-plan.html#test-plan-configuration-validation-model"
 MUTATION_URL: str | None = (
     "mutation-analysis.html#mutation-req_invalid_configuration_errors"
@@ -586,6 +587,7 @@ def render_current() -> None:
         title="Verification matrix",
         links=(
             ("Health Map ↗", f"{HEALTH_MAP_URL}#coverage:{CONTRACT_ID}"),
+            ("Depth Map ↗", f"{DEPTH_MAP_URL}#overall:{CONTRACT_ID}"),
             (f"{contract_noun} ↗", CONTRACT_URL),
             ("Profile ↗", PROFILE_URL),
             ("Raw ↗", "requirement-monitor-facts.json"),
@@ -595,6 +597,7 @@ def render_current() -> None:
         title="Fault model",
         links=(
             ("Health Map ↗", f"{HEALTH_MAP_URL}#faults:{CONTRACT_ID}"),
+            ("Depth Map ↗", f"{DEPTH_MAP_URL}#detect:{CONTRACT_ID}"),
             ("Profile ↗", PROFILE_URL),
             ("Model ↗", "test-plan.html#test-plan-fault-model"),
             ("Raw ↗", "requirement-monitor-facts.json"),
