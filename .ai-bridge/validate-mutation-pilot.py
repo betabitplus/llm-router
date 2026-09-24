@@ -5390,7 +5390,97 @@ def main() -> None:
         and "entry.link.focus()" in health_page,
         "the all-layers table stays hidden until asked for; a row opens its layer's map and a contract cell opens that contract on the map",
     )
-    layer_tips = re.findall(r'\["(\w+)","[^"]+","([^"]+)"\]', health_page)
+    check(
+        'id="tf-health-radial"' in health_page
+        and "function drawRadial(){" in health_page
+        and "function radialRings(outer){" in health_page
+        and "const order=layerOrder(),keys=[...order.failing,...order.passing];" in health_page
+        and 'node.setAttribute("data-health-ring",key);' in health_page
+        and '(key==="overall"?radialThumb():thumbnail(key))' in health_page
+        and 'section.dataset.view=mode==="overall"?"radial":"tree";' in health_page
+        and "tooltip.innerHTML=entry.layer?withMode(entry.layer,()=>tooltipHtml(entry.row)):tooltipHtml(entry.row);" in health_page,
+        "Overall shows the whole system at once: goal, capability and contract rings around the verdict, one ring per layer in strip order; a ring name opens that layer's map and a ring cell opens that layer's evidence",
+    )
+    health_insights = health_model.get("insights") or {}
+    health_causes = health_insights.get("causes") or {}
+    check(
+        "function renderCauses(){" in health_page
+        and "function applyFocus(){" in health_page
+        and "function whyLine(row){" in health_page
+        and 'id="tf-health-causes"' in health_page
+        and all(
+            {row_id for cause in health_causes.get(key, []) for row_id in cause.get("ids", [])}
+            == {
+                row_id
+                for row_id, row in health_rows.items()
+                if ((row.get("own") or {}).get(key) or {}).get("status") == "failed"
+            }
+            for key in health_layer_keys[1:]
+        )
+        and all(cause.get("label") and cause.get("hint") is not None for causes in health_causes.values() for cause in causes),
+        "every red mark of every layer is explained by at least one named cause; a cause filters the map and shows in the hover card",
+    )
+    contract_evidence_pages = sorted(HTML.glob("contract-evidence-*.html"))
+    upper_map_pages = sorted(HTML.glob("assurance-goal-*.html")) + sorted(HTML.glob("assurance-feat-*.html"))
+    check(
+        "history.replaceState(history.state" in health_page
+        and "function readHash(){" in health_page
+        and 'window.addEventListener("hashchange",readHash);' in health_page
+        and bool(contract_evidence_pages)
+        and all(
+            all(f"verification-health-map.html#{key}:" in page.read_text() for key in ("overall", "coverage", "faults"))
+            for page in contract_evidence_pages
+        )
+        and bool(upper_map_pages)
+        and all("verification-health-map.html#overall:" in page.read_text() for page in upper_map_pages),
+        "the map view has an address (#layer:ID); contract, goal and capability pages link back to their place on the map",
+    )
+    health_builder_source = (BRIDGE / "build-mutation-report-prototype.py").read_text()
+    check(
+        'id="tf-health-find"' in health_page
+        and 'if(event.key==="/"){event.preventDefault();openFind();return}' in health_page
+        and 'id="tf-health-stamp"' in health_page
+        and "function renderStamp(){" in health_page
+        and "function deltaBadge(key){" in health_page
+        and 'HEALTH_RUN_SNAPSHOTS=ROOT/"test-results/health-map/runs"' in health_builder_source
+        and "if snapshot.get(\"run_id\")!=run_id" in health_builder_source
+        and (health_insights.get("run") or {}).get("started_at")
+        and "delta" in health_insights,
+        "the page names its retained run, finds any goal, capability or contract, and compares with the previous retained run only",
+    )
+    check(
+        '["overall","Overall","Final verdict; the rings show which layers fail where."]' in health_page
+        and "Dashed line: failing layers inside, passing outside" in health_page
+        and "if(rect.bottom<0||rect.top>window.innerHeight)hideTooltip(true);else placeTooltip(rect);" in health_page,
+        "Overall help names the rings, the legend explains the pass line, and the hover card follows its tile while the page scrolls",
+    )
+    map_pages_source = (BRIDGE / "assurance_map_pages.py").read_text()
+    qualification_harness_source = (BRIDGE / "qualify-evidence-confidence.py").read_text()
+    check(
+        '<section id="verification-health-map">' in map_pages_source
+        and '<section id="verification-depth-map">' in map_pages_source
+        and '<section id="verification-health-map">' not in health_builder_source
+        and '<section id="verification-depth-map">' not in health_builder_source
+        and "MAP_PAGES.health_map_article(stable_json(payload),vendored_d3_hierarchy())" in health_builder_source
+        and "MAP_PAGES.depth_map_article(stable_json(payload))" in health_builder_source
+        and "assurance_map_pages" not in qualification_harness_source
+        and "assurance_monitor_ui" not in qualification_harness_source
+        and '"assurance_monitor_ui_sha256"' not in health_builder_source
+        and all(
+            name in qualification_harness_source
+            for name in (
+                "build-mutation-report-prototype.py",
+                "build-requirement-monitor.py",
+                "build-upper-assurance-pilot.py",
+                "assurance_monitor_domain.py",
+                "assurance_monitor_registry.py",
+                "implementation_faults.py",
+            )
+        ),
+        "page markup lives outside the evidence-producer fingerprint: the builder passes only facts, every file that computes facts stays fingerprinted",
+    )
+    layers_block = re.search(r"const LAYERS=\[(.*?)\];", health_page, flags=re.DOTALL)
+    layer_tips = re.findall(r'\["(\w+)","[^"]+","([^"]+)"\]', layers_block.group(1) if layers_block else "")
     check(
         len(layer_tips) == len(health_layer_keys)
         and all(len(tip) <= 72 for _key, tip in layer_tips)
@@ -5501,6 +5591,7 @@ def main() -> None:
         "assurance_monitor_domain.py",
         "assurance_monitor_registry.py",
         "assurance_monitor_ui.py",
+        "assurance_map_pages.py",
         "build-requirement-monitor.py",
         "build-upper-assurance-pilot.py",
         "implementation_faults.py",
@@ -5551,8 +5642,13 @@ def main() -> None:
         "docs/_build/html/evidence-classification-facts.json",
         "test-results/implementation-faults/campaign.json",
     ]
+    generated_paths += [
+        str(path.relative_to(ROOT))
+        for path in (ROOT / "test-results/health-map/runs").glob("*.json")
+    ]
     history_glob = "`docs/_build/html/mutation-results/campaign-history/*.json`"
     contract_evidence_glob = "`docs/_build/html/contract-evidence-*.html`"
+    health_run_glob = "`test-results/health-map/runs/*.json`"
     missing_artifacts = sorted(
         path
         for path in generated_paths
@@ -5566,6 +5662,11 @@ def main() -> None:
             path.startswith("docs/_build/html/contract-evidence-")
             and path.endswith(".html")
             and contract_evidence_glob in manifest
+        )
+        and not (
+            path.startswith("test-results/health-map/runs/")
+            and path.endswith(".json")
+            and health_run_glob in manifest
         )
     )
     check(not missing_artifacts, f"extraction manifest inventories all retained generated artifact classes: {missing_artifacts}")
@@ -5588,6 +5689,7 @@ def main() -> None:
         ".ai-bridge/assurance_monitor_domain.py",
         ".ai-bridge/assurance_monitor_registry.py",
         ".ai-bridge/assurance_monitor_ui.py",
+        ".ai-bridge/assurance_map_pages.py",
         ".ai-bridge/build-requirement-monitor.py",
         ".ai-bridge/build-upper-assurance-pilot.py",
         ".ai-bridge/monitor-readiness.md",

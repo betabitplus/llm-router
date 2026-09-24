@@ -1160,6 +1160,8 @@ def render_page(
             status=entity["status"],
             domain_cards="".join(cards),
             domain_strip_class="domain-strip with-support",
+            map_href="verification-health-map.html#overall"
+            + (f":{entity_id}" if entity_id.startswith(("GOAL_", "FEAT_")) else ""),
         )
         + "".join(sections)
         + "</div>"

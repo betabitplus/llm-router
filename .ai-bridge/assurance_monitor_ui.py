@@ -306,10 +306,14 @@ def verdict_header(
     status: str,
     domain_cards: str,
     domain_strip_class: str = "domain-strip",
+    map_href: str | None = None,
 ) -> str:
+    map_link = (
+        f' <a class="section-link" href="{esc(map_href)}">Health Map ↗</a>' if map_href else ""
+    )
     return (
         '<header class="verdict"><div class="verdict-main"><div>'
-        f'<div class="kicker">{esc(kicker)}</div><h2>{esc(entity_id)}</h2></div>'
+        f'<div class="kicker">{esc(kicker)}</div><h2>{esc(entity_id)}{map_link}</h2></div>'
         f'<div class="overall {status_class(status)}">{esc(status_label(status))}</div>'
         f'</div><div class="{esc(domain_strip_class)}">{domain_cards}</div></header>'
     )
