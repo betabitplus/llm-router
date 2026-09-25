@@ -75,3 +75,4 @@
 40. [040 — Health Map: лента слоёв по критичности и таблица всех слоёв](entries/040-2026-09-24-health-map-layer-strip-severity-table.md)
 41. [041 — Health Map: круговой Overall, «почему красное» и разметка вне квалификации](entries/041-2026-09-24-health-map-radial-overall-causes-markup-split.md)
 42. [042 — Depth Map на рендерере Health Map и одна карта на две страницы](entries/042-2026-09-24-25-depth-map-one-shared-map.md)
+43. [043 — Verification Map: здоровье и меры на одной карте, виды на карточке слоя](entries/043-2026-09-25-26-verification-map-views-on-card.md)

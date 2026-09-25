@@ -4937,7 +4937,7 @@ def main() -> None:
         and 'href="specification-health.html"' not in index_page,
         "portal navigation no longer exposes legacy Specification Map/Health pages",
     )
-    health_model_match = re.search(r"const model=(\{.*?\});\nconst LAYERS=", health_page, flags=re.DOTALL)
+    health_model_match = re.search(r"const model=(\{.*?\});\n// The Health Map judges", health_page, flags=re.DOTALL)
     check(health_model_match is not None, "Verification Health Map embeds its layered health model")
     health_model = json.loads(health_model_match.group(1)) if health_model_match else {}
     health_layers = (health_model.get("summary") or {}).get("layers") or {}
@@ -5374,10 +5374,10 @@ def main() -> None:
         and "function ringBands(outer){" in health_page
         and "const order=layerOrder(),keys=[...order.failing,...order.passing];" in health_page
         and '"data-map-ring":item.key' in health_page
-        and 'thumb:key==="overall"?rings.thumb():tiles.thumb(' in health_page
-        and 'rings.svg.toggleAttribute("hidden",key!=="overall");' in health_page
+        and 'if(view.form==="rings")return ringSets[view.ring].thumb();' in health_page
+        and 'ringList.forEach(rings=>rings.svg.toggleAttribute("hidden",!(view.form==="rings"&&rings===ringSets[view.ring])));' in health_page
         and "card.show(hoverKey(entry),()=>cardHtml(entry),entry.anchor,entry,immediate)" in health_page
-        and 'const layerOf=entry=>entry.layer||(entry.radial?"overall":page.layer);' in health_page,
+        and 'const projectionOf=entry=>entry.layer||(entry.radial?entry.set.projection:page.tiled);' in health_page,
         "Overall shows the whole system at once: goal, capability and contract rings around the verdict, one ring per layer in strip order; a ring name opens that layer's map and a ring cell opens that layer's evidence",
     )
     health_insights = health_model.get("insights") or {}
@@ -5428,7 +5428,7 @@ def main() -> None:
         "the page names its retained run, finds any goal, capability or contract, and compares with the previous retained run only",
     )
     check(
-        '["overall","Overall","Final verdict; the rings show which layers fail where."]' in health_page
+        '["overall","Overall","Overall health; the rings show which layers fail where."]' in health_page
         and "failing layers sit inside the dashed line, passing ones outside" in health_page
         and "if(rect.bottom<0||rect.top>innerHeight)card.hide(true);else place(rect);" in health_page,
         "Overall help names the rings, the legend explains the pass line, and the hover card follows its tile while the page scrolls",
@@ -5436,7 +5436,7 @@ def main() -> None:
     # Verification Depth Map (DEPTH-P34): Overall as rings or a table, four map projections, and a side panel
     # with the level × boundary matrix and facets. It measures; the Health Map judges.
     depth_section = depth_page.split('<section id="verification-depth-map">', 1)[-1].split("</section>", 1)[0]
-    depth_model_match = re.search(r"const model=(\{.*?\});\nconst LEVELS=", depth_section, flags=re.DOTALL)
+    depth_model_match = re.search(r"const model=(\{.*?\});\n// The Depth Map measures", depth_section, flags=re.DOTALL)
     check(depth_model_match is not None, "Verification Depth Map embeds its depth model")
     depth_model = json.loads(depth_model_match.group(1)) if depth_model_match else {}
     depth_contracts = depth_model.get("contracts") or {}
@@ -5489,12 +5489,12 @@ def main() -> None:
     )
     check(
         all(f'["{key}","' in depth_section for key in ("overall", "level", "boundary", "trust", "detect"))
-        and 'const VIEW_KEYS=[...o.layers.map(layer=>layer[0]),"table"];' in depth_section
-        and 'data-mode="table"' in depth_section
-        and 'if(!readHash())select("overall",false);' in depth_section
+        and '{key:"table",layer:"overall",projection:"overall",form:"table",label:"Table",tip:MAP_TABLE_TIP}' in depth_section
+        and 'data-map-view="\'+view.key+\'"' in depth_section
+        and 'if(!readHash())select(VIEWS[0].key,false);' in depth_section
         and 'data-depth-mode="representation"' not in depth_page
         and 'mode==="representation"' not in depth_page,
-        "Depth Map opens on Overall (rings, or the contracts table as its second mode) and four map projections; Representation is not a projection",
+        "Depth Map opens on Overall (rings, or the contracts table as its second view) and four map projections; Representation is not a projection",
     )
     check(
         ".tf-map-body{display:flex" in depth_section
@@ -5507,9 +5507,9 @@ def main() -> None:
     check(
         "const PANELS={" in depth_section
         and all(f"{key}:{{title:" in depth_section for key in ("overall", "level", "boundary", "trust", "detect"))
-        and 'const panelOf=key=>{const panel=key==="table"?{...o.panels.overall,help:MAP_TABLE_HELP}:o.panels[key];return{...panel,facets:[...panel.facets,"kind","goal"]}};' in depth_section
-        and 'previews:key=>key!=="table"' in depth_section
-        and "if(!o.previews(o.view()))return;" in depth_section
+        and 'const view=viewOf(key),panel=o.panels[view.key]||(view.form==="table"?{...o.panels[view.projection],help:MAP_TABLE_HELP}:o.panels[view.projection]);' in depth_section
+        and 'previews:key=>viewOf(key).form!=="table"' in depth_section
+        and "if(next&&!o.previews(o.view()))next=null;" in depth_section
         and "button[data-facet]:not(:disabled)" in depth_section,
         "the side panel follows the view: only controls that match what it shows, no hover preview in the table, and empty options are disabled",
     )
@@ -5521,12 +5521,15 @@ def main() -> None:
             and "const heightFor=width=>" in page
             and "new ResizeObserver(()=>{o.follow(frame.stageWidth());" in page
             and ".tf-map-view{display:block;width:100%;height:var(--tf-map-view-h,auto)" in page
-            and 'legend.style.minHeight=Math.ceil(tallest)+"px";' in page
-            and ".tf-map-side{flex-basis:100%}" in page
+            and "function fitLegend(){" in page
+            and 'legend.classList.toggle("tight",' in page
+            and ".tf-map-legendbar{position:relative;display:flex;" in page
+            and ".tf-map-legend>.tf-map-over{display:none}" in page
+            and "box.scrollLeft=left;box.scrollTop=top;" in page
             and 'id="tf-map-filters"' in page.split('id="tf-map-tools"', 1)[-1].split("</div>", 1)[0]
             for page in (depth_section, health_page)
         ),
-        "both maps keep one tiling and one height: the side panel narrows them frame by frame, and a filter, a layer or a mode never moves the page",
+        "both maps keep one tiling and one height: the side panel narrows them frame by frame, the legend is one line whose overflow opens from a +N, the table keeps its place when it redraws, and a filter, a layer or a view never moves the page",
     )
     check(
         all(
@@ -5544,14 +5547,13 @@ def main() -> None:
         all(
             "const filters=mapFilters({facets,rows:o.filterRows," in page
             and "facets:FACETS,panels:PANELS," in page
-            and "const frame=mapFrame({views:VIEW_KEYS," in page
+            and "const frame=mapFrame({layout:layoutViews,follow:followStage});" in page
             and 'id="tf-map-panel-toggle"' in page
-            and 'id="tf-map-mode"' in page
             and 'if(event.key==="f"||event.key==="F"){event.preventDefault();filters.setPanel(!filters.open,true);return}' in page
             for page in (depth_section, health_page)
         )
         and "const PANELS=Object.fromEntries(LAYERS.map(" in health_page
-        and 'const panelOf=key=>{const panel=key==="table"?{...o.panels.overall,help:MAP_TABLE_HELP}:o.panels[key];return{...panel,facets:[...panel.facets,"kind","goal"]}};' in health_page
+        and 'const view=viewOf(key),panel=o.panels[view.key]||(view.form==="table"?{...o.panels[view.projection],help:MAP_TABLE_HELP}:o.panels[view.projection]);' in health_page
         and 'VERDICTS=[["failed","Fail"],["passed","Pass"],["na","N/A"]]' in health_page
         and "FACETS[key]={label,options:VERDICTS," in health_page,
         "both maps have the same Filters panel beside the view: it follows the layer, the Health Map filters by verdict and by why a layer fails, the Depth Map by what it measures",
@@ -5576,9 +5578,8 @@ def main() -> None:
         and "function mapRings(svg,tree,o){" in map_pages_js
         and "function mapTree(rows){" in map_pages_js
         and all(
-            "const map=mapPage({" in own
-            and "map.start();" in own
-            and "mapTree(" in own
+            "mapTree(" in own
+            and "attach:page=>{map=page}" in own
             and not any(
                 name in own
                 for name in (
@@ -5608,7 +5609,8 @@ def main() -> None:
         and "const mapLegendItem=" in map_pages_js
         and ".tf-map-sw{" in map_pages_css
         and 'kind:{label:"Kind",' in map_pages_js
-        and 'columns:[["name","Contract","Contract, grouped as chosen"],...o.table.columns],' in map_pages_js
+        and "function mapKinds(o){" in map_pages_js
+        and 'columns:[["name","Contract","Contract, grouped as chosen","name"],...o.table.columns],' in map_pages_js
         and '"id","title","kind","goal","capability",...o.table.csv.head' in map_pages_js
         and "data-cell" not in map_pages_js
         and all(
@@ -5622,6 +5624,8 @@ def main() -> None:
                     "Opens <b>",
                     '<button type="button" class="tf-map-mx-cell"',
                     'kind:{label:"Kind"',
+                    "mapKinds(",
+                    "data-kind=",
                     '["tree","Goal › capability"]',
                     '"id","title","kind","goal","capability"',
                     "tf-health-swatch",
@@ -5631,7 +5635,7 @@ def main() -> None:
             )
             for own in page_own.values()
         ),
-        "both maps build the hover card, the Overall matrix, legends, swatches, the Kind and Goal filters and the table's first columns in one place; a page gives only its own content",
+        "both maps build the hover card, the Overall matrix, legends, swatches, the Kind switch, the Goal filter and the table's first columns in one place; a page gives only its own content",
     )
     # A card says where a click goes, named as on that page: the page by the mark's kind, the section by the anchor.
     opens_names = dict(re.findall(r'(\w+):"([^"]+)"', (re.search(r"const MAP_OPENS=\{(.*?)\};", map_pages_js) or re.match("", "")).group(1) or ""))
@@ -5670,6 +5674,228 @@ def main() -> None:
         and [row.get("id") for row in depth_model.get("rows") or []] == [row.get("id") for row in health_model.get("rows") or []],
         "both maps receive their tree as rows with the product first and carry only the facts their page reads",
     )
+    # The Verification Map prototype pairs every Health Map verdict with its Depth Map measures on one page.
+    pairs_page = (HTML / "verification-map.html").read_text() if (HTML / "verification-map.html").exists() else ""
+    pairs_section = pairs_page.split('<section id="verification-map">', 1)[-1].split("</section>", 1)[0]
+    pairs_js = map_pages_module.split('PAIRS_MAP_JS = r"""', 1)[-1].split('"""', 1)[0]
+    pairs_views = re.findall(r'\{key:"([^"]+)",layer:"([^"]+)",projection:"([^"]+)",form:"(\w+)"', pairs_js)
+    pairs_measures = {projection for _key, _layer, projection, _form in pairs_views} - set(health_layer_keys)
+    check(
+        bool(pairs_section)
+        and '<div id="verification-health-map"><div id="verification-depth-map">' in pairs_section
+        and "views:viewsHtml,viewTip:" in pairs_section
+        and all(own in pairs_section for own in page_own.values())
+        and pairs_js in pairs_section
+        and "mapPage(pairsMap(healthMap(model.health),depthMap(model.depth))).start();" in pairs_section
+        and "mapPage(healthMap(model)).start();" in health_page
+        and "mapPage(depthMap(model)).start();" in depth_section
+        and {layer for _key, layer, _projection, _form in pairs_views} == set(health_layer_keys)
+        and all(any(key == layer for key, _layer, _projection, _form in pairs_views) for layer in health_layer_keys)
+        and pairs_measures == {"depth", "level", "boundary", "trust", "detect"}
+        and 'const MEASURE={depth:"overall",level:"level",boundary:"boundary",trust:"trust",detect:"detect"};' in pairs_js
+        and pairs_js.count('label:"Health",') == 6
+        and "Verdict" not in pairs_js
+        and 'classList.toggle("tf-pairs-measuring",measured(view.projection))' in pairs_js
+        and "#verification-depth-map.tf-pairs-measuring{--tf-map-up:var(--tf-map-ring);--tf-map-down:var(--tf-map-ring)}" in pairs_section
+        and "def render_verification_map_page(health_payload,depth_payload):" in health_builder_source
+        and "render_verification_map_page(health_payload,depth_payload)" in health_builder_source
+        and 'href="#">' not in pairs_page.split('<main id="main-content"', 1)[0],
+        "the Verification Map prototype pairs each Health Map verdict with its Depth Map measures: every health layer is a card, its measures are views on its card beside its health, every depth layer is one of them, and a measure outlines Changes without red or green",
+    )
+    # Kind opens the side panel of every map, the same in every view, rather than a facet repeated in every panel.
+    check(
+        "const kinds=mapKinds({leaves:tree.leaves,filters});" in map_pages_js
+        and 'return{...panel,facets:[...panel.facets,"goal"]};' in map_pages_js
+        and 'facets:[...panel.facets,"kind","goal"]' not in map_pages_js
+        and 'kind:{label:"Kind",switch:true,options:' in map_pages_js
+        and "chip:false" not in map_pages_js
+        and 'class="tf-map-kind" data-facet="kind" data-value="' in map_pages_js
+        and "(facets[target.dataset.facet].switch?f.only:f.toggle)(target.dataset.facet,target.dataset.value)" in map_pages_js
+        and "f.only=(key,value)=>" in map_pages_js
+        and "f.matches(row,preview.facet)" in map_pages_js
+        and '"Technical requirements","Only technical requirements:' in map_pages_js
+        and "const MAP_KIND_ICON={" in map_pages_js
+        and map_pages_js.count("mapKindIcon(") >= 3
+        and all(
+            'id="tf-map-kinds"' in page.split('class="tf-map-panel-kinds"', 1)[-1].split('id="tf-map-panel-body"', 1)[0]
+            and 'id="tf-map-total"' in page.split('id="tf-map-filters"', 1)[-1].split('id="tf-map-panel-toggle"', 1)[0]
+            and 'class="tf-map-head"' not in page
+            for page in (health_page, depth_section, pairs_section)
+        )
+        and ".tf-map-panel-kinds{margin:0 0 .7rem;padding:0 0 .7rem;border-bottom:1px solid var(--tf-map-line-strong)}" in map_pages_css
+        and ".tf-map-kind.hit{" in map_pages_css
+        and "box.innerHTML=KINDS.map(" in map_pages_js
+        and ".tf-map-kind[aria-pressed=true]{" in map_pages_css,
+        "Kind opens the side panel of every map, the same in every view and apart from the view's filters below it: all contracts, requirements or technical requirements, each a tile with its glyph, its name and its count under the other filters, drawn once so it never shifts; its tiles are the options of a switch facet, so pointing at one lights its contracts, a click keeps one kind, and a contract on the map marks its kind; a chosen kind shows as a chip like every filter, the count of what the filters keep sits by the chips, and the card, the table and Find name a kind with the same glyph",
+    )
+    # A layer's views live on its open card as a slider of their thumbnails; the legend bar holds only the legend.
+    pairs_asks = re.findall(r'label:"[^"]+",ask:"([^"]+)"', pairs_js)
+    pairs_bar = pairs_section.split('id="tf-map-legendbar"', 1)[-1].split('id="tf-map-body"', 1)[0]
+    knob_rule = map_pages_css.split("\n.tf-map-knob{", 1)[-1].split("}", 1)[0]
+    check(
+        len(pairs_asks) == len(pairs_views) == 12
+        and all(len(ask) <= 40 for ask in pairs_asks)
+        and "function viewsHtml(key,lone){" in map_pages_js
+        and '<span class="tf-map-views-track" role="radiogroup" aria-label="Views of \'' in map_pages_js
+        and '<span class="tf-map-knob" aria-hidden="true"></span>' in map_pages_js
+        and '<button type="button" role="radio" class="tf-map-choice" data-map-view="\'+view.key+\'" aria-checked="false"'
+        in map_pages_js
+        and "const tip=view.ask||view.tip,name=view.label||labelOf(view.layer);" in map_pages_js
+        and "function tableThumb(){" in map_pages_js
+        and "if(thumb&&thumb.dataset.view!==view)thumb.outerHTML=o.thumb(key);" in map_pages_js
+        and '\'<div class="tf-map-tab-wrap" data-map-wrap="\'+key+\'">\'' in map_pages_js
+        and "views.inert=!open;" in map_pages_js
+        and "function placeKnob(views,instant){" in map_pages_js
+        and 'const knobShape=(at,count)=>count===1?" only":at===0?" first":at===count-1?" last":"";' in map_pages_js
+        and 'knob.className="tf-map-knob"+knobShape(at,buttons.length);' in map_pages_js
+        and "next=list[(step+list.length)%list.length];" in map_pages_js
+        and "function mapSpread(rows,tone,titled){" in map_pages_js
+        and '<span class="tf-map-ask" title="' in map_pages_js
+        and "tone:toneOf," in page_own["health"]
+        and "tone,blank,measure,measureHtml,measureGroupHtml," in page_own["depth"]
+        and knob_rule.startswith("position:absolute;")
+        and "border-radius:0;" in knob_rule
+        and ".tf-map-knob.first{border-radius:7px 0 0 7px}" in map_pages_css
+        and ".tf-map-knob.last{border-radius:0 7px 7px 0}" in map_pages_css
+        and ".tf-map-knob.only{border-radius:7px}" in map_pages_css
+        and ".tf-map-tab-wrap.open>.tf-map-views{max-width:calc(var(--tf-map-track-w,508px) + 12px);opacity:1;"
+        in map_pages_css
+        and "@media(min-width:961px){.tf-map-legendbar:has(+ .tf-map-body.panel-open)"
+        "{padding-left:calc(var(--tf-map-panel) + 16px)}}" in map_pages_css
+        and "inset 0 -2px 0" not in map_pages_css
+        and "tf-map-lens" not in map_pages_js + map_pages_css
+        and all(
+            'id="tf-map-mode"' not in page and "data-lens-scroll" not in page
+            for page in (health_page, depth_section, pairs_section)
+        )
+        and 'id="tf-map-legend"' in pairs_bar
+        and "<button" not in pairs_bar,
+        "a layer's views live on its open card: the card keeps its look and a slider of the views' thumbnails grows out of it, a sunken track whose raised knob glides to the chosen view (only the slider's two ends are rounded, a view between them is square, and the arrow keys move it); the card's own thumbnail shows the view it opens, a view's question is its thumbnail's hint and opens the legend, and the legend bar holds only the legend, which keeps clear of the open panel's column",
+    )
+    # A narrow page has no room beside the open card; a wide one keeps the card and its views in sight as one.
+    check(
+        'const narrow=matchMedia("(max-width:640px)");' in map_pages_js
+        and "open=!!views&&key===current&&!narrow.matches&&folded!==key;" in map_pages_js
+        and "if(fresh){viewsRow.dataset.layer=key;viewsRow.innerHTML=o.views(key,true)}" in map_pages_js
+        and 'if(views.length<2&&!lone)return"";' in map_pages_js
+        and 'narrow.addEventListener("change",()=>{sync(true);show(o.current())});' in map_pages_js
+        and ".tf-map-views-row{display:none}" in map_pages_css
+        and "@media(max-width:640px){\n.tf-map-views-row{display:flex;height:60px;" in map_pages_css
+        and all(
+            '<div class="tf-map-views-row" id="tf-map-views-row"></div>' in page
+            for page in (health_page, depth_section, pairs_section)
+        )
+        and "const delta=left<start||right-left>end-start?left-start:right>end?right-end:0;" in map_pages_js
+        and "if(picked){reveal(picked);return}" in map_pages_js
+        and '<span class="tf-map-choice-name" data-name="\'+escapeHtml(name)+\'">' in map_pages_js
+        and ".tf-map-choice-name::after{content:attr(data-name);height:0;overflow:hidden;visibility:hidden;"
+        "font-weight:750}" in map_pages_css
+        and 'class="tf-map-view"' not in map_pages_js,
+        "on a page 640 px wide or less the open layer's views take a row of their own under the strip, a lone view too, so the row keeps its height from layer to layer; on a wider page the open card and its views come into sight as one, a card too wide for the strip keeps its start in sight, a view picked on the slider leaves the strip where it is, and every name keeps room for its bold width so choosing a view never changes the slider's width",
+    )
+    # What the references taught the slider: views that fold at once and at the pace they grow, a strip that moves
+    # once, one Tab stop, dots on closed cards, equal views and a knob that can be dragged.
+    check(
+        'views.style.setProperty("--tf-map-track-w",track.offsetWidth+"px");' in map_pages_js
+        and "document.fonts?.ready?.then(()=>sync(true));" in map_pages_js
+        and "inStrip" not in map_pages_js
+        and ".held" not in map_pages_css
+        and "grown=setTimeout(()=>{syncBar();" in map_pages_js
+        and "if(box.right<=view.left+pinWidth||box.left>=view.right)reveal(tab);" in map_pages_js
+        and 'role="radiogroup"' in map_pages_js
+        and "button.tabIndex=on&&active?0:-1;" in map_pages_js
+        and "const step={ArrowRight:at+1,ArrowDown:at+1,ArrowLeft:at-1,ArrowUp:at-1,Home:0,End:list.length-1}[event.key];"
+        in map_pages_js
+        and '<span class="tf-map-dots" aria-hidden="true">' in map_pages_js
+        and 'wrap.querySelectorAll("[data-dot]").forEach(dot=>dot.classList.toggle("on",dot.dataset.dot===view));'
+        in map_pages_js
+        and '" Views: "' in map_pages_js
+        and ".tf-map-dots{grid-column:2;grid-row:3;align-self:end;justify-self:center;" in map_pages_css
+        and ".tf-map-tab-wrap.open .tf-map-dots{opacity:0}" in map_pages_css
+        and "@media(max-width:640px){.tf-map-tab[aria-selected=true]>.tf-map-dots{opacity:0}}" in map_pages_css
+        and ".tf-map-views-track{position:relative;flex:none;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;"
+        in map_pages_css
+        and ".tf-map-choice .tf-map-thumb{width:54px;height:30px}" in map_pages_css
+        and '<svg class="tf-map-thumb tabular"' in map_pages_js
+        and 'class="tf-map-thumb table"' not in map_pages_js
+        and "function knobDown(event){" in map_pages_js
+        and "function knobMove(event){" in map_pages_js
+        and "function knobUp(event){" in map_pages_js
+        and 'if(event.type==="click"&&dropped){dropped=false;return true}' in map_pages_js
+        and ".tf-map-knob.pressed{scale:.94}" in map_pages_css
+        and ".tf-map-views:not(.lone) .tf-map-choice[aria-checked=true]{cursor:grab;touch-action:pan-y}" in map_pages_css,
+        "a card's views fold as soon as another card opens, and fold and grow over the same time because a slider is as wide as its track, its padding and its border; the strip moves once, after they have grown and folded, to where everything ends up; the views are a radio group with one Tab stop whose arrow keys go round and whose Home and End go to either end; a closed card with several views shows a dot for each, the one it opens in filled, and names them to a screen reader; every view on a slider has the same width and the same thumbnail frame, the table's thumbnail clear of the theme's table margin; and the knob can be dragged along the track, pressed smaller, landing on the nearest view",
+    )
+    # A view with nothing to show under the filters fades on its slider and says why, rather than leaving.
+    check(
+        "function idleNote(view){" in map_pages_js
+        and 'if(!view||view.form!=="tiles"||!o.blank)return"";' in map_pages_js
+        and "if(!rows.length||!rows.every(row=>o.blank(row,view.projection)))return\"\";" in map_pages_js
+        and 'button.classList.toggle("idle",!!note);' in map_pages_js
+        and 'if(note)button.setAttribute("aria-description",note);else button.removeAttribute("aria-description");'
+        in map_pages_js
+        and 'changed:()=>{applyFocus();if(viewOf(page.view).form==="table")table.render();strip.sync();writeHash()}'
+        in map_pages_js
+        and ".tf-map-choice.idle .tf-map-thumb{opacity:.28;filter:grayscale(1)}" in map_pages_css
+        and "function blank(row,key){" in page_own["depth"]
+        and 'blank:(row,key)=>status(row,key)==="na",' in page_own["health"]
+        and "blank:(row,projection)=>side(projection).blank(as(row,projection),own(projection))," in pairs_js,
+        "a map view with nothing to show under the filters, because every contract they keep is blank in it (not measured, no substitute, no passing tests, N/A), stays in its place on its slider, faded, and its hint and its spoken description say why; it can still be chosen, Overall's rings and table never fade, and no contract kept at all fades nothing",
+    )
+    # Progressive disclosure: a layer's views open part way, a +N shows them all, a second click folds them.
+    check(
+        "if(current!==lastLayer){lastLayer=current;folded=null;full=null}" in map_pages_js
+        and 'if(open&&buttons.findIndex(button=>button.dataset.mapView===view)>0)full=key;' in map_pages_js
+        and 'const peek=open&&buttons.length>2&&full!==key&&!wrap.closest(".tf-map-group.pinned");' in map_pages_js
+        and "const more=views.length>2&&key!==o.layers[0][0]?" in map_pages_js
+        and 'views.style.setProperty("--tf-map-peek-w",Math.round(buttons[1].offsetLeft+buttons[1].offsetWidth/2+1)+"px");'
+        in map_pages_js
+        and "if(more){full=more.dataset.mapMore;sync();revealGrown(full);return}" in map_pages_js
+        and "folded=folded===key?null:key;" in map_pages_js
+        and 'if(cut){full=cut.dataset.mapWrap;cut.classList.remove("peek");revealGrown(full)}' in map_pages_js
+        and 'wrap.querySelector(".tf-map-tab").setAttribute("aria-expanded",String(open||narrow.matches&&key===current));'
+        in map_pages_js
+        and 'class="tf-map-views-more" data-map-more="' in map_pages_js
+        and ".tf-map-tab-wrap.open.peek>.tf-map-views{max-width:calc(var(--tf-map-peek-w,120px) + 6px)}" in map_pages_css
+        and ".tf-map-tab-wrap.peek .tf-map-views-more{opacity:1;visibility:visible}" in map_pages_css
+        and "room=80;" in map_pages_js,
+        "a card with three views or more opens them part way, except Overall, which always shows all its views: one and a half in sight, the cut one fading under a +N that shows them all; with two views both are in sight; choosing a view past the first, by a click, a key or a drag of the knob, shows them all too, until the card folds or another card opens; a second click on the open card folds its views, its dots showing again, and the next click opens them; another layer starts part way again; on a narrow page the row under the strip keeps every view; and a revealed card keeps clear of the strip's 72 px scroll edges",
+    )
+    # A failing goal or capability among few draws the eye: a slow ring from its dot, an outline that turns amber.
+    health_css = map_pages_module.split('HEALTH_MAP_CSS = r"""', 1)[-1].split('"""', 1)[0]
+    check(
+        "const judged=entries.filter(entry=>entry.kind!==\"leaf\"&&status(entry.row,key)!==\"na\");" in page_own["health"]
+        and 'svg.classList.toggle("tf-health-alert",failing>0&&failing<=Math.max(3,judged.length/4));' in page_own["health"]
+        and "#verification-health-map .tf-health-alert .tf-map-dot.failed{stroke:var(--tf-hm-fail);stroke-width:0;"
+        "animation:tf-health-ping 2.6s" in health_css
+        and "#verification-health-map .tf-health-alert .tf-health-own-failed{animation:tf-health-amber 3.2s ease-in-out infinite}"
+        in health_css
+        and "@keyframes tf-health-ping{0%{stroke-width:0;stroke-opacity:.8}75%,100%{stroke-width:8px;stroke-opacity:0}}" in health_css
+        and "@keyframes tf-health-amber{0%,100%{stroke:var(--tf-hm-fail);filter:none}50%{stroke:var(--tf-hm-alert);" in health_css
+        and "@media(prefers-reduced-motion:reduce){#verification-health-map .tf-health-alert .tf-map-dot.failed{stroke-width:5px;"
+        in health_css
+        and all(part in health_page for part in ("tf-health-ping", "tf-health-amber")),
+        "on the map of a layer where few goals or capabilities fail their own check, at most three or a quarter of those judged, each failing one draws the eye without shouting: its dot sends out a slow ring that fades and its outline turns amber and back with a soft glow, while passing marks stay still; where more fail nothing moves, since the red is plain; card thumbnails stay still; with reduced motion a still halo and an amber outline take their place",
+    )
+    # Its contracts table is Overall's rings unrolled, in the order of the tabs.
+    check(
+        "function headerHtml(){" in map_pages_js
+        and "const pathOf=column=>" in map_pages_js
+        and 'cell.style.top=top+"px"' in map_pages_js
+        and ".tf-map-list-table .name{position:sticky;left:0;" in map_pages_css
+        and "function tableColumns(){" in pairs_js
+        and "H.strip.groups().flatMap(group=>group.keys)" in pairs_js
+        and '[...D.levels,"tests"]' in pairs_js
+        and 'depthColumn("classes",[label])' in pairs_js
+        and "groupCells:list=>" in pairs_js
+        and "const tableOrder=()=>" in page_own["health"]
+        and "countOfChecks" in page_own["health"]
+        and all("function groupCell(list,key){" in own for own in page_own.values())
+        and "function tableCell(row,key){" in page_own["depth"]
+        and "levels:LEVELS" in page_own["depth"]
+        and 'if(group==="boundary")return[c.real||"notests"];' in page_own["depth"],
+        "the Verification Map's contracts table is Overall's rings unrolled: a column group per layer in the strip's order, each layer's views in tab order with every column of both maps' tables (Overall's depth by test level and own tests, Fault model's classes), a group row that sums every column, and headers and the contract name kept in sight",
+    )
     check(
         "const RING_CORE={center:.27,goal:[.29,.355],feature:[.365,.425],rays:.44};" in map_pages_js
         and all("RING_CORE.rays*outer" in own for own in page_own.values())
@@ -5682,14 +5908,14 @@ def main() -> None:
         "both rings share one core (centre, goals, capabilities) and one centre layout; each page adds only its own rings beyond it",
     )
     check(
-        'PANELS.overall={title:"Layer × verdict",' in page_own["health"]
+        'PANELS.overall={title:"Layer × health",' in page_own["health"]
         and 'overall:{title:"Test level × boundary",' in page_own["depth"]
         and all("PANELS.table" not in own for own in page_own.values())
-        and "const layer=cardOf(key),words=o.words(layer),legend=o.legend(layer);" in map_pages_js
+        and "const view=viewOf(key),words=o.words(view.projection),legend=o.legend(view.projection);" in map_pages_js
         and "'<span class=\"tf-map-changes-key\"><i class=\"up\"></i>'" in map_pages_js
         and "--tf-map-up:var(--tf-hm-fail-ink);--tf-map-down:var(--tf-hm-pass-ink)" in health_page
         and "--tf-map-up:" not in depth_section.replace(map_pages_css, ""),
-        "Overall and its table share one legend and one panel with one matrix on each map (layer × verdict, test level × boundary); Changes outlines up solid and down dashed, red and green only where the page judges",
+        "Overall and its table share one legend and one panel with one matrix on each map (layer × health, test level × boundary); Changes outlines up solid and down dashed, red and green only where the page judges",
     )
     check(
         "history.replaceState(history.state" in depth_section
@@ -5768,9 +5994,9 @@ def main() -> None:
     qualification_harness_source = (BRIDGE / "qualify-evidence-confidence.py").read_text()
     check(
         "f'<section id=\"{anchor}\">" in map_pages_source
-        and 'anchor = f"verification-{name}-map"' in map_pages_source
-        and '_article("health", "Verification Health Map",' in map_pages_source
-        and '_article("depth", "Verification Depth Map",' in map_pages_source
+        and 'style = "tf-" + anchor.removeprefix("verification-") + "-style"' in map_pages_source
+        and '_article("verification-health-map", "Verification Health Map",' in map_pages_source
+        and '_article("verification-depth-map", "Verification Depth Map",' in map_pages_source
         and '<section id="verification-health-map">' not in health_builder_source
         and '<section id="verification-depth-map">' not in health_builder_source
         and "MAP_PAGES.health_map_article(stable_json(payload),vendored_d3_hierarchy())" in health_builder_source
@@ -5830,15 +6056,17 @@ def main() -> None:
         and "html[data-theme=dark] #verification-health-map{" in health_page
         and "prefers-reduced-motion:reduce" in health_page
         and "LEVEL_COLORS" not in health_page
-        and "stroke-width:14px" not in health_page
-        and "stroke-width:8px" not in health_page,
-        "Verification Health Map keeps hierarchy in neutral rounded geometry and status only on contracts and own-check marks",
+        and not any(
+            re.search(r"stroke-width:(?:8|14)px", body)
+            for _selector, body in re.findall(r"([^{}]*\.tf-map-(?:goal|feature)\b[^{}]*)\{([^{}]*)\}", health_page)
+        ),
+        "Verification Health Map keeps hierarchy in neutral rounded geometry and status only on contracts and own-check marks: no rule for a goal or capability shape draws the thick 8 or 14 px border of the old treemap (a status ring on an own-check dot may grow that wide)",
     )
     health_section = health_page.split('<section id="verification-health-map">', 1)[-1].split("</section>", 1)[0]
     check(
         "pst-color-primary" not in health_section
         and ".tf-map-outline{fill:none;stroke:var(--tf-map-ring)" in health_section
-        and "if(layer!==page.layer){page.layer=layer;paint(true)}" in health_section
+        and 'if(view.form==="tiles"&&view.projection!==page.tiled){page.tiled=view.projection;paint(true)}' in health_section
         and ".tf-map-tile{transition:fill" in health_section
         and 'tone(entry.shape,neutral?"na":value);' in health_section
         and "@keyframes tf-map-in" in health_section,

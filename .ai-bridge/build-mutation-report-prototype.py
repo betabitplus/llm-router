@@ -55,6 +55,7 @@ ASSURANCE_TARGETS_PATH=ROOT/".ai-bridge/assurance-targets.json"
 ASSURANCE_SNAPSHOTS_PATH=ROOT/".ai-bridge/assurance-snapshots.json"
 DEPTH_PAGE=ROOT/"docs/_build/html/verification-depth-map.html"
 HEALTH_PAGE=ROOT/"docs/_build/html/verification-health-map.html"
+VERIFICATION_MAP_PAGE=ROOT/"docs/_build/html/verification-map.html"
 REQ_MONITOR_FACTS_PATH=ROOT/"docs/_build/html/requirement-monitor-facts.json"
 UPPER_ASSURANCE_FACTS_PATH=ROOT/"docs/_build/html/upper-assurance-facts.json"
 EVIDENCE_CLASSIFICATION_PATH=ROOT/"docs/_build/html/evidence-classification-facts.json"
@@ -2362,6 +2363,21 @@ def render_depth_map_page(health_payload=None):
     payload["insights"]=depth_map_insights(payload,health_payload)
     article=MAP_PAGES.depth_map_article(stable_json(payload),vendored_d3_hierarchy())
     DEPTH_PAGE.write_text(portal_map_shell(DEPTH_PAGE,"Verification Depth Map",article))
+    return payload
+
+
+def render_verification_map_page(health_payload,depth_payload):
+    """The Verification Map prototype pairs each Health Map verdict with its Depth Map measures, from both maps' facts.
+    It has no Sphinx page of its own yet, so it takes the Health Map's rendered page as its shell."""
+    article=MAP_PAGES.verification_map_article(stable_json({"health":health_payload,"depth":depth_payload}),vendored_d3_hierarchy())
+    text=portal_map_shell(HEALTH_PAGE,"Verification Map",article)
+    # In the borrowed shell the Health Map's own navigation entry is the current page; here it links back to it.
+    text=re.sub(
+      r'<li class="nav-item current active">(\s*<a class="nav-link nav-internal") href="#">(\s*Verification Health Map\s*</a>)',
+      r'<li class="nav-item ">\1 href="verification-health-map.html">\2',
+      text,
+    )
+    VERIFICATION_MAP_PAGE.write_text(text)
 
 
 def patch_allure_scope_tags():
@@ -7309,7 +7325,8 @@ def integrate_mutation_portal(summary,feedback):
       cwd=ROOT,check=True,
     )
     health_payload=render_health_map_page()
-    render_depth_map_page(health_payload)
+    depth_payload=render_depth_map_page(health_payload)
+    render_verification_map_page(health_payload,depth_payload)
     patch_traceability_contract_evidence_links()
     patch_verification_contract_evidence_path()
     patch_evidence_trust_need_anchors()
