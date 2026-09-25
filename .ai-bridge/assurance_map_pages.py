@@ -1,21 +1,21 @@
-"""Markup, styles and scripts of the Verification Health Map and Depth Map pages.
+"""Markup, styles and scripts of the Verification Health Map.
 
 Presentation only: the builder computes every fact and passes it in as a JSON payload. The
 file stays outside the evidence-producer qualification fingerprint on purpose, because no
-qualification control exercises page rendering; the structural gate checks the rendered pages.
+qualification control exercises page rendering; the structural gate checks the rendered page.
 
-Every map is one page: the same section, the same markup (tools line, layer strip with its All
-layers table, side panel, rings and map views, contracts table, hover card and Find) and one shared
-script that runs the map. Each page adds only its styles and a script that describes what it alone
-knows: the Health Map judges its layers (failing or passing), the Depth Map measures them, and the
-Verification Map prototype pairs each verdict with its measures from the other two.
+The page is one map: one section, one markup (tools line, layer strip with its All layers table,
+side panel, rings and map views, contracts table, hover card and Find) and one shared script that
+runs it. Health judges every layer (healthMap: failing or passing); beside it the measures say how
+deep, how realistic and how strong the evidence is (depthMap, once the Verification Depth Map); and
+pairsMap puts each layer's health and its measures on the layer's card.
 """
 
-MAP_SHARED_CSS = r"""/* Shared by the Health and Depth maps: the tools line, hints, the layer strip, both views, the side panel, the
-   table, the hover card and Find. Each page adds only its palette and what it judges or measures: the tone of a
-   group, the colour of a mark, the words of a status. */
-#verification-health-map,#verification-depth-map{--tf-map-ease:cubic-bezier(.2,0,0,1);--tf-map-fast:120ms;--tf-map-medium:180ms;--tf-map-radius:10px;--tf-map-line:color-mix(in srgb,var(--pst-color-text-base) 13%,transparent);--tf-map-line-strong:color-mix(in srgb,var(--pst-color-text-base) 28%,transparent);--tf-map-lineage:color-mix(in srgb,var(--pst-color-text-base) 40%,transparent);--tf-map-selected:color-mix(in srgb,var(--pst-color-text-base) 55%,transparent);--tf-map-ring:color-mix(in srgb,var(--pst-color-text-base) 78%,transparent);--tf-map-goal:color-mix(in srgb,var(--pst-color-text-base) 4.5%,var(--pst-color-background));--tf-map-feature:var(--pst-color-background);--tf-map-radial-goal:color-mix(in srgb,var(--pst-color-text-base) 12%,var(--pst-color-background));--tf-map-radial-feature:color-mix(in srgb,var(--pst-color-text-base) 7%,var(--pst-color-background));--tf-map-raised:color-mix(in srgb,var(--pst-color-text-base) 8%,var(--pst-color-background));--tf-map-up:var(--tf-map-ring);--tf-map-down:var(--tf-map-ring);--tf-map-lift:var(--pst-color-background)}
-html[data-theme=dark] #verification-health-map,html[data-theme=dark] #verification-depth-map{--tf-map-ring:color-mix(in srgb,var(--pst-color-text-base) 92%,transparent);--tf-map-goal:color-mix(in srgb,var(--pst-color-text-base) 5%,var(--pst-color-background));--tf-map-feature:color-mix(in srgb,var(--pst-color-text-base) 10%,var(--pst-color-background));--tf-map-radial-goal:color-mix(in srgb,var(--pst-color-text-base) 17%,var(--pst-color-background));--tf-map-radial-feature:color-mix(in srgb,var(--pst-color-text-base) 11%,var(--pst-color-background));--tf-map-raised:color-mix(in srgb,var(--pst-color-text-base) 10%,var(--pst-color-background));--tf-map-lift:color-mix(in srgb,var(--pst-color-text-base) 15%,var(--pst-color-background))}
+MAP_SHARED_CSS = r"""/* The Verification Health Map's shared styles: the tools line, hints, the layer strip, both views, the side panel,
+   the table, the hover card and Find. Health and the measures add only their palettes and what they judge or
+   measure: the tone of a group, the colour of a mark, the words of a status. */
+#verification-health-map{--tf-map-ease:cubic-bezier(.2,0,0,1);--tf-map-fast:120ms;--tf-map-medium:180ms;--tf-map-radius:10px;--tf-map-line:color-mix(in srgb,var(--pst-color-text-base) 13%,transparent);--tf-map-line-strong:color-mix(in srgb,var(--pst-color-text-base) 28%,transparent);--tf-map-lineage:color-mix(in srgb,var(--pst-color-text-base) 40%,transparent);--tf-map-selected:color-mix(in srgb,var(--pst-color-text-base) 55%,transparent);--tf-map-ring:color-mix(in srgb,var(--pst-color-text-base) 78%,transparent);--tf-map-goal:color-mix(in srgb,var(--pst-color-text-base) 4.5%,var(--pst-color-background));--tf-map-feature:var(--pst-color-background);--tf-map-radial-goal:color-mix(in srgb,var(--pst-color-text-base) 12%,var(--pst-color-background));--tf-map-radial-feature:color-mix(in srgb,var(--pst-color-text-base) 7%,var(--pst-color-background));--tf-map-raised:color-mix(in srgb,var(--pst-color-text-base) 8%,var(--pst-color-background));--tf-map-up:var(--tf-map-ring);--tf-map-down:var(--tf-map-ring);--tf-map-lift:var(--pst-color-background)}
+html[data-theme=dark] #verification-health-map{--tf-map-ring:color-mix(in srgb,var(--pst-color-text-base) 92%,transparent);--tf-map-goal:color-mix(in srgb,var(--pst-color-text-base) 5%,var(--pst-color-background));--tf-map-feature:color-mix(in srgb,var(--pst-color-text-base) 10%,var(--pst-color-background));--tf-map-radial-goal:color-mix(in srgb,var(--pst-color-text-base) 17%,var(--pst-color-background));--tf-map-radial-feature:color-mix(in srgb,var(--pst-color-text-base) 11%,var(--pst-color-background));--tf-map-raised:color-mix(in srgb,var(--pst-color-text-base) 10%,var(--pst-color-background));--tf-map-lift:color-mix(in srgb,var(--pst-color-text-base) 15%,var(--pst-color-background))}
 .tf-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .tf-map-tools{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.35rem 1rem;margin:-.2rem 0 .25rem;font-size:.74rem;color:var(--pst-color-text-muted)}
 .tf-map-lead{display:flex;align-items:center;gap:.4rem;flex:1 1 12rem;min-width:0;height:28px;white-space:nowrap}
@@ -175,10 +175,10 @@ html:not([data-theme=dark]) .tf-map-views-track{box-shadow:inset 0 1px 2px rgba(
 @container (max-width:600px){.tf-map-table-legend{order:3;flex-basis:100%}}
 @container (max-width:480px){.tf-map-row{--tf-row-head:118px}.tf-map-row-count{display:none}.tf-map-row-head{grid-template-columns:minmax(0,1fr) auto}}
 @media(prefers-reduced-motion:reduce){.tf-map-action,.tf-map-tab,.tf-map-hint,.tf-map-edge,.tf-map-edge button,.tf-map-table,.tf-map-table-toggle,.tf-map-chevron,.tf-map-row,.tf-map-band{animation:none!important;transition:none!important}}
-/* The view both maps share: the legend bar with the count and Rings/Table, the side panel with its filters, the stage
+/* The view: the legend bar with the count and Rings/Table, the side panel with its filters, the stage
    with one height for every view, and the contracts table. */
-#verification-health-map,#verification-depth-map{--tf-map-panel:400px}
-.bd-article-container:has(#verification-health-map),.bd-article-container:has(#verification-depth-map){overflow:visible}
+#verification-health-map{--tf-map-panel:400px}
+.bd-article-container:has(#verification-health-map){overflow:visible}
 .tf-map-badge{display:inline-grid;place-items:center;min-width:1.1rem;height:1.1rem;padding:0 .25rem;border-radius:999px;background:var(--pst-color-text-base);color:var(--pst-color-background);font-size:.62rem;font-weight:800}
 .tf-map-badge[hidden],.tf-map-filters[hidden],.tf-map-seg[hidden]{display:none}
 .tf-map-lead.filtered>.tf-map-stamp,.tf-map-lead.filtered>.tf-map-help{display:none}
@@ -260,22 +260,22 @@ html:not([data-theme=dark]) .tf-map-views-track{box-shadow:inset 0 1px 2px rgba(
 .tf-map-rings{overflow:visible}
 /* What both views draw: goals and capabilities in neutral grey, contracts in the page's colours, the names, the
    lineage of a hovered mark, the marks the filters keep or dim, and what Changes outlines. */
-#verification-health-map .tf-map-goal,#verification-depth-map .tf-map-goal{fill:var(--tf-map-goal);stroke:var(--tf-map-line);stroke-width:1;transition:stroke var(--tf-map-medium) var(--tf-map-ease)}
-#verification-health-map .tf-map-feature,#verification-depth-map .tf-map-feature{fill:var(--tf-map-feature);stroke:var(--tf-map-line);stroke-width:1;transition:stroke var(--tf-map-medium) var(--tf-map-ease)}
-#verification-health-map :is(.tf-map-rings,.tf-map-thumb.radial) .tf-map-goal,#verification-depth-map :is(.tf-map-rings,.tf-map-thumb.radial) .tf-map-goal{fill:var(--tf-map-radial-goal)}
-#verification-health-map :is(.tf-map-rings,.tf-map-thumb.radial) .tf-map-feature,#verification-depth-map :is(.tf-map-rings,.tf-map-thumb.radial) .tf-map-feature{fill:var(--tf-map-radial-feature)}
+#verification-health-map .tf-map-goal{fill:var(--tf-map-goal);stroke:var(--tf-map-line);stroke-width:1;transition:stroke var(--tf-map-medium) var(--tf-map-ease)}
+#verification-health-map .tf-map-feature{fill:var(--tf-map-feature);stroke:var(--tf-map-line);stroke-width:1;transition:stroke var(--tf-map-medium) var(--tf-map-ease)}
+#verification-health-map :is(.tf-map-rings,.tf-map-thumb.radial) .tf-map-goal{fill:var(--tf-map-radial-goal)}
+#verification-health-map :is(.tf-map-rings,.tf-map-thumb.radial) .tf-map-feature{fill:var(--tf-map-radial-feature)}
 .tf-map-tile{transition:fill 120ms var(--tf-map-ease)}
-#verification-health-map .tf-map-lineage,#verification-depth-map .tf-map-lineage{stroke:var(--tf-map-lineage)}
-#verification-health-map .tf-map-dim,#verification-depth-map .tf-map-dim{opacity:.13}
-#verification-health-map :is(path,rect).tf-map-hit,#verification-depth-map :is(path,rect).tf-map-hit{stroke:var(--tf-map-ring);stroke-width:2.4}
-#verification-health-map .tf-map-up,#verification-depth-map .tf-map-up{stroke:var(--tf-map-up);stroke-width:3}
-#verification-health-map .tf-map-down,#verification-depth-map .tf-map-down{stroke:var(--tf-map-down);stroke-width:3;stroke-dasharray:3 2}
+#verification-health-map .tf-map-lineage{stroke:var(--tf-map-lineage)}
+#verification-health-map .tf-map-dim{opacity:.13}
+#verification-health-map :is(path,rect).tf-map-hit{stroke:var(--tf-map-ring);stroke-width:2.4}
+#verification-health-map .tf-map-up{stroke:var(--tf-map-up);stroke-width:3}
+#verification-health-map .tf-map-down{stroke:var(--tf-map-down);stroke-width:3;stroke-dasharray:3 2}
 .tf-map-sw{display:inline-block;flex:0 0 auto;width:12px;height:12px;border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pst-color-text-base) 10%,transparent)}
 .tf-map-option .tf-map-sw{width:10px;height:10px}
 .tf-map-dot{fill:var(--pst-color-text-muted);transition:opacity var(--tf-map-medium) var(--tf-map-ease),fill var(--tf-map-medium) var(--tf-map-ease)}
 .tf-map-label-goal{font-size:13px;font-weight:650;fill:var(--pst-color-text-base)}
 .tf-map-label-feature{font-size:12px;font-weight:500;fill:var(--pst-color-text-muted)}
-#verification-health-map .tf-map-ring-center,#verification-depth-map .tf-map-ring-center{fill:var(--tf-map-goal);stroke:var(--tf-map-line);stroke-width:1}
+#verification-health-map .tf-map-ring-center{fill:var(--tf-map-goal);stroke:var(--tf-map-line);stroke-width:1}
 .tf-map-ring-kicker{font-size:10px;font-weight:750;letter-spacing:.08em;fill:var(--pst-color-text-muted);text-anchor:middle}
 .tf-map-ring-big{font-weight:800;letter-spacing:.02em;fill:var(--pst-color-text-base);text-anchor:middle}
 .tf-map-ring-small{font-size:11.5px;fill:var(--pst-color-text-muted);text-anchor:middle}
@@ -372,7 +372,7 @@ html:not([data-theme=dark]) .tf-map-views-track{box-shadow:inset 0 1px 2px rgba(
 .tf-map-mx-cell:disabled{opacity:.38;cursor:default}
 .tf-map-mx-cell:disabled:hover{border-color:var(--tf-map-line)}
 .tf-map-seg-dim{opacity:.28}
-/* The hover card, the outline of a hovered mark, the arc of a hovered ray and Find, shared by both maps. */
+/* The hover card, the outline of a hovered mark, the arc of a hovered ray and Find. */
 .tf-map-card{position:fixed;z-index:1200;width:300px;max-width:calc(100vw - 20px);padding:.66rem .76rem .6rem;border:1px solid var(--tf-map-line-strong);border-radius:var(--tf-map-radius);background:color-mix(in srgb,var(--pst-color-surface) 96%,var(--pst-color-text-base) 4%);color:var(--pst-color-text-base);box-shadow:0 12px 32px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.08);font-size:.75rem;line-height:1.35;text-align:left;opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity var(--tf-map-medium) var(--tf-map-ease),transform var(--tf-map-medium) var(--tf-map-ease),visibility var(--tf-map-medium) linear,left 120ms var(--tf-map-ease),top 120ms var(--tf-map-ease);pointer-events:none}
 .tf-map-card.visible{opacity:1;visibility:visible;transform:none}
 .tf-map-card.instant{transition:opacity var(--tf-map-medium) var(--tf-map-ease),transform var(--tf-map-medium) var(--tf-map-ease),visibility var(--tf-map-medium) linear}
@@ -407,11 +407,11 @@ html:not([data-theme=dark]) .tf-map-views-track{box-shadow:inset 0 1px 2px rgba(
 .tf-map-find-id{font-family:var(--pst-font-family-monospace);font-size:.66rem;color:var(--pst-color-text-muted)}
 .tf-map-find-empty{padding:1rem;text-align:center;font-size:.82rem;color:var(--pst-color-text-muted)}
 .tf-map-find-foot{padding:.45rem .9rem;border-top:1px solid var(--tf-map-line);font-size:.7rem;color:var(--pst-color-text-muted)}
-@media(prefers-reduced-motion:reduce){#verification-health-map *,#verification-depth-map *,.tf-map-card{animation:none!important;transition:none!important}}"""
+@media(prefers-reduced-motion:reduce){#verification-health-map *,.tf-map-card{animation:none!important;transition:none!important}}"""
 
-MAP_SHARED_JS = r"""// Shared by the Health and Depth maps: the tree, both views, the layer strip, the filters, the table, the hover card,
-// Find, Changes, the address and the keys. mapPage runs a map; the page describes its layers and draws what only it
-// knows: the Health Map judges each layer, the Depth Map measures it.
+MAP_SHARED_JS = r"""// The Verification Health Map's runtime: the tree, both views, the layer strip, the filters, the table, the hover
+// card, Find, Changes, the address and the keys. mapPage runs the map; the page describes its layers and draws what
+// only it knows: healthMap judges each layer and depthMap measures it (the measures that were the Depth Map).
 const MAP_CELL=10;
 const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const NS="http://www.w3.org/2000/svg";
@@ -436,7 +436,7 @@ function arcPath(cx,cy,r0,r1,a0,a1){
 }
 const plural=(count,one,many)=>count+" "+(count===1?one:many);
 const clip=(text,max)=>{text=String(text||"");if(text.length<=max)return text;const cut=text.slice(0,max);return cut.slice(0,Math.max(cut.lastIndexOf(" "),max-12)).trimEnd()+"…"};
-// Swatches and legend items look the same on both maps; the page gives the colour (a class or a CSS colour).
+// Swatches and legend items look the same in every view; the page gives the colour (a class or a CSS colour).
 const mapSwatch=(cls,color)=>'<i class="tf-map-sw'+(cls?" "+cls:"")+'"'+(color?' style="background:'+color+'"':"")+"></i>";
 const mapLegendItem=(swatch,label,count,extra)=>"<span"+(extra?' class="extra"':"")+">"+swatch+label+(count===undefined?"":" <b>"+count+"</b>")+"</span>";
 // How a set of marks splits over a view's colours: one bar, a segment per colour in legend order, as wide as its count.
@@ -500,7 +500,7 @@ function mapHint(hint){
  return{show,hide,watch};
 }
 // One column per contract in tree order, with a gap between capabilities and a wider one between goals.
-// The All layers table and the rings of both maps use the same columns, so a contract keeps its place.
+// The All layers table and the rings use the same columns, so a contract keeps its place.
 function mapColumns(root,children,isLeaf){
  const leaves=[],groups=[];
  let units=0;
@@ -513,7 +513,7 @@ function mapColumns(root,children,isLeaf){
  (children.get(root.id)||[]).forEach((goal,index)=>{if(index)units+=14;walk(goal)});
  return{leaves,groups,units};
 }
-// The tree both maps draw, from rows in tree order with the product first: goals, capabilities and contracts.
+// The tree the map draws, from rows in tree order with the product first: goals, capabilities and contracts.
 const MAP_KIND={product:"Product / System",goal:"Goal",feature:"Capability",requirement:"Requirement",treq:"Technical requirement"};
 // Every kind has its glyph wherever a mark is named: the Kind switch, the card, the contracts table and Find.
 const MAP_KIND_ICON={product:"fa-cubes",goal:"fa-bullseye",feature:"fa-puzzle-piece",requirement:"fa-file-contract",treq:"fa-gear"};
@@ -950,7 +950,7 @@ function mapStrip(o){
  new ResizeObserver(()=>syncBar()).observe(scroller);
  return{build,sync,show,order,holds,toggleTable:()=>{if(table.hidden)openTable();else closeTable(false)},closeTable};
 }
-// The treemap both maps draw: goals, capabilities and contracts with the same padding and binary tiling. The page
+// The treemap: goals, capabilities and contracts with the same padding and binary tiling. The page
 // width decides every split; a narrower view keeps the splits and only narrows the tiles, so no contract moves to
 // another place while the side panel slides in or out. inset is the room a header keeps beside its name.
 const PAD={product:[14,0,0],goal:[8,30,8],feature:[5,24,6],cluster:[2,0,0]};
@@ -1023,9 +1023,9 @@ function mapTreemap(root,children,inset){
  };
  return map;
 }
-// The treemap view both maps draw: one link per goal, capability and contract with its shape and its name, in tree
+// The treemap view: one link per goal, capability and contract with its shape and its name, in tree
 // order. A new tiling draws them again; a narrower view only moves them, so hover and focus stay put.
-//   dots: goals and capabilities carry a dot before their name (the Health Map's own verdict); bind(entry); drawn()
+//   dots: goals and capabilities carry a dot before their name (health's own verdict); bind(entry); drawn()
 function mapTiles(svg,tree,o){
  const map=mapTreemap(tree.root,tree.children,o.dots?21:10);
  const tiles={svg,map,entries:[],byId:new Map(),outline:null};
@@ -1080,7 +1080,7 @@ function mapTiles(svg,tree,o){
  });
  return tiles;
 }
-// The rings of both maps follow the height and sit in the middle, so a narrower view only moves them; the goal
+// The rings follow the height and sit in the middle, so a narrower view only moves them; the goal
 // names beside them show while there is room.
 const LABEL_ROOM=100;
 const mapRingFrame=(w,h)=>{const outer=Math.max(90,Math.min(h/2-20,w/2-8));return{cx:w/2,cy:h/2,outer,room:w/2-outer-46}};
@@ -1104,14 +1104,14 @@ function mapGoalLabels(goals,outer,height,room,enter,dotClass){
    if(label)el("text",{x:fixed(x+item.side*9),y:fixed(item.y+4.4),"text-anchor":item.side>0?"start":"end",class:"tf-map-goal-name"},group).textContent=label;
  });
 }
-// The rings view both maps draw. The core is the same on both: the centre, then goals, then capabilities; each
+// The rings view. The core is the same in every ring set: the centre, then goals, then capabilities; each
 // contract is one ray from there to the edge through the page's own rings. Radii are shares of the outer radius.
 //   bands(outer): the page's rings, with names [{labels,band,cls,key,aria,tip}] (a key opens that layer) and
 //     gap [radius,room]: the innermost named ring and the half width its names need at twelve o'clock
 //   centre(): {href,label,cls,kicker,big,tone,small}; container(row): the class a goal or capability arc adds
 //   ray(link,row,a0,a1,geometry): draws a contract's ray and returns the shape its card sits beside
 //   after(body,geometry,rings): what the page draws over the rays; rayThumb(row,a0,a1,geometry): the card's version
-//   dot(row): the class a goal name's dot adds (the Health Map's verdict); href(row), aria(row), bind(entry), drawn()
+//   dot(row): the class a goal name's dot adds (health's verdict); href(row), aria(row), bind(entry), drawn()
 const RING_CORE={center:.27,goal:[.29,.355],feature:[.365,.425],rays:.44};
 const mapRingGap=(radius,room)=>Math.min(.95,Math.max(.46,2*Math.asin(Math.min(1,room/Math.max(1,radius)))));
 const circlePath=r=>"M"+fixed(-r)+",0a"+fixed(r)+","+fixed(r)+" 0 1,0 "+fixed(2*r)+",0a"+fixed(r)+","+fixed(r)+" 0 1,0 "+fixed(-2*r)+",0";
@@ -1225,7 +1225,7 @@ function mapRings(svg,tree,o){
  };
  return rings;
 }
-// The view frame every map shares: a legend bar of one line in every view, the side panel and the stage below it, one
+// The view frame: a legend bar of one line in every view, the side panel and the stage below it, one
 // height for every view (the rest of the first screen), and a stage that follows its own width frame by frame while
 // the panel slides, then settles.
 //   layout(force), follow(width); setLegend(html) on the frame shows a view's legend
@@ -1442,7 +1442,7 @@ function mapFilters(o){
  f.startOpen=startOpen;
  return f;
 }
-// Kind: every map's contracts are requirements and technical requirements. The switch opens the side panel, the same
+// Kind: the map's contracts are requirements and technical requirements. The switch opens the side panel, the same
 // in every view, above the view's own filters: each kind with its glyph, its name and how many contracts it holds under
 // the other filters. Its tiles are the kind facet's options, so pointing at one lights its contracts and a click
 // chooses it like any option (one kind, or all); a chosen kind shows as a chip like every filter. The same glyphs name
@@ -1469,7 +1469,7 @@ function mapKinds(o){
  };
  return k;
 }
-// The matrix of Overall's panel on both maps. A cell counts the marks it holds with the filters (and of how many
+// The matrix of Overall's panel. A cell counts the marks it holds with the filters (and of how many
 // without them); pointing at it lights them, a click keeps only them. Its lines depend on the unfiltered cell, so a
 // filter changes the numbers but never the height.
 //   label, template: the grid's name and columns; columns [{label,swatch,void,title}]; rows [{label,small,void}]
@@ -1611,7 +1611,7 @@ function mapTable(o){
 }
 // A change of position that should not animate: the next frame starts from where it is put.
 function mapInstantly(node,apply){node.classList.add("instant");apply();node.getBoundingClientRect();node.classList.remove("instant")}
-// The hover card both maps share: it waits a moment before it first shows, then follows from mark to mark at once,
+// The hover card: it waits a moment before it first shows, then follows from mark to mark at once,
 // stays beside its mark while the page scrolls, and closes when the mark leaves the screen or is drawn again.
 function mapCard(node){
  let showTimer=0,hideTimer=0,scrollFrame=0;
@@ -1709,14 +1709,13 @@ function mapFind(o){
  $("tf-map-find-open").addEventListener("click",find.open);
  return find;
 }
-// A map: every map page runs this. It shows one view at a time and keeps the address, the hover card with its outline,
+// A map: the page runs this. It shows one view at a time and keeps the address, the hover card with its outline,
 // arc and lineage, the filters and Changes on every view, keyboard focus and the keys. A view is one layer seen one way:
 // as rings, as a map of tiles or as the contracts table. The page describes its layers and draws what only it knows:
 //   tree, layers [[key,label,help]], insights {run,delta}, words(projection): what up and down mean for Changes
-//   views [{key,layer,projection,form,ring,label,tip,ask}]: every view of every layer, form rings, tiles or table. By
-//     default Overall is rings (ringsTip says how) or the table and every other layer is a map. A layer with several
-//     views shows them on its open card as a slider of their thumbnails; tip or ask is a thumbnail's hint, and ask is
-//     the question a view's legend opens with
+//   views [{key,layer,projection,form,ring,label,tip,ask}]: every view of every layer, form rings, tiles or table, a
+//     layer's first view first. A layer with several views shows them on its open card as a slider of their
+//     thumbnails; tip or ask is a thumbnail's hint, and ask is the question a view's legend opens with
 //   href(row,projection); says(row,projection): {text,tone}, what a view says about a mark (its spoken name, the
 //     card's pill, the All layers foot), or null; describe(row,projection,entry): {body,extra}, the rest of its card
 //   paint(entries,projection,animated): the tiles in a projection's colours; legend(projection): {items,help};
@@ -1728,18 +1727,17 @@ function mapFind(o){
 //     data-seg
 //   strip {groups,card,row,cells}; table {columns,groups,keys,name,order,sortValue,stats,cells,groupCells,csv}, after
 //     the contract name, the goal and the capability that every table starts with
-//   tiles {dots,leaf(row,projection),mark(row,projection)}; rings, or ringSets {name: rings} for several
-//   find(row,index): {rank,badge}; selected(view): the page follows the view; attach(page): the page keeps what
+//   tiles {dots,leaf(row,projection),mark(row,projection)}; ringSets {name: rings}, the set a rings view names
+//   find(row): {rank,badge}; selected(view): the page follows the view; attach(page): the page keeps what
 //     mapPage returns for its own drawing
 // Nothing runs until start().
 const MAP_TABLE_HELP="Click a cell or an option to narrow the table; the same filters apply to every layer.";
-const MAP_TABLE_TIP="Every contract in one table that you can filter, group, sort and download.";
 const MAP_TILE_HELP="Each tile is a contract with its technical requirements beside it; ";
 function mapPage(o){
  const $=id=>document.getElementById(id);
  const tree=o.tree,delta=o.insights?.delta||{};
  const LAYER_KEYS=o.layers.map(layer=>layer[0]);
- const VIEWS=o.views||[...o.layers.map(([key])=>key==="overall"?{key,layer:key,projection:key,form:"rings",ring:"overall",label:"Rings",tip:o.ringsTip}:{key,layer:key,projection:key,form:"tiles"}),{key:"table",layer:"overall",projection:"overall",form:"table",label:"Table",tip:MAP_TABLE_TIP}];
+ const VIEWS=o.views;
  const VIEW_KEYS=VIEWS.map(view=>view.key);
  const viewOf=key=>VIEWS.find(view=>view.key===key);
  const lensesOf=layer=>VIEWS.filter(view=>view.layer===layer);
@@ -1789,7 +1787,7 @@ function mapPage(o){
  const tiles=mapTiles($("tf-map-tiles"),tree,{dots:!!o.tiles.dots,bind,drawn:()=>paint(false)});
  // One set of rings per rings view; the first uses the page's rings view, the others get their own beside it.
  const firstRings=$("tf-map-rings"),ringSets={};
- Object.entries(o.ringSets||{overall:o.rings}).forEach(([name,config],index)=>{
+ Object.entries(o.ringSets).forEach(([name,config],index)=>{
    let svg=firstRings;
    if(index){
      svg=firstRings.cloneNode(false);
@@ -1837,7 +1835,7 @@ function mapPage(o){
      +(page.changesOn&&delta.baseline?'<span class="tf-map-changes-key"><i class="up"></i>'+escapeHtml(words[0])+'<i class="down"></i>'+escapeHtml(words[1])+" since "+escapeHtml(mapRunLabel(delta.baseline.started_at))+"</span>":"")
      +'<span class="tf-map-help" data-tip="'+escapeHtml((view.form==="tiles"?MAP_TILE_HELP:"")+legend.help)+'">?</span>';
  }
- // Kind and goal narrow the contracts on every map: kind opens every panel as a switch and goal closes it. The panel
+ // Kind and goal narrow the contracts in every view: kind opens every panel as a switch and goal closes it. The panel
  // follows the view; the table keeps the panel of the view it tabulates, and only its hint says a click narrows the
  // table.
  const facets={...o.facets,
@@ -1867,7 +1865,7 @@ function mapPage(o){
    href:row=>o.href(row,"overall"),height:()=>frame.viewH,changed:()=>writeHash(),
    open:id=>{page.focusedId=id;writeHash();location.href=o.href(tree.rowById.get(id),"overall")}});
  // The strip: the page gives each card its lines and a table row its short form; the spoken name, the change badge,
- // the mini-map, a row's marks (one per contract, in the view's colours) and the foot are the same on every map. The
+ // the mini-map, a row's marks (one per contract, in the view's colours) and the foot are the same in every layer. The
  // All layers table lists a layer's other views as rows below it.
  const plain=html=>String(html).replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim();
  const spoken=(key,card)=>labelOf(key)+": "+plain(card.status)+", "+plain(card.count);
@@ -1930,7 +1928,7 @@ function mapPage(o){
    foot:row=>strip.order().map(key=>{const says=o.says(row,key);return'<span class="tf-map-mark'+(says?.tone?" "+says.tone:"")+'">'+escapeHtml(labelOf(key))+": "+escapeHtml(says?.text||"–")+"</span>"}).join(" · "),
    current:()=>page.layer,currentRow:()=>viewOf(page.view).form==="table"||LAYER_KEYS.includes(page.view)?page.layer:page.view,
    select:(key,focus)=>select(opening(key),focus),focus:focusRow});
- const find=mapFind({hint,pick:focusRow,items:()=>tree.rows.filter(row=>row.level!=="product").map((row,index)=>({row,path:tree.ancestors(row).map(item=>item.short||item.label).join(" › "),kind:MAP_KIND[row.level],...o.find(row,index)}))});
+ const find=mapFind({hint,pick:focusRow,items:()=>tree.rows.filter(row=>row.level!=="product").map(row=>({row,path:tree.ancestors(row).map(item=>item.short||item.label).join(" › "),kind:MAP_KIND[row.level],...o.find(row)}))});
  function select(key,focus,keepFocus){
    const view=viewOf(key);
    if(!view)return;
@@ -2072,7 +2070,7 @@ function mapPage(o){
 
 
 def map_tools(about: str) -> str:
-    """The tools line every map shares: the retained run, or the active filters and how many contracts they keep in its
+    """The tools line: the retained run, or the active filters and how many contracts they keep in its
     place, and the actions."""
     return (
         '<div class="tf-map-tools" id="tf-map-tools"><span class="tf-map-lead" id="tf-map-lead">'
@@ -2099,7 +2097,7 @@ def map_tools(about: str) -> str:
 
 
 def map_frame(rings_label: str, tiles_label: str) -> str:
-    """The legend bar and the body every map shares: the side panel, then the stage with the rings, the map and the
+    """The legend bar and the body: the side panel, then the stage with the rings, the map and the
     contracts table; then Find and the hover card. The legend bar is one line aligned with the view, whose overflow
     opens from a +N at its end; a layer's views are on its open card in the strip. The side panel starts with the
     Kind switch, the same in every view, above the view's own filters."""
@@ -2136,7 +2134,7 @@ def map_frame(rings_label: str, tiles_label: str) -> str:
 
 
 def map_strip(page: str, legend: str) -> str:
-    """The layer strip both maps share: cards, scroll edges, the All layers table and a narrow page's views row."""
+    """The layer strip: cards, scroll edges, the All layers table and a narrow page's views row."""
     return (
         '<div class="tf-map-layerbar" id="tf-map-layerbar">'
         '<div class="tf-map-scroller" id="tf-map-scroller">'
@@ -2162,7 +2160,7 @@ def map_strip(page: str, legend: str) -> str:
     )
 
 
-HEALTH_MAP_CSS = r"""/* The Health Map's palette: pass, fail and not applicable, and the ink of their words. The shared map does the rest. */
+HEALTH_MAP_CSS = r"""/* Health's palette: pass, fail and not applicable, and the ink of their words. The shared map does the rest. */
 #verification-health-map{--tf-hm-pass:#8ed3a2;--tf-hm-fail:#dc3f47;--tf-hm-na:#dde0e5;--tf-hm-pass-ink:#1f7a3f;--tf-hm-fail-ink:#c42b34;--tf-hm-na-strong:color-mix(in srgb,var(--tf-hm-na) 86%,#000)}
 html[data-theme=dark] #verification-health-map{--tf-hm-pass:#22603a;--tf-hm-fail:#e5484d;--tf-hm-na:#2f353d;--tf-hm-pass-ink:#5fcf85;--tf-hm-fail-ink:#ff6b70;--tf-hm-na-strong:color-mix(in srgb,var(--tf-hm-na) 78%,#fff)}
 .tf-health-verdict{font-size:.78rem;font-weight:700;letter-spacing:.02em}
@@ -2170,7 +2168,7 @@ html[data-theme=dark] #verification-health-map{--tf-hm-pass:#22603a;--tf-hm-fail
 .tf-map-sw.passed{background:var(--tf-hm-pass)}.tf-map-sw.failed{background:var(--tf-hm-fail)}.tf-map-sw.na{background:var(--tf-hm-na)}
 .tf-map-sw.own{position:relative;border:1.5px solid var(--tf-hm-fail);border-radius:4px;box-shadow:none}
 .tf-map-sw.own::after{content:"";position:absolute;left:2px;top:2px;width:5px;height:5px;border-radius:50%;background:var(--tf-hm-fail)}
-/* What the Health Map judges on both views: contracts in their verdict, goals and capabilities outlined red where their
+/* What health judges on both views: contracts in their verdict, goals and capabilities outlined red where their
    own check fails, the verdict dot before a name, the product verdict and the ring names in their verdict. */
 #verification-health-map .tf-map-tile.passed{fill:var(--tf-hm-pass)}
 #verification-health-map .tf-map-tile.failed{fill:var(--tf-hm-fail)}
@@ -2211,7 +2209,7 @@ html[data-theme=dark] #verification-health-map{--tf-hm-alert:#f59e0b}
 .tf-health-find-marks i{width:9px;height:9px;border-radius:2px;background:var(--tf-hm-na-strong)}
 .tf-health-find-marks i.passed{background:var(--tf-hm-pass)}.tf-health-find-marks i.failed{background:var(--tf-hm-fail)}
 .tf-health-find-marks i.first{margin-right:3px}
-/* What the Health Map judges in the shared strip: the failing and passing tones, and the colours of Changes. */
+/* What health judges in the strip: the failing and passing tones, and the colours of Changes. */
 #verification-health-map{--tf-map-up:var(--tf-hm-fail-ink);--tf-map-down:var(--tf-hm-pass-ink)}
 #verification-health-map .tf-map-group.failed .tf-map-group-head,#verification-health-map .tf-map-rows-label.failed,#verification-health-map .tf-map-edge-note.failed,#verification-health-map .tf-map-mark.failed,#verification-health-map .tf-map-stamp .failed{color:var(--tf-hm-fail-ink)}
 #verification-health-map .tf-map-group.passed .tf-map-group-head,#verification-health-map .tf-map-rows-label.passed,#verification-health-map .tf-map-edge-note.passed,#verification-health-map .tf-map-mark.passed,#verification-health-map .tf-map-stamp .passed{color:var(--tf-hm-pass-ink)}
@@ -2227,7 +2225,7 @@ html[data-theme=dark] #verification-health-map{--tf-hm-alert:#f59e0b}
 .tf-health-fails{font-size:.7rem;font-weight:750;white-space:nowrap;color:var(--tf-hm-fail-ink)}
 .tf-health-why-cell{min-width:14rem;font-size:.7rem;color:var(--pst-color-text-muted)}"""
 
-HEALTH_MAP_JS = r"""// The Health Map judges: every layer says whether each contract's evidence is enough.
+HEALTH_MAP_JS = r"""// Health judges: every layer says whether each contract's evidence is enough. It is every layer's first view.
 function healthMap(model){
 let map=null;
 const LAYERS=[
@@ -2257,7 +2255,7 @@ const METRIC_LABELS={
 const tree=mapTree(model.rows),{root,rows,isLeaf}=tree;
 const insights=model.insights||{},layerCauses=insights.causes||{};
 const layerByKey=new Map(LAYERS.map(layer=>[layer[0],layer]));
-// What the Health Map judges: the verdict of every goal, capability and contract in every layer.
+// What health judges: the verdict of every goal, capability and contract in every layer.
 const status=(row,key)=>row?.own?.[key]?.status||"na";
 const word=value=>value==="passed"?"PASS":value==="failed"?"FAIL":"N/A";
 const mark=value=>value==="failed"?"✕":"✓";
@@ -2436,8 +2434,8 @@ LAYERS.forEach(([key,label])=>{
  FACETS[key]={label,options:VERDICTS,swatch:value=>mapSwatch(value),test:(row,value)=>status(row,key)===value};
  FACETS["why-"+key]={label:"Why "+label+" fails",title:"Why it fails",help:"One red mark can have several causes.",empty:"Nothing fails here.",options:causes.map(cause=>[cause.id,cause.label]),tip:value=>causes.find(cause=>cause.id===value)?.hint||"",test:(row,value)=>!!ids.get(value)?.has(row.id)};
 });
-// The panel follows the layer. Overall shows the layer × verdict matrix, the Health Map's counterpart of the Depth
-// Map's test level × boundary: one row per ring, one column per colour.
+// The panel follows the layer. Overall shows the layer × verdict matrix, health's counterpart of the depth rings'
+// test level × boundary: one row per ring, one column per colour.
 const PANELS=Object.fromEntries(LAYERS.map(([key,label])=>[key,{title:label,help:"Point at Fail, Pass, N/A or a cause to light its marks on the map, or click it to keep only them.",facets:[key,"why-"+key]}]));
 PANELS.overall={title:"Layer × health",help:"Point at a cell to light its ring in every ray, or click it to keep only those marks there.",before:()=>matrixHtml(),facets:[]};
 function matrixHtml(){
@@ -2490,35 +2488,33 @@ const TABLE={
    const by=LAYERS.slice(1).map(([key,label])=>[label,list.filter(row=>status(row,key)==="failed").length]).filter(([,count])=>count).sort((a,b)=>b[1]-a[1]);
    return(failing?failing+" fail":"all pass")+(by.length?" · "+by.map(([label,count])=>label+" "+count).join(", "):"");
  },
- cells:row=>TABLE.columns.map(([key])=>tableCell(row,key)).join(""),
- groupCells:list=>TABLE.columns.map(([key])=>groupCell(list,key)).join(""),
- csv:{file:"verification-health.csv",head:[...tableOrder(),"why"],line:row=>[...tableOrder().map(key=>word(status(row,key))),allCauses(row).map(cause=>cause.label).join("; ")]}
+ csv:{head:[...tableOrder(),"why"],line:row=>[...tableOrder().map(key=>word(status(row,key))),allCauses(row).map(cause=>cause.label).join("; ")]}
 };
-// The Health Map for the shared map. Find lists what fails in most layers first and shows each item's verdict per layer.
+// Health for the map. Find lists what fails in most layers first and shows each item's verdict per layer.
 return{
  tree,layers:LAYERS,insights,words:()=>["newly failing","fixed"],
  href:hrefFor,says,describe,paint,legend:legendHtml,tone:toneOf,blank:(row,key)=>status(row,key)==="na",
  facets:FACETS,panels:PANELS,filterRows:marked,
  strip:{groups:layerGroups,card:layerCard,row:layerRow},
  table:TABLE,tableCell,groupCell,
- tiles:{dots:true,leaf:(row,key)=>'class="tf-map-tile '+status(row,key)+'"',mark:(row,key)=>status(row,key)==="failed"?"tf-health-own-failed":""},
- rings:RINGS,ringsTip:"Every contract as a ray through one ring per layer.",
+ tiles:{leaf:(row,key)=>'class="tf-map-tile '+status(row,key)+'"',mark:(row,key)=>status(row,key)==="failed"?"tf-health-own-failed":""},
+ rings:RINGS,
  find:row=>({rank:-LAYERS.slice(1).filter(layer=>status(row,layer[0])==="failed").length,
    badge:()=>'<span class="tf-health-find-marks">'+map.strip.order().map((key,position)=>'<i class="'+status(row,key)+(position?"":" first")+'" title="'+escapeHtml(layerByKey.get(key)[1])+'"></i>').join("")+"</span>"}),
  attach:page=>{map=page}
 };
 }"""
 
-DEPTH_MAP_CSS = r"""/* The Depth Map's palette: sequential scales for test levels, boundaries, model validation and mutants caught, with no
-   red or green because this page measures and does not judge. The shared map does the rest. */
-#verification-depth-map{--tf-dm-empty:#e9ecf0;--tf-dm-track:color-mix(in srgb,var(--pst-color-text-base) 5%,transparent);--tf-dm-hatch:color-mix(in srgb,var(--pst-color-text-base) 20%,transparent);--tf-dm-lv-0:#c6dbef;--tf-dm-lv-1:#9ecae1;--tf-dm-lv-2:#6baed6;--tf-dm-lv-3:#3182bd;--tf-dm-lv-4:#08519c;--tf-dm-local:#c2c9d2;--tf-dm-sub:#cbb6e8;--tf-dm-rep:#9a7ccf;--tf-dm-live:#5a3aa3;--tf-dm-t0:#ecdcbd;--tf-dm-t1:#dcc398;--tf-dm-t2:#c29e5c;--tf-dm-t3:#957541;--tf-dm-t4:#5f4a27;--tf-dm-det-lo:#e1f3ee;--tf-dm-det-hi:#12776a}
-html[data-theme=dark] #verification-depth-map{--tf-dm-empty:#2b3038;--tf-dm-track:color-mix(in srgb,var(--pst-color-text-base) 6%,transparent);--tf-dm-lv-0:#22405f;--tf-dm-lv-1:#244d74;--tf-dm-lv-2:#2c6aa0;--tf-dm-lv-3:#468fcf;--tf-dm-lv-4:#8cc2f2;--tf-dm-local:#4b5360;--tf-dm-sub:#4a3a70;--tf-dm-rep:#7157ad;--tf-dm-live:#ad91e6;--tf-dm-t0:#4d4331;--tf-dm-t1:#67583a;--tf-dm-t2:#8f7543;--tf-dm-t3:#b6975b;--tf-dm-t4:#ddc28c;--tf-dm-det-lo:#1b3935;--tf-dm-det-hi:#52cbb7}
+DEPTH_MAP_CSS = r"""/* The measures' palette: sequential scales for test levels, boundaries, model validation and mutants caught, with no
+   red or green because a measure does not judge. The shared map does the rest. */
+#verification-health-map{--tf-dm-empty:#e9ecf0;--tf-dm-track:color-mix(in srgb,var(--pst-color-text-base) 5%,transparent);--tf-dm-hatch:color-mix(in srgb,var(--pst-color-text-base) 20%,transparent);--tf-dm-lv-0:#c6dbef;--tf-dm-lv-1:#9ecae1;--tf-dm-lv-2:#6baed6;--tf-dm-lv-3:#3182bd;--tf-dm-lv-4:#08519c;--tf-dm-local:#c2c9d2;--tf-dm-sub:#cbb6e8;--tf-dm-rep:#9a7ccf;--tf-dm-live:#5a3aa3;--tf-dm-t0:#ecdcbd;--tf-dm-t1:#dcc398;--tf-dm-t2:#c29e5c;--tf-dm-t3:#957541;--tf-dm-t4:#5f4a27;--tf-dm-det-lo:#e1f3ee;--tf-dm-det-hi:#12776a}
+html[data-theme=dark] #verification-health-map{--tf-dm-empty:#2b3038;--tf-dm-track:color-mix(in srgb,var(--pst-color-text-base) 6%,transparent);--tf-dm-lv-0:#22405f;--tf-dm-lv-1:#244d74;--tf-dm-lv-2:#2c6aa0;--tf-dm-lv-3:#468fcf;--tf-dm-lv-4:#8cc2f2;--tf-dm-local:#4b5360;--tf-dm-sub:#4a3a70;--tf-dm-rep:#7157ad;--tf-dm-live:#ad91e6;--tf-dm-t0:#4d4331;--tf-dm-t1:#67583a;--tf-dm-t2:#8f7543;--tf-dm-t3:#b6975b;--tf-dm-t4:#ddc28c;--tf-dm-det-lo:#1b3935;--tf-dm-det-hi:#52cbb7}
 .tf-map-sw.pale{opacity:.45}
 .tf-map-sw.hatch{background:repeating-linear-gradient(45deg,var(--tf-dm-empty) 0 3px,var(--tf-dm-hatch) 3px 4.5px)}
 .tf-map-spread>i.hatch{background:repeating-linear-gradient(45deg,var(--tf-dm-empty) 0 2px,var(--tf-dm-hatch) 2px 3px)}
 .tf-map-sw.gap{background:none;box-shadow:none;border:1.5px dashed var(--tf-map-ring)}
 .tf-depth-grad{display:inline-block;width:92px;height:10px;border-radius:3px;background:linear-gradient(90deg,var(--tf-dm-det-lo),var(--tf-dm-det-hi))}
-/* What the Depth Map measures in its rings: a level without tests and a required cell without a test. */
+/* What the depth rings show: a level without tests and a required cell without a test. */
 .tf-depth-ring-track{fill:var(--tf-dm-track)}
 .tf-depth-ring-gap{fill:none;stroke:var(--tf-map-ring);stroke-width:1.2;stroke-dasharray:2.5 2;pointer-events:none}
 /* The matrix and the substitutes in the side panel. */
@@ -2559,7 +2555,8 @@ html[data-theme=dark] #verification-depth-map{--tf-dm-empty:#2b3038;--tf-dm-trac
 .tf-depth-detbar{display:inline-block;width:56px;height:8px;margin-right:.4rem;vertical-align:middle;border-radius:3px;background:var(--tf-dm-track);overflow:hidden}
 .tf-depth-detbar i{display:block;height:100%;background:var(--tf-dm-det-hi)}"""
 
-DEPTH_MAP_JS = r"""// The Depth Map measures: every layer says how deep each contract's evidence goes.
+DEPTH_MAP_JS = r"""// The measures (once the Depth Map) judge nothing: they say how deep, how realistic and how strong each contract's
+// evidence is, beside each layer's health.
 function depthMap(model){
 let map=null;
 const LEVELS=["component","component_integration","system","system_integration","acceptance"];
@@ -2670,7 +2667,7 @@ function contractTip(row){
  let body='<div class="sub">Own evidence by test level and boundary</div>'+miniMatrix(c);
  if(required)body+='<span>Required cases covered</span><span class="value">'+covered+" of "+required+"</span>";
  body+='<span>Own passing tests</span><span class="value">'+c.tests+"</span>"+(kinds?'<span class="note">'+kinds+"</span>":"");
- if(c.failing)body+='<span class="note">'+plural(c.failing,"failing test is","failing tests are")+" left out here; the Health Map shows failures.</span>";
+ if(c.failing)body+='<span class="note">'+plural(c.failing,"failing test is","failing tests are")+" left out here; the Health view shows failures.</span>";
  const substitutes={};
  c.cells.forEach(cell=>Object.entries(cell[3]).forEach(([id,count])=>{substitutes[id]=(substitutes[id]||0)+count}));
  const list=Object.entries(substitutes);
@@ -2787,7 +2784,7 @@ const RINGS={
 };
 
 // The side panel follows the layer and shows only the controls that match what it shows. The matrix and the
-// substitutes are the Depth Map's own sections; the shared filters draw the rest.
+// substitutes are the measures' own sections; the shared filters draw the rest.
 const PANELS={
  overall:{title:"Test level × boundary",help:"Point at a cell to light its part of every ray, or click it to keep only the contracts with tests there.",before:()=>matrixHtml(),facets:["producer","profile","detect"]},
  level:{title:"Test level",help:"Point at a level to light its contracts on the map, or click it to keep only them.",facets:["deepest"]},
@@ -2833,7 +2830,7 @@ function markCells(row,panel){
  });
 }
 
-// The contracts table: the Depth Map's columns and groups.
+// The contracts table: the measures' columns and groups.
 function sortValue(row,key){
  const c=C[row.id];
  if(LEVELS.includes(key))return c.cells.filter(cell=>cell[0]===key).reduce((sum,cell)=>sum+cell[2],0);
@@ -2841,11 +2838,6 @@ function sortValue(row,key){
  if(key==="detect"){const value=ratio(c);return value===null?-1:value}
  if(key==="classes")return c.classes.required?(c.classes.caught||0)/c.classes.required:-1;
  return c.tests;
-}
-function stats(list){
- const cs=list.map(row=>C[row.id]),measured=cs.filter(c=>c.detect),middle=median(measured.map(ratio));
- const tests=cs.reduce((sum,c)=>sum+c.tests,0),l0=cs.filter(c=>c.trust==="l0").length,beyond=cs.filter(c=>profileStates(c).includes("beyond")).length;
- return plural(tests,"own test","own tests")+" · mutants caught "+(measured.length?"median "+pct(middle)+" ("+measured.length+" measured)":"not measured")+(l0?" · "+l0+" on L0":"")+(beyond?" · "+beyond+" beyond profile":"");
 }
 // One cell of the contracts table per column: a level's cells (covered of required cases, tests beyond the profile or
 // a required cell without a test), the weakest model check, the share of mutants caught, the required fault classes
@@ -2900,27 +2892,23 @@ function csvLine(row){
 const TABLE={
  columns:[...LEVELS.map(level=>[level,LEVEL_SHORT[level],LEVEL_NAME[level]+" tests: covered/required cases, or +tests beyond the profile",levelUsed(level)?"":"void"]),["trust","Model","Weakest check of the models behind its substitutes and recordings"],["detect","Mutants caught","Mutants caught by its own tests"],["classes","Classes","Required fault classes detected","tf-map-num"],["tests","Tests","Its own passing tests","tf-map-num"]],
  groups:[["level","Test level"],["boundary","Boundary"],["producer","Substitute"],["detect","Mutants caught"]],
- keys:groupKeys,name:groupName,order:groupOrder,sortValue,stats,
- cells:row=>TABLE.columns.map(([key])=>tableCell(row,key)).join(""),
- groupCells:list=>TABLE.columns.map(([key])=>groupCell(list,key)).join(""),
- csv:{file:"verification-depth.csv",head:["tests_per_cell","required_cases_per_cell","required_cases_covered","required_cases","deepest_level","most_realistic_boundary","model_validation","substitutes_and_recordings","mutants_caught","mutants_judged","share_caught","not_measured_reason","required_fault_classes","detected_fault_classes","own_passing_tests"],line:csvLine}
+ keys:groupKeys,name:groupName,order:groupOrder,sortValue,
+ csv:{head:["tests_per_cell","required_cases_per_cell","required_cases_covered","required_cases","deepest_level","most_realistic_boundary","model_validation","substitutes_and_recordings","mutants_caught","mutants_judged","share_caught","not_measured_reason","required_fault_classes","detected_fault_classes","own_passing_tests"],line:csvLine}
 };
 
-// What each layer says, for its card and its row in the All layers table: the number first, then what it counts.
-function layerFacts(key){
+// A measure's row in the All layers table: the number it stands for, which folds away on narrow screens like the
+// verdict word in a health row.
+function layerRow(key){
  const measured=leaves.map(row=>C[row.id]).filter(c=>c.detect),middle=median(measured.map(ratio));
- const usedCells=Object.values(CELLS).filter(cell=>cell.tests).length;
- return{
-   overall:["<b>"+usedCells+"</b> of 20 cells","up to "+LEVEL_SHORT[topLevel].toLowerCase()+" × "+BOUND_NAME[topBound].toLowerCase()],
-   level:["<b>"+countOf(c=>c.deepest===topLevel)+"</b> at "+LEVEL_SHORT[topLevel].toLowerCase(),"deepest own test"],
-   boundary:["<b>"+countOf(c=>c.real==="direct")+"</b> reach live","most realistic test"],
-   trust:["<b>"+countOf(c=>c.trust==="l0")+"</b> on L0 models","behind substitutes"],
-   detect:["<b>"+(middle===null?"—":pct(middle))+"</b> median",measured.length+" of "+leaves.length+" measured"]
- }[key];
+ const number={
+   overall:()=>"<b>"+Object.values(CELLS).filter(cell=>cell.tests).length+"</b> of 20 cells",
+   level:()=>"<b>"+countOf(c=>c.deepest===topLevel)+"</b> at "+LEVEL_SHORT[topLevel].toLowerCase(),
+   boundary:()=>"<b>"+countOf(c=>c.real==="direct")+"</b> reach live",
+   trust:()=>"<b>"+countOf(c=>c.trust==="l0")+"</b> on L0 models",
+   detect:()=>"<b>"+(middle===null?"—":pct(middle))+"</b> median"
+ }[key]();
+ return{status:'<span class="tf-map-row-word">'+number+"</span>",count:""};
 }
-function layerCard(key){const[line,note]=layerFacts(key);return{status:line,count:note}}
-// In the table row the number folds away on narrow screens, like the verdict word on the Health Map.
-function layerRow(key){return{status:'<span class="tf-map-row-word">'+layerFacts(key)[0]+"</span>",count:""}}
 // Overall has no single colour per contract, so its row in the All layers table stands each ray upright: as high as
 // the contract's deepest level, in the colour of its most realistic boundary. The other rows are the shared ones.
 function overallCells(){
@@ -2932,8 +2920,6 @@ function overallCells(){
  });
  return out;
 }
-// Overall first; the other four measure, so they share one neutral group where the Health Map splits failing from passing.
-const layerGroups=()=>[{tone:"",keys:["overall"]},{tone:"",label:"Measured",keys:LAYERS.slice(1).map(layer=>layer[0])}];
 
 // A number per contract to sort a measure by: deeper, more realistic, better checked, more caught is larger.
 function measure(row,key){
@@ -2942,41 +2928,42 @@ function measure(row,key){
  const level=c.deepest?LEVELS.indexOf(c.deepest):-1,bound=c.real?BOUNDS.indexOf(c.real):-1;
  return{overall:level*10+bound,level,boundary:bound,trust:["na","l0","l1","l2","l3","l4"].indexOf(c.trust)-1,detect:ratio(c)??-1}[key];
 }
-// The Depth Map for the shared map. Find lists in tree order and shows what Overall says about each contract.
+// The measures for the map. Find shows what Overall's depth says about each contract.
 return{
- tree,layers:LAYERS,insights:model.insights,words:key=>CHANGE_WORDS[key],
+ tree,insights:model.insights,words:key=>CHANGE_WORDS[key],
  href:hrefFor,says,describe,paint,legend:legendHtml,tone,blank,measure,measureHtml,measureGroupHtml,tableCell,groupCell,levels:LEVELS,
- facets:FACETS,panels:PANELS,filterRows:leaves,markPanel:markCells,
- strip:{groups:layerGroups,card:layerCard,row:layerRow,cells:key=>key==="overall"?overallCells():undefined},
+ facets:FACETS,panels:PANELS,markPanel:markCells,
+ strip:{row:layerRow,cells:key=>key==="overall"?overallCells():undefined},
  table:TABLE,
- tiles:{dots:false,leaf:(row,key)=>'style="fill:'+FILL[key](C[row.id])+'"'},
- rings:RINGS,ringsTip:"Every contract as a ray through one ring per test level.",
- find:(row,index)=>({rank:index,badge:()=>{const pill=says(row,"overall");return pill?'<span class="tf-map-pill">'+escapeHtml(pill.text)+"</span>":""}}),
+ tiles:{leaf:(row,key)=>'style="fill:'+FILL[key](C[row.id])+'"'},
+ rings:RINGS,
+ find:row=>({badge:()=>{const pill=says(row,"overall");return pill?'<span class="tf-map-pill">'+escapeHtml(pill.text)+"</span>":""}}),
  attach:page=>{map=page}
 };
 }"""
 
-PAIRS_MAP_CSS = r"""/* The Verification Map pairs each verdict with its measures. A measure judges nothing, so its Changes are outlined
+PAIRS_MAP_CSS = r"""/* Health beside its measures. A measure judges nothing, so its Changes are outlined
    without red or green; the card shows the other half of a pair beside the one in view. */
-#verification-depth-map.tf-pairs-measuring{--tf-map-up:var(--tf-map-ring);--tf-map-down:var(--tf-map-ring)}
+#verification-health-map.tf-pairs-measuring{--tf-map-up:var(--tf-map-ring);--tf-map-down:var(--tf-map-ring)}
 .tf-pairs-other{display:flex;flex-wrap:wrap;gap:.1rem .6rem;margin-top:.45rem;padding-top:.4rem;border-top:1px solid var(--tf-map-line);color:var(--pst-color-text-muted)}
 .tf-pairs-other b{font-weight:650;color:var(--pst-color-text-base)}
 /* The contracts table: a measure's one value, and how a group's contracts split over its colours. */
 .tf-pairs-cell{white-space:nowrap}
-/* Every column of both maps: a narrower name, bar and cause column than the Health and Depth tables need. */
-#verification-map .tf-map-list-table .name{max-width:16rem}
-#verification-map .tf-depth-detbar{width:36px}
-#verification-map .tf-health-why-cell{min-width:11rem}"""
+/* Every column of health and the measures: narrower name, bar and cause columns than either table alone would need. */
+#verification-health-map .tf-map-list-table .name{max-width:16rem}
+#verification-health-map .tf-depth-detbar{width:36px}
+#verification-health-map .tf-health-why-cell{min-width:11rem}"""
 
-PAIRS_MAP_JS = r"""// The Verification Map pairs every layer's verdict with what it measures. A layer is one question: its first view says
-// whether the evidence is enough (the Health Map), its other views say how much of it there is (the Depth Map).
+PAIRS_MAP_JS = r"""// The Verification Health Map: every layer's health, and beside it what the layer measures. A layer is one question:
+// its first view says whether the evidence is enough (health), its other views say how much of it there is (the
+// measures).
 function pairsMap(H,D){
- // The measures, and the Depth Map layer each one shows; every other projection is the Health Map's.
+ // The measures, and the depth layer each one shows; every other projection is health's.
  const MEASURE={depth:"overall",level:"level",boundary:"boundary",trust:"trust",detect:"detect"};
  const measured=projection=>projection in MEASURE;
  const side=projection=>measured(projection)?D:H;
  const own=projection=>MEASURE[projection]||projection;
- // Both maps hold the same tree; a mark from one tree reads its facts from the other by ID.
+ // Health and the measures hold the same tree; a mark from one tree reads its facts from the other by ID.
  const depthRow=row=>D.tree.rowById.get(row.id)||row,healthRow=row=>H.tree.rowById.get(row.id)||row;
  const as=(row,projection)=>measured(projection)?depthRow(row):healthRow(row);
  // Each layer's views: the verdict first, then its measures. Overall adds the contracts table. A view's question is what
@@ -3001,7 +2988,7 @@ function pairsMap(H,D){
  const listed=items=>items.length<2?items.join(""):items.slice(0,-1).join(", ")+" and "+items[items.length-1];
  // A layer's card help names the measures it also shows.
  const layers=H.layers.map(([key,label,help])=>{const more=measuresOf(key).map(nameOf);return[key,label,help+(more.length?" Also shown as "+listed(more)+".":"")]});
- // Changes: verdicts from the Health Map's snapshots, measures from the Depth Map's, since the same earlier run.
+ // Changes: verdicts from the health snapshots, measures from the depth snapshots, since the same earlier run.
  const healthDelta=H.insights?.delta||{},depthDelta=D.insights?.delta||{};
  const measureChanges=Object.fromEntries(Object.entries(depthDelta.layers||{}).map(([key,value])=>[key==="overall"?"depth":key,value]));
  const insights={run:H.insights?.run,delta:{baseline:healthDelta.baseline||depthDelta.baseline||null,layers:{...(healthDelta.layers||{}),...measureChanges}}};
@@ -3028,15 +3015,15 @@ function pairsMap(H,D){
    document.getElementById("tf-map-tiles").classList.remove("tf-health-product-failed");
    D.paint(entries,own(projection));
  }
- // Filters from both maps apply together: a verdict and a measure narrow the same contracts.
+ // Health's filters and the measures' apply together: a verdict and a measure narrow the same contracts.
  const facets={};
  Object.entries(H.facets).forEach(([key,facet])=>{facets[key]={...facet,test:(row,value)=>facet.test(healthRow(row),value)}});
  Object.entries(D.facets).forEach(([key,facet])=>{facets[key]={...facet,test:(row,value)=>H.tree.isLeaf(row)&&facet.test(depthRow(row),value)}});
  const panels={...H.panels,depth:D.panels.overall,level:D.panels.level,boundary:D.panels.boundary,trust:D.panels.trust,detect:D.panels.detect,
    table:{...H.panels.overall,help:MAP_TABLE_HELP,facets:["deepest","real","detect"]}};
  // The contracts table is Overall's rings unrolled: a group of columns per layer in the strip's order, each layer's
- // views in their tab order (its verdict, then its measures), with every column of both maps' tables. Overall's depth
- // is the Depth Map's own evidence by test level and the own tests; Fault model adds the fault classes it detects.
+ // views in their order on its card (its health, then its measures), with every column of both tables. Overall's
+ // depth is the own evidence by test level and the own tests; Fault model adds the fault classes it detects.
  // Why it fails closes the row, and a group row sums every column.
  const DEPTH_COLUMNS=new Map(D.table.columns.map(column=>[column[0],column]));
  const depthColumn=(key,path)=>{const[,label,tip,cls]=DEPTH_COLUMNS.get(key);return[key,label,tip,cls,path]};
@@ -3067,7 +3054,7 @@ function pairsMap(H,D){
    stats:H.table.stats,
    cells:row=>columns.map(([key])=>fromDepth(key)?D.tableCell(depthRow(row),key):measured(key)?'<td class="tf-pairs-cell">'+D.measureHtml(depthRow(row),own(key))+"</td>":H.tableCell(row,key)).join(""),
    groupCells:list=>columns.map(([key])=>fromDepth(key)?D.groupCell(list.map(depthRow),key):measured(key)?'<td class="tf-pairs-cell">'+D.measureGroupHtml(list.map(depthRow),own(key))+"</td>":H.groupCell(list,key)).join(""),
-   csv:{file:"verification-map.csv",head:[...H.table.csv.head,...D.table.csv.head],line:row=>[...H.table.csv.line(row),...D.table.csv.line(depthRow(row))]}
+   csv:{file:"verification-health.csv",head:[...H.table.csv.head,...D.table.csv.head],line:row=>[...H.table.csv.line(row),...D.table.csv.line(depthRow(row))]}
  };
  return{
    tree:H.tree,layers,views:VIEWS,insights,
@@ -3084,14 +3071,14 @@ function pairsMap(H,D){
    table:TABLE,
    tiles:{dots:true,leaf:(row,projection)=>side(projection).tiles.leaf(as(row,projection),own(projection)),mark:(row,projection)=>measured(projection)?"":H.tiles.mark(healthRow(row),projection)},
    ringSets:{overall:H.rings,depth:{...D.rings,label:"Overall depth: goals, capabilities and contracts inside, one ring per test level and the share of mutants caught outside"}},
-   find:(row,index)=>{const verdict=H.find(row,index),depth=D.find(depthRow(row),index);return{rank:verdict.rank,badge:()=>verdict.badge()+depth.badge()}},
+   find:row=>{const verdict=H.find(row),depth=D.find(depthRow(row));return{rank:verdict.rank,badge:()=>verdict.badge()+depth.badge()}},
    // A measure judges nothing, so its Changes are outlined without red or green.
-   selected:view=>document.getElementById("verification-depth-map")?.classList.toggle("tf-pairs-measuring",measured(view.projection)),
+   selected:view=>document.getElementById("verification-health-map")?.classList.toggle("tf-pairs-measuring",measured(view.projection)),
    attach:page=>{H.attach(page);D.attach(page)}
  };
 }"""
 
-# What the Depth Map does not measure is hatched.
+# A contract a measure does not reach is hatched.
 DEPTH_HATCH = (
     '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>'
     '<pattern id="tf-depth-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
@@ -3100,72 +3087,11 @@ DEPTH_HATCH = (
 )
 
 
-def map_markup(page: str, about: str, legend: str, rings_label: str, tiles_label: str) -> str:
-    """Everything a map shows: its tools, its layer strip and its frame with the views."""
-    return map_tools(about) + map_strip(page, legend) + map_frame(rings_label, tiles_label)
-
-
-def _article(
-    anchor: str,
-    title: str,
-    css: str,
-    script: str,
-    markup: str,
-    model_json: str,
-    d3_hierarchy: str,
-    scopes: tuple[str, ...] = (),
-) -> str:
-    """A map page: its section and heading, the shared styles then its own, its markup (inside the scopes of the maps
-    whose styles it borrows), d3-hierarchy, and one script with the shared map, the page's facts and its own part."""
-    opened, closed = "".join(f'<div id="{scope}">' for scope in scopes), "</div>" * len(scopes)
-    style = "tf-" + anchor.removeprefix("verification-") + "-style"
-    return (
-        f'<section id="{anchor}">\n'
-        f'<h1>{title}<a class="headerlink" href="#{anchor}" title="Link to this heading">#</a></h1>\n'
-        f'<style id="{style}">\n{MAP_SHARED_CSS}\n{css}\n</style>\n'
-        f"{opened}{markup}{closed}\n<script>{d3_hierarchy}</script>\n"
-        f"<script>\n(()=>{{\n{MAP_SHARED_JS}\nconst model={model_json};\n{script}\n}})();\n</script>\n</section>"
-    )
-
-
 def health_map_article(model_json: str, d3_hierarchy: str) -> str:
-    legend = (
-        '<span><i class="tf-map-sw failed"></i>Fail</span>'
-        '<span><i class="tf-map-sw passed"></i>Pass</span>'
-        '<span><i class="tf-map-sw na"></i>N/A</span>'
-        '<span><i class="tf-map-sw own"></i>Own check fails</span>'
-    )
-    markup = map_markup(
-        "Health",
-        "This page says whether each contract's evidence is enough; the Depth Map shows how deep it goes.",
-        legend,
-        "Overall health: goals, capabilities and contracts inside, one ring per layer outside",
-        "Verification health by goal, capability and contract",
-    )
-    script = HEALTH_MAP_JS + "\nmapPage(healthMap(model)).start();"
-    return _article("verification-health-map", "Verification Health Map", HEALTH_MAP_CSS, script, markup, model_json, d3_hierarchy)
-
-
-def depth_map_article(model_json: str, d3_hierarchy: str) -> str:
-    legend = (
-        '<span><i class="tf-map-sw hatch"></i>Not measured</span>'
-        '<span class="tf-map-help" data-tip="Every row uses its layer\'s colours; in Overall each bar is as high as '
-        'the contract\'s deepest test level and coloured by its most realistic boundary.">?</span>'
-    )
-    markup = DEPTH_HATCH + map_markup(
-        "Depth",
-        "This page shows how deep each contract's evidence goes; the Health Map says whether it is enough.",
-        legend,
-        "Overall depth: goals, capabilities and contracts inside, one ring per test level and the share of mutants caught outside",
-        "Verification depth by goal, capability and contract",
-    )
-    script = DEPTH_MAP_JS + "\nmapPage(depthMap(model)).start();"
-    return _article("verification-depth-map", "Verification Depth Map", DEPTH_MAP_CSS, script, markup, model_json, d3_hierarchy)
-
-
-def verification_map_article(model_json: str, d3_hierarchy: str) -> str:
-    """The Verification Map prototype: one map whose layers pair the Health Map's verdict with the Depth Map's measures.
-    Its facts are both maps' facts; it borrows both maps' styles by sitting inside both of their scopes."""
+    """The Verification Health Map: every layer's health first and, beside it, what the layer measures (how deep, how
+    realistic and how strong its evidence is). One section holds the heading, the shared styles then the page's own,
+    the markup (tools line, layer strip, frame with the views), d3-hierarchy and one script: the shared map, the facts
+    (health and depth side by side), health, the measures and the pairing that runs them as one map."""
     legend = (
         '<span><i class="tf-map-sw failed"></i>Fail</span>'
         '<span><i class="tf-map-sw passed"></i>Pass</span>'
@@ -3173,22 +3099,33 @@ def verification_map_article(model_json: str, d3_hierarchy: str) -> str:
         '<span><i class="tf-map-sw own"></i>Own check fails</span>'
         '<span class="tf-map-help" data-tip="A layer\'s measures are the rows below it, each in its own colours.">?</span>'
     )
-    markup = DEPTH_HATCH + map_markup(
-        "Verification",
-        "Each layer says whether its evidence is enough and, where it can, how much there is: its health and its measures.",
-        legend,
-        "Overall health: goals, capabilities and contracts inside, one ring per layer outside",
-        "Verification by goal, capability and contract",
+    markup = (
+        DEPTH_HATCH
+        + map_tools(
+            "Where verification fails, layer by layer, and beside each layer's health how deep, how realistic and how "
+            "strong its evidence is."
+        )
+        + map_strip("Health", legend)
+        + map_frame(
+            "Overall health: goals, capabilities and contracts inside, one ring per layer outside",
+            "Verification health by goal, capability and contract",
+        )
     )
-    script = "\n".join((HEALTH_MAP_JS, DEPTH_MAP_JS, PAIRS_MAP_JS, "mapPage(pairsMap(healthMap(model.health),depthMap(model.depth))).start();"))
-    css = "\n".join((HEALTH_MAP_CSS, DEPTH_MAP_CSS, PAIRS_MAP_CSS))
-    return _article(
-        "verification-map",
-        "Verification Map",
-        css,
-        script,
-        markup,
-        model_json,
-        d3_hierarchy,
-        scopes=("verification-health-map", "verification-depth-map"),
+    css = "\n".join((MAP_SHARED_CSS, HEALTH_MAP_CSS, DEPTH_MAP_CSS, PAIRS_MAP_CSS))
+    script = "\n".join(
+        (
+            MAP_SHARED_JS,
+            f"const model={model_json};",
+            HEALTH_MAP_JS,
+            DEPTH_MAP_JS,
+            PAIRS_MAP_JS,
+            "mapPage(pairsMap(healthMap(model.health),depthMap(model.depth))).start();",
+        )
+    )
+    return (
+        '<section id="verification-health-map">\n<h1>Verification Health Map'
+        '<a class="headerlink" href="#verification-health-map" title="Link to this heading">#</a></h1>\n'
+        f'<style id="tf-health-map-style">\n{css}\n</style>\n'
+        f"{markup}\n<script>{d3_hierarchy}</script>\n"
+        f"<script>\n(()=>{{\n{script}\n}})();\n</script>\n</section>"
     )

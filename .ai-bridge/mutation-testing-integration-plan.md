@@ -19,7 +19,7 @@ DEPTH-P18 proved the basic chain:
 The next goal is to turn that successful local spike into one integrated verification workflow without conflating different questions:
 
 - **Verification Health Map** = does retained verification currently pass?
-- **Verification Depth Map / Test Strength** = can the linked tests detect behavior-changing faults in the implementation they claim to verify?
+- **Verification Depth Map / Test Strength** = can the linked tests detect behavior-changing faults in the implementation they claim to verify? Since MAP-P41 these measures are views of the Verification Health Map's layers.
 - **Mutation Analysis** = which concrete mutants survived and what action is required?
 - **Verification Assurance / Traceability** = why this evidence belongs to this contract, whether it is fresh, and where to drill down.
 
@@ -201,6 +201,8 @@ Keep the standard `mutation-report.json` conformant; do not add Ternforge-only r
 ## Portal integration
 
 ### 1. Verification Depth Map — primary overview
+
+Superseded by MAP-P41 and DEPTH-P49: the Depth Map's measures are views of the Verification Health Map's layers. This section records the earlier design.
 
 Keep the existing three projections:
 
@@ -722,11 +724,11 @@ P33 is therefore the **current local user-review surface**, not the end of the l
 When this roadmap is locally complete, one browser session should let a reviewer answer seven questions without reading implementation scripts:
 
 1. **What currently passes or fails?** → Verification Health Map.
-2. **How deeply/realistically/strongly is this contract tested?** → Verification Depth Map.
+2. **How deeply/realistically/strongly is this contract tested?** → Verification Health Map: the measures beside each layer's health (Depth, Test level, Boundary, Model validation, Mutants caught).
 3. **Did this change introduce a new testing weakness, or is it known strength debt?** → Mutation Analysis current signal + work queue.
 4. **What changed across mutation baselines and was a weakness later resolved?** → Mutation Analysis recent changes.
 5. **What exact mutation survived, which source line changed, and which linked tests covered/killed it?** → Raw mutants → exact Allure/source.
 6. **What must be demonstrated for this Requirement/TREQ, what is actually demonstrated now, and which Target obligations are still unsatisfied?** → Traceability Reader → Contract Evidence → Assurance Target / Guarantee Frontier / Target Satisfaction / Gaps.
 7. **Which fault-model layers and native fault families have actually been challenged, what does deeper evidence uniquely detect, why should the evidence be trusted, and how has the retained signal changed over time?** → Contract Evidence → Fault-model Coverage / Evidence Paths / Evidence Producer Credibility / Assurance History.
 
-Living Specifications answer semantics/proof intent; Health/Depth answer monitoring; Mutation Analysis answers mutation change history; Contract Evidence answers assurance sufficiency against an explicit Target; raw Allure/MTE/evidence records answer forensic execution detail. Platform extraction starts only after the user explicitly accepts this workflow and ends the pilot.
+Living Specifications answer semantics/proof intent; the Verification Health Map answers monitoring, health first and its measures beside it; Mutation Analysis answers mutation change history; Contract Evidence answers assurance sufficiency against an explicit Target; raw Allure/MTE/evidence records answer forensic execution detail. Platform extraction starts only after the user explicitly accepts this workflow and ends the pilot.

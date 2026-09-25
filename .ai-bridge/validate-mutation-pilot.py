@@ -103,7 +103,7 @@ def main() -> None:
         RESULTS / "operator-feedback.json",
         HTML / "verification-test-strength-facts.json",
         HTML / "mutation-analysis.html",
-        HTML / "verification-depth-map.html",
+        HTML / "verification-health-map.html",
         HTML / "verification-assurance.html",
         HTML / "contract-evidence-request-override-precedence.html",
         HTML / "contract-evidence-credential-resolution.html",
@@ -1475,7 +1475,8 @@ def main() -> None:
         "Product / System": (HTML / "assurance-product-system.html").read_text(),
     }
     health_page = (HTML / "verification-health-map.html").read_text()
-    depth_page = (HTML / "verification-depth-map.html").read_text()
+    # The map itself: health and, beside it, the measures of the retired Verification Depth Map (MAP-P41).
+    health_section = health_page.split('<section id="verification-health-map">', 1)[-1].split("</section>", 1)[0]
     trace_reader_page = (HTML / "traceability-reader.html").read_text()
     verification_page = (HTML / "verification.html").read_text()
 
@@ -4920,26 +4921,32 @@ def main() -> None:
           "Living semantic projection removes boundary/producer details from the visible semantic narrative")
 
     index_page = (HTML / "index.html").read_text()
-    for name, text in {
-        "Health": health_page,
-        "Depth": depth_page,
-    }.items():
-        check('href="mutation-analysis.html"' in text, f"{name}: portal navigation links Mutation Analysis")
+    check('href="mutation-analysis.html"' in health_page, "Health: portal navigation links Mutation Analysis")
     check(
         'href="verification-health-map.html"' in index_page
-        and 'href="verification-depth-map.html"' in index_page
         and "Verification Health Map" in index_page
-        and "Verification Depth Map" in index_page,
-        "portal navigation exposes Verification Health Map and Verification Depth Map as native documents",
+        and "verification-depth-map" not in index_page
+        and "Verification Depth Map" not in index_page
+        and "verification-depth-map" not in (BRIDGE.parent / "docs/index.md").read_text()
+        and not (BRIDGE.parent / "docs/verification-depth-map.md").exists()
+        and not (HTML / "verification-depth-map.html").exists()
+        and not (HTML / "verification-map.html").exists(),
+        "portal navigation exposes the Verification Health Map as a native document; the Verification Depth Map and the "
+        "Verification Map prototype are retired into it, with no source, navigation entry or page left",
     )
     check(
         'href="specification-map.html"' not in index_page
         and 'href="specification-health.html"' not in index_page,
         "portal navigation no longer exposes legacy Specification Map/Health pages",
     )
-    health_model_match = re.search(r"const model=(\{.*?\});\n// The Health Map judges", health_page, flags=re.DOTALL)
-    check(health_model_match is not None, "Verification Health Map embeds its layered health model")
-    health_model = json.loads(health_model_match.group(1)) if health_model_match else {}
+    # One model feeds the page: health's verdicts and, beside them, the measures' facts.
+    map_model_match = re.search(r"const model=(\{.*?\});\n// Health judges", health_page, flags=re.DOTALL)
+    map_model = json.loads(map_model_match.group(1)) if map_model_match else {}
+    check(
+        set(map_model) == {"health", "depth"},
+        "Verification Health Map embeds one model: its layered health and its measures' depth facts",
+    )
+    health_model = map_model.get("health") or {}
     health_layers = (health_model.get("summary") or {}).get("layers") or {}
     health_layer_keys = ("overall", "execution", "coverage", "faults", "evidence", "assurance")
     check(
@@ -5433,14 +5440,22 @@ def main() -> None:
         and "if(rect.bottom<0||rect.top>innerHeight)card.hide(true);else place(rect);" in health_page,
         "Overall help names the rings, the legend explains the pass line, and the hover card follows its tile while the page scrolls",
     )
-    # Verification Depth Map (DEPTH-P34): Overall as rings or a table, four map projections, and a side panel
-    # with the level × boundary matrix and facets. It measures; the Health Map judges.
-    depth_section = depth_page.split('<section id="verification-depth-map">', 1)[-1].split("</section>", 1)[0]
-    depth_model_match = re.search(r"const model=(\{.*?\});\n// The Depth Map measures", depth_section, flags=re.DOTALL)
-    check(depth_model_match is not None, "Verification Depth Map embeds its depth model")
-    depth_model = json.loads(depth_model_match.group(1)) if depth_model_match else {}
+    # The measures (DEPTH-P34, once the Verification Depth Map): Overall depth as rings or a table, four map
+    # projections, and a side panel with the level × boundary matrix and facets. They measure; health judges.
+    depth_model = map_model.get("depth") or {}
+    check(bool(depth_model.get("rows")), "Verification Health Map embeds its measures' depth model")
     depth_contracts = depth_model.get("contracts") or {}
     depth_req_facts = json.loads((HTML / "requirement-monitor-facts.json").read_text()).get("contracts") or {}
+    # Health and the measures run one map: the shared script and styles, then each part's own constant in the pages
+    # module, which the page runs after the shared map.
+    map_pages_module = (BRIDGE / "assurance_map_pages.py").read_text()
+    map_pages_js = map_pages_module.split('MAP_SHARED_JS = r"""', 1)[-1].split('"""', 1)[0]
+    map_pages_css = map_pages_module.split('MAP_SHARED_CSS = r"""', 1)[-1].split('"""', 1)[0]
+    page_own = {
+        name: map_pages_module.split(f'{name.upper()}_MAP_JS = r"""', 1)[-1].split('"""', 1)[0]
+        for name in ("health", "depth")
+    }
+    depth_own_css = map_pages_module.split('DEPTH_MAP_CSS = r"""', 1)[-1].split('"""', 1)[0]
 
     def depth_expected_detection(contract: dict) -> list[int] | None:
         classes = {
@@ -5453,15 +5468,15 @@ def main() -> None:
         return [killed, judged] if judged else None
 
     check(
-        "plotly" not in depth_page.lower()
-        and not re.search(r'<script[^>]+src="https?://', depth_section)
-        and "d3.treemap()" in depth_section,
-        "Depth Map renders with the vendored d3-hierarchy, without Plotly or any remote script",
+        "plotly" not in health_page.lower()
+        and not re.search(r'<script[^>]+src="https?://', health_section)
+        and "d3.treemap()" in health_section,
+        "the page renders with the vendored d3-hierarchy, without Plotly or any remote script",
     )
     check(
         [row.get("id") for row in depth_model.get("rows") or []]
         == [row.get("id") for row in health_model.get("rows") or []],
-        "Depth Map uses the Health Map's hierarchy and order, so every contract sits where it sits there",
+        "the measures use health's hierarchy and order, so every contract sits in the same place in every view",
     )
     check(
         bool(depth_contracts)
@@ -5471,7 +5486,7 @@ def main() -> None:
             for contract_id, contract in depth_req_facts.items()
         )
         and all(bool(item.get("detect")) != bool(item.get("reason")) for item in depth_contracts.values()),
-        "Depth Map covers every contract; fault detection is the current campaign's caught-of-judged implementation mutants, and every unmeasured contract says why",
+        "the measures cover every contract; fault detection is the current campaign's caught-of-judged implementation mutants, and every unmeasured contract says why",
     )
     check(
         all(sum(cell[2] for cell in item.get("cells") or []) == item.get("tests") for item in depth_contracts.values())
@@ -5481,98 +5496,79 @@ def main() -> None:
         "each test counts once, for the entity it was written for: goal and capability scenarios do not deepen the contracts they also verify",
     )
     check(
-        "Test Strength" not in depth_section
-        and "verification-test-strength-facts" not in depth_section
-        and "tf-hm-fail" not in depth_section
-        and "tf-hm-pass" not in depth_section,
-        "Depth Map drops the legacy mutmut Test Strength projection and uses no pass/fail colours",
+        "Test Strength" not in health_section
+        and "verification-test-strength-facts" not in health_section
+        and not any(tone in page_own["depth"] + depth_own_css for tone in ("tf-hm-fail", "tf-hm-pass")),
+        "the measures drop the legacy mutmut Test Strength projection and use no pass/fail colours",
     )
     check(
-        all(f'["{key}","' in depth_section for key in ("overall", "level", "boundary", "trust", "detect"))
-        and '{key:"table",layer:"overall",projection:"overall",form:"table",label:"Table",tip:MAP_TABLE_TIP}' in depth_section
-        and 'data-map-view="\'+view.key+\'"' in depth_section
-        and 'if(!readHash())select(VIEWS[0].key,false);' in depth_section
-        and 'data-depth-mode="representation"' not in depth_page
-        and 'mode==="representation"' not in depth_page,
-        "Depth Map opens on Overall (rings, or the contracts table as its second view) and four map projections; Representation is not a projection",
+        all(f'["{key}","' in health_section for key in ("overall", "level", "boundary", "trust", "detect"))
+        and '{key:"table",layer:"overall",projection:"overall",form:"table",label:"Table",ask:"Health and measures per contract"}' in health_section
+        and "const VIEWS=o.views;" in health_section
+        and 'data-map-view="\'+view.key+\'"' in health_section
+        and 'if(!readHash())select(VIEWS[0].key,false);' in health_section
+        and 'data-depth-mode="representation"' not in health_page
+        and 'mode==="representation"' not in health_page,
+        "the measures are views of their layers: Overall's depth rings, the contracts table of both, and four map projections; the page opens on Overall's health; Representation is not a projection",
     )
     check(
-        ".tf-map-body{display:flex" in depth_section
-        and ".tf-map-body.panel-open .tf-map-panel{width:" in depth_section
-        and ".tf-map-panel{position:sticky" in depth_section
-        and "panel.inert=!open" in depth_section
-        and all(f"{key}:{{label:" in depth_section for key in ("cell", "producer", "kind", "profile", "detect", "goal")),
+        ".tf-map-body{display:flex" in health_section
+        and ".tf-map-body.panel-open .tf-map-panel{width:" in health_section
+        and ".tf-map-panel{position:sticky" in health_section
+        and "panel.inert=!open" in health_section
+        and all(f"{key}:{{label:" in health_section for key in ("cell", "producer", "kind", "profile", "detect", "goal")),
         "the level × boundary matrix, the substitutes and the facets sit in a side panel that pushes the view instead of covering it, and filter every view",
     )
     check(
-        "const PANELS={" in depth_section
-        and all(f"{key}:{{title:" in depth_section for key in ("overall", "level", "boundary", "trust", "detect"))
-        and 'const view=viewOf(key),panel=o.panels[view.key]||(view.form==="table"?{...o.panels[view.projection],help:MAP_TABLE_HELP}:o.panels[view.projection]);' in depth_section
-        and 'previews:key=>viewOf(key).form!=="table"' in depth_section
-        and "if(next&&!o.previews(o.view()))next=null;" in depth_section
-        and "button[data-facet]:not(:disabled)" in depth_section,
+        "const PANELS={" in health_section
+        and all(f"{key}:{{title:" in health_section for key in ("overall", "level", "boundary", "trust", "detect"))
+        and 'const view=viewOf(key),panel=o.panels[view.key]||(view.form==="table"?{...o.panels[view.projection],help:MAP_TABLE_HELP}:o.panels[view.projection]);' in health_section
+        and 'previews:key=>viewOf(key).form!=="table"' in health_section
+        and "if(next&&!o.previews(o.view()))next=null;" in health_section
+        and "button[data-facet]:not(:disabled)" in health_section,
         "the side panel follows the view: only controls that match what it shows, no hover preview in the table, and empty options are disabled",
     )
-    depth_tools = depth_section.split('id="tf-map-tools"', 1)[-1].split("</div>", 1)[0]
     check(
-        all(
-            "const splits=new Map();" in page
-            and "if(record||wide===undefined)" in page
-            and "const heightFor=width=>" in page
-            and "new ResizeObserver(()=>{o.follow(frame.stageWidth());" in page
-            and ".tf-map-view{display:block;width:100%;height:var(--tf-map-view-h,auto)" in page
-            and "function fitLegend(){" in page
-            and 'legend.classList.toggle("tight",' in page
-            and ".tf-map-legendbar{position:relative;display:flex;" in page
-            and ".tf-map-legend>.tf-map-over{display:none}" in page
-            and "box.scrollLeft=left;box.scrollTop=top;" in page
-            and 'id="tf-map-filters"' in page.split('id="tf-map-tools"', 1)[-1].split("</div>", 1)[0]
-            for page in (depth_section, health_page)
-        ),
-        "both maps keep one tiling and one height: the side panel narrows them frame by frame, the legend is one line whose overflow opens from a +N, the table keeps its place when it redraws, and a filter, a layer or a view never moves the page",
+        "const splits=new Map();" in health_section
+        and "if(record||wide===undefined)" in health_section
+        and "const heightFor=width=>" in health_section
+        and "new ResizeObserver(()=>{o.follow(frame.stageWidth());" in health_section
+        and ".tf-map-view{display:block;width:100%;height:var(--tf-map-view-h,auto)" in health_section
+        and "function fitLegend(){" in health_section
+        and 'legend.classList.toggle("tight",' in health_section
+        and ".tf-map-legendbar{position:relative;display:flex;" in health_section
+        and ".tf-map-legend>.tf-map-over{display:none}" in health_section
+        and "box.scrollLeft=left;box.scrollTop=top;" in health_section
+        and 'id="tf-map-filters"' in health_section.split('id="tf-map-tools"', 1)[-1].split("</div>", 1)[0],
+        "the map keeps one tiling and one height: the side panel narrows it frame by frame, the legend is one line whose overflow opens from a +N, the table keeps its place when it redraws, and a filter, a layer or a view never moves the page",
     )
     check(
-        all(
-            'groups:[["tree","Goal › capability"]' in page
-            and "const table=mapTable({" in page
-            and "link.download=o.csv.file;" in page
-            and 'data-sort="' in page
-            for page in (depth_section, health_page)
-        )
-        and 'file:"verification-depth.csv"' in depth_section
-        and 'file:"verification-health.csv"' in health_page,
-        "both maps show Overall as rings or as the contracts table, which filters, groups with aggregates, sorts and downloads CSV",
+        'groups:[["tree","Goal › capability"]' in health_section
+        and "const table=mapTable({" in health_section
+        and "link.download=o.csv.file;" in health_section
+        and 'data-sort="' in health_section
+        and 'csv:{file:"verification-health.csv",head:[...H.table.csv.head,...D.table.csv.head]' in health_section
+        and "verification-depth.csv" not in health_section,
+        "Overall shows as rings or as the contracts table, which filters, groups with aggregates, sorts and downloads one CSV of health and its measures",
     )
     check(
-        all(
-            "const filters=mapFilters({facets,rows:o.filterRows," in page
-            and "facets:FACETS,panels:PANELS," in page
-            and "const frame=mapFrame({layout:layoutViews,follow:followStage});" in page
-            and 'id="tf-map-panel-toggle"' in page
-            and 'if(event.key==="f"||event.key==="F"){event.preventDefault();filters.setPanel(!filters.open,true);return}' in page
-            for page in (depth_section, health_page)
-        )
+        "const filters=mapFilters({facets,rows:o.filterRows," in health_section
+        and "facets:FACETS,panels:PANELS," in health_section
+        and "const frame=mapFrame({layout:layoutViews,follow:followStage});" in health_section
+        and 'id="tf-map-panel-toggle"' in health_section
+        and 'if(event.key==="f"||event.key==="F"){event.preventDefault();filters.setPanel(!filters.open,true);return}' in health_section
         and "const PANELS=Object.fromEntries(LAYERS.map(" in health_page
         and 'const view=viewOf(key),panel=o.panels[view.key]||(view.form==="table"?{...o.panels[view.projection],help:MAP_TABLE_HELP}:o.panels[view.projection]);' in health_page
         and 'VERDICTS=[["failed","Fail"],["passed","Pass"],["na","N/A"]]' in health_page
         and "FACETS[key]={label,options:VERDICTS," in health_page,
-        "both maps have the same Filters panel beside the view: it follows the layer, the Health Map filters by verdict and by why a layer fails, the Depth Map by what it measures",
+        "the Filters panel sits beside the view and follows it: health filters by verdict and by why a layer fails, a measure by what it measures",
     )
-    # Both maps run one map: the page script minus the shared script only describes its layers and draws its own rings.
-    map_pages_module = (BRIDGE / "assurance_map_pages.py").read_text()
-    map_pages_js = map_pages_module.split('MAP_SHARED_JS = r"""', 1)[-1].split('"""', 1)[0]
-    map_pages_css = map_pages_module.split('MAP_SHARED_CSS = r"""', 1)[-1].split('"""', 1)[0]
-    # A page's own script is its constant in the pages module, and it is what the rendered page runs after the map.
-    page_own = {
-        name: map_pages_module.split(f'{name.upper()}_MAP_JS = r"""', 1)[-1].split('"""', 1)[0]
-        for name in ("health", "depth")
-    }
     check(
         len(map_pages_js) > 2000
-        and all(map_pages_js in page for page in (health_page, depth_section))
+        and map_pages_js in health_section
         and all(len(own) > 2000 for own in page_own.values())
         and page_own["health"] in health_page
-        and page_own["depth"] in depth_section
+        and page_own["depth"] in health_section
         and "function mapPage(o){" in map_pages_js
         and "function mapTiles(svg,tree,o){" in map_pages_js
         and "function mapRings(svg,tree,o){" in map_pages_js
@@ -5599,7 +5595,7 @@ def main() -> None:
             )
             for own in page_own.values()
         ),
-        "both maps run one shared map (views, strip, filters, table, hover card, Find, address and keys); each page only describes its layers and draws what it alone knows",
+        "health and the measures run one shared map (views, strip, filters, table, hover card, Find, address and keys); each part only describes its layers and draws what it alone knows",
     )
     check(
         "function cardHtml(entry){" in map_pages_js
@@ -5635,7 +5631,7 @@ def main() -> None:
             )
             for own in page_own.values()
         ),
-        "both maps build the hover card, the Overall matrix, legends, swatches, the Kind switch, the Goal filter and the table's first columns in one place; a page gives only its own content",
+        "the shared map builds the hover card, the Overall matrix, legends, swatches, the Kind switch, the Goal filter and the table's first columns in one place; health and the measures give only their own content",
     )
     # A card says where a click goes, named as on that page: the page by the mark's kind, the section by the anchor.
     opens_names = dict(re.findall(r'(\w+):"([^"]+)"', (re.search(r"const MAP_OPENS=\{(.*?)\};", map_pages_js) or re.match("", "")).group(1) or ""))
@@ -5672,37 +5668,41 @@ def main() -> None:
         and all(set(layer) == {"status", "failing", "applicable"} for layer in health_layers.values())
         and "tests" not in depth_model
         and [row.get("id") for row in depth_model.get("rows") or []] == [row.get("id") for row in health_model.get("rows") or []],
-        "both maps receive their tree as rows with the product first and carry only the facts their page reads",
+        "health and the measures receive the same tree as rows with the product first and carry only the facts the page reads",
     )
-    # The Verification Map prototype pairs every Health Map verdict with its Depth Map measures on one page.
-    pairs_page = (HTML / "verification-map.html").read_text() if (HTML / "verification-map.html").exists() else ""
-    pairs_section = pairs_page.split('<section id="verification-map">', 1)[-1].split("</section>", 1)[0]
+    # The Verification Health Map pairs every health verdict with its measures (MAP-P41: the Verification Map
+    # prototype became the page, the Depth Map its measures).
     pairs_js = map_pages_module.split('PAIRS_MAP_JS = r"""', 1)[-1].split('"""', 1)[0]
     pairs_views = re.findall(r'\{key:"([^"]+)",layer:"([^"]+)",projection:"([^"]+)",form:"(\w+)"', pairs_js)
     pairs_measures = {projection for _key, _layer, projection, _form in pairs_views} - set(health_layer_keys)
     check(
-        bool(pairs_section)
-        and '<div id="verification-health-map"><div id="verification-depth-map">' in pairs_section
-        and "views:viewsHtml,viewTip:" in pairs_section
-        and all(own in pairs_section for own in page_own.values())
-        and pairs_js in pairs_section
-        and "mapPage(pairsMap(healthMap(model.health),depthMap(model.depth))).start();" in pairs_section
-        and "mapPage(healthMap(model)).start();" in health_page
-        and "mapPage(depthMap(model)).start();" in depth_section
+        bool(health_section)
+        and "views:viewsHtml,viewTip:" in health_section
+        and all(own in health_section for own in page_own.values())
+        and pairs_js in health_section
+        and re.findall(r"mapPage\(\w+Map\(", health_section) == ["mapPage(pairsMap("]
+        and "mapPage(pairsMap(healthMap(model.health),depthMap(model.depth))).start();" in health_section
         and {layer for _key, layer, _projection, _form in pairs_views} == set(health_layer_keys)
         and all(any(key == layer for key, _layer, _projection, _form in pairs_views) for layer in health_layer_keys)
         and pairs_measures == {"depth", "level", "boundary", "trust", "detect"}
         and 'const MEASURE={depth:"overall",level:"level",boundary:"boundary",trust:"trust",detect:"detect"};' in pairs_js
         and pairs_js.count('label:"Health",') == 6
         and "Verdict" not in pairs_js
-        and 'classList.toggle("tf-pairs-measuring",measured(view.projection))' in pairs_js
-        and "#verification-depth-map.tf-pairs-measuring{--tf-map-up:var(--tf-map-ring);--tf-map-down:var(--tf-map-ring)}" in pairs_section
-        and "def render_verification_map_page(health_payload,depth_payload):" in health_builder_source
-        and "render_verification_map_page(health_payload,depth_payload)" in health_builder_source
-        and 'href="#">' not in pairs_page.split('<main id="main-content"', 1)[0],
-        "the Verification Map prototype pairs each Health Map verdict with its Depth Map measures: every health layer is a card, its measures are views on its card beside its health, every depth layer is one of them, and a measure outlines Changes without red or green",
+        and 'document.getElementById("verification-health-map")?.classList.toggle("tf-pairs-measuring",measured(view.projection))' in pairs_js
+        and "#verification-health-map.tf-pairs-measuring{--tf-map-up:var(--tf-map-ring);--tf-map-down:var(--tf-map-ring)}" in health_section
+        and "verification-depth-map" not in health_page
+        and 'id="verification-map"' not in health_page
+        and "def render_health_map_page():" in health_builder_source
+        and 'MAP_PAGES.health_map_article(stable_json({"health":health_payload,"depth":depth_payload}),vendored_d3_hierarchy())' in health_builder_source
+        and "render_verification_map_page" not in health_builder_source
+        and "render_depth_map_page" not in health_builder_source
+        and "for retired in RETIRED_MAP_PAGES:" in health_builder_source,
+        "the Verification Health Map pairs each health verdict with its measures on one page: every health layer is a "
+        "card, its measures are views on its card beside its health, every measure of the former Depth Map is one of "
+        "them, a measure outlines Changes without red or green, and the builder writes this one page and removes the "
+        "retired Depth Map and Verification Map pages",
     )
-    # Kind opens the side panel of every map, the same in every view, rather than a facet repeated in every panel.
+    # Kind opens the side panel, the same in every view, rather than a facet repeated in every panel.
     check(
         "const kinds=mapKinds({leaves:tree.leaves,filters});" in map_pages_js
         and 'return{...panel,facets:[...panel.facets,"goal"]};' in map_pages_js
@@ -5716,21 +5716,18 @@ def main() -> None:
         and '"Technical requirements","Only technical requirements:' in map_pages_js
         and "const MAP_KIND_ICON={" in map_pages_js
         and map_pages_js.count("mapKindIcon(") >= 3
-        and all(
-            'id="tf-map-kinds"' in page.split('class="tf-map-panel-kinds"', 1)[-1].split('id="tf-map-panel-body"', 1)[0]
-            and 'id="tf-map-total"' in page.split('id="tf-map-filters"', 1)[-1].split('id="tf-map-panel-toggle"', 1)[0]
-            and 'class="tf-map-head"' not in page
-            for page in (health_page, depth_section, pairs_section)
-        )
+        and 'id="tf-map-kinds"' in health_section.split('class="tf-map-panel-kinds"', 1)[-1].split('id="tf-map-panel-body"', 1)[0]
+        and 'id="tf-map-total"' in health_section.split('id="tf-map-filters"', 1)[-1].split('id="tf-map-panel-toggle"', 1)[0]
+        and 'class="tf-map-head"' not in health_section
         and ".tf-map-panel-kinds{margin:0 0 .7rem;padding:0 0 .7rem;border-bottom:1px solid var(--tf-map-line-strong)}" in map_pages_css
         and ".tf-map-kind.hit{" in map_pages_css
         and "box.innerHTML=KINDS.map(" in map_pages_js
         and ".tf-map-kind[aria-pressed=true]{" in map_pages_css,
-        "Kind opens the side panel of every map, the same in every view and apart from the view's filters below it: all contracts, requirements or technical requirements, each a tile with its glyph, its name and its count under the other filters, drawn once so it never shifts; its tiles are the options of a switch facet, so pointing at one lights its contracts, a click keeps one kind, and a contract on the map marks its kind; a chosen kind shows as a chip like every filter, the count of what the filters keep sits by the chips, and the card, the table and Find name a kind with the same glyph",
+        "Kind opens the side panel, the same in every view and apart from the view's filters below it: all contracts, requirements or technical requirements, each a tile with its glyph, its name and its count under the other filters, drawn once so it never shifts; its tiles are the options of a switch facet, so pointing at one lights its contracts, a click keeps one kind, and a contract on the map marks its kind; a chosen kind shows as a chip like every filter, the count of what the filters keep sits by the chips, and the card, the table and Find name a kind with the same glyph",
     )
     # A layer's views live on its open card as a slider of their thumbnails; the legend bar holds only the legend.
     pairs_asks = re.findall(r'label:"[^"]+",ask:"([^"]+)"', pairs_js)
-    pairs_bar = pairs_section.split('id="tf-map-legendbar"', 1)[-1].split('id="tf-map-body"', 1)[0]
+    pairs_bar = health_section.split('id="tf-map-legendbar"', 1)[-1].split('id="tf-map-body"', 1)[0]
     knob_rule = map_pages_css.split("\n.tf-map-knob{", 1)[-1].split("}", 1)[0]
     check(
         len(pairs_asks) == len(pairs_views) == 12
@@ -5764,10 +5761,7 @@ def main() -> None:
         "{padding-left:calc(var(--tf-map-panel) + 16px)}}" in map_pages_css
         and "inset 0 -2px 0" not in map_pages_css
         and "tf-map-lens" not in map_pages_js + map_pages_css
-        and all(
-            'id="tf-map-mode"' not in page and "data-lens-scroll" not in page
-            for page in (health_page, depth_section, pairs_section)
-        )
+        and 'id="tf-map-mode"' not in health_section and "data-lens-scroll" not in health_section
         and 'id="tf-map-legend"' in pairs_bar
         and "<button" not in pairs_bar,
         "a layer's views live on its open card: the card keeps its look and a slider of the views' thumbnails grows out of it, a sunken track whose raised knob glides to the chosen view (only the slider's two ends are rounded, a view between them is square, and the arrow keys move it); the card's own thumbnail shows the view it opens, a view's question is its thumbnail's hint and opens the legend, and the legend bar holds only the legend, which keeps clear of the open panel's column",
@@ -5781,10 +5775,7 @@ def main() -> None:
         and 'narrow.addEventListener("change",()=>{sync(true);show(o.current())});' in map_pages_js
         and ".tf-map-views-row{display:none}" in map_pages_css
         and "@media(max-width:640px){\n.tf-map-views-row{display:flex;height:60px;" in map_pages_css
-        and all(
-            '<div class="tf-map-views-row" id="tf-map-views-row"></div>' in page
-            for page in (health_page, depth_section, pairs_section)
-        )
+        and '<div class="tf-map-views-row" id="tf-map-views-row"></div>' in health_section
         and "const delta=left<start||right-left>end-start?left-start:right>end?right-end:0;" in map_pages_js
         and "if(picked){reveal(picked);return}" in map_pages_js
         and '<span class="tf-map-choice-name" data-name="\'+escapeHtml(name)+\'">' in map_pages_js
@@ -5894,18 +5885,16 @@ def main() -> None:
         and "function tableCell(row,key){" in page_own["depth"]
         and "levels:LEVELS" in page_own["depth"]
         and 'if(group==="boundary")return[c.real||"notests"];' in page_own["depth"],
-        "the Verification Map's contracts table is Overall's rings unrolled: a column group per layer in the strip's order, each layer's views in tab order with every column of both maps' tables (Overall's depth by test level and own tests, Fault model's classes), a group row that sums every column, and headers and the contract name kept in sight",
+        "the contracts table is Overall's rings unrolled: a column group per layer in the strip's order, each layer's views in tab order with every column of health's and the measures' tables (Overall's depth by test level and own tests, Fault model's classes), a group row that sums every column, and headers and the contract name kept in sight",
     )
     check(
         "const RING_CORE={center:.27,goal:[.29,.355],feature:[.365,.425],rays:.44};" in map_pages_js
         and all("RING_CORE.rays*outer" in own for own in page_own.values())
         and 'kicker:"OVERALL",big:word(verdict),tone:verdict' in page_own["health"]
         and 'kicker:"DEEPEST",big:LEVEL_SHORT[topLevel]' in page_own["depth"]
-        and 'id="tf-map-rings"' in health_page
-        and 'id="tf-map-rings"' in depth_section
-        and 'id="tf-map-tiles"' in health_page
-        and 'id="tf-map-tiles"' in depth_section,
-        "both rings share one core (centre, goals, capabilities) and one centre layout; each page adds only its own rings beyond it",
+        and 'id="tf-map-rings"' in health_section
+        and 'id="tf-map-tiles"' in health_section,
+        "health's and the depth rings share one core (centre, goals, capabilities) and one centre layout; each adds only its own rings beyond it",
     )
     check(
         'PANELS.overall={title:"Layer × health",' in page_own["health"]
@@ -5914,26 +5903,27 @@ def main() -> None:
         and "const view=viewOf(key),words=o.words(view.projection),legend=o.legend(view.projection);" in map_pages_js
         and "'<span class=\"tf-map-changes-key\"><i class=\"up\"></i>'" in map_pages_js
         and "--tf-map-up:var(--tf-hm-fail-ink);--tf-map-down:var(--tf-hm-pass-ink)" in health_page
-        and "--tf-map-up:" not in depth_section.replace(map_pages_css, ""),
-        "Overall and its table share one legend and one panel with one matrix on each map (layer × health, test level × boundary); Changes outlines up solid and down dashed, red and green only where the page judges",
+        and "--tf-map-up:" not in page_own["depth"] + depth_own_css,
+        "Overall's views and its table share one legend and one panel with one matrix per Overall view (layer × health, test level × boundary); Changes outlines up solid and down dashed, red and green only where health judges",
     )
     check(
-        "history.replaceState(history.state" in depth_section
-        and 'addEventListener("hashchange",readHash);' in depth_section
-        and 'id="tf-map-find"' in depth_page
-        and 'id="tf-map-copy"' in depth_section
+        "history.replaceState(history.state" in health_section
+        and 'addEventListener("hashchange",readHash);' in health_section
+        and 'id="tf-map-find"' in health_page
+        and 'id="tf-map-copy"' in health_section
         and bool(contract_evidence_pages)
         and all(
-            all(f"verification-depth-map.html#{key}:" in page.read_text() for key in ("overall", "detect"))
+            all(f"verification-health-map.html#{view}:" in page.read_text() for view in ("overall/depth", "faults/detect"))
+            and "verification-depth-map" not in page.read_text()
             for page in contract_evidence_pages
         ),
-        "the Depth layer has an address (#layer:ID?filters); every Contract Evidence page links to its place on the Depth Map",
+        "every view has an address (#view:ID?filters); every Contract Evidence page links to its contract in the depth rings and in the mutants caught",
     )
     check(
-        "which is a way of testing and not a score" in depth_section
-        and 'const BOUNDS=["none","substitute","replay","direct"];' in depth_section
-        and 'direct:"Direct live"' in depth_section,
-        "Depth keeps the Local → Substitute → Replay → Direct live vocabulary and does not rank the boundary as strength",
+        "which is a way of testing and not a score" in health_section
+        and 'const BOUNDS=["none","substitute","replay","direct"];' in health_section
+        and 'direct:"Direct live"' in health_section,
+        "the measures keep the Local → Substitute → Replay → Direct live vocabulary and do not rank the boundary as strength",
     )
     check(
         all(
@@ -5943,29 +5933,24 @@ def main() -> None:
         )
         and (depth_contracts.get("REQ_CREDENTIAL_RESOLUTION") or {}).get("cases")
         == [["component", "none", 4, 4], ["system", "none", 1, 1]]
-        and "covered/required cases" in depth_section,
+        and "covered/required cases" in health_section,
         "a required cell counts covered/required cases exactly like the Contract Evidence matrix; tests beyond the profile show as +N",
     )
-    map_pages_text = (BRIDGE / "assurance_map_pages.py").read_text()
-    shared_map_js = map_pages_text.split('MAP_SHARED_JS = r"""', 1)[-1].split('"""', 1)[0]
-    shared_map_css = map_pages_text.split('MAP_SHARED_CSS = r"""', 1)[-1].split('"""', 1)[0]
     strip_call = "strip:{groups:layerGroups,card:layerCard,row:layerRow"
     depth_insights = depth_model.get("insights") or {}
     check(
-        len(shared_map_js) > 2000
-        and len(shared_map_css) > 2000
-        and all(shared_map_js in page and shared_map_css in page for page in (health_page, depth_section))
-        and all(
-            strip_call in page
-            and 'id="tf-map-layerbar"' in page
-            and 'id="tf-map-table-toggle"' in page
-            and 'id="tf-map-changes"' in page
-            and "mapChanges(document.getElementById(\"tf-map-changes\")" in page.replace('$("tf-map-changes")', 'document.getElementById("tf-map-changes")')
-            for page in (health_page, depth_section)
-        )
-        and '{tone:"",label:"Measured",keys:LAYERS.slice(1).map(layer=>layer[0])}' in depth_section
-        and "tf-hm-fail" not in depth_section,
-        "both maps run one shared layer strip, All layers table and Changes; the only difference is the grouping: failing and passing layers on the Health Map, one measured group on the Depth Map",
+        len(map_pages_js) > 2000
+        and len(map_pages_css) > 2000
+        and map_pages_js in health_section
+        and map_pages_css in health_section
+        and strip_call in health_section
+        and 'id="tf-map-layerbar"' in health_section
+        and 'id="tf-map-table-toggle"' in health_section
+        and 'id="tf-map-changes"' in health_section
+        and "mapChanges(document.getElementById(\"tf-map-changes\")" in health_section.replace('$("tf-map-changes")', 'document.getElementById("tf-map-changes")')
+        and "strip:{row:layerRow,cells:" in page_own["depth"]
+        and "strip:{groups:H.strip.groups,card:H.strip.card," in pairs_js,
+        "the page runs one shared layer strip, All layers table and Changes: health groups the layers into failing and passing and gives each its card, and a measure adds only its row in the All layers table",
     )
     check(
         "def run_delta(snapshots,schema,stamp,values,compare):" in health_builder_source
@@ -5980,27 +5965,30 @@ def main() -> None:
             for insights in (health_insights, depth_insights)
             for change in ((insights.get("delta") or {}).get("layers") or {}).values()
         ),
-        "Changes compares each map with its own snapshot of the previous retained run in one shape: what went up and what went down in every layer",
+        "Changes compares health and the measures each with its own snapshot of the previous retained run, in one shape: what went up and what went down in every layer",
     )
-    depth_nav = depth_page.split('<main id="main-content"', 1)[0]
-    # The theme renders the navigation twice (header and mobile sidebar): Depth must appear as often as Health.
+    health_nav = health_page.split('<main id="main-content"', 1)[0]
+    # The theme renders the navigation twice (header and mobile sidebar): Mutation Analysis follows the Health Map in both.
+    # The theme separates items with two blank lines and an inserted item brings one more; a longer run of blank lines
+    # means a patch landed on top of an earlier one.
     check(
-        len(re.findall(r">\s*Verification Depth Map\s*</a>", depth_nav))
-        == len(re.findall(r">\s*Verification Health Map\s*</a>", depth_nav))
-        > 0,
-        "the Depth Map page lists itself once in each portal navigation",
+        len(re.findall(r">\s*Verification Health Map\s*</a>", health_nav))
+        == len(re.findall(r">\s*Verification Health Map\s*</a>\s*</li>\s*<li[^>]*>\s*<a[^>]*>\s*Mutation Analysis\s*</a>", health_nav))
+        > 0
+        and "Verification Depth Map" not in health_nav
+        and all("\n" * 5 not in page.split('<main id="main-content"', 1)[0] for page in (health_page, index_page)),
+        "the Health Map page lists itself once in each portal navigation, Mutation Analysis right after it, and no Depth "
+        "Map; patching an already patched navigation adds nothing",
     )
-    map_pages_source = (BRIDGE / "assurance_map_pages.py").read_text()
     qualification_harness_source = (BRIDGE / "qualify-evidence-confidence.py").read_text()
     check(
-        "f'<section id=\"{anchor}\">" in map_pages_source
-        and 'style = "tf-" + anchor.removeprefix("verification-") + "-style"' in map_pages_source
-        and '_article("verification-health-map", "Verification Health Map",' in map_pages_source
-        and '_article("verification-depth-map", "Verification Depth Map",' in map_pages_source
+        "'<section id=\"verification-health-map\">\\n<h1>Verification Health Map'" in map_pages_module
+        and "f'<style id=\"tf-health-map-style\">\\n{css}\\n</style>\\n'" in map_pages_module
+        and re.findall(r"^def (\w+)\(", map_pages_module, flags=re.MULTILINE) == ["map_tools", "map_frame", "map_strip", "health_map_article"]
+        and "verification-depth-map" not in map_pages_module
         and '<section id="verification-health-map">' not in health_builder_source
-        and '<section id="verification-depth-map">' not in health_builder_source
-        and "MAP_PAGES.health_map_article(stable_json(payload),vendored_d3_hierarchy())" in health_builder_source
-        and "MAP_PAGES.depth_map_article(stable_json(payload),vendored_d3_hierarchy())" in health_builder_source
+        and "MAP_PAGES.health_map_article(" in health_builder_source
+        and health_builder_source.count("MAP_PAGES.") == 1
         and "assurance_map_pages" not in qualification_harness_source
         and "assurance_monitor_ui" not in qualification_harness_source
         and '"assurance_monitor_ui_sha256"' not in health_builder_source
@@ -6049,8 +6037,8 @@ def main() -> None:
     check(
         "const PAD={product:[14,0,0],goal:[8,30,8],feature:[5,24,6],cluster:[2,0,0]};" in health_page
         and "const RADIUS={goal:12,feature:8,leaf:3.5};" in health_page
-        and "#verification-health-map .tf-map-goal,#verification-depth-map .tf-map-goal{fill:var(--tf-map-goal)" in health_page
-        and "#verification-health-map .tf-map-feature,#verification-depth-map .tf-map-feature{fill:var(--tf-map-feature)" in health_page
+        and "#verification-health-map .tf-map-goal{fill:var(--tf-map-goal)" in health_page
+        and "#verification-health-map .tf-map-feature{fill:var(--tf-map-feature)" in health_page
         and "through.forEach(entry=>tone(entry.shape,entry.value))" in health_page
         and "#verification-health-map .tf-health-own-failed{stroke:var(--tf-hm-fail);stroke-width:1.6}" in health_page
         and "html[data-theme=dark] #verification-health-map{" in health_page
@@ -6062,7 +6050,6 @@ def main() -> None:
         ),
         "Verification Health Map keeps hierarchy in neutral rounded geometry and status only on contracts and own-check marks: no rule for a goal or capability shape draws the thick 8 or 14 px border of the old treemap (a status ring on an own-check dot may grow that wide)",
     )
-    health_section = health_page.split('<section id="verification-health-map">', 1)[-1].split("</section>", 1)[0]
     check(
         "pst-color-primary" not in health_section
         and ".tf-map-outline{fill:none;stroke:var(--tf-map-ring)" in health_section
@@ -6074,7 +6061,6 @@ def main() -> None:
     )
     for name, text in {
         "Health": health_page,
-        "Depth": depth_page,
     }.items():
         check(
             'id="tf-map-focus-layout"' in text
@@ -6161,7 +6147,7 @@ def main() -> None:
     generated_paths += [
         "docs/_build/html/mutation-analysis.html",
         "docs/_build/html/verification-test-strength-facts.json",
-        "docs/_build/html/verification-depth-map.html",
+        "docs/_build/html/verification-health-map.html",
         "docs/_build/html/verification-assurance.html",
         "docs/_build/html/contract-evidence-request-override-precedence.html",
         "docs/_build/html/contract-evidence-credential-resolution.html",
@@ -6215,15 +6201,19 @@ def main() -> None:
     setup = ROOT / "setup.cfg"
     check(not setup.exists() or "[mutmut]" not in setup.read_text(), "temporary mutmut setup config absent")
 
-    status = [
-        record
-        for record in subprocess.check_output(
-            ["git", "status", "--porcelain", "-z"],
-            cwd=ROOT,
-            text=True,
-        ).split("\0")
-        if record
-    ]
+    # With -z a rename or a copy names its source in the record after its own, which carries no status of its own.
+    status = []
+    source_follows = False
+    for record in subprocess.check_output(
+        ["git", "status", "--porcelain", "-z"],
+        cwd=ROOT,
+        text=True,
+    ).split("\0"):
+        if source_follows or not record:
+            source_follows = False
+            continue
+        status.append(record)
+        source_follows = "R" in record[:2] or "C" in record[:2]
     approved_pilot_sources = {
         ".ai-bridge/build-mutation-report-prototype.py",
         ".ai-bridge/assurance_monitor_domain.py",
@@ -6235,6 +6225,7 @@ def main() -> None:
         ".ai-bridge/monitor-readiness.md",
         ".ai-bridge/system-level-ownership.md",
         ".ai-bridge/mutation-testing-platform-extraction-manifest.md",
+        ".ai-bridge/mutation-testing-integration-plan.md",
         ".ai-bridge/qualify-evidence-confidence.py",
         ".ai-bridge/validate-mutation-pilot.py",
         ".ai-bridge/verification-health-map-local-prototype.md",
@@ -6243,6 +6234,7 @@ def main() -> None:
         ".ai-bridge/pytest_plugins/",
         ".ai-bridge/vendor/",
         ".ai-bridge/development-history/",
+        ".ai-bridge/exemplars/",
         "docs/index.md",
         "docs/README.md",
         "docs/test-plan.md",

@@ -32,9 +32,9 @@ each product branch. Use dense traceability only when you need forensic detail.
 :link: verification-health-map
 :link-type: doc
 
-Use the Verification Health Map for the whole retained execution picture. Hover a
-region for its test-health breakdown; open the linked executions only when you need
-details.
+Use the Verification Health Map to see where verification fails, layer by layer.
+Beside each layer's health it shows how deep, how realistic and how strong the
+evidence is, and every mark leads to the contract's evidence when you need details.
 :::
 
 ::::
@@ -153,7 +153,6 @@ and debugging, but they are **not required stops** in the normal semantic flow.
 requirements/index
 traceability-reader
 verification-health-map
-verification-depth-map
 experiments/index
 decisions/index
 specifications

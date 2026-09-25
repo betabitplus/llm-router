@@ -53,9 +53,9 @@ ASSURANCE_FACTS_PATH=ROOT/"docs/_build/html/assurance-fault-model-facts.json"
 ASSURANCE_HISTORY_DIR=ROOT/"docs/_build/html/assurance-history"
 ASSURANCE_TARGETS_PATH=ROOT/".ai-bridge/assurance-targets.json"
 ASSURANCE_SNAPSHOTS_PATH=ROOT/".ai-bridge/assurance-snapshots.json"
-DEPTH_PAGE=ROOT/"docs/_build/html/verification-depth-map.html"
 HEALTH_PAGE=ROOT/"docs/_build/html/verification-health-map.html"
-VERIFICATION_MAP_PAGE=ROOT/"docs/_build/html/verification-map.html"
+# The Verification Depth Map and the Verification Map prototype became the Verification Health Map (MAP-P41).
+RETIRED_MAP_PAGES=(ROOT/"docs/_build/html/verification-depth-map.html",ROOT/"docs/_build/html/verification-map.html")
 REQ_MONITOR_FACTS_PATH=ROOT/"docs/_build/html/requirement-monitor-facts.json"
 UPPER_ASSURANCE_FACTS_PATH=ROOT/"docs/_build/html/upper-assurance-facts.json"
 EVIDENCE_CLASSIFICATION_PATH=ROOT/"docs/_build/html/evidence-classification-facts.json"
@@ -993,7 +993,7 @@ def write_wrapper(contract_id,spec,allure_ids,fact):
     html=f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{contract_id} · Raw mutation detail</title><script defer src="../../_static/mutation-test-elements.js"></script>
 <style>html,body{{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}}.tf-bridge{{display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap;padding:.65rem .9rem;border-bottom:1px solid #d0d5dd;background:#f8fafc;color:#172033}}.tf-bridge a{{color:#1d4ed8;text-decoration:none}}.tf-bridge a:hover{{text-decoration:underline}}.tf-bridge details{{margin-left:auto}}.tf-bridge summary{{cursor:pointer;font-size:.78rem;color:#475467}}.tf-bridge ul{{font-size:.74rem;line-height:1.5}}.tf-campaign,.tf-triage{{flex-basis:100%;font-size:.76rem;color:#475467}}.tf-suppressions{{flex-basis:100%;margin-left:0!important;font-size:.76rem;color:#475467}}.tf-suppressions code{{font-size:.72rem}}.tf-campaign strong.is-fresh,.tf-triage strong.is-clear{{color:#2f8f5b}}.tf-campaign strong.is-stale,.tf-triage strong.is-attention{{color:#c2413b}}@media(prefers-color-scheme:dark){{.tf-bridge{{background:#151a21;color:#d0d7de;border-color:#30363d}}.tf-bridge a{{color:#79c0ff}}.tf-bridge summary,.tf-campaign,.tf-triage,.tf-suppressions{{color:#9da7b3}}}}</style></head><body>
-<nav class="tf-bridge"><a href="../../verification-depth-map.html">← Test Strength map</a><strong>{contract_id} · Raw mutants</strong>
+<nav class="tf-bridge"><a href="../../verification-health-map.html#faults/detect:{contract_id}">← Verification Health Map</a><strong>{contract_id} · Raw mutants</strong>
 <a href="../../mutation-analysis.html#mutation-{contract_id.lower()}">Changes / history</a>
 <a href="../../test-results/index.html?tags=TF_SCOPE__{contract_id}">Allure tests</a>
 <details><summary>Exact pytest / Allure tests ({len(spec["tests"])})</summary><ul>{exact}</ul></details>
@@ -1853,7 +1853,7 @@ def health_map_payload():
         return marked
 
     attribute_failures(root)
-    # One row per goal, capability and contract with the product first, in the same shape as the Depth Map's rows; the
+    # One row per goal, capability and contract with the product first, in the same shape as the measures' rows; the
     # summary is each layer's verdict and how many of its own marks fail.
     layer_summary={}
     for key,_label in layer_keys:
@@ -2069,12 +2069,9 @@ def vendored_d3_hierarchy():
     return text
 
 
-def render_health_map_page():
+def health_facts():
     payload=health_map_payload()
     payload["insights"]=health_map_insights(payload)
-
-    article=MAP_PAGES.health_map_article(stable_json(payload),vendored_d3_hierarchy())
-    HEALTH_PAGE.write_text(portal_map_shell(HEALTH_PAGE,"Verification Health Map",article))
     return payload
 
 
@@ -2357,27 +2354,22 @@ def depth_map_insights(payload,health_payload):
     return {"run":stamp,"delta":run_delta(DEPTH_RUN_SNAPSHOTS,"depth-map-run-1",stamp,depth_values(payload),depth_changes)}
 
 
-def render_depth_map_page(health_payload=None):
-    health_payload=health_payload or health_map_payload()
+def depth_facts(health_payload):
     payload=depth_map_payload(health_payload)
     payload["insights"]=depth_map_insights(payload,health_payload)
-    article=MAP_PAGES.depth_map_article(stable_json(payload),vendored_d3_hierarchy())
-    DEPTH_PAGE.write_text(portal_map_shell(DEPTH_PAGE,"Verification Depth Map",article))
     return payload
 
 
-def render_verification_map_page(health_payload,depth_payload):
-    """The Verification Map prototype pairs each Health Map verdict with its Depth Map measures, from both maps' facts.
-    It has no Sphinx page of its own yet, so it takes the Health Map's rendered page as its shell."""
-    article=MAP_PAGES.verification_map_article(stable_json({"health":health_payload,"depth":depth_payload}),vendored_d3_hierarchy())
-    text=portal_map_shell(HEALTH_PAGE,"Verification Map",article)
-    # In the borrowed shell the Health Map's own navigation entry is the current page; here it links back to it.
-    text=re.sub(
-      r'<li class="nav-item current active">(\s*<a class="nav-link nav-internal") href="#">(\s*Verification Health Map\s*</a>)',
-      r'<li class="nav-item ">\1 href="verification-health-map.html">\2',
-      text,
-    )
-    VERIFICATION_MAP_PAGE.write_text(text)
+def render_health_map_page():
+    """The Verification Health Map: every layer's health and, beside it, its measures (how deep, how realistic and
+    how strong the evidence is), from the health facts and the depth facts side by side."""
+    health_payload=health_facts()
+    depth_payload=depth_facts(health_payload)
+    article=MAP_PAGES.health_map_article(stable_json({"health":health_payload,"depth":depth_payload}),vendored_d3_hierarchy())
+    HEALTH_PAGE.write_text(portal_map_shell(HEALTH_PAGE,"Verification Health Map",article))
+    for retired in RETIRED_MAP_PAGES:
+        retired.unlink(missing_ok=True)
+    return health_payload,depth_payload
 
 
 def patch_allure_scope_tags():
@@ -2729,16 +2721,15 @@ def portal_nav_item(label,href,active=False,kind=""):
     )
 
 def patch_navigation_text(text,current=None):
+    # An item was inserted with its own leading and trailing newline, so removing it whole restores the text before it
+    # and patching an already patched page changes nothing.
     text=re.sub(
-      r'\n<li class="nav-item[^"]*" data-ternforge-p22-nav="(?:health|depth|mutation)">.*?</li>\n',
-      "\n",text,flags=re.DOTALL
+      r'\n<li class="nav-item[^"]*" data-ternforge-p22-nav="(?:health|mutation)">.*?</li>\n',
+      "",text,flags=re.DOTALL
     )
     nav_prefix=text.split('<main id="main-content"',1)[0]
     health_pattern=re.compile(
       r'(<li class="nav-item[^"]*">\s*<a class="nav-link nav-internal" href="(?:verification-health-map\.html|#)">\s*Verification Health Map\s*</a>\s*</li>)'
-    )
-    depth_pattern=re.compile(
-      r'(<li class="nav-item[^"]*">\s*<a class="nav-link nav-internal" href="(?:verification-depth-map\.html|#)">\s*Verification Depth Map\s*</a>\s*</li>)'
     )
     verification_pattern=re.compile(
       r'(<li class="nav-item[^"]*">\s*<a class="nav-link nav-internal" href="verification\.html">\s*Verification\s*</a>\s*</li>)'
@@ -2747,20 +2738,14 @@ def patch_navigation_text(text,current=None):
       "Mutation Analysis","mutation-analysis.html",
       active=current=="mutation",kind="mutation"
     )
-    if depth_pattern.search(nav_prefix):
-        return depth_pattern.sub(lambda m:m.group(1)+mutation_item,text)
-    depth_item=portal_nav_item(
-      "Verification Depth Map","verification-depth-map.html",
-      active=current=="depth",kind="depth"
-    )
     if health_pattern.search(nav_prefix):
-        return health_pattern.sub(lambda m:m.group(1)+depth_item+mutation_item,text)
+        return health_pattern.sub(lambda m:m.group(1)+mutation_item,text)
     health_item=portal_nav_item(
       "Verification Health Map","verification-health-map.html",
       active=current=="health",kind="health"
     )
     return verification_pattern.sub(
-      lambda m:m.group(1)+health_item+depth_item+mutation_item,
+      lambda m:m.group(1)+health_item+mutation_item,
       text,
     )
 
@@ -2935,7 +2920,7 @@ def write_mutation_analysis_page(summary,feedback):
 <article class="bd-article">
 <section id="mutation-analysis">
 <h1>Mutation Analysis<a class="headerlink" href="#mutation-analysis" title="Link to this heading">#</a></h1>
-<p><a href="verification-depth-map.html">← Test Strength map</a> · Open this page when the map shows a new/stale signal, when you want to work down known debt, or when you need run history.</p>
+<p><a href="verification-health-map.html#faults/detect">← Verification Health Map</a> · Open this page when the map shows a new/stale signal, when you want to work down known debt, or when you need run history.</p>
 <div class="admonition note">
 <p class="admonition-title">Current signal</p>
 <p><strong>New {int(summary.get("new_unresolved_survivors") or 0)}</strong> · <strong>Debt {debt_count}</strong> · Stale {int(summary.get("stale_measured_contracts") or 0)} · Suppressed {int(summary.get("suppressed_survivors") or 0)} · Measured {measured_count}/{total} · <code>{html_escape(str(summary.get("mode") or ""))}</code> run <a href="mutation-results/campaign.json"><code>{html_escape(run_id.rsplit("--", maxsplit=1)[-1])}</code></a></p>
@@ -7271,8 +7256,7 @@ def patch_portal_navigation():
     pages={
       ROOT/"docs/_build/html/index.html":None,
       ROOT/"docs/_build/html/verification.html":None,
-      ROOT/"docs/_build/html/verification-health-map.html":None,
-      DEPTH_PAGE:"depth",
+      HEALTH_PAGE:None,
       ASSURANCE_PAGE:None,
       MUTATION_PAGE:"mutation",
     }
@@ -7324,9 +7308,7 @@ def integrate_mutation_portal(summary,feedback):
       [sys.executable,str(ROOT/".ai-bridge/build-upper-assurance-pilot.py")],
       cwd=ROOT,check=True,
     )
-    health_payload=render_health_map_page()
-    depth_payload=render_depth_map_page(health_payload)
-    render_verification_map_page(health_payload,depth_payload)
+    render_health_map_page()
     patch_traceability_contract_evidence_links()
     patch_verification_contract_evidence_path()
     patch_evidence_trust_need_anchors()
