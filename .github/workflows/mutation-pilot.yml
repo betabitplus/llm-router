@@ -85,9 +85,16 @@ jobs:
             --record-mode=none --block-network --allowed-hosts='localhost,127\.0\.0\.1' \
             --cov-context=test --junitxml=test-results/pytest-junit.xml \
             --alluredir=test-results/allure-results --clean-alluredir
+          COVERAGE_FILE=test-results/.coverage uv run --no-sync coverage json --show-contexts -o test-results/coverage.json
 
       - name: Build the requirement graph
-        run: uv run --no-sync ternforge-docops build html
+        # The portal build, as the project CI builds it: the living specifications the requirements
+        # link to exist only there, and a strict build fails on every missing one.
+        run: >-
+          uv run --no-sync ternforge-docops build portal
+          --junit test-results/pytest-junit.xml
+          --allure-results test-results/allure-results
+          --coverage test-results/coverage.json
 
       - name: Mutate the changed lines
         env:
