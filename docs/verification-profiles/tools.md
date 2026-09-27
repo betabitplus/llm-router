@@ -13,7 +13,8 @@ the current assurance result.
 ## Profile · REQ_TOOL_CHOICE
 
 **Verification intent.** Prove explicit named-tool selection across every provider-adapter family
-that declares tool support. Existing replay evidence covers OpenAI-compatible, QwenChat,
+that declares tool support, and that a required tool choice reaches every distinct provider
+translation as a required call. Existing replay evidence covers OpenAI-compatible, QwenChat,
 Gemini WebAPI, and AI Studio; Google GenAI is exercised through a deterministic local
 provider boundary so its native named-tool configuration can be inspected directly.
 
@@ -23,14 +24,16 @@ provider boundary so its native named-tool configuration can be inspected direct
 
 | Test level         | Boundary   | Representation | M&S target |          Target |
 | ------------------ | ---------- | -------------- | ---------- | --------------: |
-| Component          | Local      | Actual         | —          |  **2 criteria** |
+| Component          | Local      | Actual         | —          |  **3 criteria** |
 | System Integration | Replay     | Surrogate      | L0         | **1 criterion** |
 | System Integration | Substitute | Surrogate      | L0         | **1 criterion** |
 
 **Coverage basis.** Component coverage requires both supported public named-choice input forms
 (string name and mapping form) to normalize to the same selected tool, plus one retained named-string
 serialization path for each distinct provider translation implementation: shared OpenAI-compatible/
-AI Studio, QwenChat, Google GenAI, and Gemini WebAPI prompt translation. The Replay cell requires
+AI Studio, QwenChat, Google GenAI, and Gemini WebAPI prompt translation. The required choice needs
+the public `"required"` input to normalize to a required call and each of those translations to emit
+its native required-call form. The Replay cell requires
 four retained adapter-family raw-choice paths: OpenAI-compatible, QwenChat, Gemini WebAPI, and AI
 Studio. The Substitute cell requires the Google GenAI raw-choice path. Together the provider-facing
 paths still cover every adapter that currently declares `supports_tools=True` without duplicating
@@ -44,12 +47,13 @@ llm-router plus the observed tool trace, not fidelity of provider reasoning.
 
 ### Verification criteria
 
-| Criterion                          | Contract                         | Test level         | Boundary   | Required paths | Required path IDs                                                          | Success criterion                                                                                                      |
-| ---------------------------------- | -------------------------------- | ------------------ | ---------- | -------------: | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `VC_TOOL_CHOICE_NAMED_INPUT_FORMS` | {need}`[[id]] <REQ_TOOL_CHOICE>` | Component          | Local      |              2 | `string` · `mapping`                                                       | Both supported public named-choice input forms normalize to the same selected registered tool.                         |
-| `VC_TOOL_CHOICE_NAMED_SERIALIZERS` | {need}`[[id]] <REQ_TOOL_CHOICE>` | Component          | Local      |              4 | `openai-compatible-shared` · `qwenchat` · `google-genai` · `gemini-webapi` | Each distinct provider translation implementation preserves the selected named tool in its native request/prompt form. |
-| `VC_TOOL_CHOICE_REPLAY_FAMILIES`   | {need}`[[id]] <REQ_TOOL_CHOICE>` | System Integration | Replay     |              4 | `OpenAI-compatible` · `QwenChat` · `Gemini WebAPI` · `AI Studio`           | All four replay-backed adapter families honor the explicit named tool and execute no alternate registered tool.        |
-| `VC_TOOL_CHOICE_GOOGLE_GENAI`      | {need}`[[id]] <REQ_TOOL_CHOICE>` | System Integration | Substitute |              1 | `Google GenAI`                                                             | Google GenAI emits native configuration restricted to the named tool and the runtime trace contains only that tool.    |
+| Criterion                          | Contract                         | Test level         | Boundary   | Required paths | Required path IDs                                                                           | Success criterion                                                                                                                            |
+| ---------------------------------- | -------------------------------- | ------------------ | ---------- | -------------: | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VC_TOOL_CHOICE_NAMED_INPUT_FORMS` | {need}`[[id]] <REQ_TOOL_CHOICE>` | Component          | Local      |              2 | `string` · `mapping`                                                                        | Both supported public named-choice input forms normalize to the same selected registered tool.                                               |
+| `VC_TOOL_CHOICE_NAMED_SERIALIZERS` | {need}`[[id]] <REQ_TOOL_CHOICE>` | Component          | Local      |              4 | `openai-compatible-shared` · `qwenchat` · `google-genai` · `gemini-webapi`                  | Each distinct provider translation implementation preserves the selected named tool in its native request/prompt form.                       |
+| `VC_TOOL_CHOICE_REQUIRED`          | {need}`[[id]] <REQ_TOOL_CHOICE>` | Component          | Local      |              5 | `public-input` · `openai-compatible-shared` · `qwenchat` · `google-genai` · `gemini-webapi` | The public `"required"` choice normalizes to a required call, and each distinct provider translation asks for a call to any registered tool. |
+| `VC_TOOL_CHOICE_REPLAY_FAMILIES`   | {need}`[[id]] <REQ_TOOL_CHOICE>` | System Integration | Replay     |              4 | `OpenAI-compatible` · `QwenChat` · `Gemini WebAPI` · `AI Studio`                            | All four replay-backed adapter families honor the explicit named tool and execute no alternate registered tool.                              |
+| `VC_TOOL_CHOICE_GOOGLE_GENAI`      | {need}`[[id]] <REQ_TOOL_CHOICE>` | System Integration | Substitute |              1 | `Google GenAI`                                                                              | Google GenAI emits native configuration restricted to the named tool and the runtime trace contains only that tool.                          |
 
 ### Evidence aggregation
 
@@ -64,11 +68,11 @@ llm-router plus the observed tool trace, not fidelity of provider reasoning.
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                               |
-| ----------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect`             | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
-| `interface.payload-schema`                      | —        | `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass`       |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `spec.wrong-ordering-boundary`                                                                                                    |
+| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                   |
+| ----------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect`             | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| `interface.payload-schema`                      | —        | `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass`                           |
+| `spec.wrong-outcome` · `spec.missing-partition` | —        | `spec.wrong-ordering-boundary`                                                                                                                        |
 
 #### Fault-group rationale
 
@@ -133,10 +137,10 @@ therefore remain Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                        | OPTIONAL | N/A                                                                                                                               |
-| ----------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` · `spec.wrong-outcome` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
-| `spec.missing-partition` · `spec.wrong-ordering-boundary`                                       | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass`               |
+| REQUIRED                                                                                        | OPTIONAL | N/A                                                                                                                                                   |
+| ----------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` · `spec.wrong-outcome` | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| `spec.missing-partition` · `spec.wrong-ordering-boundary`                                       | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass`                                   |
 
 #### Fault-group rationale
 
@@ -193,10 +197,10 @@ no external participant or model substitute is involved.
 
 ### Fault applicability
 
-| REQUIRED                                                                                       | OPTIONAL                            | N/A                                                                                                                    |
-| ---------------------------------------------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `architecture.layer-bypass` | `impl.comparison` · `impl.boundary` | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
-| `spec.wrong-outcome` · `spec.missing-partition`                                                | —                                   | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `spec.wrong-ordering-boundary`                    |
+| REQUIRED                                                                                       | OPTIONAL                            | N/A                                                                                                                                        |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `architecture.layer-bypass` | `impl.comparison` · `impl.boundary` | `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
+| `spec.wrong-outcome` · `spec.missing-partition`                                                | —                                   | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `spec.wrong-ordering-boundary`                                        |
 
 #### Fault-group rationale
 
@@ -254,7 +258,7 @@ participant remains Surrogate at L0.
 
 | REQUIRED                                                                                                              | OPTIONAL | N/A                                                                                                                 |
 | --------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`                                             | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                         |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`                                             | —        | `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`     |
 | `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
 
 #### Fault-group rationale

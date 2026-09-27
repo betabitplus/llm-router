@@ -1,5 +1,5 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS 19ce8cfa2ea55f04
-# pinned-by: claude-opus-5-5: The requirement only calls for rejecting configurations that break a configuration constraint, and that constraint is max_wait >= min_wait. The mutant also rejects the valid case where max_wait equals min_wait. Execution confirmed it: the mutant raises ConfigurationError on a valid config that the o
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 from dataclasses import replace

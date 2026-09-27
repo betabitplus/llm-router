@@ -1,6 +1,38 @@
 {
  "2038c0b46cff816b": {
   "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "request": "ProviderRequest(request_id=\"r1\", provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model=\"qwen-max-latest\", credential=ProviderCredential(key_id=0, env_var=\"K\", value=\"v\"), messages=[], temperature=None, seed=None, schema=None, tool_registry=None, tool_choice=None, kwargs={}, route_index=None)",
+     "self_base_url": "\"http://localhost:8080\"",
+     "self_timeout_seconds": "600.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145141Z-ea8c2d",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The original sets `\"stream\": False` while the changed version sets `\"stream\": True`. With empty `kwargs` (the default), this key is never overwritten, so the returned dicts differ.",
+    "response_sha256": "91cfec1834606e948833f3482e98cee833668db770b99f3423f6004286145021",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='', provider=Provider.QWENCHAT, model=Model.GEMINI_PRO, provider_model='', credential=ProviderCredential(key_id=0, env_var='', value=''), messages=[])",
+     "self_base_url": "''",
+     "self_timeout_seconds": "0.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145159Z-b55863",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The versions return different dictionaries because the original sets 'stream': False while the changed version sets 'stream': True.",
+    "response_sha256": "294e1d264d5e8617799bc728bbcb95293c170c1099cfa3923efcddcb21bec40a",
+    "verdict": "distinct"
+   },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
      "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='QWEN_API_KEY', value='secret'), messages=(), kwargs={})",
@@ -22,6 +54,38 @@
  },
  "40231175bc1ce35e": {
   "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max-latest', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=[], tool_registry=ToolRegistry(tools={'t': ToolDefinition(name='t', description='d', parameters={}, descriptor={'type': 'function', 'function': {'name': 't'}}, callable=None)}))",
+     "self_base_url": "\"http://localhost\"",
+     "self_timeout_seconds": "600.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145226Z-8f1bc0",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The changed version replaces the body of the `if request.tool_registry is not None and request.tool_registry.tools` block with `pass`, so when a non-empty tool registry is provided, the original adds a \"tools\" key to the returned dict while the changed version does not.",
+    "response_sha256": "548a6a8669ed4b9a1c682a8b8230613c2debe1d36197f772cc6b2dbc2af98def",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id=\"id\", provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model=\"qwen\", credential=ProviderCredential(key_id=1, env_var=\"A\", value=\"B\"), messages=[], tool_registry=ToolRegistry(tools={\"t\": ToolDefinition(name=\"t\", description=None, parameters={}, descriptor={\"a\": \"b\"})}))",
+     "self_base_url": "\"http://test\"",
+     "self_timeout_seconds": "60.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145241Z-bf28b1",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version ignores `request.tool_registry.tools` and fails to populate the 'tools' key in the payload, whereas the original version correctly includes it.",
+    "response_sha256": "05099cce6593b6daa9bb71f8e7d46385bfeaa5105fd4587cedaae89b191e071d",
+    "verdict": "distinct"
+   },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
      "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max-latest', credential=ProviderCredential(key_id=1, env_var='QWEN_API_KEY', value='secret'), messages=(), tool_registry=ToolRegistry(tools={'test_tool': ToolDefinition(name='test_tool', description=None, parameters={}, descriptor={'type': 'function'})}), kwargs={})",
@@ -43,6 +107,38 @@
  },
  "7f08bc96d2f666c5": {
   "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max-latest', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=[], kwargs={'top_p': 0.9})",
+     "self_base_url": "\"http://localhost:8080\"",
+     "self_timeout_seconds": "600.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145304Z-4129a7",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The changed version replaces `payload.update(dict(request.kwargs))` with `pass`, so any non-empty `request.kwargs` will be lost from the returned payload.",
+    "response_sha256": "a3a674bb23f15e4945f2be225ed6e9c5d125bf2b278c5fb8e3aa581095d477cd",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='', credential=ProviderCredential(key_id=0, env_var='', value=''), messages=[], kwargs={'a': 1})",
+     "self_base_url": "''",
+     "self_timeout_seconds": "0.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145316Z-316c22",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Version 1 updates the payload dictionary with the contents of `request.kwargs`, whereas Version 2 skips this update, returning a different dictionary when `request.kwargs` is not empty.",
+    "response_sha256": "72203367abe412cfcd1834ae5b077139d74fd9d6778a698f63564fb1d2ee88c5",
+    "verdict": "distinct"
+   },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
      "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='val'), messages=(), kwargs={'extra': 'value'})",

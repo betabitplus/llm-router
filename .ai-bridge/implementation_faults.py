@@ -14,31 +14,35 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import io
 import json
 import os
 import re
 import shutil
 import subprocess
 import time
+import tokenize
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
 
 SCHEMA = "ternforge-implementation-fault-campaign-2"
 GREMLINS_VERSION = "1.9.0"
-OPERATORS = ("comparison", "boundary", "boolean", "return", "statement", "body")
+OPERATORS = ("comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body")
 CLASS_BY_OPERATOR = {
     "comparison": "impl.comparison",
     "boundary": "impl.boundary",
+    "arithmetic": "impl.arithmetic",
     "boolean": "impl.control-flow",
     "return": "impl.control-flow",
     "statement": "impl.effect",
     "body": "impl.effect",
 }
-CLASSES = ("impl.comparison", "impl.boundary", "impl.control-flow", "impl.effect")
+CLASSES = ("impl.comparison", "impl.boundary", "impl.arithmetic", "impl.control-flow", "impl.effect")
 CLASS_NOUNS = {
     "impl.comparison": "comparison",
     "impl.boundary": "boundary",
+    "impl.arithmetic": "arithmetic",
     "impl.control-flow": "branch/return",
     "impl.effect": "effect",
 }
@@ -54,6 +58,58 @@ PRODUCERS = ("PRODUCER_PYTEST_GREMLINS", "PRODUCER_IMPLEMENTATION_FAULT_ADAPTER"
 
 def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+# --- fingerprints by meaning --------------------------------------------------------
+# A fingerprint answers one question: could a retained result differ now? Bytes answer too
+# often: a comment, a docstring or a reformatting changes them and changes nothing a run does.
+
+
+def code_digest(path: Path) -> str | None:
+    """What a tool's module does, not how it reads: its syntax tree without comments,
+    docstrings, positions or formatting. A module that does not parse counts by its bytes."""
+    if not path.is_file():
+        return None
+    source = path.read_bytes()
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return sha256_bytes(source)
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            first = node.body[0] if node.body else None
+            if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
+                node.body = node.body[1:] or [ast.Pass()]
+    return sha256_bytes(ast.dump(tree, include_attributes=False).encode())
+
+
+# The engine reads these comments (ternforge_mutation.PRAGMA); every other comment is prose.
+MUTATION_DIRECTIVE = re.compile(r"#\s*mutation:")
+
+
+def source_digest(path: Path) -> str | None:
+    """What the engine mutates and where: a module's tokens at their positions and its
+    ``# mutation:`` pragmas, without other comments. A comment edited in place moves no
+    mutant and changes nothing; a line added or removed moves every mutant below it and
+    does. A module that does not tokenize counts by its bytes."""
+    if not path.is_file():
+        return None
+    source = path.read_bytes()
+    kept = []
+    try:
+        for token in tokenize.tokenize(io.BytesIO(source).readline):
+            if token.type == tokenize.COMMENT:
+                if MUTATION_DIRECTIVE.match(token.string):
+                    kept.append((token.type, token.string, token.start))
+            elif token.type in {tokenize.NL, tokenize.NEWLINE}:
+                # A newline's column follows the comment before it, so only its place in the
+                # token stream counts.
+                kept.append((token.type,))
+            else:
+                kept.append((token.type, token.string, token.start, token.end))
+    except (tokenize.TokenError, SyntaxError):
+        return sha256_bytes(source)
+    return sha256_bytes(repr(kept).encode())
 
 
 def stable_json(value) -> str:
@@ -203,6 +259,8 @@ def contract_plan(
             if row.get("result") != "passed" and family & set(row.get("verifies") or [])
         }
     )
+    seconds = {row["nodeid"]: row.get("seconds") for row in test_rows if row.get("result") == "passed"}
+    measured = [float(value) for nodeid in tests if (value := seconds.get(nodeid)) is not None]
     plan = {
         "contract_id": contract_id,
         "scopes": [
@@ -214,6 +272,8 @@ def contract_plan(
         "tests": tests,
         "tests_not_passing": not_passing,
         "files": sorted(attributable),
+        # What its tests took in the retained run: the base of a mutant's time limit (time_limits).
+        "baseline_seconds": round(sum(measured), 3) if tests and len(measured) == len(tests) else None,
     }
     if not own_scopes:
         plan["blocked"] = "no_impl_scope"
@@ -322,13 +382,13 @@ def not_planted_mutants(plan: dict, report: dict, root: Path) -> list[dict]:
 
 
 def suppress_by_verdict(rows: list[dict], verdicts: dict[str, dict] | None) -> list[dict]:
-    """Mutant rows with every survivor a current verdict judged equivalent or irrelevant
-    (ADR_0006) suppressed, with the verdict, its reason and who gave it."""
+    """Mutant rows with every survivor or unreached mutant a current verdict judged equivalent or
+    irrelevant (ADR_0006) suppressed, with the verdict, its reason and who gave it."""
     for row in rows:
         verdict = (verdicts or {}).get(row["fingerprint"])
-        if verdict and row["outcome"] == "survived":
+        if verdict and row["outcome"] in {"survived", "notreached"}:
             row["outcome"] = "suppressed"
-            row["suppression"] = {"verdict": verdict.get("verdict"), "reason": verdict.get("reason"), "by": verdict.get("by")}
+            row["suppression"] = {"verdict": verdict.get("verdict"), "reason": verdict.get("reason"), "by": verdict.get("by"), "reviewed_by": verdict.get("reviewed_by")}
     return rows
 
 
@@ -425,11 +485,13 @@ def blocked_classes(basis: str) -> dict[str, dict]:
 
 # --- inputs and freshness ----------------------------------------------------------
 
-# Anything that can change any contract's result is a shared input. Product code is
-# deliberately shared: a mutant can push execution into code the unmutated run never
-# touched, so no per-contract subset of the source can prove a result still holds.
+# Anything that can change any contract's result is a shared input: test support, test data,
+# the examples and the dependencies. Product code counts per contract, as PIT and Stryker count
+# it: a result stays current while the files that hold its mutants (contract_inputs) and its own
+# tests are unchanged. A change elsewhere in the product that alters what that code calls is the
+# risk they accept too; the pull-request diff mutates the changed lines themselves, and a full run
+# (--full) starts every contract over.
 SHARED_INPUT_SCOPE = (
-    "src/llm_router/**/*.py",
     "tests/llm_router/data/**/*",
     "examples/**/*.py",
 )
@@ -444,11 +506,15 @@ def _files(root: Path, pattern: str) -> set[Path]:
     }
 
 
+def input_digest(path: Path) -> str | None:
+    """A Python input by what the engine runs (``source_digest``), any other file by its bytes."""
+    if path.suffix == ".py":
+        return source_digest(path)
+    return sha256_bytes(path.read_bytes()) if path.is_file() else None
+
+
 def digest_map(root: Path, paths: set[str]) -> dict[str, str | None]:
-    return {
-        relative: (sha256_bytes((root / relative).read_bytes()) if (root / relative).is_file() else None)
-        for relative in sorted(paths)
-    }
+    return {relative: input_digest(root / relative) for relative in sorted(paths)}
 
 
 def shared_inputs(root: Path) -> dict[str, str | None]:
@@ -497,9 +563,10 @@ def _imported_test_modules(root: Path, test_file: str) -> set[str]:
 
 
 def contract_inputs(root: Path, plan: dict, test_rows: list[dict]) -> dict[str, str | None]:
-    """The contract's own test inputs: test modules, their Gherkin and their cassettes."""
+    """The contract's own inputs: the product files that hold its mutants, and its test modules,
+    their Gherkin and their cassettes."""
     rows = {row["nodeid"]: row for row in test_rows}
-    paths: set[str] = set()
+    paths: set[str] = set(plan.get("files") or [])
     for nodeid in plan.get("tests") or []:
         test_file = nodeid.split("::", 1)[0]
         for module in _imported_test_modules(root, test_file):
@@ -513,11 +580,32 @@ def contract_inputs(root: Path, plan: dict, test_rows: list[dict]) -> dict[str, 
 
 
 def plugin_sha256() -> str | None:
-    """One digest over every module of the engine extension."""
+    """One digest over what every module of the engine extension does (``code_digest``)."""
     modules = sorted(PLUGIN_DIR.glob("*.py"))
     if not modules:
         return None
-    return sha256_bytes(b"".join(module.name.encode() + b"\0" + module.read_bytes() for module in modules))
+    return sha256_bytes(b"".join(module.name.encode() + b"\0" + str(code_digest(module)).encode() for module in modules))
+
+
+# A mutant's time limit follows its tests, as PIT's does (factor × their time + a constant). The
+# contract's tests took `baseline_seconds` in the retained run; a mutant gets 1.25 times that
+# plus 10 s for pytest's own start, and a run that outlasts it runs once more with twice as much
+# before the timeout counts as caught. Without a measured baseline the fixed limits stay.
+TIME_LIMIT_FACTOR = 1.25
+TIME_LIMIT_CONSTANT_SECONDS = 10.0
+TIME_LIMIT_CONFIRM_FACTOR = 2.0
+TIME_LIMITS_WITHOUT_BASELINE = (30.0, 300.0)
+# The engine extension reads them (gremlins_full_pytest.TIMEOUT_ENV and CONFIRM_TIMEOUT_ENV).
+TIMEOUT_ENV = "TERNFORGE_GREMLIN_TIMEOUT"
+CONFIRM_TIMEOUT_ENV = "TERNFORGE_GREMLIN_CONFIRM_TIMEOUT"
+
+
+def time_limits(baseline_seconds: float | None) -> tuple[float, float]:
+    """The first and the confirming time limit of a mutant's tests, in seconds."""
+    if baseline_seconds is None:
+        return TIME_LIMITS_WITHOUT_BASELINE
+    limit = round(TIME_LIMIT_FACTOR * max(0.0, float(baseline_seconds)) + TIME_LIMIT_CONSTANT_SECONDS, 1)
+    return limit, round(TIME_LIMIT_CONFIRM_FACTOR * limit, 1)
 
 
 def engine_configuration() -> dict:
@@ -528,6 +616,12 @@ def engine_configuration() -> dict:
         "operators": list(OPERATORS),
         "plugin_sha256": plugin_sha256(),
         "hermetic_options": list(HERMETIC_OPTIONS),
+        "time_limits": {
+            "factor": TIME_LIMIT_FACTOR,
+            "constant_seconds": TIME_LIMIT_CONSTANT_SECONDS,
+            "confirm_factor": TIME_LIMIT_CONFIRM_FACTOR,
+            "without_baseline": list(TIME_LIMITS_WITHOUT_BASELINE),
+        },
     }
 
 
@@ -575,6 +669,7 @@ def engine_env(
     scope: dict[str, list[int]] | None = None,
     arid_rules: list[str] | None = None,
     skip_uncovered: bool = False,
+    limits: tuple[float, float] | None = None,
 ) -> dict[str, str]:
     """Environment shared by the outer engine run and every per-mutant pytest run.
 
@@ -597,6 +692,8 @@ def engine_env(
         scope_env["TERNFORGE_MUTATION_POLICY"] = str(policy_file)
     if skip_uncovered:
         scope_env["TERNFORGE_GREMLIN_SKIP_UNCOVERED"] = "1"
+    if limits is not None:
+        scope_env[TIMEOUT_ENV], scope_env[CONFIRM_TIMEOUT_ENV] = (str(seconds) for seconds in limits)
     addopts = ["-p", "no:randomly", "-p", "no:cacheprovider", "-p", "gremlins_full_pytest"]
     if hermetic:
         addopts.extend(HERMETIC_OPTIONS)
@@ -637,22 +734,27 @@ def run_engine(
     *,
     scope: dict[str, list[int]] | None = None,
     skip_uncovered: bool = False,
+    project: Path | None = None,
+    scratch: Path | None = None,
 ) -> dict:
     """Run pytest-gremlins for one contract in place and retain its JSON report.
 
     The scope defaults to the contract's attributable lines; the pull-request diff
-    narrows it to the changed ones and skips the mutants no test covers.
+    narrows it to the changed ones and skips the mutants no test covers. A run in a
+    copy of the working tree names the project whose environment it uses and a
+    scratch folder of its own.
     """
     report_dir = root / "coverage/gremlins"
     coverage_dir_existed = (root / "coverage").exists()
     env = engine_env(
-        Path(os.environ.get("TMPDIR", "/tmp")) / "ternforge-probe-scratch",
+        scratch or Path(os.environ.get("TMPDIR", "/tmp")) / "ternforge-probe-scratch",
         scope=scope if scope is not None else plan["attributable_lines"],
         arid_rules=plan.get("arid_rules"),
         skip_uncovered=skip_uncovered,
+        limits=time_limits(plan.get("baseline_seconds")),
     )
     files = sorted(scope) if scope is not None else plan["files"]
-    command = [*engine_command(root, plan["tests"], files), "--no-cov"]
+    command = [*engine_command(root, plan["tests"], files, project=project), "--no-cov"]
     started = time.monotonic()
     shutil.rmtree(report_dir, ignore_errors=True)
     try:
@@ -708,6 +810,45 @@ def run_engine(
         "output_tail": "\n".join(output.splitlines()[-25:]),
         "command": command,
     }
+
+
+def engine_workers() -> int:
+    """How many contracts a campaign mutates at once: TERNFORGE_MUTATION_WORKERS, else the
+    machine's cores less one, at most eight. Each contract still runs its mutants one by one."""
+    configured = os.environ.get("TERNFORGE_MUTATION_WORKERS")
+    if configured:
+        return max(1, int(configured))
+    return max(1, min(8, (os.cpu_count() or 2) - 1))
+
+
+def working_tree_copy(root: Path, destination: Path) -> Path:
+    """A copy of the working tree as the tests see it: the files git tracks or would track,
+    changes included, or the whole folder outside a repository."""
+    listed = subprocess.run(["git", "ls-files", "-co", "--exclude-standard", "-z"], cwd=root, capture_output=True, check=False)
+    if listed.returncode != 0:
+        shutil.copytree(root, destination, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache", "coverage"))
+        return destination
+    for name in filter(None, listed.stdout.decode().split("\0")):
+        source = root / name
+        if source.is_file():
+            target = destination / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+    return destination
+
+
+def run_engine_isolated(root: Path, copy_root: Path, plan: dict, raw_path: Path, **options: object) -> dict:
+    """Run the engine for one contract in a copy of the working tree, so several contracts can
+    run at once, and retain its report with the working tree's own paths. The copy uses the
+    environment of ``project``, the working tree's own unless told otherwise."""
+    project = Path(str(options.pop("project", root)))
+    run = run_engine(copy_root, plan, raw_path, project=project, scratch=copy_root / ".ternforge-scratch", **options)
+    if run["report_retained"]:
+        text = raw_path.read_text()
+        for prefix in sorted({str(copy_root.resolve()), str(copy_root)}, key=len, reverse=True):
+            text = text.replace(prefix, str(root.resolve()))
+        raw_path.write_text(text)
+    return run
 
 
 def utc_now() -> str:

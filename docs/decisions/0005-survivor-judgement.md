@@ -45,9 +45,12 @@ evaluated. A semantic survivor with a confirmed input is distinguished. A rule s
 its outcome and gains the input as its test goal. When every assessor answers equivalent with a
 confidence above the calibrated threshold, the survivor is labelled likely equivalent. The label
 is advisory: the survivor stays UNKNOWN, or survived for a rule mutant, until its verdict is
-recorded (ADR_0006). The threshold is split conformal over labelled pairs, and every distinct
-pair carries an input that execution confirms. The assessors' calibration answers are frozen and
-replayed by the qualification. A change of assessor, model, prompt or pairs leaves the ensemble
+recorded (ADR_0006). The threshold is split conformal over the distinct pairs: labelled pairs,
+every distinct one with an input that execution confirms, and observed pairs, real survivors the
+symbolic search left unsure and a mutation pin proves distinct (amended 2026-09-27: on those,
+single assessors called survivors equivalent that the hand-made pairs never made them call). An assessor may call at most the
+false-equivalent rate of all distinct pairs equivalent. The assessors' calibration answers are
+frozen and replayed by the qualification. A change of assessor, model, prompt or pairs leaves the ensemble
 uncalibrated until it is calibrated again. The judgement of rule survivors runs on request,
 apart from the campaign, and never changes a mutant's outcome.
 
@@ -59,8 +62,8 @@ not label a survivor alone; the calibration pairs are easier than real survivors
 false-equivalent rate is an aim, not a guarantee, which the advisory label reflects. After the
 pilot the pieces move to their owners. The harness, the symbolic step, the input check, the
 judgement, the calibration pairs, the threshold and their qualification controls go to
-`py-testkit`. The judgement views go to `ternforge-tooling-docops`. Scheduled judgement runs and
-the retention of answers and results go to `ternforge-infra-ci`. The default assessors and
+`py-testkit`. The judgement views go to `ternforge-tooling-docops`. The retention of answers
+and results goes to `ternforge-infra-ci`; judgement runs stay local runs on request. The default assessors and
 settings go to the project template.
 
 **Alternatives considered.** Counting an assessed equivalent above the threshold as equivalent

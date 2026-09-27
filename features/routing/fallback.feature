@@ -4,13 +4,20 @@ Feature: Route fallback
 
   Rule: Routes are attempted according to routing policy
 
-    @REQ_SYNC_ROUTE_FALLBACK[revision==1]
+    @REQ_SYNC_ROUTE_FALLBACK[revision==2]
     Scenario: A failed route falls back to the next route
       Given the router has two available routes
       And the first route fails
       When a request is made
       Then the second route is used
       And the routing trace contains both attempts
+
+    @REQ_SYNC_ROUTE_FALLBACK[revision==2]
+    Scenario: The last route error is exposed when every route fails
+      Given the router has two available routes
+      And every route fails
+      When the failing request is executed
+      Then the request fails with the last route's error
 
     @REQ_ROUTE_TIMEOUT_FALLBACK[revision==1]
     Scenario: A timed-out route falls back without waiting for it indefinitely

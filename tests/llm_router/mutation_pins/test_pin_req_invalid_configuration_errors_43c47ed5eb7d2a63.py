@@ -1,5 +1,5 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS 43c47ed5eb7d2a63
-# pinned-by: claude-opus-5-5: The mutant moves the structured-output-attempts constraint from >=1 to >=2, so a valid configuration with a single attempt now fails with ConfigurationError. The requirement ties rejection to actual constraint violations, and its own error message still says "at least 1", so this is a real regressio
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 from dataclasses import replace

@@ -59,10 +59,10 @@ therefore remain Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                     | OPTIONAL | N/A                                                                                                                                                                                                |
-| ---------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
-| —                                                                            | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                  |
+| REQUIRED                                                                     | OPTIONAL | N/A                                                                                                                                                                                                                    |
+| ---------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
+| —                                                                            | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                      |
 
 #### Fault-group rationale
 
@@ -115,10 +115,10 @@ scripted HTTP provider boundary; the external participant is Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                                      | OPTIONAL | N/A                                                                                                                           |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
-| `spec.wrong-outcome` · `spec.missing-partition`                                                                                                               | —        | `interface.unexpected-interaction` · `spec.wrong-ordering-boundary`                                                           |
+| REQUIRED                                                                                                                                                      | OPTIONAL | N/A                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
+| `spec.wrong-outcome` · `spec.missing-partition`                                                                                                               | —        | `interface.unexpected-interaction` · `spec.wrong-ordering-boundary`                                                                               |
 
 #### Fault-group rationale
 
@@ -172,10 +172,10 @@ proxy and upload HTTP endpoints; the external participant is Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                                            | OPTIONAL | N/A                                                                                            |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect` · `runtime.unavailable-disconnect` · `interface.error-status` · `interface.payload-schema` · `interface.unexpected-interaction` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.malformed-response` |
-| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary`                                                                                    | —        | `architecture.forbidden-edge` · `architecture.layer-bypass`                                    |
+| REQUIRED                                                                                                                                                            | OPTIONAL | N/A                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| `impl.control-flow` · `impl.effect` · `runtime.unavailable-disconnect` · `interface.error-status` · `interface.payload-schema` · `interface.unexpected-interaction` | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.malformed-response` |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary`                                                                                    | —        | `architecture.forbidden-edge` · `architecture.layer-bypass`                                                        |
 
 #### Fault-group rationale
 
@@ -227,10 +227,10 @@ and native HTTP endpoints; the external participant is Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                              | OPTIONAL | N/A                                                                                                                               |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
-| —                                                                                                                                                     | —        | `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`         |
+| REQUIRED                                                                                                                                              | OPTIONAL | N/A                                                                                                                                                   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| —                                                                                                                                                     | —        | `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                             |
 
 #### Fault-group rationale
 
@@ -282,10 +282,10 @@ WebAPI SDK substitute; the external participant remains Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                      | OPTIONAL | N/A                                                                                                                               |
-| --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect` · `interface.error-status` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
-| —                                                                                                                                             | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                                                      | OPTIONAL | N/A                                                                                                                                                   |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.error-status` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| —                                                                                                                                             | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                     |
 
 #### Fault-group rationale
 
@@ -339,7 +339,7 @@ GenAI SDK substitute; the external participant remains Surrogate at L0.
 
 | REQUIRED                                                                                                         | OPTIONAL | N/A                                                                                                                                                            |
 | ---------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                              |
+| `impl.control-flow` · `impl.effect` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`          |
 | —                                                                                                                | —        | `interface.unexpected-interaction` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
@@ -399,9 +399,9 @@ adapter against retained provider interactions. Replay remains Surrogate/L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                           | OPTIONAL                            | N/A                                                                                                                                                                                                                                                        |
-| ------------------------------------------------------------------------------------------------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `impl.comparison` · `impl.boundary` | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                           | OPTIONAL                            | N/A                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `impl.comparison` · `impl.boundary` | `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
@@ -462,10 +462,10 @@ Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                     | OPTIONAL | N/A                                                                                                                                                                                                          |
-| ---------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` |
-| —                                                                            | —        | `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                      |
+| REQUIRED                                                                     | OPTIONAL | N/A                                                                                                                                                                                                                              |
+| ---------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` |
+| —                                                                            | —        | `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                          |
 
 #### Fault-group rationale
 
@@ -517,20 +517,20 @@ external participant or model substitute is involved.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                           | OPTIONAL | N/A                                                                                                                                                          |
-| ------------------------------------------------------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
-| —                                                                                                                  | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                            |
+| REQUIRED                                                                                                                               | OPTIONAL | N/A                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `impl.arithmetic` · `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
+| —                                                                                                                                      | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                            |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                       |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Shape-selection branches directly implement usage normalization. A normalizer whose body returns an empty default loses the usage totals. |
-| Runtime / dependency  | Normalization is local and does not depend on external runtime behavior.                                                                  |
-| Interface / protocol  | Provider-specific usage payload shape is the input contract.                                                                              |
-| Architecture          | Internal module topology is not normative.                                                                                                |
-| Specification / model | Every declared usage-shape partition must normalize to the correct stable values.                                                         |
+| Group                 | Why                                                                                                                                                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Shape-selection branches directly implement usage normalization. A normalizer whose body returns an empty default loses the usage totals. The total is the sum of input and output tokens; a swapped operator reports a wrong total. |
+| Runtime / dependency  | Normalization is local and does not depend on external runtime behavior.                                                                                                                                                             |
+| Interface / protocol  | Provider-specific usage payload shape is the input contract.                                                                                                                                                                         |
+| Architecture          | Internal module topology is not normative.                                                                                                                                                                                           |
+| Specification / model | Every declared usage-shape partition must normalize to the correct stable values.                                                                                                                                                    |
 
 ### Semantic mutants
 
@@ -587,9 +587,9 @@ SDK redirected to the scripted provider. External behavior remains Surrogate/L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                                                        | OPTIONAL | N/A                                                                                                                                                                                                                                 |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                                                                                        | OPTIONAL | N/A                                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 

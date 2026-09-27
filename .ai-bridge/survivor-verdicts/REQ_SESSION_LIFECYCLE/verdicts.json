@@ -1,0 +1,36 @@
+{
+ "76471d519ce0db39": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152634Z-36e2f2",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement says the session's system instruction is kept even when a request ignores history. The public `system` accessor is how callers read that instruction. Making it always return None means callers lose the instruction, and no test currently reaches this line.",
+   "response_sha256": "4979672647248df971baf4e96ac7629b38738b84860882f87b13bca0b3d6fc54",
+   "test_focus": "Create a SessionStore with a system prompt and check that `.system` returns that exact prompt. Check it again after `clear` and on a fork to confirm the prompt is kept.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-27T16:38:36.861967Z",
+   "answer_sha256": "4f2125289f8843e2611fc4a5641fedb7ae26c09b9cfd99e7e2b326fa98617bde",
+   "call_id": "20260927T160649Z-49e548",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "74dfc8612e2ff89b0e342f981d497567baa5f8da6c99d7c3e63d3d434fbf1391",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_76471d519ce0db39.py",
+   "response_sha256": "54e6978e03127c3d974a875ceb803bfddf34a1ac2c64375a09edf002152c963c",
+   "source": "draft author"
+  },
+  "prompt_sha256": "19a15e834aa81e1d8d6c7ac8234b855e694dae3d55aac9d3241ce7cddb96b9b5"
+ }
+}

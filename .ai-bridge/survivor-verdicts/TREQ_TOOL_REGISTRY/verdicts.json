@@ -1,4 +1,87 @@
 {
+ "77252785424d95f7": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T165223Z-0e5705",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When a registered callable raises, the mutant swallows the error. It then hits an unbound `result` and raises UnboundLocalError instead of the ToolExecutionError that carries the tool name, arguments and cause. That breaks the registry's promise to execute registered callables consistently and to report failures faithfully to the orchestration loop.",
+   "response_sha256": "c43649cba25370d18a370bc76a1a93fb722f72843fc9ae9dcd937052e0c907fe",
+   "test_focus": "Register a tool whose callable raises. Check that execute raises ToolExecutionError with the right tool_name and args, and that its cause is the original exception.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "34f7add073a6a97512ba4a323c8461b7d5fae8b67724541a2d06ecd7b3846017"
+ },
+ "77986b22a0ac6322": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T165229Z-f67981",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With the guard removed, a descriptor-only tool (callable None) is still invoked. The resulting TypeError is then wrapped as a ToolExecutionError, which looks like a runtime failure of the tool. The original instead rejects the call up front with a ValueError saying the tool is descriptor-only. TREQ_TOOL_REGISTRY requires registered tools to be executed consistently, so this difference matters.",
+   "response_sha256": "6cd49ac90bcdfa0a3afce374b99f0e5b41201ed563cc2a8c015846e62ccf22ce",
+   "test_focus": "Register a descriptor-only tool (no callable) and execute a ToolCall for it. Check that execute raises ValueError naming the tool as descriptor-only, and that it does not raise ToolExecutionError.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-27T17:10:11.926797Z",
+   "answer_sha256": "a72d3b14cb76e0f8f269cba4c878fc7746bc6c7cfe682f468ecd99c7f00acbdb",
+   "call_id": "20260927T170231Z-bfa7a0",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "40309dd9a3efa7b90ebce948446de41fe4fcd4be143ba65b3eba9d10205fd2f5",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77986b22a0ac6322.py",
+   "response_sha256": "481f65c8520a0151bdf2102fa175e346b07d7093c609c626c7a883c0c0a8fa64",
+   "source": "draft author"
+  },
+  "prompt_sha256": "9bd4a4e5ac13a56bc9ad9b9ba962b0b8bf2ad1431303069e99c4dcc4b3745b41"
+ },
+ "7ebb796581f85dea": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T165238Z-f37751",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With this change, looking up an unknown tool name quietly returns None instead of raising, so a provider tool call naming an unregistered tool no longer fails deterministically. The registry has to execute only registered callables consistently, and passing None on to the execution path breaks that contract.",
+   "response_sha256": "a936e4851ed73c105469c565b56c329f07c2a74853e36f395a82cc38aab4ceb5",
+   "test_focus": "Check that ToolRegistry.get with an unregistered name raises KeyError and that the message names the unknown tool.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-27T17:10:11.928528Z",
+   "answer_sha256": "90aa5fbeba48f70bb289918be89c33e565521618e394fed484be70f7bf20de8b",
+   "call_id": "20260927T170331Z-378625",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "90aa5fbeba48f70bb289918be89c33e565521618e394fed484be70f7bf20de8b",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_7ebb796581f85dea.py",
+   "response_sha256": "78f9b8a786bd19063ba0ee646813e651c061033b4196cd3fe6bb9c85914aa699",
+   "source": "draft author"
+  },
+  "prompt_sha256": "fd2ba68dfec86e89d717dcc2c3b540e2be737e4341bc07d17d45d7b10386d970"
+ },
  "e9c1165894dd60d7": {
   "answer": {
    "backend": "claude-cli",
@@ -11,18 +94,22 @@
    "test_focus": "Build a ToolRegistry from a dict, then mutate that dict and try to assign into registry.tools. Assert that assignment is rejected (TypeError) and that the registry's tool set and execution results stay the same.",
    "verdict": "pin"
   },
+  "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.638363Z",
+   "adopted_at": "2026-09-27T19:54:19.556268Z",
+   "answer_sha256": "7871feab9e82b0b0505b937655cfc273ee674fc219890f890b9fe746ea22f6b5",
    "call_id": "20260926T231458Z-492aec",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
    "draft_sha256": "7871feab9e82b0b0505b937655cfc273ee674fc219890f890b9fe746ea22f6b5",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_e9c1165894dd60d7.py",
    "response_sha256": "3959e872ee4396224857571cf702307195020eaeb70b75973a39bb363a7889a3",
    "source": "draft author"

@@ -25,10 +25,12 @@ no model:
 With such an input the mutant is distinguished: its class is challenged and not caught,
 and the input is the test goal. Without one it is undecided (UNKNOWN), never green. A
 proposal whose target or generation context changed is stale until it is regenerated.
-A draft test for a distinguished mutant is kept only when it passes on the original
-three times in a row, fails on the mutant, imports nothing beyond the public API and the
-modules the contract's own tests already import, and uses no process, file-system or
-dynamic-code primitive; a draft that reaches beyond that is rejected without being run.
+A draft test for a distinguished mutant is judged in the project's style (formatted and
+safely fixed by its ruff rules) and kept only when it breaks no lint rule, passes on the
+original five times in a row, fails on the mutant, imports nothing beyond the public API and
+the modules the contract's own tests already import, and uses no process, file-system or
+dynamic-code primitive; a draft that breaks a lint rule or reaches beyond that is rejected
+without being run.
 
 Proposals and drafts come from a model through the metered adapter (``model_generation.py``,
 ADR_0004); this module renders what the model is asked and turns an accepted answer into
@@ -740,13 +742,39 @@ def allowed_imports(root: Path, tests: list[str]) -> set[str]:
     return allowed
 
 
-def draft_imports(code: str) -> set[str]:
+def draft_imports(code: str, allowed: set[str] | frozenset[str] = frozenset()) -> set[str]:
+    """The modules a draft imports: ``from package import module`` imports that module, not the
+    package, when the module is allowed."""
     found = set()
     for node in ast.walk(ast.parse(code)):
         if isinstance(node, ast.ImportFrom) and node.module and not node.level:
-            found.add(node.module)
+            modules = {f"{node.module}.{alias.name}" for alias in node.names}
+            found.update(modules if modules <= allowed else {node.module})
         elif isinstance(node, ast.Import):
             found.update(alias.name for alias in node.names)
+    return found
+
+
+def module_imports(path: Path, module: str) -> set[str]:
+    """The project modules a source file imports itself, relative imports resolved: the types a
+    unit test of that module builds its inputs from."""
+    parts = module.split(".")
+    initializer = path.name == "__init__.py"
+    source_root = path.parents[len(parts) - (0 if initializer else 1)]
+    anchor_parts = parts if initializer else parts[:-1]
+
+    def is_module(name: str) -> bool:
+        location = source_root.joinpath(*name.split("."))
+        return location.with_suffix(".py").is_file() or (location / "__init__.py").is_file()
+
+    found = set()
+    for node in ast.walk(ast.parse(path.read_text())):
+        if isinstance(node, ast.ImportFrom):
+            anchor = anchor_parts[: len(anchor_parts) - node.level + 1] if node.level else []
+            base = ".".join([*anchor, *([node.module] if node.module else [])])
+            found.update(name for name in {base, *(f"{base}.{alias.name}" for alias in node.names)} if name.split(".")[0] == parts[0] and is_module(name))
+        elif isinstance(node, ast.Import):
+            found.update(alias.name for alias in node.names if alias.name.split(".")[0] == parts[0] and is_module(alias.name))
     return found
 
 
@@ -894,40 +922,86 @@ def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list
                 row["outcome"], row["reason"] = "distinguished", "it survives, and an input tells it apart from the original"
                 draft = drafts.get(proposal["id"])
                 if draft is not None:
-                    row["draft"] = judge_draft(root, workdir, draft, tests, file, original_source, mutated_source)
+                    judged = judge_draft(root, workdir, draft, tests, file, original_source, mutated_source)
+                    row["draft"] = {**{key: value for key, value in judged.items() if key != "draft"}, "draft_sha256": sha256_text(judged["draft"])}
                 results.append(row)
             finally:
                 file.write_text(original_source)
     return {"results": results, "seconds": round(time.monotonic() - started, 1), "symbolic_cache": symbolic_cache}
 
 
-def judge_draft(root: Path, workdir: Path, draft: str, tests: list[str], file: Path, original: str, mutated: str) -> dict:
-    """Keep a draft test only when it passes on the original three times, fails on the mutant,
-    imports nothing beyond the public API and what the contract's tests already import, and uses
-    no process, file-system or dynamic-code primitive. A draft that reaches beyond the allowed
-    imports or primitives is rejected without being run."""
+# A kept draft passes on the original this many times in a row (TestGen-LLM's reliability filter).
+DRAFT_PASSES = 5
+# Where a semantic mutant's draft is judged; a mutation pin is judged where it will live.
+DRAFT_PATH = "tests/test_semantic_draft.py"
+
+
+def normalize_draft(draft: str, as_path: str = DRAFT_PATH) -> tuple[str, list[str]]:
+    """A draft test in the project's own style, formatted and safely fixed by its ruff rules as the
+    file ``as_path`` would be, and the rule violations left: the form in which it is judged and kept."""
+    ruff = [shutil.which("uv") or "uv", "run", "--project", str(PROJECT), "--no-sync", "ruff"]
+
+    def through(*arguments: str, source: str) -> subprocess.CompletedProcess:
+        return subprocess.run([*ruff, *arguments, "--stdin-filename", as_path, "-"], input=source, text=True, capture_output=True, cwd=PROJECT, timeout=120, check=False)
+
+    text = draft
+    for arguments in (("format",), ("check", "--fix", "--quiet"), ("format",)):
+        done = through(*arguments, source=text)
+        if done.returncode in (0, 1) and done.stdout.strip():
+            text = done.stdout
+    left = through("check", "--no-fix", "--output-format", "concise", source=text)
+    violations = []
+    for line in left.stdout.splitlines():
+        match = re.match(r"^.*?:(\d+):\d+: ([A-Z]+\d+) (?:\[\*\] )?(.*)$", line)
+        if match:
+            violations.append(f"line {match.group(1)}: {match.group(2)} {match.group(3)}")
+    return text, violations
+
+
+def ruff_version() -> str:
+    """The ruff that normalizes drafts: a pin binds to it."""
+    done = subprocess.run([shutil.which("uv") or "uv", "run", "--project", str(PROJECT), "--no-sync", "ruff", "--version"], text=True, capture_output=True, cwd=PROJECT, check=False)
+    return done.stdout.strip()
+
+
+def judge_draft(
+    root: Path, workdir: Path, draft: str, tests: list[str], file: Path, original: str, mutated: str,
+    *, as_path: str = DRAFT_PATH, extra_imports: tuple[str, ...] = (),
+) -> dict:
+    """Keep a draft test only when, in the project's style, it breaks none of its lint rules,
+    imports nothing beyond the public API, what the contract's tests already import and the given
+    extra modules, uses no process, file-system or dynamic-code primitive, passes on the original
+    five times in a row and fails on the mutant. A draft that breaks a lint rule or reaches beyond
+    the allowed imports or primitives is rejected without being run. The judged draft is the
+    normalized one, under ``draft``."""
     try:
         ast.parse(draft)
     except SyntaxError as error:
         return {"accepted": False, "ran": False, "reason": f"it does not parse: {error.msg}", "passes_on_original": 0,
-                "fails_on_mutant": False, "imports_beyond_allowed": [], "primitives": []}
-    extra = sorted(draft_imports(draft) - allowed_imports(root, tests))
+                "fails_on_mutant": False, "imports_beyond_allowed": [], "primitives": [], "lint": [], "draft": draft}
+    draft, lint = normalize_draft(draft, as_path)
+    allowed = allowed_imports(root, tests) | set(extra_imports)
+    extra = sorted(draft_imports(draft, allowed) - allowed)
     primitives = draft_primitives(draft)
-    if extra or primitives:
+    if extra or primitives or lint:
         return {"accepted": False, "ran": False, "passes_on_original": 0, "fails_on_mutant": False,
-                "imports_beyond_allowed": extra, "primitives": primitives}
-    target = workdir / "tests/test_semantic_draft.py"
+                "imports_beyond_allowed": extra, "primitives": primitives, "lint": lint, "draft": draft}
+    target = workdir / as_path
     target.parent.mkdir(parents=True, exist_ok=True)
+    replaced = target.read_text() if target.is_file() else None
     target.write_text(draft)
     try:
         file.write_text(original)
-        runs = [run_tests(PROJECT, workdir, [str(target.relative_to(workdir))]) for _ in range(3)]
+        runs = [run_tests(PROJECT, workdir, [as_path]) for _ in range(DRAFT_PASSES)]
         passes = [run["returncode"] == 0 for run in runs]
         file.write_text(mutated)
-        fails = run_tests(PROJECT, workdir, [str(target.relative_to(workdir))])["returncode"] == 1
+        fails = run_tests(PROJECT, workdir, [as_path])["returncode"] == 1
     finally:
         file.write_text(original)
-        target.unlink(missing_ok=True)
+        if replaced is None:
+            target.unlink(missing_ok=True)
+        else:
+            target.write_text(replaced)
     return {
         "accepted": all(passes) and fails,
         "ran": True,
@@ -937,6 +1011,8 @@ def judge_draft(root: Path, workdir: Path, draft: str, tests: list[str], file: P
         "fails_on_mutant": fails,
         "imports_beyond_allowed": [],
         "primitives": [],
+        "lint": [],
+        "draft": draft,
     }
 
 
@@ -944,7 +1020,8 @@ def judge_pins(root: Path, items: list[dict]) -> list[dict]:
     """Judge draft tests against mutants given as whole module sources, rule mutants rebuilt from
     the engine's report as well as semantic ones: the same checks as a semantic draft, in one
     isolated copy. Each item names its ``key``, the source ``path``, the ``mutated_source``, the
-    ``draft`` and the contract's ``tests``."""
+    ``draft``, the contract's ``tests``, where the pin will live (``as_path``) and any
+    ``extra_imports`` it may use."""
     results = []
     if not items:
         return results
@@ -953,7 +1030,10 @@ def judge_pins(root: Path, items: list[dict]) -> list[dict]:
         workdir = isolated_copy(root, Path(scratch) / "copy", extra)
         for item in items:
             file = workdir / item["path"]
-            judged = judge_draft(root, workdir, item["draft"], item["tests"], file, file.read_text(), item["mutated_source"])
+            judged = judge_draft(
+                root, workdir, item["draft"], item["tests"], file, file.read_text(), item["mutated_source"],
+                as_path=item.get("as_path") or DRAFT_PATH, extra_imports=tuple(item.get("extra_imports") or ()),
+            )
             results.append({"key": item["key"], **judged})
     return results
 
@@ -961,14 +1041,16 @@ def judge_pins(root: Path, items: list[dict]) -> list[dict]:
 def draft_rejection(judged: dict) -> str:
     """Why the cascade rejected a draft test, in one sentence."""
     reasons = [judged["reason"]] if judged.get("reason") else []
+    if judged.get("lint"):
+        reasons.append("it breaks the project's lint rules (ruff: " + " | ".join(judged["lint"][:8]) + ")")
     if judged.get("imports_beyond_allowed"):
         reasons.append("it imports " + ", ".join(judged["imports_beyond_allowed"]))
     if judged.get("primitives"):
         reasons.append("it uses " + ", ".join(judged["primitives"]))
     if judged.get("ran", True):
-        if int(judged.get("passes_on_original") or 0) < 3:
+        if int(judged.get("passes_on_original") or 0) < DRAFT_PASSES:
             errors = judged.get("original_errors") or []
-            reasons.append("it does not pass on the original three times" + (" (pytest: " + " | ".join(errors) + ")" if errors else ""))
+            reasons.append(f"it does not pass on the original {DRAFT_PASSES} times in a row" + (" (pytest: " + " | ".join(errors) + ")" if errors else ""))
         if not judged.get("fails_on_mutant"):
             reasons.append("it does not fail on the mutant")
     return "; ".join(reasons)
@@ -1112,7 +1194,11 @@ The original gives {original_result}; the defect gives {mutant_result}.
 input above as the shape of a failing case, not as literal test data: use realistic values of the
 same shape (a token count is a positive integer, not a boolean) and name what the test pins. Build
 its inputs through the project's own types. Import only these modules: {imports}. Use no network,
-files, subprocesses, sleeps, randomness, exec or eval. Set
+files, subprocesses, sleeps, randomness, exec or eval. Keep it plain, as the project's ruff rules
+want it: lines of at most 88 characters, no try/except around the code under test, no unused
+arguments or variables, no string literal passed to or stored under a name that says secret,
+token, key or password (keep such a test value under a neutral name, such as `value`), and no
+fallbacks that guess how to build the inputs: build them one way, as the example does. Set
 pytestmark = pytest.mark.verification_kind("unit") at module level and mark the test function
 with @pytest.mark.verifies("{requirement_id}[revision=={revision}]").
 {previous}Return the complete module as test_code and one sentence on what it pins as explanation."""
@@ -1288,12 +1374,13 @@ def draft_prompt(context: dict) -> str:
 
 # --- model canaries (ADR_0006) ----------------------------------------------------------------
 
-CANARY_ROLES = ("generator", "draft_author", "verdict")
+CANARY_ROLES = ("generator", "draft_author", "verdict", "verdict_review")
 
 
 def canary_questions(calibration: Path, canaries: dict, role: str) -> list[dict]:
     """What a role's canaries ask: the very question the role is asked in earnest, on cases whose
-    outcome is known. Each item names its case, system text, prompt, schema and what to expect."""
+    outcome is known. Each item names its case, system text, prompt, schema and what to expect.
+    The verdict review answers the verdict's own question, so it passes the verdict's canaries."""
     if role == "generator":
         case = canaries["generator"]
         context = generation_context(calibration, case["requirement"], case["criteria"], case["selection"])

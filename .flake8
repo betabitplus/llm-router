@@ -1,7 +1,5 @@
 [flake8]
 max-line-length = 88
-# Mutation pins are kept byte for byte as the cascade kept them (ADR_0006).
-extend-exclude = tests/llm_router/mutation_pins
 extend-ignore = E203,E501
 max-cognitive-complexity = 15
 class-attributes-order = field,nested_class,magic_method,property_method,static_method,class_method,method

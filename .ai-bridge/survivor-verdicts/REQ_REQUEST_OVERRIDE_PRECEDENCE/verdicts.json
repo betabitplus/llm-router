@@ -11,20 +11,24 @@
    "test_focus": "With route_policy_defaults={\"max_attempts\": 5} and no call or router override for that field, the test must check that the effective max_attempts is 5, not the config default. It must also check that a call override for a different field leaves this route policy default unchanged.",
    "verdict": "pin"
   },
+  "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.625875Z",
-   "call_id": "20260926T230000Z-6a4e2f",
+   "adopted_at": "2026-09-27T20:11:01.943376Z",
+   "answer_sha256": "ba78323933a9ce7f8a8040d2191558b1df895ff2d3d8c68a4d32c97e07657186",
+   "call_id": "20260927T200323Z-2a30ba",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "12ec288ec82f9e71865b6b65349f07387c001a54b6c800debf86750151a83f16",
+   "draft_sha256": "ba78323933a9ce7f8a8040d2191558b1df895ff2d3d8c68a4d32c97e07657186",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_39cd06b3a9c8bc51.py",
-   "response_sha256": "3eaf7c55621b4424644ebf4678b57cc70086a7034d1db2cbd3649e3f1adb3420",
+   "response_sha256": "7f2739f39d7dfd3b6f8d827b5aa67f13e49314f9268a35bdfa873fe80e837afb",
    "source": "draft author"
   },
   "prompt_sha256": "f6aa8580973a5dfba265d40255669bb2641b86f479b8c5f47cf274c357d6ebaa"
@@ -41,18 +45,22 @@
    "test_focus": "The test must check that a request-level provider kwarg, both one not listed in CALL_OVERRIDE_FIELDS and one that clashes with a route or router default kwarg, shows up in EffectiveSettings.kwargs with the call value. It must also check that unrelated default kwargs are kept.",
    "verdict": "pin"
   },
+  "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.627073Z",
+   "adopted_at": "2026-09-27T19:54:19.550745Z",
+   "answer_sha256": "a88210ec78bb9cefb67c3257edc547bd840151968ee47d5bb293c14114060f83",
    "call_id": "20260926T230019Z-ebff45",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
    "draft_sha256": "a88210ec78bb9cefb67c3257edc547bd840151968ee47d5bb293c14114060f83",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_bf8a96501e88d45d.py",
    "response_sha256": "d77c96f10e31a8d3420cf4de376a80ec162326e30ee04d358e5fe446293b74d5",
    "source": "draft author"
@@ -71,18 +79,22 @@
    "test_focus": "Check that router-default kwargs appear in the effective kwargs and override route-default kwargs with the same key. Also check that request kwargs override them while unrelated router kwargs survive.",
    "verdict": "pin"
   },
+  "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.628083Z",
+   "adopted_at": "2026-09-27T19:54:19.551497Z",
+   "answer_sha256": "f76b9ba234f72d1e2e789acc6a2f993cde503b2a1ffb0b3fc3d439a8fd37f0d0",
    "call_id": "20260926T230043Z-f14076",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
    "draft_sha256": "f76b9ba234f72d1e2e789acc6a2f993cde503b2a1ffb0b3fc3d439a8fd37f0d0",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_e238ff65d72c6c1f.py",
    "response_sha256": "b3e096e302bbd1fdce602b63b08c3d1009a78cc53d5d6a6c786091552d98a64e",
    "source": "draft author"

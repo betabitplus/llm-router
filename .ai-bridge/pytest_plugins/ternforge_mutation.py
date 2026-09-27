@@ -27,10 +27,11 @@ import re
 import tokenize
 from dataclasses import dataclass, field
 
-OPERATOR_NAMES = ("comparison", "boundary", "boolean", "return", "statement", "body")
-# Most productive first (Google's operator productivity: relational, logical, statement
-# removal, then the rest); a pull request reports one survivor per line in this order.
-OPERATOR_PRIORITY = ("comparison", "boolean", "statement", "return", "boundary", "body")
+OPERATOR_NAMES = ("comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body")
+# The prior of operator productivity (Google's: relational, logical, statement removal, then
+# the rest); the recorded verdicts refine it, and a pull request reports one survivor per line
+# in that order.
+OPERATOR_PRIORITY = ("comparison", "boolean", "arithmetic", "statement", "return", "boundary", "body")
 ARID_RULES = ("arid.logging", "arid.sleep", "arid.type-checking", "arid.repr")
 SUPPRESSION_CATEGORIES = ("equivalent", "unproductive", "arid")
 
@@ -318,7 +319,8 @@ def _is_logging_call(call: ast.Call) -> bool:
     if name == "warnings.warn":
         return True
     leaf = name.split(".")[-1]
-    if leaf.startswith("log_"):
+    # A project's own log helpers, public or private (`log_…`, `_log_…`), only log.
+    if leaf.lstrip("_").startswith("log_"):
         return True
     if isinstance(call.func, ast.Attribute) and call.func.attr in LOG_METHODS:
         owner = (dotted_name(call.func.value) or "").split(".")[-1].lower()

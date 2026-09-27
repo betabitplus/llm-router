@@ -1,8 +1,9 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS 4a11c78df0078b1f
-# pinned-by: claude-opus-5-5: The constraint is that policy max attempts must be at least 1, so a value of 1 is valid. The mutant rejects it with a ConfigurationError, which blocks a legitimate no-retry setup and moves the boundary the requirement enforces. Execution confirms the two versions behave differently on the same input
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 from dataclasses import replace
+
 import pytest
 
 from llm_router import ConfigurationError

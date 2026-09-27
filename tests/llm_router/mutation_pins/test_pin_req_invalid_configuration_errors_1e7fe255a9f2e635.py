@@ -1,5 +1,5 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS 1e7fe255a9f2e635
-# pinned-by: claude-opus-5-5: The mutant moves the constraint boundary so that min_routes_for_fallback_shuffle=1 now fails validation. The constraint and its own message say values of at least 1 are valid, so the mutant rejects a valid configuration with ConfigurationError. The confirmed input shows this, so the requirement's de
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 from dataclasses import replace

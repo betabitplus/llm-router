@@ -33,6 +33,10 @@ scenarios("routing/fallback.feature")
 for _test_name, _criterion in (
     ("test_a_failed_route_falls_back_to_the_next_route", "VC_SYNC_ROUTE_FALLBACK"),
     (
+        "test_the_last_route_error_is_exposed_when_every_route_fails",
+        "VC_SYNC_ROUTE_FALLBACK_TERMINAL",
+    ),
+    (
         "test_a_timedout_route_falls_back_without_waiting_for_it_indefinitely",
         "VC_ROUTE_TIMEOUT_FALLBACK",
     ),
@@ -64,7 +68,7 @@ globals()[_test_name] = pytest.mark.assurance_item(
     "AC_ROUTE_FALLBACK_MULTI_HOP_STICKY"
 )(globals()[_test_name])
 globals()[_test_name] = pytest.mark.verifies(
-    "REQ_SYNC_ROUTE_FALLBACK[revision==1]",
+    "REQ_SYNC_ROUTE_FALLBACK[revision==2]",
     "REQ_ROUTE_STICKY_START[revision==1]",
 )(globals()[_test_name])
 globals()[_test_name] = pytest.mark.verification_kind("bdd")(globals()[_test_name])
@@ -92,6 +96,11 @@ for _test_name, _path_id in (
 for _test_name, _contract_id, _fault_class in (
     (
         "test_a_failed_route_falls_back_to_the_next_route",
+        "REQ_SYNC_ROUTE_FALLBACK",
+        "interface.error-status",
+    ),
+    (
+        "test_the_last_route_error_is_exposed_when_every_route_fails",
         "REQ_SYNC_ROUTE_FALLBACK",
         "interface.error-status",
     ),
@@ -228,6 +237,53 @@ def second_route_is_used(case: dict[str, Any]) -> None:
 @then("the routing trace contains both attempts")
 def both_attempts_are_visible(case: dict[str, Any]) -> None:
     assert [attempt.route_index for attempt in case["response"].routing_trace] == [0, 1]
+
+
+@given("every route fails")
+def every_route_fails(case: dict[str, Any]) -> None:
+    case["route_statuses"] = (400, 422)
+
+
+@when("the failing request is executed")
+def failing_request_is_executed(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_SYNC_ROUTE_FALLBACK",
+        fault_class="interface.error-status",
+        mechanism="scripted provider returns an HTTP error status on every route",
+        details={"status_codes": list(case["route_statuses"])},
+    )
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", _TIMEOUT_PATH): [
+                ScriptedResponse(
+                    status_code=status_code,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_error_response(
+                        status_code=status_code,
+                        message="route failed",
+                    ),
+                )
+                for status_code in case["route_statuses"]
+            ]
+        },
+    ) as server:
+        with (
+            patched_openai_sdk(
+                forced_base_url=f"{server.base_url}/v1",
+                disable_sdk_retries=True,
+            ),
+            pytest.raises(ProviderError) as raised,
+        ):
+            case["router"].query("hello")
+        case["error"] = raised.value
+        case["request_count"] = server.request_count("POST", _TIMEOUT_PATH)
+
+
+@then("the request fails with the last route's error")
+def last_route_error_is_public(case: dict[str, Any]) -> None:
+    assert case["request_count"] == len(case["route_statuses"])
+    assert f"status code {case['route_statuses'][-1]}." in str(case["error"])
 
 
 @given("the first route exceeds its attempt timeout", target_fixture="case")

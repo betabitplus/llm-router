@@ -74,13 +74,13 @@ Contracts in this capability:
 :id: REQ_TOOL_CHOICE
 :collapse: true
 :status: accepted
-:revision: 1
+:revision: 2
 :required_evidence: impl;bdd;unit
 :derives: FEAT_TOOL_SELECTION
 
-**Statement.** When the caller explicitly selects a named tool, a supported provider route shall request and execute that tool rather than silently choosing another registered tool.
+**Statement.** When the caller explicitly selects a named tool, a supported provider route shall request and execute that tool rather than silently choosing another registered tool. When the caller requires a tool call without naming one, a supported provider route shall ask the provider to call one of the registered tools.
 
-**Rationale.** Explicit tool choice is caller intent; silently substituting another tool can change side effects and invalidate the meaning of the request.
+**Rationale.** Explicit tool choice is caller intent; silently substituting another tool, or letting the model answer without the required call, can change side effects and invalidate the meaning of the request.
 
 ```
 

@@ -29,6 +29,17 @@ def load_domain():
     return module
 
 
+def load_fingerprints():
+    """The campaign's own fingerprints by meaning (implementation_faults.plugin_sha256), so the gate
+    judges freshness by the same rule the campaign and the qualification use."""
+    spec = importlib.util.spec_from_file_location("gate_implementation_faults", BRIDGE / "implementation_faults.py")
+    if spec is None or spec.loader is None:
+        raise RuntimeError("could not load the implementation faults module")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def load(path: Path):
     return json.loads(path.read_text())
 
@@ -218,7 +229,7 @@ def check_verification_explorer(module: str) -> None:
         answered = load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}
         decided = load(folder / "decisions.json") if (folder / "decisions.json").is_file() else {}
         for key in set(answered) | set(decided):
-            recorded_verdicts[(folder.name, key)] = (decided.get(key) or {}).get("verdict") or ((answered.get(key) or {}).get("answer") or {}).get("verdict")
+            recorded_verdicts[(folder.name, key)] = effective_verdict(answered.get(key) or {}, decided.get(key))
     mutants_expected = []
     for contract_id, entry in sorted((campaign.get("contracts") or {}).items()):
         classes_actual = ((facts.get(contract_id) or {}).get("fault_actual") or {}).get("classes") or {}
@@ -236,7 +247,7 @@ def check_verification_explorer(module: str) -> None:
             status = "pass" if raw in {"zapped", "timeout"} else "na" if raw in {"pardoned", "error"} else "fail"
             cause = [] if status != "fail" else ["notreached" if result.get("covered") is False else "survivors"]
             fingerprint = str(result.get("fingerprint"))
-            judged = recorded_verdicts.get((contract_id, fingerprint)) if cause == ["survivors"] and raw == "survived" else None
+            judged = recorded_verdicts.get((contract_id, fingerprint)) if raw == "survived" and cause in (["survivors"], ["notreached"]) else None
             mutants_expected.append((contract_id, fingerprint, status, cause, klass, judged if judged in {"equivalent", "irrelevant"} else None))
     semantic_expected = []
     for contract_id in sorted(semantic_selections()):
@@ -392,10 +403,11 @@ def check_verification_explorer(module: str) -> None:
     )
 
 
-MUTATION_OPERATORS = ["comparison", "boundary", "boolean", "return", "statement", "body"]
+MUTATION_OPERATORS = ["comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body"]
 MUTATION_CLASSES = {
     "comparison": "impl.comparison",
     "boundary": "impl.boundary",
+    "arithmetic": "impl.arithmetic",
     "boolean": "impl.control-flow",
     "return": "impl.control-flow",
     "statement": "impl.effect",
@@ -430,17 +442,14 @@ def check_mutation_system(monitor_facts: dict) -> None:
     outcome, the standard report recounted from the retained engine reports, visible pragmas, the
     pull-request diff, and no trace of mutmut or of mutation scores."""
     campaign = load(ROOT / "test-results/implementation-faults/campaign.json")
-    modules = sorted((BRIDGE / "pytest_plugins").glob("*.py"))
-    extension_digest = hashlib.sha256(
-        b"".join(module.name.encode() + b"\0" + module.read_bytes() for module in modules)
-    ).hexdigest()
+    extension_digest = load_fingerprints().plugin_sha256()
     engine = campaign.get("engine_configuration") or {}
     check(
         campaign.get("schema") == "ternforge-implementation-fault-campaign-2"
         and engine.get("operators") == MUTATION_OPERATORS
         and engine.get("plugin_sha256") == extension_digest
         and campaign.get("class_by_operator") == MUTATION_CLASSES,
-        "the campaign runs the six operators of the current engine extension and maps statement and body removal to impl.effect",
+        "the campaign runs the seven operators of the current engine extension, arithmetic to impl.arithmetic and statement and body removal to impl.effect",
     )
     entries = campaign.get("contracts") or {}
     stale_engine = sorted(
@@ -468,6 +477,19 @@ def check_mutation_system(monitor_facts: dict) -> None:
         len(effect_states) == 63 and all(state in {"required", "optional", "na"} for state in effect_states.values())
         and not any("mutation" in (contract.get("target") or {}) for contract in contracts.values()),
         "every one of the 63 verification profiles classifies impl.effect, and none selects a mutation threshold",
+    )
+    arithmetic_states = {
+        contract_id: next(
+            (item.get("state") for group in (contract.get("target") or {}).get("fault_groups") or [] for item in group.get("items") or [] if item.get("id") == "impl.arithmetic"),
+            None,
+        )
+        for contract_id, contract in contracts.items()
+    }
+    check(
+        len(arithmetic_states) == 63 and all(state in {"required", "optional", "na"} for state in arithmetic_states.values())
+        and {contract_id for contract_id, state in arithmetic_states.items() if state == "required"}
+        == {"REQ_CREDENTIAL_RESOLUTION", "REQ_STRUCTURED_OUTPUT_REPAIR", "TREQ_RATE_LIMIT_STATE", "TREQ_USAGE_NORMALIZATION"},
+        "every one of the 63 verification profiles classifies impl.arithmetic, required where the contract's code computes with it",
     )
     check(
         not any("### Blocking mutation checks" in path.read_text() for path in (ROOT / "docs/verification-profiles").glob("*.md")),
@@ -889,13 +911,13 @@ def check_semantic_mutants(monitor_facts: dict) -> None:
             and all((row.get("tests") or {}).get("returncode") == 1 for row in rows.values() if row["outcome"] == "caught")
             and all((row.get("tests") or {}).get("returncode") == 0 for row in rows.values() if row["outcome"] in {"distinguished", "undecided"})
             and all(
-                (row.get("draft") or {}).get("passes_on_original") == 3 and (row.get("draft") or {}).get("fails_on_mutant") is True
+                (row.get("draft") or {}).get("passes_on_original") == 5 and (row.get("draft") or {}).get("fails_on_mutant") is True
                 for row in rows.values()
                 if (row.get("draft") or {}).get("accepted")
             )
-            and all((row.get("draft") or {}).get("ran") is False for row in rows.values() if (row.get("draft") or {}).get("primitives") or (row.get("draft") or {}).get("imports_beyond_allowed")),
+            and all((row.get("draft") or {}).get("ran") is False for row in rows.values() if (row.get("draft") or {}).get("primitives") or (row.get("draft") or {}).get("imports_beyond_allowed") or (row.get("draft") or {}).get("lint")),
             f"{contract_id}: a caught mutant failed a contract test, a survivor passed them all, a distinguished one names its input, "
-            "a kept draft passes three times and fails on its mutant, and a draft that reaches beyond was never run",
+            "a kept draft passes five times and fails on its mutant, and a draft that reaches beyond or breaks a lint rule was never run",
         )
         for class_id in {row["class"] for row in rows.values()}:
             counts = {outcome: sum(row["outcome"] == outcome for row in rows.values() if row["class"] == class_id) for outcome in SEMANTIC_OUTCOME_STATUS}
@@ -934,25 +956,71 @@ def pin_body(text: str) -> str:
     return "\n".join(line for line in text.splitlines() if not line.startswith(PIN_HEADERS)).strip() + "\n"
 
 
+_SEMANTIC = None
+
+
+def semantic_module():
+    """The cascade's module, loaded once: the gate normalizes a pin's origin as the cascade did."""
+    global _SEMANTIC
+    if _SEMANTIC is None:
+        spec = importlib.util.spec_from_file_location("gate_semantic_mutants", BRIDGE / "semantic_mutants.py")
+        if spec is None or spec.loader is None:
+            raise RuntimeError("could not load the semantic mutant cascade")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _SEMANTIC = module
+    return _SEMANTIC
+
+
+VERDICTS = ("pin", "equivalent", "irrelevant", "escalate")
+SUPPRESSING = ("equivalent", "irrelevant")
+
+
+def effective_verdict(entry: dict, decided: dict | None = None) -> str | None:
+    """The verdict a record holds as it counts (ADR_0006): the person's; else the model's pin or
+    escalate; its equivalent or irrelevant only with a review that agrees, pin against one that
+    does not, none without one."""
+    if decided and decided.get("verdict") in VERDICTS and decided.get("reason"):
+        return decided["verdict"]
+    answer = entry.get("answer") or {}
+    if answer.get("problems") or answer.get("verdict") not in VERDICTS:
+        return None
+    if answer["verdict"] not in SUPPRESSING:
+        return answer["verdict"]
+    review = entry.get("review") or {}
+    if review.get("prompt_sha256") != entry.get("prompt_sha256") or review.get("problems") or review.get("verdict") not in VERDICTS:
+        return None
+    return answer["verdict"] if review["verdict"] in SUPPRESSING else "pin"
+
+
 def pin_origin_holds(models, by_call: dict, folder: Path, key: str, pin: dict) -> bool:
-    """A pin's test is what its origin wrote: the draft author's stored, ledgered answer, or the
-    semantic draft the cascade already kept for that mutant."""
-    digest = pin.get("draft_sha256")
+    """A pin's test is what its origin wrote, in the project's style: the draft author's stored,
+    ledgered answer, or the semantic draft the cascade kept, normalized again by the same ruff into
+    exactly the pin's body, with no lint rule left broken."""
+    semantic = semantic_module()
     if pin.get("source") == "draft author":
         path = folder / "responses" / f"{pin.get('call_id')}.json"
         response = load(path) if path.is_file() else {}
         call = by_call.get(str(pin.get("call_id"))) or {}
-        code = str((response.get("structured") or {}).get("test_code") or "")
-        return bool(response) and not models.verify_response(response) and (
-            models.response_sha256(response) == pin.get("response_sha256") == call.get("response_sha256")
+        if not (
+            bool(response) and not models.verify_response(response)
+            and models.response_sha256(response) == pin.get("response_sha256") == call.get("response_sha256")
             and call.get("outcome") == "ok" and response.get("purpose") == "mutation-pin" and response.get("subject") == key
-            and hashlib.sha256(pin_body(code).encode()).hexdigest() == digest
-        )
-    if pin.get("source") == "kept semantic draft":
+        ):
+            return False
+        draft = semantic.draft_from_answer(key, response.get("structured") or {})
+    elif pin.get("source") == "kept semantic draft":
         drafts = sorted((BRIDGE / "semantic-mutants" / folder.name / "drafts").glob("*.draft.py"))
         kept = [path.read_text() for path in drafts if re.search(rf"# semantic-mutant: {re.escape(key)}\s", path.read_text())]
-        return len(kept) == 1 and hashlib.sha256(pin_body(kept[0]).encode()).hexdigest() == digest
-    return False
+        if len(kept) != 1:
+            return False
+        draft = kept[0]
+    else:
+        return False
+    if hashlib.sha256(pin_body(draft).encode()).hexdigest() != pin.get("answer_sha256") or pin.get("normalizer") != semantic.ruff_version():
+        return False
+    normalized, lint = semantic.normalize_draft(draft, str(pin.get("path")))
+    return not lint and hashlib.sha256(pin_body(normalized).encode()).hexdigest() == pin.get("draft_sha256")
 
 
 def check_survivor_verdicts(models, by_call: dict, usable: set) -> None:
@@ -972,18 +1040,21 @@ def check_survivor_verdicts(models, by_call: dict, usable: set) -> None:
     recorded: set[str] = set()
     for folder in sorted(path for path in verdict_dir.iterdir() if path.is_dir()) if verdict_dir.is_dir() else []:
         verdicts = load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}
+        decided = load(folder / "decisions.json") if (folder / "decisions.json").is_file() else {}
         bound = pins_ok = True
         for key, entry in verdicts.items():
-            answer = entry.get("answer") or {}
-            response_path = folder / "responses" / f"{answer.get('call_id')}.json"
-            response = load(response_path) if response_path.is_file() else {}
-            call = by_call.get(str(answer.get("call_id"))) or {}
-            structured = response.get("structured") or {}
-            bound = bound and bool(response) and (
-                models.response_sha256(response) == answer.get("response_sha256") == call.get("response_sha256")
-                and call.get("outcome") == "ok" and response.get("backend") in usable
-                and all(structured.get(name) == answer.get(name) for name in ("verdict", "level", "reason", "test_focus"))
-            )
+            # The verdict and, for a suppression, its review: each a stored, ledgered call's answer to the entry's question.
+            for answer in [entry.get("answer") or {}, *([entry["review"]] if entry.get("review") else [])]:
+                response_path = folder / "responses" / f"{answer.get('call_id')}.json"
+                response = load(response_path) if response_path.is_file() else {}
+                call = by_call.get(str(answer.get("call_id"))) or {}
+                structured = response.get("structured") or {}
+                bound = bound and bool(response) and (
+                    models.response_sha256(response) == answer.get("response_sha256") == call.get("response_sha256")
+                    and call.get("outcome") == "ok" and response.get("backend") in usable
+                    and response.get("prompt_sha256") == entry.get("prompt_sha256")
+                    and all(structured.get(name) == answer.get(name) for name in ("verdict", "level", "reason", "test_focus"))
+                )
             pin = entry.get("pin")
             if not pin:
                 continue
@@ -994,7 +1065,7 @@ def check_survivor_verdicts(models, by_call: dict, usable: set) -> None:
                 pin_text.startswith(f"# mutation-pin: {folder.name} {key}\n")
                 and hashlib.sha256(pin_body(pin_text).encode()).hexdigest() == pin.get("draft_sha256")
                 and (pin.get("cascade") or {}).get("accepted") is True
-                and answer.get("verdict") == "pin"
+                and effective_verdict(entry, decided.get(key)) == "pin"
                 and pin_origin_holds(models, by_call, folder, key, pin)
             )
         check(bound, f"{folder.name}: every verdict about its survivors is a stored, ledgered call's answer")
@@ -1481,6 +1552,7 @@ def main() -> None:
         "Mutation signal",
         "surviving mutant on a changed line",
         "`impl.effect`",
+        "`impl.arithmetic`",
         "##### Mutant outcomes",
         "##### Arid code",
         "##### Validity",
@@ -2129,6 +2201,7 @@ def main() -> None:
     tool_choice_actual = tool_choice.get("coverage_actual") or {}
     named_forms = tool_choice_actual.get("VC_TOOL_CHOICE_NAMED_INPUT_FORMS") or []
     named_serializers = tool_choice_actual.get("VC_TOOL_CHOICE_NAMED_SERIALIZERS") or []
+    required_choice = tool_choice_actual.get("VC_TOOL_CHOICE_REQUIRED") or []
     replay_choice = tool_choice_actual.get("VC_TOOL_CHOICE_REPLAY_FAMILIES") or []
     local_choice = tool_choice_actual.get("VC_TOOL_CHOICE_GOOGLE_GENAI") or []
     check(
@@ -2136,6 +2209,7 @@ def main() -> None:
             == {
                 "VC_TOOL_CHOICE_NAMED_INPUT_FORMS": 2,
                 "VC_TOOL_CHOICE_NAMED_SERIALIZERS": 4,
+                "VC_TOOL_CHOICE_REQUIRED": 5,
             }
         and tool_choice_targets.get(("system_integration", "replay"), {}).get("item_path_counts")
             == {"VC_TOOL_CHOICE_REPLAY_FAMILIES": 4}
@@ -2143,9 +2217,10 @@ def main() -> None:
             == {"VC_TOOL_CHOICE_GOOGLE_GENAI": 1}
         and len(named_forms) == 2
         and len(named_serializers) == 4
+        and len(required_choice) == 5
         and len(replay_choice) == 4
         and len(local_choice) == 1,
-        "Tool Choice preserves independent public-input, provider-serializer and provider-family denominators without last-test-wins collapse",
+        "Tool Choice preserves independent public-input, provider-serializer, required-call and provider-family denominators without last-test-wins collapse",
     )
     check(
         all(
@@ -2153,7 +2228,7 @@ def main() -> None:
             and row.get("level") == "component"
             and row.get("boundary") == "none"
             and row.get("representation") == "actual"
-            for row in [*named_forms, *named_serializers]
+            for row in [*named_forms, *named_serializers, *required_choice]
         )
         and all(
             row.get("result") == "passed"
@@ -3751,8 +3826,9 @@ def main() -> None:
         )
 
     routing_fault_expectations = {
+        # The fallback that succeeds and, since revision 2, the request whose every route fails.
         "REQ_SYNC_ROUTE_FALLBACK": {
-            "interface.error-status": (1, 1),
+            "interface.error-status": (2, 2),
         },
         "REQ_ROUTE_TIMEOUT_FALLBACK": {
             "runtime.latency-timeout": (4, 4),
@@ -5715,11 +5791,12 @@ def main() -> None:
         impl_campaign.get("engine", {}).get("name") == "pytest-gremlins"
         and class_map.get("comparison") == "impl.comparison"
         and class_map.get("boundary") == "impl.boundary"
+        and class_map.get("arithmetic") == "impl.arithmetic"
         and class_map.get("boolean") == "impl.control-flow"
         and class_map.get("return") == "impl.control-flow"
         and class_map.get("statement") == "impl.effect"
         and class_map.get("body") == "impl.effect",
-        "Implementation fault campaign is retained and maps its operator families onto all four Implementation classes",
+        "Implementation fault campaign is retained and maps its operator families onto all five Implementation classes",
     )
     full_pytest_plugin = BRIDGE / "pytest_plugins/gremlins_full_pytest.py"
     faults_source = (BRIDGE / "implementation_faults.py").read_text()
@@ -6839,6 +6916,8 @@ def main() -> None:
         "src/llm_router/_api/errors.py",
         "src/llm_router/_internal/capabilities/schema.py",
         "src/llm_router/_internal/capabilities/content.py",
+        # Its @impl link follows REQ_TOOL_CHOICE to revision 2, the owner's decision (history 046).
+        "src/llm_router/_internal/capabilities/tools.py",
         "src/llm_router/_internal/config/validation.py",
         "src/llm_router/_internal/providers/_prompted.py",
         "src/llm_router/_internal/providers/aistudio.py",
@@ -6872,8 +6951,9 @@ def main() -> None:
         "tests/llm_router/bdd/structured_output/cassettes/",
         "tests/llm_router/property_based/internal/test_invariants.py",
         "tests/llm_router/mutation_pins/",
-        # flake8 leaves the mutation pins as the cascade kept them (ADR_0006).
         ".flake8",
+        "typos.toml",
+        ".pre-commit-config.yaml",
         ".github/workflows/mutation-pilot.yml",
         "tests/llm_router/support/fault_server.py",
         "tests/llm_router/support/fault_observation.py",

@@ -39,7 +39,7 @@ for _test_name, _criterion, _contracts in (
         "test_a_forced_named_tool_result_is_returned_before_the_final_provider_response",
         "AGI_TOOL_SELECTION_EXECUTION_HANDOFF",
         (
-            "REQ_TOOL_CHOICE[revision==1]",
+            "REQ_TOOL_CHOICE[revision==2]",
             "REQ_MULTI_ROUND_TOOL_EXECUTION[revision==1]",
         ),
     ),

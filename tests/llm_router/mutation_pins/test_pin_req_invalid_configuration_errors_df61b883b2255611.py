@@ -1,5 +1,5 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS df61b883b2255611
-# pinned-by: claude-opus-5-5: The constraint is "structured output max attempts must be at least 1". The mutant rejects the valid boundary value 1 with a ConfigurationError, so it fails a configuration that breaks no constraint. That shifts the boundary the requirement's rejection is defined by, and a valid public request would
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 from dataclasses import replace

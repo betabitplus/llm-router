@@ -13,20 +13,22 @@ to exist.
 ## Profile · REQ_SYNC_ROUTE_FALLBACK
 
 **Verification intent.** Prove that a synchronous provider-route failure does not
-terminate a request while another eligible route remains, and that the public result
-retains the ordered failed/successful attempt trace.
+terminate a request while another eligible route remains, that the public result
+retains the ordered failed/successful attempt trace, and that a request whose every
+route fails raises the last route's error.
 
 **Models:** {ref}`Routing fallback <test-plan-routing-fallback-model>`
 
 ### Required coverage
 
-| Test level         | Boundary   | Representation | M&S target |          Target |
-| ------------------ | ---------- | -------------- | ---------- | --------------: |
-| System Integration | Substitute | Surrogate      | L0         | **1 criterion** |
+| Test level         | Boundary   | Representation | M&S target |         Target |
+| ------------------ | ---------- | -------------- | ---------- | -------------: |
+| System Integration | Substitute | Surrogate      | L0         | **2 criteria** |
 
 **Coverage basis.** One public synchronous workflow must execute a real provider-facing
 attempt that fails, continue to the next eligible route, succeed there, and retain both
-attempts in order. Additional failure mechanisms belong to the Fault Model rather than
+attempts in order. A second one fails on every eligible route and must raise the last
+route's error. Additional failure mechanisms belong to the Fault Model rather than
 inflating the semantic-path denominator.
 
 **Representation basis.** The router/provider-adapter path is actual llm-router code.
@@ -35,9 +37,10 @@ and trace ordering, not fidelity of provider reasoning.
 
 ### Verification criteria
 
-| Criterion                | Contract                                 | Test level         | Boundary   | Required paths | Success criterion                                                                                                                                  |
-| ------------------------ | ---------------------------------------- | ------------------ | ---------- | -------------: | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VC_SYNC_ROUTE_FALLBACK` | {need}`[[id]] <REQ_SYNC_ROUTE_FALLBACK>` | System Integration | Substitute |              1 | A failed synchronous provider attempt falls through to the next eligible route, which succeeds, and the trace preserves failed → successful order. |
+| Criterion                         | Contract                                 | Test level         | Boundary   | Required paths | Success criterion                                                                                                                                  |
+| --------------------------------- | ---------------------------------------- | ------------------ | ---------- | -------------: | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VC_SYNC_ROUTE_FALLBACK`          | {need}`[[id]] <REQ_SYNC_ROUTE_FALLBACK>` | System Integration | Substitute |              1 | A failed synchronous provider attempt falls through to the next eligible route, which succeeds, and the trace preserves failed → successful order. |
+| `VC_SYNC_ROUTE_FALLBACK_TERMINAL` | {need}`[[id]] <REQ_SYNC_ROUTE_FALLBACK>` | System Integration | Substitute |              1 | When every eligible synchronous route fails, each is attempted once and the request raises the last route's provider error.                        |
 
 ### Evidence aggregation
 
@@ -54,7 +57,7 @@ and trace ordering, not fidelity of provider reasoning.
 
 | REQUIRED                                                                                              | OPTIONAL | N/A                                                                                      |
 | ----------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect` · `runtime.unavailable-disconnect` · `runtime.malformed-response` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout`                          |
+| `impl.control-flow` · `impl.effect` · `runtime.unavailable-disconnect` · `runtime.malformed-response` | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout`      |
 | `interface.unexpected-interaction` · `interface.error-status`                                         | —        | `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
 | `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary`                      | —        | —                                                                                        |
 
@@ -66,7 +69,7 @@ and trace ordering, not fidelity of provider reasoning.
 | Runtime / dependency  | Disconnect/unavailability and malformed provider results are distinct route-failure mechanisms that must still permit fallback; timeout is specified separately.                   |
 | Interface / protocol  | A provider error status must not stop eligible fallback, and no additional external route may run after the successful fallback result.                                            |
 | Architecture          | This Requirement constrains observable routing behavior rather than a particular internal layering topology.                                                                       |
-| Specification / model | Successful fallback, failure-mechanism partitions, and failed→successful trace order are all normative semantics.                                                                  |
+| Specification / model | Successful fallback, failure-mechanism partitions, failed→successful trace order, and the last route's error when every route fails are all normative semantics.                   |
 
 (verification-profile-req-route-timeout-fallback)=
 
@@ -115,7 +118,7 @@ external provider fidelity.
 
 | REQUIRED                                                                                                              | OPTIONAL | N/A                                                                                                                 |
 | --------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
-| `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout`                                     | —        | `impl.comparison` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                 |
+| `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout`                                     | —        | `impl.comparison` · `impl.arithmetic` · `runtime.unavailable-disconnect` · `runtime.malformed-response`             |
 | `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
 
 #### Fault-group rationale
@@ -176,7 +179,7 @@ is sufficient.
 
 | REQUIRED                                                                             | OPTIONAL | N/A                                                                                                                                                  |
 | ------------------------------------------------------------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`            | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                                          |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`            | —        | `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                      |
 | `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
@@ -239,9 +242,9 @@ Surrogate/L0 evidence for the public routing-order claim.
 
 ### Fault applicability
 
-| REQUIRED                                                                                   | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                      |
-| ------------------------------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.wrong-ordering-boundary` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` |
+| REQUIRED                                                                                   | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.wrong-ordering-boundary` | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` |
 
 #### Fault-group rationale
 
@@ -296,9 +299,9 @@ without an external dependency or surrogate model.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                            | OPTIONAL | N/A                                                                                                                                                                                                                                                                                             |
-| ------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.control-flow` · `impl.effect` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-outcome` |
+| REQUIRED                                                                                                            | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.control-flow` · `impl.effect` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-outcome` |
 
 #### Fault-group rationale
 
@@ -364,9 +367,9 @@ Requirement claims local availability policy and externally visible interaction 
 
 ### Fault applicability
 
-| REQUIRED                                                                             | OPTIONAL                         | N/A                                                                                                                                                                                                                                                                                         |
-| ------------------------------------------------------------------------------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `interface.unexpected-interaction` · `interface.error-status` · `spec.wrong-outcome` | `runtime.unavailable-disconnect` | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.malformed-response` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                             | OPTIONAL                         | N/A                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------ | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `interface.unexpected-interaction` · `interface.error-status` · `spec.wrong-outcome` | `runtime.unavailable-disconnect` | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.malformed-response` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
@@ -420,19 +423,19 @@ there is no external model or provider boundary.
 
 ### Fault applicability
 
-| REQUIRED                                                                                             | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                            |
-| ---------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `spec.missing-partition` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                                 | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `impl.control-flow` · `impl.effect` · `spec.missing-partition` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                           |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Comparisons, thresholds, and branch/reset logic directly implement the technical state invariants. A dropped state write or reset leaves stale limiter state. |
-| Runtime / dependency  | The invariants are local state behavior and do not depend on an external provider fault mode.                                                                 |
-| Interface / protocol  | No external payload or interaction shape is normative for this TREQ.                                                                                          |
-| Architecture          | No package-layer edge is part of the state invariant.                                                                                                         |
-| Specification / model | Missing provider/key or interval partitions would leave part of the technical contract unproved.                                                              |
+| Group                 | Why                                                                                                                                                                                                                                                                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Comparisons, thresholds, and branch/reset logic directly implement the technical state invariants. A dropped state write or reset leaves stale limiter state. The next allowed time and the remaining wait are sums and differences of timestamps; a swapped operator waits for the wrong time. |
+| Runtime / dependency  | The invariants are local state behavior and do not depend on an external provider fault mode.                                                                                                                                                                                                   |
+| Interface / protocol  | No external payload or interaction shape is normative for this TREQ.                                                                                                                                                                                                                            |
+| Architecture          | No package-layer edge is part of the state invariant.                                                                                                                                                                                                                                           |
+| Specification / model | Missing provider/key or interval partitions would leave part of the technical contract unproved.                                                                                                                                                                                                |
 
 (verification-profile-treq-rate-limit-cooldown-policy)=
 
@@ -474,9 +477,9 @@ controlled clock/state setup and no external dependency.
 
 ### Fault applicability
 
-| REQUIRED                                                                                         | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                |
-| ------------------------------------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `spec.wrong-outcome` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                         | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `spec.wrong-outcome` | —        | `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
@@ -531,9 +534,9 @@ availability ordering, not provider semantic fidelity.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                                    | OPTIONAL | N/A                                                                                                                                                                                                                                                     |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `spec.wrong-outcome` · `spec.missing-partition` |
+| REQUIRED                                                                                                                                                    | OPTIONAL | N/A                                                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` | —        | `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `spec.wrong-outcome` · `spec.missing-partition` |
 
 #### Fault-group rationale
 

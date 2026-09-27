@@ -1,59 +1,143 @@
 {
  "1482e5f7eb7771b5": {
   "answers": {
-   "antigravity-cli:gemini-3.8-flash-high": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
     "arguments": {
-     "choice": "{'name': 'my_tool', 'type': 'function', 'function': {'name': 'my_tool'}}",
-     "registry": "ToolRegistry()"
+     "choice": "{\"name\": \"no_such_tool\"}",
+     "registry": "ToolRegistry(tools={})"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260926T185518Z-388b07",
+    "call_id": "20260927T182959Z-f33ca2",
+    "confidence": 0.75,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "In the Mapping branch, the original calls `_require_tool_exists(name, registry=registry)` when `name is not None`, which would raise if the named tool is absent from the registry; the changed version replaces that call with `pass`, silently skipping validation. Any Mapping input from which `_tool_choice_name` extracts a non-None name, paired with a registry lacking that tool, will cause the original to raise while the changed version returns successfully.",
+    "response_sha256": "d84671e2a49c608f78671c1060a33fbabb7e4dd0f348beb4f79ba844f5222c45",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "choice": "{\"type\": \"function\", \"function\": {\"name\": \"test\"}}",
+     "registry": "ToolRegistry(tools={})"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T183051Z-7526ac",
     "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version validates whether the extracted tool name from a Mapping exists in the registry, raising an exception if it doesn't, whereas the changed version removes this check and returns successfully.",
+    "response_sha256": "f1a73e272299c95641fc41bb0e7cf2f3549d247598cea5140e26edb4d6dac5ed",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "choice": "{'type': 'function', 'function': {'name': 'test'}, 'name': 'test'}",
+     "registry": "ToolRegistry(tools={})"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T183123Z-1a390a",
+    "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When choice is a mapping specifying a tool name that is not present in the registry, the original version raises an exception via _require_tool_exists while the changed version does not validate tool existence and returns a ToolChoice.",
-    "response_sha256": "77d69727c7361a6e8d23139455d2effc524fb1ba012adda443abead3f895ec90",
+    "reason": "When choice is a mapping specifying a tool name that is not present in registry, the original version validates tool existence and raises an exception whereas the changed version bypasses validation and returns a ToolChoice.",
+    "response_sha256": "87b32c1b2dc0150102bdb380c57efa539d9001330dfedb4594ada39f47aa66a1",
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "daa44ec4bcd53a3ea504cec9873c1fb9c3bcabb40f76efaf7137355114488836"
+  "prompt_sha256": "c8a395ca81080086ed36f508f6285505df2e925c8916019a5aa6e731804a5778"
  },
  "1651891a2bad0ae9": {
   "answers": {
-   "antigravity-cli:gemini-3.8-flash-high": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
     "arguments": {
-     "choice": "'my_tool'",
-     "registry": "ToolRegistry()"
+     "choice": "\"nonexistent_tool\"",
+     "registry": "ToolRegistry(tools={})"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260926T185400Z-e66462",
+    "call_id": "20260927T182807Z-dbe891",
+    "confidence": 0.97,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The changed version replaces `_require_tool_exists(choice, registry=registry)` with `pass` in the `isinstance(choice, str)` branch. When a named tool string is passed with a registry that does not contain that tool, the original raises an exception from `_require_tool_exists`, while the changed version silently returns `ToolChoice(kind='named', name='nonexistent_tool')`.",
+    "response_sha256": "082b426b8731a7704f689bca6a66464e0e04ba8c07b963a47e5ded13a001db9e",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "choice": "'my_tool'",
+     "registry": "ToolRegistry(tools={})"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T182828Z-138864",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version removes the call to _require_tool_exists when choice is a string, so it will no longer raise an exception when a named tool is not present in the registry.",
+    "response_sha256": "841c6548626eb68d17fe251b4bf3fe93a32ca159392f78dbf8b3fb47c25b335d",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "choice": "'test'",
+     "registry": "ToolRegistry(tools={})"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T182846Z-f21ed0",
     "confidence": 0.95,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When choice is a tool name not present in the registry and registry is a ToolRegistry instance, the original version raises an exception through _require_tool_exists whereas the changed version bypasses validation and returns a named ToolChoice.",
-    "response_sha256": "c0c08649c6f46ebe908934b8ad72a52aed44951809452d78b327e74747ca67bb",
+    "reason": "When choice is a tool name not present in the registry, the original version raises an exception via _require_tool_exists while the changed version passes and returns a named ToolChoice.",
+    "response_sha256": "a1632eab6d33129e7d2f68711eb622307591148dd91908b2033c77d4136581ed",
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "eb8870a95a0bf00b108dc991cf826d76cd3c9ae606607b2c357e4be7d3d4cbdc"
+  "prompt_sha256": "a052730f8c3a7c2bc0c679fa48d63a5b4232f3028914ce974fa06cf9412ddd0e"
  },
  "617eaa60ca22a0da": {
   "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "choice": "None",
+     "registry": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T182709Z-7c7b1a",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The first condition changed from `or` to `and`: `choice is None or choice == \"auto\"` became `choice is None and choice == 'auto'`. The `and` version is always False (None never equals \"auto\"), so passing `choice=None` no longer returns `ToolChoice(kind=\"auto\")`; instead it falls through all branches and raises `TypeError`.",
+    "response_sha256": "f5a8d27b771ebd9e55487011cab574d2e89563d3df4d83c57ff625cd5a4a403e",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "choice": "None",
+     "registry": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T182732Z-cd67d2",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version uses 'and' instead of 'or', causing choice=None to raise a TypeError rather than returning ToolChoice(kind='auto').",
+    "response_sha256": "34113f55153130f7e3897862a032f4d90bb97d7bbc11b47b2101f4bdf171f69a",
+    "verdict": "distinct"
+   },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
      "choice": "None",
      "registry": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260926T185337Z-6637a4",
+    "call_id": "20260927T182748Z-2d96cb",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When choice is None, the original version returns ToolChoice(kind='auto') while the changed version raises a TypeError because the condition was changed to 'choice is None and choice == \\\"auto\\\"', which is impossible to satisfy.",
-    "response_sha256": "c648b61d1a97d2194d0bacb3976121f729bacf455d21f357a27a43c6ed1b8967",
+    "reason": "When choice is None, the original version returns ToolChoice(kind='auto') whereas the changed version raises a TypeError because choice is None and choice == 'auto' evaluates to False.",
+    "response_sha256": "7c4596f5b3efcafaf722cfc669849d4bab1146e23bb9026abcf562ad54d9d8a5",
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "608a68a7d5796a0bc63a0c378877c89cee6bb727dc9b94b3e03f15773ae16f50"
+  "prompt_sha256": "b94989a7352d061decd9931fe85f990549318ba9951c89adbd1b9a6984ddf17c"
  }
 }

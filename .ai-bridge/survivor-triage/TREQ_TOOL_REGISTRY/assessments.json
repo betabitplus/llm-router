@@ -1,0 +1,46 @@
+{
+ "e9c1165894dd60d7": {
+  "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145417Z-854e6e",
+    "confidence": 0.85,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [
+     "it answers distinct without an input"
+    ],
+    "reason": "__post_init__ has no parameters, so the difference manifests on every construction. The original replaces self.tools with a MappingProxyType (immutable proxy), while the changed version leaves it as the raw dict. The built object differs: type(registry.tools) is MappingProxyType vs dict, and the tools attribute is mutable in the changed version but immutable in the original, changing the observable state of the constructed object.",
+    "response_sha256": "6217278df675dd9e72b396766b52676c62d47ce2bf1a96d67e299d26068d9740",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145458Z-25a36d",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [
+     "it answers distinct without an input"
+    ],
+    "reason": "The original version converts the 'tools' attribute to a MappingProxyType to freeze it, whereas the changed version leaves it as its original mutable type (e.g. dict).",
+    "response_sha256": "e6661dd8752c4e5ceb129673ec63378e7f48a443744bfdcb47d42fbf36e1380a",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145529Z-42663a",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [
+     "it answers distinct without an input"
+    ],
+    "reason": "The original initializer freezes tools into a MappingProxyType whose text representation differs from the plain dictionary in the changed version.",
+    "response_sha256": "3753a0620a70d58be7eb0bdfdc964f0c978ff9571fcf4d7d1d663ed625436ab2",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "682a31d6abcf7aa5cc414fe0ebbde69aaec1b5a81237884b259be75c8607f823"
+ }
+}

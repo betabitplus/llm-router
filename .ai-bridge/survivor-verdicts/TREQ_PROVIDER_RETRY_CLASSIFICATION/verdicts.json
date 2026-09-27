@@ -1,0 +1,119 @@
+{
+ "2f11d5445216910c": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152930Z-5995fc",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "This change breaks the requirement. The mutant flips the fallback comparison, so any status that isn't in either explicit set is now classified the wrong way round. An unlisted 4xx such as 418 becomes retryable, so a permanent failure gets retried. An unlisted 5xx such as 599 becomes non-retryable, so a temporary server failure is not retried. REQ_PROVIDER_RETRY forbids both.",
+   "response_sha256": "487280e38c27b124930e3cb91a3d1fd3b9c5f84d8f79eedef5bb7629e099f0ad",
+   "test_focus": "Check that a 5xx status outside the explicit sets (e.g. 599) is classified RETRYABLE with reason 'server_status', and that a 4xx status outside the explicit sets (e.g. 418) is classified NON_RETRYABLE with reason 'status_not_retryable'.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "pin": {
+   "adopted_at": "2026-09-27T16:38:36.864441Z",
+   "answer_sha256": "d23b5a7b31b143bcfa58c5de890ac97e471752509659b82cf8a8f5c9484c7666",
+   "call_id": "20260927T160923Z-1a34a3",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "90fe881c0060cf41eb60cd79be366be443c01efb4f58b793180653b318d512d0",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_2f11d5445216910c.py",
+   "response_sha256": "332128f61ac7f835179a2f7e5c3322edc836729aaaa9eda8631d17237a8c92d4",
+   "source": "draft author"
+  },
+  "prompt_sha256": "6edef6d97783ef3b085a649e8a33b75f69eff19ee18a5160f2854f20dfc599bc"
+ },
+ "5a829211adec3347": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152937Z-25c7e0",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For any 5xx status not in the explicit sets, the mutant returns None instead of a RETRYABLE decision. That breaks the requirement that temporary server failures, judged by status meaning, can be retried. It also hands callers a value that is not a RetryDecision.",
+   "response_sha256": "fddaf2f07a5b2e6de85b5d2da3483ba392bde9c89ef3c5f3be36085fa9e71eff",
+   "test_focus": "Call classify_status_code with a 5xx status that is in neither explicit set (e.g. 599). Check that it returns a RetryDecision with classification RETRYABLE, reason \"server_status\" and the matching status_code.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-27T16:38:36.865096Z",
+   "answer_sha256": "589797b5c1b809ef77f6d2e243537683201de6c24969a4b7b45974b855d72520",
+   "call_id": "20260927T160940Z-0a344f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "a1a965f36f469808e6e1780e74a0bbc3fd40f01b35135c4a9edc146f8d2ad44d",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_5a829211adec3347.py",
+   "response_sha256": "8aa2f1f33d94e19428bd024382d3b386343d7d93a7d89be870f150ffe0c64b41",
+   "source": "draft author"
+  },
+  "prompt_sha256": "8542f848fc6362012c32cc80adfac16406d092a64768aa2b71c77f4e8b582e90"
+ },
+ "d8f7199ce8dc26c9": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152943Z-641eaf",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Changing `>=` to `>` means a status exactly equal to _SERVER_ERROR_STATUS_MIN (500) that is in neither explicit set is now classed as non-retryable. A temporary server failure would then be treated as permanent, which breaks REQ_PROVIDER_RETRY. The mutant would be equivalent only if 500 is already in the retryable set, and I couldn't confirm that because the set's contents weren't shown.",
+   "response_sha256": "2f1c2ac2a195527039c1a094099e2e69852490404c4969943c014f6fbea46fb2",
+   "test_focus": "Check that a status equal to _SERVER_ERROR_STATUS_MIN (500) is classified RETRYABLE with reason 'server_status' when it is in neither explicit set; also check that a status just below that threshold is NON_RETRYABLE.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "prompt_sha256": "e32066f9a851395250aa6a30c1976d152cb2504af15823c19fbb79a79cc69c59"
+ },
+ "f49ab970d70faf89": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152954Z-17e115",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For any status code below 500 that is in neither explicit set (e.g. 418 or 422), the mutant returns None where the original returns a NON_RETRYABLE decision. That drops the permanent-failure classification the requirement asks for, and callers would get a missing decision or crash instead of a clear \"do not retry\".",
+   "response_sha256": "013d5dfb9953711068032d65224029a9df53f19f5cebe5faa9bf8e9db3125606",
+   "test_focus": "Call classify_status_code with a sub-500 status that is in neither explicit set (e.g. 418) and assert it returns a RetryDecision with classification NON_RETRYABLE, reason 'status_not_retryable' and the same status_code.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-27T16:38:36.865635Z",
+   "answer_sha256": "af30668c9ac63adc47a0cbf0e2e89f2e3d2a5eed3db26b9f770b08e4ac366ed0",
+   "call_id": "20260927T161016Z-b0acb6",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "e02d0dd7d69e626c7e3cecedf9af26deff22640de150b08d7f825510e70a60d0",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_f49ab970d70faf89.py",
+   "response_sha256": "fda388794ae15358033a90e41399a103ed1630bd47761680c82570956b052242",
+   "source": "draft author"
+  },
+  "prompt_sha256": "d0e86bdfbe77316d8fa6d95ee67967be570d404fddf8f3ed6ea43c862a93b268"
+ }
+}

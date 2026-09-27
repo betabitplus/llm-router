@@ -334,13 +334,13 @@
 
 ### Fault-based testing
 
-| Group                 | Fault classes                                                                               |
-| --------------------- | ------------------------------------------------------------------------------------------- |
-| Implementation        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`                   |
-| Runtime / dependency  | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
-| Interface / protocol  | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema`  |
-| Architecture          | `architecture.forbidden-edge` · `architecture.layer-bypass`                                 |
-| Specification / model | `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary`            |
+| Group                 | Fault classes                                                                                 |
+| --------------------- | --------------------------------------------------------------------------------------------- |
+| Implementation        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `impl.control-flow` · `impl.effect` |
+| Runtime / dependency  | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`   |
+| Interface / protocol  | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema`    |
+| Architecture          | `architecture.forbidden-edge` · `architecture.layer-bypass`                                   |
+| Specification / model | `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary`              |
 
 #### Fault-class semantics
 
@@ -348,6 +348,7 @@
 | ---------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `impl.comparison`                  | A comparison/operator change alters the implementation decision.                   | rule mutant: a comparison operator is swapped (`<` ↔ `<=`, `==` ↔ `!=`, …)                                                                                                                    |
 | `impl.boundary`                    | A boundary value or threshold change alters accepted vs rejected behavior.         | rule mutant: a compared constant is shifted by ±1                                                                                                                                             |
+| `impl.arithmetic`                  | An arithmetic operator change alters a computed value.                             | rule mutant: an arithmetic operator is swapped (`+` ↔ `-`, `*` ↔ `/`, `//` → `/`, `%` → `//`, `**` → `*`)                                                                                     |
 | `impl.control-flow`                | A branch, return, or exception-flow change alters execution.                       | rule mutant: `and` ↔ `or`, a dropped `not`, `True` ↔ `False`; a returned value replaced by `None` or its negation                                                                             |
 | `impl.effect`                      | A statement's effect or a function's whole work is lost while execution continues. | rule mutant: a statement with an effect is removed (a call, an attribute or item write, an augmented assignment, `raise`, `del`); a function body is replaced by a default of its return type |
 | `runtime.latency-timeout`          | Dependency latency or timeout behavior challenges the runtime path.                | retained test with a runtime fault-injection observation                                                                                                                                      |
@@ -394,12 +395,12 @@ scope is wrong.
 
 ##### Arid code
 
-| Rule                 | Code it covers                                                                                    | Why it is not mutated                                                                   |
-| -------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `arid.logging`       | a statement that only logs or warns: a logger method call, a `log_…` helper call, `warnings.warn` | a log line is no contract outcome, and a test that pins log wording is brittle          |
-| `arid.sleep`         | a statement that only waits: `sleep`, `time.sleep`, `asyncio.sleep`                               | waiting changes timing, not results                                                     |
-| `arid.type-checking` | an `if TYPE_CHECKING:` block                                                                      | it never runs                                                                           |
-| `arid.repr`          | a `__repr__` or `__rich_repr__` method                                                            | a debug representation is no contract outcome; `__str__` stays mutated, it is a message |
+| Rule                 | Code it covers                                                                                                | Why it is not mutated                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `arid.logging`       | a statement that only logs or warns: a logger method call, a `log_…` or `_log_…` helper call, `warnings.warn` | a log line is no contract outcome, and a test that pins log wording is brittle          |
+| `arid.sleep`         | a statement that only waits: `sleep`, `time.sleep`, `asyncio.sleep`                                           | waiting changes timing, not results                                                     |
+| `arid.type-checking` | an `if TYPE_CHECKING:` block                                                                                  | it never runs                                                                           |
+| `arid.repr`          | a `__repr__` or `__rich_repr__` method                                                                        | a debug representation is no contract outcome; `__str__` stays mutated, it is a message |
 
 A mutant inside arid code is not planted; the campaign counts it by rule. A profile
 turns a rule off for its contract in a **Mutation policy** table
@@ -429,12 +430,23 @@ the build; the engine's own pardon pragma is not used.
 
 ##### Cadence and signal
 
-A pull request mutates only the lines that are changed,
-attributable and covered by the contract's tests, and reports at most one surviving
-mutant per line as a review finding, choosing operators in this order: comparison,
-boolean, statement, return, boundary, body. The retained campaign reruns every contract
-whose inputs changed since its last run, and every contract on request. No mutation
-percentage gates a contract or the project.
+A pull request and every push of a branch mutate only the lines the branch changes against
+its base that are attributable and covered by the contract's tests, and report at most one
+surviving mutant per line as a review finding. The operator of a line's finding is the most
+productive one: the recorded verdicts rank the operators by the share of their survivors a
+pin was asked for, starting from Google's order (comparison, boolean, arithmetic, statement,
+return, boundary, body) while few verdicts are recorded, as Google ranks its operators by how
+useful their mutants were. A survivor whose recorded verdict is equivalent or irrelevant is
+no finding: the summary lists it apart with the verdict and its reason. The retained
+campaign reruns every contract whose inputs changed since its last run, and every contract
+on request, several contracts at once, each in its own copy of the working tree. Its inputs
+are the product files that hold its mutants, its tests with their Gherkin and cassettes, the
+shared test support and the dependencies, as PIT and Stryker count them. Python files count by
+what they do: a tool by its syntax tree, code under test by its tokens at their positions with
+its `# mutation:` pragmas, so an edited comment or a reformatting reruns nothing. A mutant's
+time limit is 1.25 times its tests' time in the retained run plus 10 s, as in PIT, and a
+mutant that outruns it counts as caught only when a second run with twice the limit runs out
+of time too: a slow suite is no hang. No mutation percentage gates a contract or the project.
 
 ##### Semantic mutants
 
@@ -463,12 +475,16 @@ cascade is an evidence producer qualified on a calibration set of known identica
 duplicate, invalid, confined, equivalent and distinguishable mutants. A selected target
 without a current proposal keeps its class UNKNOWN: it was never generated, its
 generation was deferred or failed, or its proposals went stale. A draft test for a
-survivor is kept only when it passes on the original three times in a row, fails on the
-frozen patch, imports nothing beyond the public API and the modules the contract's own
-tests already import, and uses no process, file-system or dynamic-code primitive. Its
-author sees the shortest of the contract's tests as an example, or the step definitions of
-the scenarios pytest-bdd generates, and a rejected draft is asked for again with the reason
-and the errors pytest reported on the original.
+survivor is judged in the project's style: it is formatted and given ruff's safe fixes by
+the project's own rules first, and a rule it still breaks rejects it. It is kept only when it
+passes on the original five times in a row (TestGen-LLM's reliability filter), fails on the
+frozen patch, imports nothing beyond the public API, the modules the contract's own tests
+already import and, for a Technical requirement, the module of the code it tests and the
+project modules that module imports itself, and uses no process, file-system or
+dynamic-code primitive. Its author sees the shortest of the
+contract's tests as an example, or the step definitions of the scenarios pytest-bdd
+generates, and a rejected draft is asked for again with the reason, the errors pytest
+reported on the original and the lint rules it broke, from the role's next model.
 
 ##### Model generation
 
@@ -479,6 +495,8 @@ and the errors pytest reported on the original.
 | Draft test author         |     1 | `antigravity-cli` | `gemini-3.8-flash-medium` |
 | Draft test author         |     2 | `antigravity-cli` | `claude-sonnet-4-6`       |
 | Survivor verdict          |     1 | `claude-cli`      | `claude-opus-5-5`         |
+| Survivor verdict review   |     1 | `antigravity-cli` | `gemini-3.1-pro-high`     |
+| Survivor verdict review   |     2 | `antigravity-cli` | `gemini-3.8-flash-high`   |
 
 Semantic mutants, their draft tests and the verdicts on survivors come from a model called
 through one adapter (ADR_0004). Antigravity serves Gemini and Claude models from two quotas,
@@ -554,27 +572,36 @@ survivor alone.
 
 The symbolic search explores its paths in a seeded order, so a bound on paths gives the same
 answer on any machine; the time limit only stops a search that runs away. The threshold is
-split conformal over labelled calibration pairs, half equivalent and half distinct, and every
-distinct pair carries an input that execution confirms. A survivor is
-labelled likely equivalent only when its lowest assessor confidence is above the threshold,
-which at most the false-equivalent rate of the distinct pairs exceed. The assessors' answers
-on the pairs are frozen and replayed by the qualification. A change of assessor, model,
-prompt or pairs leaves the ensemble uncalibrated, and its labels do not count until it is
-calibrated again. The pairs are hand-made and easier than real survivors, so the rate is an
-aim, not a guarantee. Rule survivors are judged on request, apart from the campaign.
+split conformal over the distinct pairs: labelled calibration pairs, half equivalent and half
+distinct, every distinct one with an input that execution confirms, and observed pairs, real
+survivors the symbolic search left unsure and a mutation pin proves distinct, once every
+assessor answered the triage's own question about them. Only those are asked the triage's
+question, so only they stand for the survivors it asks about. The hand-made pairs are easier than real survivors (on the survivors
+the pins proved distinct, single assessors called some equivalent that none of the labelled
+pairs had them call), so the observed pairs carry the rate. A survivor is labelled likely
+equivalent only when its lowest assessor confidence is above the threshold, which at most the
+false-equivalent rate of the distinct pairs exceed. The assessors' answers on the pairs are
+frozen and replayed by the qualification. A change of assessor, model, prompt or labelled pairs
+leaves the ensemble uncalibrated, and its labels do not count until it is calibrated again.
+Rule survivors are judged on request, apart from the campaign.
 
 ##### Survivor verdicts
 
-Every judged survivor gets a verdict from the Survivor verdict role (ADR_0006). The verdict
-model sees the requirement and its criteria, the Feature and Goal it serves, both versions of
-the code, the survivor judgement and any input execution confirmed.
+Every judged survivor, and every mutant no test of its contract reaches, gets a verdict from
+the Survivor verdict role (ADR_0006). The verdict model sees the requirement and its criteria,
+the Feature and Goal it serves, both versions of the code, the survivor judgement and any
+input execution confirmed; for an unreached mutant, that no test runs its line. A verdict
+that would take a mutant out of its class, equivalent or irrelevant, counts only when the
+Survivor verdict review, a model of another family asked the same question, agrees: a panel
+of models from different families is less biased toward its own (PoLL). When the review does
+not agree, the mutant is pinned.
 
-| Verdict      | Meaning                                                                                        | Effect                                                                                                                                       |
-| ------------ | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pin`        | The mutant changes something the requirement asks for.                                         | A test that pins it is drafted, kept only when it passes on the original three times and fails on the mutant, and adopted as a mutation pin. |
-| `equivalent` | No input tells the versions apart as the contract observes them; never with a confirmed input. | The mutant leaves its class as suppressed, with the verdict's reason.                                                                        |
-| `irrelevant` | The versions differ, but in nothing a requirement asks for.                                    | The mutant leaves its class as suppressed, with the verdict's reason.                                                                        |
-| `escalate`   | Deciding changes what a Feature or Goal promises, and no requirement settles it.               | The mutant stays in its class, and the decision waits for the person.                                                                        |
+| Verdict      | Meaning                                                                                        | Effect                                                                                                                                                           |
+| ------------ | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pin`        | The mutant changes something the requirement asks for.                                         | A test that pins it is drafted, kept only when it breaks no lint rule, passes on the original five times and fails on the mutant, and adopted as a mutation pin. |
+| `equivalent` | No input tells the versions apart as the contract observes them; never with a confirmed input. | The mutant leaves its class as suppressed, with the verdict's reason.                                                                                            |
+| `irrelevant` | The versions differ, but in nothing a requirement asks for.                                    | The mutant leaves its class as suppressed, with the verdict's reason.                                                                                            |
+| `escalate`   | Deciding changes what a Feature or Goal promises, and no requirement settles it.               | The mutant stays in its class, and the decision waits for the person.                                                                                            |
 
 The person decides only escalations: a comparison, a type, a default or a message inside a
 requirement's scope is the verdict model's to decide, never a reason to escalate. A person's
@@ -583,16 +610,20 @@ the question it answered are unchanged. A mutation pin is a test module under
 `tests/llm_router/mutation_pins/` that verifies its contract and names, in its first line, the
 mutant it pins; it proves no coverage case and no depth, so it never changes a criterion's
 count or a contract's level, boundary or representation, but the next campaign counts it
-among the contract's tests.
+among the contract's tests. A pin is kept as the cascade judged it, in the project's style, and
+it names the answer or kept draft it was made from; when the rules change, every pin is judged
+again, and a pin that no draft brings within them is removed.
 
 ###### Model canaries
 
 A model's answers count for a role only after it passed that role's canaries, a few cases
 with a known outcome. The generator must propose a well-formed, confined defect for a canary
 target; the draft author must write a test the cascade keeps for a known distinguishable
-mutant; the verdict model must pin a known gap, judge a known equivalent equivalent and
-escalate a known product decision. An assessor must meet the calibration floors: an input
-confirmed for at least 80% of the distinct pairs, and no distinct pair judged equivalent. A
+mutant; the verdict model and the verdict review must pin a known gap, judge a known
+equivalent equivalent and escalate a known product decision. An assessor must meet the
+calibration floors: an input confirmed for at least 80% of the labelled distinct pairs, and
+at most the false-equivalent rate of all distinct pairs, labelled or observed, judged
+equivalent. A
 change of model, question or canary set asks for the canaries again; until they pass, the
 role skips that model. A canary the backend did not answer (its quota, its capacity, the time
 limit) leaves the model's record for the same questions as it was.

@@ -1,4 +1,38 @@
 {
+ "8139110fd930fa09": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152508Z-bae827",
+   "level": "feature",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the type guard. A non-LLMRouterConfig object then goes to validate_config and fails with some other error. If it is duck-typed enough to pass, it is installed as the active config and the adapter caches are cleared. That breaks the feature's validation promise and the coherence of what becomes the effective configuration.",
+   "response_sha256": "f26bc0bbc58ac6dd196943dd7068dd1a6460890eacf6506e6e78ddf4b4fc547c",
+   "test_focus": "Call install_config with a non-LLMRouterConfig object, such as a dict or a duck-typed stand-in. Assert that it raises TypeError and that the previously active config from the public API is unchanged.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-27T16:38:36.858307Z",
+   "answer_sha256": "aead1bfd0aa6c91eb390d97a81f1e8b6bc52738ce997b48646136514a5b9e7fc",
+   "call_id": "20260927T155201Z-91f967",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "a2cd0266ed3e0469e34ac895c0e2f5e9d05e0c13a4418750cf100b9291572a96",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_8139110fd930fa09.py",
+   "response_sha256": "272867203c10b122caa79168638fa972a83416754b8cadd9fc22e3bcb9bdd547",
+   "source": "draft author"
+  },
+  "prompt_sha256": "85db3ec91ba2175c4ee30ea21305492e274870166a91c8fb97c1107fbce30615"
+ },
  "a2e61f2155653e45": {
   "answer": {
    "backend": "claude-cli",
@@ -11,20 +45,24 @@
    "test_focus": "The test must install a config whose catalog lacks the default provider and model, check that it raises ConfigurationError, and check that the previously active config is still what the public API returns.",
    "verdict": "pin"
   },
+  "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.607686Z",
-   "call_id": "20260926T223854Z-e29ffc",
+   "adopted_at": "2026-09-27T20:11:01.942017Z",
+   "answer_sha256": "4385ec4814d6c16b1f473d91c94d04f74037bfd44ece2f844aea8b38519f8976",
+   "call_id": "20260927T200146Z-2fe2e3",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "c4ec573717e01693e9c0089e5b52a7ee6dcfe0e860fc4d55a28a757513b49b35",
-   "model": "gemini-3.8-flash-high",
+   "draft_sha256": "4385ec4814d6c16b1f473d91c94d04f74037bfd44ece2f844aea8b38519f8976",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_a2e61f2155653e45.py",
-   "response_sha256": "3e9db82fc3fb4e764ecb977604ce38d6b294356f9d6e28926f3dd6b6a117ea58",
+   "response_sha256": "d214d4a4ad7f28d28815fbfcc56fe22250f2cdac4cdb2d568909f57ba57aa422",
    "source": "draft author"
   },
   "prompt_sha256": "3b856b3d149612034e5edd8667f0c12369f89ffd68420ffcaf429c0faad80f97"

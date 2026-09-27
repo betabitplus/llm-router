@@ -1,4 +1,34 @@
 {
+ "14f4d9793d873316": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T153002Z-1918b0",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant silently drops the normalized tool_choice from the QwenChat request payload. That breaks the requirement that the adapter carry normalized request semantics across its HTTP boundary: a caller that forces or disables tool use would see that choice ignored by the provider.",
+   "response_sha256": "dcde1d80cd4f98e7b3e23135440dc5f101143d3786977a0aa85da71ffe72bd47",
+   "test_focus": "Build a QwenChat payload from a request with tools and an explicit tool_choice (e.g. a named function or \"none\"), and assert the payload contains a \"tool_choice\" key equal to the translated provider value.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "e6fe9cdfa2f04cf9eb40ffb9a1748c00806e46f76112b73927ffed5a56bf3d3f"
+ },
+ "1e1bd3200d2722cb": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T153009Z-07c153",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant returns None instead of the parsed response. Async QwenChat calls then lose their response text, tool outputs and the translation of provider HTTP-status errors. This breaks TREQ_QWENCHAT_ADAPTER_BOUNDARY's promise to preserve normalized response semantics across the transport boundary.",
+   "response_sha256": "d812972a9ded86bbb958513942f33f2ac2dfd1d042fd60b596bb42a6a5839c0c",
+   "test_focus": "Run aexecute against a mocked QwenChat proxy that returns a successful chat response. Assert that the ProviderResult carries the normalized text or tool output. Also assert that an error status is raised as a translated ProviderError.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "prompt_sha256": "a8d15cccf7ff8f20b27ea2de315dff2122ca0abe32688daaa9c39b45e4862f5b"
+ },
  "2038c0b46cff816b": {
   "answer": {
    "backend": "claude-cli",
@@ -11,23 +41,42 @@
    "test_focus": "Check that build_payload, and the request actually sent to the proxy for a text-only request, has 'stream' set to False.",
    "verdict": "pin"
   },
+  "operator": "boolean",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.632364Z",
+   "adopted_at": "2026-09-27T19:54:19.552383Z",
+   "answer_sha256": "8c76dd6fd3fd40e8a2ec21f7848f0d7ef8ef3fb1fe9f9be79db2d26f2b98ad6b",
    "call_id": "20260926T231112Z-1a4a43",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "8c76dd6fd3fd40e8a2ec21f7848f0d7ef8ef3fb1fe9f9be79db2d26f2b98ad6b",
+   "draft_sha256": "95f4405f8b8a8d2e7c9f44769835bbe29fa3362bd3193deaab9fac2070283e06",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_2038c0b46cff816b.py",
    "response_sha256": "660f857850ef901cffc6e2325e0b202b8ee75607d2333203749707947f6589a7",
    "source": "draft author"
   },
   "prompt_sha256": "399786764d21b46f537684a2d9ad7834f7f327b959344a721522ba713a61d004"
+ },
+ "2fe5c64afc7ed393": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T153015Z-aaf424",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant swallows any ProviderError raised while building the payload, for example a failed or non-retryable media upload. Execution then reaches the return with `response` never assigned, so the caller gets an UnboundLocalError instead of the translated ProviderError. That breaks the provider-error translation that TREQ_QWENCHAT_ADAPTER_BOUNDARY requires.",
+   "response_sha256": "fa5ff03093562b033994b0c4d06b6b216e2061f751e2ea64585771cf0927fb86",
+   "test_focus": "When a media upload fails in the async path with a provider error (for example, the upload endpoint returns a non-retryable error), aexecute must raise the normalized ProviderError, with the expected provider, model and failure. It must not raise any other exception, and no chat request may be sent.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "59a3be2611d1fc2d40bb5b6608349cb0bc47b55e8991b3c71084c93d41996009"
  },
  "40231175bc1ce35e": {
   "answer": {
@@ -41,23 +90,87 @@
    "test_focus": "Build a payload from a request whose tool registry has at least one tool, and check that payload['tools'] equals the list of the registered tool descriptors.",
    "verdict": "pin"
   },
+  "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.633473Z",
+   "adopted_at": "2026-09-27T19:54:19.553542Z",
+   "answer_sha256": "a103753fda297f952a9039e79e4088ab46631adc3dc8e79437fa20ccaeca5bf4",
    "call_id": "20260926T231142Z-7df71d",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "a103753fda297f952a9039e79e4088ab46631adc3dc8e79437fa20ccaeca5bf4",
+   "draft_sha256": "992953e2abb294dc418d3bbb6ffa25b0f7daeec374cc058358a35b98ada9a388",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_40231175bc1ce35e.py",
    "response_sha256": "60eaf882ce59bcaa5545d58642f095431727cc636c80e5cda9a81ce5f169fa60",
    "source": "draft author"
   },
   "prompt_sha256": "1f6b7eb1879af1c326bad8e0c7d05e9b57aff6d4ba8ea9a655dcf4392bb98133"
+ },
+ "4f1c2e37ad20c744": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T153022Z-0e6e8f",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant flips `stream` from False to True in the async payload builder. That asks the QwenChat proxy for a streamed (SSE) response instead of the single JSON completion the adapter parses. This breaks the proxy HTTP behavior and response normalization that TREQ_QWENCHAT_ADAPTER_BOUNDARY requires the adapter to preserve.",
+   "response_sha256": "edc67727302e87979e0bcd31f7864460b51e2803284bc904dceb0381e188d7fb",
+   "test_focus": "Run a request through the async build path (for example, a media-upload chat request) and assert that the chat request body sent to the proxy has `\"stream\": false`.",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "825fb3bf6b633c2ffcf1299d9178ee31d6ceef2ca332764c39c5fa3b6f8e9a0a"
+ },
+ "5e7fd67e19872a42": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T153029Z-04391f",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant silently drops the normalized `temperature` field from the QwenChat request payload. That breaks the requirement that every adapter keep normalized request semantics when it crosses its native HTTP boundary.",
+   "response_sha256": "80c72b9d6d3b98306bbfce52b42e851f312bf64f9acf496bea1026a49e238daf",
+   "test_focus": "Build a QwenChat payload through abuild_payload from a ProviderRequest with a temperature set, such as 0.3. Assert that the outgoing payload has \"temperature\" equal to 0.3 as a float, and that the key is absent when temperature is None.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "6e9c4376ff39d912de2d4d73b009c2406f3cdd92342a65f1fe41dc50c12b6c03"
+ },
+ "76cf360dbfb7ff62": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T153035Z-228c7b",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant quietly drops the caller's tool_choice from the QwenChat payload. That breaks the adapter's duty to carry normalized request semantics across its native HTTP boundary, because a forced or disabled tool choice would never reach the provider.",
+   "response_sha256": "dbff0611d7e5e681d857a5bb3bbb2d631f8a47fadd9a3b2e5447a6315f340d6a",
+   "test_focus": "Call abuild_payload with a request that sets tool_choice (for example, a named tool or \"none\") and a tool registry. Assert that the payload contains a \"tool_choice\" key equal to the value tool_choice_payload(request) produces.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "78e6655a734759be4f18459c93d083e9fe17fda981308b60cd07c3b5532f7337"
+ },
+ "7879b343f0d7cac0": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T153041Z-8648ce",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With `or`, a request that has no tool registry now reads `.tools` on None and raises AttributeError, so every async QwenChat request without tools fails, including plain proxy text and media-upload requests. A registry with no tools also gets an empty `tools` list it did not get before. Both break the requirement to preserve QwenChat request semantics across the transport boundary.",
+   "response_sha256": "913f7b6185b03fbb05afb46ecd43cabc01e795d2dd8a225ede2d6f98f1f16b65",
+   "test_focus": "Call abuild_payload (the async path) with no tool registry, then with an empty registry. Check that it builds the payload without raising and that the payload has no \"tools\" key.",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "f59aac5cdd6812815b1d94497ebc1396d942b4b096d5b46bf5af9fda6929916d"
  },
  "7f08bc96d2f666c5": {
   "answer": {
@@ -71,23 +184,72 @@
    "test_focus": "Call build_payload with a ProviderRequest whose kwargs include an extra option such as {'extra': 'value'}, and check that the returned payload contains that key and value next to model, messages and stream.",
    "verdict": "pin"
   },
+  "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.634590Z",
+   "adopted_at": "2026-09-27T19:54:19.554461Z",
+   "answer_sha256": "db63d3eecf75ced16166d0667be45e54d33c3333e79f02a21314eff243ce8948",
    "call_id": "20260926T231155Z-9847d9",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "db63d3eecf75ced16166d0667be45e54d33c3333e79f02a21314eff243ce8948",
+   "draft_sha256": "1da0ef28dc413128caca618fc9c5118fd43e26a2ba00691b6698b9c61d3ef7a2",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7f08bc96d2f666c5.py",
    "response_sha256": "cc790d7ccf051fc81c3fd52e310a8bcbf994b60ce5dc561fb25e2eebbdd28d1b",
    "source": "draft author"
   },
   "prompt_sha256": "617ae49656e7c5140563496b5a97d04615d501b98894d5e5827c0d3e63e8299c"
+ },
+ "8916bf123bb5af04": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T153049Z-8fb93b",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant silently leaves the tool definitions out of the QwenChat payload. The provider never sees the registered tools, so the normalized request's tool semantics are lost at the adapter boundary. This breaks the requirement to preserve request semantics and makes the tool outputs it asks for impossible.",
+   "response_sha256": "b9ad94597360e2a462ca911b46c3d236df59d4ca757b93e5e2fdbc0d34bf1140",
+   "test_focus": "Call abuild_payload with a ProviderRequest whose tool_registry has at least one tool, and assert that payload[\"tools\"] equals the list of each definition's descriptor dict.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "8fd48c5b5ed804158720ed1f4e1d7b8b4c4d224528a373b78d81dc2b79444ef0"
+ },
+ "8920c14adbe7aa36": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T153056Z-79fd84",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Switching to trust_env=True makes the async client pick up proxy variables (HTTP(S)_PROXY, ALL_PROXY), .netrc credentials and SSL environment settings. Chat and upload traffic could then be sent through another proxy or carry injected auth instead of going straight to the configured QwenChat proxy base_url. That breaks the \"proxy HTTP behavior\" and transport-boundary behavior that TREQ_QWENCHAT_ADAPTER_BOUNDARY requires.",
+   "response_sha256": "749eec7a0a2d6486babe39fc909c15d4099c73bb4e92f347e566d30a0fb7e843",
+   "test_focus": "Set HTTPS_PROXY/HTTP_PROXY/ALL_PROXY to an unreachable proxy and run aexecute (with a media upload). Check that both the upload and chat requests still reach the configured base_url directly and succeed, e.g. by asserting the AsyncClient is created with trust_env=False.",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "48e17ee6c91157d67d07d5dc5fd2f4ed1b343eb1dd773d9cf06f04bffd3125f1"
+ },
+ "97f91dfe57fdbb0a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T153109Z-81e902",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "If abuild_payload returns an empty dict, QwenChat loses the model, the messages (including uploaded media references), temperature, seed, tools and tool_choice. That breaks the proxy text and media upload semantics that TREQ_QWENCHAT_ADAPTER_BOUNDARY requires the adapter to keep.",
+   "response_sha256": "fad81f10fca211e72c98d77f12a944a3ce15c84e7f2609c0c314361be1f0dfdb",
+   "test_focus": "Call abuild_payload with a text-and-media request and a stub uploader, then assert the payload has the provider model, messages carrying the uploaded media reference, stream=False, and the temperature, seed, tools and tool_choice that were passed in.",
+   "verdict": "pin"
+  },
+  "operator": "body",
+  "prompt_sha256": "3d8b33ed8dcd621483a6ff7b39a6197b03bb0adfbf15b5d82b241ec4e368c764"
  },
  "aeeb7e44dc927403": {
   "answer": {
@@ -101,22 +263,82 @@
    "test_focus": "With HTTP_PROXY, HTTPS_PROXY and ALL_PROXY set to an unreachable address, execute (with a media upload) should still reach the configured base_url directly and return the normalized result, not a transport ProviderError; alternatively, assert that httpx.Client is built with trust_env=False.",
    "verdict": "pin"
   },
-  "pin": {
-   "adopted_at": "2026-09-27T00:39:19.755717Z",
-   "call_id": "20260927T003457Z-e62172",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "passes_on_original": 3,
-    "primitives": []
-   },
-   "draft_sha256": "6ace5cb1c7abe89e0015bac0f63610e5da4ab02e3b1bc81a0001546ecadc1e30",
-   "model": "gemini-3.8-flash-medium",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_aeeb7e44dc927403.py",
-   "response_sha256": "f04bcc4c9b65ae4d806b30df6786f6c866c628064bfb3e1025eba445156e5599",
-   "source": "draft author"
-  },
+  "operator": "boolean",
   "prompt_sha256": "2e6a99585048b7828d02d343ae39e94689cad18c02eff8fae509f144d0c6d166"
+ },
+ "cbd3f30a9cbff5df": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T165142Z-c292c8",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant swallows transport exceptions instead of raising them as a normalized ProviderError. Execution then falls through to `response`, which was never assigned, so callers get an UnboundLocalError rather than the translated public error. That breaks the provider-error translation that TREQ_QWENCHAT_ADAPTER_BOUNDARY requires.",
+   "response_sha256": "7292655de48566e5e1aeb995e36adcbd12481c9a3b2f8d52937e44f372200c64",
+   "test_focus": "Make the async chat POST (or a media upload) raise a transport exception such as httpx.ConnectError or a timeout. Check that aexecute raises ProviderError with the transport-failure classification and message, keeps the original exception as its cause, and names the right provider and model.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "3ba005880b95685f139c5e2a4ee5a03611d1930b6bf1c665edee080f0724fcd1"
+ },
+ "cebb90925a422d7e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T165154Z-1b7207",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant removes the step that merges `request.kwargs` into the payload, so the async QwenChat path silently drops caller-supplied provider parameters. That breaks the requirement that the adapter carry normalized request semantics across its HTTP boundary unchanged. No test runs this path, so nothing catches the loss.",
+   "response_sha256": "c7de6c4854b56d246ef796c0acdfdff5f862b96960d1577f5514232f6b6eceb2",
+   "test_focus": "Call `abuild_payload` (or run an async proxy chat request) with extra request kwargs, such as `top_p` or an override of `stream`. Assert that those keys and values appear in the payload sent to QwenChat, and that they override the defaults.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "2084a187238aa84870a4a70f7607c6c66005b540580828c591d2bb320c55076f"
+ },
+ "d0d545a61d998262": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T165202Z-6e68f4",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant quietly drops the normalized `seed` field, so it never reaches the QwenChat request. That breaks REQ_PROVIDER_ADAPTER_INTEROPERABILITY's promise to keep normalized request semantics intact across the adapter boundary.",
+   "response_sha256": "5d6f2b17e118952c88c034550fb572ffff4acf9e9e127fade5fb746fd3a5bc1f",
+   "test_focus": "Build a QwenChat payload from a ProviderRequest with a seed set (e.g. 42) and check that the payload carries `seed` as the integer 42.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "c1ba8b1cf41a6e7fc2424286d65e3f407bf3eadd7d0aa9f624e54b13fb610316"
+ },
+ "d19c86a3969c8208": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T165209Z-e73a4d",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "If abuild_payload returns None, the async QwenChat path never produces a chat request body. That drops the model, the messages with their uploaded media references, and the tools, so the adapter can no longer carry normalized requests across its transport boundary. TREQ_QWENCHAT_ADAPTER_BOUNDARY requires media upload and a dependent chat request that uses the uploaded reference, so this change breaks it.",
+   "response_sha256": "3327c75881aeced12666ba63516cc0fbe2eb358db15f9f7db362e249fc7a0b4d",
+   "test_focus": "Await abuild_payload with a stub uploader on a request that has media, temperature, seed, tools and kwargs. Assert that it returns a dict with the provider model, stream=False, messages that contain the uploaded reference, and the merged optional fields.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "prompt_sha256": "0e925fbf164e12260ea1e77d706324158ae46aacf45885a9d639ccd3af654e1a"
+ },
+ "d553c778448d4a6c": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T165215Z-a516bf",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "In the mutant, a transport failure gets logged and then swallowed. Execution then reaches `response.status_code`, where `response` was never assigned, so callers get an `UnboundLocalError` instead of a normalized `ProviderError`. That breaks the provider-error translation that TREQ_QWENCHAT_ADAPTER_BOUNDARY requires.",
+   "response_sha256": "8ff88a92c8a462f25c9bd3ef68ad64d69fa7fcd19094d4fd7fed2271876d175f",
+   "test_focus": "Make the QwenChat chat POST fail at the transport level, for example with an httpx `ConnectError` or a timeout. Assert that `execute` raises a `ProviderError` carrying the transport-failure classification, provider and model, and that it chains the original exception.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "b32ac718e18f42637fee55d27058c4ed967b99e0a94cc2ca3668465a4cad7dea"
  }
 }

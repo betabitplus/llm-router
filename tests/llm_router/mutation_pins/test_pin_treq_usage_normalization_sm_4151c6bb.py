@@ -1,5 +1,5 @@
 # mutation-pin: TREQ_USAGE_NORMALIZATION SM-4151C6BB
-# pinned-by: claude-opus-5-5: Normalization is supposed to produce the stable common usage model, and the helper's contract is to return non-negative counts. The mutant lets negative provider token values through into the usage statistics and the total. That breaks the stable model and the consistent total that TREQ_USAGE_NORMAL
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 import pytest

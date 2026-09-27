@@ -11,7 +11,23 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "statement",
   "prompt_sha256": "70f20d6f3f3d86aed8569973d80ed810657cf2cdcfaadfe40002460d75c2ed27"
+ },
+ "0601f3c62c74bba8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152434Z-61d152",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When every route is briefly blocked (wait_seconds > 0), the mutant returns None instead of waiting and running the blocked request. That async call then hands back no normalized response, which breaks the rule that async requests keep the public response contract.",
+   "response_sha256": "d351af341d0ee759c93ecb7e8e66a830c3ee00f24ab5b3d56d5f09ee5c4c5ea3",
+   "test_focus": "Run an async request where the only available route is briefly blocked (for example a rate-limit wait). Check that it waits, returns the normalized text response with a trace for the blocked attempt, and never returns None.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "prompt_sha256": "a57e7d61340b30f175b9b81d820e6321be2e7d6395d7b2c57f1da8e1ff9be0e9"
  },
  "1f46adce42be5e76": {
   "answer": {
@@ -25,22 +41,7 @@
    "test_focus": "Send an async request where the first route's provider call raises and a second route succeeds. Check that the response's attempt traces include the failed attempt with its error, before the successful final trace, as the sync path does.",
    "verdict": "pin"
   },
-  "pin": {
-   "adopted_at": "2026-09-27T08:27:44.925259Z",
-   "call_id": "20260927T082502Z-a14f3e",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "passes_on_original": 3,
-    "primitives": []
-   },
-   "draft_sha256": "6b84e2f60d83b246a00f677b72516238b6ede226ef121647eed8a233c026725d",
-   "model": "gemini-3.8-flash-medium",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_1f46adce42be5e76.py",
-   "response_sha256": "a459bd4074663f5a400dc421380b5257fa8d4a86b1e2513c09b5646539997457",
-   "source": "draft author"
-  },
+  "operator": "statement",
   "prompt_sha256": "dc364533ea1803cfa3c4e476358fb27ebd648e4470019402b8abba386e5af395"
  },
  "27d11bf90174a30a": {
@@ -55,6 +56,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "statement",
   "prompt_sha256": "fcbcbd03152619481f28fb8f56ab196dacd0c0c63f86a78f6e0e8d4d5e7019dd"
  },
  "2e53b12c273fddd6": {
@@ -69,6 +71,7 @@
    "test_focus": "Make the primary route fail and a fallback succeed in one async call. Then check that the next async call tries the remembered fallback route first, as its routing traces show, just as the sync path does.",
    "verdict": "pin"
   },
+  "operator": "statement",
   "prompt_sha256": "499f53906ff632f086e23cffc9d018f566414a4cac7a09aaf0bf5c136a1762f5"
  },
  "3dc1348c54023b59": {
@@ -83,20 +86,24 @@
    "test_focus": "Make one async attempt fail on a route or key, then check that the failure was recorded: the key or route shows up as cooled down or unhealthy, and the next async request blocks or skips it the same way the sync path does.",
    "verdict": "pin"
   },
+  "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-27T08:25:02.674116Z",
-   "call_id": "20260927T082151Z-1e7e85",
+   "adopted_at": "2026-09-27T20:11:01.939241Z",
+   "answer_sha256": "8ec2d38db7b8b0b38e7763a8cd550dffb8b554806f1e1e80d0e23090f7e06e54",
+   "call_id": "20260927T195627Z-bf6c0f",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "386d70a2436eff59ecf2b19d2df9dbf2a1965e35bacade2ada270f4e2dbc909f",
+   "draft_sha256": "8ec2d38db7b8b0b38e7763a8cd550dffb8b554806f1e1e80d0e23090f7e06e54",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_3dc1348c54023b59.py",
-   "response_sha256": "b1c3442f01becf49b9ca12f402aea40b74ad4efac8ce7b83805b6228bd259944",
+   "response_sha256": "150e13d1e33be97b5105a85211275b0df370be948b10fcb99aaed8a0d3fd939a",
    "source": "draft author"
   },
   "prompt_sha256": "e536f233e8671447d8aa4efa6fd3b71528dda200fecf7b3e4d0da37af806f76c"
@@ -113,22 +120,7 @@
    "test_focus": "Give a route a pacing wait under one second (e.g. 0.5s). The test must check that the async run defers that route: it tries a ready alternative route first, or waits before calling the provider, and reports it as blocked in the attempt traces.",
    "verdict": "pin"
   },
-  "pin": {
-   "adopted_at": "2026-09-27T00:39:19.750174Z",
-   "call_id": "20260927T002305Z-1c0849",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "passes_on_original": 3,
-    "primitives": []
-   },
-   "draft_sha256": "bdac364824a71822ad7d97e6c73bd7c39bd1b45d366560a7ba5123f609753f60",
-   "model": "gemini-3.8-flash-medium",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_4185d08c0ebf67fe.py",
-   "response_sha256": "82d02514b122b2e2e902918f38ace740366203205dbc339fe13757f916860bb5",
-   "source": "draft author"
-  },
+  "operator": "boundary",
   "prompt_sha256": "2b4b47a9c85549768fa09c28126fce51b624921b88c260923dbfd87baf8df3a0"
  },
  "43dd25caa8a885c2": {
@@ -143,6 +135,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "statement",
   "prompt_sha256": "078e520d99732353ad093777a42a991b8df45fcc6e0d82ef51d5ee1b56881c1f"
  },
  "55f001261b9df2d4": {
@@ -157,6 +150,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "statement",
   "prompt_sha256": "eb3429cf1e80a6f7413ed7521ff2a65518193df299d7290d5324a67c64cbb6ea"
  },
  "588a5d6523edb2f8": {
@@ -171,6 +165,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "statement",
   "prompt_sha256": "ffedbe618a1b506925fe45f4d06b744593e09c253d665afa90882539cdf05d5f"
  },
  "630cbef3a8ff25af": {
@@ -185,6 +180,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "statement",
   "prompt_sha256": "e42aaab99615f1349fd9e80d4bbdd2d3a1635634a12c33cc31424beee9159ee0"
  },
  "72a7031bbe702ccb": {
@@ -199,6 +195,7 @@
    "test_focus": "Send an async text request through a route that is not rate-limited. Check that it calls the provider directly and that the trace holds exactly one successful attempt with no blocked or wait entries, the same as the sync call.",
    "verdict": "pin"
   },
+  "operator": "boundary",
   "prompt_sha256": "b0d703a1e24d12465885707ce9c070bd4de35a993d2e11763d7a38df20efebd6"
  },
  "a73d76c7050e2371": {
@@ -213,20 +210,24 @@
    "test_focus": "After a successful async call on a route that failed before (or that has a usage-limited key), check that its success was recorded: the failure streak or cooldown is cleared, or the usage is counted. A second async request should then see the same routing state that the sync path produces.",
    "verdict": "pin"
   },
+  "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-27T00:39:19.751688Z",
-   "call_id": "20260927T002612Z-ea9272",
+   "adopted_at": "2026-09-27T20:11:01.940873Z",
+   "answer_sha256": "accfc92c3cb6a119a1c7157ece0268f037c6ecabffff96fa39b20a5c4ae90930",
+   "call_id": "20260927T195857Z-ab6b48",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "80e426d8f668d65801201fc19bea92d85aaf11c0d2829941fff181c1bc0b846f",
+   "draft_sha256": "08fb58b871d12333fc1a17fb369f3b72ba6b784cac799c76ee8a8b63bb163cb0",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_a73d76c7050e2371.py",
-   "response_sha256": "54af14a0568b15e4787236fe2f72e3a559786c288be7460360bfa98fc7ad1276",
+   "response_sha256": "007649bc781fcb032c2e13da0da704b9289e13fd37ff058aa42d44e498311bbd",
    "source": "draft author"
   },
   "prompt_sha256": "e9fcf0476a3e2ae05e432860085e135ff1f9ae91f0c8f65a8f75ad04f2f62ade"
@@ -243,20 +244,24 @@
    "test_focus": "Run an async request where the first route raises and the second succeeds with no blocked routes. Assert that the fallback success is remembered, so the next async request starts on that route and its traces match the sync behaviour.",
    "verdict": "pin"
   },
+  "operator": "boolean",
   "pin": {
-   "adopted_at": "2026-09-27T08:25:02.675739Z",
-   "call_id": "20260927T082222Z-8de2af",
+   "adopted_at": "2026-09-27T20:18:21.689308Z",
+   "answer_sha256": "79040d24ad69ae3711da24c7a747ec20b83c7a91cac7ea7f366acab39a9bf212",
+   "call_id": "20260927T201237Z-61b247",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "3fd489e3373604cdf5932c57930b095601dbf235a38362ef69b893da94b0db92",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "c685708ef02c93bceb56153ec306bb47666c9df29672b1b7daff647335309a54",
+   "model": "claude-sonnet-4-6",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_c673733c4b655a92.py",
-   "response_sha256": "9419d937596b25a8f97bd8436785ec48e102afa8d353765b4595bddd5ac58ff7",
+   "response_sha256": "6cc582333fbd7f25919ab8a428646cac1cd3658a0a9e7a7a06eb701447fef650",
    "source": "draft author"
   },
   "prompt_sha256": "886a6bb5ec5e4cf43e18193492d6d137f1899a834b3475ca6585213feb061724"
@@ -273,6 +278,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "statement",
   "prompt_sha256": "84064ecb55746d4f8b16dbff474a4ee880ebedcf19ceca7c5de4435977e20731"
  },
  "dbef2764a0a707b7": {
@@ -287,7 +293,23 @@
    "test_focus": "Run an async request where the first route's key is rate-limited (positive wait) and a second route is free. Check that the blocked route's provider is not called right away, the free route answers, and the response's traces include the blocked attempt with its wait time.",
    "verdict": "pin"
   },
+  "operator": "comparison",
   "prompt_sha256": "c53e6b1ada1e8afef74540eb133da5ff2ce08d9db081584593adce6c90d3ed6c"
+ },
+ "e1a047184fcbb294": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152445Z-509d81",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant stops recording an attempt trace when a route fails during request preparation. An async response that falls back past such a route would then leave out the failed attempt, and fallback success could be marked as not having occurred. That changes the routing traces in the public response contract, which async execution must keep the same.",
+   "response_sha256": "b4d5b2279e1fc14f26a88cfe79479020bbfd4503acae26fe0f02004a533b6bc0",
+   "test_focus": "Run an async request where the first route fails in _prepare_request (for example, a missing key or an unsupported capability) and a later route succeeds. Assert that the response's attempt traces include the failed first route with its error, before the final successful trace.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "f34b25ffcd27a38597e33c0a76ec49852b48577487ae62013471d86aca14fa0d"
  },
  "e1e147c2641e44f4": {
   "answer": {
@@ -301,6 +323,22 @@
    "test_focus": "Send an async text request whose first route is ready now (wait of 0). Check that the provider is called once on that route and that the response carries a single successful attempt trace, with no blocked or fallback entries, matching the sync result.",
    "verdict": "pin"
   },
+  "operator": "comparison",
   "prompt_sha256": "809293a6deab1e62a769a626a52fca3e9b9c86c17d6b81729e069d3df1ca0548"
+ },
+ "fddc853000a48d63": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152456Z-b21340",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "If the attempt order is empty, the mutant no longer raises TimeoutError(\"No route attempts were available.\"). It logs a failure with error=None and then runs `raise None`, which throws a TypeError. That changes the error contract of the async path, and the requirement says async execution must keep the same public contract.",
+   "response_sha256": "d885e60122e7b673444a6438ffbb10de0541c309c25f0fc261777afbbf4681b7",
+   "test_focus": "Set up a router whose async attempt order yields no routes, then check that the async call raises TimeoutError with the message \"No route attempts were available.\" and not TypeError.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "ccdd64dd3792b696d25c6cfb3bad7cfd2922f9e06961ebea80ec9c2b0b6775f6"
  }
 }

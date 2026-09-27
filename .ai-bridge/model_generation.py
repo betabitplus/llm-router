@@ -44,7 +44,12 @@ RESPONSE_SCHEMA = "ternforge-model-response-1"
 LEDGER_PATH = BRIDGE / "semantic-mutants" / "model-ledger.jsonl"
 BACKENDS = ("claude-cli", "antigravity-cli")
 # Test Plan labels of the Model generation tables.
-ROLES = {"Semantic mutant generator": "generator", "Draft test author": "draft_author", "Survivor verdict": "verdict"}
+ROLES = {
+    "Semantic mutant generator": "generator",
+    "Draft test author": "draft_author",
+    "Survivor verdict": "verdict",
+    "Survivor verdict review": "verdict_review",
+}
 
 
 def model_family(model: str) -> str:
@@ -191,6 +196,13 @@ def claude_env(profile: str) -> dict[str, str]:
     return env
 
 
+def account_label(profile: str) -> str:
+    """The sign-in a ledger row names: ``default`` for the CLI's own sign-in, else a short digest of
+    the profile name. A profile is often named after a person or an alias, and the ledger is kept
+    in the repository, so it never carries the name."""
+    return profile if profile in {"", "default"} else "profile-" + sha256_text(profile)[:8]
+
+
 class ClaudeCli:
     name = "claude-cli"
     # One plan window for the whole account: a rejection stops every model until it resets.
@@ -224,7 +236,7 @@ class ClaudeCli:
         if not self.executable:
             return Invocation("unavailable", "the claude CLI is not installed")
         if self.profile != "default" and not (CLAUDE_PROFILES_DIR / self.profile).is_dir():
-            return Invocation("unavailable", f"the Claude CLI profile {self.profile} is not signed in (model_generation.py profile {self.profile} --login)")
+            return Invocation("unavailable", "the chosen Claude CLI profile is not signed in (see `model_generation.py profile`, then sign it in with --login)")
         started = time.monotonic()
         with tempfile.TemporaryDirectory(prefix="ternforge-model-call-") as empty:
             try:
@@ -530,8 +542,8 @@ class Run:
         return self.backends[name]
 
     def account(self, name: str) -> str:
-        """Which sign-in of a backend the run uses: a profile name, never who it belongs to."""
-        return str(getattr(self.backend(name), "profile", "") or "")
+        """Which sign-in of a backend the run uses, as a label that carries no profile name."""
+        return account_label(str(getattr(self.backend(name), "profile", "") or ""))
 
     def record(self, row: dict) -> dict:
         row = {"schema": LEDGER_SCHEMA, "run_id": self.run_id, "at": self.clock(), **row}

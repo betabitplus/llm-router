@@ -1,8 +1,9 @@
 # mutation-pin: TREQ_QWENCHAT_ADAPTER_BOUNDARY 40231175bc1ce35e
-# pinned-by: claude-opus-5-5: The mutant quietly removes the registered tool descriptors from the QwenChat payload. The provider never sees the tools, so the normalized request is not carried across the native boundary, which REQ_PROVIDER_ADAPTER_INTEROPERABILITY requires. Running the confirmed input shows the 'tools' key is mis
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 import pytest
+
 from llm_router import Model, Provider
 from llm_router._internal.capabilities.tools import ToolDefinition, ToolRegistry
 from llm_router._internal.providers.base import ProviderCredential, ProviderRequest

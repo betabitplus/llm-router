@@ -1,5 +1,5 @@
 # mutation-pin: TREQ_TOOL_REGISTRY e9c1165894dd60d7
-# pinned-by: claude-opus-5-5: Without the freeze, the registry keeps the caller's mutable dict and exposes it. Code outside the registry can then add, overwrite or remove tools after construction, which bypasses duplicate-name rejection and breaks consistent execution of registered callables. TREQ_TOOL_REGISTRY requires both of
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 import pytest

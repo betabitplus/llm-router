@@ -74,13 +74,13 @@ Contracts in this capability:
 :id: REQ_SYNC_ROUTE_FALLBACK
 :collapse: true
 :status: accepted
-:revision: 1
+:revision: 2
 :required_evidence: impl;bdd
 :derives: FEAT_ROUTE_FALLBACK
 
-**Statement.** During a synchronous request, when an attempted route fails before producing a successful response and another eligible route remains, the router shall continue with the next route. A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded.
+**Statement.** During a synchronous request, when an attempted route fails before producing a successful response and another eligible route remains, the router shall continue with the next route. A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded. When every attempted route has failed and no rate-limited route remains to wait for, the request shall fail with the last route's error rather than return without a result.
 
-**Rationale.** A transient failure on one route should not turn into a user-visible request failure when another configured route can still satisfy the request, and the caller needs enough trace information to explain the fallback.
+**Rationale.** A transient failure on one route should not turn into a user-visible request failure when another configured route can still satisfy the request, and the caller needs enough trace information to explain the fallback. When no route is left, the caller needs the underlying failure, not an empty result.
 ```
 
 ::::{dropdown} Follow this contract to proof

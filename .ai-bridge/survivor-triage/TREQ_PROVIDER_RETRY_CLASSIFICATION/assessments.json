@@ -1,0 +1,86 @@
+{
+ "5a829211adec3347": {
+  "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "status_code": "599"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T190326Z-bbada9",
+    "confidence": 0.97,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The third branch differs: when status_code >= _SERVER_ERROR_STATUS_MIN and not in either explicit set, the original returns a RetryDecision(RETRYABLE, \"server_status\", status_code) while the changed version returns None.",
+    "response_sha256": "c9d13f7b92edf65d8fe9c9d0157ec47abf6fff9a7b2252fe634b9cbb09fb0d92",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "status_code": "999"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T190347Z-ea1a6f",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "An unlisted large integer like 999 will bypass the explicit sets and satisfy the server error minimum check, yielding a RetryDecision in the original and None in the modified version.",
+    "response_sha256": "2fdb16b85bbad76f629e0b05d02d8a5b3e28a45a5f17ad7a77a95252126ec8aa",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "status_code": "500"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T190415Z-248d71",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For HTTP status codes greater than or equal to _SERVER_ERROR_STATUS_MIN (such as 500), the original version returns a RetryDecision with reason 'server_status' whereas the changed version returns None.",
+    "response_sha256": "2550cac3261a5c7861771ea4279a9568dc55c5bd1e83131ca1cb9e05ee314e02",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "08c621a04e478edb41bdbe5bdd4aac706d794838761ff2d39e29182ec9738d96"
+ },
+ "d8f7199ce8dc26c9": {
+  "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260927T183340Z-c6fb6c",
+    "confidence": 0.82,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The only difference is `>=` vs `>` for `_SERVER_ERROR_STATUS_MIN`, but that exact value is evidently already handled by the `_RETRYABLE_STATUS_CODES` check in the first branch, making the difference unreachable; the symbolic search corroborates this.",
+    "response_sha256": "eeabdac51a3821c36daf025793786a7c27845a1c44785fcd91b9cfb87ef34369",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "status_code": "_SERVER_ERROR_STATUS_MIN"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T183422Z-f7d403",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version uses a strict inequality (> instead of >=), so it will classify _SERVER_ERROR_STATUS_MIN differently.",
+    "response_sha256": "1d093bbacb7f2ecd981201a369b5cb80fbeffb43241b620c77b0b9099b4de073",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260927T183441Z-5d7acc",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The boundary status code _SERVER_ERROR_STATUS_MIN is already covered by _RETRYABLE_STATUS_CODES in the preceding check, making >= and > produce identical behavior on all inputs.",
+    "response_sha256": "9d5f6fd5651f8170fc05e056e5263406b65c142579f48c7fa81903d766842cde",
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "3cf31e434fd9da0ef776c5edb4a2efbbebbf09910db8378f518152caba0fd1ed"
+ }
+}

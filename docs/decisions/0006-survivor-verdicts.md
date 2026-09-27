@@ -18,15 +18,21 @@ be checked by execution. Models change and degrade silently, so a model that dec
 requalified whenever it changes.
 
 **Decision.** A verdict model, named by the Test Plan's Survivor verdict role, gives every
-judged survivor one verdict with its reason: pin, equivalent, irrelevant or escalate.
+judged survivor, and every mutant no test of its contract reaches, one verdict with its
+reason: pin, equivalent, irrelevant or escalate.
 Escalate is allowed only when deciding changes what a Feature or Goal promises and no
 requirement settles it; a verdict inside a requirement's scope is never escalated. Equivalent
 is never allowed for a survivor with a confirmed input. An equivalent or irrelevant verdict
-takes the mutant out of its class as suppressed, with the reason and the model that gave it.
-A pin verdict asks the draft author for a test; the test is adopted as a mutation pin only
-when it passes on the original three times, fails on the mutant and imports only what the
-contract's tests may. A mutation pin verifies its contract and names its mutant; it proves no
-coverage case. An escalated survivor keeps its class failing and waits for the person, whose
+takes the mutant out of its class as suppressed, with the reason and the model that gave it,
+only when the Test Plan's Survivor verdict review, a model of another family asked the same
+question, agrees; when it does not, the mutant is pinned (amended 2026-09-27, after PoLL:
+judges of one family favour their own). A pin verdict asks the draft author for a test; the
+test is adopted as a mutation pin only when, in the project's style (formatted and safely
+fixed by its ruff rules), it breaks no lint rule, passes on the original five times, fails on
+the mutant and imports only what the contract's tests may and, for a Technical requirement,
+the module of the code it tests and the project modules it imports. A mutation pin verifies its contract and names its mutant;
+it proves no coverage case and no depth. When the pin rules change, every pin is judged again,
+and a pin no draft brings within them is removed. An escalated survivor keeps its class failing and waits for the person, whose
 verdict wins over the model's. A verdict counts while the code, the tests and the question it
 answered are unchanged. Every model a role lists passes that role's canaries, cases with a
 known outcome, before its answers count, and again after any change of model, question or
@@ -40,8 +46,9 @@ model on known cases. Mutation pins grow the suite automatically, and the campai
 them. Verdict calls use the Claude subscription and its budget; the rest of the models run on
 Antigravity. After the pilot the pieces move to their owners. The verdict question, the
 application of verdicts to classes, the pin adoption and the canaries go to `py-testkit`. The
-verdict and escalation views go to `ternforge-tooling-docops`. Scheduled verdict and canary
-runs go to `ternforge-infra-ci`. The default roles and canaries go to the project template.
+verdict and escalation views go to `ternforge-tooling-docops`. The pull-request diff that
+applies the recorded verdicts goes to `ternforge-infra-ci`; verdict and canary runs stay local
+runs on request. The default roles and canaries go to the project template.
 
 **Alternatives considered.** A person reviewing every survivor was rejected: it blocks
 Features on decisions the person does not own. Taking the assessors' unanimous equivalent as

@@ -1,5 +1,5 @@
 # mutation-pin: REQ_REQUEST_OVERRIDE_PRECEDENCE bf8a96501e88d45d
-# pinned-by: claude-opus-5-5: The mutant drops the step that merges request-level provider kwargs into the effective kwargs. As a result, a call override such as custom_kwarg is silently lost (the effective kwargs come out as {} instead of {'custom_kwarg': 'value'}). This breaks the requirement that request-level settings overri
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 import pytest

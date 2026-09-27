@@ -1,4 +1,72 @@
 {
+ "53bdcf1990f4aaa4": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152519Z-650084",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When no keys are discovered for a provider that requires a credential, the mutant skips the raise and falls through to `offset % len(keys)`. That throws ZeroDivisionError instead of ApiKeyNotFoundError, which breaks the requirement that a missing required credential surfaces as the public missing-key error.",
+   "response_sha256": "ecfae1e0ba351a1241d5b869109508d48b089305ecb21fe77dedb27a1126bd95",
+   "test_focus": "With automatic key selection, no discoverable keys, and a provider that requires a credential, resolution must raise ApiKeyNotFoundError carrying the default key's env var name, the provider, and the default key ID.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-27T16:50:51.254859Z",
+   "answer_sha256": "ec8fa1d2d900c92c71f68bc0a67177392d1696b609bf56a79c9486950b2cef0b",
+   "call_id": "20260927T164440Z-5bf800",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "ec8fa1d2d900c92c71f68bc0a67177392d1696b609bf56a79c9486950b2cef0b",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_53bdcf1990f4aaa4.py",
+   "response_sha256": "c7686fb21812f176b4dc1227adf0d2a59a5d9390b6519a2bd5e24e69f740ef82",
+   "source": "draft author"
+  },
+  "prompt_sha256": "5fb26cf4367351e10f0574ce070b9f315ea6177f7c9a806298b5f96fcd9e45ed"
+ },
+ "5ef3f33a9ec29e3d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152525Z-adb498",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With automatic key selection, no available keys, and a provider that requires a credential, the mutant returns None where it should raise ApiKeyNotFoundError. This breaks the requirement that a missing required credential surfaces as the public missing-key error with its identity.",
+   "response_sha256": "2bbfcb12643684eaa10ceb3601ba0e4005a33b17550bb45944db584361d431eb",
+   "test_focus": "Call candidates(key_id=\"auto\") for a provider that requires a key, with no keys configured or discovered, and assert it raises ApiKeyNotFoundError carrying the default key's env var name, the provider value and the default key ID.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-27T16:50:51.256370Z",
+   "answer_sha256": "83351faf9b322968cb75d1789c72d85a13108fe462493c4e1ef8682ed91797c8",
+   "call_id": "20260927T164524Z-f57616",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "83351faf9b322968cb75d1789c72d85a13108fe462493c4e1ef8682ed91797c8",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_5ef3f33a9ec29e3d.py",
+   "response_sha256": "ef289d73a6edbfcbedb21ea1493dff7fc67bd5fd5a83baf8df1ee751e78ca199",
+   "source": "draft author"
+  },
+  "prompt_sha256": "a897210571b006afd16f452a930b8d79f1b69c33afc532cfd26785ca4dbc4fe2"
+ },
  "779116a1f28d187b": {
   "answer": {
    "backend": "claude-cli",
@@ -11,23 +79,95 @@
    "test_focus": "Configure a provider with api_key_env_var='CUSTOM_KEY' and no api_key_env_vars mapping. Check that the default key ID resolves to CUSTOM_KEY and that a non-default key ID resolves to the '<PROVIDER>_API_KEY_<id>' naming pattern.",
    "verdict": "pin"
   },
+  "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.609312Z",
+   "adopted_at": "2026-09-27T19:54:19.513010Z",
+   "answer_sha256": "d579a107de4aa76a3a682e7c2ec8b9d44507119121e556f3caeb8c623be61a44",
    "call_id": "20260926T225348Z-0e1b75",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "d579a107de4aa76a3a682e7c2ec8b9d44507119121e556f3caeb8c623be61a44",
+   "draft_sha256": "42fe7eea865a2a9a0b2ba3489cd635a7b49f27c80afe962a024eb522515455ea",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_779116a1f28d187b.py",
    "response_sha256": "9023ca4bbce8b4b1f493d2ffe45de665d6066cdfe54f672ac51d6be1acc34097",
    "source": "draft author"
   },
   "prompt_sha256": "3d54f6bd154db76172c0b4bb07d57b3d7b7b7a93e94aea6596d17b4914002e21"
+ },
+ "8bf6ec5f1367a5d6": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152532Z-b00a5a",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For any non-auto key_id, the mutant returns None where the original returns a one-element tuple holding the resolved fixed key. This breaks the requirement that a configured fixed key resolves deterministically through its configured custom environment name.",
+   "response_sha256": "5b398c5b989ec6c32fc5262429a6baa87c43fba1a9e87a2a30548753f062f24a",
+   "test_focus": "Call candidates with a configured fixed key_id whose custom environment variable is set. Assert that it returns a one-element tuple whose ResolvedKey has that key_id, the custom env_var name and that variable's value.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-27T16:38:36.859891Z",
+   "answer_sha256": "d3cd6482ff684e55da9841bbc2c180b7d851e5b5e16a849b75e653a6942d8472",
+   "call_id": "20260927T155420Z-d1e9f9",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "d3cd6482ff684e55da9841bbc2c180b7d851e5b5e16a849b75e653a6942d8472",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_8bf6ec5f1367a5d6.py",
+   "response_sha256": "5a4ba1f6a681f7fd2e57dad28fdf17ed3eadec22701f1f9b5001f2fb76fdd4aa",
+   "source": "draft author"
+  },
+  "prompt_sha256": "0cd2eafaf12eaccab16f888869e3e809d1c91cce847552f4f8ef9580b062534e"
+ },
+ "adb0de8f41da4f7e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152538Z-ce4912",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For a provider that allows an absent bearer credential, automatic selection with no available keys now returns None instead of one ResolvedKey with an empty value. That breaks the requirement's criterion that every such provider family resolves to the permitted empty value.",
+   "response_sha256": "899df6c9e6ede6ebc692c8b1bc53723edfde90503e660ccf1b851e827df2cdaa",
+   "test_focus": "For each provider family that permits a missing key, with no keys configured, call candidates(key_id=\"auto\") and check that it returns exactly one ResolvedKey with the default key_id, the expected env_var and value \"\".",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-27T16:50:51.257361Z",
+   "answer_sha256": "46cc95dc39763462e30e499c472f11170eea37fc06911e4ae5f6b312d79e4908",
+   "call_id": "20260927T164624Z-ee9ef4",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "46cc95dc39763462e30e499c472f11170eea37fc06911e4ae5f6b312d79e4908",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_adb0de8f41da4f7e.py",
+   "response_sha256": "326a16ad4d0bf1c5476cf68f50dd66f53d7428211bf9f012cf6fb3f5c9fa98dd",
+   "source": "draft author"
+  },
+  "prompt_sha256": "76900ca9ba5b11bc14e6238b11b87f57f65bf13764cd726a8e29a87d6294298b"
  },
  "b249b8ff900bff0b": {
   "answer": {
@@ -41,22 +181,60 @@
    "test_focus": "Map a key ID to a custom env name with the provider prefix and a non-numeric suffix (e.g. `<PROVIDER>_API_KEY_PRIMARY`) and also set a numeric `<PROVIDER>_API_KEY_2`. Check that automatic selection rotates over exactly the configured and numeric IDs with no error, and that an env var named only with digits is ignored.",
    "verdict": "pin"
   },
+  "operator": "boolean",
   "pin": {
-   "adopted_at": "2026-09-27T00:39:19.753025Z",
-   "call_id": "20260927T003021Z-b4d824",
+   "adopted_at": "2026-09-27T20:18:21.690991Z",
+   "answer_sha256": "f3b93df85b3e020bb22398a572940bb480cdea61cdf2fdb765fd7b87fff9db30",
+   "call_id": "20260927T201340Z-6d0a23",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "d060f7bea53b5cb8114520384d56a27c5fd1ee303f9f36ff8e9d695ff5262808",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "f3b93df85b3e020bb22398a572940bb480cdea61cdf2fdb765fd7b87fff9db30",
+   "model": "claude-sonnet-4-6",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b249b8ff900bff0b.py",
-   "response_sha256": "ebd60029ad3327177993ac302bfff32f591c05513639dc1acc56d81f00d68ae7",
+   "response_sha256": "7c84aa0db16b76d4f07feb880686ae53d45b49f1ce76e8439915c5f995b5c10d",
    "source": "draft author"
   },
   "prompt_sha256": "1f149f8cb9911a1348366ca6532860c69b28af63f5b1d16725e887b6b1cc1c2d"
+ },
+ "b30cea8391ac9160": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152544Z-ceee53",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement says every provider family that allows a missing bearer credential must resolve to the permitted empty value. The mutant returns None instead of a ResolvedKey with an empty value for fixed key ids, which breaks that promise and would likely fail later when a caller reads the value.",
+   "response_sha256": "77b15862367d924eaa17a8515bc0afc42593b817b0c44d9d0f632e07a519cfe8",
+   "test_focus": "For a provider that allows a missing key, pass a fixed key id whose env var is unset and check that resolution returns a ResolvedKey with that key_id, the expected env_var name and value \"\".",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-27T16:38:36.860741Z",
+   "answer_sha256": "c3d680addd5f70f93a54662b4cd3951397c26fc9f189a7b59d3620d5b1ef56dc",
+   "call_id": "20260927T155556Z-c7b8b2",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "c3d680addd5f70f93a54662b4cd3951397c26fc9f189a7b59d3620d5b1ef56dc",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b30cea8391ac9160.py",
+   "response_sha256": "7e56503fe3adfba93f537f2f13d2083e50c93c05ced3b7d79e8271960e288f78",
+   "source": "draft author"
+  },
+  "prompt_sha256": "18f37ae236c3d566486b654d636cb7ddf6089f30194f4f46a609f4781b800d04"
  }
 }

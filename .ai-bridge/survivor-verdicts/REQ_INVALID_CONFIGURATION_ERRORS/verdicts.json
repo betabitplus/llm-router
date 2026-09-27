@@ -11,18 +11,22 @@
    "test_focus": "A public request whose retry max_wait_seconds equals min_wait_seconds should pass without a ConfigurationError. One with max_wait_seconds below min_wait_seconds should raise ConfigurationError and make no provider request.",
    "verdict": "pin"
   },
+  "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.610620Z",
+   "adopted_at": "2026-09-27T19:54:19.523568Z",
+   "answer_sha256": "f0ab22de5bded9745f7d989a82bd7974c122ca9d66d5ee522543fdb0fb10f9b5",
    "call_id": "20260926T225456Z-eea057",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
    "draft_sha256": "f0ab22de5bded9745f7d989a82bd7974c122ca9d66d5ee522543fdb0fb10f9b5",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_19ce8cfa2ea55f04.py",
    "response_sha256": "18ccc1dbb1427adf5e5b740ff89a7df9acb4a3005b0f919684c04d46eebcd676",
    "source": "draft author"
@@ -41,18 +45,22 @@
    "test_focus": "Send a public request with min_routes_for_fallback_shuffle=1 and check that it succeeds with no ConfigurationError. Send one with 0 and check that it raises ConfigurationError and makes no provider request.",
    "verdict": "pin"
   },
+  "operator": "boundary",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.611812Z",
+   "adopted_at": "2026-09-27T19:54:19.529630Z",
+   "answer_sha256": "e2c1ff2954bc66d7c051bd3975301050bcab994afbac7b5c4d7a84d3615557b7",
    "call_id": "20260926T225517Z-b90b97",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
    "draft_sha256": "e2c1ff2954bc66d7c051bd3975301050bcab994afbac7b5c4d7a84d3615557b7",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_1e7fe255a9f2e635.py",
    "response_sha256": "b8c802b772d59722a5609f71bb191d04c396a194b3143aa78e3bd2c0f2876ee5",
    "source": "draft author"
@@ -71,18 +79,22 @@
    "test_focus": "Check that a public request with a policy attempt timeout of 1.0 (or 0.5) passes validation and reaches the provider, and that a timeout of 0 raises ConfigurationError without making any provider request.",
    "verdict": "pin"
   },
+  "operator": "boundary",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.612925Z",
+   "adopted_at": "2026-09-27T19:54:19.531450Z",
+   "answer_sha256": "f7a4402ec9ac26e788987ec452cf601e6c1d84aca9d4d78d54378feb660e4af8",
    "call_id": "20260926T225543Z-d86110",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "f7a4402ec9ac26e788987ec452cf601e6c1d84aca9d4d78d54378feb660e4af8",
+   "draft_sha256": "cac21cec2e55ff65eec979dc4c6cbbfa1bdc9685fa1f15e34808a0bd5e7698a4",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_3b57c08f839ab791.py",
    "response_sha256": "b022b308189bba674fe7f0d610b8f8c1db25bc5e13b2fa177a694cb35599c520",
    "source": "draft author"
@@ -101,18 +113,22 @@
    "test_focus": "Boundary test: structured_output_max_attempts=1 must be accepted without ConfigurationError, and 0 must be rejected with ConfigurationError before any provider request.",
    "verdict": "pin"
   },
+  "operator": "boundary",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.614424Z",
+   "adopted_at": "2026-09-27T19:54:19.532207Z",
+   "answer_sha256": "5752101866b166ca2bcc44a308fd7ed2f76eeb81d37fcbb8db8ce1ec16a65d90",
    "call_id": "20260926T225607Z-ea59e8",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
    "draft_sha256": "5752101866b166ca2bcc44a308fd7ed2f76eeb81d37fcbb8db8ce1ec16a65d90",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_43c47ed5eb7d2a63.py",
    "response_sha256": "f8933f2f92291b43c24508edecfaccd09272ff22bc557786f2d0a95d965e57c1",
    "source": "draft author"
@@ -131,18 +147,22 @@
    "test_focus": "At the boundary, a public request with policy max_attempts=1 must succeed without a ConfigurationError, and one with max_attempts=0 must raise ConfigurationError without sending any provider request.",
    "verdict": "pin"
   },
+  "operator": "boundary",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.615700Z",
+   "adopted_at": "2026-09-27T19:54:19.533642Z",
+   "answer_sha256": "fa2f9c8eaebebfcdd8d350742a860ac937beac201d3622f16142e20c82cb6fc9",
    "call_id": "20260926T225624Z-6832b6",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "fa2f9c8eaebebfcdd8d350742a860ac937beac201d3622f16142e20c82cb6fc9",
+   "draft_sha256": "422285f3f8fcd274bcb45c9e0d98f175c542a78fe5f64dcc943c18449f09b834",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_4a11c78df0078b1f.py",
    "response_sha256": "52c1408d61ebcc9196a8cfda74d27284d3fa527d01815b4f1b8b5345ab1ccfcc",
    "source": "draft author"
@@ -161,18 +181,22 @@
    "test_focus": "Through the public boundary, check that min_routes_for_fallback_shuffle=1 is accepted without a ConfigurationError, while 0 raises ConfigurationError and no provider request is made.",
    "verdict": "pin"
   },
+  "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.616920Z",
+   "adopted_at": "2026-09-27T19:54:19.536662Z",
+   "answer_sha256": "2eff3d2823fcc031ce030e805fd83ac693c2d7cf74bbd6c4bc870dcf5aecfd8b",
    "call_id": "20260926T225651Z-bb1159",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "2eff3d2823fcc031ce030e805fd83ac693c2d7cf74bbd6c4bc870dcf5aecfd8b",
+   "draft_sha256": "ef7f2676a8c04c67699ff6042e94f73fff23a497af085cf0134e3530863b1adf",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_551e89dc7d0431df.py",
    "response_sha256": "36490799be8d17ec5552105f46aa499ecfaf0c2429a38d0246cc33fbbb8cbd2f",
    "source": "draft author"
@@ -191,18 +215,22 @@
    "test_focus": "At the boundary, a public request whose retry policy has max_attempts=1 must pass validation and reach the provider, and max_attempts=0 must raise ConfigurationError with no provider request.",
    "verdict": "pin"
   },
+  "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.618089Z",
+   "adopted_at": "2026-09-27T19:54:19.539940Z",
+   "answer_sha256": "07a672eed80eb704a21165245be65855a2586f4b948f7633ed7dddf0cd6eab38",
    "call_id": "20260926T225716Z-36abf2",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "07a672eed80eb704a21165245be65855a2586f4b948f7633ed7dddf0cd6eab38",
+   "draft_sha256": "fd8d9084328c60a61e15fa58afa02b283d981dc6aee734fd400aa9c885f7499e",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_a02b9c41521c0e84.py",
    "response_sha256": "c296a6ede86c81a99813219a4269f240897396609713dc5987285c2c5b9db310",
    "source": "draft author"
@@ -221,18 +249,22 @@
    "test_focus": "Test through the public boundary at the boundary value: a config with retry max_attempts=1 must pass validation and reach the provider, and max_attempts=0 must raise ConfigurationError without making any provider request.",
    "verdict": "pin"
   },
+  "operator": "boundary",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.619396Z",
+   "adopted_at": "2026-09-27T19:54:19.541094Z",
+   "answer_sha256": "13d388e0853e28537b63c6a04f7ef4f85aeaa6d1d34dfa94c3c702ccab2eed76",
    "call_id": "20260926T225739Z-14d926",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "13d388e0853e28537b63c6a04f7ef4f85aeaa6d1d34dfa94c3c702ccab2eed76",
+   "draft_sha256": "041567a0248cbe34f2b8a08618ea04b89fc12d679c8fd43d413a8030e4630b5a",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_a6c77976ba2d4065.py",
    "response_sha256": "594a23db344d8cfe725a00c923008ed3780df28b71ef8ebae7a6c1f91d09056f",
    "source": "draft author"
@@ -251,18 +283,22 @@
    "test_focus": "Send a public request with default_max_tool_rounds=1 and check that it is accepted and reaches the provider, then send one with 0 and check that it raises ConfigurationError without any provider request.",
    "verdict": "pin"
   },
+  "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.620742Z",
+   "adopted_at": "2026-09-27T19:54:19.542148Z",
+   "answer_sha256": "a9f5e88c801a1c43317673eae646558cbdbea13022903d81f9d5337e221a0d68",
    "call_id": "20260926T225803Z-07b00e",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "a9f5e88c801a1c43317673eae646558cbdbea13022903d81f9d5337e221a0d68",
+   "draft_sha256": "34a4f068644c936ceffdaf63be47e21268b96a422c0ed43c1080de2e504a2278",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_c18833e1526efa72.py",
    "response_sha256": "bcf8d3d976c2136716e5223583841a92919b8343f789d3379324b8455ece72ef",
    "source": "draft author"
@@ -281,18 +317,22 @@
    "test_focus": "At the boundary, check that a config with default_max_tool_rounds=1 passes validation and that one with 0 raises ConfigurationError before any provider request.",
    "verdict": "pin"
   },
+  "operator": "boundary",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.621972Z",
+   "adopted_at": "2026-09-27T19:54:19.543686Z",
+   "answer_sha256": "92e66cf0d65958b60606796cc3066c50e3dc4e3cd45c95734c90ab3508997b02",
    "call_id": "20260926T225832Z-a76ed7",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
    "draft_sha256": "92e66cf0d65958b60606796cc3066c50e3dc4e3cd45c95734c90ab3508997b02",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_c37a776247b2f0eb.py",
    "response_sha256": "858f218637305de081fec663756dfadab9c1cc1934b595dd8c9c15175ff581c4",
    "source": "draft author"
@@ -311,18 +351,22 @@
    "test_focus": "Check that a configuration with structured_output_max_attempts=1 passes validation and reaches the provider, and that a value of 0 raises ConfigurationError without making any provider request.",
    "verdict": "pin"
   },
+  "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.623071Z",
+   "adopted_at": "2026-09-27T19:54:19.546695Z",
+   "answer_sha256": "6dcfc6f5198f27433f049913623a7988de99bc3d5c9844a502febca5dd489b12",
    "call_id": "20260926T225851Z-5aa1f2",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
    "draft_sha256": "6dcfc6f5198f27433f049913623a7988de99bc3d5c9844a502febca5dd489b12",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_df61b883b2255611.py",
    "response_sha256": "4243165ac044445e8f58187289755dc10a956da5756bcd88a59b148a41785388",
    "source": "draft author"
@@ -341,18 +385,22 @@
    "test_focus": "Check that a public request with retry min_wait_seconds=0.5 passes validation and runs, while min_wait_seconds=0 raises ConfigurationError without making any provider request.",
    "verdict": "pin"
   },
+  "operator": "boundary",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.623773Z",
+   "adopted_at": "2026-09-27T19:54:19.548390Z",
+   "answer_sha256": "2036f6b40c7cd9883f4a4b98ddce728af51a9ca489b1ea2957ef5b05655ad6e4",
    "call_id": "20260926T225915Z-6e1872",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "2036f6b40c7cd9883f4a4b98ddce728af51a9ca489b1ea2957ef5b05655ad6e4",
+   "draft_sha256": "86bcb84c6f6cb6a68e2ea42fa046764a10ba31ed118ff368db617c2fb7a6dc3c",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_e303da2411404c79.py",
    "response_sha256": "262de5525b79bbb80082f08e2db9b3ac3aceee1050c4bb23a0ff2ce01ab607fc",
    "source": "draft author"
@@ -371,18 +419,22 @@
    "test_focus": "Send a public request whose effective config sets policy max_attempts=1 and check that it passes validation and reaches the provider. Send one with max_attempts=0 and check that it raises ConfigurationError without making any provider request.",
    "verdict": "pin"
   },
+  "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.624364Z",
+   "adopted_at": "2026-09-27T19:54:19.549517Z",
+   "answer_sha256": "48a00a22668bd71494ca495725adf3e3d46e50b214d346a9898b02b678bb0c0c",
    "call_id": "20260926T225932Z-1cad24",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "48a00a22668bd71494ca495725adf3e3d46e50b214d346a9898b02b678bb0c0c",
+   "draft_sha256": "644e74d173341364accc1bac4b3cc6b131ed7d22e9890f65910cfff0e0981609",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_ea9109b0b3884c40.py",
    "response_sha256": "1cf4d4f312b204432d11d68137dc9377198aa055077ca8fb62c16419987ea15f",
    "source": "draft author"

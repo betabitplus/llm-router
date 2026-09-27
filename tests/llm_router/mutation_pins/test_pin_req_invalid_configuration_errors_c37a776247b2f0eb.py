@@ -1,5 +1,5 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS c37a776247b2f0eb
-# pinned-by: claude-opus-5-5: The mutant moves the boundary of the default max tool rounds constraint from ≥1 to ≥2. As a result, a valid config with default_max_tool_rounds=1 now raises ConfigurationError, which execution confirmed. Its own message still says "at least 1", so the constraint the requirement enforces is no longer
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 from dataclasses import replace

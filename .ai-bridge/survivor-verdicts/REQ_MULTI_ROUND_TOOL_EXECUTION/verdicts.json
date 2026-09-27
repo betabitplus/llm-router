@@ -1,0 +1,32 @@
+{
+ "c64b7deb7394ba40": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152550Z-871953",
+   "level": "feature",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When the provider returns tool calls but no local tool registry is configured, the original ends the loop straight away with a public response that carries the provider's tool calls and the current trace. The mutant returns None, so the result goes to whatever the caller does for non-tool results, which may change or drop the tool calls in the response. This passthrough is part of the Feature's public orchestration contract even though the multi-round requirement doesn't state it.",
+   "response_sha256": "35e62e735bf018edf2e426f240fd46665e0eaafdd82e2fce6de3fa986a097796",
+   "test_focus": "With no tool registry and a provider result that has tool calls, check that the public response ends right away with exactly those tool calls and the existing tool trace, and that no further provider turn is made.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "prompt_sha256": "d0eacb28691a15b5047d0ae11fa364f2a6d80ba8089555e24dc55848ac5c3801"
+ },
+ "ee8c1e76f998e445": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152605Z-61ecda",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When the tool-round limit is reached, the mutant returns None instead of the bounded public response. That response has empty output text, the pending tool calls and the full tool trace. With None, the caller treats the tool-call result as if it had no tool step, so the multi-round workflow ends without a proper terminal response and drops the last round's trace. That breaks the promise of a bounded multi-round loop that ends with a traced response.",
+   "response_sha256": "21f7f1eb48bcb870557635a06a25bb3ed664a9a75d44c92220c9a840dab2711f",
+   "test_focus": "Run a workflow where the provider keeps asking for tools until the round limit. Assert the final response has empty output_text, carries the last result's tool_calls, and includes a tool_trace with every executed step, the last round's steps included.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "prompt_sha256": "590a2ffd0edd6838de30638923f4544545f47784ca6aaf772448e869b3dce8c8"
+ }
+}

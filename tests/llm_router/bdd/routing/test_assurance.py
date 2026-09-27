@@ -24,7 +24,7 @@ for _test_name, _criterion, _requirements in (
         "test_a_degraded_fallback_chain_recovers_within_the_attempt_budget",
         "ACV_ROUTE_FALLBACK_BOUNDED_RECOVERY",
         (
-            "REQ_SYNC_ROUTE_FALLBACK[revision==1]",
+            "REQ_SYNC_ROUTE_FALLBACK[revision==2]",
             "REQ_ROUTE_ATTEMPT_LIMIT[revision==1]",
         ),
     ),
@@ -33,7 +33,7 @@ for _test_name, _criterion, _requirements in (
         "AGI_ROUTING_BLOCKED_THEN_FALLBACK",
         (
             "REQ_RATE_LIMIT_ROUTING[revision==1]",
-            "REQ_SYNC_ROUTE_FALLBACK[revision==1]",
+            "REQ_SYNC_ROUTE_FALLBACK[revision==2]",
         ),
     ),
     (
@@ -41,7 +41,7 @@ for _test_name, _criterion, _requirements in (
         "AOV_ROUTING_PREDICTABLE_PROGRESS",
         (
             "REQ_RATE_LIMIT_ROUTING[revision==1]",
-            "REQ_SYNC_ROUTE_FALLBACK[revision==1]",
+            "REQ_SYNC_ROUTE_FALLBACK[revision==2]",
             "REQ_ROUTE_STICKY_START[revision==1]",
         ),
     ),

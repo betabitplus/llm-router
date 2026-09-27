@@ -11,23 +11,61 @@
    "test_focus": "Check that a usage payload with a nonzero reported total_tokens that differs from input+output (e.g. input 1, output 1, total 3) keeps total_tokens=3, and that a payload with no total gets input+output.",
    "verdict": "pin"
   },
+  "operator": "boolean",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.639088Z",
+   "adopted_at": "2026-09-27T19:54:19.557012Z",
+   "answer_sha256": "ed27d4e405b8c8fcb03981796717ed914c29e75c7483d2be0095fe232be47985",
    "call_id": "20260926T231551Z-15ed90",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "ed27d4e405b8c8fcb03981796717ed914c29e75c7483d2be0095fe232be47985",
+   "draft_sha256": "21f735b6ab7f294a5d5b319bfd56c9647f94e990d92a400d85d3f3f0fd3d074b",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_1356bcae910da7c0.py",
    "response_sha256": "145cdc658841777538c8b1d96c4ce0b8092cacd43092c1ccf742eb607eb62077",
    "source": "draft author"
   },
   "prompt_sha256": "2e040fc7dd31033e20c0406e46840c5d9086dcc792041ed4a0601ae3096039aa"
+ },
+ "58413afa88ad9810": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T165245Z-ea3c16",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When the input is already a UsageStats, the mutant returns None and throws away the usage data. The requirement says every supported usage shape must come out as the common usage model with a consistent total, and a UsageStats object is the most basic of those shapes.",
+   "response_sha256": "be422fd9ce744570549ba13722f9045e1e04d3d2b8973b5485512e18f04bb761",
+   "test_focus": "Pass an existing UsageStats instance (e.g. input=3, output=4, total=7) to normalize_usage and check it comes back unchanged, not as None.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-27T17:10:11.929360Z",
+   "answer_sha256": "802a705462d5229bce78c704aa68ac75aaac8a12cfee25e2b660b93a22ce54ad",
+   "call_id": "20260927T170426Z-cb241e",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "802a705462d5229bce78c704aa68ac75aaac8a12cfee25e2b660b93a22ce54ad",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_58413afa88ad9810.py",
+   "response_sha256": "e975db999ca5fe424f5e78d42f03b889861b3fe6d3f2b1065d59a5a75753930c",
+   "source": "draft author"
+  },
+  "prompt_sha256": "e264f3f2cb3dae1a05c02e9087dd396c23e635aa3090f17c304f4edf139bc799"
  },
  "SM-4151C6BB": {
   "answer": {
@@ -41,16 +79,20 @@
    "test_focus": "Normalize a provider usage payload that has a negative token count, such as prompt_tokens=-1. Check that the common usage field comes out as 0 and that the total token count stays consistent and non-negative.",
    "verdict": "pin"
   },
+  "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.639894Z",
+   "adopted_at": "2026-09-27T19:54:19.557487Z",
+   "answer_sha256": "0c8a49d17d2e6aac60e0e6ca5301cae95b62c7de9e0584a7a7a0fc0ce2064574",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
    "draft_sha256": "0c8a49d17d2e6aac60e0e6ca5301cae95b62c7de9e0584a7a7a0fc0ce2064574",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_sm_4151c6bb.py",
    "source": "kept semantic draft"
   },
@@ -68,16 +110,20 @@
    "test_focus": "The test must check that a usage payload with an explicit total (total-only, or a total larger than input + output) keeps the provider-reported total_tokens, and that the total is derived from input + output only when none is reported.",
    "verdict": "pin"
   },
+  "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.640784Z",
+   "adopted_at": "2026-09-27T19:54:19.557949Z",
+   "answer_sha256": "3f409c54ab93517c23c333c789d55966eaa2059ea4960561a9ac48470169ac05",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
    "draft_sha256": "3f409c54ab93517c23c333c789d55966eaa2059ea4960561a9ac48470169ac05",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_sm_67e8442b.py",
    "source": "kept semantic draft"
   },
@@ -95,18 +141,22 @@
    "test_focus": "Normalize a usage payload that has nonzero input tokens, zero output tokens and a total of zero or no total, and check that total_tokens equals input_tokens. Also check the reverse case, with zero input and nonzero output.",
    "verdict": "pin"
   },
+  "operator": "boolean",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.642046Z",
+   "adopted_at": "2026-09-27T19:54:19.558346Z",
+   "answer_sha256": "6add062e640547f6af8030995490da1a2c413cb53ad8a36e85339b5e39ad8c5c",
    "call_id": "20260926T231605Z-c65cb9",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "6add062e640547f6af8030995490da1a2c413cb53ad8a36e85339b5e39ad8c5c",
+   "draft_sha256": "d6fcac6ecec30be02ed5a60151e9e5d0efe1045e4b872e8d4db482fe2153e461",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_f3d4b39e06f3f013.py",
    "response_sha256": "2a5adfd1bec333bf70ae9f57698c170cddeca37223e8fb45ae1fa0d0d2708304",
    "source": "draft author"

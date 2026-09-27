@@ -11,6 +11,7 @@
    "test_focus": "Make an async provider fail with a retryable error until max_attempts runs out. Check that it makes exactly max_attempts calls and that the exception raised is the last provider error, not a tenacity RetryError.",
    "verdict": "pin"
   },
+  "operator": "boolean",
   "prompt_sha256": "23d036cbc867f230e5e3b968d1f03e05ddf33bf1f0f3f32b4a8747e6bec17d75"
  },
  "cdebfb831ae4dc16": {
@@ -25,6 +26,7 @@
    "test_focus": "Make every attempt fail with a retryable provider error until the retries run out. Check that the caller gets that same provider exception (same type and instance), not tenacity.RetryError, and that exactly max_attempts calls were made.",
    "verdict": "pin"
   },
+  "operator": "boolean",
   "prompt_sha256": "447f0a36466c91255af9abf267191eccb17d8672f9884523262a3af6891c7150"
  }
 }

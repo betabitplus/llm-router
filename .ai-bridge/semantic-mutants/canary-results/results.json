@@ -3,25 +3,25 @@
   "backend": "antigravity-cli",
   "cases": {
    "D-SECRET": {
-    "call_id": "20260927T081413Z-b885bf",
+    "call_id": "20260927T133927Z-ce125e",
     "cascade": {
      "accepted": true,
      "fails_on_mutant": true,
      "imports_beyond_allowed": [],
-     "passes_on_original": 3,
+     "passes_on_original": 5,
      "primitives": []
     },
     "detail": "the cascade keeps the draft",
-    "draft_sha256": "2fc79cc7baefe60cc75a9f5d4f55947c9e52f0d5983ca487d9bfa5733f8b0968",
+    "draft_sha256": "8766340a78f704df88924db0743f96533fd743e14ed360c2117c9003bb303ed4",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "2224450d5f369d9876924253475e5b640b06b6346cbe8429c1fe3aff387febe5"
+    "response_sha256": "83b004ceba1da0facb3cf51bff1835586d4f9311ce6a831d57ff2c8a66ed2b77"
    }
   },
   "model": "claude-sonnet-4-6",
   "passed": true,
-  "questions_sha256": "e8bb12b51b15f4e25d36f52586048dcea3c114ea3c74495f49069ddc0e782862",
-  "ran_at": "2026-09-27T08:14:30.252541Z",
+  "questions_sha256": "b43f47cf1eab540a2dfb461018b58ffb6909ec3bd22a2cad9f7644bec1ac45a4",
+  "ran_at": "2026-09-27T13:39:43.329765Z",
   "role": "draft_author"
  },
  "draft_author|antigravity-cli|gemini-3.8-flash-high": {
@@ -53,25 +53,25 @@
   "backend": "antigravity-cli",
   "cases": {
    "D-SECRET": {
-    "call_id": "20260927T081350Z-68d9b1",
+    "call_id": "20260927T133902Z-d5c11d",
     "cascade": {
      "accepted": true,
      "fails_on_mutant": true,
      "imports_beyond_allowed": [],
-     "passes_on_original": 3,
+     "passes_on_original": 5,
      "primitives": []
     },
     "detail": "the cascade keeps the draft",
-    "draft_sha256": "8502b1ac94fc72241ccc5a64a385011531fcf0d02580c3f2d0525165dcdf0b20",
+    "draft_sha256": "cc79db31075f1b4c5bb1bd3f3bb11673919af8af207044543a70cfd669f20c12",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "31ed80339cb56cfb656f61cefff9181950d80c14e76ff35d2a5f37f65ec4f777"
+    "response_sha256": "a40fc8ec7031cec517e5e374d66cdc7b23cd509946d37b38002fe418316dcd0a"
    }
   },
   "model": "gemini-3.8-flash-medium",
   "passed": true,
-  "questions_sha256": "e8bb12b51b15f4e25d36f52586048dcea3c114ea3c74495f49069ddc0e782862",
-  "ran_at": "2026-09-27T08:14:13.407941Z",
+  "questions_sha256": "b43f47cf1eab540a2dfb461018b58ffb6909ec3bd22a2cad9f7644bec1ac45a4",
+  "ran_at": "2026-09-27T13:39:27.748509Z",
   "role": "draft_author"
  },
  "generator|antigravity-cli|gemini-3.1-pro-high": {
@@ -107,6 +107,68 @@
   "questions_sha256": "f3b1d358f6db9f3916ba936c747ac3e8fa6261f37d70acec6cb0de7721a9e3e5",
   "ran_at": "2026-09-26T21:11:49.926349Z",
   "role": "generator"
+ },
+ "verdict_review|antigravity-cli|gemini-3.1-pro-high": {
+  "backend": "antigravity-cli",
+  "cases": {
+   "V-EQUIVALENT": {
+    "call_id": "20260927T132725Z-063de5",
+    "detail": "expected equivalent, got equivalent",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "29309a36ab0b47d30cd6834e325372c5f862de494c2f05f11334e8ea481beb32"
+   },
+   "V-ESCALATE": {
+    "call_id": "20260927T132737Z-e97f00",
+    "detail": "expected escalate, got escalate",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "90a4a9b3808204e2fb72db354b927deff9755e5a1fdb05013cd66ca612c7af59"
+   },
+   "V-PIN": {
+    "call_id": "20260927T132710Z-f2b4ab",
+    "detail": "expected pin, got pin",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "a65b857af284f7959f4c5763306a54d39b72e9bdb906b6dbfd7dc0bc31117831"
+   }
+  },
+  "model": "gemini-3.1-pro-high",
+  "passed": true,
+  "questions_sha256": "558051ec84d77ad406617fedb5d06287551ebcc2f926e410d1a0bcfbdd0570e0",
+  "ran_at": "2026-09-27T13:27:50.786708Z",
+  "role": "verdict_review"
+ },
+ "verdict_review|antigravity-cli|gemini-3.8-flash-high": {
+  "backend": "antigravity-cli",
+  "cases": {
+   "V-EQUIVALENT": {
+    "call_id": "20260927T132833Z-cd3dab",
+    "detail": "expected equivalent, got equivalent",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "dd15ee45aa3c11f4f8d5c2461578ca00d9aa07186386d7109bdae30b2b297648"
+   },
+   "V-ESCALATE": {
+    "call_id": "20260927T132904Z-6dc201",
+    "detail": "expected escalate, got escalate",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "5ca0100da1b77d166b0342b792dc10f350c26708b6253e407b7577c1408a30d7"
+   },
+   "V-PIN": {
+    "call_id": "20260927T132750Z-76de0a",
+    "detail": "expected pin, got pin",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "f9005667806509c4a64fd4397c4cdb448e29c42b0a88f8752fbe1f6274f06cad"
+   }
+  },
+  "model": "gemini-3.8-flash-high",
+  "passed": true,
+  "questions_sha256": "558051ec84d77ad406617fedb5d06287551ebcc2f926e410d1a0bcfbdd0570e0",
+  "ran_at": "2026-09-27T13:29:41.127488Z",
+  "role": "verdict_review"
  },
  "verdict|claude-cli|claude-opus-5-5": {
   "backend": "claude-cli",

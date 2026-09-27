@@ -1,5 +1,5 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS a02b9c41521c0e84
-# pinned-by: claude-opus-5-5: The constraint is that retry max attempts must be at least 1, and the error message says so. The requirement only rejects configurations that break a constraint. The mutant also rejects the valid boundary value max_attempts=1 with ConfigurationError (confirmed by running it), so a correctly configur
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 from dataclasses import replace
@@ -22,5 +22,7 @@ def test_retry_policy_max_attempts_boundary() -> None:
 
     invalid_retry = replace(config.defaults.retry_policy, max_attempts=0)
     invalid_defaults = replace(config.defaults, retry_policy=invalid_retry)
-    with pytest.raises(ConfigurationError, match="retry max attempts must be at least 1"):
+    with pytest.raises(
+        ConfigurationError, match="retry max attempts must be at least 1"
+    ):
         validate_config(replace(config, defaults=invalid_defaults))

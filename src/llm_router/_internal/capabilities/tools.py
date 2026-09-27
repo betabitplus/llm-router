@@ -138,7 +138,7 @@ def normalize_tool(tool: object) -> ToolDefinition:
     raise TypeError(msg)
 
 
-# @impl Explicit tool selection, IMPL_TOOL_CHOICE, [REQ_TOOL_CHOICE[revision==1]]
+# @impl Explicit tool selection, IMPL_TOOL_CHOICE, [REQ_TOOL_CHOICE[revision==2]]
 def normalize_tool_choice(
     choice: object,
     *,

@@ -1,17 +1,43 @@
 {
  "1356bcae910da7c0": {
   "answers": {
-   "antigravity-cli:gemini-3.8-flash-high": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
     "arguments": {
-     "value": "{'total_tokens': 3, 'input_tokens': 1, 'output_tokens': 1, 'prompt_tokens': 1, 'completion_tokens': 1}"
+     "value": "{\"input_tokens\": 3, \"output_tokens\": 4, \"total_tokens\": 10}"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260926T190758Z-b16514",
-    "confidence": 0.98,
+    "call_id": "20260927T145710Z-c4f1b9",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The `and` was changed to `or`. When total_tokens is non-zero and at least one of input/output tokens is non-zero, the original preserves the provider's total_tokens (10) while the changed version overwrites it with input+output (7).",
+    "response_sha256": "f253c8ea0fe645f7cc4f14c6b73f179ec0922a600091336ec201fca5cbd9a28a",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "{\"input_tokens\": 1, \"prompt_tokens\": 1, \"output_tokens\": 2, \"completion_tokens\": 2, \"total_tokens\": 10}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145730Z-99192d",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version only recalculates total_tokens if it is exactly 0, whereas the changed version uses 'or', causing it to overwrite a non-zero total_tokens with the sum of input and output tokens whenever either is non-zero.",
+    "response_sha256": "14b07bae52d5fde9949640f5268ad39db84596fd4c8c5ab19e576a0e9293a046",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{'input_tokens': 1, 'output_tokens': 1, 'total_tokens': 3}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145814Z-83625e",
+    "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When total tokens is non-zero and either input or output tokens are present with a sum different from total tokens, the changed version overwrites total tokens whereas the original preserves it.",
-    "response_sha256": "370511ead9bb097f4264f4d0fed8fda1ace695fd32e93a9a356b6afb61ec09fb",
+    "reason": "When total_tokens is non-zero and input or output tokens are present with a sum differing from total_tokens, the changed version overwrites total_tokens with input_tokens + output_tokens while the original version preserves the provided total_tokens.",
+    "response_sha256": "cbd0ffd34f4f7c7424b6cab6bdea1dd106c9c93b28b346bcff47e99b9c5f32c7",
     "verdict": "distinct"
    }
   },
@@ -19,17 +45,43 @@
  },
  "f3d4b39e06f3f013": {
   "answers": {
-   "antigravity-cli:gemini-3.8-flash-high": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
     "arguments": {
-     "value": "{'input_tokens': 1, 'output_tokens': 0, 'total_tokens': 0, 'prompt_tokens': 1, 'completion_tokens': 0}"
+     "value": "{\"input_tokens\": 5}"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260926T190701Z-b892ad",
+    "call_id": "20260927T145916Z-ebdf06",
+    "confidence": 0.97,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The change from `or` to `and` means when exactly one of input_tokens/output_tokens is non-zero and total_tokens is 0, the original computes total_tokens = input + output (via `or`, truthy), while the changed version skips it (via `and`, falsy), leaving total_tokens as 0. With `{\"input_tokens\": 5}`, the original returns UsageStats(input_tokens=5, output_tokens=0, total_tokens=5) but the changed returns total_tokens=0.",
+    "response_sha256": "a13441a5368eb3de38c0699a81c02a08268bcf6bcc3dc781f0617c3f507d2f2d",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "{\"prompt_tokens\": 10, \"completion_tokens\": 0, \"total_tokens\": 0, \"input_tokens\": 10, \"output_tokens\": 0}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T145935Z-9ca864",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When input_tokens is non-zero (e.g. 10) but output_tokens is 0, the original version's 'or' condition is true and updates total_tokens to 10, while the changed version's 'and' condition evaluates to false and leaves total_tokens as 0.",
+    "response_sha256": "5a45973983aacdc29c8216a2891c286c4a66f5def7b2bbf31c1b27748e3a4480",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{'input_tokens': 1, 'prompt_tokens': 1, 'output_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260927T150014Z-1bdfd8",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When total_tokens is 0 and only input_tokens is non-zero, the original version sets total_tokens to input_tokens + output_tokens while the changed version leaves total_tokens as 0.",
-    "response_sha256": "d3c49032c24027ea71030bf0dc9ef46dfd3b9c88eb4b08fbe76e24ecdf4bc423",
+    "reason": "When total_tokens is 0 and only one of input_tokens or output_tokens is non-zero, the original version calculates total_tokens as their sum whereas the changed version leaves total_tokens as 0.",
+    "response_sha256": "1497bcf5b24b2fab81c69f32d3d9dc64d816d3f7732f222c38d782b624b27209",
     "verdict": "distinct"
    }
   },

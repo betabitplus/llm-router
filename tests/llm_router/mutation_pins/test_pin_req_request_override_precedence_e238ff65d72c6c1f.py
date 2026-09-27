@@ -1,5 +1,5 @@
 # mutation-pin: REQ_REQUEST_OVERRIDE_PRECEDENCE e238ff65d72c6c1f
-# pinned-by: claude-opus-5-5: The mutant never merges router-level provider kwargs into the effective kwargs, so router defaults are silently lost. The confirmed input shows this: with no request override, {'custom_kwarg': 'test_val'} disappears. That breaks the precedence chain (route < router < request) and the criterion that
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 import pytest

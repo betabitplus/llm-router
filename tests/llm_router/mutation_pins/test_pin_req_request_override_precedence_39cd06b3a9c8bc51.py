@@ -1,5 +1,5 @@
 # mutation-pin: REQ_REQUEST_OVERRIDE_PRECEDENCE 39cd06b3a9c8bc51
-# pinned-by: claude-opus-5-5: The mutant skips applying route policy defaults. A route-level max_attempts=5 is silently dropped and falls back to the config value 3, even though no request override touched it. That breaks the criterion that request overrides take precedence over router and route defaults while unrelated defaults
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 import pytest
@@ -15,7 +15,7 @@ pytestmark = pytest.mark.verification_kind("unit")
 
 
 @pytest.mark.verifies("REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]")
-def test_route_policy_defaults_override_config_and_persist_with_unrelated_call_override() -> None:
+def test_route_policy_defaults_override_and_persist() -> None:
     config = build_default_config()
 
     settings_no_override = resolve_effective_settings(

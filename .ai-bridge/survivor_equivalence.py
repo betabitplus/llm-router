@@ -707,6 +707,9 @@ def _symbolic_main(original_file: str, mutant_file: str, seconds: str, paths: st
 
 # --- judging one survivor ----------------------------------------------------------------------
 
+# What the symbolic search returns when it tells nothing apart: the survivor stays for the assessors.
+SEARCH_UNDECIDED = frozenset({"none", "exhausted", "timeout", "error"})
+
 
 def symbolic_key(original_source: str, mutant_source: str, harness: dict, seconds: float, paths: int | None = None) -> str:
     """What a symbolic result depends on: both modules, the harness, CrossHair and its bounds."""
@@ -992,6 +995,30 @@ VERDICT_SCHEMA = {
 }
 
 
+SUPPRESSING = ("equivalent", "irrelevant")
+
+
+def reviewed_verdict(entry: dict) -> dict | None:
+    """The model's verdict as it counts (ADR_0006): pin and escalate as answered; equivalent or
+    irrelevant only when the review, a model of another family asked the same question, agrees,
+    and pin when it does not; none while the review is missing."""
+    answer = entry.get("answer") or {}
+    if answer.get("problems") or answer.get("verdict") not in VERDICTS_FINAL:
+        return None
+    if answer["verdict"] not in SUPPRESSING:
+        return {**answer, "by": answer.get("model")}
+    review = entry.get("review") or {}
+    if review.get("prompt_sha256") != entry.get("prompt_sha256") or review.get("problems") or review.get("verdict") not in VERDICTS_FINAL:
+        return None
+    if review["verdict"] in SUPPRESSING:
+        return {**answer, "by": answer.get("model"), "reviewed_by": review.get("model")}
+    return {
+        **answer, "verdict": "pin", "by": f"{answer.get('model')} and {review.get('model')}",
+        "reason": f"{review.get('model')} disagrees with {answer['verdict']}: {review.get('reason')}",
+        "test_focus": str(review.get("test_focus") or answer.get("test_focus") or ""),
+    }
+
+
 def verdict_prompt(*, context: str, target: str, original: str, mutant: str, judgement: str) -> str:
     return VERDICT_TEMPLATE.format(context=context + "\n" if context else "", target=target, original=original, mutant=mutant, judgement=judgement)
 
@@ -1021,6 +1048,8 @@ def judgement_summary(judged: dict) -> str:
         )
     if status == "not-applicable":
         return f"it could not be judged: {judged.get('reason')}; no input was tried."
+    if status == "not-reached":
+        return "no test of the requirement runs this line, so no test observed the change; a pin must reach it."
     parts = []
     symbolic = judged.get("symbolic") or {}
     if symbolic.get("status"):

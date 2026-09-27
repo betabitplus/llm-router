@@ -1,8 +1,9 @@
 # mutation-pin: TREQ_QWENCHAT_ADAPTER_BOUNDARY 2038c0b46cff816b
-# pinned-by: claude-opus-5-5: The mutant sets 'stream': True, which asks the QwenChat proxy for a streamed (SSE) reply. The adapter expects one complete JSON response, so this breaks the proxy HTTP behaviour and the normalized response semantics that TREQ_QWENCHAT_ADAPTER_BOUNDARY requires the adapter to preserve.
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 import pytest
+
 from llm_router import Model, Provider
 from llm_router._internal.capabilities.content import normalize_content
 from llm_router._internal.providers.base import ProviderCredential, ProviderRequest

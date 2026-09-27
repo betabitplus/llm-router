@@ -1,9 +1,11 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS 551e89dc7d0431df
-# pinned-by: claude-opus-5-5: The documented constraint is "minimum routes for fallback shuffle must be at least 1". The mutant raises ConfigurationError for the valid boundary value 1, and execution confirms this. The requirement's boundary is whatever violates an applicable constraint, so rejecting a valid configuration missta
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 from dataclasses import replace
+
 import pytest
+
 from llm_router import ConfigurationError
 from llm_router._internal.config import build_default_config, validate_config
 

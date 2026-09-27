@@ -104,7 +104,7 @@ class RouterRuntime:
             ),
         )
 
-    # @impl Sync fallback, IMPL_SYNC_ROUTE_FALLBACK, [REQ_SYNC_ROUTE_FALLBACK[revision==1]]
+    # @impl Sync fallback, IMPL_SYNC_ROUTE_FALLBACK, [REQ_SYNC_ROUTE_FALLBACK[revision==2]]
     def _run_sync(
         self,
         *,

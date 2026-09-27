@@ -24,7 +24,12 @@ The plugin also adds what the engine lacks (see ``ternforge_mutation``):
   With TERNFORGE_GREMLIN_SKIP_UNCOVERED=1 (the pull-request diff) an uncovered mutant
   is not run and is reported as not covered;
 * for each mutant a stable fingerprint, its enclosing function or class, its exact
-  location, the original code and the replacement.
+  location, the original code and the replacement;
+* a confirmed time limit: the engine waits TERNFORGE_GREMLIN_TIMEOUT seconds for a
+  mutant's tests and counts a longer run as caught, so a mutant that ran out of time runs
+  once more with TERNFORGE_GREMLIN_CONFIRM_TIMEOUT seconds before it counts: a slow suite is
+  no hang. The campaign sets both from the contract's measured test time
+  (implementation_faults.time_limits); without them the limits are 30 s and 300 s.
 """
 
 from __future__ import annotations
@@ -34,6 +39,7 @@ import copy
 import dataclasses
 import json
 import os
+import subprocess
 from collections import Counter
 from pathlib import Path
 
@@ -51,6 +57,8 @@ from pytest_gremlins.reporting.results import (  # ty: ignore[unresolved-import]
 SCOPE_ENV = "TERNFORGE_GREMLIN_SCOPE"
 POLICY_ENV = "TERNFORGE_MUTATION_POLICY"
 SKIP_UNCOVERED_ENV = "TERNFORGE_GREMLIN_SKIP_UNCOVERED"
+TIMEOUT_ENV = "TERNFORGE_GREMLIN_TIMEOUT"
+CONFIRM_TIMEOUT_ENV = "TERNFORGE_GREMLIN_CONFIRM_TIMEOUT"
 EXTENSION_SCHEMA = "ternforge-mutation-extension-1"
 SIDECAR = "coverage/gremlins/ternforge-extension.json"
 
@@ -315,11 +323,39 @@ def _select_tests_recording_reach(gremlin, gremlin_session):  # noqa: ANN001
 _test_gremlin = _gremlins_plugin._test_gremlin
 
 
+class _TimeLimited:
+    """The engine's ``subprocess`` with another time limit for a mutant's tests."""
+
+    def __init__(self, seconds: float) -> None:
+        self.seconds = seconds
+
+    def run(self, *args, **kwargs):  # noqa: ANN002, ANN003, ANN201
+        if "timeout" in kwargs:
+            kwargs["timeout"] = self.seconds
+        return subprocess.run(*args, **kwargs)  # noqa: PLW1510 - the engine passes check itself
+
+    def __getattr__(self, name: str):  # noqa: ANN204
+        return getattr(subprocess, name)
+
+
+def _test_within(gremlin, test_command, rootdir, instrumented_dir, seconds: float):  # noqa: ANN001, ANN201
+    engine_subprocess = _gremlins_plugin.subprocess
+    _gremlins_plugin.subprocess = _TimeLimited(seconds)
+    try:
+        return _test_gremlin(gremlin, test_command, rootdir, instrumented_dir)
+    finally:
+        _gremlins_plugin.subprocess = engine_subprocess
+
+
 def _test_gremlin_unless_uncovered(gremlin, test_command, rootdir, instrumented_dir):  # noqa: ANN001
     if os.environ.get(SKIP_UNCOVERED_ENV) == "1" and STATE["reach"].get(gremlin.gremlin_id) is False:
         STATE["skipped"].add(gremlin.gremlin_id)
         return GremlinResult(gremlin=gremlin, status=GremlinResultStatus.SURVIVED)
-    return _test_gremlin(gremlin, test_command, rootdir, instrumented_dir)
+    result = _test_within(gremlin, test_command, rootdir, instrumented_dir, float(os.environ.get(TIMEOUT_ENV) or 30))
+    if result.status == GremlinResultStatus.TIMEOUT:
+        # A slow suite is no hang: the time limit catches a mutant only when a run with room to spare times out too.
+        result = _test_within(gremlin, test_command, rootdir, instrumented_dir, float(os.environ.get(CONFIRM_TIMEOUT_ENV) or 300))
+    return result
 
 
 def _mte_location(location) -> dict:

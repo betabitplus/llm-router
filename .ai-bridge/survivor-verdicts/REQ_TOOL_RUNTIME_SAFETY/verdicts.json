@@ -11,6 +11,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "statement",
   "prompt_sha256": "9d8d1af105993ddcd41aa4bc1df62aec784b1112aa330ab69400d4d9f94451e5"
  },
  "cc2237e2e7228b57": {
@@ -25,6 +26,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "statement",
   "prompt_sha256": "1582c6a5e12504d4ac3ec136bace52c3c3969b97eee91286c4f915917450d46d"
  },
  "db62c1957a5a14e0": {
@@ -39,6 +41,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "statement",
   "prompt_sha256": "1698d922f8010ca6c73bd375cd74082bc4c92ed522b6c5dda6681c3862fb4a7e"
  }
 }

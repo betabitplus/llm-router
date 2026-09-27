@@ -54,11 +54,11 @@ price and window share. Generation competes with the person's own sessions for t
 windows, so the limits defer work instead of exhausting the plan. A machine may keep several
 Claude sign-ins as named CLI profiles and choose one; every ledger row names it, and a call
 never inherits the variables of the agent session that started the run. Antigravity stays
-local; CI uses `claude-cli` with a `CLAUDE_CODE_OAUTH_TOKEN` secret. After the pilot the
+local, and CI never calls a model: generation is a local run on request. After the pilot the
 pieces move to their owners. The adapter, the backends, the ledger format, the budget
 guard, the confinement rules and their qualification controls go to `py-testkit`. The
-provenance and spend views go to `ternforge-tooling-docops`. The CI secret, the scheduled
-generation job and the retention of responses and ledger go to `ternforge-infra-ci`. The
+provenance and spend views go to `ternforge-tooling-docops`. The retention of responses
+and ledger goes to `ternforge-infra-ci`. The
 default roles and limits go to the project template.
 
 **Alternatives considered.** Pay-as-you-go API keys (Anthropic, Gemini, Vertex) give

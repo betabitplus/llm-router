@@ -1,0 +1,70 @@
+{
+ "3cc16a6300b216ed": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152915Z-1d65ba",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant still rejects undeclared models, but a declared model now resolves to None instead of the requested model, so the request can no longer proceed with it. The requirement's accept/reject split assumes that a declared model is actually accepted, and this change breaks that. The survivor judgement also found that no test runs this return line.",
+   "response_sha256": "0e87766c097f56eeb8b508376fb05906709d18f6f2156d7dafff31c8471fb348",
+   "test_focus": "Request a model the effective configuration declares, passed both as a Model enum and as its string value, and check that the call succeeds and resolves to exactly that Model, which then reaches provider execution.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-27T16:38:36.863274Z",
+   "answer_sha256": "31fb838b39b267bc69e9e39d1cdb5fe984049eab51b3d915d905663928d01c09",
+   "call_id": "20260927T160834Z-a6f8c3",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "31fb838b39b267bc69e9e39d1cdb5fe984049eab51b3d915d905663928d01c09",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_3cc16a6300b216ed.py",
+   "response_sha256": "3fda6fdb77d34948df4c7d0b4f77e9a1b71eb184841c40727ea1bd56b1d95460",
+   "source": "draft author"
+  },
+  "prompt_sha256": "5e76e779d4a852e5c41a88a842e4cc3723774207bd8e89a96b966463cfd83ff9"
+ },
+ "5ed9365a38636da5": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152923Z-166920",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "In the mutant, a model string that is not a valid Model value no longer raises ConfigurationError. `resolved` is then never assigned, so the function fails with UnboundLocalError instead of the public configuration error that REQ_INVALID_CONFIGURATION_ERRORS requires for an undeclared model.",
+   "response_sha256": "a1200688033d3f3245189ec143ef04488e7118cfb45256408d31de0c96888c41",
+   "test_focus": "Pass a model string that matches no Model enum value (e.g. \"no-such-model\"). Check that it raises ConfigurationError with the message \"Unknown model: no-such-model\" and that no provider is called.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-27T16:38:36.863816Z",
+   "answer_sha256": "42b225e7e88d7231a4f7f57b757ab23e5c057a535db3a04bbd47d3c27d30ac79",
+   "call_id": "20260927T160903Z-596412",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "2b1df89596c32c375fbd90bcb3d48ad48f7710a83b687017461d96c27956ad0f",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_5ed9365a38636da5.py",
+   "response_sha256": "0b63e9957283b937b37809f2eaac59d4f40440e581175f9846d57d38ccb0d421",
+   "source": "draft author"
+  },
+  "prompt_sha256": "fc6fa4b264e56b76b06d7062ebf466c5881c7cc0104bc3b5482635b0eca0ce75"
+ }
+}

@@ -57,7 +57,7 @@ the verification claim is the request constructed by llm-router, not fidelity of
 
 | REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                         |
 | -------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`        | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                 |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`        | —        | `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`             |
 | `interface.payload-schema`                                                       | —        | `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
 | `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | —                                                                                                                           |
 
@@ -120,20 +120,20 @@ depend on a material provider surrogate.
 
 ### Fault applicability
 
-| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                                                      |
-| -------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`        | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                                              |
-| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
+| REQUIRED                                                                                      | OPTIONAL | N/A                                                                                                                                                      |
+| --------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `impl.control-flow` · `impl.effect` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                                              |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary`              | —        | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                                                                                  |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Required/optional, fixed/auto, custom-name, and rotation branches can fail independently and must remain discriminated. A dropped rotation update or missing-key rejection breaks resolution without failing loudly. |
-| Runtime / dependency  | Credential resolution reads local configuration/environment state; remote dependency failure is outside this contract.                                                                                               |
-| Interface / protocol  | Provider protocol behavior is not part of credential-source selection or missing-key translation.                                                                                                                    |
-| Architecture          | No internal layering topology is part of the credential-resolution contract.                                                                                                                                         |
-| Specification / model | Source partitions, deterministic rotation ordering, and public missing-key outcome are all normative semantics.                                                                                                      |
+| Group                 | Why                                                                                                                                                                                                                                                                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Required/optional, fixed/auto, custom-name, and rotation branches can fail independently and must remain discriminated. A dropped rotation update or missing-key rejection breaks resolution without failing loudly. Key rotation computes the next key's position arithmetically (`offset % len(keys)`, `position + 1`); a swapped operator picks the wrong key. |
+| Runtime / dependency  | Credential resolution reads local configuration/environment state; remote dependency failure is outside this contract.                                                                                                                                                                                                                                            |
+| Interface / protocol  | Provider protocol behavior is not part of credential-source selection or missing-key translation.                                                                                                                                                                                                                                                                 |
+| Architecture          | No internal layering topology is part of the credential-resolution contract.                                                                                                                                                                                                                                                                                      |
+| Specification / model | Source partitions, deterministic rotation ordering, and public missing-key outcome are all normative semantics.                                                                                                                                                                                                                                                   |
 
 (verification-profile-req-config-installation-coherence)=
 
@@ -189,11 +189,11 @@ the replacement-derived request, so Surrogate/L0 is sufficient.
 
 ### Fault applicability
 
-| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                               |
-| -------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `impl.effect`                                              | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
-| `architecture.layer-bypass`                                                      | —        | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge`        |
-| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | —                                                                                                                                 |
+| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                                                   |
+| -------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect`                                              | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| `architecture.layer-bypass`                                                      | —        | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge`                            |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | —                                                                                                                                                     |
 
 #### Fault-group rationale
 
@@ -246,10 +246,10 @@ registered cache invalidation mechanism locally.
 
 ### Fault applicability
 
-| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                                                                                                                            |
-| -------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `impl.control-flow` · `impl.effect` · `architecture.layer-bypass`                | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `architecture.forbidden-edge`                                                                                                                                                                                                  |
+| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                                                                                                                                                |
+| -------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `architecture.layer-bypass`                | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `architecture.forbidden-edge`                                                                                                                                                                                                                      |
 
 #### Fault-group rationale
 

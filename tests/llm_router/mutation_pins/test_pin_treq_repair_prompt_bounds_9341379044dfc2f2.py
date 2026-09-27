@@ -1,10 +1,12 @@
 # mutation-pin: TREQ_REPAIR_PROMPT_BOUNDS 9341379044dfc2f2
-# pinned-by: claude-opus-5-5: TREQ_REPAIR_PROMPT_BOUNDS assumes the repair prompt includes the schema identity and preview, the invalid output and the validation details, and then requires each of them to be bounded. An empty prompt passes the size cap only because it drops all of them, so it gives no repair guidance and breaks
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 import json
+
 import pytest
 from hypothesis import given, settings, strategies as st
+
 from llm_router._internal.capabilities.schema import (
     SchemaSpec,
     build_repair_prompt,

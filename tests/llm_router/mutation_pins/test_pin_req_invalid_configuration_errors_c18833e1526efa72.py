@@ -1,10 +1,11 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS c18833e1526efa72
-# pinned-by: claude-opus-5-5: The constraint says default max tool rounds must be at least 1. The mutant changes the check from >= 1 to > 1, so a valid configuration with default_max_tool_rounds=1 now fails with ConfigurationError, as the confirmed input shows. That means the validation no longer matches the constraint it is sup
+# pinned-by: claude-opus-5-5
 from __future__ import annotations
 
 from dataclasses import replace
 
 import pytest
+
 from llm_router import ConfigurationError
 from llm_router._internal.config import build_default_config, validate_config
 

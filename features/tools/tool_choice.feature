@@ -1,4 +1,4 @@
-@hermetic @REQ_TOOL_CHOICE[revision==1]
+@hermetic @REQ_TOOL_CHOICE[revision==2]
 Feature: Explicit tool choice
   A named tool choice should be honored before the final structured answer is returned.
 

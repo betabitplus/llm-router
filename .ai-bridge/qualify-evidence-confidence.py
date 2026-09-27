@@ -34,12 +34,9 @@ def version_or_unknown(name: str) -> str:
         return "UNKNOWN"
 
 
-def mutation_extension_sha256() -> str | None:
-    """One digest over every module of the mutation engine extension (``pytest_plugins``)."""
-    modules = sorted((ROOT / ".ai-bridge/pytest_plugins").glob("*.py"))
-    if not modules:
-        return None
-    return hashlib.sha256(b"".join(module.name.encode() + b"\0" + module.read_bytes() for module in modules)).hexdigest()
+# The tools count by what they do, as the builder counts them: one implementation of the
+# fingerprints (implementation_faults.code_digest and plugin_sha256) for both.
+FINGERPRINTS = runpy.run_path(str(ROOT / ".ai-bridge/implementation_faults.py"), run_name="evidence_confidence_fingerprints")
 
 
 def semantic_calibration_sha256() -> str | None:
@@ -71,19 +68,19 @@ def environment() -> dict[str, str | None]:
         "hypothesis": version_or_unknown("hypothesis"),
         "vcrpy": version_or_unknown("vcrpy"),
         "pytest_recording": version_or_unknown("pytest-recording"),
-        "assurance_adapter_sha256": sha256_file(ROOT / ".ai-bridge/build-mutation-report-prototype.py"),
-        "requirement_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-requirement-monitor.py"),
-        "upper_assurance_monitor_sha256": sha256_file(ROOT / ".ai-bridge/build-upper-assurance-pilot.py"),
-        "assurance_monitor_domain_sha256": sha256_file(ROOT / ".ai-bridge/assurance_monitor_domain.py"),
-        "assurance_monitor_registry_sha256": sha256_file(ROOT / ".ai-bridge/assurance_monitor_registry.py"),
-        "implementation_faults_sha256": sha256_file(ROOT / ".ai-bridge/implementation_faults.py"),
-        "mutation_extension_sha256": mutation_extension_sha256(),
-        "semantic_mutants_sha256": sha256_file(ROOT / ".ai-bridge/semantic_mutants.py"),
+        "assurance_adapter_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/build-mutation-report-prototype.py"),
+        "requirement_monitor_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/build-requirement-monitor.py"),
+        "upper_assurance_monitor_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/build-upper-assurance-pilot.py"),
+        "assurance_monitor_domain_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/assurance_monitor_domain.py"),
+        "assurance_monitor_registry_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/assurance_monitor_registry.py"),
+        "implementation_faults_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/implementation_faults.py"),
+        "mutation_extension_sha256": FINGERPRINTS["plugin_sha256"](),
+        "semantic_mutants_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/semantic_mutants.py"),
         "semantic_calibration_sha256": semantic_calibration_sha256(),
-        "model_generation_sha256": sha256_file(ROOT / ".ai-bridge/model_generation.py"),
-        "survivor_equivalence_sha256": sha256_file(ROOT / ".ai-bridge/survivor_equivalence.py"),
-        "qualification_harness_sha256": sha256_file(Path(__file__)),
-        "trace_bridge_sha256": sha256_file(ROOT / "tests/conftest.py"),
+        "model_generation_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/model_generation.py"),
+        "survivor_equivalence_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/survivor_equivalence.py"),
+        "qualification_harness_sha256": FINGERPRINTS["code_digest"](Path(__file__)),
+        "trace_bridge_sha256": FINGERPRINTS["code_digest"](ROOT / "tests/conftest.py"),
     }
 
 
@@ -1130,6 +1127,8 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             {"gremlin_id": "g8", "file_path": target, "line_number": 29, "operator": "comparison", "description": "== to !=", "status": "error", "covered": True},
             {"gremlin_id": "g9", "file_path": target, "line_number": 28, "operator": "statement", "description": "removed x.append(1)", "status": "zapped", "covered": True},
             {"gremlin_id": "g10", "file_path": target, "line_number": 30, "operator": "body", "description": "body → return None", "status": "survived"},
+            # An operator the Test Plan does not map challenges no class, caught or not.
+            {"gremlin_id": "g11", "file_path": target, "line_number": 21, "operator": "unmapped", "description": "x to y", "status": "zapped", "covered": True},
         ],
         "ternforge": {
             "not_planted": [
@@ -1141,7 +1140,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
     classes = faults["project_classes"](broad, report, root)
     all_caught = faults["project_classes"](
         broad,
-        {"results": [dict(row, status="zapped", covered=True) for row in report["results"] if row["gremlin_id"] in {"g1", "g2", "g3", "g4", "g9", "g10"}]},
+        {"results": [dict(row, status="zapped", covered=True) for row in report["results"] if row["gremlin_id"] in {"g1", "g2", "g3", "g4", "g7", "g9", "g10"}]},
         root,
     )
     outcome = faults["mutant_outcome"]
@@ -1161,6 +1160,9 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         and classes["impl.effect"]["detected"] is False
         and classes["impl.effect"]["survived_reached"] == 1
         and classes["impl.effect"]["not_planted"] == {"arid.logging": 1}
+        and classes["impl.arithmetic"]["exercised"] is True
+        and classes["impl.arithmetic"]["detected"] is False
+        and classes["impl.arithmetic"]["survived_reached"] == 1
         and all(row["detected"] for row in all_caught.values())
         and outcome({"status": "survived", "covered": False}) == "notreached"
         and outcome({"status": "survived"}) == "survived"
@@ -1222,6 +1224,55 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and "tests/x/helpers.py" in shared
             and "tests/x/test_a.py" not in shared
         )
+        # Fingerprints by meaning. A tool keeps its digest through a comment, a docstring, a
+        # reformatting or a moved line, and loses it with changed code. Code under test keeps
+        # its digest through a comment edited in place, and loses it with changed code, a
+        # `# mutation:` pragma or a moved line.
+        base = 'def f(x):\n    """Doc."""\n    return x + 1  # note\n'
+        variants = {
+            "base": base,
+            "comment": 'def f(x):\n    """Doc."""\n    return x + 1  # a longer note\n',
+            "docstring": 'def f(x):\n    """Other doc."""\n    return x + 1  # note\n',
+            "format": 'def f( x ):\n    """Doc."""\n    return (x + 1)  # note\n',
+            "moved": '# header\ndef f(x):\n    """Doc."""\n    return x + 1  # note\n',
+            "pragma": 'def f(x):\n    """Doc."""\n    return x + 1  # mutation: equivalent same value\n',
+            "code": 'def f(x):\n    """Doc."""\n    return x + 2  # note\n',
+        }
+        code, source = {}, {}
+        for name, text in variants.items():
+            (tmp / f"digest_{name}.py").write_text(text)
+            code[name] = faults["code_digest"](tmp / f"digest_{name}.py")
+            source[name] = faults["source_digest"](tmp / f"digest_{name}.py")
+        reuse_ok = reuse_ok and (
+            len({code[name] for name in ("base", "comment", "docstring", "format", "moved", "pragma")}) == 1
+            and code["code"] != code["base"]
+            and source["comment"] == source["base"]
+            and len({source[name] for name in ("base", "moved", "pragma", "code")}) == 4
+            and faults["input_digest"](tmp / "tests/x/cassettes/test_a/one.yaml") == faults["sha256_bytes"](b"interactions: []\n")
+        )
+        # Product code counts per contract, as PIT counts it: the file that holds the contract's
+        # mutants is its own input, other product code is no one's shared input.
+        (tmp / "src/llm_router").mkdir(parents=True)
+        (tmp / "src/llm_router/m.py").write_text("def f():\n    return 1\n")
+        (tmp / "src/llm_router/other.py").write_text("def g():\n    return 2\n")
+        owned = faults["contract_inputs"](
+            tmp,
+            {**reuse_plan, "files": ["src/llm_router/m.py"]},
+            [{"nodeid": "tests/x/test_a.py::test_one", "gherkin_feature": "features/x.feature"}],
+        )
+        shared_now = faults["shared_inputs"](tmp)
+        reuse_ok = reuse_ok and (
+            "src/llm_router/m.py" in owned and "src/llm_router/other.py" not in owned
+            and not any(path.startswith("src/") for path in shared_now)
+        )
+        # A mutant's time limit follows its tests, as PIT's does: 1.25 × their time + 10 s, then a
+        # confirming run with twice that; without a measured baseline the fixed 30 s and 300 s.
+        limits = faults["time_limits"]
+        limited = faults["engine_env"](tmp / "scratch-limits", limits=limits(2.0))
+        reuse_ok = reuse_ok and (
+            limits(None) == (30.0, 300.0) and limits(2.0) == (12.5, 25.0) and limits(0.0) == (10.0, 20.0)
+            and limited.get("TERNFORGE_GREMLIN_TIMEOUT") == "12.5" and limited.get("TERNFORGE_GREMLIN_CONFIRM_TIMEOUT") == "25.0"
+        )
 
     # Engine: every operator family exists, and a mutant counts as caught only when a
     # real pytest run of the selected tests fails. The controls use fixtures,
@@ -1252,10 +1303,15 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             "    def record(self, value: int) -> None:\n"
             "        logger.debug('recording %s', value > 0)\n"
             "        self.entries.append(value)\n"
-            "        self.total += value\n\n"
+            "        self.total += value\n"
+            "        _log_recorded(value)\n\n"
+            "    def average(self) -> float:\n"
+            "        return self.total / len(self.entries)\n\n"
             "    def reset(self) -> None:\n"
             "        self.entries.clear()\n"
             "        self.total = 0\n\n\n"
+            "def _log_recorded(value: int) -> None:\n"
+            "    logger.info('recorded %s', value)\n\n\n"
             "def unused(value: int) -> bool:\n"
             "    return value > 3\n\n\n"
             "def stream(values):\n"
@@ -1283,6 +1339,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             "    ledger.record(5)\n"
             "    assert ledger.entries == [2, 5]\n"
             "    assert ledger.total == 7\n"
+            "    assert ledger.average() == 3.5\n"
             "    ledger.reset()\n"
             "    assert ledger.entries == []\n"
             "    assert ledger.total == 0\n\n"
@@ -1420,6 +1477,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
 
         effects = list(effects_report.get("results") or [])
         extension = effects_report.get("ternforge") or {}
+        helper_line = line_of("_log_recorded(value)")
         unused_start, unused_end = line_of("def unused"), line_of("return value > 3")
         in_unused = [row for row in effects if unused_start <= int(row.get("line_number") or -1) <= unused_end]
         pinned_return = [row for row in effects if row.get("operator") == "return" and int(row.get("line_number") or -1) == line_of("return abs(value)")]
@@ -1439,6 +1497,10 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and (pinned_return[0].get("suppression") or {}).get("category") == "equivalent"
             and (log_line, "statement", "arid.logging") in not_planted
             and (log_line, "comparison", "arid.logging") in not_planted
+            # A project's private log helper (`_log_…`) only logs as well.
+            and (helper_line, "statement", "arid.logging") in not_planted
+            and not any(int(row.get("line_number") or -1) == helper_line for row in effects)
+            and any(row.get("operator") == "arithmetic" and row.get("status") == "zapped" for row in effects)
             # Only the enclosing function's body mutant may sit on the logging line: it is
             # anchored on the first line the body runs.
             and not any(int(row.get("line_number") or -1) == log_line and row.get("operator") != "body" for row in effects)
@@ -1471,6 +1533,26 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and (sidecars.get("nosite", {}).get("ternforge") or {}).get("schema") == "ternforge-mutation-extension-1"
             and (sidecars.get("effects", {}).get("ternforge") or {}) == (effects_report.get("ternforge") or {})
         )
+        # The campaign runs several contracts at once, each in a copy: a copy must change no outcome.
+        with tempfile.TemporaryDirectory(prefix="ternforge-isolated-qualification-") as copy_dir:
+            copy_root = faults["working_tree_copy"](tmp, Path(copy_dir) / "copy")
+            plan = {"tests": suites["strong"], "files": ["control_target.py"], "attributable_lines": {"control_target.py": [1, 2, 3, 4]}}
+            isolated_raw = Path(copy_dir) / "isolated.json"
+            isolated_run = faults["run_engine_isolated"](tmp, copy_root, plan, isolated_raw, project=ROOT)
+            isolated = json.loads(isolated_raw.read_text()).get("results") or [] if isolated_run["report_retained"] else []
+        isolated_ok = (
+            bool(isolated)
+            and {str(row.get("fingerprint")): row.get("status") for row in isolated} == {str(row.get("fingerprint")): row.get("status") for row in strong}
+            and all(str(row.get("file_path") or "").startswith(str(tmp.resolve())) for row in isolated)
+        )
+        # A mutant whose tests outrun the first time limit is caught only when a second run with room to spare runs out too.
+        (tmp / "slow_target.py").write_text("def double(value: int) -> int:\n    return value * 2\n")
+        (tmp / "test_slow_weak.py").write_text("import time\nfrom slow_target import double\n\ndef test_slow():\n    time.sleep(1.5)\n    double(2)\n")
+        slow_env = {**faults["engine_env"](tmp / "scratch-slow"), "TERNFORGE_GREMLIN_TIMEOUT": "1", "TERNFORGE_GREMLIN_CONFIRM_TIMEOUT": "30"}
+        subprocess.run(faults["engine_command"](tmp, ["test_slow_weak.py"], ["slow_target.py"], project=ROOT, config="pytest.ini"), cwd=tmp, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=900, env=slow_env)
+        slow_path = tmp / "coverage/gremlins/gremlins.json"
+        slow = list((json.loads(slow_path.read_text()).get("results") or []) if slow_path.exists() else [])
+        timeout_ok = bool(slow) and all(row.get("status") == "survived" for row in slow)
         families = {str(row.get("operator")) for row in [*strong, *effects]}
         engine_ok = (
             honest_ok
@@ -1480,6 +1562,8 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and rule_off_ok
             and diff_ok
             and nosite_ok
+            and isolated_ok
+            and timeout_ok
         )
         engine_detail = {
             "families": sorted(families),
@@ -1498,6 +1582,8 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             "rule_turned_off": rule_off_ok,
             "diff_skips_uncovered": diff_ok,
             "no_site_keeps_extension_facts": nosite_ok,
+            "isolated_copy_same_outcomes": isolated_ok,
+            "slow_suite_no_false_catch": {"ok": timeout_ok, "statuses": sorted({str(row.get("status")) for row in slow})},
             "configuration": faults["engine_configuration"](),
         }
         if not engine_ok:
@@ -1513,7 +1599,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         "PRODUCER_IMPLEMENTATION_FAULT_ADAPTER": {
             "status": "QUALIFIED" if resolution_ok and attribution_ok and projection_ok and reuse_ok else "NOT QUALIFIED",
             "intended_use": "resolve @impl scopes from the graph, attribute each mutated line to one contract family, project engine results onto Implementation fault classes by outcome (caught, survived, not reached, invalid, suppressed), and reuse a retained result only while it is still current",
-            "false_green_control": "a line shared with a non-derived contract, a failing test, an unreached, surviving, invalid or suppressed mutant, an unmapped operator, or a retained result whose engine, scope, arid rules, tests or inputs changed must never make a class detected",
+            "false_green_control": "a line shared with a non-derived contract, a failing test, an unreached, surviving, invalid or suppressed mutant, an unmapped operator, or a retained result whose engine, scope, arid rules, tests or inputs changed must never make a class detected; a fingerprint ignores only what cannot change a run (comments, docstrings and layout of a tool; comments edited in place in code under test), never changed code, a mutation pragma or a moved line; the product file that holds a contract's mutants stales that contract, and a mutant's time limit follows its tests' measured time",
         },
     }
 
@@ -1589,6 +1675,33 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
     )
     failing_errors = cascade["test_errors"](failing_output, Path("/tmp/ternforge-copy"))
     failing_reason = cascade["draft_rejection"]({"ran": True, "passes_on_original": 0, "original_errors": failing_errors, "fails_on_mutant": True})
+    # A draft is judged in the project's style: formatted and safely fixed, and a lint rule it still breaks rejects it.
+    sloppy = "import os\nimport pytest\ndef test_x(unused):\n    value=1\n    try:\n        assert value==1\n    except Exception:\n        pass\n"
+    normalized, lint = cascade["normalize_draft"](sloppy, "tests/llm_router/mutation_pins/test_pin_qualification.py")
+    renormalized, relint = cascade["normalize_draft"](normalized, "tests/llm_router/mutation_pins/test_pin_qualification.py")
+    lint_reason = cascade["draft_rejection"]({"ran": False, "lint": lint})
+    style_ok = (
+        "import os" not in normalized and "value = 1" in normalized and renormalized == normalized and relint == lint
+        and any("S110" in item for item in lint) and any("ARG001" in item for item in lint)
+        and lint_reason.startswith("it breaks the project's lint rules (ruff: ")
+        and cascade["DRAFT_PASSES"] == 5
+    )
+    # A Technical requirement's pin may import its module and the project modules that module imports;
+    # `from package import module` imports the module, not the package.
+    with tempfile.TemporaryDirectory(prefix="ternforge-pin-imports-") as imports_dir:
+        tree = Path(imports_dir) / "src"
+        for name, text in {
+            "pkg/__init__.py": "", "pkg/other.py": "", "pkg/util.py": "", "pkg/sub/__init__.py": "", "pkg/sub/base.py": "",
+            "pkg/sub/mod.py": "import json\nimport pkg.util\nfrom .base import Thing\nfrom .. import other\n",
+        }.items():
+            (tree / name).parent.mkdir(parents=True, exist_ok=True)
+            (tree / name).write_text(text)
+        resolved = cascade["module_imports"](tree / "pkg/sub/mod.py", "pkg.sub.mod")
+    imports_ok = (
+        resolved == {"pkg", "pkg.other", "pkg.util", "pkg.sub.base"}
+        and cascade["draft_imports"]("from pkg.sub import mod\n", {"pkg.sub.mod"}) == {"pkg.sub.mod"}
+        and cascade["draft_imports"]("from pkg.sub import mod\n") == {"pkg.sub"}
+    )
     ok = (
         outcomes == expected
         and "adds an import" in reasons.get("C-CONFINED", "")
@@ -1618,13 +1731,15 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
         and '@given("a record"' in scenario_example and "def a_record" in scenario_example
         and "scenarios(" not in scenario_example and "globals()" not in scenario_example
         and failing_errors == ["AssertionError: in ./tests/t.py for <Record>", "KeyError: 'name'"]
-        and failing_reason == "it does not pass on the original three times (pytest: AssertionError: in ./tests/t.py for <Record> | KeyError: 'name')"
+        and failing_reason == "it does not pass on the original 5 times in a row (pytest: AssertionError: in ./tests/t.py for <Record> | KeyError: 'name')"
+        and style_ok
+        and imports_ok
     )
     return {
         "PRODUCER_SEMANTIC_MUTANT_CASCADE": {
             "status": "QUALIFIED" if ok else "NOT QUALIFIED",
             "intended_use": "judge frozen semantic mutant proposals for a named risk without a model: reject identical, duplicate, invalid and unconfined ones, run the rest against the contract's passing tests in an isolated copy, and look for an input that tells a survivor apart from the original",
-            "false_green_control": "a calibration set with a known outcome for every proposal: an identical, a rule-duplicate, an invalid, a confined one that adds an import, one whose module no longer imports, a caught, an equivalent (must stay undecided, never caught, and only be labelled likely equivalent by unanimous assessors), a distinguishable (must be found), one only the symbolic search finds, one whose assessor input is refuted, a stale and a reviewer-judged equivalent; a kept draft, a draft that imports beyond the allowed and one that uses exec, both rejected without being run; a selected target without proposals that must keep its class undecided; a scenario pytest-bdd generates, whose example for a draft must be its module's step definitions; and a draft failing on the original, rejected with pytest's errors free of the copy's path and memory addresses",
+            "false_green_control": "a calibration set with a known outcome for every proposal: an identical, a rule-duplicate, an invalid, a confined one that adds an import, one whose module no longer imports, a caught, an equivalent (must stay undecided, never caught, and only be labelled likely equivalent by unanimous assessors), a distinguishable (must be found), one only the symbolic search finds, one whose assessor input is refuted, a stale and a reviewer-judged equivalent; a kept draft, a draft that imports beyond the allowed and one that uses exec, both rejected without being run; a selected target without proposals that must keep its class undecided; a scenario pytest-bdd generates, whose example for a draft must be its module's step definitions; a draft failing on the original, rejected with pytest's errors free of the copy's path and memory addresses; a draft in the project's style only, formatted and safely fixed, rejected for a lint rule it still breaks; and the imports a draft may use, where `from package import module` imports the module and a Technical requirement's module brings the project modules it imports itself",
             "control": {
                 "outcomes": outcomes, "expected": expected, "reasons": reasons, "kept_draft": kept, "rejected_draft": rejected,
                 "primitive_draft": primitive, "projection": projection, "target_without_proposals": unchallenged,
@@ -1792,7 +1907,11 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         signed.profile = "second"
         run = run_with(both[:1], {"claude-cli": signed}, "account")
         run.call("generator", response_dir=temp / "account", **request)
-        checks["every ledger row names the sign-in it used, never who owns it"] = [entry.get("account") for entry in run.rows] == ["second", "second"]
+        label = models["account_label"]("second")
+        checks["every ledger row names the sign-in it used by a label that carries no profile name"] = (
+            [entry.get("account") for entry in run.rows] == [label, label]
+            and label.startswith("profile-") and "second" not in label and models["account_label"]("default") == "default"
+        )
 
         absent = Scripted([invocation("unavailable", "not signed in")])
         second = Scripted([probe(), answered()])
@@ -2145,7 +2264,7 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
     record_path = calibration / "calibration.json"
     base = {
         "intended_use": "label a survivor likely equivalent only when every assessor of the Test Plan judges it equivalent above a split-conformal threshold, advisory; distinct only through a confirmed input",
-        "false_green_control": "the frozen calibration replayed: every answer bound to a stored, ledgered call; each pair's judgement and the threshold recomputed; the labelled distinct pairs within the Test Plan's false-equivalent rate; the calibration current for the assessors, the question, the pairs and the rate",
+        "false_green_control": "the frozen calibration replayed: every answer bound to a stored, ledgered call; each pair's judgement and the threshold recomputed; the labelled distinct pairs within the Test Plan's false-equivalent rate; the calibration current for the assessors, the question, the pairs and the rate; every observed pair a real survivor the symbolic search left unsure, that a recorded mutation pin proves distinct and the campaign now catches, its answers the triage's own for the question it names",
     }
     if not record_path.exists():
         return {"PRODUCER_ASSESSOR_ENSEMBLE": {**base, "status": "NOT QUALIFIED", "control": {"reason": "the assessors have not been calibrated yet"}}}
@@ -2178,6 +2297,40 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
                 and judge["answer_problems"](structured) == answer.get("problems")
             )
     checks["every calibration answer is a stored, ledgered call's answer"] = bound and bool(record.get("answers"))
+    # The observed pairs: real survivors the symbolic search left unsure and a mutation pin proves distinct (ADR_0006),
+    # asked the triage's own question.
+    campaign_path = ROOT / "test-results/implementation-faults/campaign.json"
+    campaign = json.loads(campaign_path.read_text()) if campaign_path.exists() else {}
+    observed = record.get("observed") or {}
+    observed_ok = True
+    observed_scores = {}
+    for pair_id, pair in observed.items():
+        contract_id, key = pair.get("contract_id"), pair.get("fingerprint")
+        verdicts_path = ROOT / ".ai-bridge/survivor-verdicts" / str(contract_id) / "verdicts.json"
+        pin = ((json.loads(verdicts_path.read_text()) if verdicts_path.exists() else {}).get(key) or {}).get("pin") or {}
+        report_path = ROOT / str((((campaign.get("contracts") or {}).get(contract_id) or {}).get("run") or {}).get("report_path") or "")
+        rows = {str(row.get("fingerprint")): row for row in (json.loads(report_path.read_text()).get("results") or [])} if report_path.is_file() else {}
+        caught = str((rows.get(key) or {}).get("status")) in {"zapped", "timeout"}
+        given = []
+        for member in keys:
+            answer = (pair.get("answers") or {}).get(member) or {}
+            response_path = ROOT / ".ai-bridge/survivor-triage" / str(contract_id) / "responses" / f"{answer.get('call_id')}.json"
+            response = json.loads(response_path.read_text()) if response_path.exists() else {}
+            row = ledger.get(str(answer.get("call_id"))) or {}
+            structured = response.get("structured") or {}
+            observed_ok = observed_ok and bool(response) and not models["verify_response"](response) and (
+                models["response_sha256"](response) == answer.get("response_sha256") == row.get("response_sha256")
+                and row.get("outcome") == "ok" and response.get("prompt_sha256") == pair.get("prompt_sha256")
+                and structured.get("verdict") == answer.get("verdict") and structured.get("confidence") == answer.get("confidence")
+                and judge["answer_problems"](structured) == answer.get("problems") == []
+            )
+            given.append(answer)
+        observed_ok = observed_ok and caught and (pin.get("cascade") or {}).get("accepted") is True and pin.get("path") == pair.get("pin_path")
+        # Only what the triage puts to the assessors is exchangeable with its questions.
+        observed_ok = observed_ok and (pair.get("symbolic") or {}).get("status") in judge["SEARCH_UNDECIDED"]
+        observed_scores[pair_id] = judge["ensemble_score"](given, len(keys))
+        observed_ok = observed_ok and observed_scores[pair_id] == pair.get("score")
+    checks["every observed pair is a survivor the symbolic search left unsure and a recorded mutation pin proves distinct, answered by every assessor in stored, ledgered calls"] = observed_ok
     payload = judge["calibration_payload"](folder)
     recomputed = {}
     with tempfile.TemporaryDirectory(prefix="ternforge-ensemble-qualification-") as temp_dir:
@@ -2190,13 +2343,14 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
     checks["every pair's judgement recomputes to the record"] = all(
         (stored.get(pid) or {}).get("status") == row["status"] and (stored.get(pid) or {}).get("score") == row["score"] for pid, row in recomputed.items()
     )
-    distinct = [recomputed[pair["id"]]["score"] for pair in payload["pairs"] if pair["label"] == "distinct"]
+    distinct = [recomputed[pair["id"]]["score"] for pair in payload["pairs"] if pair["label"] == "distinct"] + list(observed_scores.values())
     threshold = judge["conformal_threshold"](distinct, settings["alpha"])
     labelled = sum(1 for score in distinct if threshold is not None and score > threshold)
     checks["the threshold recomputes, and at most the Test Plan's rate of distinct pairs is labelled"] = (
         threshold == record.get("threshold") and threshold is not None and labelled <= settings["alpha"] * len(distinct)
     )
-    # The assessors' canary (ADR_0006): each finds a confirmed input for at least 80% of the distinct pairs and calls none equivalent.
+    # The assessors' canary (ADR_0006): each finds a confirmed input for at least 80% of the labelled distinct pairs,
+    # and calls at most the Test Plan's rate of all distinct pairs, labelled or observed, equivalent.
     floors = {}
     distinct_pairs = [pair for pair in payload["pairs"] if pair["label"] == "distinct"]
     with tempfile.TemporaryDirectory(prefix="ternforge-ensemble-floors-") as temp_dir:
@@ -2211,8 +2365,15 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
                     original_source, mutant_source = judge["pair_sources"](folder, pair)
                     alone = judge["judge_survivor"](original_source, mutant_source, pair["target"], scratch=Path(temp_dir), token=f"f{index}{pair['id'].lower()}", seconds=0, answers={member: answer}, members=[member], threshold=None, calibrated=False)
                     confirmed += alone.get("status") == "found"
-            floors[member] = {"confirmed": confirmed, "equivalent_on_distinct": equivalent, "met": confirmed >= 0.8 * len(distinct_pairs) and equivalent == 0}
-    checks["every assessor meets the calibration floors: inputs for 80% of the distinct pairs, none called equivalent"] = bool(floors) and all(row["met"] for row in floors.values())
+            answered = sum(1 for pair in distinct_pairs if not (((record.get("answers") or {}).get(pair["id"]) or {}).get(member) or {}).get("problems"))
+            for pair in observed.values():
+                answered += 1
+                equivalent += ((pair.get("answers") or {}).get(member) or {}).get("verdict") == "equivalent"
+            floors[member] = {
+                "confirmed": confirmed, "equivalent_on_distinct": equivalent, "distinct_answered": answered,
+                "met": confirmed >= 0.8 * len(distinct_pairs) and equivalent <= settings["alpha"] * answered,
+            }
+    checks["every assessor meets the calibration floors: inputs for 80% of the labelled distinct pairs, at most the rate of all distinct pairs called equivalent"] = bool(floors) and all(row["met"] for row in floors.values())
     ok = all(checks.values())
     # The record is bound here, not in the shared environment: a calibration run then leaves every other producer current.
     control = {"checks": checks, "threshold": threshold, "labelled_distinct": labelled, "floors": floors, "record_sha256": sha256_file(record_path), "calibration_sha256": assessor_calibration_sha256()}
@@ -2256,7 +2417,7 @@ def model_canary_controls() -> dict[str, dict[str, object]]:
             structured = response.get("structured") or {}
             if role == "generator":
                 passed = semantic["generator_canary_passed"](calibration, question, structured)[0]
-            elif role == "verdict":
+            elif role in ("verdict", "verdict_review"):
                 passed = semantic["verdict_canary_passed"](question, structured)[0]
             else:
                 draft = semantic["draft_from_answer"](question["proposal"]["id"], structured)
@@ -2275,6 +2436,18 @@ def model_canary_controls() -> dict[str, dict[str, object]]:
     passed_record = {"questions_sha256": "q", "passed": True, "cases": {"C": {"outcome": "ok", "passed": True}}}
     unanswered = {"questions_sha256": "q", "passed": False, "cases": {"C": {"outcome": "rejected", "passed": False}}}
     answered_wrong = {"questions_sha256": "q", "passed": False, "cases": {"C": {"outcome": "invalid", "passed": False}}}
+    judge = runpy.run_path(str(ROOT / ".ai-bridge/survivor_equivalence.py"), run_name="evidence_confidence_review")
+    reviewed = judge["reviewed_verdict"]
+    answer = {"verdict": "irrelevant", "level": "requirement", "reason": "no requirement asks for it", "test_focus": "", "model": "claude-opus-5-5", "problems": []}
+    agree = {"verdict": "equivalent", "level": "requirement", "reason": "the same", "test_focus": "", "model": "gemini-3.1-pro-high", "problems": [], "prompt_sha256": "q"}
+    disagree = {**agree, "verdict": "pin", "reason": "the requirement asks for it", "test_focus": "check the total"}
+    checks["a suppression counts only when a review of another family agrees, and a disagreeing review pins the mutant"] = (
+        (reviewed({"prompt_sha256": "q", "answer": answer, "review": agree}) or {}).get("verdict") == "irrelevant"
+        and (reviewed({"prompt_sha256": "q", "answer": answer, "review": disagree}) or {}).get("verdict") == "pin"
+        and reviewed({"prompt_sha256": "q", "answer": answer}) is None
+        and reviewed({"prompt_sha256": "q", "answer": answer, "review": {**agree, "prompt_sha256": "other"}}) is None
+        and (reviewed({"prompt_sha256": "q", "answer": {**answer, "verdict": "pin"}}) or {}).get("verdict") == "pin"
+    )
     after = semantic["canary_record_after"]
     checks["an unanswered canary keeps the record of the same questions, never of other questions or over a wrong answer"] = (
         after(passed_record, unanswered) is passed_record

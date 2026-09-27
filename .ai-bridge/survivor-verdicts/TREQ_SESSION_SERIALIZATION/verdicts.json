@@ -11,6 +11,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "boolean",
   "prompt_sha256": "244b7dd8215a6b247c5114e9206208133c42d525ba34a659612571c1edc36ea4"
  }
 }

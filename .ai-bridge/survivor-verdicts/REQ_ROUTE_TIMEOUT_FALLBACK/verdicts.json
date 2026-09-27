@@ -11,7 +11,23 @@
    "test_focus": "",
    "verdict": "equivalent"
   },
+  "operator": "boolean",
   "prompt_sha256": "77deae57c6919207db21f03305361aa972696543ecd31d1840bcd5fe66f315af"
+ },
+ "3ccbc7c7990f5f22": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152625Z-fc8a1a",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When no attempt timeout is configured, the mutant returns None without ever calling the executor, so every sync request without a timeout silently gets no response. The timeout handling is only meant to change behaviour when a timeout is set; with no timeout, the attempt must run on the current route and return its result.",
+   "response_sha256": "373fa7232ed3ad9a204636a3bc4fd2ea9b52800c75c5ed206c0812133ca27909",
+   "test_focus": "Send a sync request with no attempt timeout set (timeout_seconds is None) and check that the executor is called and its actual LLMRouterResponse comes back, not None.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "prompt_sha256": "c105ba3cee07c075fee8c8258c4b1c90ca004c55232da8338e6a6f7e838bc77e"
  },
  "ac82539c9e31aa00": {
   "answer": {
@@ -25,6 +41,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "statement",
   "prompt_sha256": "8dae83fd018bc6d0597004ed32ea19bbd57843f080d3f9d82150c9c268e3b494"
  },
  "b39c78844ce0f60e": {
@@ -39,6 +56,7 @@
    "test_focus": "",
    "verdict": "equivalent"
   },
+  "operator": "statement",
   "prompt_sha256": "4429563abb48cb82f0aae70277b4c7ad4f05ddcaf1be2786413f4361721cbe61"
  },
  "b9accd29af1a644f": {
@@ -53,20 +71,24 @@
    "test_focus": "Use a sync executor whose first route blocks on an event that is only released after the test's assertions. Check that the request falls back to the second route and succeeds, or raises TimeoutError when no fallback remains, within a bounded time well below the blocked call's duration.",
    "verdict": "pin"
   },
+  "operator": "boolean",
   "pin": {
-   "adopted_at": "2026-09-26T23:24:57.629496Z",
-   "call_id": "20260926T230115Z-08c48b",
+   "adopted_at": "2026-09-27T20:18:21.692069Z",
+   "answer_sha256": "0871e0cb2b48e5a7e48500a8ab5048c9edf96e84a8ccd4942e8897ee804849d5",
+   "call_id": "20260927T201430Z-745817",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "b0c3c84d39011592d369fce9bfd4559330a10febb5f5a3145e01bf549c890192",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "d747717743024e455c3861f72780a481317b51b6585100bb868018cf67b68e72",
+   "model": "claude-sonnet-4-6",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_b9accd29af1a644f.py",
-   "response_sha256": "c634d43ad09ca01fa5ccedc6a4545e8ecb9ecaa06915d64a38306bca54344732",
+   "response_sha256": "d63bc6a70d0a91486a6a3e71daa272b4242387e2186eeca6272f71ab892ac494",
    "source": "draft author"
   },
   "prompt_sha256": "fa13670112cfd3b32fef451206a7ea2333ea479a832e9aed0398573d1e59cacc"
@@ -83,6 +105,7 @@
    "test_focus": "Use a sync executor whose first route blocks on an event that is only released after the assertion, or that sleeps well past the timeout. Check that the request falls back to the next route, or raises the timeout, within about timeout_seconds and before the blocked call returns.",
    "verdict": "pin"
   },
+  "operator": "boolean",
   "prompt_sha256": "d0661fb7bc4e6dcdfdd73a8bbd79916a61d9506b69c9315a77cdd8e18dcb8e06"
  },
  "f793def41400b418": {
@@ -97,6 +120,7 @@
    "test_focus": "",
    "verdict": "equivalent"
   },
+  "operator": "boolean",
   "prompt_sha256": "1f881ac5267da9bf96066c0a96b721a4ff03faf89a4aa4ee9d92f14795da994e"
  }
 }

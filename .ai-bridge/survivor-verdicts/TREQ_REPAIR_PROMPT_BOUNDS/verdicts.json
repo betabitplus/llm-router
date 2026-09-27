@@ -11,6 +11,7 @@
    "test_focus": "",
    "verdict": "irrelevant"
   },
+  "operator": "boolean",
   "prompt_sha256": "8e2f8dc2e01914c7dbdf498eb51c2cb9880f30d89b358a0a8b3621ede764f1ce"
  },
  "9341379044dfc2f2": {
@@ -25,18 +26,22 @@
    "test_focus": "For short inputs, the test must check that the prompt contains the schema name, the schema preview, the validation error and the invalid output preview. For property-generated oversized inputs, it must check that the prompt stays within the cap and still contains each truncated component.",
    "verdict": "pin"
   },
+  "operator": "body",
   "pin": {
-   "adopted_at": "2026-09-27T00:39:19.756670Z",
+   "adopted_at": "2026-09-27T19:54:19.555330Z",
+   "answer_sha256": "f736e834b6bd25d73f751beef8937fdf41f1924a725a062acc3b36ab1360e7a3",
    "call_id": "20260927T003601Z-02f026",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
     "imports_beyond_allowed": [],
-    "passes_on_original": 3,
+    "lint": [],
+    "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "f736e834b6bd25d73f751beef8937fdf41f1924a725a062acc3b36ab1360e7a3",
+   "draft_sha256": "fd48626508752af5ddff635461f57529a26695a4cf83f81f7ab9bf987206f3c0",
    "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_9341379044dfc2f2.py",
    "response_sha256": "b4935b2ee51e9ca897a7a2526aff3f975fb11aca288ce51dc7b0bbc2f8880e6c",
    "source": "draft author"

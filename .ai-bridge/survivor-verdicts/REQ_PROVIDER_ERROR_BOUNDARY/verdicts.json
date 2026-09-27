@@ -1,0 +1,17 @@
+{
+ "62fc1baca32629b1": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T152619Z-7ebfaa",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For any provider failure that is not already an LLMRouterError, the mutant returns None instead of a ProviderError. Raising None would then fail with a TypeError, so the provider's error would escape the public ProviderError boundary. That directly breaks REQ_PROVIDER_ERROR_BOUNDARY.",
+   "response_sha256": "04d8f31168421f5b396776d813f1d5154afb2c7d5dd06998f14d6ef9bbc7628d",
+   "test_focus": "Make the provider fail with a raw HTTP or Google GenAI SDK exception and check that the caller gets a ProviderError carrying the provider, model and stable status metadata, with provider detail hidden and exactly one provider request made.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "prompt_sha256": "6f9d6b175f8b8f619bbf5931c19a441bcb0884f1ffe7b0757bce6d8748c26c01"
+ }
+}
