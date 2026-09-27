@@ -31,7 +31,8 @@ ROOT=Path.cwd()
 if str(ROOT) not in sys.path:
     sys.path.insert(0,str(ROOT))
 DEPTH_FACTS_PATH=ROOT/"docs/_build/html/verification-depth-facts.json"
-DEPTH: dict[str, Any]=json.loads(DEPTH_FACTS_PATH.read_text())
+# A fresh checkout (the pull-request run) has no depth facts yet: the portal refresh writes them.
+DEPTH: dict[str, Any]=json.loads(DEPTH_FACTS_PATH.read_text()) if DEPTH_FACTS_PATH.exists() else {"tests":[]}
 TEST_META: dict[str, dict[str, Any]]={r["nodeid"]:r for r in DEPTH["tests"]}
 COVERAGE_DB=ROOT/"test-results/.coverage"
 COVERAGE_JSON_PATH=ROOT/"test-results/coverage.json"
