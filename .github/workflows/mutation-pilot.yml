@@ -18,6 +18,8 @@ on:
       - "features/**"
       - "pyproject.toml"
       - "uv.lock"
+      # The pilot's own tooling, until it moves to the platform.
+      - ".ai-bridge/**/*.py"
       - ".github/workflows/mutation-pilot.yml"
   pull_request:
     branches: [main]
@@ -27,6 +29,8 @@ on:
       - "features/**"
       - "pyproject.toml"
       - "uv.lock"
+      # The pilot's own tooling, until it moves to the platform.
+      - ".ai-bridge/**/*.py"
       - ".github/workflows/mutation-pilot.yml"
   workflow_dispatch:
 
