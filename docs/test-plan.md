@@ -492,17 +492,24 @@ reported on the original and the lint rules it broke, from the role's next model
 | ------------------------- | ----: | ----------------- | ------------------------- |
 | Semantic mutant generator |     1 | `antigravity-cli` | `gemini-3.1-pro-high`     |
 | Semantic mutant generator |     2 | `antigravity-cli` | `gemini-3.8-flash-high`   |
+| Semantic mutant generator |     3 | `claude-cli`      | `claude-sonnet-5`         |
 | Draft test author         |     1 | `antigravity-cli` | `gemini-3.8-flash-medium` |
-| Draft test author         |     2 | `antigravity-cli` | `claude-sonnet-4-6`       |
+| Draft test author         |     2 | `antigravity-cli` | `gemini-3.1-pro-high`     |
+| Draft test author         |     3 | `claude-cli`      | `claude-sonnet-5`         |
 | Survivor verdict          |     1 | `claude-cli`      | `claude-opus-5-5`         |
 | Survivor verdict review   |     1 | `antigravity-cli` | `gemini-3.1-pro-high`     |
 | Survivor verdict review   |     2 | `antigravity-cli` | `gemini-3.8-flash-high`   |
 
 Semantic mutants, their draft tests and the verdicts on survivors come from a model called
 through one adapter (ADR_0004). Antigravity serves Gemini and Claude models from two quotas,
-a large one for the Gemini family and a smaller one for every other model, so Gemini carries
-the volume and a role falls back into the other pool; the Claude subscription serves only the
-verdict model. Each role tries its backends in order. A backend that is unavailable (not
+a large one for the Gemini family and a smaller one for every other model. On Google AI Pro
+a week of the smaller one took about 64 of the pilot's calls and a week of the Gemini one
+about 920 (2026-09-28), so Gemini carries the volume and a draft's retry goes to a stronger
+Gemini model. The smaller pool serves only the first survivor assessor, of another family on
+purpose: on the one real survivor both Gemini assessors judged equivalent, it found the
+mutant distinct. The Claude subscription serves the verdict model, and its Sonnet 5 is the
+last model of the generator, the draft author and the first assessor, so a full Antigravity
+pool leaves no role waiting for its reset. Each role tries its backends in order. A backend that is unavailable (not
 signed in, account not eligible) or whose budget defers the call is skipped for the next.
 A `claude-cli` call runs without tools, plugins, MCP servers or memory, with a replaced
 system prompt and a JSON schema. `agy` cannot be started without its tools, its own system
@@ -515,20 +522,23 @@ reads are that subscription's.
 
 ###### Generation budget
 
-| Budget                     | Limit |
-| -------------------------- | ----: |
-| 5-hour window              |   80% |
-| Weekly window              |   70% |
-| Calls per run              |    40 |
-| List price per call        | $0.50 |
-| Draft attempts per mutant  |     2 |
-| Parallel calls per backend |     2 |
+| Budget                      | Limit |
+| --------------------------- | ----: |
+| 5-hour window               |   80% |
+| Weekly window               |   70% |
+| Calls per run               |    40 |
+| List price per call         | $0.50 |
+| Draft attempts per mutant   |     2 |
+| Parallel calls per backend  |     2 |
+| Smaller-pool calls per week |    30 |
 
 Every call appends one row to the consumption ledger. The row records the role,
 backend, model, outcome, tokens, the list-price equivalent where the backend reports
 one, the duration and the plan windows. A window at or above its limit, or a run that
 reached its call limit, defers the call; a backend that reports no windows is bounded by
-the call limit alone. Independent questions (the assessors of one survivor, the verdicts of a
+the call limit alone. Antigravity reports neither of its quotas, so its smaller pool is also
+bounded by its calls in the last seven days, counted from the ledger's calls actually made:
+30 is about half of that pool's week and leaves the rest to the person's own work on it. Independent questions (the assessors of one survivor, the verdicts of a
 chunk of survivors, the drafts of one round) are asked at once, each backend taking at most
 its parallel calls: Antigravity documents no limit on simultaneous requests and counts its
 quota by the work done, so two at a time only spend the same quota sooner and leave a margin.
@@ -542,16 +552,19 @@ produced it, and the gate recomputes it from the stored response.
 
 ##### Survivor judgement
 
-| Assessor | Backend           | Model                      |
-| -------: | ----------------- | -------------------------- |
-|        1 | `antigravity-cli` | `claude-opus-4-6-thinking` |
-|        2 | `antigravity-cli` | `gemini-3.1-pro-high`      |
-|        3 | `antigravity-cli` | `gemini-3.8-flash-high`    |
+| Assessor | Order | Backend           | Model                      |
+| -------: | ----: | ----------------- | -------------------------- |
+|        1 |     1 | `antigravity-cli` | `claude-opus-4-6-thinking` |
+|        1 |     2 | `claude-cli`      | `claude-sonnet-5`          |
+|        2 |     1 | `antigravity-cli` | `gemini-3.1-pro-high`      |
+|        3 |     1 | `antigravity-cli` | `gemini-3.8-flash-high`    |
 
 A survivor is a mutant that every passing test of its contract lets through, rule or
 semantic (ADR_0005). A symbolic search (CrossHair) over a typed harness of the original and
 the mutant looks for an input that tells them apart, then every assessor of the table
-answers distinct (with an input), equivalent or unsure, with its confidence. The assessors
+answers distinct (with an input), equivalent or unsure, with its confidence. An assessor
+answers through its first model that can, as a role does: a later one only when the ones
+before it are deferred, unavailable or not calibrated yet. The assessors
 see the parameters as the code declares them and how the project's types the target takes
 or names are built; an input may use any of the project's dataclasses, exceptions and enum
 members. None of this
@@ -583,14 +596,19 @@ answer on any machine; the time limit only stops a search that runs away. The th
 split conformal over the distinct pairs: labelled calibration pairs, half equivalent and half
 distinct, every distinct one with an input that execution confirms, and observed pairs, real
 survivors the symbolic search left unsure and a mutation pin proves distinct, once every
-assessor answered the triage's own question about them. Only those are asked the triage's
+assessor's first calibrated model answered the triage's own question about them. Only those are asked the triage's
 question, so only they stand for the survivors it asks about. The hand-made pairs are easier than real survivors (on the survivors
 the pins proved distinct, single assessors called some equivalent that none of the labelled
 pairs had them call), so the observed pairs carry the rate. A survivor is labelled likely
 equivalent only when its lowest assessor confidence is above the threshold, which at most the
-false-equivalent rate of the distinct pairs exceed. The assessors' answers on the pairs are
-frozen and replayed by the qualification. A change of assessor, model, prompt or labelled pairs
-leaves the ensemble uncalibrated, and its labels do not count until it is calibrated again.
+false-equivalent rate of the distinct pairs exceed. A model counts for its assessor once it
+answered every labelled pair and every observed pair the first such models answered, so a
+new or replaced model costs one pass over the pairs, and the calibration asks only what is
+missing. Each combination of usable models, one per assessor, gets its own threshold
+(Mondrian conformal), and the highest labels, so a label keeps the rate whichever models
+answered. The assessors' answers on the pairs are frozen and replayed by the qualification.
+A change of assessor, model, prompt or labelled pairs leaves the ensemble uncalibrated until
+the calibration runs again.
 Rule survivors are judged on request, apart from the campaign.
 
 ##### Survivor verdicts

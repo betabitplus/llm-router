@@ -20,7 +20,10 @@ tool and memory context; with tools, plugins, MCP servers and memory switched of
 600. Measured on 2026-09-26: three mutants for one function with Sonnet 5 took about 2.2k
 input and 1.6k output tokens ($0.025 at list price, 18 s), and sixteen such calls moved
 the 5-hour window by two points. The windows are shared with the person's own work. An
-exhausted window rejects calls and never bills. Model output is untrusted: it may break
+exhausted window rejects calls and never bills. Antigravity serves two quotas and reports neither to the CLI;
+its settings page showed on 2026-09-28 that about 58 of the pilot's calls to Claude models
+had used 90% of the smaller quota's week, and about 285 calls to Gemini 31% of the larger
+one's. Model output is untrusted: it may break
 the schema, call helpers that do not exist, or reach outside the function through
 imports or `exec`. Text taken from the repository into a prompt may carry instructions.
 
@@ -37,7 +40,8 @@ schema and the response, so the gate can recompute the chain. Every call, accept
 not, appends one row to a consumption ledger. The row holds the tokens, the list-price
 equivalent where the backend reports it, the duration and the plan windows. Before each
 call a budget guard compares the last known windows and the run's call count with the
-Test Plan's limits. Above a limit no call is made and the target is deferred. A deferred,
+Test Plan's limits. A quota pool that reports no window, Antigravity's smaller one, is
+bounded by the calls the ledger shows it took in the last seven days. Above a limit no call is made and the target is deferred. A deferred,
 rejected or invalid generation, or an unavailable backend, leaves the target without
 current mutants, and its class stays UNKNOWN. None of them is ever a pass. Generation
 runs only on request, for targets whose proposals are missing or stale. The gate, the

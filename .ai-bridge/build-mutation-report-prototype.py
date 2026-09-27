@@ -5105,28 +5105,39 @@ def semantic_judgement_request(contract_id,proposals,needs,policy=None,state=Non
             answers[proposal["id"]]=given
     return {
       "seconds":policy["judgement"]["symbolic_seconds"],"paths":policy["judgement"]["symbolic_paths"],"members":state["members"],
+      "members_by":{proposal_id:assessor_members(policy,state,given) for proposal_id,given in answers.items()},
       "threshold":state["threshold"],"calibrated":state["calibrated"],"answers":answers,
     }
 
 
-def ask_assessors(run,policy,*,purpose,contract_id,subject,prompt,entry,response_dir):
-    """Ask every assessor that has not answered this question; return whether one answered."""
+def ask_assessors(run,policy,*,purpose,contract_id,subject,prompt,entry,response_dir,every=False,usable=None):
+    """Ask every assessor that has not answered this question; return whether one answered. An
+    assessor has answered once one of its usable models has; it is asked through its models in
+    order, and an answer is kept under the model that gave it. With ``every`` (the calibration) each
+    model is asked on its own, usable or not."""
     prompt_sha=sha256_text(prompt)
     if entry.get("prompt_sha256")!=prompt_sha:
         entry.clear()
         entry.update({"prompt_sha256":prompt_sha,"answers":{}})
-    members=[member for member in policy["assessors"] if member["key"] not in entry["answers"]]
+    if every:
+        asking=[assessor_model_role(row) for row in policy["assessors"] if row["key"] not in entry["answers"]]
+    else:
+        usable=set(assessor_calibration_state(policy)["usable"] if usable is None else usable)
+        asking=[
+          f"assessor:{number}" for number,models in MODELS.assessor_seats(policy["assessors"]).items()
+          if not any(row["key"] in entry["answers"] and row["key"] in usable for row in models)
+        ]
     # The assessors answer the same question independently, so they are asked at once.
     results=run.call_many([
-      {"role":f"assessor:{member['assessor']}","purpose":purpose,"contract_id":contract_id,"subject":subject,
+      {"role":role,"purpose":purpose,"contract_id":contract_id,"subject":subject,
        "system":EQ.ASSESSOR_SYSTEM,"prompt":prompt,"schema":EQ.ASSESSOR_SCHEMA,"response_dir":response_dir}
-      for member in members
+      for role in asking
     ])
     asked=False
-    for member,(_call,response,attempts) in zip(members,results):
-        print(f"[ASSESS] {contract_id} · {subject} · assessor {member['assessor']}: "+attempts_text(attempts),flush=True)
+    for role,(_call,response,attempts) in zip(asking,results):
+        print(f"[ASSESS] {contract_id} · {subject} · {role}: "+attempts_text(attempts),flush=True)
         if response is not None:
-            entry["answers"][member["key"]]=assessor_answer(response)
+            entry["answers"][f"{response['backend']}:{response['model']}"]=assessor_answer(response)
             asked=True
     return asked
 
@@ -5247,15 +5258,49 @@ def assessor_prompt_sha256():
 
 
 def assessor_roles(policy):
-    """Every assessor is a role of its own: each is asked, none stands in for another."""
-    return {f"assessor:{row['assessor']}":[{"order":1,"backend":row["backend"],"model":row["model"]}] for row in policy["assessors"]}
+    """Every assessor is a role of its own with its models in their order: a later model answers only
+    when the ones before it cannot. None stands in for another assessor."""
+    return {
+      f"assessor:{number}":[{"order":row["order"],"backend":row["backend"],"model":row["model"]} for row in models]
+      for number,models in MODELS.assessor_seats(policy["assessors"]).items()
+    }
+
+
+def assessor_model_role(row):
+    """The role that asks one assessor model alone, as the calibration does."""
+    return f"assessor:{row['assessor']}" if row["order"]==1 else f"assessor:{row['assessor']}.{row['order']}"
+
+
+def assessor_model_roles(policy):
+    return {assessor_model_role(row):[{"order":1,"backend":row["backend"],"model":row["model"]}] for row in policy["assessors"]}
+
+
+def assessor_members(policy,state,answers):
+    """The models whose answers judge one survivor, one per assessor: its first usable model that
+    answered, else its first usable model, so a missing answer leaves the survivor unsure."""
+    usable=set(state.get("usable") or [])
+    members=[]
+    for models in MODELS.assessor_seats(policy["assessors"]).values():
+        keys=[row["key"] for row in models if row["key"] in usable] or [models[0]["key"]]
+        members.append(next((key for key in keys if key in (answers or {})),keys[0]))
+    return members
+
+
+def block_unusable_assessors(run,policy,state=None):
+    """An assessor model counts once the calibration covers it; until then its assessor skips it."""
+    usable=set((state or assessor_calibration_state(policy))["usable"])
+    run.blocked.update({
+      (f"assessor:{row['assessor']}",row["backend"],row["model"]):f"{row['model']} has not answered every calibration pair yet (--calibrate-assessors)"
+      for row in policy["assessors"] if row["key"] not in usable
+    })
 
 
 def assessor_calibration_state(policy=None):
     """Whether the assessors' labels count: a calibration for the Test Plan's assessors, the current
-    question and pairs and the Test Plan's rate, complete, and a qualified ensemble."""
+    question and pairs and the Test Plan's rate, complete, and a qualified ensemble. Its usable models
+    are the ones an assessor may answer with, and the members the first usable model of each."""
     policy=policy or model_generation_policy()
-    members=[row["key"] for row in policy["assessors"]]
+    keys=[row["key"] for row in policy["assessors"]]
     path=ASSESSOR_CALIBRATION_DIR/"calibration.json"
     record=json.loads(path.read_text()) if path.exists() else {}
     qualification=load_evidence_qualification()
@@ -5265,24 +5310,28 @@ def assessor_calibration_state(policy=None):
       and (((qualification.get("producers") or {}).get(producer_id) or {}).get("control") or {}).get("calibration_sha256")==assessor_calibration_sha256()
       for producer_id in ASSESSOR_PRODUCERS
     )
+    current=bool(record) and (
+      record.get("members")==keys and record.get("prompt_sha256")==assessor_prompt_sha256()
+      and record.get("pairs_sha256")==EQ.calibration_sha256(EQUIVALENCE_PAIRS_DIR)
+      and record.get("alpha")==policy["judgement"]["alpha"]
+    )
     reason=""
     if not record:
         reason="the assessors have not been calibrated yet"
-    elif (
-      record.get("members")!=members or record.get("prompt_sha256")!=assessor_prompt_sha256()
-      or record.get("pairs_sha256")!=EQ.calibration_sha256(EQUIVALENCE_PAIRS_DIR)
-      or record.get("alpha")!=policy["judgement"]["alpha"]
-    ):
+    elif not current:
         reason="the assessors' calibration no longer matches the Test Plan's assessors, the question, the pairs or the rate"
     elif not record.get("complete"):
-        reason="the assessors' calibration is not complete: "+str(record.get("missing") or "some pairs are unanswered")
+        reason="the assessors' calibration is not complete: "+str(record.get("missing") or "an assessor has no usable model")
     elif record.get("threshold") is None:
         reason="the calibration has too few distinct pairs for the Test Plan's rate"
     elif not qualified:
         reason="the assessor ensemble is not currently qualified"
+    usable=list(record.get("usable") or []) if current else []
+    configurations=MODELS.assessor_configurations(policy["assessors"],set(usable))
     return {
-      "calibrated":not reason,"threshold":record.get("threshold"),"members":members,"reason":reason,
-      "record_sha256":sha256_file(path),
+      "calibrated":not reason,"threshold":record.get("threshold"),"usable":usable,"configurations":configurations,
+      "members":configurations[0] if configurations else [models[0]["key"] for models in MODELS.assessor_seats(policy["assessors"]).values()],
+      "reason":reason,"record_sha256":sha256_file(path),
     }
 
 
@@ -5305,24 +5354,36 @@ RULE_SURVIVOR_TRIED="The tests pass on both versions, and a symbolic search foun
 
 
 def assessor_calibration_record(payload,answers,members,policy,prompt_sha,pairs_sha,observed=()):
-    """The calibration's result: every answer, its witness checked by execution, the ensemble's score
-    per pair and the split-conformal threshold over the distinct pairs, the labelled pairs and the
-    observed ones: real survivors the symbolic search left unsure and a mutation pin proves distinct,
-    once every assessor answered them."""
+    """The calibration's result: every answer, its witness checked by execution, and the split-conformal
+    threshold over the distinct pairs, the labelled pairs and the observed ones: real survivors the
+    symbolic search left unsure and a mutation pin proves distinct. An assessor's model is usable once
+    it answered every labelled pair and every observed pair the first such models all answered. Each
+    combination of usable models gets its own threshold, and the record keeps the highest, so a label
+    keeps the Test Plan's rate whichever models answered."""
     import tempfile as _tempfile
     keys=[row["key"] for row in members]
-    scores,rows,missing={}, {}, []
+    clean=lambda given:{key:value for key,value in (given or {}).items() if key in keys and not value.get("problems")}
+    labelled_complete={key for key in keys if all(key in clean(answers.get(pair["id"])) for pair in payload["pairs"])}
+    primary=next(iter(MODELS.assessor_configurations(members,labelled_complete)),[])
+    reference={pair["id"] for pair in observed if primary and all(key in clean(pair["answers"]) for key in primary)}
+    pending=[pair["id"] for pair in observed if pair["id"] not in reference]
+    usable={key for key in labelled_complete if all(key in clean(pair["answers"]) for pair in observed if pair["id"] in reference)}
+    configurations=MODELS.assessor_configurations(members,usable)
+    missing=[f"{pair['id']}:{key}" for pair in payload["pairs"] for key in keys if key not in clean(answers.get(pair["id"]))]
+    missing+=[f"{pair['id']}:{key}" for pair in observed if pair["id"] in reference for key in keys if key not in clean(pair["answers"])]
+    rows: dict[str,dict[str,Any]]={}
     with _tempfile.TemporaryDirectory(prefix="ternforge-assessor-calibration-") as scratch:
         for pair in payload["pairs"]:
             original_source,mutant_source=EQ.pair_sources(EQUIVALENCE_PAIRS_DIR,pair)
-            given={key:value for key,value in (answers.get(pair["id"]) or {}).items() if key in keys and not value.get("problems")}
-            judged=EQ.judge_survivor(
-              original_source,mutant_source,pair["target"],scratch=Path(scratch),token="cal"+pair["id"].lower(),
-              seconds=0,answers=given,members=keys,threshold=None,calibrated=False,
-            )
-            missing.extend(f"{pair['id']}:{key}" for key in keys if key not in given)
-            scores[pair["id"]]=judged.get("score",0.0) if judged.get("status")!="found" else 0.0
-            # Each assessor's input is checked on its own, so each is credited with what it found.
+            given=clean(answers.get(pair["id"]))
+            judged=[
+              EQ.judge_survivor(
+                original_source,mutant_source,pair["target"],scratch=Path(scratch),token=f"cal{pair['id'].lower()}c{index}",
+                seconds=0,answers={key:given[key] for key in combination if key in given},members=combination,threshold=None,calibrated=False,
+              )
+              for index,combination in enumerate(configurations or [primary or keys])
+            ]
+            # Each assessor model's input is checked on its own, so each is credited with what it found.
             confirmed={
               key:EQ.judge_survivor(
                 original_source,mutant_source,pair["target"],scratch=Path(scratch),token=f"cal{pair['id'].lower()}m{keys.index(key)}",
@@ -5330,21 +5391,31 @@ def assessor_calibration_record(payload,answers,members,policy,prompt_sha,pairs_
               ).get("status")=="found"
               for key,answer in given.items() if answer.get("verdict")=="distinct"
             }
+            scores=[result.get("score",0.0) if result.get("status")!="found" else 0.0 for result in judged]
             rows[pair["id"]]={
-              "label":pair["label"],"status":judged.get("status"),"score":scores[pair["id"]],
-              "witness_by":(judged.get("witness") or {}).get("by"),"refuted":[row["by"] for row in judged.get("refuted") or []],
+              "label":pair["label"],"status":judged[0].get("status"),"score":scores[0],"scores":scores,
+              "witness_by":(judged[0].get("witness") or {}).get("by"),"refuted":[row["by"] for row in judged[0].get("refuted") or []],
               "confirmed":confirmed,
             }
     alpha=policy["judgement"]["alpha"]
-    real,pending={}, []
+    real: dict[str,dict[str,Any]]={}
     for pair in observed:
-        given=[pair["answers"][key] for key in keys if key in pair["answers"] and not pair["answers"][key].get("problems")]
-        if len(given)<len(keys):
-            pending.append(pair["id"])
+        if pair["id"] not in reference:
             continue
-        real[pair["id"]]={**{name:pair[name] for name in ("contract_id","fingerprint","pin_path","symbolic","prompt_sha256")},"answers":pair["answers"],"score":EQ.ensemble_score(given,len(keys))}
-    distinct=[scores[pair["id"]] for pair in payload["pairs"] if pair["label"]=="distinct"]+[row["score"] for row in real.values()]
-    threshold=EQ.conformal_threshold(distinct,alpha)
+        given=clean(pair["answers"])
+        scores=[EQ.ensemble_score([given[key] for key in combination],len(combination)) for combination in configurations or [primary]]
+        real[pair["id"]]={**{name:pair[name] for name in ("contract_id","fingerprint","pin_path","symbolic","prompt_sha256")},"answers":pair["answers"],"score":scores[0],"scores":scores}
+    combinations: list[dict[str,Any]]=[]
+    for index,combination in enumerate(configurations):
+        distinct=[row["scores"][index] for row in rows.values() if row["label"]=="distinct"]+[row["scores"][index] for row in real.values()]
+        threshold=EQ.conformal_threshold(distinct,alpha)
+        combinations.append({
+          "members":combination,"threshold":threshold,"distinct":len(distinct),
+          "labelled_distinct":sum(1 for score in distinct if threshold is not None and score>threshold),
+        })
+    thresholds=[row["threshold"] for row in combinations]
+    threshold=max(thresholds) if thresholds and None not in thresholds else None
+    distinct=[row["score"] for row in rows.values() if row["label"]=="distinct"]+[row["score"] for row in real.values()]
     labelled=lambda label:[pid for pid,row in rows.items() if row["label"]==label and threshold is not None and row["score"]>threshold]
     metrics={
       "pairs":len(payload["pairs"]),
@@ -5369,7 +5440,8 @@ def assessor_calibration_record(payload,answers,members,policy,prompt_sha,pairs_
     return {
       "schema":"ternforge-assessor-calibration-1","members":keys,"prompt_sha256":prompt_sha,"pairs_sha256":pairs_sha,
       "alpha":alpha,"answers":answers,"pairs":rows,"observed":real,"observed_pending":pending,"threshold":threshold,"metrics":metrics,
-      "complete":not missing,"missing":missing[:12],"calibrated_at":utc_now(),
+      "usable":sorted(usable),"configurations":combinations,
+      "complete":bool(configurations),"missing":missing[:12],"calibrated_at":utc_now(),
     }
 
 
@@ -5440,7 +5512,8 @@ def calibrate_assessors(ask=True):
     usable=qualified_model_backends()
     if (unanswered or unanswered_observed) and not usable:
         raise SystemExit("assessor calibration: the model adapter is not currently qualified (run qualify-evidence-confidence.py)")
-    run=MODELS.Run({**policy["roles"],**assessor_roles(policy)},policy["budget"])
+    # Every assessor model is asked on its own: the calibration covers each, usable or not yet.
+    run=MODELS.Run({**policy["roles"],**assessor_model_roles(policy)},policy["budget"])
     for name in MODELS.BACKENDS:
         if name not in usable:
             run.availability[name]="the adapter has not yet been shown to read this backend's answers"
@@ -5454,10 +5527,10 @@ def calibrate_assessors(ask=True):
                     continue
                 before=len(run.rows)
                 _call,response=run.call(
-                  f"assessor:{row['assessor']}",purpose="assessor-calibration",contract_id="CALIBRATION",subject=pair["id"],
+                  assessor_model_role(row),purpose="assessor-calibration",contract_id="CALIBRATION",subject=pair["id"],
                   system=EQ.ASSESSOR_SYSTEM,prompt=prompt,schema=EQ.ASSESSOR_SCHEMA,response_dir=ASSESSOR_CALIBRATION_DIR/"responses",
                 )
-                print(f"[CALIBRATE] {pair['id']} · assessor {row['assessor']}: "+attempts_text(run.rows[before:]),flush=True)
+                print(f"[CALIBRATE] {pair['id']} · {assessor_model_role(row)} · {row['model']}: "+attempts_text(run.rows[before:]),flush=True)
                 if response is None:
                     continue
                 answers.setdefault(pair["id"],{})[row["key"]]=assessor_answer(response)
@@ -5466,7 +5539,7 @@ def calibrate_assessors(ask=True):
             answers_path=TRIAGE_ANSWERS_DIR/pair["contract_id"]/"assessments.json"
             assessments=load_assessments(answers_path)
             entry=assessments.setdefault(pair["fingerprint"],{})
-            if ask_assessors(run,policy,purpose="survivor-assessment",contract_id=pair["contract_id"],subject=pair["fingerprint"],prompt=pair["prompt"],entry=entry,response_dir=TRIAGE_ANSWERS_DIR/pair["contract_id"]/"responses"):
+            if ask_assessors(run,policy,purpose="survivor-assessment",contract_id=pair["contract_id"],subject=pair["fingerprint"],prompt=pair["prompt"],entry=entry,response_dir=TRIAGE_ANSWERS_DIR/pair["contract_id"]/"responses",every=True):
                 save_assessments(answers_path,assessments)
             pair["answers"]=current_answers(assessments,pair["fingerprint"],pair["prompt"])
     finally:
@@ -5554,6 +5627,7 @@ def guarded_run(policy,usable,extra_roles=None):
     blocks=canary_blocks(policy)
     run.blocked.update(blocks)
     run.blocked.update({("draft_author_retry",backend,model):reason for (role,backend,model),reason in blocks.items() if role=="draft_author"})
+    block_unusable_assessors(run,policy)
     return run
 
 
@@ -5575,20 +5649,28 @@ def judge_pin_drafts(root,items):
 
 
 def run_canaries(roles=None):
-    """Ask every model the Test Plan lists for a role its canaries, and record what it answered and
-    whether it passed. Only a person starts it, on request; a change of model calls for it."""
+    """Ask its canaries of every model the Test Plan lists for a role and has not passed them for the
+    current questions, and record what it answered and whether it passed. Only a person starts it,
+    on request; a change of model, question or canary set calls for it."""
     policy=model_generation_policy()
     usable=qualified_model_backends()
     if not usable:
         raise SystemExit("model canaries: the model adapter is not currently qualified (run qualify-evidence-confidence.py)")
     canaries=json.loads(CANARY_PATH.read_text())
-    entries=[entry for entry in canary_entries(policy) if not roles or entry[0] in roles]
+    results=load_canary_results()
+    questions_sha256={role:SEMANTIC.canary_questions_sha256(SEMANTIC.canary_questions(CALIBRATION_PROJECT,canaries,role)) for role in SEMANTIC.CANARY_ROLES}
+    # A record that passed exactly these questions stands: asking again would only spend quota and
+    # could turn a passing model into a failing one by chance.
+    standing_records=[entry for entry in canary_entries(policy) if (not roles or entry[0] in roles)
+                      and (results.get("|".join(entry)) or {}).get("passed") and (results.get("|".join(entry)) or {}).get("questions_sha256")==questions_sha256[entry[0]]]
+    for role,backend,model in standing_records:
+        print(f"[CANARY] {role}|{backend}|{model}: passed on {(results.get(f'{role}|{backend}|{model}') or {}).get('ran_at')} for the current questions, not asked again",flush=True)
+    entries=[entry for entry in canary_entries(policy) if (not roles or entry[0] in roles) and entry not in standing_records]
     own={f"canary:{role}:{backend}:{model}":[{"order":1,"backend":backend,"model":model}] for role,backend,model in entries}
     run=MODELS.Run(own,policy["budget"])
     for name in MODELS.BACKENDS:
         if name not in usable:
             run.availability[name]="the adapter has not yet been shown to read this backend's answers"
-    results=load_canary_results()
     CANARY_RESULTS_DIR.mkdir(parents=True,exist_ok=True)
     drafts,standing=[],{}
     try:
@@ -6408,6 +6490,7 @@ def triage_request(contract_id,records,assessments,needs,policy,state,cache):
             answers[str(record.get("fingerprint"))]=given
     return {
       "survivors":records,"seconds":policy["judgement"]["symbolic_seconds"],"paths":policy["judgement"]["symbolic_paths"],"members":state["members"],
+      "members_by":{fingerprint:assessor_members(policy,state,given) for fingerprint,given in answers.items()},
       "threshold":state["threshold"],"calibrated":state["calibrated"],"answers":answers,"symbolic_cache":cache,
     }
 
@@ -6449,6 +6532,7 @@ def assess_survivors(contract_ids=None):
         for name in MODELS.BACKENDS:
             if name not in usable:
                 run.availability[name]="the adapter has not yet been shown to read this backend's answers"
+        block_unusable_assessors(run,policy,state)
     else:
         print("[TRIAGE] the model adapter is not qualified: symbolic search only",flush=True)
     campaign=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
@@ -7672,8 +7756,9 @@ def parse_args():
     parser.add_argument("--generate-semantic-mutants",action="store_true",help="call the model (ADR_0004) for every selected target without a current semantic mutant, judge them, draft tests for the distinguished ones, then rebuild the pages")
     parser.add_argument("--force",action="store_true",help="with --generate-semantic-mutants: regenerate every selected target, not only those without a current proposal")
     parser.add_argument("--calibrate-assessors",action="store_true",help="ask every survivor assessor about the labelled calibration pairs it has not answered, then recompute the threshold (ADR_0005)")
+    parser.add_argument("--stored-only",action="store_true",help="with --calibrate-assessors: rebuild the record from the answers already stored and ask nothing, as after a change of the assessor table")
     parser.add_argument("--assess-survivors",action="store_true",help="judge the surviving rule mutants: symbolic search, then the assessors within the budget; outcomes never change")
-    parser.add_argument("--run-canaries",action="store_true",help="ask every model the Test Plan lists for a role its canaries and record whether it passed (ADR_0006); a change of model calls for it")
+    parser.add_argument("--run-canaries",action="store_true",help="ask its canaries of every model the Test Plan lists for a role that has not passed them for the current questions, and record whether it passed (ADR_0006); a change of model calls for it")
     parser.add_argument("--roles",nargs="*",help="with --run-canaries: only these roles (generator, draft_author, verdict)")
     parser.add_argument("--decide-survivors",action="store_true",help="ask the verdict model about every judged survivor and adopt a mutation pin for every pin verdict (ADR_0006)")
     parser.add_argument("--revise-pins",action="store_true",help="remove the mutation pins that verify an older revision of their requirement than the docs declare, with their records, and rebuild the calibration from stored answers; asks no model (ADR_0006)")
@@ -7690,7 +7775,7 @@ def portal_left_for_refresh():
 def main():
     args=parse_args()
     if args.calibrate_assessors:
-        calibrate_assessors()
+        calibrate_assessors(ask=not args.stored_only)
         return
     if args.run_canaries:
         run_canaries(set(args.roles or []) or None)

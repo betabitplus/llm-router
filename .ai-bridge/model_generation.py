@@ -8,8 +8,9 @@ answer is stored as a response file with the prompt it answered, and whatever is
 from it names the call. Every call, accepted or not, appends one row to the ledger: its
 tokens, its list-price equivalent where the backend reports one, its duration and the plan
 windows the backend reported. Before each call the guard compares the last known windows
-and the run's call count with the Test Plan's limits; above a limit the call is not made
-and is recorded as deferred. Deferred, rejected, invalid and unavailable calls return no
+and the run's call count with the Test Plan's limits, and for a quota pool that reports no
+window, the calls the ledger shows it took in the last seven days; above a limit the call is
+not made and is recorded as deferred. Deferred, rejected, invalid and unavailable calls return no
 answer, so nothing downstream can mistake them for a pass.
 
 Backends:
@@ -19,12 +20,15 @@ Backends:
                      weekly window utilization. API-key variables are removed from its environment,
                      so a call never bills an API account instead of the subscription.
 ``antigravity-cli``  ``agy -p`` where a person signed in to Antigravity. It reports tokens only;
-                     it has no system-prompt flag, so the system text leads the prompt.
+                     it has no system-prompt flag, so the system text leads the prompt. Its
+                     smaller quota, every model outside the Gemini family, is bounded by its
+                     calls in the last seven days.
 """
 
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 import os
 import re
@@ -37,7 +41,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 BRIDGE = Path(__file__).resolve().parent
@@ -66,6 +70,7 @@ BUDGET_LABELS = {
     "List price per call": "usd_per_call",
     "Draft attempts per mutant": "draft_attempts",
     "Parallel calls per backend": "parallel_calls",
+    "Smaller-pool calls per week": "pool_calls_per_week",
 }
 # Test Plan labels of the Survivor judgement settings.
 JUDGEMENT_LABELS = {
@@ -331,6 +336,9 @@ class AntigravityCli:
     @staticmethod
     def quota_pool(model: str) -> str:
         return "gemini" if model_family(model) == "google" else "other"
+    # The CLI reports neither quota. The smaller one serves far fewer calls a week (about 64 of the
+    # pilot's on Google AI Pro), so the guard bounds it by the calls the ledger shows it took.
+    smaller_pool = "other"
     # agy has no switch that removes its tools; it is told not to reach for them, and a call that
     # does anyway is refused (the headless run denies the permission and answers nothing).
     TOOLLESS = "Answer from the text alone: do not run commands, read or write files, or use any tool."
@@ -467,21 +475,43 @@ def parse_budget(rows: list[dict]) -> dict[str, float]:
 
 
 def parse_assessors(rows: list[dict]) -> list[dict]:
-    """The Test Plan's Survivor judgement table, fail-closed: every assessor numbered 1, 2, … with
-    a known backend and a model. Every assessor answers; none stands in for another."""
+    """The Test Plan's Survivor judgement table, fail-closed: assessors numbered 1, 2, … in order,
+    each with its models ordered 1, 2, …, every model a known backend's and listed once. Every
+    assessor answers and none stands in for another; within an assessor a later model answers only
+    when the ones before it cannot."""
     assessors = []
     for row in rows:
         number = row.get("Assessor", "")
+        order = row.get("Order", "") or "1"
         backend = row.get("Backend", "").strip("`")
         model = row.get("Model", "").strip("`")
-        if not number.isdigit() or backend not in BACKENDS or not model:
-            raise RuntimeError(f"Test Plan: a Survivor judgement row names an unknown assessor, backend or model: {row}")
-        assessors.append({"assessor": int(number), "backend": backend, "model": model, "key": f"{backend}:{model}"})
-    if [row["assessor"] for row in assessors] != list(range(1, len(assessors) + 1)):
+        if not number.isdigit() or not order.isdigit() or backend not in BACKENDS or not model:
+            raise RuntimeError(f"Test Plan: a Survivor judgement row names an unknown assessor, order, backend or model: {row}")
+        assessors.append({"assessor": int(number), "order": int(order), "backend": backend, "model": model, "key": f"{backend}:{model}"})
+    numbers = [row["assessor"] for row in assessors]
+    if numbers != sorted(numbers) or sorted(set(numbers)) != list(range(1, len(set(numbers)) + 1)):
         raise RuntimeError("Test Plan: the survivor assessors must be numbered 1, 2, … in order")
+    for number, models in assessor_seats(assessors).items():
+        if [row["order"] for row in models] != list(range(1, len(models) + 1)):
+            raise RuntimeError(f"Test Plan: the models of survivor assessor {number} must be ordered 1, 2, …")
     if len({row["key"] for row in assessors}) != len(assessors):
-        raise RuntimeError("Test Plan: a survivor assessor is listed twice")
+        raise RuntimeError("Test Plan: a survivor assessor model is listed twice")
     return assessors
+
+
+def assessor_seats(assessors: list[dict]) -> dict[int, list[dict]]:
+    """Each assessor's models, in the order they answer."""
+    seats: dict[int, list[dict]] = {}
+    for row in assessors:
+        seats.setdefault(row["assessor"], []).append(row)
+    return seats
+
+
+def assessor_configurations(assessors: list[dict], usable) -> list[list[str]]:
+    """Every combination of models that can judge a survivor, one usable model per assessor, the
+    first models first. Empty while an assessor has no usable model."""
+    choices = [[row["key"] for row in models if row["key"] in usable] for models in assessor_seats(assessors).values()]
+    return [list(combination) for combination in itertools.product(*choices)] if choices and all(choices) else []
 
 
 def parse_judgement(rows: list[dict]) -> dict:
@@ -513,6 +543,14 @@ def parse_judgement(rows: list[dict]) -> dict:
     return settings
 
 
+def ledger_time(row: dict) -> datetime | None:
+    """When a ledger row was written, or None for a row without a readable time."""
+    try:
+        return datetime.fromisoformat(str(row.get("at")))
+    except ValueError:
+        return None
+
+
 def read_ledger(path: Path = LEDGER_PATH) -> list[dict]:
     if not path.is_file():
         return []
@@ -536,6 +574,9 @@ class Run:
         self.blocked: dict[tuple[str, str, str], str] = {}
         # (backend, quota pool) whose quota rejected a call in this run.
         self.rejected_models: dict[tuple[str, str], str] = {}
+        # (backend, smaller quota pool): its calls in the seven days before the run, read from the
+        # ledger once and counted on as the run reserves calls, since the pool reports no window.
+        self.pool_calls: dict[tuple[str, str], int] = {}
         self.versions: dict[str, str] = {}
         self.rows: list[dict] = []
         # Several calls may run at once (call_many): the budget, the windows and the ledger change
@@ -614,6 +655,23 @@ class Run:
         pool = getattr(self.backend(name), "quota_pool", None)
         return pool(model) if callable(pool) else model
 
+    def smaller_pool(self, name: str, model: str) -> str:
+        """The backend's smaller quota pool when the model draws on it, else an empty string."""
+        smaller = getattr(self.backend(name), "smaller_pool", "")
+        return smaller if smaller and self.quota_pool(name, model) == smaller else ""
+
+    def pool_week(self, name: str, pool: str) -> int:
+        """The calls a backend's quota pool took in the last seven days: the ledger's calls actually
+        made, as ``spend`` counts them, read once per run."""
+        if (name, pool) not in self.pool_calls:
+            since = datetime.fromisoformat(self.clock()) - timedelta(days=7)
+            self.pool_calls[(name, pool)] = sum(
+                1 for row in read_ledger(self.ledger_path)
+                if row.get("backend") == name and row.get("role") != "probe" and row.get("outcome") not in {"deferred", "unavailable"}
+                and self.quota_pool(name, str(row.get("model") or "")) == pool and (at := ledger_time(row)) is not None and at >= since
+            )
+        return self.pool_calls[(name, pool)]
+
     def reject(self, name: str, model: str, invocation) -> None:
         """Remember a rejection for the run: for the whole backend when its plan window is the
         account's, otherwise for the quota pool the model draws on."""
@@ -628,6 +686,10 @@ class Run:
             return f"the run reached its limit of {int(self.budget['calls_per_run'])} calls"
         if model and (name, self.quota_pool(name, model)) in self.rejected_models:
             return f"the {self.quota_pool(name, model)} quota of {name} rejects calls until it resets"
+        pool = self.smaller_pool(name, model) if model else ""
+        limit = self.budget.get("pool_calls_per_week")
+        if pool and limit is not None and self.pool_week(name, pool) >= limit:
+            return f"the {pool} quota of {name} took {self.pool_week(name, pool)} calls in the last 7 days, at or above its limit of {int(limit)}"
         windows = self.windows.get(name) or {}
         if windows.get("status") == "rejected":
             return "the plan's usage window rejects calls until it resets"
@@ -682,6 +744,9 @@ class Run:
                     attempts.append(self.record({**base, "backend_version": self.versions.get(name, ""), "outcome": "deferred", "reason": deferred, "tokens": {}, "list_usd": None, "seconds": 0.0, "windows": self.windows.get(name)}))
                     continue
                 self.calls += 1
+                pool = self.smaller_pool(name, model)
+                if pool:
+                    self.pool_calls[(name, pool)] = self.pool_week(name, pool) + 1
             in_flight, limit = self.enter(name)
             invocation = None
             try:

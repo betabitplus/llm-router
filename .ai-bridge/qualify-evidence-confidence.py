@@ -13,7 +13,7 @@ import threading
 import time
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from importlib.metadata import version as package_version
 from pathlib import Path
 
@@ -2008,6 +2008,39 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
             and [entry["outcome"] for entry in run.rows if entry.get("model") == "a"] == ["rejected", "deferred"]
         )
 
+        # Antigravity reports neither quota, so its smaller pool is bounded by the calls the ledger shows
+        # it took in the last seven days: older calls, Gemini calls and calls never made do not count.
+        pool_now = datetime.now(UTC)
+
+        def pool_row(model, outcome, days):
+            written = (pool_now - timedelta(days=days)).isoformat(timespec="seconds").replace("+00:00", "Z")
+            return {"at": written, "backend": "antigravity-cli", "model": model, "outcome": outcome, "role": "generator"}
+
+        week_ledger = temp / "pool-week.jsonl"
+        week_ledger.write_text("".join(json.dumps(row) + "\n" for row in [
+            pool_row("claude-a", "ok", 1), pool_row("claude-a", "invalid", 2), pool_row("claude-a", "ok", 6),
+            pool_row("claude-a", "ok", 8), pool_row("claude-a", "deferred", 1), pool_row("gemini-a", "ok", 1),
+        ]))
+
+        class Pooled(Scripted):
+            quota_pool = staticmethod(models["AntigravityCli"].quota_pool)
+            smaller_pool = models["AntigravityCli"].smaller_pool
+
+        pooled = Pooled([probe(), answered(), answered()])
+        run = models["Run"](
+            {"generator": [{"order": 1, "backend": "antigravity-cli", "model": "claude-a"}],
+             "draft_author": [{"order": 1, "backend": "antigravity-cli", "model": "gemini-a"}]},
+            {**budget, "pool_calls_per_week": 4}, ledger_path=week_ledger, backends={"antigravity-cli": pooled},
+        )
+        within, within_response = run.call("generator", response_dir=temp / "pool-week", **request)
+        over, over_response = run.call("generator", response_dir=temp / "pool-week", **{**request, "subject": "src/x.py::k"})
+        gemini, gemini_response = run.call("draft_author", response_dir=temp / "pool-week", **{**request, "subject": "src/x.py::m"})
+        checks["the smaller pool's calls in the last seven days defer its next call at the limit, and a Gemini call still goes"] = (
+            within["outcome"] == "ok" and within_response is not None
+            and over["outcome"] == "deferred" and "4 calls in the last 7 days" in over["reason"] and over_response is None
+            and gemini["outcome"] == "ok" and gemini_response is not None and pooled.calls == 3
+        )
+
         if response is not None:
             tampered = {**response, "prompt": response["prompt"] + " "}
             broken = {**response, "structured": {"proposals": []}}
@@ -2055,6 +2088,26 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         and refuses(parse_budget, budget_ok[:-1])
         and refuses(parse_budget, [{**budget_ok[0], "Limit": "eighty"}, *budget_ok[1:]])
     )
+    # An assessor may list several models in order; every combination of its usable models, one per
+    # assessor, is one the calibration must cover.
+    parse_assessors, combine = models["parse_assessors"], models["assessor_configurations"]
+    seats_ok = [
+        {"Assessor": "1", "Order": "1", "Backend": "`antigravity-cli`", "Model": "`claude-a`"},
+        {"Assessor": "1", "Order": "2", "Backend": "`claude-cli`", "Model": "`claude-b`"},
+        {"Assessor": "2", "Order": "1", "Backend": "`antigravity-cli`", "Model": "`gemini-a`"},
+    ]
+    seated = parse_assessors(seats_ok)
+    keys = [row["key"] for row in seated]
+    checks["an assessor's models are read in order, and each combination of usable ones is one per assessor"] = (
+        [(row["assessor"], row["order"]) for row in seated] == [(1, 1), (1, 2), (2, 1)]
+        and combine(seated, set(keys)) == [[keys[0], keys[2]], [keys[1], keys[2]]]
+        and combine(seated, {keys[1], keys[2]}) == [[keys[1], keys[2]]] and combine(seated, {keys[0]}) == []
+        and parse_assessors([{key: value for key, value in row.items() if key != "Order"} for row in seats_ok[1:]]) != []
+        and refuses(parse_assessors, [{**seats_ok[0], "Order": "2"}, *seats_ok[1:]])
+        and refuses(parse_assessors, [seats_ok[1], seats_ok[0], seats_ok[2]])
+        and refuses(parse_assessors, [*seats_ok, {**seats_ok[0], "Assessor": "3"}])
+        and refuses(parse_assessors, [{**seats_ok[2], "Assessor": "3"}, *seats_ok[:2]])
+    )
 
     # What an accepted answer becomes: at most the budget, one per distinct mutant, each naming its call.
     context = {"requirement": {"id": "CALIBRATION", "revision": 1, "statement": "s"}, "criteria": [], "risk": "r", "budget": 2, "target": "src/x.py::f"}
@@ -2077,7 +2130,7 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         "PRODUCER_MODEL_GENERATION_ADAPTER": {
             "status": "QUALIFIED" if ok else "NOT QUALIFIED",
             "intended_use": "call a subscription CLI model for semantic mutants and draft tests (ADR_0004), store only answers within their schema, and ledger and budget every call",
-            "false_green_control": "recorded real answers and their failing variants (schema break, rejected window, API-key billing, missing result, usage limit, ineligible account) must never read as an answer; scripted runs must defer above the budget, fall back in order, store nothing from a failure, and bind every stored answer to its prompt, schema and content",
+            "false_green_control": "recorded real answers and their failing variants (schema break, rejected window, API-key billing, missing result, usage limit, ineligible account) must never read as an answer; scripted runs must defer above the budget (a window, the run's calls, the smaller pool's week), fall back in order, store nothing from a failure, and bind every stored answer to its prompt, schema and content",
             "backends_qualified": backends_qualified,
             "control": checks,
         }
@@ -2302,7 +2355,7 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
     calibration = ROOT / ".ai-bridge/semantic-mutants/assessor-calibration"
     record_path = calibration / "calibration.json"
     base = {
-        "intended_use": "label a survivor likely equivalent only when every assessor of the Test Plan judges it equivalent above a split-conformal threshold, advisory; distinct only through a confirmed input",
+        "intended_use": "label a survivor likely equivalent only when every assessor of the Test Plan, each through one usable model, judges it equivalent above a split-conformal threshold, advisory; distinct only through a confirmed input",
         "false_green_control": "the frozen calibration replayed: every answer bound to a stored, ledgered call; each pair's judgement and the threshold recomputed; the labelled distinct pairs within the Test Plan's false-equivalent rate; the calibration current for the assessors, the question, the pairs and the rate; every observed pair a real survivor the symbolic search left unsure, that a recorded mutation pin proves distinct and the campaign now catches, its answers the triage's own for the question it names",
     }
     if not record_path.exists():
@@ -2336,11 +2389,27 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
                 and judge["answer_problems"](structured) == answer.get("problems")
             )
     checks["every calibration answer is a stored, ledgered call's answer"] = bound and bool(record.get("answers"))
+    # Which models may answer for their assessor, recomputed from the answers: every labelled pair
+    # answered, and every observed pair the first such models all answered (the record keeps only those).
+    payload = judge["calibration_payload"](folder)
+    observed = record.get("observed") or {}
+
+    def clean(given):
+        return {key: value for key, value in (given or {}).items() if key in keys and not value.get("problems")}
+
+    labelled_complete = {key for key in keys if all(key in clean((record.get("answers") or {}).get(pair["id"])) for pair in payload["pairs"])}
+    primary = next(iter(models["assessor_configurations"](assessors, labelled_complete)), [])
+    usable = {key for key in labelled_complete if all(key in clean(pair.get("answers")) for pair in observed.values())}
+    configurations = models["assessor_configurations"](assessors, usable)
+    checks["the usable assessor models and every combination of them recompute to the record, one model per assessor"] = (
+        bool(configurations) and sorted(usable) == record.get("usable")
+        and [row.get("members") for row in record.get("configurations") or []] == configurations
+        and all(all(key in clean(pair.get("answers")) for key in primary) for pair in observed.values())
+    )
     # The observed pairs: real survivors the symbolic search left unsure and a mutation pin proves distinct (ADR_0006),
     # asked the triage's own question.
     campaign_path = ROOT / "test-results/implementation-faults/campaign.json"
     campaign = json.loads(campaign_path.read_text()) if campaign_path.exists() else {}
-    observed = record.get("observed") or {}
     observed_ok = True
     observed_scores = {}
     for pair_id, pair in observed.items():
@@ -2350,8 +2419,7 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
         report_path = ROOT / str((((campaign.get("contracts") or {}).get(contract_id) or {}).get("run") or {}).get("report_path") or "")
         rows = {str(row.get("fingerprint")): row for row in (json.loads(report_path.read_text()).get("results") or [])} if report_path.is_file() else {}
         caught = str((rows.get(key) or {}).get("status")) in {"zapped", "timeout"}
-        given = []
-        for member in keys:
+        for member in sorted(usable):
             answer = (pair.get("answers") or {}).get(member) or {}
             response_path = ROOT / ".ai-bridge/survivor-triage" / str(contract_id) / "responses" / f"{answer.get('call_id')}.json"
             response = json.loads(response_path.read_text()) if response_path.exists() else {}
@@ -2363,37 +2431,54 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
                 and structured.get("verdict") == answer.get("verdict") and structured.get("confidence") == answer.get("confidence")
                 and judge["answer_problems"](structured) == answer.get("problems") == []
             )
-            given.append(answer)
         observed_ok = observed_ok and caught and (pin.get("cascade") or {}).get("accepted") is True and pin.get("path") == pair.get("pin_path")
         # Only what the triage puts to the assessors is exchangeable with its questions.
         observed_ok = observed_ok and (pair.get("symbolic") or {}).get("status") in judge["SEARCH_UNDECIDED"]
-        observed_scores[pair_id] = judge["ensemble_score"](given, len(keys))
-        observed_ok = observed_ok and observed_scores[pair_id] == pair.get("score")
-    checks["every observed pair is a survivor the symbolic search left unsure and a recorded mutation pin proves distinct, answered by every assessor in stored, ledgered calls"] = observed_ok
-    payload = judge["calibration_payload"](folder)
-    recomputed = {}
+        given = clean(pair.get("answers"))
+        observed_scores[pair_id] = [judge["ensemble_score"]([given[member] for member in combination], len(combination)) for combination in configurations]
+        observed_ok = observed_ok and observed_scores[pair_id] == pair.get("scores") and observed_scores[pair_id][:1] == [pair.get("score")]
+    checks["every observed pair is a survivor the symbolic search left unsure and a recorded mutation pin proves distinct, answered by every usable assessor model in stored, ledgered calls"] = observed_ok
+    recomputed: dict[str, dict] = {}
     with tempfile.TemporaryDirectory(prefix="ternforge-ensemble-qualification-") as temp_dir:
         for pair in payload["pairs"]:
             original_source, mutant_source = judge["pair_sources"](folder, pair)
-            given = {key: value for key, value in ((record.get("answers") or {}).get(pair["id"]) or {}).items() if key in keys and not value.get("problems")}
-            judged = judge["judge_survivor"](original_source, mutant_source, pair["target"], scratch=Path(temp_dir), token="e" + pair["id"].lower(), seconds=0, answers=given, members=keys, threshold=None, calibrated=False)
-            recomputed[pair["id"]] = {"status": judged.get("status"), "score": judged.get("score", 0.0) if judged.get("status") != "found" else 0.0}
+            given = clean((record.get("answers") or {}).get(pair["id"]))
+            judged = [
+                judge["judge_survivor"](
+                    original_source, mutant_source, pair["target"], scratch=Path(temp_dir), token=f"e{pair['id'].lower()}c{index}", seconds=0,
+                    answers={member: given[member] for member in combination if member in given}, members=combination, threshold=None, calibrated=False,
+                )
+                for index, combination in enumerate(configurations or [primary or keys])
+            ]
+            scores = [row.get("score", 0.0) if row.get("status") != "found" else 0.0 for row in judged]
+            recomputed[pair["id"]] = {"status": judged[0].get("status"), "score": scores[0], "scores": scores}
     stored = record.get("pairs") or {}
-    checks["every pair's judgement recomputes to the record"] = all(
-        (stored.get(pid) or {}).get("status") == row["status"] and (stored.get(pid) or {}).get("score") == row["score"] for pid, row in recomputed.items()
+    checks["every pair's judgement recomputes to the record, for every combination of usable models"] = all(
+        (stored.get(pid) or {}).get("status") == row["status"] and (stored.get(pid) or {}).get("score") == row["score"]
+        and (stored.get(pid) or {}).get("scores") == row["scores"]
+        for pid, row in recomputed.items()
     )
-    distinct = [recomputed[pair["id"]]["score"] for pair in payload["pairs"] if pair["label"] == "distinct"] + list(observed_scores.values())
-    threshold = judge["conformal_threshold"](distinct, settings["alpha"])
-    labelled = sum(1 for score in distinct if threshold is not None and score > threshold)
-    checks["the threshold recomputes, and at most the Test Plan's rate of distinct pairs is labelled"] = (
-        threshold == record.get("threshold") and threshold is not None and labelled <= settings["alpha"] * len(distinct)
+    # Each combination gets its own split-conformal threshold, and the highest is the one that labels,
+    # so a label keeps the Test Plan's rate whichever models answered.
+    combinations = []
+    for index, combination in enumerate(configurations):
+        distinct = [recomputed[pair["id"]]["scores"][index] for pair in payload["pairs"] if pair["label"] == "distinct"] + [scores[index] for scores in observed_scores.values()]
+        combination_threshold = judge["conformal_threshold"](distinct, settings["alpha"])
+        labelled_here = sum(1 for score in distinct if combination_threshold is not None and score > combination_threshold)
+        combinations.append({"members": combination, "threshold": combination_threshold, "distinct": len(distinct), "labelled_distinct": labelled_here})
+    thresholds = [row["threshold"] for row in combinations]
+    threshold = max(thresholds) if thresholds and None not in thresholds else None
+    labelled = sum(row["labelled_distinct"] for row in combinations)
+    checks["every combination's threshold recomputes, the highest is the record's, and at most the Test Plan's rate of distinct pairs is labelled"] = (
+        threshold == record.get("threshold") and threshold is not None and combinations == record.get("configurations")
+        and all(row["labelled_distinct"] <= settings["alpha"] * row["distinct"] for row in combinations)
     )
-    # The assessors' canary (ADR_0006): each finds a confirmed input for at least 80% of the labelled distinct pairs,
-    # and calls at most the Test Plan's rate of all distinct pairs, labelled or observed, equivalent.
+    # The assessors' canary (ADR_0006): each usable model finds a confirmed input for at least 80% of the labelled distinct
+    # pairs, and calls at most the Test Plan's rate of all distinct pairs, labelled or observed, equivalent.
     floors = {}
     distinct_pairs = [pair for pair in payload["pairs"] if pair["label"] == "distinct"]
     with tempfile.TemporaryDirectory(prefix="ternforge-ensemble-floors-") as temp_dir:
-        for index, member in enumerate(keys):
+        for index, member in enumerate(sorted(usable)):
             confirmed = equivalent = 0
             for pair in distinct_pairs:
                 answer = ((record.get("answers") or {}).get(pair["id"]) or {}).get(member) or {}
@@ -2412,7 +2497,7 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
                 "confirmed": confirmed, "equivalent_on_distinct": equivalent, "distinct_answered": answered,
                 "met": confirmed >= 0.8 * len(distinct_pairs) and equivalent <= settings["alpha"] * answered,
             }
-    checks["every assessor meets the calibration floors: inputs for 80% of the labelled distinct pairs, at most the rate of all distinct pairs called equivalent"] = bool(floors) and all(row["met"] for row in floors.values())
+    checks["every usable assessor model meets the calibration floors: inputs for 80% of the labelled distinct pairs, at most the rate of all distinct pairs called equivalent"] = bool(floors) and all(row["met"] for row in floors.values())
     ok = all(checks.values())
     # The record is bound here, not in the shared environment: a calibration run then leaves every other producer current.
     control = {"checks": checks, "threshold": threshold, "labelled_distinct": labelled, "floors": floors, "record_sha256": sha256_file(record_path), "calibration_sha256": assessor_calibration_sha256()}

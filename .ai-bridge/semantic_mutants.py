@@ -900,7 +900,8 @@ def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list
                         scratch=Path(scratch), token=re.sub(r"\W", "_", proposal["id"]).lower(),
                         seconds=float(judgement.get("seconds") or 20), paths=judgement.get("paths"),
                         answers=(judgement.get("answers") or {}).get(proposal["id"]),
-                        members=list(judgement.get("members") or []), threshold=judgement.get("threshold"),
+                        members=list((judgement.get("members_by") or {}).get(proposal["id"]) or judgement.get("members") or []),
+                        threshold=judgement.get("threshold"),
                         calibrated=bool(judgement.get("calibrated")), symbolic_cache=symbolic_cache,
                         package=equivalence().project_package(proposal["target"].split("::", 1)[0]),
                     )

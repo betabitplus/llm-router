@@ -821,7 +821,9 @@ def triage(request: dict) -> dict:
         judged = judge_survivor(
             sources[path], rebuilt["source"], str(record.get("qualname")),
             scratch=scratch, token="r" + re.sub(r"\W", "_", fingerprint), seconds=float(request.get("seconds") or 20), paths=request.get("paths"),
-            answers=(request.get("answers") or {}).get(fingerprint), members=list(request.get("members") or []),
+            # One model per assessor, the ones that answered this survivor; the request's members otherwise.
+            answers=(request.get("answers") or {}).get(fingerprint),
+            members=list((request.get("members_by") or {}).get(fingerprint) or request.get("members") or []),
             threshold=request.get("threshold"), calibrated=bool(request.get("calibrated")), symbolic_cache=cache,
             package=project_package(path),
         )

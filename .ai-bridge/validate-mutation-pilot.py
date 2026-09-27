@@ -1110,6 +1110,8 @@ def check_survivor_judgement(monitor_facts: dict, models, by_call: dict, usable:
         f"the Test Plan names the survivor assessors {members} and keeps their equivalent advisory",
     )
     threshold = record.get("threshold")
+    # One usable model per assessor: the combinations the calibration gave a threshold.
+    configurations = [row.get("members") for row in record.get("configurations") or []]
     judge = load_bridge_module("gate_survivor_equivalence", "survivor_equivalence.py")
 
     def answers_bound(folder: Path) -> bool:
@@ -1145,7 +1147,7 @@ def check_survivor_judgement(monitor_facts: dict, models, by_call: dict, usable:
             voted = judged.get("members") or []
             return (
                 judged.get("calibrated") is True and threshold is not None and judged.get("threshold") == threshold
-                and float(judged.get("score") or 0) > threshold and [row.get("member") for row in voted] == members
+                and float(judged.get("score") or 0) > threshold and [row.get("member") for row in voted] in configurations
                 and all(row.get("verdict") == "equivalent" for row in voted)
             )
         return True

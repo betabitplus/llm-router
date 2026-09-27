@@ -51,7 +51,12 @@ symbolic search left unsure and a mutation pin proves distinct (amended 2026-09-
 single assessors called survivors equivalent that the hand-made pairs never made them call). An assessor may call at most the
 false-equivalent rate of all distinct pairs equivalent. The assessors' calibration answers are
 frozen and replayed by the qualification. A change of assessor, model, prompt or pairs leaves the ensemble
-uncalibrated until it is calibrated again. The judgement of rule survivors runs on request,
+uncalibrated until it is calibrated again. An assessor may list several models in order and
+answers through its first model that can (amended 2026-09-28): a quota runs out every few days,
+and models are replaced often. A model counts for its assessor once it answered every
+calibration pair. Each combination of usable models, one per assessor, gets its own threshold
+(Mondrian conformal prediction), and the highest labels, so a label keeps the rate whichever
+models answered. The judgement of rule survivors runs on request,
 apart from the campaign, and never changes a mutant's outcome.
 
 **Consequences.** UNKNOWN shrinks only through confirmed inputs or a person's verdict, never
@@ -71,5 +76,9 @@ was rejected: a false equivalent would take a real gap out of its class and coul
 green. Symbolic search alone cannot see effects and stops at its time bound. Model assessors
 alone invent inputs. Many more random examples still miss inputs that need one exact value.
 Trivial compiler equivalence has no optimizing compiler to lean on in Python, and the cascade
-already compares normalized syntax trees.
+already compares normalized syntax trees. Waiting for an exhausted quota to reset, or replacing a model and
+calibrating the whole ensemble again, was rejected for ordered models per assessor: the pairs
+are asked once per new model, and nothing else is asked again. Asking the other-family assessor
+only when the Gemini assessors all judge a survivor equivalent was rejected too: a survivor a
+pin later proves distinct becomes a calibration pair, which needs that answer anyway.
 ```

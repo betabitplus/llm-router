@@ -1790,10 +1790,23 @@
    }
   }
  },
- "calibrated_at": "2026-09-27T20:24:02.642842Z",
+ "calibrated_at": "2026-09-27T22:35:58.308416Z",
  "complete": true,
+ "configurations": [
+  {
+   "distinct": 47,
+   "labelled_distinct": 0,
+   "members": [
+    "antigravity-cli:claude-opus-4-6-thinking",
+    "antigravity-cli:gemini-3.1-pro-high",
+    "antigravity-cli:gemini-3.8-flash-high"
+   ],
+   "threshold": 0.0
+  }
+ ],
  "members": [
   "antigravity-cli:claude-opus-4-6-thinking",
+  "claude-cli:claude-sonnet-5",
   "antigravity-cli:gemini-3.1-pro-high",
   "antigravity-cli:gemini-3.8-flash-high"
  ],
@@ -1826,13 +1839,34 @@
     "equivalent_on_observed": 1,
     "refuted": 0,
     "unsure": 0
+   },
+   "claude-cli:claude-sonnet-5": {
+    "distinct_confirmed": 13,
+    "equivalent_on_distinct": 0,
+    "equivalent_on_equivalent": 14,
+    "equivalent_on_observed": 0,
+    "refuted": 1,
+    "unsure": 0
    }
   },
   "observed": 33,
   "observed_pending": 2,
   "pairs": 28
  },
- "missing": [],
+ "missing": [
+  "REQ_CONFIG_INSTALLATION_COHERENCE:a2e61f2155653e45:claude-cli:claude-sonnet-5",
+  "REQ_CREDENTIAL_RESOLUTION:53bdcf1990f4aaa4:claude-cli:claude-sonnet-5",
+  "REQ_CREDENTIAL_RESOLUTION:5ef3f33a9ec29e3d:claude-cli:claude-sonnet-5",
+  "REQ_CREDENTIAL_RESOLUTION:779116a1f28d187b:claude-cli:claude-sonnet-5",
+  "REQ_CREDENTIAL_RESOLUTION:8bf6ec5f1367a5d6:claude-cli:claude-sonnet-5",
+  "REQ_CREDENTIAL_RESOLUTION:adb0de8f41da4f7e:claude-cli:claude-sonnet-5",
+  "REQ_CREDENTIAL_RESOLUTION:b30cea8391ac9160:claude-cli:claude-sonnet-5",
+  "REQ_INVALID_CONFIGURATION_ERRORS:19ce8cfa2ea55f04:claude-cli:claude-sonnet-5",
+  "REQ_INVALID_CONFIGURATION_ERRORS:1e7fe255a9f2e635:claude-cli:claude-sonnet-5",
+  "REQ_INVALID_CONFIGURATION_ERRORS:3b57c08f839ab791:claude-cli:claude-sonnet-5",
+  "REQ_INVALID_CONFIGURATION_ERRORS:43c47ed5eb7d2a63:claude-cli:claude-sonnet-5",
+  "REQ_INVALID_CONFIGURATION_ERRORS:4a11c78df0078b1f:claude-cli:claude-sonnet-5"
+ ],
  "observed": {
   "REQ_CONFIG_INSTALLATION_COHERENCE:a2e61f2155653e45": {
    "answers": {
@@ -1877,6 +1911,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_a2e61f2155653e45.py",
    "prompt_sha256": "5e5eda77e23773bdf443be9b715db9b9d8370fa7929638278206e5feb013c454",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -1937,6 +1974,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_53bdcf1990f4aaa4.py",
    "prompt_sha256": "4cf53130880083c003a6666700a4e1659b33617350e1e99b94a7f89c365c91f2",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -1997,6 +2037,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_5ef3f33a9ec29e3d.py",
    "prompt_sha256": "fd34f467e7be07d54c6b20e3b1b2da555ae1415c8684b2b7429817f502c5db77",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2057,6 +2100,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_779116a1f28d187b.py",
    "prompt_sha256": "437637cfd2d682e27e1d72e7be9d6996fd2afc20469436563addfbc46e1fdc9c",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2117,6 +2163,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_8bf6ec5f1367a5d6.py",
    "prompt_sha256": "2cfb45dd73845fce0f63d601953578947c051ca81697c772a182a7874426ff47",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2177,6 +2226,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_adb0de8f41da4f7e.py",
    "prompt_sha256": "f2d81c0c629b65b4fb7bfc6199853f25afd31feb96ef5c9bdb91e244e8239240",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2257,6 +2309,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b249b8ff900bff0b.py",
    "prompt_sha256": "464a2b3fcc26d74921ea356026ac41f4e3ce43b94542f5992d3bbc9e756c82d0",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2317,6 +2372,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b30cea8391ac9160.py",
    "prompt_sha256": "9c3642a392cdcc3cade833a8d7ce8a14cfd4663759a289254b33a0540abdc9ed",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2371,6 +2429,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_19ce8cfa2ea55f04.py",
    "prompt_sha256": "070c11f52edafb41a9a966eef17f1cbe9f5e975393a3e3a8c38f4815af2a201f",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2425,6 +2486,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_1e7fe255a9f2e635.py",
    "prompt_sha256": "4112459c8f9a9cc18595c55a5960869476f9607600ddcdba2c5960ce63272692",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2479,6 +2543,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_3b57c08f839ab791.py",
    "prompt_sha256": "86dbac72df8c24ee6fb6c542d5e577ed43c09fc9a891c002d85779b1b50618fe",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2533,6 +2600,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_43c47ed5eb7d2a63.py",
    "prompt_sha256": "290d7564e481404324bb6a5e1d2a60f5751659b38ae3a44e9a9f0f778094e37a",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2587,6 +2657,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_4a11c78df0078b1f.py",
    "prompt_sha256": "f8a9ebe07b5f30bb8f8c10424a2071df38a5f54f18544fbf7db988e80be0506b",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2641,6 +2714,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_551e89dc7d0431df.py",
    "prompt_sha256": "f050408e19e98fcd88eb24ab8d311b0f8ab18946f4d510d47ff3d87c3fbea490",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2695,6 +2771,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_a02b9c41521c0e84.py",
    "prompt_sha256": "e3e5ada7a36634ef6cc8aa55895dd33dc6fad8a06cd96c6fb69a464f591fa0ec",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2749,6 +2828,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_a6c77976ba2d4065.py",
    "prompt_sha256": "a1678c846f6e97077a216cbbbcd28be38f6140d0fcf551840484468ed7095b82",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2803,6 +2885,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_c18833e1526efa72.py",
    "prompt_sha256": "3c3518494072e215a1aea04c144070728db1ab358f8fa158b96b889308b0c81d",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2857,6 +2942,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_c37a776247b2f0eb.py",
    "prompt_sha256": "36ab27782430d89982d25ae48ad58d2e0743665ae1e3037c6ba1a960ece2a1ba",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2911,6 +2999,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_df61b883b2255611.py",
    "prompt_sha256": "9160fa17f864cf416e6ade7e0c42d53f45123a8efc5fd1e8f93ee98cf11e3e8e",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -2965,6 +3056,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_e303da2411404c79.py",
    "prompt_sha256": "ecec956594d614a32a5c7f076a4772a2e0b550b550735e64c2721bb24cf9c427",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -3019,6 +3113,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_ea9109b0b3884c40.py",
    "prompt_sha256": "540de960b4948f7f661fb5112e13d6608291058052894ea5d866d7ddaed1b83c",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -3085,6 +3182,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_39cd06b3a9c8bc51.py",
    "prompt_sha256": "178c081c42e4bebe2b67a9ff5a8ace825814227598c913d7f8aff6716c3a9663",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -3151,6 +3251,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_bf8a96501e88d45d.py",
    "prompt_sha256": "4b4264835a8a6f01dd03820b5d7b8d78a879fb75bf2e9a92fce08a4f691d184c",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -3217,6 +3320,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_e238ff65d72c6c1f.py",
    "prompt_sha256": "ed1bfaba494a07fd8118c1bc826306abc660b790ed4ca245d490ee4fd5169b5f",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -3274,6 +3380,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_3cc16a6300b216ed.py",
    "prompt_sha256": "c0963697e5bae8f0da2684bdf885d258ab712ac62c872fe926a12877995389d5",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -3331,6 +3440,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_5ed9365a38636da5.py",
    "prompt_sha256": "8889c542e79e1ae149aa6d79543accd5e8485ffd890937440b28d7e0df7781c9",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -3385,6 +3497,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_5a829211adec3347.py",
    "prompt_sha256": "08c621a04e478edb41bdbe5bdd4aac706d794838761ff2d39e29182ec9738d96",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -3448,6 +3563,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_2038c0b46cff816b.py",
    "prompt_sha256": "1b6e4eb05d90be9a0b7d571ceff2ff278edeaad83833e438214e128045ca6c5d",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
@@ -3511,6 +3629,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_40231175bc1ce35e.py",
    "prompt_sha256": "3d2ec278925131a9a2bd21aae8617b56882d4829766c7d61b27c1d7e2b1b3ef2",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
@@ -3574,6 +3695,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7f08bc96d2f666c5.py",
    "prompt_sha256": "13009ee380553e924b437d1f3723c7b6e6b817e693b7764b797fa820123359ee",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
@@ -3634,6 +3758,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_9341379044dfc2f2.py",
    "prompt_sha256": "8a93cecd1fee1cbb85a05d7f1d7c07e1caf8905d3083e8eb75e1527d3867633e",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
@@ -3688,6 +3815,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_1356bcae910da7c0.py",
    "prompt_sha256": "2f773bfda3c167e657d92194f5b5d4370c1534219fb292a58793d3aa583a013a",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -3742,6 +3872,9 @@
    "pin_path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_f3d4b39e06f3f013.py",
    "prompt_sha256": "2260be5deeccde6456b92fb80c19cce584c925a8d7a7c208e79285b981dca6b5",
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
@@ -3759,11 +3892,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3771,11 +3908,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3783,11 +3924,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3795,11 +3940,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3807,11 +3956,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3819,11 +3972,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3831,11 +3988,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": false
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3843,11 +4004,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3855,11 +4020,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3867,11 +4036,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3879,11 +4052,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3891,11 +4068,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3903,11 +4084,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3915,11 +4100,15 @@
    "confirmed": {
     "antigravity-cli:claude-opus-4-6-thinking": true,
     "antigravity-cli:gemini-3.1-pro-high": true,
-    "antigravity-cli:gemini-3.8-flash-high": true
+    "antigravity-cli:gemini-3.8-flash-high": true,
+    "claude-cli:claude-sonnet-5": true
    },
    "label": "distinct",
    "refuted": [],
    "score": 0.0,
+   "scores": [
+    0.0
+   ],
    "status": "found",
    "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
   },
@@ -3928,6 +4117,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.99,
+   "scores": [
+    0.99
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -3936,6 +4128,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.99,
+   "scores": [
+    0.99
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -3944,6 +4139,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.99,
+   "scores": [
+    0.99
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -3952,6 +4150,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.97,
+   "scores": [
+    0.97
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -3960,6 +4161,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.97,
+   "scores": [
+    0.97
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -3968,6 +4172,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.99,
+   "scores": [
+    0.99
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -3976,6 +4183,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.99,
+   "scores": [
+    0.99
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -3984,6 +4194,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 1.0,
+   "scores": [
+    1.0
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -3992,6 +4205,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.99,
+   "scores": [
+    0.99
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -4000,6 +4216,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.99,
+   "scores": [
+    0.99
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -4008,6 +4227,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.99,
+   "scores": [
+    0.99
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -4016,6 +4238,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.97,
+   "scores": [
+    0.97
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -4024,6 +4249,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.99,
+   "scores": [
+    0.99
+   ],
    "status": "unsure",
    "witness_by": null
   },
@@ -4032,6 +4260,9 @@
    "label": "equivalent",
    "refuted": [],
    "score": 0.97,
+   "scores": [
+    0.97
+   ],
    "status": "unsure",
    "witness_by": null
   }
@@ -4039,5 +4270,10 @@
  "pairs_sha256": "6775ac5845cef2ded86e0ec0e9989a34669e919048af2b0aefafcbee52423b04",
  "prompt_sha256": "6a992ab7c870e158ed84aaacd935525a05824535919cb99015d030a11449f288",
  "schema": "ternforge-assessor-calibration-1",
- "threshold": 0.0
+ "threshold": 0.0,
+ "usable": [
+  "antigravity-cli:claude-opus-4-6-thinking",
+  "antigravity-cli:gemini-3.1-pro-high",
+  "antigravity-cli:gemini-3.8-flash-high"
+ ]
 }

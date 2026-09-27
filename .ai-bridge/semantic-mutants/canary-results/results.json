@@ -24,6 +24,31 @@
   "ran_at": "2026-09-27T13:39:43.329765Z",
   "role": "draft_author"
  },
+ "draft_author|antigravity-cli|gemini-3.1-pro-high": {
+  "backend": "antigravity-cli",
+  "cases": {
+   "D-SECRET": {
+    "call_id": "20260927T215626Z-8c8ad1",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "detail": "the cascade keeps the draft",
+    "draft_sha256": "bb6af133d53e3a8e407c4736133ff4362d7907f15c2d913c4345b0ad1898f1e7",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "fb7721b2ecdb0f79c4085f4da293f12ebe92cb1caf2f33d02e2b0da868c38d6f"
+   }
+  },
+  "model": "gemini-3.1-pro-high",
+  "passed": true,
+  "questions_sha256": "b43f47cf1eab540a2dfb461018b58ffb6909ec3bd22a2cad9f7644bec1ac45a4",
+  "ran_at": "2026-09-27T21:56:55.398818Z",
+  "role": "draft_author"
+ },
  "draft_author|antigravity-cli|gemini-3.8-flash-high": {
   "backend": "antigravity-cli",
   "cases": {
