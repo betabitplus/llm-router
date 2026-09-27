@@ -62,10 +62,10 @@ count, not external provider reasoning.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                     | OPTIONAL | N/A                                                                                                                   |
-| ---------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
-| `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `interface.error-status` · `interface.unexpected-interaction` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `runtime.malformed-response` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition`                                                                              | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                          |
+| REQUIRED                                                                                                                     | OPTIONAL | N/A                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `interface.error-status` · `interface.unexpected-interaction` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.malformed-response` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`                                                                              | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                          |
 
 #### Fault-group rationale
 
@@ -76,9 +76,6 @@ count, not external provider reasoning.
 | Interface / protocol  | Provider error status and absence of an unexpected extra interaction are observable parts of retry behavior.              |
 | Architecture          | The parent contract does not prescribe internal module layering.                                                          |
 | Specification / model | Temporary/permanent and sync/async partitions are normative product behavior; missing one can hide a public recovery gap. |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
 
 (verification-profile-treq-provider-retry-classification)=
 
@@ -123,22 +120,20 @@ involved.
 
 ### Fault applicability
 
-| REQUIRED                                                       | OPTIONAL | N/A                                                                                                                                                                   |
-| -------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.control-flow` · `spec.wrong-outcome` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` |
-| `spec.missing-partition`                                       | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                     |
+| REQUIRED                                                                       | OPTIONAL | N/A                                                                                                                                                                   |
+| ------------------------------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.control-flow` · `impl.effect` · `spec.wrong-outcome` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` |
+| `spec.missing-partition`                                                       | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                     |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Retryability comparisons and classifier branches directly determine the classification result.                                     |
-| Runtime / dependency  | External transport failures are classifier inputs, not external dependencies exercised by this local contract.                     |
-| Interface / protocol  | The Technical requirement consumes normalized status/exception semantics rather than owning an external protocol boundary.         |
-| Architecture          | Classification correctness does not prescribe a specific module topology.                                                          |
-| Specification / model | Retryable/permanent status and transport/unrelated exception partitions are all required; omission or inversion violates the rule. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Retryability comparisons and classifier branches directly determine the classification result. A classifier whose body returns a constant stops discriminating. |
+| Runtime / dependency  | External transport failures are classifier inputs, not external dependencies exercised by this local contract.                                                  |
+| Interface / protocol  | The Technical requirement consumes normalized status/exception semantics rather than owning an external protocol boundary.                                      |
+| Architecture          | Classification correctness does not prescribe a specific module topology.                                                                                       |
+| Specification / model | Retryable/permanent status and transport/unrelated exception partitions are all required; omission or inversion violates the rule.                              |
 
 (verification-profile-treq-provider-retry-bounds)=
 
@@ -181,22 +176,20 @@ provider boundary; the external participant is therefore Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                       | OPTIONAL | N/A                                                                                                                                                 |
-| ---------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `interface.unexpected-interaction` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.payload-schema` · `interface.error-status` |
-| `spec.wrong-outcome` · `spec.wrong-ordering-boundary`                                          | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition`                                                              |
+| REQUIRED                                                                                                       | OPTIONAL | N/A                                                                                                                                                 |
+| -------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.payload-schema` · `interface.error-status` |
+| `spec.wrong-outcome` · `spec.wrong-ordering-boundary`                                                          | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition`                                                              |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                     |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Attempt-count comparison, off-by-one boundary, and retry-loop control flow directly implement the cap.                  |
-| Runtime / dependency  | Which transient mechanism caused retry is outside this Technical requirement; only the number of attempts matters here. |
-| Interface / protocol  | An interaction after the configured attempt ceiling is the observable failure mode.                                     |
-| Architecture          | The bound does not require a specific internal layering topology.                                                       |
-| Specification / model | Initial-call counting and stop-before-extra-call ordering are normative technical semantics.                            |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Attempt-count comparison, off-by-one boundary, and retry-loop control flow directly implement the cap. A dropped attempt update or exhaustion raise removes the cap. |
+| Runtime / dependency  | Which transient mechanism caused retry is outside this Technical requirement; only the number of attempts matters here.                                              |
+| Interface / protocol  | An interaction after the configured attempt ceiling is the observable failure mode.                                                                                  |
+| Architecture          | The bound does not require a specific internal layering topology.                                                                                                    |
+| Specification / model | Initial-call counting and stop-before-extra-call ordering are normative technical semantics.                                                                         |
 
 (verification-profile-req-structured-output-repair)=
 
@@ -248,10 +241,10 @@ Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                     | OPTIONAL | N/A                                                                                                                                                                                |
-| ---------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
-| —                                                                            | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                  |
+| REQUIRED                                                                     | OPTIONAL | N/A                                                                                                                                                                                                |
+| ---------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
+| —                                                                            | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                  |
 
 #### Fault-group rationale
 
@@ -262,8 +255,6 @@ Surrogate at L0.
 | Interface / protocol  | A schema-invalid successful provider response is the public recovery stimulus.                                                 |
 | Architecture          | The parent requirement does not prescribe internal layering.                                                                   |
 | Specification / model | Invalid→repair→validated-result behavior is the normative product claim; missing the invalid partition would hide the feature. |
-
-No blocking mutation threshold is selected.
 
 (verification-profile-treq-structured-output-attempt-bounds)=
 
@@ -306,22 +297,20 @@ against a scripted provider participant; the external participant is Surrogate a
 
 ### Fault applicability
 
-| REQUIRED                                                                                       | OPTIONAL | N/A                                                                                                                    |
-| ---------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `interface.unexpected-interaction` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
-| `spec.wrong-outcome` · `spec.wrong-ordering-boundary`                                          | —        | `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition`    |
+| REQUIRED                                                                                                       | OPTIONAL | N/A                                                                                                                    |
+| -------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
+| `spec.wrong-outcome` · `spec.wrong-ordering-boundary`                                                          | —        | `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition`    |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                     |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| Implementation        | Attempt-count comparison, boundary handling, and repair-loop control flow directly implement the cap.   |
-| Runtime / dependency  | Transport failures are owned by provider retry; this Technical requirement counts structured responses. |
-| Interface / protocol  | Any provider response evaluated after the configured total-attempt budget is an unexpected interaction. |
-| Architecture          | The count bound does not prescribe a particular internal module topology.                               |
-| Specification / model | The initial response is part of the budget, and exhaustion must occur before an extra repair turn.      |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Attempt-count comparison, boundary handling, and repair-loop control flow directly implement the cap. A dropped attempt update or exhaustion raise removes the cap. |
+| Runtime / dependency  | Transport failures are owned by provider retry; this Technical requirement counts structured responses.                                                             |
+| Interface / protocol  | Any provider response evaluated after the configured total-attempt budget is an unexpected interaction.                                                             |
+| Architecture          | The count bound does not prescribe a particular internal module topology.                                                                                           |
+| Specification / model | The initial response is part of the budget, and exhaustion must occur before an extra repair turn.                                                                  |
 
 (verification-profile-treq-repair-prompt-bounds)=
 
@@ -364,19 +353,17 @@ with generated values; no external participant or model substitute is involved.
 
 ### Fault applicability
 
-| REQUIRED                                                     | OPTIONAL | N/A                                                                                                                                                                     |
-| ------------------------------------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.boundary` · `impl.control-flow` · `spec.wrong-outcome` | —        | `impl.comparison` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` |
-| `spec.missing-partition`                                     | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                       |
+| REQUIRED                                                                     | OPTIONAL | N/A                                                                                                                                                                     |
+| ---------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.boundary` · `impl.control-flow` · `impl.effect` · `spec.wrong-outcome` | —        | `impl.comparison` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` |
+| `spec.missing-partition`                                                     | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                       |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                         |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Truncation/capping branches and per-component limits enforce bounded prompt growth.                                         |
-| Runtime / dependency  | Prompt construction is local and has no external runtime dependency.                                                        |
-| Interface / protocol  | The prompt builder consumes already-normalized dynamic values rather than owning an external protocol boundary.             |
-| Architecture          | Bounded prompt construction does not prescribe module topology.                                                             |
-| Specification / model | Schema identity, preview, invalid output, and validation detail are independent dynamic partitions that all require bounds. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Truncation/capping branches and per-component limits enforce bounded prompt growth. A truncation helper whose body returns a default breaks the bound. |
+| Runtime / dependency  | Prompt construction is local and has no external runtime dependency.                                                                                   |
+| Interface / protocol  | The prompt builder consumes already-normalized dynamic values rather than owning an external protocol boundary.                                        |
+| Architecture          | Bounded prompt construction does not prescribe module topology.                                                                                        |
+| Specification / model | Schema identity, preview, invalid output, and validation detail are independent dynamic partitions that all require bounds.                            |

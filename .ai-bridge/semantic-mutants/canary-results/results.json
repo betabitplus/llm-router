@@ -1,0 +1,142 @@
+{
+ "draft_author|antigravity-cli|claude-sonnet-4-6": {
+  "backend": "antigravity-cli",
+  "cases": {
+   "D-SECRET": {
+    "call_id": "20260927T081413Z-b885bf",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "passes_on_original": 3,
+     "primitives": []
+    },
+    "detail": "the cascade keeps the draft",
+    "draft_sha256": "2fc79cc7baefe60cc75a9f5d4f55947c9e52f0d5983ca487d9bfa5733f8b0968",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "2224450d5f369d9876924253475e5b640b06b6346cbe8429c1fe3aff387febe5"
+   }
+  },
+  "model": "claude-sonnet-4-6",
+  "passed": true,
+  "questions_sha256": "e8bb12b51b15f4e25d36f52586048dcea3c114ea3c74495f49069ddc0e782862",
+  "ran_at": "2026-09-27T08:14:30.252541Z",
+  "role": "draft_author"
+ },
+ "draft_author|antigravity-cli|gemini-3.8-flash-high": {
+  "backend": "antigravity-cli",
+  "cases": {
+   "D-SECRET": {
+    "call_id": "20260926T211204Z-81c6d1",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "passes_on_original": 3,
+     "primitives": []
+    },
+    "detail": "the cascade keeps the draft",
+    "draft_sha256": "501dc1762ce31c5927b9d726a286bb516b224ae549bad333148dd7523d11c997",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "9822771eb1c964d00aeea48ab52f0adee87e41eb1b29887156b40ef0ad699657"
+   }
+  },
+  "model": "gemini-3.8-flash-high",
+  "passed": true,
+  "questions_sha256": "e8bb12b51b15f4e25d36f52586048dcea3c114ea3c74495f49069ddc0e782862",
+  "ran_at": "2026-09-26T21:12:22.700149Z",
+  "role": "draft_author"
+ },
+ "draft_author|antigravity-cli|gemini-3.8-flash-medium": {
+  "backend": "antigravity-cli",
+  "cases": {
+   "D-SECRET": {
+    "call_id": "20260927T081350Z-68d9b1",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "passes_on_original": 3,
+     "primitives": []
+    },
+    "detail": "the cascade keeps the draft",
+    "draft_sha256": "8502b1ac94fc72241ccc5a64a385011531fcf0d02580c3f2d0525165dcdf0b20",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "31ed80339cb56cfb656f61cefff9181950d80c14e76ff35d2a5f37f65ec4f777"
+   }
+  },
+  "model": "gemini-3.8-flash-medium",
+  "passed": true,
+  "questions_sha256": "e8bb12b51b15f4e25d36f52586048dcea3c114ea3c74495f49069ddc0e782862",
+  "ran_at": "2026-09-27T08:14:13.407941Z",
+  "role": "draft_author"
+ },
+ "generator|antigravity-cli|gemini-3.1-pro-high": {
+  "backend": "antigravity-cli",
+  "cases": {
+   "G-SUMMARY": {
+    "call_id": "20260926T210911Z-259557",
+    "detail": "2 well-formed, confined proposals",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "b6667bc168e037a7464b673432f29494e4c9841f03fbb618cdb7c58b231c9bde"
+   }
+  },
+  "model": "gemini-3.1-pro-high",
+  "passed": true,
+  "questions_sha256": "f3b1d358f6db9f3916ba936c747ac3e8fa6261f37d70acec6cb0de7721a9e3e5",
+  "ran_at": "2026-09-26T21:09:44.137225Z",
+  "role": "generator"
+ },
+ "generator|antigravity-cli|gemini-3.8-flash-high": {
+  "backend": "antigravity-cli",
+  "cases": {
+   "G-SUMMARY": {
+    "call_id": "20260926T210944Z-cf5e88",
+    "detail": "2 well-formed, confined proposals",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "05c8435bf0fab25886e9110f9e4950a2510466ac60c3d3ef50e4d52113855857"
+   }
+  },
+  "model": "gemini-3.8-flash-high",
+  "passed": true,
+  "questions_sha256": "f3b1d358f6db9f3916ba936c747ac3e8fa6261f37d70acec6cb0de7721a9e3e5",
+  "ran_at": "2026-09-26T21:11:49.926349Z",
+  "role": "generator"
+ },
+ "verdict|claude-cli|claude-opus-5-5": {
+  "backend": "claude-cli",
+  "cases": {
+   "V-EQUIVALENT": {
+    "call_id": "20260926T205735Z-4af008",
+    "detail": "expected equivalent, got equivalent",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "90e2f131a578dd054598e8e4c1b591b04fc301f912feef182a97b9421faba20a"
+   },
+   "V-ESCALATE": {
+    "call_id": "20260926T205740Z-ba7db9",
+    "detail": "expected escalate, got escalate",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "17c3cb7aba0bb1bf14a444cd7fd052629c773c550a4984efc2af229b60033e2b"
+   },
+   "V-PIN": {
+    "call_id": "20260926T205727Z-03fab3",
+    "detail": "expected pin, got pin",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "3c64f212a1a40b712723cf065d299e4008ed2d1ceebe8a139ffb0716fd294646"
+   }
+  },
+  "model": "claude-opus-5-5",
+  "passed": true,
+  "questions_sha256": "558051ec84d77ad406617fedb5d06287551ebcc2f926e410d1a0bcfbdd0570e0",
+  "ran_at": "2026-09-26T20:57:45.706271Z",
+  "role": "verdict"
+ }
+}

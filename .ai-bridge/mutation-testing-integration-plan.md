@@ -1,5 +1,7 @@
 # Mutation testing integration roadmap — llm-router local pilot
 
+> **Superseded in part by ADR_0003 (2026-09-26).** mutmut, its Test Strength score, the Mutation Analysis page, the suppression ledger, operator feedback, the DVC trend history and the per-contract MTE wrappers are retired. The current design is the Test Plan's Mutation policy: one qualified rule engine (pytest-gremlins behind `.ai-bridge/implementation_faults.py` and the extension in `.ai-bridge/pytest_plugins/`) judging fault classes by outcome, arid-code rules, a validity filter and a visible `# mutation:` pragma, the pull-request diff, the standard report in Mutation Testing Elements, and semantic mutants through the qualified cascade `.ai-bridge/semantic_mutants.py`. The sections below are the history of how the pilot got there; where they contradict ADR_0003, ADR_0003 holds.
+
 Status: planned after DEPTH-P18\
 Date: 2026-09-14\
 Scope guard: implement and validate only inside `llm-router` while the pilot moves quickly. Do not roll this work to other consumers yet. Preserve every generic contract, temporary workaround, migration candidate, and cleanup trigger here so later Ternforge platform extraction does not lose prototype knowledge.

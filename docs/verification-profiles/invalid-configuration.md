@@ -72,28 +72,19 @@ contract requires failure before provider execution.
 
 | REQUIRED                                                                         | OPTIONAL                      | N/A                                                             |
 | -------------------------------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow`                        | `runtime.latency-timeout`     | `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`        | `runtime.latency-timeout`     | `runtime.unavailable-disconnect` · `runtime.malformed-response` |
 | `interface.unexpected-interaction` · `architecture.layer-bypass`                 | `architecture.forbidden-edge` | `interface.error-status` · `interface.payload-schema`           |
 | `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —                             | —                                                               |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                          |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | The public pre-provider rejection boundary depends on validation control flow and rejection predicates remaining effective.                  |
-| Runtime / dependency  | Provider latency is a useful negative-control challenge; provider disconnect/malformed response cannot determine a pre-provider rejection.   |
-| Interface / protocol  | Any provider interaction is itself a violation because applicable invalid configuration must fail before the provider boundary.              |
-| Architecture          | A validation-layer bypass can violate pre-provider rejection even when the public API still returns normally.                                |
-| Specification / model | Wrong public outcome, omitted invalid partitions, or incorrect ordering of rejection relative to provider execution violate the Requirement. |
-
-### Blocking mutation checks
-
-| Test level | Required checks                       |
-| ---------- | ------------------------------------- |
-| Component  | Mutation Reach · Mutation Sensitivity |
-| System     | Mutation Reach · Mutation Sensitivity |
-
-Uses the {ref}`project mutation floor <test-plan>`.
+| Group                 | Why                                                                                                                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The public pre-provider rejection boundary depends on validation control flow and rejection predicates remaining effective. A dropped rejection call lets an invalid configuration through. |
+| Runtime / dependency  | Provider latency is a useful negative-control challenge; provider disconnect/malformed response cannot determine a pre-provider rejection.                                                  |
+| Interface / protocol  | Any provider interaction is itself a violation because applicable invalid configuration must fail before the provider boundary.                                                             |
+| Architecture          | A validation-layer bypass can violate pre-provider rejection even when the public API still returns normally.                                                                               |
+| Specification / model | Wrong public outcome, omitted invalid partitions, or incorrect ordering of rejection relative to provider execution violate the Requirement.                                                |
 
 (verification-profile-treq-config-provider-identity)=
 
@@ -133,22 +124,20 @@ provider identity disagree is rejected by the actual local validator.
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                        |
-| ----------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.control-flow`         | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                               |
+| REQUIRED                                                | OPTIONAL | N/A                                                                                                                                                                                                        |
+| ------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.control-flow` · `impl.effect` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`         | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                               |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                       |
-| --------------------- | ----------------------------------------------------------------------------------------- |
-| Implementation        | Equality/identity comparison and its rejection branch implement the technical constraint. |
-| Runtime / dependency  | The constraint is resolved entirely from local configuration.                             |
-| Interface / protocol  | No external protocol interaction is needed to decide provider identity consistency.       |
-| Architecture          | The contract does not prescribe internal module topology.                                 |
-| Specification / model | Wrong acceptance/rejection or omission of the mismatch partition violates the constraint. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Equality/identity comparison and its rejection branch implement the technical constraint. A dropped rejection call accepts the mismatched entry. |
+| Runtime / dependency  | The constraint is resolved entirely from local configuration.                                                                                    |
+| Interface / protocol  | No external protocol interaction is needed to decide provider identity consistency.                                                              |
+| Architecture          | The contract does not prescribe internal module topology.                                                                                        |
+| Specification / model | Wrong acceptance/rejection or omission of the mismatch partition violates the constraint.                                                        |
 
 (verification-profile-treq-config-model-declaration)=
 
@@ -188,22 +177,20 @@ registry is rejected locally before provider execution.
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                        |
-| ----------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.control-flow`         | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                               |
+| REQUIRED                                                | OPTIONAL | N/A                                                                                                                                                                                                        |
+| ------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.control-flow` · `impl.effect` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`         | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                               |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                               |
-| --------------------- | --------------------------------------------------------------------------------- |
-| Implementation        | Registry membership comparison and rejection control flow implement the rule.     |
-| Runtime / dependency  | The decision is local and independent of provider availability.                   |
-| Interface / protocol  | No provider payload or status participates in model declaration.                  |
-| Architecture          | Internal topology is not normative.                                               |
-| Specification / model | Accepting an undeclared model or omitting that partition violates the constraint. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Registry membership comparison and rejection control flow implement the rule. A dropped rejection call accepts the undeclared model. |
+| Runtime / dependency  | The decision is local and independent of provider availability.                                                                      |
+| Interface / protocol  | No provider payload or status participates in model declaration.                                                                     |
+| Architecture          | Internal topology is not normative.                                                                                                  |
+| Specification / model | Accepting an undeclared model or omitting that partition violates the constraint.                                                    |
 
 (verification-profile-treq-config-required-base-url)=
 
@@ -245,20 +232,18 @@ accepted when the effective configuration omits that URL.
 
 | REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                                            |
 | ----------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `impl.control-flow`                             | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `impl.control-flow` · `impl.effect`             | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
 | `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                                   |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                |
-| --------------------- | ---------------------------------------------------------------------------------- |
-| Implementation        | The requires-base-URL branch must not skip its missing-value rejection.            |
-| Runtime / dependency  | Endpoint reachability is outside the local presence constraint.                    |
-| Interface / protocol  | Provider protocol behavior is irrelevant before endpoint configuration is valid.   |
-| Architecture          | No internal layer edge is normative.                                               |
-| Specification / model | Wrong acceptance or omission of the required-base-URL partition violates the rule. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | The requires-base-URL branch must not skip its missing-value rejection. A dropped rejection call accepts the missing base URL. |
+| Runtime / dependency  | Endpoint reachability is outside the local presence constraint.                                                                |
+| Interface / protocol  | Provider protocol behavior is irrelevant before endpoint configuration is valid.                                               |
+| Architecture          | No internal layer edge is normative.                                                                                           |
+| Specification / model | Wrong acceptance or omission of the required-base-URL partition violates the rule.                                             |
 
 (verification-profile-treq-config-attempt-timeout)=
 
@@ -298,22 +283,20 @@ timeout.
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                            |
-| ----------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary`             | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
+| REQUIRED                                            | OPTIONAL | N/A                                                                                                                                                                                                            |
+| --------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.effect` | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`     | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                    |
-| --------------------- | -------------------------------------------------------------------------------------- |
-| Implementation        | The positivity comparison and exact zero boundary implement the constraint.            |
-| Runtime / dependency  | This is a local configured-value invariant, not an observed latency contract.          |
-| Interface / protocol  | No external protocol participates in timeout-value validity.                           |
-| Architecture          | Internal topology is not part of the constraint.                                       |
-| Specification / model | Accepting a non-positive timeout or omitting that invalid partition violates the rule. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                   |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The positivity comparison and exact zero boundary implement the constraint. The rejection is one check call; dropping it accepts the invalid timeout. |
+| Runtime / dependency  | This is a local configured-value invariant, not an observed latency contract.                                                                         |
+| Interface / protocol  | No external protocol participates in timeout-value validity.                                                                                          |
+| Architecture          | Internal topology is not part of the constraint.                                                                                                      |
+| Specification / model | Accepting a non-positive timeout or omitting that invalid partition violates the rule.                                                                |
 
 (verification-profile-treq-config-retry-attempts)=
 
@@ -352,22 +335,20 @@ No blocking mutation threshold is selected.
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                            |
-| ----------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary`             | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
+| REQUIRED                                            | OPTIONAL | N/A                                                                                                                                                                                                            |
+| --------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.effect` | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`     | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                 |
-| --------------------- | ----------------------------------------------------------------------------------- |
-| Implementation        | The lower-bound comparison implements the retry-attempt validity rule.              |
-| Runtime / dependency  | Retry execution behavior is outside this configuration invariant.                   |
-| Interface / protocol  | No provider protocol result is required to validate the configured count.           |
-| Architecture          | Internal topology is not normative.                                                 |
-| Specification / model | Accepting zero attempts or omitting that invalid partition violates the constraint. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                            |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The lower-bound comparison implements the retry-attempt validity rule. The rejection is one check call; dropping it accepts the invalid limit. |
+| Runtime / dependency  | Retry execution behavior is outside this configuration invariant.                                                                              |
+| Interface / protocol  | No provider protocol result is required to validate the configured count.                                                                      |
+| Architecture          | Internal topology is not normative.                                                                                                            |
+| Specification / model | Accepting zero attempts or omitting that invalid partition violates the constraint.                                                            |
 
 (verification-profile-treq-config-retry-wait-bounds)=
 
@@ -409,20 +390,18 @@ non-positive minimum and a maximum below the minimum.
 
 | REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                                                                                                            |
 | -------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary`                                              | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `impl.comparison` · `impl.boundary` · `impl.effect`                              | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
 | `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass`                                                                                                                                                    |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                          |
-| --------------------- | -------------------------------------------------------------------------------------------- |
-| Implementation        | Boundary and relative-order comparisons implement the two independent invalid partitions.    |
-| Runtime / dependency  | Runtime retry timing is outside validity of the configured interval.                         |
-| Interface / protocol  | No provider interaction is required to validate the wait bounds.                             |
-| Architecture          | Internal topology is not normative.                                                          |
-| Specification / model | Missing either invalid partition, wrong outcome, or inverted ordering semantics violates it. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                                          |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Boundary and relative-order comparisons implement the two independent invalid partitions. Each partition is rejected by one check call; dropping one accepts that partition. |
+| Runtime / dependency  | Runtime retry timing is outside validity of the configured interval.                                                                                                         |
+| Interface / protocol  | No provider interaction is required to validate the wait bounds.                                                                                                             |
+| Architecture          | Internal topology is not normative.                                                                                                                                          |
+| Specification / model | Missing either invalid partition, wrong outcome, or inverted ordering semantics violates it.                                                                                 |
 
 (verification-profile-treq-config-route-attempt-limit)=
 
@@ -462,22 +441,20 @@ cannot be below one.
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                            |
-| ----------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary`             | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
+| REQUIRED                                            | OPTIONAL | N/A                                                                                                                                                                                                            |
+| --------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.effect` | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`     | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                 |
-| --------------------- | ----------------------------------------------------------------------------------- |
-| Implementation        | The lower-bound comparison implements the configured route-attempt invariant.       |
-| Runtime / dependency  | Fallback execution behavior is outside this local configuration validity check.     |
-| Interface / protocol  | No provider protocol is needed to validate the attempt count.                       |
-| Architecture          | Internal topology is not normative.                                                 |
-| Specification / model | Accepting zero attempts or omitting that invalid partition violates the constraint. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                   |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The lower-bound comparison implements the configured route-attempt invariant. The rejection is one check call; dropping it accepts the invalid limit. |
+| Runtime / dependency  | Fallback execution behavior is outside this local configuration validity check.                                                                       |
+| Interface / protocol  | No provider protocol is needed to validate the attempt count.                                                                                         |
+| Architecture          | Internal topology is not normative.                                                                                                                   |
+| Specification / model | Accepting zero attempts or omitting that invalid partition violates the constraint.                                                                   |
 
 (verification-profile-treq-config-fallback-shuffle-min-routes)=
 
@@ -517,22 +494,20 @@ is one.
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                            |
-| ----------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary`             | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
+| REQUIRED                                            | OPTIONAL | N/A                                                                                                                                                                                                            |
+| --------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.effect` | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`     | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                               |
-| --------------------- | --------------------------------------------------------------------------------- |
-| Implementation        | The lower-bound comparison implements the shuffle-threshold validity rule.        |
-| Runtime / dependency  | Candidate execution behavior is outside this local configuration invariant.       |
-| Interface / protocol  | No provider interaction is required to validate the threshold.                    |
-| Architecture          | Internal topology is not normative.                                               |
-| Specification / model | Accepting zero routes or omitting that invalid partition violates the constraint. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | The lower-bound comparison implements the shuffle-threshold validity rule. The rejection is one check call; dropping it accepts the invalid threshold. |
+| Runtime / dependency  | Candidate execution behavior is outside this local configuration invariant.                                                                            |
+| Interface / protocol  | No provider interaction is required to validate the threshold.                                                                                         |
+| Architecture          | Internal topology is not normative.                                                                                                                    |
+| Specification / model | Accepting zero routes or omitting that invalid partition violates the constraint.                                                                      |
 
 (verification-profile-treq-config-tool-round-limit)=
 
@@ -572,22 +547,20 @@ least one.
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                            |
-| ----------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary`             | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
+| REQUIRED                                            | OPTIONAL | N/A                                                                                                                                                                                                            |
+| --------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.effect` | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`     | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                               |
-| --------------------- | --------------------------------------------------------------------------------- |
-| Implementation        | The lower-bound comparison implements the default tool-loop budget constraint.    |
-| Runtime / dependency  | Tool execution itself is outside validity of the configured default.              |
-| Interface / protocol  | No tool/provider protocol interaction is required to validate the count.          |
-| Architecture          | Internal topology is not normative.                                               |
-| Specification / model | Accepting zero rounds or omitting that invalid partition violates the constraint. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The lower-bound comparison implements the default tool-loop budget constraint. The rejection is one check call; dropping it accepts the invalid budget. |
+| Runtime / dependency  | Tool execution itself is outside validity of the configured default.                                                                                    |
+| Interface / protocol  | No tool/provider protocol interaction is required to validate the count.                                                                                |
+| Architecture          | Internal topology is not normative.                                                                                                                     |
+| Specification / model | Accepting zero rounds or omitting that invalid partition violates the constraint.                                                                       |
 
 (verification-profile-treq-config-structured-output-attempts)=
 
@@ -627,22 +600,20 @@ is at least one.
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                            |
-| ----------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary`             | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
+| REQUIRED                                            | OPTIONAL | N/A                                                                                                                                                                                                            |
+| --------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.effect` | —        | `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`     | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                                   |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                 |
-| --------------------- | ----------------------------------------------------------------------------------- |
-| Implementation        | The lower-bound comparison implements the configured repair-attempt constraint.     |
-| Runtime / dependency  | Structured-output execution/repair runtime is outside this configuration invariant. |
-| Interface / protocol  | Provider response shape is irrelevant to validity of the configured count.          |
-| Architecture          | Internal topology is not normative.                                                 |
-| Specification / model | Accepting zero attempts or omitting that invalid partition violates the constraint. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The lower-bound comparison implements the configured repair-attempt constraint. The rejection is one check call; dropping it accepts the invalid limit. |
+| Runtime / dependency  | Structured-output execution/repair runtime is outside this configuration invariant.                                                                     |
+| Interface / protocol  | Provider response shape is irrelevant to validity of the configured count.                                                                              |
+| Architecture          | Internal topology is not normative.                                                                                                                     |
+| Specification / model | Accepting zero attempts or omitting that invalid partition violates the constraint.                                                                     |
 
 (verification-profile-treq-config-default-provider-declaration)=
 
@@ -682,22 +653,20 @@ effective provider catalog.
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                        |
-| ----------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.control-flow`         | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                               |
+| REQUIRED                                                | OPTIONAL | N/A                                                                                                                                                                                                        |
+| ------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.control-flow` · `impl.effect` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`         | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                               |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                    |
-| --------------------- | -------------------------------------------------------------------------------------- |
-| Implementation        | Catalog-membership comparison and rejection control flow implement the rule.           |
-| Runtime / dependency  | The declaration check is local and independent of provider availability.               |
-| Interface / protocol  | No external protocol interaction is required.                                          |
-| Architecture          | Internal topology is not normative.                                                    |
-| Specification / model | Accepting an undeclared default provider or omitting that partition violates the rule. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                            |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Catalog-membership comparison and rejection control flow implement the rule. A dropped rejection call accepts the undeclared default provider. |
+| Runtime / dependency  | The declaration check is local and independent of provider availability.                                                                       |
+| Interface / protocol  | No external protocol interaction is required.                                                                                                  |
+| Architecture          | Internal topology is not normative.                                                                                                            |
+| Specification / model | Accepting an undeclared default provider or omitting that partition violates the rule.                                                         |
 
 (verification-profile-treq-config-default-model-mapping)=
 
@@ -737,22 +706,20 @@ obligations: the default model must be declared and it must map to the default p
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                        |
-| ----------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.control-flow`         | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                               |
+| REQUIRED                                                | OPTIONAL | N/A                                                                                                                                                                                                        |
+| ------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.control-flow` · `impl.effect` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`         | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                               |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                       |
-| --------------------- | ----------------------------------------------------------------------------------------- |
-| Implementation        | Registry membership and provider-mapping branches implement the two obligations.          |
-| Runtime / dependency  | Model/provider execution is outside validity of the configured mapping.                   |
-| Interface / protocol  | No external provider protocol is required to validate the mapping.                        |
-| Architecture          | Internal topology is not normative.                                                       |
-| Specification / model | Wrong acceptance or omission of either mapping partition violates the technical contract. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Registry membership and provider-mapping branches implement the two obligations. A dropped rejection call accepts the unmapped default model. |
+| Runtime / dependency  | Model/provider execution is outside validity of the configured mapping.                                                                       |
+| Interface / protocol  | No external provider protocol is required to validate the mapping.                                                                            |
+| Architecture          | Internal topology is not normative.                                                                                                           |
+| Specification / model | Wrong acceptance or omission of either mapping partition violates the technical contract.                                                     |
 
 (verification-profile-treq-config-model-provider-references)=
 
@@ -792,19 +759,17 @@ and every referenced provider exists in the effective provider catalog.
 
 ### Fault applicability
 
-| REQUIRED                                        | OPTIONAL | N/A                                                                                                                                                                                                        |
-| ----------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.control-flow`         | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
-| `spec.wrong-outcome` · `spec.missing-partition` | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                               |
+| REQUIRED                                                | OPTIONAL | N/A                                                                                                                                                                                                        |
+| ------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.control-flow` · `impl.effect` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `spec.wrong-outcome` · `spec.missing-partition`         | —        | `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                                               |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                       |
-| --------------------- | ----------------------------------------------------------------------------------------- |
-| Implementation        | Empty-mapping and dangling-reference branches implement the two required checks.          |
-| Runtime / dependency  | Provider availability is irrelevant to local reference integrity.                         |
-| Interface / protocol  | No provider interaction is needed to validate references.                                 |
-| Architecture          | Internal topology is not normative.                                                       |
-| Specification / model | Wrong acceptance or omission of either invalid reference partition violates the contract. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Empty-mapping and dangling-reference branches implement the two required checks. A dropped rejection call accepts the dangling reference. |
+| Runtime / dependency  | Provider availability is irrelevant to local reference integrity.                                                                         |
+| Interface / protocol  | No provider interaction is needed to validate references.                                                                                 |
+| Architecture          | Internal topology is not normative.                                                                                                       |
+| Specification / model | Wrong acceptance or omission of either invalid reference partition violates the contract.                                                 |

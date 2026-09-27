@@ -2,7 +2,7 @@
 
 Этот файл — **стартовая точка для нового владельца работы**.
 
-Он не заменяет repository state и не заменяет историю 001–043. Его задача — передать то, что новому человеку опаснее всего потерять: **ментальную модель, принятые границы, инварианты, UX-требования и выученные уроки**.
+Он не заменяет repository state и не заменяет историю 001–045. Его задача — передать то, что новому человеку опаснее всего потерять: **ментальную модель, принятые границы, инварианты, UX-требования и выученные уроки**.
 
 > История фиксирует, как решения менялись.
 > Репозиторий показывает, что существует сейчас.
@@ -20,7 +20,7 @@ ______________________________________________________________________
 04. **Runtime fact сильнее marker/AST/inference.** Actual нельзя дорисовывать из Target.
 05. **Evidence path — отдельная единица proof.** Multiple paths нельзя схлопывать в один test.
 06. **Здоровье, меры, Contract Evidence и Living Specs отвечают на разные вопросы.** Здоровье и меры живут на одной карте разными видами слоя, но не смешиваются: здоровье судит, меры измеряют (044). Остальное не сливать в один dashboard.
-07. **Mutation/fault evidence — отдельная сила доказательства.** Contract-specific mutation score допустим только при однозначном implementation ownership.
+07. **Mutation/fault evidence судит классы отказов, процента нет (ADR_0003).** Класс пойман, только когда пойман каждый его валидный мутант; выживший на изменённой строке — сигнал. Выжившим вердикт даёт модель, человек смотрит только эскалации уровня Feature/Goal (ADR_0006, 045).
 08. **Change Impact уже встроен во Freshness.** Видимый lifecycle signal — STALE; отдельный SUSPECT удалён.
 09. **Monitor = сигналы, не журнал.** PASS/FAIL/N/A/UNKNOWN, counts, progressive disclosure; forensic детали глубже.
 10. **Pilot scope дисциплинирован.** Reusable logic идёт правильному owner, но rollout других consumers не начинается без отдельного решения.
@@ -38,6 +38,7 @@ ______________________________________________________________________
 - [**042** — Depth Map на рендерере Health Map и одна карта на две страницы](entries/042-2026-09-24-25-depth-map-one-shared-map.md);
 - [**043** — Verification Map: здоровье и меры на одной карте, виды на карточке слоя](entries/043-2026-09-25-26-verification-map-views-on-card.md);
 - [**044** — Verification Health Map: одна страница вместо трёх](entries/044-2026-09-26-verification-health-map-one-page.md);
+- [**045** — Verification Explorer и мутационное тестирование с моделями](entries/045-2026-09-26-27-verification-explorer-llm-mutation-testing.md);
 - нужный тематический диапазон из раздела «Как читать историю по теме» ниже.
 
 ______________________________________________________________________
@@ -73,6 +74,8 @@ ______________________________________________________________________
 - Health Map стал whole-system projection нескольких assurance dimensions;
 - hierarchy Health Map визуально решена через **real geometry + whitespace + rounding**, а не через толстые borders.
 - Verification Health Map — единственная карта: здоровье каждого слоя, а рядом, видами на его карточке, меры глубины, реализма и силы доказательств. Depth Map и прототип Verification Map растворены в ней (042–044).
+- Verification Explorer — одна страница со всеми элементами за мониторами; мониторы только считают и ведут в него (045).
+- Мутационное тестирование — классы отказов без процента, LLM-мутанты через метрируемый адаптер, суждение о выживших, вердикты Opus 5.5, пины и канарейки; CI мутирует только изменённые строки (ADR_0003–0006, 045).
 
 Последний принятый UX checkpoint Health Map:
 
@@ -258,24 +261,18 @@ Functional PASS не означает, что контракт достаточ�
 
 ### Mutation
 
-Полезные понятия:
+С ADR_0003 процента мутаций нет: Mutation Reach, Sensitivity и Test Strength как пороги удалены вместе с mutmut и Mutation Analysis (045). Класс implementation faults detected, только если пойманы все его валидные неподавленные attributable mutants; общий между контрактами код остаётся N/A, пока ownership нельзя разрешить объективно.
 
-- Mutation Reach — мутированный код достигнут связанным evidence.
-- Mutation Sensitivity — достигнутый mutant убит.
-- Test Strength — killed / (killed + survived) среди covered valid mutants.
+Implementation fault classes (`impl.comparison` / `impl.boundary` / `impl.control-flow` / `impl.effect`) считает одна кампания pytest-gremlins по всем контрактам с `@impl`. Каждый mutant обязан выполняться полноценным pytest: lightweight runner gremlins фабрикует kills на fixture/param/BDD tests (история 039).
 
-Mutation score допустим как contract-specific signal **только при объективно однозначном ownership implementation scope**.
-
-Если class/function реализует несколько sibling contracts — нельзя приписывать один общий mutation score одному из них. Лучше N/A/shared diagnostic, чем ложная точность.
-
-Implementation fault classes (`impl.comparison` / `impl.boundary` / `impl.control-flow`) считает одна кампания pytest-gremlins по всем контрактам с `@impl`; класс detected, только если пойманы все его attributable mutants. Каждый mutant обязан выполняться полноценным pytest: lightweight runner gremlins фабрикует kills на fixture/param/BDD tests (история 039).
+Выжившего судят символьный поиск и асессоры (ADR_0005), вердикт даёт Opus 5.5 (ADR_0006): equivalent/irrelevant подавляют мутанта с причиной, pin превращается в тест-пин в `tests/llm_router/mutation_pins/`. Пин хранится байт в байт как его принял каскад: инструменты стиля его не трогают, гейт привязывает его к ответу модели, он не даёт ни покрытия, ни глубины (045).
 
 Mutants не становятся Allure test cases.
 
 Роли:
 
 - Health Map, вид Mutants caught слоя Fault model — доля пойманных attributable-мутантов текущей кампании implementation faults по контракту (истории 042, 044);
-- Mutation Analysis — journal/work queue;
+- Verification Explorer — строки мутантов под их классом, с причиной, вердиктом и пином (045);
 - MTE/raw report — mutant forensic detail;
 - Allure — реальный pytest execution.
 
@@ -628,7 +625,7 @@ ______________________________________________________________________
 
 ### Mutation / Test Strength / fault model
 
-Читайте **026–031**.
+Читайте **026–031**, затем **045** (классы отказов без процента, LLM-мутанты, вердикты и пины).
 
 ### Requirement Monitor / Verification Profiles / Target vs Actual
 

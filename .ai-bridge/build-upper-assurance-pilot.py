@@ -871,27 +871,35 @@ def support_section(
     title: str,
     state: dict,
     profile_url: str,
+    explorer_url: str,
 ) -> str:
-    cards = []
-    for row in state["children"]:
-        cards.append(
-            ui.technical_support_card(
-                item_id=row["id"],
-                title=row["title"],
-                status=row["status"],
-                href=row["url"],
-            )
-        )
+    # How many of the items it rests on pass; which ones and why they fail is the explorer's to list.
+    children = state["children"]
+    noun = {
+        "Requirement support": "requirements",
+        "Capability support": "capabilities",
+        "Goal support": "goals",
+    }.get(title, "items")
+    parts = (
+        (
+            title,
+            state["status"],
+            sum(row["status"] == "MET" for row in children),
+            sum(row["status"] == "NOT MET" for row in children),
+            len(children),
+        ),
+    )
     return (
         f'<section class="section" id="{esc(section_id)}">'
         + ui.section_head(
             title=title,
             links=(
+                ("Explorer ↗", explorer_url),
                 ("Profile ↗", profile_url),
                 ("Raw ↗", "upper-assurance-facts.json"),
             ),
         )
-        + ui.support_panel("".join(cards))
+        + ui.support_summary(noun=noun, parts=parts)
         + "</section>"
     )
 
@@ -988,6 +996,13 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
     links = []
     if bdd_url:
         links.append(("BDD evidence ↗", bdd_url))
+    links.insert(
+        0,
+        (
+            "Explorer ↗",
+            ui.explorer_href(criterion["owner_id"], kind="check", q=criterion["id"]),
+        ),
+    )
     links.extend(
         (
             ("Assurance profile ↗", profile_url),
@@ -1024,6 +1039,7 @@ def direct_section(
     title: str,
     state: dict,
     profile_url: str,
+    explorer_url: str,
 ) -> tuple[str, dict[str, str], str | None]:
     if state["status"] == "N/A":
         markup = (
@@ -1088,6 +1104,7 @@ def direct_section(
         + ui.section_head(
             title=title,
             links=(
+                ("Explorer ↗", explorer_url),
                 ("Profile ↗", profile_url),
                 ("Raw ↗", "upper-assurance-facts.json"),
             ),
@@ -1129,6 +1146,7 @@ def render_page(
                     label,
                     state,
                     profile_url,
+                    ui.explorer_href(entity_id, kind="support"),
                 )
             )
         else:
@@ -1137,6 +1155,7 @@ def render_page(
                 label,
                 state,
                 profile_url,
+                ui.explorer_href(entity_id, kind="check"),
             )
             sections.append(markup)
             upper_inspectors.update(inspectors)
@@ -1147,8 +1166,9 @@ def render_page(
         ui.history_section(
             section_id=history_id,
             status=entity["status"],
-            link_href="upper-assurance-facts.json",
-            link_label="Raw ↗",
+            link_href=ui.explorer_href(entity_id, change="any"),
+            link_label="Changes ↗",
+            owner_id=entity_id,
         )
     )
 
@@ -1162,6 +1182,7 @@ def render_page(
             domain_strip_class="domain-strip with-support",
             map_href="verification-health-map.html#overall"
             + (f":{entity_id}" if entity_id.startswith(("GOAL_", "FEAT_")) else ""),
+            explorer_href=ui.explorer_href(entity_id),
         )
         + "".join(sections)
         + "</div>"

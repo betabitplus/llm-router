@@ -1,0 +1,392 @@
+{
+ "19ce8cfa2ea55f04": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214817Z-bc302b",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement only calls for rejecting configurations that break a configuration constraint, and that constraint is max_wait >= min_wait. The mutant also rejects the valid case where max_wait equals min_wait. Execution confirmed it: the mutant raises ConfigurationError on a valid config that the original accepts, so a valid setup is wrongly treated as invalid.",
+   "response_sha256": "a7d51c2f4825b3623a70452286a9dde53d27af387a73cf4a7076ac56807c7b40",
+   "test_focus": "A public request whose retry max_wait_seconds equals min_wait_seconds should pass without a ConfigurationError. One with max_wait_seconds below min_wait_seconds should raise ConfigurationError and make no provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.610620Z",
+   "call_id": "20260926T225456Z-eea057",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "f0ab22de5bded9745f7d989a82bd7974c122ca9d66d5ee522543fdb0fb10f9b5",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_19ce8cfa2ea55f04.py",
+   "response_sha256": "18ccc1dbb1427adf5e5b740ff89a7df9acb4a3005b0f919684c04d46eebcd676",
+   "source": "draft author"
+  },
+  "prompt_sha256": "e4b4d1d204ae1fa88e77715acea9356af4bd37b1189cce3b1674999a0b5250ea"
+ },
+ "1e7fe255a9f2e635": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214825Z-2fac8b",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant moves the constraint boundary so that min_routes_for_fallback_shuffle=1 now fails validation. The constraint and its own message say values of at least 1 are valid, so the mutant rejects a valid configuration with ConfigurationError. The confirmed input shows this, so the requirement's definition of which configurations violate a constraint is broken.",
+   "response_sha256": "37a82bc56d01196046bbc7b451bd1db7ef0739109a221ba47c4abd6a947aa33e",
+   "test_focus": "Send a public request with min_routes_for_fallback_shuffle=1 and check that it succeeds with no ConfigurationError. Send one with 0 and check that it raises ConfigurationError and makes no provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.611812Z",
+   "call_id": "20260926T225517Z-b90b97",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "e2c1ff2954bc66d7c051bd3975301050bcab994afbac7b5c4d7a84d3615557b7",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_1e7fe255a9f2e635.py",
+   "response_sha256": "b8c802b772d59722a5609f71bb191d04c396a194b3143aa78e3bd2c0f2876ee5",
+   "source": "draft author"
+  },
+  "prompt_sha256": "730af778986f2f93fefcb555c61aff708476070aabf015a8edb16bad9b98641c"
+ },
+ "3b57c08f839ab791": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214834Z-ae0246",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The documented constraint is that the policy attempt timeout must be greater than 0. The mutant moves that limit to greater than 1, so a valid configuration with a timeout of 1.0 (or 0.5) now fails with ConfigurationError. Only configurations that actually break a constraint should be rejected, so this breaks the requirement's rejection boundary.",
+   "response_sha256": "f3effdf290d66cd6ae5a7f52457b5bbab6c4c89645843e099e559003c643e727",
+   "test_focus": "Check that a public request with a policy attempt timeout of 1.0 (or 0.5) passes validation and reaches the provider, and that a timeout of 0 raises ConfigurationError without making any provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.612925Z",
+   "call_id": "20260926T225543Z-d86110",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "f7a4402ec9ac26e788987ec452cf601e6c1d84aca9d4d78d54378feb660e4af8",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_3b57c08f839ab791.py",
+   "response_sha256": "b022b308189bba674fe7f0d610b8f8c1db25bc5e13b2fa177a694cb35599c520",
+   "source": "draft author"
+  },
+  "prompt_sha256": "a55e2db02f60d4f822d3a17656fe0f3862226c1094794b94787329e388a7e932"
+ },
+ "43c47ed5eb7d2a63": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214842Z-af20bd",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant moves the structured-output-attempts constraint from >=1 to >=2, so a valid configuration with a single attempt now fails with ConfigurationError. The requirement ties rejection to actual constraint violations, and its own error message still says \"at least 1\", so this is a real regression, not an equivalent variant.",
+   "response_sha256": "f340640a723449b90cf9bf4a428d9fcd6c71819e933f693c1767dd9f03627d61",
+   "test_focus": "Boundary test: structured_output_max_attempts=1 must be accepted without ConfigurationError, and 0 must be rejected with ConfigurationError before any provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.614424Z",
+   "call_id": "20260926T225607Z-ea59e8",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "5752101866b166ca2bcc44a308fd7ed2f76eeb81d37fcbb8db8ce1ec16a65d90",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_43c47ed5eb7d2a63.py",
+   "response_sha256": "f8933f2f92291b43c24508edecfaccd09272ff22bc557786f2d0a95d965e57c1",
+   "source": "draft author"
+  },
+  "prompt_sha256": "3fd5fb56a1f6b8c3d477a9350efbba83bc4eb84410463fed8447b1cf110400bd"
+ },
+ "4a11c78df0078b1f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214849Z-1deaff",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The constraint is that policy max attempts must be at least 1, so a value of 1 is valid. The mutant rejects it with a ConfigurationError, which blocks a legitimate no-retry setup and moves the boundary the requirement enforces. Execution confirms the two versions behave differently on the same input.",
+   "response_sha256": "833e42ced94f69ce2f43607c380e32afa1b749ff13b158e408289d15bbd96d2d",
+   "test_focus": "At the boundary, a public request with policy max_attempts=1 must succeed without a ConfigurationError, and one with max_attempts=0 must raise ConfigurationError without sending any provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.615700Z",
+   "call_id": "20260926T225624Z-6832b6",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "fa2f9c8eaebebfcdd8d350742a860ac937beac201d3622f16142e20c82cb6fc9",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_4a11c78df0078b1f.py",
+   "response_sha256": "52c1408d61ebcc9196a8cfda74d27284d3fa527d01815b4f1b8b5345ab1ccfcc",
+   "source": "draft author"
+  },
+  "prompt_sha256": "06131d67be720264d6097a792589103e51458cb4bc189ab6b4d1c9fa5cb2487a"
+ },
+ "551e89dc7d0431df": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214856Z-c82e9e",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The documented constraint is \"minimum routes for fallback shuffle must be at least 1\". The mutant raises ConfigurationError for the valid boundary value 1, and execution confirms this. The requirement's boundary is whatever violates an applicable constraint, so rejecting a valid configuration misstates that boundary and makes the effective configuration unpredictable.",
+   "response_sha256": "0afa585feae94710cad09afc1da6ed9ab5c19b3e7ca265e25229bcddf0cd51e8",
+   "test_focus": "Through the public boundary, check that min_routes_for_fallback_shuffle=1 is accepted without a ConfigurationError, while 0 raises ConfigurationError and no provider request is made.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.616920Z",
+   "call_id": "20260926T225651Z-bb1159",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "2eff3d2823fcc031ce030e805fd83ac693c2d7cf74bbd6c4bc870dcf5aecfd8b",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_551e89dc7d0431df.py",
+   "response_sha256": "36490799be8d17ec5552105f46aa499ecfaf0c2429a38d0246cc33fbbb8cbd2f",
+   "source": "draft author"
+  },
+  "prompt_sha256": "290d034c6d64526c057129d4d230341b61d038b375ce7ee03b1390a6441cef7b"
+ },
+ "a02b9c41521c0e84": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214905Z-19db74",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The constraint is that retry max attempts must be at least 1, and the error message says so. The requirement only rejects configurations that break a constraint. The mutant also rejects the valid boundary value max_attempts=1 with ConfigurationError (confirmed by running it), so a correctly configured no-retry request would fail.",
+   "response_sha256": "ce69a3ad0d355f5406c8c1a8d536bea55296b8be43e132c70cce026daa025052",
+   "test_focus": "At the boundary, a public request whose retry policy has max_attempts=1 must pass validation and reach the provider, and max_attempts=0 must raise ConfigurationError with no provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.618089Z",
+   "call_id": "20260926T225716Z-36abf2",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "07a672eed80eb704a21165245be65855a2586f4b948f7633ed7dddf0cd6eab38",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_a02b9c41521c0e84.py",
+   "response_sha256": "c296a6ede86c81a99813219a4269f240897396609713dc5987285c2c5b9db310",
+   "source": "draft author"
+  },
+  "prompt_sha256": "124f6d95ead2aab6262439f0407ec64078b4fb1d3c59cfce1cefc7e192e61f3f"
+ },
+ "a6c77976ba2d4065": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214912Z-7d6a91",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The documented constraint is that retry max attempts must be at least 1. The mutant moves that boundary to 2, so a valid configuration with max_attempts=1 now raises ConfigurationError, which a run confirmed. The requirement says to reject only configurations that break an applicable constraint, so wrongly rejecting a valid one is a failure the requirement covers.",
+   "response_sha256": "9cc68c5e4f7042e19d64bbaf72d7649243f178e1c33ce67d500be67d3e0d5a44",
+   "test_focus": "Test through the public boundary at the boundary value: a config with retry max_attempts=1 must pass validation and reach the provider, and max_attempts=0 must raise ConfigurationError without making any provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.619396Z",
+   "call_id": "20260926T225739Z-14d926",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "13d388e0853e28537b63c6a04f7ef4f85aeaa6d1d34dfa94c3c702ccab2eed76",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_a6c77976ba2d4065.py",
+   "response_sha256": "594a23db344d8cfe725a00c923008ed3780df28b71ef8ebae7a6c1f91d09056f",
+   "source": "draft author"
+  },
+  "prompt_sha256": "5ec62f618013fc10ac4d30debb49b800e86505bdb2ea8421a423fa9735aef980"
+ },
+ "c18833e1526efa72": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214920Z-76961e",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The constraint says default max tool rounds must be at least 1. The mutant changes the check from >= 1 to > 1, so a valid configuration with default_max_tool_rounds=1 now fails with ConfigurationError, as the confirmed input shows. That means the validation no longer matches the constraint it is supposed to enforce, which breaks the requirement's promise that only configurations violating a constraint are rejected.",
+   "response_sha256": "2f1f5d777ea5e552bfd25bb5a86f6374d6f0886ca5de8648d8d2023a8fe06519",
+   "test_focus": "Send a public request with default_max_tool_rounds=1 and check that it is accepted and reaches the provider, then send one with 0 and check that it raises ConfigurationError without any provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.620742Z",
+   "call_id": "20260926T225803Z-07b00e",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "a9f5e88c801a1c43317673eae646558cbdbea13022903d81f9d5337e221a0d68",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_c18833e1526efa72.py",
+   "response_sha256": "bcf8d3d976c2136716e5223583841a92919b8343f789d3379324b8455ece72ef",
+   "source": "draft author"
+  },
+  "prompt_sha256": "307ae23baf13ea00c7e5a94d7c26e678639d8cd57a8d32ec46c377238cd1848d"
+ },
+ "c37a776247b2f0eb": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214928Z-b1d47c",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant moves the boundary of the default max tool rounds constraint from \u22651 to \u22652. As a result, a valid config with default_max_tool_rounds=1 now raises ConfigurationError, which execution confirmed. Its own message still says \"at least 1\", so the constraint the requirement enforces is no longer applied correctly at the public boundary.",
+   "response_sha256": "dde20648836a25748e2b33de463e03790a95dd017132d350ba8c7f5f1067bd26",
+   "test_focus": "At the boundary, check that a config with default_max_tool_rounds=1 passes validation and that one with 0 raises ConfigurationError before any provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.621972Z",
+   "call_id": "20260926T225832Z-a76ed7",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "92e66cf0d65958b60606796cc3066c50e3dc4e3cd45c95734c90ab3508997b02",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_c37a776247b2f0eb.py",
+   "response_sha256": "858f218637305de081fec663756dfadab9c1cc1934b595dd8c9c15175ff581c4",
+   "source": "draft author"
+  },
+  "prompt_sha256": "e9414fcd0bbe600801f7051191b7af815cedac53eb1e67f88e25d865f05f39d9"
+ },
+ "df61b883b2255611": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214935Z-9ea560",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The constraint is \"structured output max attempts must be at least 1\". The mutant rejects the valid boundary value 1 with a ConfigurationError, so it fails a configuration that breaks no constraint. That shifts the boundary the requirement's rejection is defined by, and a valid public request would now fail.",
+   "response_sha256": "4b74e05a465dbcb72367f3bfff48e7c4f874e6bd11fcea0cfbf4b3e2b78f0522",
+   "test_focus": "Check that a configuration with structured_output_max_attempts=1 passes validation and reaches the provider, and that a value of 0 raises ConfigurationError without making any provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.623071Z",
+   "call_id": "20260926T225851Z-5aa1f2",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "6dcfc6f5198f27433f049913623a7988de99bc3d5c9844a502febca5dd489b12",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_df61b883b2255611.py",
+   "response_sha256": "4243165ac044445e8f58187289755dc10a956da5756bcd88a59b148a41785388",
+   "source": "draft author"
+  },
+  "prompt_sha256": "0f2aca498dccdce250aa47dce1b5136037eea77bcc2d5d13a7fa8f195d2e127f"
+ },
+ "e303da2411404c79": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214944Z-3aabcf",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The constraint is that the retry minimum wait must be greater than 0, as its own error message says. The mutant changes the check to greater than 1, so a valid configuration with min_wait_seconds=0.5 now raises ConfigurationError. Execution confirmed this. The requirement is to reject only configurations that break a constraint, so rejecting a valid one is wrong.",
+   "response_sha256": "6171d75491be3160578b0000ce65ac3f1ee03cc786cf89375657b1545ad166eb",
+   "test_focus": "Check that a public request with retry min_wait_seconds=0.5 passes validation and runs, while min_wait_seconds=0 raises ConfigurationError without making any provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.623773Z",
+   "call_id": "20260926T225915Z-6e1872",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "2036f6b40c7cd9883f4a4b98ddce728af51a9ca489b1ea2957ef5b05655ad6e4",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_e303da2411404c79.py",
+   "response_sha256": "262de5525b79bbb80082f08e2db9b3ac3aceee1050c4bb23a0ff2ce01ab607fc",
+   "source": "draft author"
+  },
+  "prompt_sha256": "4829365142d122e5ad273f1c7fb40f011dae9f40522f8def12864a09738b6eef"
+ },
+ "ea9109b0b3884c40": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214951Z-366274",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The constraint is policy max_attempts >= 1, but the mutant turns it into > 1. That makes a ConfigurationError fire for the valid boundary value 1, and execution has confirmed this. The requirement only permits rejecting configurations that actually break a constraint, so moving the boundary breaks what the requirement asks for.",
+   "response_sha256": "9083838e5b1683e7e66a21b8a7dc62b83d841337b1df1eed03f908b517a4b0e7",
+   "test_focus": "Send a public request whose effective config sets policy max_attempts=1 and check that it passes validation and reaches the provider. Send one with max_attempts=0 and check that it raises ConfigurationError without making any provider request.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.624364Z",
+   "call_id": "20260926T225932Z-1cad24",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "48a00a22668bd71494ca495725adf3e3d46e50b214d346a9898b02b678bb0c0c",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_ea9109b0b3884c40.py",
+   "response_sha256": "1cf4d4f312b204432d11d68137dc9377198aa055077ca8fb62c16419987ea15f",
+   "source": "draft author"
+  },
+  "prompt_sha256": "fea6376f29993549047c06e8c45f64476a7ee456cd706cf02ad0464d5b2e32f9"
+ }
+}

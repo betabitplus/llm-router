@@ -1,0 +1,68 @@
+{
+ "39cd06b3a9c8bc51": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "call_overrides": "{}",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog())",
+     "route_defaults": "RouteGenerationDefaults(key_id=0)",
+     "route_policy_defaults": "{\"max_attempts\": 5}",
+     "router_defaults": "RouterDefaults()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T185109Z-f2164b",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version replaces the application of route_policy_defaults with pass, causing route-level policy defaults like max_attempts to be ignored.",
+    "response_sha256": "7e676de0d1a463c43cf58c2cc5e97b160456e93511853fa0d8570acacd14154d",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "178c081c42e4bebe2b67a9ff5a8ace825814227598c913d7f8aff6716c3a9663"
+ },
+ "bf8a96501e88d45d": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "call_overrides": "{\"custom_kwarg\": \"value\"}",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={}, provider_base_urls={}, models={}))",
+     "route_defaults": "RouteGenerationDefaults(key_id=0, kwargs={})",
+     "route_policy_defaults": "{}",
+     "router_defaults": "RouterDefaults(values={}, kwargs={})"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T185249Z-a7ea65",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version replaces kwargs.update(call_provider_kwargs) with pass, omitting custom provider kwargs in call_overrides from EffectiveSettings.kwargs.",
+    "response_sha256": "735498993a83c61c3da9b5a891b5496516c38dee067a1976fbe6f2bd8878ce48",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "4b4264835a8a6f01dd03820b5d7b8d78a879fb75bf2e9a92fce08a4f691d184c"
+ },
+ "e238ff65d72c6c1f": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "call_overrides": "{}",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog())",
+     "route_defaults": "RouteGenerationDefaults(key_id=0)",
+     "route_policy_defaults": "{}",
+     "router_defaults": "RouterDefaults(values={}, kwargs={'custom_kwarg': 'test_val'})"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T185209Z-a82f10",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version replaces kwargs.update(router_defaults.kwargs) with pass, failing to propagate router_defaults kwargs into the returned EffectiveSettings.",
+    "response_sha256": "4bc6825dd6cb173ff79b349890c900bf209b87363c2deac631557d9556230947",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "ed1bfaba494a07fd8118c1bc826306abc660b790ed4ca245d490ee4fd5169b5f"
+ }
+}

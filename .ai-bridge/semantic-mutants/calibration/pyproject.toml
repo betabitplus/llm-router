@@ -1,0 +1,6 @@
+[project]
+name = "semantic-mutant-calibration"
+version = "0"
+
+[tool.pytest.ini_options]
+addopts = ""

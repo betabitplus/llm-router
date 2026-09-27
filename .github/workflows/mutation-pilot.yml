@@ -1,0 +1,112 @@
+name: Mutation pilot
+
+# Mutation testing the way Google runs it at code review (ADR_0003, the Test Plan's Mutation
+# signal): only the lines a change touches are mutated, and only where they belong to a
+# contract's code and its tests cover them; each mutant runs that contract's own tests; a
+# surviving mutant is a review finding on its line and never fails the build. There is no full
+# run here and no model call: the retained campaign, the survivor judgement, the verdicts and
+# the model canaries are local runs on request.
+#
+# TODO(ternforge-infra-ci): move this job into a reusable workflow beside python-library.yml.
+
+on:
+  push:
+    branches: [experimental-assurance-portal]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "features/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/mutation-pilot.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "features/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/mutation-pilot.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mutation-pilot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changed-lines:
+    name: mutants on changed lines
+    runs-on: ${{ vars.TERNFORGE_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 30
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHON_VERSION: "3.13"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The changed lines are found against the change's base.
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version-file: pyproject.toml
+
+      - name: Create read-only GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.TERNFORGE_SOURCE_READ_CLIENT_ID }}
+          private-key: ${{ secrets.TERNFORGE_SOURCE_READ_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-contents: read
+
+      - name: Configure Git authentication
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh auth setup-git
+
+      - name: Synchronize the locked environment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: uv sync --locked --all-groups --python "$PYTHON_VERSION"
+
+      - name: Run the hermetic tests
+        # Their results and coverage decide which contract owns a line and which tests cover it.
+        run: |
+          mkdir -p test-results/allure-results
+          COVERAGE_FILE=test-results/.coverage uv run --no-sync pytest -c pyproject.toml -n 2 \
+            --record-mode=none --block-network --allowed-hosts='localhost,127\.0\.0\.1' \
+            --cov-context=test --junitxml=test-results/pytest-junit.xml \
+            --alluredir=test-results/allure-results --clean-alluredir
+
+      - name: Build the requirement graph
+        run: uv run --no-sync ternforge-docops build html
+
+      - name: Mutate the changed lines
+        env:
+          # A pull request against its base; a push against main, like the pull request it becomes: the
+          # change is the branch's, not only its latest push.
+          BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || 'origin/main' }}
+        run: uv run --no-sync python .ai-bridge/build-mutation-report-prototype.py --refresh-implementation-faults --diff "$BASE"
+
+      - name: Report surviving mutants as review findings
+        if: always()
+        run: |
+          if [ -f test-results/implementation-faults/diff/annotations.txt ]; then cat test-results/implementation-faults/diff/annotations.txt; fi
+          if [ -f test-results/implementation-faults/diff/summary.md ]; then cat test-results/implementation-faults/diff/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - name: Upload the mutation report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: mutation-findings
+          path: test-results/implementation-faults/diff/
+          if-no-files-found: warn
+          retention-days: 14

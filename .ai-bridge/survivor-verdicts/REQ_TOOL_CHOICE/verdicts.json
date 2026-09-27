@@ -1,0 +1,92 @@
+{
+ "1482e5f7eb7771b5": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215416Z-a2ceee",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement says both public named-choice forms must normalize to the same selected registered tool. With the mutant, the mapping form accepts a tool name that isn't in the registry, while the string form rejects it. The two forms no longer agree, and a named choice can point at a tool that can't be executed.",
+   "response_sha256": "7e2e01403d8b3ddbb684b5831879311eb250b6f10791530ebb52d0023f48ae83",
+   "test_focus": "Call normalize_tool_choice with a mapping that names a tool missing from the registry. Check that it raises the same error as the string form, and that a mapping naming a registered tool gives the same selected name as the string form.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-27T00:39:19.754431Z",
+   "call_id": "20260927T003134Z-5619b3",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "4ce75c1c8b94d4c4533147a8bb8ca3586fc835444c7c3c17e6a065429c22798e",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_tool_choice_1482e5f7eb7771b5.py",
+   "response_sha256": "99ea364922e181187dfd4c8740f2c58afc6d5000c2391495fa4b52d8f1b25de3",
+   "source": "draft author"
+  },
+  "prompt_sha256": "e7c5ca914a8d058460065ab0189085ff24b8487368fd8d34fa46ba4853a3a62f"
+ },
+ "1651891a2bad0ae9": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215426Z-e9a1b2",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the registry check for the string form only. A bare string naming an unregistered tool is now accepted as a named choice, while the mapping form still raises KeyError. That breaks the criterion that both public named-choice forms resolve to the same registered tool, and it lets an unknown name go on to the provider route instead of being rejected.",
+   "response_sha256": "56af618531f9d474e6160e1760909659bcb24e6cf075d148c47dc35c74d1c2f6",
+   "test_focus": "normalize_tool_choice with a string naming a tool missing from the registry must raise KeyError, the same way the equivalent mapping form does.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.630631Z",
+   "call_id": "20260926T230650Z-86e4e2",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "63f135f9fc0c1567b70f342621bcc92f6486e8017f9390f3d12b0e2454416acf",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_tool_choice_1651891a2bad0ae9.py",
+   "response_sha256": "ee5f038071ab7116b750ea39b5231b4ee224dbda477db6a904552c193d275926",
+   "source": "draft author"
+  },
+  "prompt_sha256": "34606086c8e2d20bafc3d3c964b23eeee8164fd261fe5b415d3062df7f8936e5"
+ },
+ "617eaa60ca22a0da": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215435Z-0626ee",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With the mutant, choice=None raises TypeError and \"auto\" falls into the named-tool string branch. Every call that leaves tool_choice unset would fail, and the reserved keyword would be treated as an explicit tool name. Named-choice normalization only works if keywords are kept apart from tool names and there is a working default, so this breaks the public tool-choice contract the requirement relies on.",
+   "response_sha256": "476cbd30bf8415dd11df11ec3aec4f2c73ca59bd206d08e0c74c0c0d0d646f60",
+   "test_focus": "Check that normalize_tool_choice(None) and normalize_tool_choice(\"auto\") both return ToolChoice(kind=\"auto\") without raising, and that a registered tool name still returns kind=\"named\".",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.631423Z",
+   "call_id": "20260926T230703Z-e8702a",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "82d538b208fa5fa46d4b21838a150fae84ee86f996acaa394def325438e27cfe",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_tool_choice_617eaa60ca22a0da.py",
+   "response_sha256": "a14735ba6937483d3bfe6be2ec07910deaf95ad42ccac0dd2262dc47d24f616d",
+   "source": "draft author"
+  },
+  "prompt_sha256": "6709f9e6b57ea2779eb52c05077fd9fafacf99661875451297c665edf930b1cf"
+ }
+}

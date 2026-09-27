@@ -35,6 +35,7 @@ each product branch. Use dense traceability only when you need forensic detail.
 Use the Verification Health Map to see where verification fails, layer by layer.
 Beside each layer's health it shows how deep, how realistic and how strong the
 evidence is, and every mark leads to the contract's evidence when you need details.
+The Verification Explorer lists every item behind those counts, one row each.
 :::
 
 ::::
@@ -153,6 +154,7 @@ and debugging, but they are **not required stops** in the normal semantic flow.
 requirements/index
 traceability-reader
 verification-health-map
+verification-explorer
 experiments/index
 decisions/index
 specifications

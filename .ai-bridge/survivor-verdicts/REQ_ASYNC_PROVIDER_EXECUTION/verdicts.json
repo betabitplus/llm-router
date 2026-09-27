@@ -1,0 +1,306 @@
+{
+ "04335da4c62c8508": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214457Z-817b14",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the request-started log call. Routing, fallback, traces and the returned response or raised error are unchanged, so the async text, structured and media contracts in REQ_ASYNC_PROVIDER_EXECUTION stay intact. Only a logging requirement could observe this difference, and none applies here.",
+   "response_sha256": "e1a58b9c90916b5d7e724d78b473efd1507f9ee3e5dcae17da767d5bef794120",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "70f20d6f3f3d86aed8569973d80ed810657cf2cdcfaadfe40002460d75c2ed27"
+ },
+ "1f46adce42be5e76": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214510Z-6e23d0",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant stops recording a trace when an async provider call fails. On fallback, the async response then has no entry for the failed attempt, and the fallback flag can be wrong. The sync path still records both, so the async public response contract no longer matches it, which the requirement forbids.",
+   "response_sha256": "7f85154a5f6db7c2ead55bfa29ea7291dbc5b3d3558feaae35d5cc8d15d62468",
+   "test_focus": "Send an async request where the first route's provider call raises and a second route succeeds. Check that the response's attempt traces include the failed attempt with its error, before the successful final trace, as the sync path does.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-27T08:27:44.925259Z",
+   "call_id": "20260927T082502Z-a14f3e",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "6b84e2f60d83b246a00f677b72516238b6ede226ef121647eed8a233c026725d",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_1f46adce42be5e76.py",
+   "response_sha256": "a459bd4074663f5a400dc421380b5257fa8d4a86b1e2513c09b5646539997457",
+   "source": "draft author"
+  },
+  "prompt_sha256": "dc364533ea1803cfa3c4e476358fb27ebd648e4470019402b8abba386e5af395"
+ },
+ "27d11bf90174a30a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T081735Z-527a65",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the `_log_route_blocked` diagnostic log call when a route is rate-limited. The routing, the blocked-request queue, the traces and the normalized response are all unchanged. The requirement covers the async text, structured and media response contract, not log output.",
+   "response_sha256": "e4aeafa21b5d67a6faa93dc152cb1707b85530e03544a78efefe752a11244edb",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "fcbcbd03152619481f28fb8f56ab196dacd0c0c63f86a78f6e0e8d4d5e7019dd"
+ },
+ "2e53b12c273fddd6": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214521Z-93f309",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops `_remember_fallback_success` from the async path. After a fallback succeeds, later async requests no longer start with the route that worked, so their routing order and traces differ from the sync path. That breaks the requirement that async execution keep the same public contract.",
+   "response_sha256": "c90190d91f65367e2d9a34dbac481c212a00a1bb2e6839e8104c9f691a7c0c8a",
+   "test_focus": "Make the primary route fail and a fallback succeed in one async call. Then check that the next async call tries the remembered fallback route first, as its routing traces show, just as the sync path does.",
+   "verdict": "pin"
+  },
+  "prompt_sha256": "499f53906ff632f086e23cffc9d018f566414a4cac7a09aaf0bf5c136a1762f5"
+ },
+ "3dc1348c54023b59": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214534Z-e1f577",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops `_record_failure` from the async attempt path, so a provider or key failure is never recorded in the health, cooldown and circuit state. Async requests would then route differently from sync ones: later calls keep hitting a failed key or route, and the routing traces change. That breaks the rule that async execution keeps the same public contract, including the failure-handling semantics that the routing requirements ask for.",
+   "response_sha256": "0eaf3e0bab009db23839fe12cc58a674a81fbcf46a8ae3c6b1eaecfecc4b945d",
+   "test_focus": "Make one async attempt fail on a route or key, then check that the failure was recorded: the key or route shows up as cooled down or unhealthy, and the next async request blocks or skips it the same way the sync path does.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-27T08:25:02.674116Z",
+   "call_id": "20260927T082151Z-1e7e85",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "386d70a2436eff59ecf2b19d2df9dbf2a1965e35bacade2ada270f4e2dbc909f",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_3dc1348c54023b59.py",
+   "response_sha256": "b1c3442f01becf49b9ca12f402aea40b74ad4efac8ce7b83805b6228bd259944",
+   "source": "draft author"
+  },
+  "prompt_sha256": "e536f233e8671447d8aa4efa6fd3b71528dda200fecf7b3e4d0da37af806f76c"
+ },
+ "4185d08c0ebf67fe": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214549Z-b7df81",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Changing the check to `wait_seconds > 1` means a route with a wait between 0 and 1 second is no longer treated as blocked. The async path then calls the provider right away, ignoring the pacing wait, and skips a ready fallback route. The resulting attempt traces also differ from the original's (and likely from the sync path's). That changes the async execution behaviour and response contract this requirement says must stay the same.",
+   "response_sha256": "3397b66e47bc136f2e489a769bd5105b0bff3aa7c3772ca7cbcb3591ac111841",
+   "test_focus": "Give a route a pacing wait under one second (e.g. 0.5s). The test must check that the async run defers that route: it tries a ready alternative route first, or waits before calling the provider, and reports it as blocked in the attempt traces.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-27T00:39:19.750174Z",
+   "call_id": "20260927T002305Z-1c0849",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "bdac364824a71822ad7d97e6c73bd7c39bd1b45d366560a7ba5123f609753f60",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_4185d08c0ebf67fe.py",
+   "response_sha256": "82d02514b122b2e2e902918f38ace740366203205dbc339fe13757f916860bb5",
+   "source": "draft author"
+  },
+  "prompt_sha256": "2b4b47a9c85549768fa09c28126fce51b624921b88c260923dbfd87baf8df3a0"
+ },
+ "43dd25caa8a885c2": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214603Z-7541a5",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the `_log_attempt_succeeded` log call after a successful async attempt. The response, the traces, the success/fallback bookkeeping and the returned public contract all stay the same. Only the log output changes, and this async-execution requirement doesn't ask for it.",
+   "response_sha256": "e0ae8d20fe63cdfb7ce8e5ee7efc8ba7059ac2fd911e9c4bdc8cb9a3df22aee6",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "078e520d99732353ad093777a42a991b8df45fcc6e0d82ef51d5ee1b56881c1f"
+ },
+ "55f001261b9df2d4": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214609Z-755609",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only removes the `_log_route_selected` logging call. Routing, fallback traces and the normalized async response (text, structured, image, file and video) stay the same, so nothing this requirement asks for changes. If a separate observability requirement covers route-selection logs, the test for this belongs there.",
+   "response_sha256": "a53815b1d0ddcc564e4d916b26071c8574ccd3199a6eeecb3cdb6cba7afb9d1e",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "eb3429cf1e80a6f7413ed7521ff2a65518193df299d7290d5324a67c64cbb6ea"
+ },
+ "588a5d6523edb2f8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214616Z-f53d25",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only removes the log call for an attempt whose provider call failed. Failure recording, the error trace, fallback to the next route and the final result or raised error are unchanged. So the response returned asynchronously across provider families doesn't change, and this requirement doesn't ask for log output.",
+   "response_sha256": "bca205a2586491ea754bed07c4e5e5c15a1a5ee39d13eb44afef9db5b3e4049c",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "ffedbe618a1b506925fe45f4d06b744593e09c253d665afa90882539cdf05d5f"
+ },
+ "630cbef3a8ff25af": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214625Z-3bb334",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the `_log_request_failed` log call on the path where every route fails. It still raises the same `last_error`, and success paths are unchanged, so the async text, structured and media response contract stays the same. Only observability logging differs, and REQ_ASYNC_PROVIDER_EXECUTION does not ask for it.",
+   "response_sha256": "1b66e06a566c9f322465999195fb34e43ab30178dfab9a80dd0af975f02163e8",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "e42aaab99615f1349fd9e80d4bbdd2d3a1635634a12c33cc31424beee9159ee0"
+ },
+ "72a7031bbe702ccb": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214632Z-12de63",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Changing `wait_seconds > 0` to `> -1` means a route with no wait (wait 0) is treated as blocked. Every async request then skips the direct call and goes through `_run_blocked_async`. That likely changes what callers get back: the routing trace gains blocked entries and fallback is recorded as having happened. This breaks the promise that async execution keeps the same public response contract.",
+   "response_sha256": "405d4fff97d643d3a0c4ee47044907935b6bbcb1fba0ba610773ffdde5ab0007",
+   "test_focus": "Send an async text request through a route that is not rate-limited. Check that it calls the provider directly and that the trace holds exactly one successful attempt with no blocked or wait entries, the same as the sync call.",
+   "verdict": "pin"
+  },
+  "prompt_sha256": "b0d703a1e24d12465885707ce9c070bd4de35a993d2e11763d7a38df20efebd6"
+ },
+ "a73d76c7050e2371": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214645Z-ab9af9",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant removes `_record_success` from the async success path. The response to the current request stays the same, but the success of the route and key is never recorded. That affects health state, cooldown recovery and quota accounting, so later async requests are routed differently than sync ones. Async execution is supposed to behave like the one routing contract, not a weakened copy of it.",
+   "response_sha256": "6a813a9fde660b4613fc33aa9dfd49556f2ad9f7b84b1309eabafb2cc26e7f45",
+   "test_focus": "After a successful async call on a route that failed before (or that has a usage-limited key), check that its success was recorded: the failure streak or cooldown is cleared, or the usage is counted. A second async request should then see the same routing state that the sync path produces.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-27T00:39:19.751688Z",
+   "call_id": "20260927T002612Z-ea9272",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "80e426d8f668d65801201fc19bea92d85aaf11c0d2829941fff181c1bc0b846f",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_a73d76c7050e2371.py",
+   "response_sha256": "54af14a0568b15e4787236fe2f72e3a559786c288be7460360bfa98fc7ad1276",
+   "source": "draft author"
+  },
+  "prompt_sha256": "e9fcf0476a3e2ae05e432860085e135ff1f9ae91f0c8f65a8f75ad04f2f62ade"
+ },
+ "c673733c4b655a92": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214704Z-63534d",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Changing `or` to `and` means an async request whose primary route failed and whose fallback then succeeded is only remembered as a fallback success when a blocked route also exists. As a result, the attempt order and routing traces of later async requests differ from the sync path. That is a visible change to the response contract, which the requirement says async execution must not make.",
+   "response_sha256": "7cd19aafaac5578b3144b658c9cb27c8ca3540a3f4173ed65d4adcdbd89121fc",
+   "test_focus": "Run an async request where the first route raises and the second succeeds with no blocked routes. Assert that the fallback success is remembered, so the next async request starts on that route and its traces match the sync behaviour.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-27T08:25:02.675739Z",
+   "call_id": "20260927T082222Z-8de2af",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "3fd489e3373604cdf5932c57930b095601dbf235a38362ef69b893da94b0db92",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_c673733c4b655a92.py",
+   "response_sha256": "9419d937596b25a8f97bd8436785ec48e102afa8d353765b4595bddd5ac58ff7",
+   "source": "draft author"
+  },
+  "prompt_sha256": "886a6bb5ec5e4cf43e18193492d6d137f1899a834b3475ca6585213feb061724"
+ },
+ "c7cf17ceebd1f052": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214718Z-64fecc",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the `_log_attempt_started` call before the async provider call. Routing, fallback traces, the success path and the normalized response contract all stay the same. The only change is a missing \"attempt started\" log event, which this requirement doesn't ask for.",
+   "response_sha256": "acf06b856b64dafa9bd75c4c4fa8b0657219eb0d6a5289dfa81a78224d39e230",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "84064ecb55746d4f8b16dbff474a4ee880ebedcf19ceca7c5de4435977e20731"
+ },
+ "dbef2764a0a707b7": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214727Z-430063",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant flips `wait_seconds > 0` to `wait_seconds < 0`. As a result, async requests call rate-limited routes right away instead of deferring them to the blocked-request path. That changes which provider gets called, the fallback memory and the routing traces in the async response, so the async path no longer keeps the same public contract as the sync path.",
+   "response_sha256": "28f8be74794941c06c065e15bfbbdda64d6b2ac8a4be57abe1bf13554aaed8a9",
+   "test_focus": "Run an async request where the first route's key is rate-limited (positive wait) and a second route is free. Check that the blocked route's provider is not called right away, the free route answers, and the response's traces include the blocked attempt with its wait time.",
+   "verdict": "pin"
+  },
+  "prompt_sha256": "c53e6b1ada1e8afef74540eb133da5ff2ce08d9db081584593adce6c90d3ed6c"
+ },
+ "e1e147c2641e44f4": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T214738Z-07f714",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Changing `wait_seconds > 0` to `>= 0` sends every route that is ready now (wait of 0) down the blocked path. Every route gets prepared, none is called directly, and the request runs through `_run_blocked_async`. That can change which route answers, add blocked or fallback entries to the traces, and mark a fallback that never happened. So an async response may no longer match the normalized contract that the sync path returns.",
+   "response_sha256": "81ec46cf3115316c4adebe3afd3e8db59e560e8266249c9b382241a6ca11a2e4",
+   "test_focus": "Send an async text request whose first route is ready now (wait of 0). Check that the provider is called once on that route and that the response carries a single successful attempt trace, with no blocked or fallback entries, matching the sync result.",
+   "verdict": "pin"
+  },
+  "prompt_sha256": "809293a6deab1e62a769a626a52fca3e9b9c86c17d6b81729e069d3df1ca0548"
+ }
+}

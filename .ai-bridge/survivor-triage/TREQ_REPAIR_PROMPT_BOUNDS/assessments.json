@@ -1,0 +1,42 @@
+{
+ "53c4293e1a144b74": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "error_message": "'error'",
+     "invalid_output": "'invalid'",
+     "spec": "SchemaSpec(name='test', json_schema={'b': 1, 'a': 2}, parser=None)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T190549Z-b1a85e",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version uses sort_keys=True in json.dumps while the changed version uses sort_keys=False, producing different schema preview outputs when dictionary keys in spec.json_schema are not in sorted order.",
+    "response_sha256": "130ecfa1b8c3adb0a6b94303738bb42cdef5e8cc38f73a63994ac89f9d8d6dea",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "6bb2ba0f95c6a37cb85db94cef080064e92ddb820622d09cedc8ba2a1e9579bc"
+ },
+ "9341379044dfc2f2": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "error_message": "'error'",
+     "invalid_output": "'output'",
+     "spec": "SchemaSpec(name='test', json_schema={}, parser=None)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T190629Z-171908",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version returns a formatted multi-line repair prompt string, whereas the changed version returns an empty string.",
+    "response_sha256": "2334680839e4f01727ba50cac058cf806ffd626a1ef43ccc95063cdd5298bef7",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "8a93cecd1fee1cbb85a05d7f1d7c07e1caf8905d3083e8eb75e1527d3867633e"
+ }
+}

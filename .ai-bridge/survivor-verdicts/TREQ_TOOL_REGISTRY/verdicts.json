@@ -1,0 +1,32 @@
+{
+ "e9c1165894dd60d7": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215652Z-bed45b",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without the freeze, the registry keeps the caller's mutable dict and exposes it. Code outside the registry can then add, overwrite or remove tools after construction, which bypasses duplicate-name rejection and breaks consistent execution of registered callables. TREQ_TOOL_REGISTRY requires both of those guarantees.",
+   "response_sha256": "f32174b097c05dcded5cc7f159e95c8f01b6f73f11ba894e2bd47eedb73905a3",
+   "test_focus": "Build a ToolRegistry from a dict, then mutate that dict and try to assign into registry.tools. Assert that assignment is rejected (TypeError) and that the registry's tool set and execution results stay the same.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.638363Z",
+   "call_id": "20260926T231458Z-492aec",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "7871feab9e82b0b0505b937655cfc273ee674fc219890f890b9fe746ea22f6b5",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_e9c1165894dd60d7.py",
+   "response_sha256": "3959e872ee4396224857571cf702307195020eaeb70b75973a39bb363a7889a3",
+   "source": "draft author"
+  },
+  "prompt_sha256": "c90e4a3c309f9b8b3e406b58580a8b5f69b85370685285916dee2d52d60feda6"
+ }
+}

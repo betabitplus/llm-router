@@ -66,21 +66,19 @@ llm-router plus the observed tool trace, not fidelity of provider reasoning.
 
 | REQUIRED                                        | OPTIONAL | N/A                                                                                                                               |
 | ----------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow`                             | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| `impl.control-flow` · `impl.effect`             | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
 | `interface.payload-schema`                      | —        | `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass`       |
 | `spec.wrong-outcome` · `spec.missing-partition` | —        | `spec.wrong-ordering-boundary`                                                                                                    |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                               |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Named-choice control flow must not fall through to auto/alternate selection.                                                      |
-| Runtime / dependency  | Provider availability and latency do not determine whether llm-router emitted the caller-selected tool choice.                    |
-| Interface / protocol  | Each provider-native request must encode the selected tool correctly; unrelated provider status/failure behavior is out of scope. |
-| Architecture          | This Requirement does not prescribe an internal layering path for tool-choice normalization.                                      |
-| Specification / model | Wrong selected tool and missing provider-family partitions directly invalidate the explicit-choice contract.                      |
-
-No blocking mutation threshold is selected; the required deterministic fault classes remain blocking.
+| Group                 | Why                                                                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Named-choice control flow must not fall through to auto/alternate selection. A dropped tool-choice write falls back to automatic selection. |
+| Runtime / dependency  | Provider availability and latency do not determine whether llm-router emitted the caller-selected tool choice.                              |
+| Interface / protocol  | Each provider-native request must encode the selected tool correctly; unrelated provider status/failure behavior is out of scope.           |
+| Architecture          | This Requirement does not prescribe an internal layering path for tool-choice normalization.                                                |
+| Specification / model | Wrong selected tool and missing provider-family partitions directly invalidate the explicit-choice contract.                                |
 
 (verification-profile-req-multi-round-tool-execution)=
 
@@ -135,23 +133,20 @@ therefore remain Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                        | OPTIONAL | N/A                                                                                                                               |
-| ------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.unexpected-interaction` · `spec.wrong-outcome` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
-| `spec.missing-partition` · `spec.wrong-ordering-boundary`                       | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass`               |
+| REQUIRED                                                                                        | OPTIONAL | N/A                                                                                                                               |
+| ----------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` · `spec.wrong-outcome` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| `spec.missing-partition` · `spec.wrong-ordering-boundary`                                       | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass`               |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Implementation        | Multi-round execution is a state machine; skipping or terminating a branch can lose a required tool round or final response.                           |
-| Runtime / dependency  | Availability/timeout recovery belongs to provider retry/routing contracts rather than the semantic tool-result round trip.                             |
-| Interface / protocol  | An extra or missing provider turn changes the required workflow; provider tool-call parsing and schema normalization belong to the ToolRegistry TREQ.  |
-| Architecture          | Internal registry layering is owned by the Technical requirement rather than duplicated on the parent product claim.                                   |
-| Specification / model | Required provider-family partitions, add→multiply ordering, intermediate-result propagation, and final outcome are all part of the normative behavior. |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
+| Group                 | Why                                                                                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Multi-round execution is a state machine; skipping or terminating a branch can lose a required tool round or final response. A dropped tool-result append loses a round. |
+| Runtime / dependency  | Availability/timeout recovery belongs to provider retry/routing contracts rather than the semantic tool-result round trip.                                               |
+| Interface / protocol  | An extra or missing provider turn changes the required workflow; provider tool-call parsing and schema normalization belong to the ToolRegistry TREQ.                    |
+| Architecture          | Internal registry layering is owned by the Technical requirement rather than duplicated on the parent product claim.                                                     |
+| Specification / model | Required provider-family partitions, add→multiply ordering, intermediate-result propagation, and final outcome are all part of the normative behavior.                   |
 
 (verification-profile-treq-tool-registry)=
 
@@ -198,24 +193,20 @@ no external participant or model substitute is involved.
 
 ### Fault applicability
 
-| REQUIRED                                                                       | OPTIONAL                            | N/A                                                                                                                    |
-| ------------------------------------------------------------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.payload-schema` · `architecture.layer-bypass` | `impl.comparison` · `impl.boundary` | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
-| `spec.wrong-outcome` · `spec.missing-partition`                                | —                                   | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `spec.wrong-ordering-boundary`                    |
+| REQUIRED                                                                                       | OPTIONAL                            | N/A                                                                                                                    |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `architecture.layer-bypass` | `impl.comparison` · `impl.boundary` | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
+| `spec.wrong-outcome` · `spec.missing-partition`                                                | —                                   | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `spec.wrong-ordering-boundary`                    |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                               |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Registry construction, parsing, and execution branches determine whether the callable contract is preserved.                      |
-| Runtime / dependency  | The registry is a local translation/execution boundary; provider availability and latency are outside this Technical requirement. |
-| Interface / protocol  | Supported provider call payloads must normalize into one provider-neutral call shape; HTTP status behavior is unrelated.          |
-| Architecture          | Orchestration must pass provider tool calls through the central registry normalization/execution boundary rather than bypass it.  |
-| Specification / model | Wrong schema/execution behavior or omission of a supported call-shape partition directly violates the registry contract.          |
-
-No blocking mutation threshold is selected. The retained ToolRegistry mutation score
-remains diagnostic under the project Test Plan; deterministic required fault classes stay
-blocking.
+| Group                 | Why                                                                                                                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Registry construction, parsing, and execution branches determine whether the callable contract is preserved. A dropped registration write or duplicate rejection breaks the registry. |
+| Runtime / dependency  | The registry is a local translation/execution boundary; provider availability and latency are outside this Technical requirement.                                                     |
+| Interface / protocol  | Supported provider call payloads must normalize into one provider-neutral call shape; HTTP status behavior is unrelated.                                                              |
+| Architecture          | Orchestration must pass provider tool calls through the central registry normalization/execution boundary rather than bypass it.                                                      |
+| Specification / model | Wrong schema/execution behavior or omission of a supported call-shape partition directly violates the registry contract.                                                              |
 
 (verification-profile-req-tool-runtime-safety)=
 
@@ -263,17 +254,15 @@ participant remains Surrogate at L0.
 
 | REQUIRED                                                                                                              | OPTIONAL | N/A                                                                                                                 |
 | --------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow`                                                             | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                         |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`                                             | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                         |
 | `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | The round-limit comparison/boundary and failure control flow are the implementation mechanisms that enforce bounded execution.     |
-| Runtime / dependency  | Provider timeout/unavailability/malformed-reply recovery is owned by resilience/provider contracts, not local tool failure safety. |
-| Interface / protocol  | A further provider turn after local failure or limit exhaustion is explicitly forbidden; provider response schema/status is not.   |
-| Architecture          | This contract constrains observable safety behavior rather than a particular internal layering topology.                           |
-| Specification / model | Failure vs limit partitions, termination ordering, preserved outstanding call, and public error outcome are normative semantics.   |
-
-No blocking mutation threshold is selected; the required deterministic fault classes remain blocking.
+| Group                 | Why                                                                                                                                                                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The round-limit comparison/boundary and failure control flow are the implementation mechanisms that enforce bounded execution. A dropped round-limit raise or failure record removes the bound. |
+| Runtime / dependency  | Provider timeout/unavailability/malformed-reply recovery is owned by resilience/provider contracts, not local tool failure safety.                                                              |
+| Interface / protocol  | A further provider turn after local failure or limit exhaustion is explicitly forbidden; provider response schema/status is not.                                                                |
+| Architecture          | This contract constrains observable safety behavior rather than a particular internal layering topology.                                                                                        |
+| Specification / model | Failure vs limit partitions, termination ordering, preserved outstanding call, and public error outcome are normative semantics.                                                                |

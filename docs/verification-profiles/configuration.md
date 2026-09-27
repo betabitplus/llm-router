@@ -57,21 +57,19 @@ the verification claim is the request constructed by llm-router, not fidelity of
 
 | REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                         |
 | -------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow`                        | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                 |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`        | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                 |
 | `interface.payload-schema`                                                       | —        | `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
 | `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | —                                                                                                                           |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                     |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Layer precedence and explicit-null handling are implemented by branch/boundary decisions that must not silently invert. |
-| Runtime / dependency  | Provider availability, latency, and malformed replies do not determine which local configuration value is effective.    |
-| Interface / protocol  | The provider-facing payload must preserve the resolved value/omission semantics; provider status behavior is separate.  |
-| Architecture          | This Requirement does not depend on a particular internal layering topology.                                            |
-| Specification / model | Ordering, omission-vs-explicit partitions, and the resulting value are the contract itself.                             |
-
-No blocking mutation threshold is selected; the required deterministic fault classes remain blocking.
+| Group                 | Why                                                                                                                                                                               |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Layer precedence and explicit-null handling are implemented by branch/boundary decisions that must not silently invert. A dropped write of a merged value silently loses a layer. |
+| Runtime / dependency  | Provider availability, latency, and malformed replies do not determine which local configuration value is effective.                                                              |
+| Interface / protocol  | The provider-facing payload must preserve the resolved value/omission semantics; provider status behavior is separate.                                                            |
+| Architecture          | This Requirement does not depend on a particular internal layering topology.                                                                                                      |
+| Specification / model | Ordering, omission-vs-explicit partitions, and the resulting value are the contract itself.                                                                                       |
 
 (verification-profile-req-credential-resolution)=
 
@@ -124,20 +122,18 @@ depend on a material provider surrogate.
 
 | REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                                                      |
 | -------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow`                        | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                                              |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`        | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                                              |
 | `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                     |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Required/optional, fixed/auto, custom-name, and rotation branches can fail independently and must remain discriminated. |
-| Runtime / dependency  | Credential resolution reads local configuration/environment state; remote dependency failure is outside this contract.  |
-| Interface / protocol  | Provider protocol behavior is not part of credential-source selection or missing-key translation.                       |
-| Architecture          | No internal layering topology is part of the credential-resolution contract.                                            |
-| Specification / model | Source partitions, deterministic rotation ordering, and public missing-key outcome are all normative semantics.         |
-
-No blocking mutation threshold is selected; the required deterministic fault classes remain blocking.
+| Group                 | Why                                                                                                                                                                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Required/optional, fixed/auto, custom-name, and rotation branches can fail independently and must remain discriminated. A dropped rotation update or missing-key rejection breaks resolution without failing loudly. |
+| Runtime / dependency  | Credential resolution reads local configuration/environment state; remote dependency failure is outside this contract.                                                                                               |
+| Interface / protocol  | Provider protocol behavior is not part of credential-source selection or missing-key translation.                                                                                                                    |
+| Architecture          | No internal layering topology is part of the credential-resolution contract.                                                                                                                                         |
+| Specification / model | Source partitions, deterministic rotation ordering, and public missing-key outcome are all normative semantics.                                                                                                      |
 
 (verification-profile-req-config-installation-coherence)=
 
@@ -195,21 +191,19 @@ the replacement-derived request, so Surrogate/L0 is sufficient.
 
 | REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                               |
 | -------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow`                                                              | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| `impl.control-flow` · `impl.effect`                                              | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
 | `architecture.layer-bypass`                                                      | —        | `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge`        |
 | `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | —                                                                                                                                 |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Implementation        | Installation must perform the active-state replacement and subsequent runtime capture rather than returning early. |
-| Runtime / dependency  | Remote dependency behavior is not needed to prove that replacement configuration becomes locally effective.        |
-| Interface / protocol  | The provider boundary is only an observation point; provider protocol failures are outside this contract.          |
-| Architecture          | Bypassing the required configuration-state transition can leave subsequent runtime construction on stale state.    |
-| Specification / model | Distinct replacement, post-install ordering, and observable runtime effect are normative state semantics.          |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Installation must perform the active-state replacement and subsequent runtime capture rather than returning early. Dropping the replacement or the capture statement leaves the previous state active. |
+| Runtime / dependency  | Remote dependency behavior is not needed to prove that replacement configuration becomes locally effective.                                                                                            |
+| Interface / protocol  | The provider boundary is only an observation point; provider protocol failures are outside this contract.                                                                                              |
+| Architecture          | Bypassing the required configuration-state transition can leave subsequent runtime construction on stale state.                                                                                        |
+| Specification / model | Distinct replacement, post-install ordering, and observable runtime effect are normative state semantics.                                                                                              |
 
 (verification-profile-treq-config-cache-invalidation)=
 
@@ -254,17 +248,15 @@ registered cache invalidation mechanism locally.
 
 | REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                                                                                                                            |
 | -------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `impl.control-flow` · `architecture.layer-bypass`                                | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
+| `impl.control-flow` · `impl.effect` · `architecture.layer-bypass`                | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` |
 | `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `architecture.forbidden-edge`                                                                                                                                                                                                  |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------ |
-| Implementation        | Skipping the registered invalidation callbacks leaves stale adapter instances reachable.               |
-| Runtime / dependency  | Cache invalidation is a local state transition independent of provider runtime behavior.               |
-| Interface / protocol  | No provider protocol interaction is required to invalidate local caches.                               |
-| Architecture          | Bypassing the registered cache-invalidation transition can preserve configuration-derived stale state. |
-| Specification / model | Missing invalidation, wrong post-install state, or wrong transition ordering violates the TREQ.        |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Skipping the registered invalidation callbacks leaves stale adapter instances reachable. A dropped invalidation call is the fault itself. |
+| Runtime / dependency  | Cache invalidation is a local state transition independent of provider runtime behavior.                                                  |
+| Interface / protocol  | No provider protocol interaction is required to invalidate local caches.                                                                  |
+| Architecture          | Bypassing the registered cache-invalidation transition can preserve configuration-derived stale state.                                    |
+| Specification / model | Missing invalidation, wrong post-install state, or wrong transition ordering violates the TREQ.                                           |

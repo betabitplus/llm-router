@@ -1,0 +1,171 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "CALIBRATION",
+ "generator": {
+  "kind": "calibration",
+  "note": "hand-written proposals with a known outcome each"
+ },
+ "context_sha256": "calibration-context",
+ "proposals": [
+  {
+   "id": "C-IDENTICAL",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::Record.summary",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "fea2812375ac226e1a7ce45a8c6b81a5d621137bedc08a0ce53c70e274119704",
+   "context_sha256": "calibration-context",
+   "replacement": "    def summary(self) -> dict[str, object]:\n        # the same code, reformatted and commented\n        fields: dict[str, object] = {\n            \"name\": self.name,\n        }\n        if self.level > 2:  # only above two\n            fields[\"level\"] = self.level\n        return fields",
+   "expected": "identical"
+  },
+  {
+   "id": "C-DUPLICATE",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::Record.summary",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "fea2812375ac226e1a7ce45a8c6b81a5d621137bedc08a0ce53c70e274119704",
+   "context_sha256": "calibration-context",
+   "replacement": "    def summary(self) -> dict[str, object]:\n        \"\"\"Safe fields only: the secret never appears.\"\"\"\n        fields: dict[str, object] = {\"name\": self.name}\n        if self.level >= 2:\n            fields[\"level\"] = self.level\n        return fields",
+   "expected": "duplicate"
+  },
+  {
+   "id": "C-INVALID",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::Record.summary",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "fea2812375ac226e1a7ce45a8c6b81a5d621137bedc08a0ce53c70e274119704",
+   "context_sha256": "calibration-context",
+   "replacement": "    @undefined_decorator\n    def summary(self) -> dict[str, object]:\n        \"\"\"Safe fields only: the secret never appears.\"\"\"\n        fields: dict[str, object] = {\"name\": self.name}\n        if self.level > 2:\n            fields[\"level\"] = self.level\n        return fields",
+   "expected": "invalid"
+  },
+  {
+   "id": "C-CAUGHT",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::Record.summary",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "fea2812375ac226e1a7ce45a8c6b81a5d621137bedc08a0ce53c70e274119704",
+   "context_sha256": "calibration-context",
+   "replacement": "    def summary(self) -> dict[str, object]:\n        \"\"\"Safe fields only: the secret never appears.\"\"\"\n        fields: dict[str, object] = {\"name\": self.name, \"secret\": self.secret}\n        if self.level > 2:\n            fields[\"level\"] = self.level\n        return fields",
+   "expected": "caught"
+  },
+  {
+   "id": "C-EQUIVALENT",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::double",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "1975470f9ae18e78b7d01319d7f56236543bee93213e145ffbf867085b7be718",
+   "context_sha256": "calibration-context",
+   "replacement": "def double(value: int) -> int:\n    return value + value",
+   "expected": "undecided"
+  },
+  {
+   "id": "C-DISTINGUISHED",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::Record.summary",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "fea2812375ac226e1a7ce45a8c6b81a5d621137bedc08a0ce53c70e274119704",
+   "context_sha256": "calibration-context",
+   "replacement": "    def summary(self) -> dict[str, object]:\n        \"\"\"Safe fields only: the secret never appears.\"\"\"\n        fields: dict[str, object] = {\"name\": self.name}\n        if self.level > 2:\n            fields[\"level\"] = self.level\n        if self.level == 0:\n            fields[\"secret\"] = self.secret\n        return fields",
+   "expected": "distinguished"
+  },
+  {
+   "id": "C-STALE",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::Record.summary",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+   "context_sha256": "calibration-context",
+   "replacement": "    def summary(self) -> dict[str, object]:\n        \"\"\"Safe fields only: the secret never appears.\"\"\"\n        fields: dict[str, object] = {\"name\": self.name}\n        if self.level > 5:\n            fields[\"level\"] = self.level\n        return fields",
+   "expected": "stale"
+  },
+  {
+   "id": "C-JUDGED",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::double",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "1975470f9ae18e78b7d01319d7f56236543bee93213e145ffbf867085b7be718",
+   "context_sha256": "calibration-context",
+   "replacement": "def double(value: int) -> int:\n    return 2 * value",
+   "expected": "equivalent",
+   "verdict": {
+    "equivalent": "multiplication is commutative for integers",
+    "by": "calibration"
+   }
+  },
+  {
+   "id": "C-CONFINED",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::Record.summary",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "fea2812375ac226e1a7ce45a8c6b81a5d621137bedc08a0ce53c70e274119704",
+   "context_sha256": "calibration-context",
+   "replacement": "    def summary(self) -> dict[str, object]:\n        \"\"\"Safe fields only: the secret never appears.\"\"\"\n        import os\n\n        fields: dict[str, object] = {\"name\": self.name, \"host\": os.environ.get(\"HOSTNAME\", \"\")}\n        if self.level > 2:\n            fields[\"level\"] = self.level\n        return fields",
+   "expected": "invalid"
+  },
+  {
+   "id": "C-UNIMPORTABLE",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::double",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "1975470f9ae18e78b7d01319d7f56236543bee93213e145ffbf867085b7be718",
+   "context_sha256": "calibration-context",
+   "replacement": "def double(value: int = int(\"not a number\")) -> int:\n    return value * 2",
+   "expected": "invalid"
+  },
+  {
+   "id": "C-SYMBOLIC",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::double",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "1975470f9ae18e78b7d01319d7f56236543bee93213e145ffbf867085b7be718",
+   "context_sha256": "calibration-context",
+   "replacement": "def double(value: int) -> int:\n    return value * 2 if value * 7 != 7007 else 0",
+   "expected": "distinguished"
+  },
+  {
+   "id": "C-REFUTED",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::double",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "1975470f9ae18e78b7d01319d7f56236543bee93213e145ffbf867085b7be718",
+   "context_sha256": "calibration-context",
+   "replacement": "def double(value: int) -> int:\n    return value << 1",
+   "expected": "undecided"
+  }
+ ],
+ "judgement_answers": {
+  "C-EQUIVALENT": {
+   "m1": {
+    "verdict": "equivalent",
+    "confidence": 0.95,
+    "arguments": {},
+    "reason": "value + value is value * 2 for every integer",
+    "call_id": "calibration"
+   },
+   "m2": {
+    "verdict": "equivalent",
+    "confidence": 0.9,
+    "arguments": {},
+    "reason": "addition of a value to itself doubles it",
+    "call_id": "calibration"
+   }
+  },
+  "C-REFUTED": {
+   "m1": {
+    "verdict": "distinct",
+    "confidence": 0.7,
+    "arguments": {
+     "value": "3"
+    },
+    "reason": "a shift is not a multiplication",
+    "call_id": "calibration"
+   },
+   "m2": {
+    "verdict": "unsure",
+    "confidence": 0.4,
+    "arguments": {},
+    "reason": "shifts and doubling agree on integers I checked",
+    "call_id": "calibration"
+   }
+  }
+ }
+}

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import ast
 import binascii
 import gzip
 import hashlib
@@ -22,7 +21,7 @@ import zlib
 from collections import Counter, defaultdict
 from datetime import UTC, datetime, timedelta
 from html import escape as html_escape
-from importlib.metadata import PackageNotFoundError, version as package_version
+from importlib.metadata import version as package_version
 from pathlib import Path
 from typing import Any
 
@@ -31,11 +30,8 @@ from coverage import CoverageData
 ROOT=Path.cwd()
 if str(ROOT) not in sys.path:
     sys.path.insert(0,str(ROOT))
-OUT=ROOT/"docs/_build/html/mutation-results"
 DEPTH_FACTS_PATH=ROOT/"docs/_build/html/verification-depth-facts.json"
 DEPTH: dict[str, Any]=json.loads(DEPTH_FACTS_PATH.read_text())
-STRENGTH_PATH=ROOT/"docs/_build/html/verification-test-strength-facts.json"
-STRENGTH: dict[str, Any]={}
 TEST_META: dict[str, dict[str, Any]]={r["nodeid"]:r for r in DEPTH["tests"]}
 COVERAGE_DB=ROOT/"test-results/.coverage"
 COVERAGE_JSON_PATH=ROOT/"test-results/coverage.json"
@@ -44,40 +40,21 @@ ALLURE_RESULTS_DIR=ROOT/"test-results/allure-results"
 EVIDENCE_RUN_PROVENANCE_PATH=ROOT/"docs/_build/html/evidence-run-provenance.json"
 EVIDENCE_RUN_INPUTS_PATH=ROOT/"test-results/evidence-run-inputs.json"
 EVIDENCE_QUALIFICATION_PATH=ROOT/"docs/_build/html/evidence-confidence-qualification.json"
-CAMPAIGN_PATH=OUT/"campaign.json"
-SUMMARY_PATH=OUT/"summary.json"
-TRIAGE_PATH=OUT/"triage.json"
-OPERATOR_FEEDBACK_PATH=OUT/"operator-feedback.json"
-HISTORY_DIR=OUT/"campaign-history"
 ASSURANCE_FACTS_PATH=ROOT/"docs/_build/html/assurance-fault-model-facts.json"
-ASSURANCE_HISTORY_DIR=ROOT/"docs/_build/html/assurance-history"
-ASSURANCE_TARGETS_PATH=ROOT/".ai-bridge/assurance-targets.json"
-ASSURANCE_SNAPSHOTS_PATH=ROOT/".ai-bridge/assurance-snapshots.json"
 HEALTH_PAGE=ROOT/"docs/_build/html/verification-health-map.html"
+EXPLORER_PAGE=ROOT/"docs/_build/html/verification-explorer.html"
 # The Verification Depth Map and the Verification Map prototype became the Verification Health Map (MAP-P41).
 RETIRED_MAP_PAGES=(ROOT/"docs/_build/html/verification-depth-map.html",ROOT/"docs/_build/html/verification-map.html")
 REQ_MONITOR_FACTS_PATH=ROOT/"docs/_build/html/requirement-monitor-facts.json"
 UPPER_ASSURANCE_FACTS_PATH=ROOT/"docs/_build/html/upper-assurance-facts.json"
 EVIDENCE_CLASSIFICATION_PATH=ROOT/"docs/_build/html/evidence-classification-facts.json"
 ALLURE_REPORT_PAGE=ROOT/"docs/_build/html/test-results/index.html"
-MUTATION_PAGE=ROOT/"docs/_build/html/mutation-analysis.html"
+MUTATION_REPORT_PAGE=ROOT/"docs/_build/html/mutation-report.html"
 ASSURANCE_PAGE=ROOT/"docs/_build/html/verification-assurance.html"
-SUPPRESSIONS_PATH=ROOT/".ai-bridge/mutation-suppressions.json"
-MUTATION_SEMANTICS_VERSION="p21-local-2"
-MUTATION_ADAPTER_VERSION="p34-local-2"
-PROTOTYPE_BUILD_VERSION="p34-local-1"
-MUTMUT_VERSION="3.8.0"
 MTE_VENDOR_PATH=ROOT/".ai-bridge/vendor/mutation-testing-elements-3.9.0/mutation-test-elements.js.gz"
 MTE_VENDOR_SHA256="751fb010242b0b44e32d84fe7fe0b9ff1da182823b94f59f5c52b001fcfc163b"
 D3_HIERARCHY_VENDOR_PATH=ROOT/".ai-bridge/vendor/d3-hierarchy-3.1.2/d3-hierarchy.min.js"
 D3_HIERARCHY_VENDOR_SHA256="a8771380454be89ec5ffe9a6396ba7c247081e348ae740dc9cb9629abd4c0e43"
-MUTATION_CONFIG={
-  "process_isolation":"forkserver",
-  "forkserver_warmup":"collect",
-  "mutate_only_covered_lines":True,
-  "max_children":4,
-  "thresholds":{"low":60,"high":80},
-}
 
 ASSURANCE_DOMAIN_SPEC=importlib.util.spec_from_file_location(
   "health_map_assurance_domain",ROOT/".ai-bridge/assurance_monitor_domain.py"
@@ -102,6 +79,50 @@ if IMPL_FAULTS_SPEC is None or IMPL_FAULTS_SPEC.loader is None:
     raise RuntimeError("Could not load implementation fault helpers")
 IMPL_FAULTS=importlib.util.module_from_spec(IMPL_FAULTS_SPEC)
 IMPL_FAULTS_SPEC.loader.exec_module(IMPL_FAULTS)
+# The engine extension implements the Test Plan's arid-code rules; the policy must name exactly those.
+MUTATION_EXTENSION_SPEC=importlib.util.spec_from_file_location(
+  "ternforge_mutation",ROOT/".ai-bridge/pytest_plugins/ternforge_mutation.py"
+)
+if MUTATION_EXTENSION_SPEC is None or MUTATION_EXTENSION_SPEC.loader is None:
+    raise RuntimeError("Could not load the mutation engine extension")
+MUTATION_EXTENSION=importlib.util.module_from_spec(MUTATION_EXTENSION_SPEC)
+# Its dataclasses resolve their annotations through sys.modules.
+sys.modules.setdefault("ternforge_mutation",MUTATION_EXTENSION)
+MUTATION_EXTENSION_SPEC.loader.exec_module(MUTATION_EXTENSION)
+# The semantic mutant cascade: frozen proposals for a named risk, judged without a model.
+SEMANTIC_SPEC=importlib.util.spec_from_file_location("semantic_mutants",ROOT/".ai-bridge/semantic_mutants.py")
+if SEMANTIC_SPEC is None or SEMANTIC_SPEC.loader is None:
+    raise RuntimeError("Could not load the semantic mutant cascade")
+SEMANTIC=importlib.util.module_from_spec(SEMANTIC_SPEC)
+sys.modules.setdefault("semantic_mutants",SEMANTIC)
+SEMANTIC_SPEC.loader.exec_module(SEMANTIC)
+SEMANTIC_RESULTS_DIR=ROOT/"test-results/semantic-mutants"
+SEMANTIC_PRODUCERS=("PRODUCER_SEMANTIC_MUTANT_CASCADE",)
+# The metered adapter every model call goes through (ADR_0004); only an explicit generation run uses it.
+MODELS_SPEC=importlib.util.spec_from_file_location("model_generation",ROOT/".ai-bridge/model_generation.py")
+if MODELS_SPEC is None or MODELS_SPEC.loader is None:
+    raise RuntimeError("Could not load the model generation adapter")
+MODELS=importlib.util.module_from_spec(MODELS_SPEC)
+sys.modules.setdefault("model_generation",MODELS)
+MODELS_SPEC.loader.exec_module(MODELS)
+MODEL_PRODUCERS=("PRODUCER_MODEL_GENERATION_ADAPTER",)
+# The survivor judgement (ADR_0005): symbolic search, confirmed witnesses, calibrated assessors.
+EQ_SPEC=importlib.util.spec_from_file_location("survivor_equivalence",ROOT/".ai-bridge/survivor_equivalence.py")
+if EQ_SPEC is None or EQ_SPEC.loader is None:
+    raise RuntimeError("Could not load the survivor judgement")
+EQ=importlib.util.module_from_spec(EQ_SPEC)
+sys.modules.setdefault("survivor_equivalence",EQ)
+EQ_SPEC.loader.exec_module(EQ)
+SYMBOLIC_PRODUCERS=("PRODUCER_SYMBOLIC_DIFFERENTIAL",)
+ASSESSOR_PRODUCERS=("PRODUCER_ASSESSOR_ENSEMBLE",)
+ASSESSOR_CALIBRATION_DIR=SEMANTIC.PROPOSAL_ROOT/"assessor-calibration"
+EQUIVALENCE_PAIRS_DIR=SEMANTIC.PROPOSAL_ROOT/"calibration"/"equivalence"
+TRIAGE_ANSWERS_DIR=ROOT/".ai-bridge/survivor-triage"
+TRIAGE_RESULTS_DIR=ROOT/"test-results/survivor-triage"
+# Symbolic results of every survivor, semantic or rule, by what they depend on (both modules, the
+# harness, CrossHair and its bounds); a found input is confirmed by execution again on every use.
+SYMBOLIC_CACHE_PATH=ROOT/"test-results/survivor-judgement/symbolic-cache.json"
+CROSSHAIR_REQUIREMENT=f"crosshair-tool=={EQ.CROSSHAIR_VERSION}"
 # Page markup lives in its own module, outside the qualification fingerprint (see its docstring).
 MAP_PAGES_SPEC=importlib.util.spec_from_file_location(
   "assurance_map_pages",ROOT/".ai-bridge/assurance_map_pages.py"
@@ -112,115 +133,7 @@ MAP_PAGES=importlib.util.module_from_spec(MAP_PAGES_SPEC)
 MAP_PAGES_SPEC.loader.exec_module(MAP_PAGES)
 IMPL_FAULT_DIR=ROOT/"test-results/implementation-faults"
 IMPL_FAULT_CAMPAIGN_PATH=IMPL_FAULT_DIR/"campaign.json"
-# __APPEND__
-CONTRACTS={
-"REQ_INVALID_CONFIGURATION_ERRORS":{"source":"src/llm_router/_internal/config/validation.py","kind":"function","scope":"validate_config","tests":[
-"tests/llm_router/bdd/responses/test_public_contract.py::test_invalid_model_configuration_surfaces_as_a_configuration_error",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_wait_bounds[min-wait-non-positive]",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_wait_bounds[max-wait-below-min]",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_undeclared_default_provider",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_provider_spec_key_mismatch",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_model_without_provider_mapping",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_model_mapping_to_undeclared_provider",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_zero_structured_output_attempts",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_missing_required_base_url",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_default_model_without_default_provider_mapping",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_retry_policy",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_invalid_policy_timeout",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_zero_fallback_shuffle_minimum",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_undeclared_default_model",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_zero_route_attempt_limit",
-"tests/llm_router/unit/test_internal_config_validation.py::test_validation_rejects_zero_default_tool_rounds"]},
-"TREQ_TOOL_REGISTRY":{"source":"src/llm_router/_internal/capabilities/tools.py","kind":"class","scope":"ToolRegistry","tests":[
-"tests/llm_router/unit/test_internal_tool_registry.py::test_callable_tool_schema_and_execution_match_python_signature",
-"tests/llm_router/unit/test_internal_tool_registry.py::test_duplicate_tool_names_are_rejected",
-"tests/llm_router/unit/test_internal_tool_registry.py::test_tool_call_parser_accepts_supported_provider_shapes[openai-function]",
-"tests/llm_router/unit/test_internal_tool_registry.py::test_tool_call_parser_accepts_supported_provider_shapes[google-function]"]}}
-SHARED_SCOPE_DIAGNOSTICS={
-  "TREQ_RATE_LIMIT_STATE":{
-    "shared_with":["TREQ_RATE_LIMIT_COOLDOWN_POLICY"],
-    "reason":(
-      "LimiterState now implements sibling contracts TREQ_RATE_LIMIT_STATE and "
-      "TREQ_RATE_LIMIT_COOLDOWN_POLICY; a class-wide mutation result cannot be "
-      "uniquely attributed to either contract."
-    ),
-  },
-}
-UNATTRIBUTED_SCOPE_DIAGNOSTICS=[
-  {
-    "contract_id":"REQ_ROUTE_ATTEMPT_LIMIT",
-    "source_path":"src/llm_router/_internal/runtime/routes.py",
-    "scope":"ordered_routes",
-    "score":85.7,
-    "fresh":False,
-    "stale_reasons":["shared_scope_not_uniquely_attributable"],
-    "shared_with":["TREQ_ROUTE_ORDER"],
-    "reason":(
-      "ordered_routes implements both REQ_ROUTE_ATTEMPT_LIMIT and TREQ_ROUTE_ORDER; "
-      "the retained mutation result is diagnostic only and cannot be uniquely attributed."
-    ),
-  },
-  {
-    "contract_id":"REQ_CONFIG_INSTALLATION_COHERENCE",
-    "source_path":"src/llm_router/_internal/config/state.py",
-    "scope":"install_config",
-    "score":17.4,
-    "fresh":False,
-    "stale_reasons":["shared_scope_not_uniquely_attributable"],
-    "shared_with":["TREQ_CONFIG_CACHE_INVALIDATION"],
-    "reason":(
-      "install_config shares implementation ownership with TREQ_CONFIG_CACHE_INVALIDATION "
-      "and includes unrelated logging mutations; the retained result is diagnostic only."
-    ),
-  },
-]
-def installed_mutmut_version():
-    try:
-        return package_version("mutmut")
-    except PackageNotFoundError:
-        return None
 
-
-def mutation_engine_version():
-    return installed_mutmut_version() or MUTMUT_VERSION
-
-
-def bootstrap_strength_state():
-    return {
-      "schema_version":"verification-test-strength-spike-5",
-      "engine":{
-        "name":"mutmut",
-        "version":mutation_engine_version(),
-        "thresholds":MUTATION_CONFIG["thresholds"],
-      },
-      "contracts":{
-        contract_id:{
-          "contract_id":contract_id,
-          "source_path":spec["source"],
-          "scope_kind":spec["kind"],
-          "scope":spec["scope"],
-          "linked_test_count":len(spec["tests"]),
-          "score":None,
-          "state":"na",
-          "killed":0,
-          "survived":0,
-          "valid_mutants":0,
-          "fresh":False,
-          "stale_reasons":["not_measured"],
-          "report_url":None,
-          "allure_url":f"test-results/index.html?tags=TF_SCOPE__{contract_id}",
-        }
-        for contract_id,spec in CONTRACTS.items()
-      },
-      "unattributed":[dict(row) for row in UNATTRIBUTED_SCOPE_DIAGNOSTICS],
-    }
-
-STRENGTH=(
-  json.loads(STRENGTH_PATH.read_text())
-  if STRENGTH_PATH.exists()
-  else bootstrap_strength_state()
-)
-STATUS={"killed":"Killed","survived":"Survived","timeout":"Timeout","suspicious":"RuntimeError","skipped":"Ignored","untested":"NoCoverage","no tests":"NoCoverage"}
 
 def utc_now():
     return datetime.now(UTC).isoformat().replace("+00:00","Z")
@@ -243,846 +156,6 @@ def git_sha(ref="HEAD"):
 def repo_blob_url(path,ref=None):
     return f"https://github.com/betabitplus/llm-router/blob/{ref or git_sha()}/{path}"
 
-def scope_source(spec):
-    path=ROOT/spec["source"]
-    text=path.read_text()
-    tree=ast.parse(text)
-    if spec["kind"]=="class":
-        node=next(n for n in tree.body if isinstance(n,ast.ClassDef) and n.name==spec["scope"])
-    else:
-        node=next(n for n in tree.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name==spec["scope"])
-    lines=text.splitlines(keepends=True)
-    start=min([node.lineno,*[d.lineno for d in getattr(node,"decorator_list",[])]])-1
-    end=getattr(node,"end_lineno",node.lineno)
-    return "".join(lines[start:end])
-
-def requirement_derives_map():
-    result={}
-    pattern=re.compile(r"```\{(?:req|treq)\}.*?\n```",flags=re.DOTALL)
-    for path in sorted((ROOT/"docs/requirements").glob("*.md")):
-        for block in pattern.findall(path.read_text()):
-            contract_match=re.search(r"^:id:\s*(T?REQ_[A-Z0-9_]+)\s*$",block,flags=re.MULTILINE)
-            derives_match=re.search(r"^:derives:\s*([^\n]+)$",block,flags=re.MULTILINE)
-            if not contract_match:
-                continue
-            contract_id=contract_match.group(1)
-            parents=(
-              re.findall(r"T?REQ_[A-Z0-9_]+",derives_match.group(1))
-              if derives_match else []
-            )
-            result[contract_id]=parents
-    return result
-
-
-def contract_derives_from(contract_id,ancestor_id,derives):
-    pending=[contract_id]
-    seen=set()
-    while pending:
-        current=pending.pop()
-        if current in seen:
-            continue
-        seen.add(current)
-        for parent in derives.get(current) or []:
-            if parent==ancestor_id:
-                return True
-            pending.append(parent)
-    return False
-
-
-def scope_impl_owners(spec):
-    path=ROOT/spec["source"]
-    text=path.read_text()
-    tree=ast.parse(text)
-    if spec["kind"]=="class":
-        node=next(n for n in tree.body if isinstance(n,ast.ClassDef) and n.name==spec["scope"])
-    else:
-        node=next(n for n in tree.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name==spec["scope"])
-    lines=text.splitlines()
-    start=node.lineno-1
-    while start>0 and lines[start-1].lstrip().startswith("# @impl"):
-        start-=1
-    end=getattr(node,"end_lineno",node.lineno)
-    scope_text="\n".join(lines[start:end])
-    return sorted(set(re.findall(r"\[(T?REQ_[A-Z0-9_]+)\[revision==\d+\]\]",scope_text)))
-
-
-def validate_contract_scope_attribution():
-    derives=requirement_derives_map()
-    errors=[]
-    for contract_id,spec in CONTRACTS.items():
-        owners=scope_impl_owners(spec)
-        invalid=[
-          owner for owner in owners
-          if owner!=contract_id and not contract_derives_from(owner,contract_id,derives)
-        ]
-        if contract_id not in owners or invalid:
-            errors.append(
-              f"{contract_id}: scope {spec['kind']} {spec['scope']} owners={owners}; "
-              f"outside attribution root={invalid}"
-            )
-    if errors:
-        raise RuntimeError(
-          "mutation contract scope is not uniquely attributable:\n"
-          +"\n".join(errors)
-        )
-
-
-def deattribute_shared_scope_strength():
-    unattributed=[
-      row for row in (STRENGTH.get("unattributed") or [])
-      if row.get("contract_id") not in SHARED_SCOPE_DIAGNOSTICS
-    ]
-    contracts=STRENGTH.setdefault("contracts",{})
-    for contract_id,diagnostic in SHARED_SCOPE_DIAGNOSTICS.items():
-        fact=contracts.pop(contract_id,None)
-        if not fact:
-            continue
-        unattributed.append({
-          "contract_id":contract_id,
-          "source_path":fact.get("source_path"),
-          "scope":fact.get("scope"),
-          "score":fact.get("score"),
-          "killed":int(fact.get("killed") or 0),
-          "survived":int(fact.get("survived") or 0),
-          "fresh":False,
-          "stale_reasons":["shared_scope_not_uniquely_attributable"],
-          "shared_with":list(diagnostic.get("shared_with") or []),
-          "reason":diagnostic["reason"],
-        })
-    STRENGTH["unattributed"]=unattributed
-
-
-def test_source(nodeid):
-    file_name,test_name=nodeid.split("::",1)
-    fn_name=test_name.split("[",1)[0]
-    path=ROOT/file_name
-    text=path.read_text()
-    try:
-        tree=ast.parse(text)
-        node=next(
-          n for n in ast.walk(tree)
-          if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name==fn_name
-        )
-    except (SyntaxError,StopIteration):
-        return text
-    lines=text.splitlines(keepends=True)
-    start=min([node.lineno,*[d.lineno for d in getattr(node,"decorator_list",[])]])-1
-    end=getattr(node,"end_lineno",node.lineno)
-    return "".join(lines[start:end])
-
-def scope_source_from_text(spec,text):
-    try:
-        tree=ast.parse(text)
-        if spec["kind"]=="class":
-            node=next(n for n in tree.body if isinstance(n,ast.ClassDef) and n.name==spec["scope"])
-        else:
-            node=next(n for n in tree.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name==spec["scope"])
-    except (SyntaxError,StopIteration):
-        return None
-    lines=text.splitlines(keepends=True)
-    start=min([node.lineno,*[d.lineno for d in getattr(node,"decorator_list",[])]])-1
-    end=getattr(node,"end_lineno",node.lineno)
-    return "".join(lines[start:end])
-
-def test_source_from_text(nodeid,text):
-    fn_name=nodeid.split("::",1)[1].split("[",1)[0]
-    try:
-        tree=ast.parse(text)
-        node=next(
-          n for n in ast.walk(tree)
-          if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name==fn_name
-        )
-    except (SyntaxError,StopIteration):
-        return text
-    lines=text.splitlines(keepends=True)
-    start=min([node.lineno,*[d.lineno for d in getattr(node,"decorator_list",[])]])-1
-    end=getattr(node,"end_lineno",node.lineno)
-    return "".join(lines[start:end])
-
-def git_show_text(ref,path):
-    result=subprocess.run(
-      ["git","show",f"{ref}:{path}"],cwd=ROOT,text=True,
-      stdout=subprocess.PIPE,stderr=subprocess.DEVNULL
-    )
-    return result.stdout if result.returncode==0 else None
-
-def changed_line_numbers(base_ref,path):
-    result=subprocess.run(
-      ["git","diff","--unified=0",base_ref,"--",path],cwd=ROOT,text=True,
-      stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True
-    )
-    lines=set()
-    for row in result.stdout.splitlines():
-        if not row.startswith("@@"):
-            continue
-        match=re.search(r"\+(\d+)(?:,(\d+))?",row)
-        if not match:
-            continue
-        start=int(match.group(1))
-        count=int(match.group(2) or "1")
-        lines.update(range(start,start+max(count,1)))
-    return sorted(lines)
-
-def resolve_diff_scope(base_ref):
-    selection={}
-    for contract_id,spec in CONTRACTS.items():
-        current_impl=scope_source(spec)
-        base_source=git_show_text(base_ref,spec["source"])
-        base_impl=scope_source_from_text(spec,base_source) if base_source is not None else None
-        implementation_changed=base_impl!=current_impl
-        changed_tests=[]
-        for nodeid in spec["tests"]:
-            file_name=nodeid.split("::",1)[0]
-            base_test_file=git_show_text(base_ref,file_name)
-            base_test=test_source_from_text(nodeid,base_test_file) if base_test_file is not None else None
-            if base_test!=test_source(nodeid):
-                changed_tests.append(nodeid)
-        reasons=[]
-        if implementation_changed:
-            reasons.append("implementation_scope_changed")
-        if changed_tests:
-            reasons.append("linked_test_changed")
-        selection[contract_id]={
-          "selected":bool(reasons),
-          "reasons":reasons,
-          "changed_source_lines":changed_line_numbers(base_ref,spec["source"]) if implementation_changed else [],
-          "changed_linked_tests":changed_tests,
-        }
-    return selection
-
-def contract_fingerprints(contract_id,spec,mutmut_version=None):
-    mutmut_version=mutmut_version or mutation_engine_version()
-    source_fp=sha256_text(scope_source(spec))
-    tests_payload=[{"nodeid":nodeid,"source":test_source(nodeid)} for nodeid in spec["tests"]]
-    tests_fp=sha256_text(stable_json(tests_payload))
-    config_payload={
-      "contract_id":contract_id,
-      "source":spec["source"],
-      "kind":spec["kind"],
-      "scope":spec["scope"],
-      "tests":spec["tests"],
-      "mutation_config":MUTATION_CONFIG,
-      "mutation_semantics_version":MUTATION_SEMANTICS_VERSION,
-      "mutmut_version":mutmut_version,
-    }
-    config_fp=sha256_text(stable_json(config_payload))
-    combined=sha256_text(stable_json({
-      "source":source_fp,
-      "tests":tests_fp,
-      "config":config_fp,
-    }))
-    return {
-      "source_fingerprint":source_fp,
-      "test_set_fingerprint":tests_fp,
-      "config_fingerprint":config_fp,
-      "combined_fingerprint":combined,
-    }
-
-def relevant_allure_run_fingerprint():
-    wanted={nodeid for spec in CONTRACTS.values() for nodeid in spec["tests"]}
-    keys={(nodeid.split("::",1)[0].removesuffix(".py").replace("/","."),nodeid.split("::",1)[1].split("[",1)[0]) for nodeid in wanted}
-    rows=[]
-    for path in sorted((ROOT/"test-results/allure-results").glob("*-result.json")):
-        try:
-            row=json.loads(path.read_text())
-        except Exception:
-            continue
-        if (str(row.get("fullName") or "").split("#",1)[0],str(row.get("name") or "").split("[",1)[0]) in keys:
-            rows.append(row)
-    return sha256_text(stable_json(rows))
-
-def build_campaign_inputs(mode,base_ref,contract_ids=None,mutmut_version=None):
-    ids=list(CONTRACTS.keys()) if contract_ids is None else list(contract_ids)
-    mutmut_version=mutmut_version or mutation_engine_version()
-    contracts={cid:contract_fingerprints(cid,CONTRACTS[cid],mutmut_version) for cid in ids}
-    head=git_sha()
-    base=git_sha(base_ref) if base_ref else None
-    identity_payload={
-      "mode":mode,
-      "head_sha":head,
-      "base_sha":base,
-      "contracts":contracts,
-      "adapter_version":MUTATION_ADAPTER_VERSION,
-      "adapter_sha256":sha256_file(ROOT/".ai-bridge/build-mutation-report-prototype.py"),
-      "mutation_semantics_version":MUTATION_SEMANTICS_VERSION,
-      "mutmut_version":mutmut_version,
-      "mutation_config":MUTATION_CONFIG,
-    }
-    campaign_id=f"{mode}-{head[:12]}-{sha256_text(stable_json(identity_payload))[:12]}"
-    return {
-      "campaign_id":campaign_id,
-      "mode":mode,
-      "head_sha":head,
-      "base_sha":base,
-      "contracts":contracts,
-      "coverage_run_fingerprint":sha256_file(COVERAGE_DB),
-      "allure_run_fingerprint":relevant_allure_run_fingerprint(),
-      "mutation_config_fingerprint":sha256_text(stable_json(MUTATION_CONFIG)),
-    }
-
-def archive_previous_run(new_run_id):
-    if not CAMPAIGN_PATH.exists():
-        return None
-    previous=json.loads(CAMPAIGN_PATH.read_text())
-    previous_run_id=str(previous.get("run_id") or previous.get("campaign_id") or "")
-    if not previous_run_id or previous_run_id==new_run_id:
-        return previous.get("baseline_run_id") or previous.get("baseline_campaign_id")
-    HISTORY_DIR.mkdir(parents=True,exist_ok=True)
-    (HISTORY_DIR/f"{previous_run_id}.json").write_text(json.dumps(previous,indent=2))
-    for fact in STRENGTH.get("contracts",{}).values():
-        if (fact.get("run_id") or fact.get("campaign_id"))==previous_run_id:
-            fact["campaign_provenance_url"]=f"../campaign-history/{previous_run_id}.json"
-    return previous_run_id
-
-def mutant_symbol(engine_id):
-    return re.sub(r"__mutmut_\d+$","",str(engine_id))
-
-def stable_mutant_fingerprint(contract_id,spec,mutant):
-    payload={
-      "contract_id":contract_id,
-      "source_path":spec["source"],
-      "scope_kind":spec["kind"],
-      "scope":spec["scope"],
-      "symbol":mutant_symbol(mutant["id"]),
-      "description":mutant.get("description") or "",
-      "replacement":mutant.get("replacement") or "",
-    }
-    return sha256_text(stable_json(payload))
-
-def mutant_record(contract_id,spec,mutant):
-    return {
-      "fingerprint":stable_mutant_fingerprint(contract_id,spec,mutant),
-      "engine_id":mutant["id"],
-      "symbol":mutant_symbol(mutant["id"]),
-      "status":mutant["status"],
-      "source_path":spec["source"],
-      "line":int(mutant["location"]["start"]["line"]),
-      "description":mutant.get("description") or "",
-      "replacement":mutant.get("replacement") or "",
-      "covered_by":list(mutant.get("coveredBy") or []),
-    }
-
-def empty_suppressions():
-    return {"schema_version":"ternforge-mutation-suppressions-prototype-1","suppressions":[]}
-
-def load_suppressions():
-    if not SUPPRESSIONS_PATH.exists():
-        return empty_suppressions()
-    payload=json.loads(SUPPRESSIONS_PATH.read_text())
-    rows=list(payload.get("suppressions") or [])
-    seen=set()
-    for row in rows:
-        key=(str(row.get("contract_id") or ""),str(row.get("mutant_fingerprint") or ""))
-        if not all(key) or key in seen:
-            raise ValueError(f"invalid/duplicate mutation suppression: {key}")
-        seen.add(key)
-        if not str(row.get("reason") or "").strip():
-            raise ValueError(f"mutation suppression requires reason: {key}")
-    return {"schema_version":"ternforge-mutation-suppressions-prototype-1","suppressions":rows}
-
-def save_suppressions(payload):
-    SUPPRESSIONS_PATH.parent.mkdir(parents=True,exist_ok=True)
-    SUPPRESSIONS_PATH.write_text(json.dumps(payload,indent=2))
-
-def suppression_active(row):
-    expires=str(row.get("expires_at") or "").strip()
-    if not expires:
-        return True
-    try:
-        expiry=datetime.fromisoformat(expires.replace("Z","+00:00"))
-    except ValueError:
-        return False
-    if expiry.tzinfo is None:
-        expiry=expiry.replace(tzinfo=UTC)
-    return expiry>datetime.now(UTC)
-
-def suppression_map(contract_id):
-    return {
-      str(row["mutant_fingerprint"]):row
-      for row in load_suppressions()["suppressions"]
-      if str(row.get("contract_id"))==contract_id and suppression_active(row)
-    }
-
-def load_run(run_id):
-    if not run_id:
-        return None
-    if CAMPAIGN_PATH.exists():
-        current=json.loads(CAMPAIGN_PATH.read_text())
-        if run_id in {current.get("run_id"),current.get("campaign_id")}:
-            return current
-    path=HISTORY_DIR/f"{run_id}.json"
-    return json.loads(path.read_text()) if path.exists() else None
-
-def triage_contract(campaign,contract_id):
-    current_result=campaign["contracts"][contract_id].get("result") or {}
-    current_records=list(current_result.get("mutants") or [])
-    current_survivors={r["fingerprint"]:r for r in current_records if r.get("status")=="Survived"}
-
-    baseline_run_id=(
-      campaign["contracts"][contract_id].get("baseline_run_id")
-      or campaign["contracts"][contract_id].get("baseline_campaign_id")
-      or campaign.get("baseline_run_id")
-      or campaign.get("baseline_campaign_id")
-    )
-    baseline=load_run(baseline_run_id)
-    baseline_contract=(baseline or {}).get("contracts",{}).get(contract_id,{})
-    baseline_result=baseline_contract.get("result") or {}
-    baseline_records=list(baseline_result.get("mutants") or [])
-    baseline_available=bool(baseline_records)
-    baseline_survivors={r["fingerprint"]:r for r in baseline_records if r.get("status")=="Survived"}
-
-    current_ids=set(current_survivors)
-    baseline_ids=set(baseline_survivors)
-    new_ids=current_ids-baseline_ids if baseline_available else set()
-    existing_ids=current_ids&baseline_ids if baseline_available else set()
-    resolved_ids=baseline_ids-current_ids if baseline_available else set()
-    unclassified_ids=current_ids if not baseline_available else set()
-
-    suppressions=suppression_map(contract_id)
-    suppressed_ids={fingerprint for fingerprint in current_ids if fingerprint in suppressions}
-    new_unresolved_ids=new_ids-suppressed_ids
-    unresolved_ids=current_ids-suppressed_ids
-
-    baseline_score=baseline_result.get("score")
-    current_score=current_result.get("score")
-    baseline_adapter=(baseline or {}).get("adapter") or {}
-    current_adapter=campaign.get("adapter") or {}
-    baseline_engine=(baseline or {}).get("engine") or {}
-    current_engine=campaign.get("engine") or {}
-    comparable=bool(
-      baseline_available
-      and baseline_contract.get("source_path")==campaign["contracts"][contract_id].get("source_path")
-      and baseline_contract.get("scope_kind")==campaign["contracts"][contract_id].get("scope_kind")
-      and baseline_contract.get("scope")==campaign["contracts"][contract_id].get("scope")
-      and baseline_engine.get("name")==current_engine.get("name")
-      and baseline_engine.get("version")==current_engine.get("version")
-      and baseline.get("mutation_config")==campaign.get("mutation_config")
-      and baseline_adapter.get("mutation_semantics_version")
-          ==current_adapter.get("mutation_semantics_version")
-      and baseline_score is not None and current_score is not None
-    )
-    score_delta=round(float(current_score)-float(baseline_score),1) if comparable else None
-
-    current_rows=[]
-    for fingerprint,row in current_survivors.items():
-        if fingerprint in suppressed_ids:
-            classification="suppressed"
-        elif fingerprint in new_ids:
-            classification="new"
-        elif fingerprint in existing_ids:
-            classification="existing"
-        else:
-            classification="unclassified"
-        item={**row,"classification":classification}
-        if fingerprint in suppressions:
-            suppression=suppressions[fingerprint]
-            item["suppression"]={
-              "reason":suppression.get("reason"),
-              "owner":suppression.get("owner"),
-              "expires_at":suppression.get("expires_at"),
-            }
-        current_rows.append(item)
-
-    resolved_rows=[
-      {**baseline_survivors[fingerprint],"classification":"resolved"}
-      for fingerprint in sorted(resolved_ids)
-    ]
-    return {
-      "baseline_available":baseline_available,
-      "baseline_run_id":baseline_run_id,
-      "baseline_campaign_id":(baseline or {}).get("campaign_id"),
-      "baseline_comparable":comparable,
-      "baseline_score":baseline_score if baseline_available else None,
-      "score_delta":score_delta,
-      "current_survivors":len(current_ids),
-      "new_survivors":len(new_ids),
-      "existing_survivors":len(existing_ids),
-      "resolved_survivors":len(resolved_ids),
-      "unclassified_survivors":len(unclassified_ids),
-      "suppressed_survivors":len(suppressed_ids),
-      "new_unresolved_survivors":len(new_unresolved_ids),
-      "unresolved_survivors":len(unresolved_ids),
-      "readiness":"attention" if new_unresolved_ids else ("clear" if baseline_available else "baseline_unavailable"),
-      "survivors":sorted(current_rows,key=lambda row:(row["classification"],row["fingerprint"])),
-      "resolved":resolved_rows,
-    }
-
-def apply_triage(campaign):
-    selected=list(campaign.get("contracts") or {})
-    for contract_id in selected:
-        triage=triage_contract(campaign,contract_id)
-        campaign["contracts"][contract_id]["result"]["triage"]=triage
-        STRENGTH["contracts"][contract_id]["triage"]=triage
-    return selected
-
-def upsert_suppression(contract_id,fingerprint,reason,owner=None,expires_at=None):
-    reason=str(reason or "").strip()
-    if not reason:
-        raise ValueError("suppression reason is required")
-    payload=load_suppressions()
-    rows=payload["suppressions"]
-    key=(contract_id,fingerprint)
-    rows[:]=[
-      row for row in rows
-      if (str(row.get("contract_id")),str(row.get("mutant_fingerprint")))!=key
-    ]
-    rows.append({
-      "contract_id":contract_id,
-      "mutant_fingerprint":fingerprint,
-      "reason":reason,
-      "owner":owner or None,
-      "expires_at":expires_at or None,
-      "created_at":utc_now(),
-    })
-    save_suppressions(payload)
-
-def remove_suppression(contract_id,fingerprint):
-    payload=load_suppressions()
-    before=len(payload["suppressions"])
-    payload["suppressions"]=[
-      row for row in payload["suppressions"]
-      if not (
-        str(row.get("contract_id"))==contract_id
-        and str(row.get("mutant_fingerprint"))==fingerprint
-      )
-    ]
-    if len(payload["suppressions"])!=before:
-        save_suppressions(payload)
-    return before-len(payload["suppressions"])
-
-def validate_linked_test_nodeids():
-    errors=[]
-    for contract_id,spec in CONTRACTS.items():
-        files=sorted({str(nodeid).split("::",1)[0] for nodeid in spec["tests"]})
-        completed=subprocess.run(
-          [
-            sys.executable,"-m","pytest",
-            "--collect-only","-q","--no-cov",
-            "-p","no:randomly","-p","no:random-order",
-            *files,
-          ],
-          cwd=ROOT,
-          env=probe_env(),
-          text=True,
-          stdout=subprocess.PIPE,
-          stderr=subprocess.STDOUT,
-        )
-        if completed.returncode!=0:
-            tail=(completed.stdout or "")[-8000:]
-            errors.append(
-              f"{contract_id}: linked-test collection failed:\n{tail}"
-            )
-            continue
-        # pytest -q collection output is one exact nodeid per line; ignore
-        # coverage/plugin prose by requiring the declared test-file prefix.
-        collected={
-          line.strip()
-          for line in (completed.stdout or "").splitlines()
-          if any(line.strip().startswith(file_name+"::") for file_name in files)
-        }
-        missing=[nodeid for nodeid in spec["tests"] if nodeid not in collected]
-        if missing:
-            errors.append(
-              f"{contract_id}: linked mutation nodeids are not in current pytest collection: "
-              +", ".join(missing)
-            )
-    if errors:
-        raise RuntimeError(
-          "mutation linked-test preflight failed:\n"+"\n".join(errors)
-        )
-
-
-def write_config(spec):
-    selected="\n".join("    "+n for n in spec["tests"])
-    (ROOT/"setup.cfg").write_text(
-      "[mutmut]\nprocess_isolation = forkserver\nforkserver_warmup = collect\nsource_paths =\n    src/llm_router\n"
-      f"only_mutate =\n    {spec['source']}\nmutate_only_covered_lines = true\nalso_copy =\n    features\n"
-      f"pytest_add_cli_args =\n    --no-cov\npytest_add_cli_args_test_selection =\n{selected}\n")
-
-def run_mutmut(spec):
-    shutil.rmtree(ROOT/"mutants",ignore_errors=True)
-    write_config(spec)
-    env=probe_env()
-    env["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"]="YES"
-    mutmut_executable=shutil.which("mutmut")
-    command=[
-      *( [mutmut_executable] if mutmut_executable else [sys.executable,"-m","mutmut"] ),
-      "run",
-      "--max-children",str(MUTATION_CONFIG["max_children"]),
-    ]
-    completed=subprocess.run(
-      command,
-      cwd=ROOT,
-      env=env,
-      text=True,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.STDOUT,
-    )
-    output=completed.stdout or ""
-    if completed.returncode!=0 and "ForkServerCrashError" in output:
-        print(
-          "[P23] mutmut forkserver crashed; resuming retained mutant set "
-          "with max_children=1",
-          flush=True,
-        )
-        resume_command=[*command[:-1],"1"]
-        completed=subprocess.run(
-          resume_command,
-          cwd=ROOT,
-          env=env,
-          text=True,
-          stdout=subprocess.PIPE,
-          stderr=subprocess.STDOUT,
-        )
-        output=(output+"\n--- forkserver recovery ---\n"+(completed.stdout or ""))
-    if completed.returncode!=0:
-        tail=output[-8000:]
-        raise RuntimeError(f"mutmut failed with exit {completed.returncode}:\n{tail}")
-
-def scope_matches(name,spec):
-    from mutmut.utils.format_utils import (  # ty: ignore[unresolved-import]
-        orig_function_and_class_names_from_key,
-    )
-    fn,cls=orig_function_and_class_names_from_key(name)
-    return cls==spec["scope"] if spec["kind"]=="class" else cls is None and fn==spec["scope"]
-
-def function_start(path,name):
-    from mutmut.utils.format_utils import (  # ty: ignore[unresolved-import]
-        orig_function_and_class_names_from_key,
-    )
-    fn,cls=orig_function_and_class_names_from_key(name)
-    nodes=ast.parse(path.read_text()).body
-    if cls:
-        nodes=next(n for n in nodes if isinstance(n,ast.ClassDef) and n.name==cls).body
-    f=next(n for n in nodes if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name==fn)
-    return min([f.lineno,*[d.lineno for d in f.decorator_list]])
-
-def mutant_detail(path,name):
-    from mutmut.mutation.diff_apply import (  # ty: ignore[unresolved-import]
-        get_diff_for_mutant,
-    )
-    diff=get_diff_for_mutant(name,path=str(path.relative_to(ROOT)))
-    start=function_start(path,name)
-    old=new=0
-    changed=None
-    before=after=""
-    for row in diff.splitlines():
-        if row.startswith("@@"):
-            m=re.search(r"@@ -(\d+)(?:,\d+)? \+(\d+)",row)
-            if m:
-                old,new=map(int,m.groups())
-        elif row.startswith("---") or row.startswith("+++"):
-            continue
-        elif row.startswith("-"):
-            if changed is None:
-                changed=start+old-1
-                before=row[1:]
-            old+=1
-        elif row.startswith("+"):
-            if not after:
-                after=row[1:]
-            new+=1
-        else:
-            old+=1
-            new+=1
-    line=changed or start
-    common=0
-    for a,b in zip(before,after):
-        if a!=b:
-            break
-        common+=1
-    col=max(1,common+1)
-    loc={"start":{"line":line,"column":col},"end":{"line":line,"column":max(col+1,len(before)+1)}}
-    desc=f"{before.strip() or '[removed]'} -> {after.strip() or '[removed]'}"
-    return loc,desc,after.strip()
-
-def coverage_by_test(spec):
-    source=str((ROOT/spec["source"]).resolve())
-    out={}
-    for nodeid in spec["tests"]:
-        d=CoverageData(basename=str(COVERAGE_DB))
-        d.read()
-        d.set_query_context(nodeid+"|run")
-        out[nodeid]=set(d.lines(source) or [])
-    return out
-
-def report_test_files(spec):
-    grouped=defaultdict(list)
-    for nodeid in spec["tests"]:
-        grouped[nodeid.split("::",1)[0]].append(nodeid)
-    files={}
-    for file_name,nodeids in grouped.items():
-        files[file_name]={
-          "source":(ROOT/file_name).read_text(),
-          "tests":[
-            {"id":nodeid,"name":nodeid,"location":{"start":{"line":int(TEST_META.get(nodeid,{}).get("source_line") or 1),"column":1}}}
-            for nodeid in nodeids]}
-    return files
-
-def allure_report_ids():
-    wanted={nodeid for spec in CONTRACTS.values() for nodeid in spec["tests"]}
-    keys={}
-    for nodeid in wanted:
-        file_name,test_name=nodeid.split("::",1)
-        keys[(file_name.removesuffix(".py").replace("/","."),test_name)]=nodeid
-    found={}
-    for path in (ROOT/"test-results/allure-results").glob("*-result.json"):
-        try:
-            row=json.loads(path.read_text())
-        except Exception:
-            continue
-        full_name=str(row.get("fullName") or "")
-        name=str(row.get("name") or "")
-        for (package,test_name),nodeid in keys.items():
-            base_name=test_name.split("[",1)[0]
-            full_name_matches = full_name == package + "#" + base_name
-            display_name_matches = name == test_name or name == base_name
-            parameterized = "[" in test_name
-            if full_name_matches and (display_name_matches or not parameterized):
-                uuid=str(row.get("uuid") or "")
-                if uuid:
-                    import hashlib
-                    found[nodeid]=hashlib.md5(uuid.encode()).hexdigest()
-    return found
-
-def write_wrapper(contract_id,spec,allure_ids,fact):
-    links=[]
-    for nodeid in spec["tests"]:
-        report_id=allure_ids.get(nodeid)
-        target=(f"../../test-results/index.html#{report_id}" if report_id
-                else f"../../test-results/index.html?tags=TF_SCOPE__{contract_id}")
-        links.append(f'<li><a href="{target}" title="{nodeid}">{nodeid.split("::")[-1]}</a></li>')
-    exact="".join(links)
-    fresh=bool(fact.get("fresh"))
-    freshness_label="Fresh" if fresh else "STALE"
-    freshness_class="is-fresh" if fresh else "is-stale"
-    stale_reason="" if fresh else " · "+", ".join(fact.get("stale_reasons") or ["fingerprint mismatch"])
-    campaign_mode=str(fact.get("campaign_mode") or "unknown")
-    campaign_head=str(fact.get("campaign_head_sha") or "")
-    campaign_id=str(fact.get("campaign_id") or "unknown")
-    run_id=str(fact.get("run_id") or campaign_id)
-    provenance_url=str(fact.get("campaign_provenance_url") or "../campaign.json")
-    triage=fact.get("triage") or {}
-    new_unresolved=int(triage.get("new_unresolved_survivors") or 0)
-    if triage.get("baseline_available"):
-        delta=("n/a" if triage.get("score_delta") is None else f"{float(triage['score_delta']):+.1f} pp")
-        triage_text=(
-          f"Mutation delta · New {int(triage.get('new_survivors') or 0)} "
-          f"({new_unresolved} unresolved) · Debt {int(triage.get('existing_survivors') or 0)} · "
-          f"Resolved {int(triage.get('resolved_survivors') or 0)} · "
-          f"Suppressed {int(triage.get('suppressed_survivors') or 0)} · score Δ {delta}"
-        )
-    elif triage:
-        triage_text=f"Mutation delta · baseline unavailable · current survivors {int(triage.get('current_survivors') or 0)}"
-    else:
-        triage_text="Mutation delta · not retained for this campaign"
-    triage_class="is-attention" if new_unresolved else "is-clear"
-    suppressed_rows=[row for row in triage.get("survivors") or [] if row.get("classification")=="suppressed"]
-    suppressed_html=""
-    if suppressed_rows:
-        items="".join(
-          "<li><code>"+html_escape(str(row.get("fingerprint") or "")[:12])+"</code> · "+
-          html_escape(str(row.get("description") or ""))+" · <b>Reason:</b> "+
-          html_escape(str((row.get("suppression") or {}).get("reason") or ""))+
-          (" · owner "+html_escape(str((row.get("suppression") or {}).get("owner"))) if (row.get("suppression") or {}).get("owner") else "")+
-          (" · expires "+html_escape(str((row.get("suppression") or {}).get("expires_at"))) if (row.get("suppression") or {}).get("expires_at") else "")+
-          "</li>"
-          for row in suppressed_rows
-        )
-        suppressed_html=f'<details class="tf-suppressions"><summary>Suppressed survivors ({len(suppressed_rows)})</summary><ul>{items}</ul></details>'
-    html=f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{contract_id} · Raw mutation detail</title><script defer src="../../_static/mutation-test-elements.js"></script>
-<style>html,body{{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}}.tf-bridge{{display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap;padding:.65rem .9rem;border-bottom:1px solid #d0d5dd;background:#f8fafc;color:#172033}}.tf-bridge a{{color:#1d4ed8;text-decoration:none}}.tf-bridge a:hover{{text-decoration:underline}}.tf-bridge details{{margin-left:auto}}.tf-bridge summary{{cursor:pointer;font-size:.78rem;color:#475467}}.tf-bridge ul{{font-size:.74rem;line-height:1.5}}.tf-campaign,.tf-triage{{flex-basis:100%;font-size:.76rem;color:#475467}}.tf-suppressions{{flex-basis:100%;margin-left:0!important;font-size:.76rem;color:#475467}}.tf-suppressions code{{font-size:.72rem}}.tf-campaign strong.is-fresh,.tf-triage strong.is-clear{{color:#2f8f5b}}.tf-campaign strong.is-stale,.tf-triage strong.is-attention{{color:#c2413b}}@media(prefers-color-scheme:dark){{.tf-bridge{{background:#151a21;color:#d0d7de;border-color:#30363d}}.tf-bridge a{{color:#79c0ff}}.tf-bridge summary,.tf-campaign,.tf-triage,.tf-suppressions{{color:#9da7b3}}}}</style></head><body>
-<nav class="tf-bridge"><a href="../../verification-health-map.html#faults/detect:{contract_id}">← Verification Health Map</a><strong>{contract_id} · Raw mutants</strong>
-<a href="../../mutation-analysis.html#mutation-{contract_id.lower()}">Changes / history</a>
-<a href="../../test-results/index.html?tags=TF_SCOPE__{contract_id}">Allure tests</a>
-<details><summary>Exact pytest / Allure tests ({len(spec["tests"])})</summary><ul>{exact}</ul></details>
-<div class="tf-campaign"><strong class="{freshness_class}">{freshness_label}</strong> · {campaign_mode} campaign · {campaign_head[:12]} · content {campaign_id} · run {run_id.rsplit("--", maxsplit=1)[-1]}{stale_reason} · <a href="{provenance_url}">campaign provenance</a></div>
-<div class="tf-triage"><strong class="{triage_class}">{'Attention' if new_unresolved else 'No new unresolved survivors'}</strong> · {triage_text}</div>
-{suppressed_html}</nav>
-<mutation-test-report-app src="mutation-report.json" title-postfix="{contract_id} · llm-router"></mutation-test-report-app>
-</body></html>"""
-    (OUT/contract_id/"index.html").write_text(html)
-
-def freshness_state(record,current):
-    reasons=[]
-    labels={
-      "source_fingerprint":"implementation source changed",
-      "test_set_fingerprint":"linked tests changed",
-      "config_fingerprint":"mutation configuration changed",
-    }
-    for key,label in labels.items():
-        if record.get(key)!=current.get(key):
-            reasons.append(label)
-    return not reasons,reasons
-
-def build_summary(campaign):
-    rows={}
-    fresh=stale=0
-    totals={
-      "new_survivors":0,
-      "existing_survivors":0,
-      "resolved_survivors":0,
-      "suppressed_survivors":0,
-      "new_unresolved_survivors":0,
-      "unresolved_survivors":0,
-    }
-    actionable_contracts=[]
-    for contract_id in CONTRACTS:
-        fact=STRENGTH["contracts"][contract_id]
-        triage=fact.get("triage") or {}
-        is_fresh=bool(fact.get("fresh"))
-        fresh+=int(is_fresh)
-        stale+=int(not is_fresh)
-        for key in totals:
-            totals[key]+=int(triage.get(key) or 0)
-        if int(triage.get("new_unresolved_survivors") or 0)>0:
-            actionable_contracts.append(contract_id)
-        rows[contract_id]={
-          "score":fact.get("score"),
-          "state":fact.get("state"),
-          "killed":fact.get("killed"),
-          "survived":fact.get("survived"),
-          "valid_mutants":fact.get("valid_mutants"),
-          "fresh":is_fresh,
-          "stale_reasons":fact.get("stale_reasons") or [],
-          "report_url":fact.get("report_url"),
-          "campaign_id":fact.get("campaign_id"),
-          "run_id":fact.get("run_id"),
-          "campaign_mode":fact.get("campaign_mode"),
-          "campaign_head_sha":fact.get("campaign_head_sha"),
-          "baseline_run_id":fact.get("baseline_run_id"),
-          "baseline_campaign_id":fact.get("baseline_campaign_id"),
-          "triage":{
-            key:triage.get(key)
-            for key in (
-              "baseline_available","baseline_comparable","baseline_score","score_delta",
-              "current_survivors","new_survivors","existing_survivors","resolved_survivors",
-              "unclassified_survivors","suppressed_survivors","new_unresolved_survivors",
-              "unresolved_survivors","readiness"
-            )
-            if key in triage
-          },
-        }
-    return {
-      "schema_version":"ternforge-mutation-summary-prototype-4",
-      "campaign_id":campaign["campaign_id"],
-      "run_id":campaign.get("run_id"),
-      "baseline_run_id":campaign.get("baseline_run_id"),
-      "baseline_campaign_id":campaign.get("baseline_campaign_id"),
-      "mode":campaign["mode"],
-      "head_sha":campaign["head_sha"],
-      "latest_selected_contracts":campaign.get("selected_contracts") or list(campaign.get("contracts") or {}),
-      "latest_skipped_contracts":campaign.get("skipped_contracts") or [],
-      "measured_contracts":len(rows),
-      "total_contracts":len(DEPTH.get("contracts") or []),
-      "fresh_measured_contracts":fresh,
-      "stale_measured_contracts":stale,
-      **totals,
-      "actionable_contracts":actionable_contracts,
-      "readiness":"attention" if actionable_contracts else "clear",
-      "contracts":rows,
-    }
 
 # TERNFORGE-P34-CLEAN-MAPS-START
 NORMATIVE_MAP_TYPES = {"goal", "feature", "req", "treq"}
@@ -1172,17 +245,6 @@ def map_rows_for_scope(scope_ids, direct_index):
             seen.add(nodeid)
             rows.append(row)
     return rows
-
-
-def map_status(rows):
-    if not rows:
-        return "none"
-    results = [str(row.get("result") or "unknown").lower() for row in rows]
-    if any(result in {"failed", "error", "broken"} for result in results):
-        return "failed"
-    if any(result != "passed" for result in results):
-        return "attention"
-    return "passed"
 
 
 def portal_map_shell(shell_path, title, article_html):
@@ -1347,7 +409,8 @@ def health_map_payload():
             if owner and owner!=contract_id:
                 continue
             owned_tests[contract_id].append(row)
-            if not owner and not binding.get("fault_challenge"):
+            # A mutation pin pins a fault, not a coverage case (ADR_0006): it is bound by what it pins.
+            if not owner and not binding.get("fault_challenge") and not is_mutation_pin(row.get("nodeid")):
                 unbound_tests[contract_id]+=1
 
     contract_layers={}
@@ -1875,7 +938,13 @@ HEALTH_CAUSES={
   "faults":(
     ("unchallenged","Unchallenged fault classes","A required fault class has no retained test that challenges it for this contract."),
     ("shared","Shared @impl","Its code is also claimed by other contracts, so a fault there cannot be pinned on this one."),
-    ("survivors","Surviving mutants","The contract's own tests let injected implementation faults survive."),
+    ("survivors","Surviving mutants","The contract's tests run the mutated code and still pass: they do not check what the mutant changes."),
+    ("notreached","Code not reached","No test of the contract runs the code where its mutants sit."),
+    ("unproven","Equivalence not proven","A semantic mutant survives and no input yet tells it apart from the original."),
+    ("generate","Semantic mutants not generated","A target the profile selects has no semantic mutant: it was never generated, or its generation was deferred by the budget, found no available model or got an answer the adapter rejected."),
+    ("regenerate","Semantic mutants not current","The cascade has not judged the current proposals: they are new, their target or its context changed, or the cascade has not run since."),
+    ("suppressed","All mutants suppressed","Every mutant of a required class carries a suppression pragma, so none is judged."),
+    ("invalid","Mutants break collection","Every mutant of a required class broke test collection, so none could be judged."),
     ("nosite","No fault site","A required class has no mutable site in the attributable code; the profile may ask for too much."),
     ("noimpl","No @impl","No code is annotated as implementing this contract, so implementation faults have no target."),
     ("notests","No passing tests","The contract has no passing test to judge its faults with."),
@@ -1908,18 +977,38 @@ HEALTH_METRIC_CAUSES={
 
 
 def health_fault_cause(state,plan):
+    """Why a required fault class is not caught, in the words a reader acts on."""
     if not state:
         return "campaign"
-    if state.get("detected"):
+    undecided=int(state.get("undecided") or 0)
+    if state.get("detected") and not undecided:
         return None
     campaign=state.get("campaign_state")
     if campaign=="blocked":
         return {"shared_scope":"shared","no_impl_scope":"noimpl","no_passing_tests":"notests"}.get((plan or {}).get("blocked"),"blocked")
     if campaign=="current":
-        return "survivors" if state.get("generated") else "nosite"
+        if int(state.get("survived_reached") or 0):
+            return "survivors"
+        if int(state.get("unreached") or 0):
+            return "notreached"
+        if int(state.get("judged") or 0)==0:
+            if int(state.get("suppressed") or 0):
+                return "suppressed"
+            if int(state.get("invalid") or 0):
+                return "invalid"
+            return "nosite"
+        return "survivors"
     if campaign:
         return "campaign"
-    return "missed" if state.get("exercised") else "unchallenged"
+    if state.get("exercised") and not state.get("detected"):
+        return "missed"
+    if undecided and int(state.get("semantic_not_generated") or 0):
+        return "generate"
+    if undecided and state.get("semantic_state") in {"stale","not_run","unqualified"}:
+        return "regenerate"
+    if undecided:
+        return "unproven"
+    return "unchallenged"
 
 
 def health_layer_causes(rows,contracts,plans):
@@ -2117,10 +1206,10 @@ def depth_fault_measure(contract,plan):
       for name,state in (((contract.get("fault_actual") or {}).get("classes")) or {}).items()
       if name.startswith("impl.")
     }
-    killed=sum(int(state.get("killed") or 0) for state in classes.values())
-    survived=sum(int(state.get("survived") or 0) for state in classes.values())
-    if killed+survived:
-        return [killed,killed+survived],""
+    killed=sum(int(state.get("caught") or state.get("killed") or 0) for state in classes.values())
+    judged=sum(int(state.get("judged") or 0) for state in classes.values())
+    if judged:
+        return [killed,judged],""
     asked={
       item.get("state")
       for group in (contract.get("target") or {}).get("fault_groups") or []
@@ -2141,7 +1230,8 @@ def depth_map_payload(health_payload):
     """Evidence depth: where each contract's own passing tests sit by test level and boundary,
     which substitutes stand at the boundary and how well their model is validated, and how
     many injected implementation faults the tests catch. Each test counts once, for the entity
-    it was written for, as on the Health Map; the hierarchy is the Health Map's own."""
+    it was written for, as on the Health Map; the hierarchy is the Health Map's own. A mutation
+    pin pins one mutant: it is no evidence of depth, so it does not count here."""
     req_facts=json.loads(REQ_MONITOR_FACTS_PATH.read_text())
     upper_facts=json.loads(UPPER_ASSURANCE_FACTS_PATH.read_text())
     contracts=req_facts.get("contracts") or {}
@@ -2157,7 +1247,7 @@ def depth_map_payload(health_payload):
     failing=Counter()
     for test in DEPTH.get("tests") or []:
         binding=bindings.get(test.get("nodeid")) or {}
-        if binding.get("assurance_item"):
+        if binding.get("assurance_item") or is_mutation_pin(test.get("nodeid")):
             continue
         owner=criterion_owner.get(binding.get("coverage_item") or "")
         for contract_id in test.get("verifies") or []:
@@ -2372,6 +1462,688 @@ def render_health_map_page():
     return health_payload,depth_payload
 
 
+# The Verification Explorer lists every item behind the monitors, one row each: the evidence paths of every
+# criterion, tests outside the profiles, fault classes and their mutants, the own checks of goals and capabilities,
+# what each item depends on and the evidence producers. It judges nothing a monitor does not judge: statuses come
+# from the same domain algebra as Contract Evidence and the Health Map, causes in the Health Map's own words.
+# Causes that only a single row can have; the rest are the Health Map's.
+EXPLORER_CAUSES={
+  "support":("Supporting item fails","Something this item depends on fails, so it cannot pass until that passes."),
+  "unexpected":("Path the profile does not declare","A retained test claims a path the profile does not list, so its criterion cannot be judged."),
+}
+EXPLORER_SUPPORT_SECTIONS={"feature":"requirement_support","goal":"capability_support","product":"goal_support"}
+EXPLORER_SECTION_LABELS={
+  key:label
+  for labels in (ASSURANCE_REGISTRY.FEATURE_SECTION_LABELS,ASSURANCE_REGISTRY.GOAL_SECTION_LABELS,ASSURANCE_REGISTRY.PRODUCT_SECTION_LABELS)
+  for label,key in labels
+}
+EXPLORER_STATUS={"MET":"pass","NOT MET":"fail","N/A":"na"}
+# A semantic mutant in the explorer: its status, state word and causes, by the cascade's outcome.
+EXPLORER_SEMANTIC_OUTCOMES={
+  "caught":("pass","Caught",[]),
+  "distinguished":("fail","Survived",["survivors"]),
+  "undecided":("unknown","Undecided",["unproven"]),
+  "stale":("unknown","Stale",["regenerate"]),
+  "equivalent":("na","Equivalent",[]),
+  "identical":("na","Filtered · identical",[]),
+  "duplicate":("na","Filtered · duplicate",[]),
+  "invalid":("na","Filtered · invalid",[]),
+}
+# One mutant in the explorer: its status, state word, causes and what it means, by outcome.
+EXPLORER_MUTANT_OUTCOMES={
+  "caught":("pass","Caught",[],"A test of the contract fails on this change, so the tests catch it."),
+  "survived":("fail","Survived",["survivors"],"Its tests run this line and none fails."),
+  "notreached":("fail","Not reached",["notreached"],"No test of the contract runs this line."),
+  "suppressed":("na","Suppressed",[],"Suppressed by a pragma."),
+  "invalid":("na","Invalid",[],"The change broke test collection, so it proves nothing either way."),
+}
+EXPLORER_WORD={"MET":"PASS","NOT MET":"FAIL","N/A":"N/A","UNKNOWN":"UNKNOWN"}
+# What one backend's attempt at a target without mutants came to.
+EXPLORER_GENERATION_OUTCOMES={
+  "deferred":"was deferred by the budget",
+  "unavailable":"was unavailable",
+  "rejected":"was rejected by its plan's usage window",
+  "invalid":"answered outside its schema",
+  "error":"failed",
+  "timeout":"timed out",
+}
+
+
+def tokens_text(count):
+    count=int(count or 0)
+    return f"{count/1000:.1f}k" if count>=1000 else str(count)
+
+
+def explorer_generation_note(contract_id,generator,calls,verb,label,shared=1):
+    """Who wrote a semantic mutant or its draft, and what the call cost, for its explorer row; a call that
+    produced several mutants is named with how many, so its cost is not read as each one's."""
+    if generator.get("kind")=="model":
+        call=calls.get(generator.get("call_id")) or {}
+        tokens=call.get("tokens") or {}
+        spent=[]
+        if tokens:
+            spent.append(
+              f"{tokens_text(sum(int(tokens.get(key) or 0) for key in ('input','cache_read','cache_write')))} in and "
+              f"{tokens_text(tokens.get('output'))} out tokens"
+            )
+        if call.get("list_usd") is not None:
+            spent.append(f"${call['list_usd']:.3f} at list price")
+        if call.get("seconds"):
+            spent.append(f"{float(call['seconds']):.0f} s")
+        text=f" {verb} by {generator.get('model')} through {generator.get('backend')} {generator.get('backend_version') or ''}".rstrip()
+        text+=f" on {str(call['at'])[:10]}" if call.get("at") else ""
+        text+=f", one call for {shared} mutants" if shared>1 else ""
+        text+=(f" ({', '.join(spent)})" if spent else "")+"."
+        return text,[[label,f"semantic-mutants/{contract_id}/responses/{generator.get('call_id')}.json","raw"]]
+    if generator.get("kind")=="agent":
+        return f" {verb} by an agent session ({generator.get('model')}) from the same prompt.",[]
+    return "",[]
+
+
+def explorer_causes():
+    causes={cause_id:{"label":label,"hint":hint} for entries in HEALTH_CAUSES.values() for cause_id,label,hint in entries}
+    causes.update({"metric:"+name:{"label":label,"hint":hint} for name,(label,hint) in HEALTH_METRIC_CAUSES.items()})
+    causes.update({cause_id:{"label":label,"hint":hint} for cause_id,(label,hint) in EXPLORER_CAUSES.items()})
+    return causes
+
+
+def explorer_test_links():
+    """Where each test has its own pages: its Living Specification scenario, its evidence record and its exact Allure
+    result. A scenario is found by its title on the page of its feature file; an ambiguous match links nowhere."""
+    base=ROOT/"docs/_build/html"
+    scenarios=[]
+    for path in sorted((base/"specifications").rglob("*.html")):
+        page=path.relative_to(base).as_posix()
+        scenarios.extend((anchor,page) for anchor in re.findall(r'id="(living-scenario-[a-z0-9-]+)"',path.read_text()))
+    allure={}
+    for nodeid,rows in allure_monitor_index().items():
+        if len(rows)==1 and rows[0].get("uuid"):
+            allure[nodeid]="test-results/index.html#"+hashlib.md5(str(rows[0]["uuid"]).encode()).hexdigest()
+    links={}
+    for need in current_needs().values():
+        nodeid=need.get("nodeid")
+        if need.get("type")!="testcase" or not nodeid:
+            continue
+        spec=None
+        title,feature=str(need.get("gherkin_scenario") or ""),str(need.get("gherkin_feature") or "")
+        if title and feature:
+            slug=re.sub(r"[^a-z0-9]+","-",title.lower()).strip("-")
+            page_tail="/"+Path(feature).parent.name.replace("_","-")+"/"+Path(feature).stem.replace("_","-")+".html"
+            hits=[(anchor,page) for anchor,page in scenarios if anchor.endswith("-"+slug) and page.endswith(page_tail)]
+            if len(hits)==1:
+                spec=hits[0][1]+"#"+hits[0][0]
+        links[nodeid]={"spec":spec,"evidence":test_evidence_url(nodeid),"allure":allure.get(nodeid)}
+    return links
+
+
+def explorer_path_checks(row,cell):
+    """How one retained path stands against its cell's target, property by property, as cell_state judges the paths
+    it aggregates (every profile aggregates its paths with ALL)."""
+    domain=ASSURANCE_DOMAIN
+    representation=domain.representation_label(row.get("representation"))
+    checks={
+      "Representation":domain.minimum_representation_status([representation],domain.representation_label(cell.get("representation")),"ALL")[0],
+      "Provenance":domain.quantified_status([str(row.get("provenance") or "UNKNOWN").upper() if row.get("provenance_scope")=="full_chain" else "UNKNOWN"],"COMPLETE","ALL"),
+      "Producers":domain.quantified_status([str(row.get("producer_qualification") or "UNKNOWN").upper() if row.get("producer_qualification_scope")=="full_chain" else "UNKNOWN"],"QUALIFIED","ALL"),
+      "Freshness":domain.quantified_status([str(row.get("freshness") or "UNKNOWN").upper()],"CURRENT","ALL"),
+      "M&S":"N/A",
+    }
+    declared=cell.get("ms_validation_target") or cell.get("ms_validation")
+    if representation=="Surrogate / simulated":
+        if not declared:
+            checks["M&S"]="UNKNOWN"
+        elif domain.ms_label(str(declared))!="L0":
+            checks["M&S"]=domain.minimum_ms_status([domain.ms_label(row.get("ms_validation"))],domain.ms_label(str(declared)),"ALL")[0]
+    return checks
+
+
+def explorer_clip(value,limit):
+    value=str(value)
+    return value if len(value)<=limit else value[:limit-1]+"…"
+
+
+def explorer_verdict_note(contract_id,key):
+    """What the verdict that counts says about one survivor, for its explorer row (ADR_0006)."""
+    entry=((verdict_state().get(contract_id) or {}).get("items") or {}).get(str(key)) or {}
+    verdict=entry.get("verdict")
+    if not verdict:
+        return ""
+    by="the person" if verdict.get("by")=="person" else str(verdict.get("by"))
+    reason=explorer_clip(" ".join(str(verdict.get("reason") or "").split()),260)
+    if verdict["verdict"]=="pin":
+        pin=entry.get("pin") or {}
+        return f" Verdict by {by}: pin. {reason} "+(f"Pinned by {pin['path']}." if pin else "A pinning test is still to be written and kept.")
+    if verdict["verdict"]=="escalate":
+        return f" Verdict by {by}: escalated, it waits for you. {reason}"
+    return f" Verdict by {by}: {verdict['verdict']}. {reason}"
+
+
+def explorer_judgement_note(judged,rule):
+    """What the survivor judgement found about a survivor, for its explorer row (ADR_0005)."""
+    status=judged.get("status")
+    if status=="found":
+        witness=judged.get("witness") or {}
+        author="the symbolic search" if witness.get("by")=="symbolic search" else f"{str(witness.get('by')).split(':',1)[-1]}, an assessor,"
+        # Where the two outcomes differ, not their shared beginning.
+        original,mutant=EQ.contrast(str(witness.get("original") or ""),str(witness.get("mutant") or ""),120)
+        return (
+          f" {'Test goal' if rule else 'Input'}: {explorer_clip(witness.get('display'),220)}: the original gives "
+          f"{original}; the mutant gives {mutant}. "
+          f"Found by {author} and confirmed by execution."
+        )
+    if status=="not-applicable":
+        return f" Not judged: {judged.get('reason')}."
+    parts=[]
+    symbolic=judged.get("symbolic") or {}
+    if symbolic.get("status") in {"none","exhausted"}:
+        parts.append(
+          f"the symbolic search found no input in {int(symbolic.get('paths') or 0)} paths"+(", having explored them all" if symbolic.get("status")=="exhausted" else "")
+          +(f", trying plain values for {', '.join(judged['substituted'])} in place of the declared type" if judged.get("substituted") else "")
+        )
+    elif symbolic.get("status")=="error":
+        parts.append("the symbolic search could not run ("+explorer_clip(symbolic.get("reason") or "",120)+")")
+    elif symbolic.get("status")=="different":
+        reasons=[item.get("reason") for item in judged.get("refuted") or [] if item.get("by")=="symbolic search"]
+        parts.append("the symbolic search's inputs are refuted"+(f" ({explorer_clip(reasons[0],120)})" if reasons else ""))
+    elif symbolic.get("status")=="timeout":
+        parts.append("the symbolic search ran out of time")
+    answered=[member for member in judged.get("members") or [] if member.get("verdict")]
+    if answered:
+        parts.append("the assessors answer "+", ".join(
+          f"{str(member['member']).split(':',1)[-1]} {member['verdict']} ({float(member.get('confidence') or 0):.2f})" for member in answered
+        ))
+    elif judged.get("members"):
+        parts.append("no assessor has answered yet")
+    parts.extend(
+      f"the input {str(item['by']).split(':',1)[-1]} proposed is refuted: {item.get('reason')}"
+      for item in judged.get("refuted") or [] if item.get("by")!="symbolic search"
+    )
+    said=(" "+"; ".join(parts)[:1].upper()+"; ".join(parts)[1:]+".") if parts else ""
+    if status=="likely-equivalent":
+        return said+(
+          f" Likely equivalent in what the judgement observes (returns, object state and exception types, not effects such as logging): "
+          f"every assessor judges it equivalent above the calibrated {float(judged.get('threshold') or 0):.2f}. Advisory: "
+          +("if you agree, suppress it with `# mutation: equivalent` and the reason." if rule else "if you agree, record the verdict with its reason.")
+        )
+    return said+" Unsure."+("" if judged.get("calibrated") or not answered else " The assessors are not calibrated, so they label nothing.")
+
+
+def explorer_not_planted(actual):
+    """How many would-be mutants of a class the arid-code rules kept out, by rule."""
+    rules=actual.get("not_planted") or {}
+    total=sum(int(count) for count in rules.values())
+    if not total:
+        return ""
+    return f"{total} more sit in arid code and were not planted ("+", ".join(f"{rule} {count}" for rule,count in sorted(rules.items()))+")."
+
+
+def explorer_mutant_change(mutant):
+    """What the mutant changes, in code: the original and its replacement where both are short."""
+    original,replacement=mutant.get("original") or "",mutant.get("replacement") or ""
+    if mutant["operator"]=="statement":
+        return "removed: "+original if original else mutant["description"]
+    if mutant["operator"]=="body":
+        return f"{mutant.get('qualname') or 'function'} body → {replacement}"
+    if original and replacement and len(original)+len(replacement)<=110:
+        return f"{original} → {replacement}"
+    return mutant["description"]
+
+
+def working_changed_lines(base_ref="main"):
+    """Lines the working tree changes against its merge base with the base branch:
+    the lines a pull request from this branch would change."""
+    try:
+        merge_base=subprocess.run(
+          ["git","merge-base","HEAD",base_ref],cwd=ROOT,text=True,capture_output=True,check=True,
+        ).stdout.strip()
+        diff=subprocess.run(
+          ["git","diff","--unified=0","--no-color",merge_base,"--","src"],cwd=ROOT,text=True,capture_output=True,check=True,
+        ).stdout
+    except (subprocess.CalledProcessError,FileNotFoundError):
+        return set(),None
+    changed=set()
+    current=None
+    for line in diff.splitlines():
+        if line.startswith("+++ "):
+            current=line[6:] if line.startswith("+++ b/") else None
+        elif line.startswith("@@") and current:
+            match=re.search(r"\+(\d+)(?:,(\d+))?",line)
+            if match:
+                start,count=int(match.group(1)),int(match.group(2) or 1)
+                changed.update((current,number) for number in range(start,start+count))
+    return changed,merge_base
+
+
+def explorer_payload(health_payload):
+    rows=health_payload["rows"]
+    req_facts=json.loads(REQ_MONITOR_FACTS_PATH.read_text())
+    upper_facts=json.loads(UPPER_ASSURANCE_FACTS_PATH.read_text())
+    contracts=req_facts.get("contracts") or {}
+    policy=req_facts.get("policy") or {}
+    descriptions=policy.get("fault_class_descriptions") or {}
+    plans=implementation_fault_plans()
+    semantic_actual=semantic_mutant_actual(plans)
+    triage_actual=survivor_triage_actual()
+    tests=explorer_test_links()
+    campaign=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
+    head=git_sha()
+    changed_lines,merge_base=working_changed_lines()
+    # The product is PRODUCT_SYSTEM here, as on its monitor, so that its monitor can link to its items.
+    product_id=ASSURANCE_REGISTRY.PRODUCT_SYSTEM_ID
+    root_id=rows[0]["id"]
+    tree=[
+      {
+        "id":product_id if row["id"]==root_id else row["id"],"level":row["level"],
+        "parent":product_id if row.get("parent")==root_id else row.get("parent") or "",
+        "label":row["label"],"short":row.get("short") or row["label"],"href":row["layers"]["overall"]["href"],
+      }
+      for row in rows
+    ]
+    href={row["id"]:row["href"] for row in tree}
+    items=[]
+    objects={}
+
+    def test_links(nodeid,source_url=None):
+        found=tests.get(nodeid) or {}
+        links=[[label,found[key],kind] for key,label,kind in (("spec","Spec","semantic"),("evidence","Evidence","semantic"),("allure","Allure","raw")) if found.get(key)]
+        if source_url:
+            links.append(["Source",source_url,"raw"])
+        return links
+
+    def test_name(nodeid):
+        return str(nodeid).split("::")[-1]
+
+    for contract_id,contract in contracts.items():
+        target=contract.get("target") or {}
+        profile=target.get("profile_url") or target.get("source_url") or "verification-profiles/index.html"
+        model=target.get("model_url") or "test-plan.html"
+        actual_rows=contract.get("coverage_actual") or {}
+        # Coverage: every required path of every criterion, found or missing, in the profile's order.
+        for cell in target.get("coverage") or []:
+            for criterion in cell.get("items") or []:
+                object_id=f"criterion|{contract_id}|{criterion}"
+                named=list((cell.get("item_path_ids") or {}).get(criterion) or [])
+                count=len(named) or int((cell.get("item_path_counts") or {}).get(criterion,1))
+                here=[row for row in actual_rows.get(criterion,[]) if row.get("level")==cell["level"] and row.get("boundary")==cell["boundary"]]
+                elsewhere=[row for row in actual_rows.get(criterion,[]) if row not in here]
+                objects[object_id]={
+                  "kind":"criterion","owner":contract_id,"name":criterion,
+                  "what":(target.get("item_descriptions") or {}).get(criterion,""),
+                  "level":cell["level"],"boundary":cell["boundary"],"paths":count,
+                  "links":[["Profile",profile,"semantic"],["Test model",model,"semantic"]],
+                }
+                slots=[]
+                if named:
+                    by_path=defaultdict(list)
+                    for row in here:
+                        by_path[str(row.get("coverage_path") or "").strip()].append(row)
+                    slots=[(path,(by_path.get(path) or [None])[0]) for path in named]
+                    # A path the profile does not name, or a second test on one path, keeps its criterion from passing.
+                    extra=[row for path,found in by_path.items() for row in (found if path not in named else found[1:])]
+                else:
+                    slots=[("",here[index] if index<len(here) else None) for index in range(count)]
+                    extra=here[count:]
+                for index,(path,row) in enumerate(slots+[(str(row.get("coverage_path") or ""),row) for row in extra]):
+                    unexpected=index>=len(slots)
+                    causes=[]
+                    layers=["coverage"]
+                    attrs={"level":cell["level"],"boundary":cell["boundary"]}
+                    if row is None:
+                        status,state="fail","Missing"
+                        causes.append("uncovered")
+                        note="No retained test covers this path."
+                        if elsewhere:
+                            note+=" A test for this criterion ran at another level or boundary: "+", ".join(sorted({test_name(other.get("nodeid")) for other in elsewhere}))+"."
+                        name=path or "Required path"
+                        links=[]
+                    else:
+                        passed=row.get("result")=="passed"
+                        checks=explorer_path_checks(row,cell)
+                        # What fails outright makes the path fail; what cannot be judged makes it unknown, with its cause
+                        # all the same: the Health Map paints both red.
+                        unknown=[]
+                        if unexpected:
+                            causes.append("unexpected")
+                        if not passed:
+                            causes.append("uncovered")
+                            layers.append("execution")
+                        for metric,value in checks.items():
+                            if value=="NOT MET":
+                                causes.append("metric:"+metric)
+                            elif value=="UNKNOWN":
+                                unknown.append("metric:"+metric)
+                        if any(value in {"NOT MET","UNKNOWN"} for value in checks.values()):
+                            layers.append("evidence")
+                        status="fail" if causes else ("unknown" if unknown else "pass")
+                        causes+=unknown
+                        state="Unexpected" if unexpected else ("Failed" if not passed else ("Passed" if status=="pass" else "Unknown"))
+                        name=path or test_name(row.get("nodeid"))
+                        note=(test_name(row.get("nodeid"))+" · " if path else "")+str(row.get("kind") or "test").upper()
+                        attrs.update({
+                          "representation":row.get("representation"),"ms":row.get("ms_validation"),
+                          "freshness":row.get("freshness"),"provenance":row.get("provenance"),
+                          "qualification":row.get("producer_qualification"),
+                          "checks":{metric:value for metric,value in checks.items() if value!="N/A"},
+                        })
+                        links=test_links(row.get("nodeid"),row.get("source_url"))
+                    items.append({
+                      "id":f"path|{contract_id}|{criterion}|{path if path and not unexpected else index}","kind":"path","owner":contract_id,"object":object_id,
+                      "layers":layers,"status":status,"state":state,"causes":causes,"name":name,"note":note,
+                      "attrs":attrs,"producers":list((row or {}).get("producer_ids") or []),"links":links,
+                    })
+        # Tests that verify the contract outside every required case prove no case, but their failure fails it.
+        for row in contract.get("linked_outside_profile") or []:
+            failed=row.get("result")=="failed"
+            nodeid=str(row.get("nodeid") or "")
+            items.append({
+              "id":f"unbound|{contract_id}|{nodeid}","kind":"unbound","owner":contract_id,"object":"",
+              "layers":["coverage","execution"] if failed else ["coverage"],
+              "status":"fail" if failed else "na","state":"Failed" if failed else "Counts for no case",
+              "causes":["unbound"] if failed else [],"name":test_name(nodeid),
+              "note":"It verifies the contract, but its profile names no case it proves.",
+              "attrs":{},"producers":[],"links":test_links(nodeid,repo_blob_url(nodeid.split("::")[0],head)),
+            })
+        # Fault model: every required and optional class, and under an implementation class its mutants.
+        classes=(contract.get("fault_actual") or {}).get("classes") or {}
+        listed=set()
+        for group in target.get("fault_groups") or []:
+            object_id=f"group|{contract_id}|{group['label']}"
+            objects[object_id]={"kind":"group","owner":contract_id,"name":group["label"],"what":group.get("rationale") or ""}
+            for spec in group.get("items") or []:
+                if spec.get("state") not in {"required","optional"}:
+                    continue
+                listed.add(spec["id"])
+                actual=classes.get(spec["id"]) or {}
+                # The monitors' own verdict: caught, missed, undecided (UNKNOWN) or not challenged.
+                verdict=ASSURANCE_DOMAIN.class_verdict(actual)
+                word={"caught":"Caught","missed":"Missed","unknown":"Undecided"}.get(verdict,"Not challenged")
+                cause=None
+                if spec["state"]=="required":
+                    status={"caught":"pass","unknown":"unknown"}.get(verdict,"fail")
+                    cause=None if verdict=="caught" else health_fault_cause(actual or None,plans.get(contract_id))
+                else:
+                    status,word="na","Optional · "+word.lower()
+                items.append({
+                  "id":f"fault|{contract_id}|{spec['id']}","kind":"fault","owner":contract_id,"object":object_id,
+                  "layers":["faults"],"status":status,"state":word,"causes":[cause] if cause else [],
+                  "name":spec["id"],"what":descriptions.get(spec["id"]) or spec.get("description") or "",
+                  "note":" ".join(filter(None,[str(actual.get("basis") or ""),explorer_not_planted(actual)])),
+                  "attrs":{"group":group["label"],"class":spec["id"],"applicability":spec["state"]},
+                  "producers":list(actual.get("producer_ids") or []),
+                  "links":[["Profile",profile,"semantic"],["Test plan","test-plan.html#test-plan-fault-model","semantic"]],
+                })
+        report_path=IMPL_FAULT_DIR/f"{contract_id}.gremlins.json"
+        if report_path.exists() and contract_id in plans:
+            report=json.loads(report_path.read_text())
+            # The rows say what the class counts: a survivor a verdict judged equivalent or irrelevant is suppressed.
+            for mutant in IMPL_FAULTS.suppress_by_verdict(IMPL_FAULTS.contract_mutants(plans[contract_id],report,ROOT),verdict_suppressions(contract_id)):
+                klass=mutant["class"]
+                # A result that no longer counts (stale, blocked, unqualified) shows on its class, not as mutants.
+                if klass not in listed or (classes.get(klass) or {}).get("campaign_state")!="current":
+                    continue
+                outcome=mutant["outcome"]
+                suppression=mutant.get("suppression") or {}
+                status,word,causes,note=EXPLORER_MUTANT_OUTCOMES[outcome]
+                triaged=None
+                if outcome=="suppressed" and suppression.get("verdict"):
+                    word=f"Suppressed · {suppression['verdict']}"
+                    note=f"Judged {suppression['verdict']} by {suppression.get('by')}: "+explorer_clip(" ".join(str(suppression.get("reason") or "").split()),300)
+                elif outcome=="suppressed":
+                    word=f"Suppressed · {suppression.get('category') or 'pardoned'}"
+                    note=str(suppression.get("reason") or "Suppressed by a pragma.")
+                elif outcome=="survived":
+                    note=f"{mutant['selected_tests']} of its tests run this line and none fails."
+                    triaged=((triage_actual.get(contract_id) or {}).get("rows") or {}).get(str(mutant["fingerprint"]))
+                    if triaged:
+                        note+=explorer_judgement_note(triaged,rule=True)
+                    note+=explorer_verdict_note(contract_id,mutant["fingerprint"])
+                elif outcome=="notreached" and mutant.get("run_skipped"):
+                    note+=" The pull-request diff does not run uncovered mutants."
+                source=Path(mutant["source"])
+                line=int(mutant["line"])
+                change=explorer_mutant_change(mutant)
+                items.append({
+                  "id":f"mutant|{contract_id}|{mutant['fingerprint']}","kind":"mutant","owner":contract_id,
+                  "object":f"fault|{contract_id}|{klass}","layers":["faults"],"status":status,"state":word,"causes":causes,
+                  "name":f"{source.name}:{line}"+(f" · {mutant['qualname']}" if mutant.get("qualname") and mutant["qualname"]!="<module>" else ""),
+                  "what":change,"note":note,
+                  "attrs":{
+                    "group":"Implementation","class":klass,"operator":mutant["operator"],"origin":"rule",
+                    **({"judgement":triaged["status"]} if outcome=="survived" and triaged else {}),
+                    **({"diff":"yes"} if (mutant["source"],line) in changed_lines else {}),
+                  },
+                  "producers":list(IMPL_FAULTS.PRODUCERS),
+                  "links":[
+                    ["Source",repo_blob_url(mutant["source"],campaign.get("head_sha") or head)+f"#L{line}","raw"],
+                    *([["Mutation report",f"mutation-report.html#mutant/{mutant['source']}","raw"]] if MUTATION_REPORT_PAGE.exists() else []),
+                  ],
+                })
+        # Semantic mutants, frozen proposals for the risks the profile names, under their class.
+        semantic=semantic_actual.get(contract_id) or {}
+        by_id={row["id"]:row for row in semantic.get("results") or []}
+        calls=semantic.get("calls") or {}
+        per_call=Counter((proposal.get("generator") or {}).get("call_id") for proposal in semantic.get("proposals") or [])
+        for proposal in semantic.get("proposals") or []:
+            klass=proposal["class"]
+            if klass not in listed:
+                continue
+            result=by_id.get(proposal["id"])
+            outcome=(result or {}).get("outcome") or ("stale" if semantic.get("state")=="stale" else "undecided")
+            status,word,causes=EXPLORER_SEMANTIC_OUTCOMES[outcome]
+            note=str((result or {}).get("reason") or semantic.get("reason") or "")
+            note=note[:1].upper()+note[1:]+("" if note.endswith(".") else ".")
+            found=(result or {}).get("differential") or {}
+            judged=(result or {}).get("judgement") or {}
+            if found.get("found"):
+                clip=lambda value,limit:(value if len(value)<=limit else value[:limit-1]+"…")
+                note+=(
+                  f" Input: {clip(str(found.get('input')),220)}. The original gives {clip(str(found.get('original')),140)};"
+                  f" the mutant gives {clip(str(found.get('mutant')),140)}."
+                )
+                if found.get("by"):
+                    note+=" Found by "+("the symbolic search" if found["by"]=="symbolic search" else f"{str(found['by']).split(':',1)[-1]}, an assessor,")+" and confirmed by execution."
+            elif outcome=="undecided" and judged:
+                note+=explorer_judgement_note(judged,rule=False)
+            if outcome in {"distinguished","undecided"}:
+                note+=explorer_verdict_note(contract_id,proposal["id"])
+            draft=(result or {}).get("draft") or {}
+            source,_,qualname=proposal["target"].partition("::")
+            group_label=next((group["label"] for group in target.get("fault_groups") or [] if any(item["id"]==klass for item in group.get("items") or [])),"")
+            origin_note,origin_links=explorer_generation_note(
+              contract_id,proposal.get("generator") or semantic.get("generator") or {},calls,"Generated","Model answer",
+              per_call.get((proposal.get("generator") or {}).get("call_id"),1),
+            )
+            links=[["Patch",f"semantic-mutants/{contract_id}/{proposal['id']}.diff","raw"],*origin_links,["Source",repo_blob_url(source,head),"raw"]]
+            if draft:
+                links.insert(1,["Draft test",f"semantic-mutants/{contract_id}/{proposal['id']}.test.py","raw"])
+                note+=" Draft test "+("kept: it passes on the original three times and fails on the mutant." if draft.get("accepted") else "rejected: "+SEMANTIC.draft_rejection(draft)+".")
+                draft_note,draft_links=explorer_generation_note(contract_id,(semantic.get("draft_provenance") or {}).get(proposal["id"]) or {},calls,"The draft was written","Draft answer")
+                note+=draft_note
+                links[2:2]=draft_links
+            note+=origin_note
+            items.append({
+              "id":f"mutant|{contract_id}|semantic:{proposal['id']}","kind":"mutant","owner":contract_id,
+              "object":f"fault|{contract_id}|{klass}","layers":["faults"],"status":status,"state":word,"causes":causes,
+              "name":f"{proposal['id']} · {qualname}","what":proposal.get("risk") or "","note":note.strip(),
+              "attrs":{
+                "group":group_label,"class":klass,"operator":"semantic","origin":"semantic",
+                **({"draft":"kept" if draft.get("accepted") else "rejected"} if draft else {}),
+                **({"judgement":judged["status"]} if judged.get("status") else {}),
+              },
+              "producers":list(SEMANTIC_PRODUCERS),"links":links,
+            })
+        # A selected target without any semantic mutant: its class stays undecided until one is generated.
+        for selection in semantic.get("missing") or []:
+            klass=selection["class"]
+            if klass not in listed:
+                continue
+            source,_,qualname=selection["target"].partition("::")
+            attempts=selection.get("attempts") or []
+            group_label=next((group["label"] for group in target.get("fault_groups") or [] if any(item["id"]==klass for item in group.get("items") or [])),"")
+            note=(
+              f"The last generation, on {str(attempts[-1].get('at'))[:10]}, made no mutant: "+"; ".join(
+                f"{row['backend']}:{row['model']} {EXPLORER_GENERATION_OUTCOMES.get(row['outcome'],row['outcome'])}"
+                +(f" ({row['reason']})" if row.get("reason") else "")
+                for row in attempts
+              )+"."
+              if attempts else "No generation has run for this target yet."
+            )
+            items.append({
+              "id":f"mutant|{contract_id}|semantic-target:{selection['target']}","kind":"mutant","owner":contract_id,
+              "object":f"fault|{contract_id}|{klass}","layers":["faults"],"status":"unknown","state":"Not generated","causes":["generate"],
+              "name":f"{qualname} · up to {selection['budget']}","what":selection["risk"],"note":note,
+              "attrs":{"group":group_label,"class":klass,"operator":"semantic","origin":"semantic"},
+              "producers":list(SEMANTIC_PRODUCERS),"links":[["Source",repo_blob_url(source,head),"raw"]],
+            })
+        # What a requirement needs from its technical requirements.
+        for treq_id in target.get("required_treqs") or []:
+            child=contracts.get(treq_id)
+            state=ASSURANCE_DOMAIN.contract_domain_state(child,policy) if child else {"overall":"UNKNOWN","coverage":"UNKNOWN","fault":"UNKNOWN"}
+            status=EXPLORER_STATUS.get(state["overall"],"unknown")
+            items.append({
+              "id":f"support|{contract_id}|{treq_id}","kind":"support","owner":contract_id,"object":"","layers":[],
+              "status":status,"state":{"pass":"Passes","fail":"Fails","na":"N/A"}.get(status,"Unknown"),
+              "causes":["support"] if status=="fail" else [],"name":treq_id,"what":(child or {}).get("title") or treq_id,
+              "note":"Coverage "+EXPLORER_WORD.get(state["coverage"],"UNKNOWN")+" · Fault model "+EXPLORER_WORD.get(state["fault"],"UNKNOWN"),
+              "attrs":{"child":treq_id},"producers":[],"links":[["Opens",href[treq_id],"semantic"]] if href.get(treq_id) else [],
+            })
+
+    # Goals, capabilities and the product: their own integration and validation checks, and what they rest on.
+    entities=[("feature",entity_id,entity) for entity_id,entity in (upper_facts.get("features") or {}).items()]
+    entities+=[("goal",entity_id,entity) for entity_id,entity in (upper_facts.get("goals") or {}).items()]
+    entities.append(("product",ASSURANCE_REGISTRY.PRODUCT_SYSTEM_ID,upper_facts.get("product_system") or {}))
+    for level,entity_id,entity in entities:
+        owner=product_id if level=="product" else entity_id
+        page=href.get(owner,"")
+        for section in DEPTH_UPPER_SECTIONS[level]:
+            criteria=(entity.get(section) or {}).get("criteria") or []
+            if not criteria:
+                continue
+            object_id=f"section|{owner}|{section}"
+            objects[object_id]={
+              "kind":"section","owner":owner,"name":EXPLORER_SECTION_LABELS.get(section,section),"what":"",
+              "links":[[EXPLORER_SECTION_LABELS.get(section,section),page+"#"+upper_section_anchor(entity_id,section),"semantic"]] if page else [],
+            }
+            for criterion in criteria:
+                status=EXPLORER_STATUS.get(criterion.get("status"),"unknown")
+                causes=[]
+                if status!="pass":
+                    if criterion.get("execution_status") not in {None,"MET"}:
+                        causes.append("scenario")
+                    for key,metric in (("classification","Representation"),("freshness","Freshness"),("producer_qualification","Producers")):
+                        if (criterion.get(key) or {}).get("status")=="NOT MET":
+                            causes.append("metric:"+metric)
+                    if status in {"fail","unknown"} and not causes:
+                        causes.append("metric:Validation" if section.endswith("validation") else "metric:Integration")
+                runs=criterion.get("rows") or []
+                items.append({
+                  "id":f"check|{owner}|{criterion.get('id')}","kind":"check","owner":owner,"object":object_id,
+                  "layers":["assurance"],"status":status,
+                  "state":{"pass":"Passes","fail":"Fails","na":"N/A"}.get(status,"Unknown"),"causes":causes,
+                  "name":str(criterion.get("id") or ""),"what":str(criterion.get("success_criterion") or ""),
+                  "note":(f"{int(criterion.get('passed_executions') or 0)} of {int(criterion.get('required_executions') or 0)} required runs passed"
+                          +("" if runs else "; no scenario ran")),
+                  "attrs":{"level":(runs[0].get("level") if runs else None),"boundary":(runs[0].get("boundary") if runs else None),"representation":(runs[0].get("representation") if runs else None),"section":section},
+                  "producers":sorted({producer for run in runs for producer in run.get("producer_ids") or []}),
+                  "links":[link for run in runs for link in test_links(run.get("nodeid"),repo_blob_url(run.get("source_path"),head) if run.get("source_path") else None)]
+                  +([["Profile",criterion["profile_url"],"semantic"]] if criterion.get("profile_url") else []),
+                })
+        for child in (entity.get(EXPLORER_SUPPORT_SECTIONS[level]) or {}).get("children") or []:
+            status=EXPLORER_STATUS.get(child.get("status"),"unknown")
+            items.append({
+              "id":f"support|{owner}|{child.get('id')}","kind":"support","owner":owner,"object":"","layers":[],
+              "status":status,"state":{"pass":"Passes","fail":"Fails","na":"N/A"}.get(status,"Unknown"),
+              "causes":["support"] if status=="fail" else [],"name":str(child.get("id") or ""),"what":str(child.get("title") or ""),
+              "note":"","attrs":{"child":child.get("id")},"producers":[],
+              "links":[["Opens",href.get(child.get("id")) or child.get("url") or "","semantic"]] if (href.get(child.get("id")) or child.get("url")) else [],
+            })
+
+    # The evidence producers, each with the contracts whose evidence it made.
+    users=defaultdict(set)
+    for item in items:
+        for producer_id in item.get("producers") or []:
+            users[producer_id].add(item["owner"])
+    qualification=load_evidence_qualification()
+    records=current_needs()
+    qualified_now=qualification_is_current(qualification)
+    for producer_id,record in sorted((qualification.get("producers") or {}).items()):
+        need=records.get(producer_id) or {}
+        raw=str(record.get("status") or "UNKNOWN").upper() if qualified_now else "UNKNOWN"
+        status="pass" if raw=="QUALIFIED" else ("fail" if raw=="NOT QUALIFIED" else "unknown")
+        items.append({
+          "id":f"producer|{producer_id}","kind":"producer","owner":"","object":"","layers":["evidence"],
+          "status":status,"state":{"pass":"Qualified","fail":"Not qualified"}.get(status,"Unknown"),
+          "causes":["metric:Producers"] if status!="pass" else [],
+          "name":need.get("title") or producer_id.removeprefix("PRODUCER_").replace("_"," ").capitalize(),
+          "what":need.get("producer_purpose") or record.get("intended_use") or "",
+          "note":"False-green control: "+str(record.get("false_green_control") or "none recorded"),
+          "attrs":{"producer":producer_id,"users":sorted(users.get(producer_id) or ())},"producers":[],
+          "links":([["Evidence trust","evidence-trust.html#"+producer_id,"semantic"]] if need else [])+[["Qualification","evidence-confidence-qualification.json","raw"]],
+        })
+    return {
+      "rows":tree,"items":items,"objects":objects,"causes":explorer_causes(),
+      "levels":req_facts.get("levels") or [],"boundaries":req_facts.get("boundaries") or [],
+      "run":(health_payload.get("insights") or {}).get("run") or {},
+      # "In this change": the lines this branch changes against its merge base with main.
+      "change_base":{"base":"main","merge_base":merge_base,"lines":len(changed_lines)},
+    }
+
+
+EXPLORER_RUN_SNAPSHOTS=ROOT/"test-results/explorer/runs"
+EXPLORER_FAILING={"fail","unknown"}
+
+
+def explorer_changes(before,after):
+    """Up: an item that fails now and did not before; down: one that failed and passes now; new: one the earlier run did
+    not have. What the earlier run had and this one does not is only counted."""
+    return {"items":{
+      "up":sorted(item_id for item_id,status in after.items() if item_id in before and status in EXPLORER_FAILING and before[item_id] not in EXPLORER_FAILING),
+      "down":sorted(item_id for item_id,status in after.items() if item_id in before and status not in EXPLORER_FAILING and before[item_id] in EXPLORER_FAILING),
+      "new":sorted(item_id for item_id in after if item_id not in before),
+      "gone":sum(1 for item_id in before if item_id not in after),
+    }}
+
+
+def render_explorer_page(health_payload):
+    """The Verification Explorer, from the facts the Health Map was drawn from, with what changed since the previous
+    retained run."""
+    payload=explorer_payload(health_payload)
+    values={item["id"]:item["status"] for item in payload["items"]}
+    payload["delta"]=run_delta(EXPLORER_RUN_SNAPSHOTS,"explorer-run-1",payload["run"],values,explorer_changes)
+    article=MAP_PAGES.explorer_article(stable_json(payload))
+    EXPLORER_PAGE.write_text(portal_map_shell(EXPLORER_PAGE,"Verification Explorer",article))
+    return payload
+
+
+def history_changes_text(owner_id,items,delta):
+    """What changed for one owner since the previous retained run, in the explorer's words."""
+    baseline=delta.get("baseline") or {}
+    if not baseline:
+        return "No earlier retained run to compare with yet."
+    changes=(delta.get("layers") or {}).get("items") or {}
+    own={item["id"] for item in items if item.get("owner")==owner_id}
+    counts=[(len(own & set(changes.get(key) or [])),word) for key,word in (("up","fail now"),("down","pass now"),("new","new"))]
+    since="the run of "+str(baseline.get("started_at") or "")[:16].replace("T"," ")
+    parts=[f"{count} {word}" for count,word in counts if count]
+    return ("Since "+since+": "+" · ".join(parts)+".") if parts else f"Nothing changed since {since}."
+
+
+def patch_monitor_history(explorer):
+    """Write into every monitor's History what changed for its owner since the previous retained run."""
+    items=explorer.get("items") or []
+    delta=explorer.get("delta") or {}
+    pattern=re.compile(r'(<span class="history-changes" data-history-owner="([A-Z0-9_]+)">)[^<]*(</span>)')
+    base=ROOT/"docs/_build/html"
+    for path in [*base.glob("contract-evidence-*.html"),*base.glob("assurance-*.html"),ASSURANCE_PAGE]:
+        if not path.is_file():
+            continue
+        text=path.read_text()
+        if 'class="history-changes"' not in text:
+            continue
+        text=pattern.sub(lambda match:match.group(1)+html_escape(history_changes_text(match.group(2),items,delta))+match.group(3),text)
+        path.write_text(text)
+
+
 def patch_allure_scope_tags():
     if not ALLURE_REPORT_PAGE.exists():
         return
@@ -2457,257 +2229,6 @@ def regenerate_verification_maps():
 # TERNFORGE-P34-CLEAN-MAPS-END
 
 
-def mutation_family(record):
-    description=str(record.get("description") or "")
-    replacement=str(record.get("replacement") or "")
-    left=description.split(" -> ",1)[0].strip()
-    low_replacement=replacement.lower()
-    low_description=description.lower()
-    if not replacement.strip() or "-> [removed]" in low_description:
-        if re.match(r"^[A-Za-z_][A-Za-z0-9_.]*\s*=",left) or left.endswith(","):
-            return "Argument / field removal"
-        return "Statement removal"
-    if "none" in low_replacement:
-        return "None / nullification"
-    if any(token in low_replacement for token in (" and false"," or true"," and true"," or false")):
-        return "Boolean / condition"
-    if any(token in low_description for token in (" is none -> "," is not none -> "," == "," != "," <= "," >= "," < "," > ")):
-        return "Comparison / condition"
-    if re.search(r"['\"][^'\"]*['\"]",left) and re.search(r"['\"][^'\"]*['\"]",replacement):
-        return "String literal"
-    if re.search(r"(?<![A-Za-z_])[-+]?\d+(?:\.\d+)?(?![A-Za-z_])",left) and re.search(r"(?<![A-Za-z_])[-+]?\d+(?:\.\d+)?(?![A-Za-z_])",replacement):
-        return "Numeric literal"
-    if "(" in left and "(" in replacement:
-        return "Call / argument change"
-    return "Other"
-
-def retained_runs(current_campaign):
-    rows=[]
-    seen=set()
-    for path in sorted(HISTORY_DIR.glob("*.json")):
-        try:
-            row=json.loads(path.read_text())
-        except Exception:
-            continue
-        run_id=str(row.get("run_id") or row.get("campaign_id") or path.stem)
-        if run_id in seen:
-            continue
-        seen.add(run_id)
-        rows.append(row)
-    run_id=str(current_campaign.get("run_id") or current_campaign.get("campaign_id") or "current")
-    rows=[row for row in rows if str(row.get("run_id") or row.get("campaign_id"))!=run_id]
-    rows.append(current_campaign)
-    return rows
-
-def median_value(values):
-    values=sorted(float(value) for value in values)
-    if not values:
-        return None
-    middle=len(values)//2
-    return values[middle] if len(values)%2 else (values[middle-1]+values[middle])/2
-
-def build_operator_feedback(current_campaign):
-    runs=retained_runs(current_campaign)
-    families={}
-    mode_costs=defaultdict(list)
-    run_rows=[]
-    mutant_runs=0
-    directly_timed_contract_runs=0
-
-    def family_row(name):
-        return families.setdefault(name,{
-          "family":name,
-          "unique_fingerprints":set(),
-          "actionable_fingerprints":set(),
-          "observations":0,
-          "killed_observations":0,
-          "survived_observations":0,
-          "new_events":0,
-          "resolved_events":0,
-          "suppressed_events":0,
-          "current_survivors":0,
-          "estimated_cost_seconds":0.0,
-          "cost_observations":0,
-        })
-
-    current_run_id=str(current_campaign.get("run_id") or current_campaign.get("campaign_id") or "")
-    for run in runs:
-        mode=str(run.get("mode") or "unknown")
-        duration=run.get("duration_seconds")
-        if duration is not None:
-            mode_costs[mode].append(float(duration))
-        run_id=str(run.get("run_id") or run.get("campaign_id") or "")
-        selected=list(run.get("selected_contracts") or (run.get("contracts") or {}).keys())
-        run_row={
-          "run_id":run_id,
-          "campaign_id":run.get("campaign_id"),
-          "baseline_run_id":run.get("baseline_run_id"),
-          "mode":mode,
-          "duration_seconds":duration,
-          "finished_at":run.get("finished_at"),
-          "selected_contracts":selected,
-          "mutants":sum(len((contract.get("result") or {}).get("mutants") or []) for contract in (run.get("contracts") or {}).values()),
-          "new_unresolved_survivors":0,
-          "existing_survivors":0,
-          "resolved_survivors":0,
-          "suppressed_survivors":0,
-        }
-        run_rows.append(run_row)
-        run_has_mutants=False
-        for contract_id,contract in (run.get("contracts") or {}).items():
-            result=contract.get("result") or {}
-            records=list(result.get("mutants") or [])
-            if not records:
-                continue
-            run_has_mutants=True
-            contract_duration=result.get("duration_seconds")
-            if contract_duration is not None:
-                directly_timed_contract_runs+=1
-                contract_duration=float(contract_duration)
-            elif len(selected)==1 and duration is not None:
-                contract_duration=float(duration)
-            else:
-                contract_duration=None
-            by_family=defaultdict(list)
-            by_fp={}
-            for record in records:
-                name=mutation_family(record)
-                by_family[name].append(record)
-                by_fp[str(record.get("fingerprint") or "")]=name
-                item=family_row(name)
-                fingerprint=str(record.get("fingerprint") or "")
-                if fingerprint:
-                    item["unique_fingerprints"].add(fingerprint)
-                item["observations"]+=1
-                if record.get("status")=="Killed":
-                    item["killed_observations"]+=1
-                if record.get("status")=="Survived":
-                    item["survived_observations"]+=1
-                    if run_id==current_run_id:
-                        item["current_survivors"]+=1
-            if contract_duration is not None and records:
-                for name,family_records in by_family.items():
-                    item=family_row(name)
-                    item["estimated_cost_seconds"]+=contract_duration*len(family_records)/len(records)
-                    item["cost_observations"]+=1
-
-            triage=result.get("triage") or {}
-            run_row["new_unresolved_survivors"]+=int(triage.get("new_unresolved_survivors") or 0)
-            run_row["existing_survivors"]+=int(triage.get("existing_survivors") or 0)
-            run_row["resolved_survivors"]+=int(triage.get("resolved_survivors") or 0)
-            run_row["suppressed_survivors"]+=int(triage.get("suppressed_survivors") or 0)
-            for survivor in triage.get("survivors") or []:
-                classification=str(survivor.get("classification") or "")
-                name=mutation_family(survivor)
-                item=family_row(name)
-                fingerprint=str(survivor.get("fingerprint") or "")
-                if classification=="new":
-                    item["new_events"]+=1
-                    if fingerprint:
-                        item["actionable_fingerprints"].add(fingerprint)
-                elif classification=="suppressed":
-                    item["suppressed_events"]+=1
-                    if fingerprint:
-                        item["actionable_fingerprints"].add(fingerprint)
-            for resolved in triage.get("resolved") or []:
-                name=mutation_family(resolved)
-                item=family_row(name)
-                fingerprint=str(resolved.get("fingerprint") or "")
-                item["resolved_events"]+=1
-                if fingerprint:
-                    item["actionable_fingerprints"].add(fingerprint)
-        mutant_runs+=int(run_has_mutants)
-
-    family_rows=[]
-    for item in families.values():
-        unique_count=len(item["unique_fingerprints"])
-        actionable_count=len(item["actionable_fingerprints"])
-        observations=int(item["observations"])
-        survived=int(item["survived_observations"])
-        action_events=int(item["new_events"])+int(item["resolved_events"])+int(item["suppressed_events"])
-        if action_events:
-            decision="Retain · demonstrated action events"
-        elif int(item["current_survivors"]):
-            decision="Observe · persistent survivors"
-        else:
-            decision="Observe · no filter evidence"
-        family_rows.append({
-          "family":item["family"],
-          "unique_mutants":unique_count,
-          "observations":observations,
-          "killed_observations":int(item["killed_observations"]),
-          "survived_observations":survived,
-          "survival_observation_rate":round(100*survived/observations,1) if observations else None,
-          "current_survivors":int(item["current_survivors"]),
-          "new_events":int(item["new_events"]),
-          "resolved_events":int(item["resolved_events"]),
-          "suppressed_events":int(item["suppressed_events"]),
-          "action_events":action_events,
-          "unique_actionable_mutants":actionable_count,
-          "actionable_unique_rate":round(100*actionable_count/unique_count,1) if unique_count else None,
-          "estimated_cost_seconds":round(float(item["estimated_cost_seconds"]),3),
-          "cost_observations":int(item["cost_observations"]),
-          "decision":decision,
-        })
-    family_rows.sort(
-        key=lambda row: (
-            -int(row["action_events"]),
-            -float(row["estimated_cost_seconds"]),
-            -int(row["unique_mutants"]),
-            str(row["family"]),
-        )
-    )
-
-    performance={}
-    for mode,values in mode_costs.items():
-        performance[mode]={
-          "runs":len(values),
-          "median_seconds":round(median_value(values),3),
-          "min_seconds":round(min(values),3),
-          "max_seconds":round(max(values),3),
-        }
-
-    return {
-      "schema_version":"ternforge-mutation-operator-feedback-prototype-1",
-      "generated_at":utc_now(),
-      "engine":"mutmut",
-      "family_basis":"Ternforge-derived diagnostic families from retained mutation descriptions/replacements; not engine-native mutator labels.",
-      "cost_basis":"Observed campaign/contract runtime. Family cost is a proportional estimate by family mutant share because retained mutmut data has no per-mutant timing.",
-      "sample":{
-        "retained_runs":len(runs),
-        "runs_with_mutant_records":mutant_runs,
-        "unique_campaign_contents":len({str(row.get("campaign_id") or "") for row in runs if row.get("campaign_id")}),
-        "measured_contracts":len([fact for fact in STRENGTH.get("contracts",{}).values() if fact.get("score") is not None]),
-        "directly_timed_contract_runs":directly_timed_contract_runs,
-      },
-      "performance_by_mode":performance,
-      "families":family_rows,
-      "filtering_decision":{
-        "decision":"none",
-        "reason":"Pilot history is narrow (three uniquely attributable contracts plus controlled acceptance probes); no mutation family is disabled or capped from this sample.",
-        "full_audit_preserved":True,
-        "diff_mode_filtering_enabled":False,
-      },
-      "runs":run_rows,
-    }
-
-def mutation_priority(fact):
-    triage=fact.get("triage") or {}
-    if int(triage.get("new_unresolved_survivors") or 0):
-        return (0,-int(triage.get("new_unresolved_survivors") or 0))
-    if not fact.get("fresh"):
-        return (1,0)
-    if int(triage.get("suppressed_survivors") or 0):
-        return (2,-int(triage.get("suppressed_survivors") or 0))
-    if int(triage.get("unresolved_survivors") or 0):
-        return (3,-int(triage.get("unresolved_survivors") or 0))
-    return (4,0)
-
-def format_delta(value):
-    if value is None:
-        return "n/a"
-    return f"{float(value):+.1f} pp"
-
 def portal_nav_item(label,href,active=False,kind=""):
     active_class=" current active" if active else " "
     target="#" if active else href
@@ -2734,266 +2255,15 @@ def patch_navigation_text(text,current=None):
     verification_pattern=re.compile(
       r'(<li class="nav-item[^"]*">\s*<a class="nav-link nav-internal" href="verification\.html">\s*Verification\s*</a>\s*</li>)'
     )
-    mutation_item=portal_nav_item(
-      "Mutation Analysis","mutation-analysis.html",
-      active=current=="mutation",kind="mutation"
-    )
+    # Mutation Analysis and mutmut are retired (ADR_0003): the Verification Explorer lists the mutants that judge the
+    # Fault model. An old item is removed above; a page whose navigation lacks the Health Map gets it after Verification.
     if health_pattern.search(nav_prefix):
-        return health_pattern.sub(lambda m:m.group(1)+mutation_item,text)
+        return text
     health_item=portal_nav_item(
       "Verification Health Map","verification-health-map.html",
       active=current=="health",kind="health"
     )
-    return verification_pattern.sub(
-      lambda m:m.group(1)+health_item+mutation_item,
-      text,
-    )
-
-
-def operator_feedback_section(feedback):
-    sample=feedback.get("sample") or {}
-    performance_rows=[]
-    for mode,row in sorted((feedback.get("performance_by_mode") or {}).items()):
-        performance_rows.append(
-          "<tr>"
-          f"<td><code>{html_escape(mode)}</code></td>"
-          f"<td>{int(row.get('runs') or 0)}</td>"
-          f"<td>{float(row.get('median_seconds') or 0):.3f}s</td>"
-          f"<td>{float(row.get('min_seconds') or 0):.3f}s – {float(row.get('max_seconds') or 0):.3f}s</td>"
-          "</tr>"
-        )
-    family_rows=[]
-    for row in feedback.get("families") or []:
-        cost=(
-          f"~{float(row.get('estimated_cost_seconds') or 0):.1f}s proportional · "
-          f"{int(row.get('cost_observations') or 0)} observation(s)"
-          if int(row.get("cost_observations") or 0)
-          else "not directly timed yet"
-        )
-        family_rows.append(
-          "<tr>"
-          f"<td><strong>{html_escape(str(row.get('family') or ''))}</strong></td>"
-          f"<td>{int(row.get('unique_mutants') or 0)} unique<br><small>{int(row.get('observations') or 0)} retained observations</small></td>"
-          f"<td>{int(row.get('current_survivors') or 0)} current<br><small>{float(row.get('survival_observation_rate') or 0):.1f}% survivor observations</small></td>"
-          f"<td>New {int(row.get('new_events') or 0)} · Resolved {int(row.get('resolved_events') or 0)} · Suppressed {int(row.get('suppressed_events') or 0)}<br><small>{int(row.get('unique_actionable_mutants') or 0)} unique actionable mutant(s)</small></td>"
-          f"<td>{html_escape(cost)}</td>"
-          f"<td>{html_escape(str(row.get('decision') or ''))}</td>"
-          "</tr>"
-        )
-    return f"""
-<details id="mutation-operator-feedback" class="sd-card sd-sphinx-override sd-shadow-sm sd-mt-3 sd-mb-3 docutils">
-<summary><strong>Run cost / mutation diagnostics</strong> · {int(sample.get('retained_runs') or 0)} runs · no filters</summary>
-<div class="sd-card-body docutils">
-<p><small>Diagnostic only. Family labels are derived from retained mutmut descriptions; full audit remains enabled.</small></p>
-<p><a href="mutation-results/operator-feedback.json">Raw operator feedback JSON</a></p>
-<h3>Observed run cost</h3>
-<div class="pst-scrollable-table-container"><table class="table">
-<thead><tr><th>Mode</th><th>Runs</th><th>Median</th><th>Range</th></tr></thead>
-<tbody>{''.join(performance_rows)}</tbody>
-</table></div>
-<h3>Derived mutation families</h3>
-<div class="pst-scrollable-table-container"><table class="table">
-<thead><tr><th>Family</th><th>Volume</th><th>Survivors</th><th>Action events</th><th>Cost evidence</th><th>Decision</th></tr></thead>
-<tbody>{''.join(family_rows)}</tbody>
-</table></div>
-</div>
-</details>
-"""
-
-def mutation_history_section(summary,feedback):
-    current_run=str(summary.get("run_id") or "")
-    runs=list(feedback.get("runs") or [])
-    runs.sort(key=lambda row:(str(row.get("finished_at") or ""),str(row.get("run_id") or "")))
-    rows=[]
-    for row in list(reversed(runs))[:6]:
-        run_id=str(row.get("run_id") or "")
-        campaign_id=str(row.get("campaign_id") or "")
-        if run_id==current_run:
-            provenance="mutation-results/campaign.json"
-            current=" <strong>current</strong>"
-        else:
-            candidate=HISTORY_DIR/f"{run_id}.json"
-            if not candidate.exists() and campaign_id:
-                candidate=HISTORY_DIR/f"{campaign_id}.json"
-            provenance=(
-              f"mutation-results/campaign-history/{html_escape(candidate.name)}"
-              if candidate.exists()
-              else "mutation-results/operator-feedback.json"
-            )
-            current=""
-        new_count=int(row.get("new_unresolved_survivors") or 0)
-        resolved=int(row.get("resolved_survivors") or 0)
-        suppressed=int(row.get("suppressed_survivors") or 0)
-        existing=int(row.get("existing_survivors") or 0)
-        if new_count:
-            signal=f"<strong>New {new_count}</strong> · Debt {existing}"
-        elif resolved:
-            signal=f"Resolved {resolved} · Debt {existing}"
-        else:
-            signal=f"No new regression · Debt {existing}"
-        if suppressed:
-            signal+=f" · Suppressed {suppressed}"
-        duration=row.get("duration_seconds")
-        duration_text=f"{float(duration):.3f}s" if duration is not None else "n/a"
-        selected=len(row.get("selected_contracts") or [])
-        rows.append(
-          "<tr>"
-          f"<td>{signal}</td>"
-          f'<td><code>{html_escape(str(row.get("mode") or "unknown"))}</code> · {selected} contract(s)<br><small>{int(row.get("mutants") or 0)} mutants</small></td>'
-          f"<td>{duration_text}</td>"
-          f'<td><a href="{provenance}"><code>{html_escape(run_id.rsplit("--", maxsplit=1)[-1] or campaign_id)}</code></a>{current}</td>'
-          "</tr>"
-        )
-    return f"""<section id="mutation-history">
-<h2>Recent changes<a class="headerlink" href="#mutation-history" title="Link to this heading">#</a></h2>
-<p><small>Most recent retained mutation campaign summaries. The current campaign links to raw provenance; older summary-only rows link to the retained operator-feedback record.</small></p>
-<div class="pst-scrollable-table-container"><table class="table">
-<thead><tr><th>Signal</th><th>Run scope</th><th>Duration</th><th>Evidence</th></tr></thead>
-<tbody>{''.join(rows) if rows else '<tr><td colspan="4">No retained campaigns yet.</td></tr>'}</tbody>
-</table></div>
-</section>"""
-
-
-def write_mutation_analysis_page(summary,feedback):
-    if not ASSURANCE_PAGE.exists():
-        return
-    template=ASSURANCE_PAGE.read_text()
-    # The PyData shell is reused, but assurance-only runtime projections must
-    # never leak into the mutation journal on repeated local rebuilds.
-    template=re.sub(
-      r"<!-- TERNFORGE-(?:P2[789]|P3[0-3])-ASSURANCE-EVIDENCE-START -->.*?<!-- TERNFORGE-(?:P2[789]|P3[0-3])-ASSURANCE-EVIDENCE-END -->",
-      "",template,flags=re.DOTALL,
-    )
-    template=re.sub(
-      r"<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-START -->.*?<!-- TERNFORGE-P27-CONTRACT-EVIDENCE-END -->",
-      "",template,flags=re.DOTALL,
-    )
-    template=re.sub(
-      r'<style id="tf-requirement-monitor-style">.*?</style>',
-      "",
-      template,
-      flags=re.DOTALL,
-    )
-    template=re.sub(
-      r'<script id="tf-requirement-monitor-script">.*?</script>',
-      "",
-      template,
-      flags=re.DOTALL,
-    )
-    measured=[]
-    for contract_id,fact in STRENGTH.get("contracts",{}).items():
-        if fact.get("score") is None:
-            continue
-        measured.append((contract_id,fact))
-    measured.sort(key=lambda item:(mutation_priority(item[1]),item[0]))
-    rows=[]
-    for contract_id,fact in measured:
-        triage=fact.get("triage") or {}
-        score=f"{float(fact['score']):.1f}%"
-        band=str(fact.get("state") or "n/a").title()
-        fresh="Fresh" if fact.get("fresh") else "STALE"
-        rows.append(
-          f'<tr id="mutation-{html_escape(contract_id.lower())}">'
-          f'<td><a href="traceability-reader.html#review-{html_escape(contract_id)}"><code>{html_escape(contract_id)}</code></a></td>'
-          f'<td><strong>{score}</strong> · {html_escape(band)}<br><small>{int(fact.get("killed") or 0)} killed · {int(fact.get("survived") or 0)} survived</small></td>'
-          f'<td><strong>{fresh}</strong> · New {int(triage.get("new_survivors") or 0)} · Debt {int(triage.get("existing_survivors") or 0)} · Resolved {int(triage.get("resolved_survivors") or 0)} · Suppressed {int(triage.get("suppressed_survivors") or 0)}<br><small>Δ {html_escape(format_delta(triage.get("score_delta")))} · {html_escape(str(fact.get("campaign_mode") or "unknown"))}</small></td>'
-          f'<td><a href="{html_escape(str(fact.get("report_url") or "#"))}">Raw mutants</a> · <a href="{html_escape(str(fact.get("allure_url") or "#"))}">Allure</a></td>'
-          '</tr>'
-        )
-    unattributed_rows=[]
-    for row in STRENGTH.get("unattributed") or []:
-        unattributed_rows.append(
-          '<tr>'
-          f'<td><code>{html_escape(str(row.get("contract_id") or ""))}</code></td>'
-          f'<td>{float(row.get("score") or 0):.1f}% diagnostic<br><small>{int(row.get("killed") or 0)} killed · {int(row.get("survived") or 0)} survived</small></td>'
-          f'<td><code>{html_escape(str(row.get("source_path") or ""))}</code> · {html_escape(str(row.get("scope") or ""))}</td>'
-          f'<td>{html_escape(str(row.get("reason") or ""))}</td>'
-          '</tr>'
-        )
-    total=int(summary.get("total_contracts") or 0)
-    measured_count=int(summary.get("measured_contracts") or 0)
-    run_id=str(summary.get("run_id") or "")
-    operator_section=operator_feedback_section(feedback)
-    history_section=mutation_history_section(summary,feedback)
-    debt_count=int(summary.get("existing_survivors") or 0)
-    article=f"""
-<article class="bd-article">
-<section id="mutation-analysis">
-<h1>Mutation Analysis<a class="headerlink" href="#mutation-analysis" title="Link to this heading">#</a></h1>
-<p><a href="verification-health-map.html#faults/detect">← Verification Health Map</a> · Open this page when the map shows a new/stale signal, when you want to work down known debt, or when you need run history.</p>
-<div class="admonition note">
-<p class="admonition-title">Current signal</p>
-<p><strong>New {int(summary.get("new_unresolved_survivors") or 0)}</strong> · <strong>Debt {debt_count}</strong> · Stale {int(summary.get("stale_measured_contracts") or 0)} · Suppressed {int(summary.get("suppressed_survivors") or 0)} · Measured {measured_count}/{total} · <code>{html_escape(str(summary.get("mode") or ""))}</code> run <a href="mutation-results/campaign.json"><code>{html_escape(run_id.rsplit("--", maxsplit=1)[-1])}</code></a></p>
-</div>
-<section id="mutation-work-queue">
-<h2>Changes &amp; debt<a class="headerlink" href="#mutation-work-queue" title="Link to this heading">#</a></h2>
-<p><small>Priority: New → Stale → Suppressed → Debt.</small></p>
-<div class="pst-scrollable-table-container"><table class="table">
-<thead><tr><th>Contract</th><th>Strength</th><th>Change</th><th>Open</th></tr></thead>
-<tbody>{''.join(rows)}</tbody>
-</table></div>
-</section>
-{history_section}
-<details id="mutation-unattributed" class="sd-card sd-sphinx-override sd-shadow-sm sd-mt-3 sd-mb-3 docutils">
-<summary><strong>Why some contracts are N/A</strong> · {len(STRENGTH.get("unattributed") or [])} shared-scope diagnostics</summary>
-<div class="sd-card-body docutils">
-<div class="pst-scrollable-table-container"><table class="table">
-<thead><tr><th>Contract</th><th>Diagnostic result</th><th>Scope</th><th>Why N/A</th></tr></thead>
-<tbody>{''.join(unattributed_rows) if unattributed_rows else '<tr><td colspan="4">None.</td></tr>'}</tbody>
-</table></div>
-</div>
-</details>
-{operator_section}
-</section>
-</article>
-"""
-    text=re.sub(r'<article class="bd-article">.*?</article>',article,template,count=1,flags=re.DOTALL)
-    mutation_toc=(
-      '<nav class="bd-toc-nav page-toc"><ul class="visible nav section-nav flex-column">'
-      '<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mutation-work-queue">Changes &amp; debt</a></li>'
-      '<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mutation-history">Recent changes</a></li>'
-      '<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mutation-unattributed">Why some contracts are N/A</a></li>'
-      '<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mutation-operator-feedback">Operator feedback</a></li>'
-      '</ul></nav>'
-    )
-    text=re.sub(
-      r'<nav class="bd-toc-nav page-toc">.*?</nav>',
-      mutation_toc,
-      text,
-      count=1,
-      flags=re.DOTALL,
-    )
-    text=re.sub(
-      r"<title>.*?(?= &#8212;)",
-      "<title>Mutation Analysis",
-      text,
-      count=1,
-      flags=re.DOTALL,
-    )
-    text=re.sub(
-      r'<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">.*?</span></li>',
-      '<li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Mutation Analysis</span></li>',
-      text,count=1,flags=re.DOTALL
-    )
-    text=text.replace("_sources/verification-assurance.rst.txt","_sources/mutation-analysis.rst.txt")
-    text=patch_navigation_text(text,current="mutation")
-    MUTATION_PAGE.write_text(text)
-    source=MUTATION_PAGE.parent/"_sources/mutation-analysis.rst.txt"
-    source.write_text(
-      "Mutation Analysis\n=================\n\n"
-      "Generated local llm-router pilot work queue over retained mutation campaign, "
-      "Test Strength, triage, and standard Mutation Testing Elements reports.\n"
-    )
-
-
-def scope_line_range(spec):
-    path=ROOT/spec["source"]
-    tree=ast.parse(path.read_text())
-    if spec["kind"]=="class":
-        node=next(n for n in tree.body if isinstance(n,ast.ClassDef) and n.name==spec["scope"])
-    else:
-        node=next(n for n in tree.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name==spec["scope"])
-    return int(node.lineno),int(getattr(node,"end_lineno",node.lineno))
+    return verification_pattern.sub(lambda m:m.group(1)+health_item,text)
 
 
 PROBE_SCRATCH_DIR=Path(tempfile.gettempdir())/"ternforge-probe-scratch"
@@ -3023,207 +2293,6 @@ def run_checked(command,*,cwd=ROOT,env=None):
     return completed.stdout
 
 
-def coverage_lines_for(nodeids,source_path):
-    source=str((ROOT/source_path).resolve())
-    covered=set()
-    for nodeid in nodeids:
-        data=CoverageData(basename=str(COVERAGE_DB))
-        data.read()
-        data.set_query_context(nodeid+"|run")
-        covered.update(data.lines(source) or [])
-    return covered
-
-
-def gremlin_group_metrics(spec,nodeids,report):
-    start,end=scope_line_range(spec)
-    scoped=[
-      row for row in report.get("results") or []
-      if start<=int(row.get("line_number") or -1)<=end
-    ]
-    # Mutants that break collection/import are invalid, as in the Implementation
-    # fault campaign: excluded from reach and sensitivity, reported separately.
-    rows=[row for row in scoped if row.get("status") not in IMPL_FAULTS.INVALID]
-    invalid_count=len(scoped)-len(rows)
-    covered=coverage_lines_for(nodeids,spec["source"])
-    coverage_by_test={nodeid:coverage_lines_for([nodeid],spec["source"]) for nodeid in nodeids}
-    reached=[row for row in rows if int(row.get("line_number") or -1) in covered]
-    killed=[row for row in reached if row.get("status")=="zapped"]
-    families={}
-    for family in sorted({str(row.get("operator") or "unknown") for row in rows}):
-        family_rows=[row for row in rows if str(row.get("operator") or "unknown")==family]
-        family_reached=[row for row in family_rows if int(row.get("line_number") or -1) in covered]
-        family_killed=[row for row in family_reached if row.get("status")=="zapped"]
-        families[family]={
-          "generated":len(family_rows),
-          "reached":len(family_reached),
-          "killed":len(family_killed),
-          "survived":len(family_reached)-len(family_killed),
-          "unreached":len(family_rows)-len(family_reached),
-          "mutation_reach":round(100*len(family_reached)/len(family_rows),1) if family_rows else None,
-          "sensitivity":round(100*len(family_killed)/len(family_reached),1) if family_reached else None,
-          "overall_detection":round(100*len(family_killed)/len(family_rows),1) if family_rows else None,
-        }
-    stable=lambda row:(int(row.get("line_number") or -1),str(row.get("operator") or ""),str(row.get("description") or ""))
-    mutant_rows=[]
-    for row in sorted(rows,key=stable):
-        line=int(row.get("line_number") or -1)
-        row_reached=line in covered
-        row_killed=row_reached and row.get("status")=="zapped"
-        mutant_rows.append({
-          "gremlin_id":row.get("gremlin_id"),
-          "line":line,
-          "operator":str(row.get("operator") or "unknown"),
-          "description":str(row.get("description") or ""),
-          "engine_status":row.get("status"),
-          "reached":row_reached,
-          "killed":row_killed,
-          "covering_tests":[nodeid for nodeid,lines in coverage_by_test.items() if line in lines],
-          "killing_test":row.get("killing_test"),
-          "selected_tests":list(row.get("selected_tests") or []),
-        })
-    return {
-      "generated":len(rows),
-      "reached":len(reached),
-      "killed":len(killed),
-      "survived":len(reached)-len(killed),
-      "unreached":len(rows)-len(reached),
-      "mutation_reach":round(100*len(reached)/len(rows),1) if rows else None,
-      "sensitivity":round(100*len(killed)/len(reached),1) if reached else None,
-      "overall_detection":round(100*len(killed)/len(rows),1) if rows else None,
-      "families":families,
-      "invalid":invalid_count,
-      "mutants":mutant_rows,
-      "killed_ids":[str(row.get("gremlin_id") or "") for row in killed],
-      "engine_metadata":"native pytest-gremlins operator metadata",
-      "nodeids":nodeids,
-    }
-
-
-def implementation_line_reach(spec,nodeids):
-    """Exact coverage.py statement reach for the declared implementation scope."""
-    from coverage import Coverage
-
-    start,end=scope_line_range(spec)
-    source=str((ROOT/spec["source"]).resolve())
-    cov=Coverage(data_file=str(COVERAGE_DB))
-    cov.load()
-    analysis=cov._analyze(source)
-    statements=sorted(int(line) for line in analysis.statements if start<=int(line)<=end)
-    covered=sorted(set(statements)&coverage_lines_for(nodeids,spec["source"]))
-    missing=sorted(set(statements)-set(covered))
-    return {
-      "metric":"implementation_statement_reach",
-      "label":"Implementation statement reach",
-      "source_path":spec["source"],
-      "scope":spec["scope"],
-      "start_line":start,
-      "end_line":end,
-      "executable_statements":len(statements),
-      "covered_statements":len(covered),
-      "missing_statements":missing,
-      "covered_lines":covered,
-      "percent":round(100*len(covered)/len(statements),1) if statements else None,
-      "basis":"coverage.py executable statements intersected with retained linked-test run contexts",
-      "denominator_note":"Executable Python statements in the declared implementation scope; definition-only/non-statement lines are not counted.",
-      "nodeids":list(nodeids),
-    }
-
-
-def gremlin_group_probe(spec,nodeids):
-    # Same qualified engine configuration as the Implementation fault campaign: every
-    # mutant runs through full pytest, never gremlins' fixture-less lightweight runner.
-    command=[*IMPL_FAULTS.engine_command(ROOT,list(nodeids),[spec["source"]]),"--no-cov"]
-    start,end=scope_line_range(spec)
-    coverage_dir_existed=(ROOT/"coverage").exists()
-    try:
-        run_checked(
-          command,
-          env=IMPL_FAULTS.engine_env(PROBE_SCRATCH_DIR,scope={spec["source"]:list(range(start,end+1))}),
-        )
-        report=json.loads((ROOT/"coverage/gremlins/gremlins.json").read_text())
-    finally:
-        shutil.rmtree(ROOT/"coverage/gremlins",ignore_errors=True)
-        if not coverage_dir_existed:
-            shutil.rmtree(ROOT/"coverage",ignore_errors=True)
-        (ROOT/".coveragerc.gremlins").unlink(missing_ok=True)
-    return gremlin_group_metrics(spec,nodeids,report)
-
-
-def gherkin_mutation_metrics(payload):
-    findings=payload.get("findings") or []
-    return {
-      "engine":"Agentic Test Forge",
-      "mode":"Gherkin Examples mutation",
-      "generated":sum(int(row.get("total") or 0) for row in findings),
-      "detected":sum(int(row.get("killed") or 0) for row in findings),
-      "score":round(
-        sum(int(row.get("killed") or 0) for row in findings)
-        / max(1,sum(int(row.get("total") or 0) for row in findings))*100,1
-      ),
-      "target":"features/tools/multi_round.feature",
-      "native_metadata":True,
-      "report":payload,
-    }
-
-
-def probe_gherkin_mutation():
-    forge=ROOT/"forge.toml"
-    backup=forge.read_bytes() if forge.exists() else None
-    with tempfile.TemporaryDirectory(prefix="ternforge-gherkin-") as temp_dir:
-        report_path=Path(temp_dir)/"report.json"
-        forge.write_text(
-          'gherkin_threshold = 0\n'
-          'gherkin_runner = "pytest"\n'
-          'gherkin_test_cmd = "uv run pytest -q tests/llm_router/bdd/tools/test_multi_round.py"\n'
-          'gherkin_paths = ["features/tools/multi_round.feature"]\n'
-          'manifest_dir = ".forge"\n'
-        )
-        try:
-            run_checked([
-              shutil.which("uvx") or "uvx","--from","agentic-test-forge","forge","mutate-gherkin",
-              "--path","features/tools/multi_round.feature","--full","--threshold","0",
-              "--json",str(report_path),
-            ])
-            payload=json.loads(report_path.read_text())
-        finally:
-            shutil.rmtree(ROOT/".forge",ignore_errors=True)
-            if backup is None:
-                forge.unlink(missing_ok=True)
-            else:
-                forge.write_bytes(backup)
-    return gherkin_mutation_metrics(payload)
-
-
-def probe_architecture_fault():
-    baseline=run_checked([str(ROOT/".venv/bin/lint-imports"),"--no-cache"])
-    match=re.search(r"Contracts:\s+(\d+) kept,\s+(\d+) broken",baseline)
-    with tempfile.TemporaryDirectory(prefix="ternforge-arch-") as temp_dir:
-        temp=Path(temp_dir)
-        shutil.copy2(ROOT/"pyproject.toml",temp/"pyproject.toml")
-        for name in ("src","tests","examples"):
-            shutil.copytree(ROOT/name,temp/name)
-        mutant=temp/"src/llm_router/_internal/runtime/limiter.py"
-        mutant.write_text(mutant.read_text()+"\nfrom llm_router._api.router import LLMRouter  # intentional architecture mutant\n")
-        env=os.environ.copy()
-        env["PYTHONPATH"]=f"{temp/'src'}:{temp}"
-        completed=subprocess.run(
-          [str(ROOT/".venv/bin/lint-imports"),"--no-cache"],
-          cwd=temp,env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT
-        )
-    detected=completed.returncode!=0 and "Private implementation must not depend on facade entrypoints BROKEN" in completed.stdout
-    return {
-      "engine":"Import Linter",
-      "mode":"architecture negative-control injection",
-      "baseline_kept":int(match.group(1)) if match else None,
-      "baseline_broken":int(match.group(2)) if match else None,
-      "generated":1,
-      "detected":1 if detected else 0,
-      "score":100.0 if detected else 0.0,
-      "target":"llm_router._internal → llm_router._api.router forbidden edge",
-      "native_metadata":True,
-    }
-
-
 def free_port():
     sock=socket.socket()
     try:
@@ -3231,124 +2300,6 @@ def free_port():
         return int(sock.getsockname()[1])
     finally:
         sock.close()
-
-
-def probe_runtime_fault():
-    binary=shutil.which("toxiproxy-server")
-    if not binary:
-        return {
-          "engine":"Toxiproxy",
-          "mode":"network fault injection",
-          "available":False,
-          "generated":0,"detected":0,"score":None,
-          "reason":"toxiproxy-server is not installed",
-        }
-    import httpx
-
-    from tests.llm_router.support.fault_server import (
-        ScriptedHTTPServer,
-        ScriptedResponse,
-    )
-    from tests.llm_router.support.workers.retry import (
-        openai_chat_path,
-        openai_success_response,
-    )
-    from tests.llm_router.support.workers.timeout import run_timeout_worker
-
-    api_port=free_port()
-    proxy_port=free_port()
-    process=subprocess.Popen(
-      [binary,"-host","127.0.0.1","-port",str(api_port)],
-      stdout=subprocess.DEVNULL,stderr=subprocess.STDOUT
-    )
-    try:
-        api=f"http://127.0.0.1:{api_port}"
-        for _ in range(80):
-            try:
-                if httpx.get(api+"/version",timeout=.2).status_code==200:
-                    break
-            except Exception:
-                time.sleep(.05)
-        else:
-            raise RuntimeError("Toxiproxy API did not start")
-        path=openai_chat_path()
-        routes={
-          ("POST",path):[
-            ScriptedResponse(
-              status_code=200,
-              headers={"Content-Type":"application/json"},
-              body=openai_success_response(text="unexpected success"),
-            )
-          ]
-        }
-        with ScriptedHTTPServer(port=0,routes=routes) as server:
-            upstream=urllib.parse.urlparse(server.base_url)
-            httpx.post(api+"/proxies",json={
-              "name":"llm-router-provider",
-              "listen":f"127.0.0.1:{proxy_port}",
-              "upstream":f"{upstream.hostname}:{upstream.port}",
-              "enabled":True,
-            }).raise_for_status()
-            httpx.post(api+"/proxies/llm-router-provider/toxics",json={
-              "name":"provider-latency",
-              "type":"latency",
-              "stream":"downstream",
-              "toxicity":1.0,
-              "attributes":{"latency":1500,"jitter":0},
-            }).raise_for_status()
-            started=time.perf_counter()
-            result=run_timeout_worker(
-              scenario="terminal_timeout",
-              server_base_url=f"http://127.0.0.1:{proxy_port}",
-            )
-            elapsed=round(time.perf_counter()-started,3)
-            detected=(not result.ok and result.error_type=="TimeoutError")
-            request_count=server.request_count("POST",path)
-        return {
-          "engine":"Toxiproxy",
-          "engine_version":"2.12.0",
-          "mode":"network fault injection",
-          "available":True,
-          "generated":1,
-          "detected":1 if detected else 0,
-          "score":100.0 if detected else 0.0,
-          "target":"provider HTTP path",
-          "faults":[{"family":"latency","latency_ms":1500,"detected":detected,"public_error":result.error_type,"elapsed_seconds":elapsed,"request_count":request_count}],
-          "native_metadata":True,
-        }
-    finally:
-        process.terminate()
-        try:
-            process.wait(timeout=2)
-        except subprocess.TimeoutExpired:
-            process.kill()
-
-
-def probe_interface_faults():
-    tests=[
-      "tests/llm_router/integration/test_openai_compatible_adapter_fake_server.py::test_retryable_status_is_translated_to_provider_error",
-      "tests/llm_router/integration/test_openai_compatible_adapter_fake_server.py::test_malformed_success_json_is_wrapped_as_provider_error",
-      "tests/llm_router/integration/test_openai_compatible_adapter_fake_server.py::test_remote_disconnect_is_retryable_transport_failure",
-    ]
-    output=run_checked([shutil.which("uv") or "uv","run","pytest","-q",*tests,"--no-cov"])
-    return {
-      "engine":"pytest deterministic boundary challenges",
-      "mode":"interface/protocol fault challenges",
-      "generated":3,
-      "detected":3,
-      "score":100.0,
-      "target":"TREQ_OPENAI_ADAPTER_BOUNDARY",
-      "generic_mutator":False,
-      "families":[
-        {"family":"retryable HTTP status","detected":True},
-        {"family":"malformed success payload","detected":True},
-        {"family":"transport disconnect","detected":True},
-      ],
-      "note":"No machine-readable provider interface schema exists in llm-router today, so this layer is challenge-backed rather than generator-backed.",
-      "pytest_output_tail":"\n".join(output.splitlines()[-5:]),
-    }
-
-
 
 
 def probe_invalid_config_specification_fault():
@@ -3614,140 +2565,13 @@ def probe_invalid_config_runtime_isolation():
         except subprocess.TimeoutExpired:
             process.kill()
 
-def assurance_history_rows(contract_id=None):
-    """Project the retained assurance snapshot registry into the DVC journal."""
-    payload=json.loads(ASSURANCE_SNAPSHOTS_PATH.read_text())
-    snapshots=list(payload.get("snapshots") or [])
-    if contract_id:
-        snapshots=[
-          row for row in snapshots
-          if row.get("contract_id")==contract_id and row.get("test_strength") is not None
-        ]
-        groups=[
-          (
-            str(row.get("checkpoint") or ""),
-            str(row.get("captured_at") or ""),
-            [row],
-          )
-          for row in snapshots
-        ]
-    else:
-        by_checkpoint=defaultdict(list)
-        captured_at={}
-        for row in snapshots:
-            if row.get("test_strength") is None:
-                continue
-            checkpoint=str(row.get("checkpoint") or "")
-            by_checkpoint[checkpoint].append(row)
-            captured_at[checkpoint]=max(
-              str(row.get("captured_at") or ""),
-              captured_at.get(checkpoint,""),
-            )
-        groups=[
-          (checkpoint,captured_at.get(checkpoint,""),rows)
-          for checkpoint,rows in by_checkpoint.items()
-        ]
-    projected=[]
-    for checkpoint,captured_at,rows in groups:
-        scores=[float(row["test_strength"]) for row in rows]
-        if not scores:
-            continue
-        projected.append({
-          "finished_at":captured_at,
-          "run_id":checkpoint,
-          "mode":"assurance-snapshot",
-          "measured_contracts":len(scores),
-          "mutation_sensitivity":round(sum(scores)/len(scores),1),
-          "new_survivors":sum(int(row.get("new_survivors") or 0) for row in rows),
-          "survivor_debt":sum(int(row.get("survivor_debt") or 0) for row in rows),
-          "resolved_survivors":sum(int(row.get("resolved_survivors") or 0) for row in rows),
-        })
-    projected.sort(key=lambda row:(row["finished_at"],row["run_id"]))
-    for index,row in enumerate(projected,1):
-        row["step"]=index
-    return projected
-
-
-def build_dvc_assurance_history(rows,*,subdir=None,title="Assurance history · Test Strength",metric="mean requirement Test Strength for the contracts measured by each retained mutation campaign"):
-    target_dir=ASSURANCE_HISTORY_DIR/(subdir or "")
-    target_dir.mkdir(parents=True,exist_ok=True)
-    csv_path=target_dir/"assurance-history.csv"
-    header="step,finished_at,mode,measured_contracts,mutation_sensitivity,new_survivors,survivor_debt,resolved_survivors\n"
-    body="".join(
-      f'{row["step"]},{row["finished_at"]},{row["mode"]},{row["measured_contracts"]},{row["mutation_sensitivity"]},{row["new_survivors"]},{row["survivor_debt"]},{row["resolved_survivors"]}\n'
-      for row in rows
-    )
-    csv_path.write_text(header+body)
-    rel_dir="assurance-history"+(f"/{subdir}" if subdir else "")
-    if os.environ.get("TERNFORGE_REUSE_DVC")=="1" and (target_dir/"index.html").exists():
-        return {
-          "tool":"DVC plots",
-          "url":f"{rel_dir}/index.html",
-          "csv_url":f"{rel_dir}/assurance-history.csv",
-          "metric":metric,
-          "rows":rows,
-          "render_reused":True,
-          "render_reuse_basis":"DVC/Vega-Lite artifact already exists and the retained mutation-only history rows are unchanged; P31 assurance snapshots are rendered separately.",
-        }
-    with tempfile.TemporaryDirectory(prefix="ternforge-dvc-") as temp_dir:
-        temp=Path(temp_dir)
-        run_checked(["git","init","-q"],cwd=temp)
-        run_checked(["git","config","user.email","pilot@example.invalid"],cwd=temp)
-        run_checked(["git","config","user.name","Ternforge pilot"],cwd=temp)
-        run_checked([shutil.which("uvx") or "uvx","--from","dvc","dvc","init","-q"],cwd=temp)
-        shutil.copy2(csv_path,temp/"assurance.csv")
-        report_dir=temp/"report"
-        run_checked([
-          shutil.which("uvx") or "uvx","--from","dvc","dvc","plots","show","assurance.csv",
-          "-t","simple",
-          "-x","step","-y","mutation_sensitivity",
-          "--title",title,
-          "--x-label","Retained campaign",
-          "--y-label","Mean Test Strength (%)",
-          "-o",str(report_dir),
-        ],cwd=temp)
-        # DVC/Vega-Lite is the renderer; this only makes the standard report
-        # responsive inside the Contract Evidence iframe instead of keeping
-        # DVC's built-in fixed 300 px plot width.
-        rendered=(report_dir/"index.html").read_text()
-        rendered,replaced=re.subn(
-          r'"width": 300, "height": 300',
-          '"width": "container", "height": 300',
-          rendered,count=1,
-        )
-        if replaced != 1:
-            raise RuntimeError("DVC plot no longer exposes the expected fixed-size Vega-Lite width")
-        rendered=rendered.replace(
-          "</style>",
-          ".vega-embed { width: 100%; max-width: 100%; }\n</style>",
-          1,
-        )
-        # Prevent the standalone local DVC report from producing a spurious
-        # /favicon.ico 404 in browser QA. The chart itself still comes from
-        # DVC's standard Vega-Lite renderer.
-        rendered=rendered.replace(
-          "<head>",
-          '<head>\n    <link rel="icon" href="data:,">',
-          1,
-        )
-        (target_dir/"index.html").write_text(rendered)
-    rel_dir="assurance-history"+(f"/{subdir}" if subdir else "")
-    return {
-      "tool":"DVC plots",
-      "url":f"{rel_dir}/index.html",
-      "csv_url":f"{rel_dir}/assurance-history.csv",
-      "metric":metric,
-      "rows":rows,
-    }
-
 
 def invalid_config_fault_probe_input_paths():
     """Return the current source set that can change specialized fault-probe meaning."""
-    config_spec=CONTRACTS["REQ_INVALID_CONFIGURATION_ERRORS"]
     paths={
       "docs/requirements/configuration.md",
       "docs/verification-profiles/invalid-configuration.md",
-      str(config_spec["source"]),
+      "src/llm_router/_internal/config/validation.py",
       "features/responses/public_contract.feature",
       "tests/llm_router/bdd/responses/test_public_contract.py",
       "tests/llm_router/unit/test_internal_config_validation.py",
@@ -3757,7 +2581,6 @@ def invalid_config_fault_probe_input_paths():
       "tests/llm_router/support/workers/timeout.py",
       "pyproject.toml",
     }
-    paths.update(str(nodeid).split("::",1)[0] for nodeid in config_spec["tests"])
     return sorted(paths)
 
 
@@ -3778,9 +2601,6 @@ def invalid_config_fault_probe_binding():
       "source_sha256":sha256_file(ROOT/contract["source_path"]),
       "probe_inputs":inputs,
       "probe_input_set_sha256":sha256_text(stable_json(inputs)),
-      # Facts produced by another mutation-engine configuration (for example the
-      # fixture-less lightweight runner) are not this probe's evidence.
-      "engine":IMPL_FAULTS.engine_configuration(),
     }
 
 
@@ -3802,143 +2622,29 @@ def specialized_fault_binding_current(contract_id, contract_fault):
       and binding.get("source_sha256")==current["source_sha256"]
       and binding.get("probe_input_set_sha256")==current["probe_input_set_sha256"]
       and binding.get("probe_inputs")==current["probe_inputs"]
-      and binding.get("engine")==current["engine"]
     )
+
+
+INVALID_CONFIG_PUBLIC_TEST="tests/llm_router/bdd/responses/test_public_contract.py::test_invalid_model_configuration_surfaces_as_a_configuration_error"
 
 
 def build_fault_model_facts():
-    config_spec=CONTRACTS["REQ_INVALID_CONFIGURATION_ERRORS"]
-    component_tests=[
-      nodeid
-      for nodeid in config_spec["tests"]
-      if "/unit/test_internal_config_validation.py::" in nodeid
-    ]
-    system_tests=[
-      "tests/llm_router/bdd/responses/test_public_contract.py::test_invalid_model_configuration_surfaces_as_a_configuration_error",
-    ]
-    cache_dir_value=str(os.environ.get("TERNFORGE_P29_PROBE_CACHE") or "").strip()
-    cache_dir=Path(cache_dir_value) if cache_dir_value else None
-    if cache_dir and (cache_dir/"config-unit.json").exists() and (cache_dir/"config-bdd.json").exists():
-        component=gremlin_group_metrics(config_spec,component_tests,json.loads((cache_dir/"config-unit.json").read_text()))
-        system=gremlin_group_metrics(config_spec,system_tests,json.loads((cache_dir/"config-bdd.json").read_text()))
-    else:
-        component=gremlin_group_probe(config_spec,component_tests)
-        system=gremlin_group_probe(config_spec,system_tests)
-    component_killed=set(component.pop("killed_ids"))
-    system_killed=set(system.pop("killed_ids"))
-    overlap={
-      "corroborated":len(component_killed & system_killed),
-      "component_only":len(component_killed-system_killed),
-      "system_only":len(system_killed-component_killed),
-      "detected_union":len(component_killed | system_killed),
-      "mutant_universe":max(int(component["generated"]),int(system["generated"])),
-    }
-    overlap["undetected"]=overlap["mutant_universe"]-overlap["detected_union"]
+    """Specialized fault probes of REQ_INVALID_CONFIGURATION_ERRORS.
 
-    component_mutants={str(row.get("gremlin_id") or ""):row for row in component.get("mutants") or []}
-    system_mutants={str(row.get("gremlin_id") or ""):row for row in system.get("mutants") or []}
-    mutant_detail=[]
-    for mutant_id in sorted(set(component_mutants)|set(system_mutants)):
-        c_row=component_mutants.get(mutant_id) or {}
-        s_row=system_mutants.get(mutant_id) or {}
-        base=c_row or s_row
-        mutant_detail.append({
-          "gremlin_id":mutant_id,
-          "line":int(base.get("line") or -1),
-          "operator":str(base.get("operator") or "unknown"),
-          "description":str(base.get("description") or ""),
-          "component_reached":bool(c_row.get("reached")),
-          "component_killed":bool(c_row.get("killed")),
-          "component_covering_tests":list(c_row.get("covering_tests") or []),
-          "component_killing_test":c_row.get("killing_test"),
-          "system_reached":bool(s_row.get("reached")),
-          "system_killed":bool(s_row.get("killed")),
-          "system_covering_tests":list(s_row.get("covering_tests") or []),
-          "system_killing_test":s_row.get("killing_test"),
-        })
-
-    component["implementation_reach"]=implementation_line_reach(config_spec,component_tests)
-    system["implementation_reach"]=implementation_line_reach(config_spec,system_tests)
-    implementation_reach=implementation_line_reach(config_spec,component_tests+system_tests)
-
-    cached_gherkin=(cache_dir/"gherkin.json") if cache_dir else None
-    gherkin=(
-      gherkin_mutation_metrics(json.loads(cached_gherkin.read_text()))
-      if cached_gherkin and cached_gherkin.exists()
-      else probe_gherkin_mutation()
-    )
-    architecture=probe_architecture_fault()
-    interface=probe_interface_faults()
-    runtime=probe_runtime_fault()
-
-    strength_fact=(STRENGTH.get("contracts") or {}).get("REQ_INVALID_CONFIGURATION_ERRORS") or {}
-    triage=strength_fact.get("triage") or {}
-    retained_mutmut={
-      "metric":"covered_mutant_test_strength",
-      "definition":"killed / (killed + survived) for mutmut valid mutants generated only on covered lines",
-      "score":strength_fact.get("score"),
-      "killed":int(strength_fact.get("killed") or 0),
-      "survived":int(strength_fact.get("survived") or 0),
-      "valid_mutants":int(strength_fact.get("valid_mutants") or 0),
-      "new_survivors":int(triage.get("new_survivors") or 0),
-      "existing_survivors":int(triage.get("existing_survivors") or 0),
-      "resolved_survivors":int(triage.get("resolved_survivors") or 0),
-      "suppressed_survivors":int(triage.get("suppressed_survivors") or 0),
-      "unresolved_survivors":int(triage.get("unresolved_survivors") or 0),
-      "survivor_examples":list(strength_fact.get("survivor_examples") or []),
-      "survivors":list(triage.get("survivors") or []),
-      "fresh":strength_fact.get("fresh"),
-      "report_url":strength_fact.get("report_url"),
-      "allure_url":strength_fact.get("allure_url"),
-      "campaign_id":strength_fact.get("campaign_id"),
-      "denominator_warning":"mutmut is configured mutate_only_covered_lines=true, so this Test Strength metric is not a full-scope Mutation Reach denominator.",
-    }
-    implementation={
-      "engine":"pytest-gremlins + retained mutmut campaign",
-      "mode":"implementation mutation",
-      "generated":overlap["mutant_universe"],
-      "detected":overlap["detected_union"],
-      "score":round(100*overlap["detected_union"]/max(1,overlap["mutant_universe"]),1),
-      "target":"REQ_INVALID_CONFIGURATION_ERRORS · validate_config",
-      "native_metadata":True,
-      "implementation_reach":implementation_reach,
-      "overall_detection":round(100*overlap["detected_union"]/max(1,overlap["mutant_universe"]),1),
-      "mutant_detail":mutant_detail,
-      "retained_mutmut":retained_mutmut,
-      "raw_facts_url":"assurance-fault-model-facts.json",
-      "mutants_url":strength_fact.get("report_url"),
-    }
-    layers=[
-      {"id":"specification","label":"Specification / model","kind":"mutation-engine",**gherkin},
-      {"id":"architecture","label":"Architecture","kind":"negative-control",**architecture},
-      {"id":"interface","label":"Interface / protocol","kind":"challenge-suite",**interface},
-      {"id":"runtime","label":"Runtime / dependency","kind":"fault-injection-engine",**runtime},
-      {"id":"implementation","label":"Implementation","kind":"mutation-engine",**implementation},
-    ]
-    history=build_dvc_assurance_history(
-      assurance_history_rows(),
-      metric="retained assurance-snapshot Test Strength across measured contracts",
-    )
-    contract_history=build_dvc_assurance_history(
-      assurance_history_rows("REQ_INVALID_CONFIGURATION_ERRORS"),
-      subdir="REQ_INVALID_CONFIGURATION_ERRORS",
-      title="REQ_INVALID_CONFIGURATION_ERRORS · Test Strength history",
-      metric="retained assurance-snapshot Test Strength for REQ_INVALID_CONFIGURATION_ERRORS",
-    )
-    rate_limit_history=build_dvc_assurance_history(
-      assurance_history_rows("TREQ_RATE_LIMIT_STATE"),
-      subdir="TREQ_RATE_LIMIT_STATE",
-      title="TREQ_RATE_LIMIT_STATE · covered-mutant Test Strength history",
-      metric="retained assurance-snapshot covered-mutant Test Strength for TREQ_RATE_LIMIT_STATE",
-    )
+    Its public rejection path is challenged where mutation cannot reach: a mutated
+    specification outcome, an injected forbidden import edge, a provider boundary that
+    must see no request, and injected provider latency. Each probe runs against an
+    isolated copy or a controlled boundary and is retained with the exact inputs it
+    ran on; implementation faults are the campaign's.
+    """
     req_spec=probe_invalid_config_specification_fault()
     req_spec.update({
       "claim_section":"public error-category outcome",
       "expected_outcome":"ConfigurationError",
       "mutated_outcome":"ProviderError",
       "parser_validity":"Original and mutated feature text both parse successfully with the Cucumber Gherkin parser.",
-      "execution_nodeid":system_tests[0],
-      "execution_command":f"uv run pytest -q {system_tests[0]} --no-cov",
+      "execution_nodeid":INVALID_CONFIG_PUBLIC_TEST,
+      "execution_command":f"uv run pytest -q {INVALID_CONFIG_PUBLIC_TEST} --no-cov",
       "detector":"pytest-bdd exact Then-step assertion on the public error type",
       "source_url":repo_blob_url("features/responses/public_contract.feature"),
       "test_source_url":repo_blob_url("tests/llm_router/bdd/responses/test_public_contract.py"),
@@ -3974,430 +2680,30 @@ def build_fault_model_facts():
       "source_url":repo_blob_url("tests/llm_router/support/workers/error_boundary.py"),
       "raw_facts_url":"assurance-fault-model-facts.json",
     })
-    implementation.update({
-      "source_url":repo_blob_url(config_spec["source"]),
-      "detector":"pytest-gremlins native operators + retained mutmut campaign",
-      "expected_invariant":"Linked verification should execute the declared implementation scope and detect plausible implementation faults.",
-    })
     requirement_layers={
       "specification":{"id":"specification","label":"Specification / model","kind":"scenario-mutation",**req_spec},
       "architecture":{"id":"architecture","label":"Architecture","kind":"negative-control",**req_arch},
       "interface":{"id":"interface","label":"Interface / protocol","kind":"isolation-challenge",**req_interface},
       "runtime":{"id":"runtime","label":"Runtime / dependency","kind":"fault-injection-isolation",**req_runtime},
-      "implementation":{"id":"implementation","label":"Implementation","kind":"mutation-engine",**implementation},
     }
     payload={
-      "schema_version":"ternforge-fault-model-coverage-p31-1",
+      "schema_version":"ternforge-specialized-fault-probes-1",
       "generated_at":utc_now(),
       "head_sha":git_sha(),
-      "obligation_semantics":"A ladder layer is covered only when a real generator/challenge mechanism has been executed against the pilot. Layer scores keep their own denominators and are never averaged into a confidence percentage.",
-      "layers":layers,
+      "obligation_semantics":"A probe covers its fault class only when its challenge actually ran against the contract's public path; a probe whose inputs changed no longer counts.",
       "contracts":{
         "REQ_INVALID_CONFIGURATION_ERRORS":{
           "binding":invalid_config_fault_probe_binding(),
-          "engine":"pytest-gremlins",
-          "scope":"src/llm_router/_internal/config/validation.py::validate_config",
-          "mutant_universe":overlap["mutant_universe"],
-          "groups":{
-            "component_local":{
-              "label":"Component · local",
-              "system_reach":"component",
-              "boundary_mode":"none",
-              **component,
-            },
-            "system_local":{
-              "label":"System · local",
-              "system_reach":"system",
-              "boundary_mode":"none",
-              **system,
-            },
-          },
-          "detection_overlap":overlap,
           "layers":requirement_layers,
-          "history":contract_history,
         }
       },
-      "history":history,
-      "contract_histories":{
-        "REQ_INVALID_CONFIGURATION_ERRORS":contract_history,
-        "TREQ_RATE_LIMIT_STATE":rate_limit_history,
-      },
       "known_limitations":[
-        "The global interface/protocol pilot probe remains challenge-backed because llm-router has no machine-readable provider interface schema suitable for a generic interface mutator. REQ_INVALID_CONFIGURATION_ERRORS uses a stronger claim-specific boundary-isolation sentinel instead.",
-        "Agentic Test Forge is validated for Scenario Outline Examples mutation, but REQ_INVALID_CONFIGURATION_ERRORS is a simple Scenario. Its claim-specific specification negative control is parsed by the official Cucumber Gherkin parser and executed by pytest-bdd; this distinction remains explicit.",
-        "Older Assurance History rows contain retained mutation-campaign metrics only. P31 starts explicit multi-metric assurance snapshots/events without back-filling unavailable pre-P31 target/fault-model values.",
+        "REQ_INVALID_CONFIGURATION_ERRORS uses a claim-specific boundary-isolation sentinel for its interface class, because llm-router has no machine-readable provider interface schema for a generic interface mutator.",
+        "Its specification probe mutates a simple Scenario parsed by the official Cucumber Gherkin parser and executed by pytest-bdd.",
       ],
     }
     ASSURANCE_FACTS_PATH.write_text(json.dumps(payload,indent=2))
-    shutil.rmtree(ROOT/"coverage",ignore_errors=True)
     return payload
-
-
-def current_needs():
-    payload=json.loads((ROOT/"docs/_build/html/needs.json").read_text())
-    version=payload.get("current_version")
-    if version not in (payload.get("versions") or {}):
-        version=list((payload.get("versions") or {}).keys())[-1]
-    return payload["versions"][version]["needs"]
-
-
-def need_field(content,label):
-    match=re.search(
-      rf"\*\*{re.escape(label)}\.\*\*\s*(.*?)(?=\n\n\*\*|\Z)",
-      str(content or ""),flags=re.DOTALL,
-    )
-    return " ".join(match.group(1).split()) if match else ""
-
-
-def contract_assurance_model():
-    needs=current_needs()
-    depth_by_nodeid={row["nodeid"]:row for row in DEPTH.get("tests") or []}
-    reach_order=list((DEPTH.get("classification") or {}).get("system_reach_order") or [])
-    boundary_order=list((DEPTH.get("classification") or {}).get("boundary_mode_order") or [])
-    rep_order=list((DEPTH.get("classification") or {}).get("representation_fidelity_order") or [])
-    ms_order=list((DEPTH.get("classification") or {}).get("ms_validation_order") or [])
-    fault_model=json.loads(ASSURANCE_FACTS_PATH.read_text()) if ASSURANCE_FACTS_PATH.exists() else {}
-    targets=json.loads(ASSURANCE_TARGETS_PATH.read_text()) if ASSURANCE_TARGETS_PATH.exists() else {"profiles":{},"assignments":{}}
-
-    def producer_info(producer_id):
-        p=needs.get(producer_id) or {}
-        return {
-          "id":producer_id,
-          "title":p.get("title") or producer_id,
-          "url":"evidence-trust.html#evidence-trust-"+producer_id.lower().replace("_","-"),
-          "role":p.get("producer_role"),
-          "impact":p.get("producer_impact"),
-          "qualified_by":list(p.get("qualified_by") or []),
-          "calibrated_by":list(p.get("calibrated_by") or p.get("calibrates_back") or []),
-          "residual_doubt":p.get("residual_doubt"),
-        }
-
-    contracts={}
-    for contract_id,need in needs.items():
-        if need.get("type") not in {"req","treq"}:
-            continue
-        direct=[]
-        for evidence_id in need.get("verifies_back") or []:
-            evidence_need=needs.get(evidence_id) or {}
-            nodeid=evidence_need.get("nodeid")
-            depth=depth_by_nodeid.get(nodeid)
-            if not nodeid or not depth:
-                continue
-            producers=[producer_info(pid) for pid in evidence_need.get("produced_by") or []]
-            source_path=depth.get("source_path") or nodeid.split("::",1)[0]
-            narrative_anchor=evidence_id.replace("TEST_EVIDENCE","PYTEST_LOCAL_EVIDENCE",1)
-            direct.append({
-              "id":evidence_id,
-              "title":depth.get("gherkin_scenario") or evidence_need.get("title") or nodeid.split("::")[-1],
-              "nodeid":nodeid,
-              "kind":depth.get("verification_kind"),
-              "reach":depth.get("system_reach"),
-              "reach_basis":depth.get("system_reach_basis"),
-              "boundary":depth.get("boundary_mode"),
-              "boundary_basis":depth.get("boundary_evidence_basis"),
-              "representation":depth.get("representation_fidelity"),
-              "representation_basis":depth.get("representation_basis"),
-              "environment":depth.get("environment"),
-              "environment_basis":depth.get("environment_basis"),
-              "scenario_data":"not_classified",
-              "scenario_data_basis":"No retained scenario/data representativeness field exists for this evidence path. Environment classification is kept separate and is not relabeled as scenario/data fidelity.",
-              "ms_validation":depth.get("ms_validation"),
-              "ms_validation_basis":depth.get("ms_validation_basis"),
-              "model_producer":depth.get("model_producer"),
-              "producers":producers,
-              "source_path":source_path,
-              "source_url":repo_blob_url(source_path),
-              "narrative_url":f"local-pytest-evidence.html#{narrative_anchor}",
-              "raw_url":f"ternforge-test-evidence.html#{evidence_id}",
-              "allure_url":f"test-results/index.html?tags=TF_SCOPE__{contract_id}",
-              "freshness":"not_timestamped",
-              "freshness_basis":"Verification Depth retains the execution result but no per-path freshness timestamp; build time is not substituted for evidence freshness.",
-            })
-        direct.sort(key=lambda row:(
-          reach_order.index(row["reach"]) if row["reach"] in reach_order else -1,
-          boundary_order.index(row["boundary"]) if row["boundary"] in boundary_order else -1,
-          row["kind"] or "",
-          row["title"],
-        ),reverse=True)
-        children=[
-          child for child in (need.get("derives_back") or [])
-          if (needs.get(child) or {}).get("type") in {"req","treq"}
-        ]
-        strength=(STRENGTH.get("contracts") or {}).get(contract_id) or {}
-        for evidence in direct:
-            evidence["mutants_url"]=strength.get("report_url") if strength else None
-            evidence["mutation_freshness"]=(
-              "current" if strength.get("fresh") is True else
-              "stale" if strength.get("fresh") is False else
-              "not_measured"
-            )
-            evidence["mutation_freshness_basis"]=(
-              "retained mutation campaign fingerprint is current" if strength.get("fresh") is True else
-              "retained mutation campaign fingerprint is stale" if strength.get("fresh") is False else
-              "no retained mutation campaign is attributed to this contract"
-            )
-        implementations=[
-          {
-            "id":impl_id,
-            "title":(needs.get(impl_id) or {}).get("title") or impl_id,
-            "url":f"ternforge-python-source-trace.html#{impl_id}",
-          }
-          for impl_id in (need.get("implements_back") or [])
-        ]
-        assignment=(targets.get("assignments") or {}).get(contract_id)
-        profile=(targets.get("profiles") or {}).get((assignment or {}).get("profile")) if assignment else None
-        target=(
-          {
-            **assignment,
-            "profile_id":assignment.get("profile"),
-            "profile_name":profile.get("name") if profile else assignment.get("profile"),
-            "profile_revision":profile.get("revision") if profile else None,
-            "profile_status":profile.get("status") if profile else None,
-            "profile_source":profile.get("source") if profile else None,
-            "profile_rationale":profile.get("rationale") if profile else None,
-            "cadence":(profile or {}).get("cadence"),
-            "freshness":(profile or {}).get("freshness"),
-            "optional_improvements":list((profile or {}).get("optional_improvements") or []),
-            "obligations":list((profile or {}).get("obligations") or []),
-          }
-          if assignment else None
-        )
-        contracts[contract_id]={
-          "id":contract_id,
-          "title":need.get("title") or contract_id,
-          "type":need.get("type"),
-          "revision":need.get("revision"),
-          "statement":need_field(need.get("content"),"Statement"),
-          "rationale":need_field(need.get("content"),"Rationale"),
-          "verification_intent":need_field(need.get("content"),"Verification intent"),
-          "contract_url":f"{need.get('docname')}.html#{contract_id}" if need.get("docname") else f"traceability-reader.html#review-{contract_id}",
-          "implementations":implementations,
-          "direct":direct,
-          "children":children,
-          "target":target,
-          "strength":{
-            "score":strength.get("score"),
-            "killed":strength.get("killed"),
-            "survived":strength.get("survived"),
-            "valid_mutants":strength.get("valid_mutants"),
-            "fresh":strength.get("fresh"),
-            "report_url":strength.get("report_url"),
-            "allure_url":strength.get("allure_url"),
-            "campaign_id":strength.get("campaign_id"),
-            "triage":{
-              "new_survivors":int((strength.get("triage") or {}).get("new_survivors") or 0),
-              "existing_survivors":int((strength.get("triage") or {}).get("existing_survivors") or 0),
-              "resolved_survivors":int((strength.get("triage") or {}).get("resolved_survivors") or 0),
-              "suppressed_survivors":int((strength.get("triage") or {}).get("suppressed_survivors") or 0),
-              "unresolved_survivors":int((strength.get("triage") or {}).get("unresolved_survivors") or 0),
-            },
-          } if strength else None,
-        }
-
-    def descendants(root_id):
-        seen=set()
-        stack=list((needs.get(root_id) or {}).get("derives_back") or [])
-        while stack:
-            child=stack.pop()
-            if child in seen:
-                continue
-            seen.add(child)
-            node=needs.get(child) or {}
-            stack.extend(node.get("derives_back") or [])
-        return sorted(
-          cid for cid in seen
-          if (needs.get(cid) or {}).get("type") in {"req","treq"}
-        )
-
-    goals=[]
-    for goal_id,goal in needs.items():
-        if goal.get("type")!="goal":
-            continue
-        features=[]
-        for feature_id in goal.get("derives_back") or []:
-            feature=needs.get(feature_id) or {}
-            if feature.get("type")!="feature":
-                continue
-            features.append({
-              "id":feature_id,
-              "title":feature.get("title") or feature_id,
-              "contracts":descendants(feature_id),
-            })
-        goals.append({
-          "id":goal_id,
-          "title":goal.get("title") or goal_id,
-          "contracts":descendants(goal_id),
-          "features":features,
-        })
-    goals.sort(key=lambda row:row["title"])
-    return {
-      "schema_version":"p33-local-1",
-      "reach_order":reach_order,
-      "boundary_order":boundary_order,
-      "representation_order":rep_order,
-      "ms_validation_order":ms_order,
-      "contracts":contracts,
-      "goals":goals,
-      "fault_model":fault_model,
-      "target_schema_version":targets.get("schema_version"),
-    }
-
-
-def evaluate_assurance_obligation(model,contract,obligation):
-    rows=contract.get("direct") or []
-    fault=((model.get("fault_model") or {}).get("contracts") or {}).get(contract["id"]) or {}
-    kind=obligation.get("kind")
-    if kind=="frontier_cell":
-        matching=[
-          row for row in rows
-          if row.get("reach")==obligation.get("reach") and row.get("boundary")==obligation.get("boundary")
-        ]
-        rep_order=model.get("representation_order") or []
-        target_rep=obligation.get("representation_min")
-        def rep_rank(value):
-            try:
-                return rep_order.index(value)
-            except ValueError:
-                return -1
-        rep_ok=not target_rep or any(rep_rank(row.get("representation"))>=rep_rank(target_rep) for row in matching)
-        strongest=max((row.get("representation") for row in matching),key=rep_rank,default=None)
-        return {
-          "met":bool(matching and rep_ok),
-          "actual":f"{len(matching)} path(s) · strongest representation {strongest or 'n/a'}" if matching else "0 matching paths",
-          "value":len(matching),
-          "evidence_ids":[row.get("id") for row in matching],
-        }
-    if kind=="method_count":
-        methods=sorted({row.get("kind") for row in rows if row.get("kind")})
-        minimum=int(obligation.get("min") or 0)
-        return {"met":len(methods)>=minimum,"actual":f"{len(methods)} method type(s)","value":len(methods),"methods":methods}
-    if kind in {"mutation_reach","mutation_sensitivity"}:
-        group=(fault.get("groups") or {}).get(obligation.get("group")) or {}
-        key="mutation_reach" if kind=="mutation_reach" else "sensitivity"
-        value=group.get(key)
-        minimum=float(obligation.get("min") or 0)
-        return {"met":value is not None and float(value)>=minimum,"actual":None if value is None else float(value),"value":value}
-    if kind=="test_strength":
-        value=(contract.get("strength") or {}).get("score")
-        minimum=float(obligation.get("min") or 0)
-        return {"met":value is not None and float(value)>=minimum,"actual":value,"value":value}
-    if kind=="fault_layer":
-        layer=(fault.get("layers") or {}).get(obligation.get("layer")) or {}
-        generated=int(layer.get("generated") or 0)
-        detected=int(layer.get("detected") or 0)
-        return {
-          "met":generated>0 and detected>0,
-          "actual":f"{detected}/{generated} detected" if generated else "not exercised",
-          "value":detected,
-        }
-    return {"met":False,"actual":"unsupported obligation type","value":None}
-
-
-def build_assurance_snapshot_history(model):
-    existing={
-      "schema_version":"ternforge-assurance-history-p31-1",
-      "history_starts_at_checkpoint":"p31-local-1",
-      "note":"Assurance snapshots start at P31. Older retained DVC mutation history is preserved separately and is not back-filled with unavailable Target/fault-model dimensions.",
-      "snapshots":[],
-    }
-    if ASSURANCE_SNAPSHOTS_PATH.exists():
-        try:
-            loaded=json.loads(ASSURANCE_SNAPSHOTS_PATH.read_text())
-            if loaded.get("schema_version")==existing["schema_version"]:
-                existing=loaded
-        except Exception:
-            pass
-
-    snapshots=list(existing.get("snapshots") or [])
-    fault_model=model.get("fault_model") or {}
-    for contract_id,contract in sorted((model.get("contracts") or {}).items()):
-        target=contract.get("target")
-        if not target:
-            continue
-        obligations=list(target.get("obligations") or [])
-        evaluated: list[dict[str, Any]]=[
-          {
-            "id":obligation.get("id"),
-            "label":obligation.get("label"),
-            "kind":obligation.get("kind"),
-            "blocking":obligation.get("blocking") is not False,
-            "target":obligation,
-            "result":evaluate_assurance_obligation(model,contract,obligation),
-          }
-          for obligation in obligations
-        ]
-        blocking=[row for row in evaluated if row["blocking"]]
-        gaps=[row for row in blocking if not row["result"]["met"]]
-        fact=((fault_model.get("contracts") or {}).get(contract_id) or {})
-        groups=fact.get("groups") or {}
-        component=groups.get("component_local") or {}
-        system=groups.get("system_local") or {}
-        strength=contract.get("strength") or {}
-        triage=strength.get("triage") or {}
-        layers=fact.get("layers") or {}
-        content={
-          "contract_id":contract_id,
-          "head_sha":git_sha(),
-          "checkpoint":PROTOTYPE_BUILD_VERSION,
-          "target_profile":target.get("profile_id"),
-          "target_revision":target.get("target_revision"),
-          "requirement_revision":contract.get("revision"),
-          "obligations_met":len(blocking)-len(gaps),
-          "obligations_total":len(blocking),
-          "blocking_gap_ids":[row["id"] for row in gaps],
-          "blocking_gap_labels":[row["label"] for row in gaps],
-          "component_mutation_reach":component.get("mutation_reach"),
-          "component_mutation_sensitivity":component.get("sensitivity"),
-          "system_mutation_reach":system.get("mutation_reach"),
-          "system_mutation_sensitivity":system.get("sensitivity"),
-          "test_strength":strength.get("score"),
-          "new_survivors":triage.get("new_survivors"),
-          "survivor_debt":triage.get("existing_survivors"),
-          "resolved_survivors":triage.get("resolved_survivors"),
-          "fault_layers_detected":sum(1 for row in layers.values() if int(row.get("detected") or 0)>0),
-          "fault_layers_total":len(layers),
-          "target_source":target.get("source"),
-          "target_rationale":target.get("rationale"),
-          "issue_links":list(target.get("issue_links") or []),
-          "overrides":list(target.get("overrides") or []),
-        }
-        fingerprint=sha256_text(stable_json(content))
-        prior=[row for row in snapshots if row.get("contract_id")==contract_id]
-        previous=prior[-1] if prior else None
-        if previous and previous.get("fingerprint")==fingerprint:
-            continue
-        previous_gaps=set((previous or {}).get("blocking_gap_ids") or [])
-        current_gaps=set(content["blocking_gap_ids"])
-        events=[]
-        if previous is None:
-            events.append({
-              "type":"history_started",
-              "detail":"Assurance snapshot retention starts at P31; pre-P31 assurance dimensions are not back-filled.",
-            })
-            for gap in sorted(current_gaps):
-                events.append({"type":"gap_present_at_history_start","obligation_id":gap})
-        else:
-            if previous.get("target_revision")!=content["target_revision"] or previous.get("target_profile")!=content["target_profile"]:
-                events.append({
-                  "type":"target_revision",
-                  "from_profile":previous.get("target_profile"),
-                  "from_revision":previous.get("target_revision"),
-                  "to_profile":content["target_profile"],
-                  "to_revision":content["target_revision"],
-                  "rationale":content["target_rationale"],
-                })
-            for gap in sorted(current_gaps-previous_gaps):
-                events.append({"type":"gap_opened","obligation_id":gap})
-            for gap in sorted(previous_gaps-current_gaps):
-                events.append({"type":"gap_closed","obligation_id":gap})
-        snapshot={**content,"fingerprint":fingerprint,"captured_at":utc_now(),"events":events}
-        snapshots.append(snapshot)
-
-    existing["snapshots"]=snapshots
-    ASSURANCE_SNAPSHOTS_PATH.write_text(json.dumps(existing,indent=2))
-    generated=ROOT/"docs/_build/html/assurance-snapshots.json"
-    generated.write_text(json.dumps(existing,indent=2))
-    return existing
 
 
 def markdown_table_after(text, heading):
@@ -4541,10 +2847,24 @@ def project_monitor_policy():
         if match:
             thresholds[decision]=float(match.group(1))
     fault_class_descriptions={}
+    fault_class_challenges={}
     for row in markdown_table_after(text,"#### Fault-class semantics"):
         ids=re.findall(r"\x60([^\x60]+)\x60",row.get("Fault class",""))
         for class_id in ids:
             fault_class_descriptions[class_id]=row.get("Meaning","")
+            fault_class_challenges[class_id]=row.get("Challenged by","")
+    arid_rules=[]
+    for row in markdown_table_after(text,"##### Arid code"):
+        ids=re.findall(r"\x60(arid\.[a-z-]+)\x60",row.get("Rule",""))
+        if len(ids)!=1:
+            raise RuntimeError("Test Plan: each Arid code row must name exactly one rule")
+        arid_rules.append({"id":ids[0],"covers":row.get("Code it covers",""),"why":row.get("Why it is not mutated","")})
+    declared_rules={rule["id"] for rule in arid_rules}
+    if declared_rules!=set(MUTATION_EXTENSION.ARID_RULES):
+        raise RuntimeError(
+          f"Test Plan arid rules {sorted(declared_rules)} differ from the engine extension's "
+          f"{sorted(MUTATION_EXTENSION.ARID_RULES)}"
+        )
     fault_groups=[]
     for row in markdown_table_after(text,"### Fault-based testing"):
         ids=re.findall(r"\x60([^\x60]+)\x60",row.get("Fault classes",""))
@@ -4554,11 +2874,15 @@ def project_monitor_policy():
           "descriptions":{class_id:fault_class_descriptions.get(class_id,"") for class_id in ids},
         })
     return {
-      "mutation_reach_floor":thresholds.get("Mutation Reach floor"),
-      "mutation_sensitivity_floor":thresholds.get("Mutation Sensitivity floor"),
       "freshness_rule":decision_values.get("Evidence freshness"),
+      "fault_detection_rule":decision_values.get("Implementation fault detection"),
+      "mutation_signal":decision_values.get("Mutation signal"),
       "fault_class_descriptions":fault_class_descriptions,
+      "fault_class_challenges":fault_class_challenges,
       "fault_groups":fault_groups,
+      "arid_rules":arid_rules,
+      "model_generation":model_generation_policy(text),
+      "mutation_policy_url":"test-plan.html#test-plan-mutation-policy",
       "url":"test-plan.html#test-plan",
     }
 
@@ -4950,24 +3274,46 @@ def requirement_monitor_target(contract_id, policy):
             )
         required_treqs.append(treq_id)
 
-    mutation={}
-    for row in markdown_table_after(section,"### Blocking mutation checks"):
-        level_label=row.get("Test level","").strip()
-        level=level_keys.get(level_label)
-        if not level:
+    # Where the contract's own code is the subject of an arid rule, its profile turns the rule off.
+    arid_ids={rule["id"] for rule in policy.get("arid_rules") or []}
+    arid_overrides=[]
+    for row in markdown_table_after(section,"### Mutation policy"):
+        ids=re.findall(r"\x60(arid\.[a-z-]+)\x60",row.get("Rule",""))
+        decision=row.get("Decision","").strip()
+        why=row.get("Why","").strip()
+        if len(ids)!=1 or ids[0] not in arid_ids:
+            raise RuntimeError(f"{contract_id}: each Mutation policy row must name one Test Plan arid rule")
+        if decision!="Mutate":
+            raise RuntimeError(f"{contract_id}: Mutation policy decision for {ids[0]} must be Mutate, not {decision!r}")
+        if not why:
+            raise RuntimeError(f"{contract_id}: Mutation policy row for {ids[0]} must say why")
+        if any(item["rule"]==ids[0] for item in arid_overrides):
+            raise RuntimeError(f"{contract_id}: duplicate Mutation policy row for {ids[0]}")
+        arid_overrides.append({"rule":ids[0],"why":why})
+    # Semantic mutants challenge only a specification or interface class the profile applies.
+    semantic_mutants=[]
+    for row in markdown_table_after(section,"### Semantic mutants"):
+        class_ids=re.findall(r"\x60((?:spec|interface)\.[a-z-]+)\x60",row.get("Fault class",""))
+        refs=re.findall(r"\x60([^\x60]+)\x60",row.get("Target",""))
+        budget=row.get("Budget","").strip()
+        risk=row.get("Risk","").strip()
+        if len(class_ids)!=1 or class_state.get(class_ids[0]) not in {"required","optional"}:
             raise RuntimeError(
-              f"{contract_id}: Blocking mutation checks has unknown Test level {level_label!r}"
+              f"{contract_id}: a Semantic mutants row must name one spec.* or interface.* class the profile applies"
             )
-        checks=row.get("Required checks","")
-        known=("Mutation Reach" in checks,"Mutation Sensitivity" in checks)
-        if not any(known):
-            raise RuntimeError(
-              f"{contract_id}: Blocking mutation checks row declares no recognized check"
-            )
-        mutation[level]={
-          "reach":known[0],
-          "sensitivity":known[1],
-        }
+        if len(refs)!=1 or "::" not in refs[0] or not (ROOT/refs[0].split("::",1)[0]).is_file():
+            raise RuntimeError(f"{contract_id}: a Semantic mutants target must be `path/to/module.py::qualname`")
+        if not budget.isdigit() or not 1<=int(budget)<=3:
+            raise RuntimeError(f"{contract_id}: a Semantic mutants budget must be 1 to 3 per target")
+        if not risk:
+            raise RuntimeError(f"{contract_id}: a Semantic mutants row must name the risk it probes")
+        source,qualname=refs[0].split("::",1)
+        if SEMANTIC.function_source((ROOT/source).read_text(),qualname) is None:
+            raise RuntimeError(f"{contract_id}: the Semantic mutants target {refs[0]} names no function in its module")
+        semantic_mutants.append({
+          "class":class_ids[0],"target":refs[0],"source":source,"qualname":qualname,
+          "budget":int(budget),"risk":risk,
+        })
     return {
       "contract_id":contract_id,
       "source_path":str(path.relative_to(ROOT)) if path else None,
@@ -4989,44 +3335,24 @@ def requirement_monitor_target(contract_id, policy):
       "criterion_contracts":criterion_contracts,
       "required_treqs":required_treqs,
       "fault_groups":fault_groups,
-      "mutation":mutation,
+      "arid_overrides":arid_overrides,
+      "semantic_mutants":semantic_mutants,
     }
 
 
-def verification_criterion_targets():
-    policy=project_monitor_policy()
-    result={}
-    for contract_id in verification_profile_contract_ids():
-        target=requirement_monitor_target(contract_id,policy)
-        if not target:
-            continue
-        for cell in target.get("coverage") or []:
-            for criterion_id in cell.get("items") or []:
-                if criterion_id in result:
-                    raise RuntimeError(f"verification criterion appears in multiple target cells: {criterion_id}")
-                result[criterion_id]={
-                  "profile_contract_id":contract_id,
-                  "level":cell.get("level"),
-                  "boundary":cell.get("boundary"),
-                  "representation":cell.get("representation"),
-                  "ms_validation_target":cell.get("ms_validation_target"),
-                }
-    return result
+TEST_EVIDENCE_IDS: dict[str, str]={}
 
 
-def local_pytest_evidence_url(test_name):
-    path=ROOT/"docs/_build/html/local-pytest-evidence.html"
-    if not path.exists():
-        return "local-pytest-evidence.html"
-    text=path.read_text()
-    index=text.find(f">{test_name}<")
-    if index<0:
-        index=text.find(test_name)
-    if index<0:
-        return "local-pytest-evidence.html"
-    prefix=text[max(0,index-2600):index]
-    ids=re.findall(r'id="(PYTEST_LOCAL_EVIDENCE_[A-Z0-9_]+)"',prefix)
-    return f"local-pytest-evidence.html#{ids[-1]}" if ids else "local-pytest-evidence.html"
+def test_evidence_url(nodeid):
+    """A test's own evidence record in the portal: what it checked, how far it reached and what was real."""
+    if not TEST_EVIDENCE_IDS:
+        TEST_EVIDENCE_IDS.update({
+          need["nodeid"]:need["id"]
+          for need in current_needs().values()
+          if need.get("type")=="testcase" and need.get("nodeid")
+        })
+    need_id=TEST_EVIDENCE_IDS.get(nodeid)
+    return f"ternforge-test-evidence.html#{need_id}" if need_id else None
 
 
 def package_version_or_unknown(name):
@@ -5053,9 +3379,31 @@ def current_evidence_qualification_environment():
       "assurance_monitor_domain_sha256":sha256_file(ROOT/".ai-bridge/assurance_monitor_domain.py"),
       "assurance_monitor_registry_sha256":sha256_file(ROOT/".ai-bridge/assurance_monitor_registry.py"),
       "implementation_faults_sha256":sha256_file(ROOT/".ai-bridge/implementation_faults.py"),
+      "mutation_extension_sha256":IMPL_FAULTS.plugin_sha256(),
+      "semantic_mutants_sha256":sha256_file(ROOT/".ai-bridge/semantic_mutants.py"),
+      "semantic_calibration_sha256":semantic_calibration_sha256(),
+      "model_generation_sha256":sha256_file(ROOT/".ai-bridge/model_generation.py"),
+      "survivor_equivalence_sha256":sha256_file(ROOT/".ai-bridge/survivor_equivalence.py"),
       "qualification_harness_sha256":sha256_file(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
       "trace_bridge_sha256":sha256_file(ROOT/"tests/conftest.py"),
     }
+
+
+def assessor_calibration_sha256():
+    """One digest over the assessors' frozen calibration answers and their record."""
+    files=sorted(path for path in ASSESSOR_CALIBRATION_DIR.rglob("*") if path.is_file()) if ASSESSOR_CALIBRATION_DIR.is_dir() else []
+    if not files:
+        return None
+    return hashlib.sha256(b"".join(str(path.relative_to(ASSESSOR_CALIBRATION_DIR)).encode()+b"\0"+path.read_bytes() for path in files)).hexdigest()
+
+
+def semantic_calibration_sha256():
+    """One digest over the calibration set that qualifies the semantic mutant cascade."""
+    folder=ROOT/".ai-bridge/semantic-mutants/calibration"
+    files=sorted(path for path in folder.rglob("*") if path.is_file() and "__pycache__" not in path.parts)
+    if not files:
+        return None
+    return hashlib.sha256(b"".join(str(path.relative_to(folder)).encode()+b"\0"+path.read_bytes() for path in files)).hexdigest()
 
 
 def load_evidence_qualification():
@@ -5370,39 +3718,6 @@ def evidence_input_state(snapshot,paths):
         more=f" (+{len(changed)-3} more)" if len(changed)>3 else ""
         return "STALE",f"relevant verification input changed since the retained run: {sample}{more}",digest,changed
     return "CURRENT","all inputs relevant to this evidence still match the retained run",digest,[]
-
-
-CORE_EXECUTION_PRODUCERS={
-  "PRODUCER_PYTEST",
-  "PRODUCER_PY_TESTKIT",
-  "PRODUCER_ALLURE",
-  "PRODUCER_PYTEST_BDD",
-  "PRODUCER_HYPOTHESIS",
-}
-
-
-def boundary_from_current_evidence(nodeid,allure_row,target_boundary,fallback=None,fallback_basis=None):
-    observations=(allure_row or {}).get("observations") or []
-    for observation in observations:
-        if observation.get("kind")!="boundary-interaction-check":
-            continue
-        payload=observation.get("payload") or {}
-        if payload.get("boundary")!="provider-http":
-            continue
-        requests=payload.get("requests_received")
-        if isinstance(requests,int):
-            if requests==0:
-                return "none","current retained provider-boundary observation recorded zero HTTP requests",True
-            return "substitute",f"current retained provider-boundary observation recorded {requests} HTTP request(s)",True
-    external_producers=set((allure_row or {}).get("producer_ids") or [])-CORE_EXECUTION_PRODUCERS
-    external_observations={
-      observation.get("kind")
-      for observation in observations
-      if observation.get("kind") in {"external-substitute","external-replay","external-direct"}
-    }
-    if target_boundary=="none" and not external_producers and not external_observations:
-        return "none","current retained producer chain contains no material external participant",True
-    return target_boundary or fallback,fallback_basis or "current retained evidence does not prove the declared boundary mode",False
 
 
 def evidence_run_manifest(junit_root,allure_index):
@@ -6031,52 +4346,6 @@ def refresh_verification_depth_facts():
     return payload
 
 
-def current_reach_for_target(nodeid,verification_kind,target_level,boundary):
-    files=current_context_files(nodeid)
-    product=[path for path in files if path.startswith("src/llm_router/")]
-    has_api=any(path.startswith("src/llm_router/_api/") for path in product)
-    has_runtime=any(path.startswith("src/llm_router/_internal/runtime/") for path in product)
-    has_provider=any(path.startswith("src/llm_router/_internal/providers/") for path in product)
-    if not product:
-        return target_level,"current coverage contains no llm-router production code for this testcase",False
-    if target_level=="component":
-        current=verification_kind in {"unit","property"} and boundary=="none"
-        basis="declared Component criterion is backed by current unit/property execution of llm-router code with no material external boundary"
-    elif target_level=="component_integration":
-        current=verification_kind=="integration" and boundary=="none"
-        basis="declared Component Integration criterion is backed by current integration execution without an external-system boundary"
-    elif target_level=="system":
-        current=verification_kind=="bdd" and has_api and has_runtime and boundary=="none"
-        basis="declared System criterion is backed by current public API plus runtime execution with no material external boundary"
-    elif target_level=="system_integration":
-        current=(
-          verification_kind in {"bdd","integration"}
-          and has_api and has_runtime and has_provider
-          and boundary in {"substitute","replay","direct"}
-        )
-        basis="declared System Integration criterion is backed by current public API, runtime, provider-adapter and observed external-boundary execution"
-    else:
-        current=False
-        basis=f"current pilot has no execution rule for declared Test level {target_level or 'UNKNOWN'}"
-    return target_level,basis,current
-
-
-def current_representation_from_boundary(boundary,boundary_current,target_representation):
-    if not boundary_current:
-        return "unknown","representation cannot be established until the current boundary mode is proven",False
-    if boundary in {"substitute","replay"}:
-        actual="surrogate_simulated"
-        basis="current evidence uses a material substitute/replay external participant, so Representation is Surrogate / simulated"
-    elif boundary in {"none","direct"}:
-        actual="actual"
-        basis="current evidence uses actual llm-router code without a material surrogate representation"
-    else:
-        return "unknown","current boundary mode does not establish Representation",False
-    return actual,basis,actual==target_representation
-
-
-
-
 def current_allure_aggregate(allure_index):
     rows=[row for values in allure_index.values() for row in values]
     return sha256_text(stable_json(sorted(
@@ -6332,7 +4601,7 @@ def junit_monitor_actual():
           "source_sha256":retained_source_sha or None,
           "current_source_sha256":sha256_file(ROOT/source_path) if source_path and (ROOT/source_path).exists() else None,
           "source_url":repo_blob_url(source_path) if source_path else None,
-          "evidence_url":local_pytest_evidence_url(test_name),
+          "evidence_url":test_evidence_url(nodeid),
           "provenance_manifest":{
             "git_head":manifest.get("git_head"),
             "projected_from_git_head":manifest.get("projected_from_git_head"),
@@ -6551,7 +4820,7 @@ def junit_fault_actual(policy):
                 if not observed else
                 "matching declared fault challenge and runtime injection observation belong to the current retained run"
               ),
-              "evidence_url":local_pytest_evidence_url(test_name),
+              "evidence_url":test_evidence_url(nodeid),
               "observation_path":matching[-1].get("path") if matching else None,
               "observation_sha256":matching[-1].get("sha256") if matching else None,
             })
@@ -6576,16 +4845,24 @@ def junit_fault_actual(policy):
 
 
 def implementation_fault_plans(test_rows=None):
+    """What the campaign may challenge per contract, and which arid rules apply to it:
+    every Test Plan rule except those its profile turns off."""
     needs=current_needs()
     scopes=IMPL_FAULTS.resolve_impl_scopes(ROOT,needs)
     owners=IMPL_FAULTS.line_owners(scopes)
     descendants=IMPL_FAULTS.descendants_map(needs)
     test_rows=junit_depth_rows() if test_rows is None else test_rows
-    return {
-      contract_id:IMPL_FAULTS.contract_plan(contract_id,scopes,owners,descendants,test_rows)
-      for contract_id,need in sorted(needs.items())
-      if need.get("type") in {"req","treq"}
-    }
+    policy=project_monitor_policy()
+    rules=[rule["id"] for rule in policy.get("arid_rules") or []]
+    plans={}
+    for contract_id,need in sorted(needs.items()):
+        if need.get("type") not in {"req","treq"}:
+            continue
+        plan=IMPL_FAULTS.contract_plan(contract_id,scopes,owners,descendants,test_rows)
+        overrides={row["rule"] for row in (requirement_monitor_target(contract_id,policy) or {}).get("arid_overrides") or []}
+        plan["arid_rules"]=[rule for rule in rules if rule not in overrides]
+        plans[contract_id]=plan
+    return plans
 
 
 def retained_campaign_entry_state(entry,plan,shared_sha256,test_rows):
@@ -6684,6 +4961,1312 @@ def refresh_implementation_fault_campaign(contract_ids=None,full=False):
     print(f"[IMPL] campaign finished in {round(time.monotonic()-started,1)}s",flush=True)
 
 
+# --- semantic mutants ----------------------------------------------------------------
+
+
+def need_statement(need):
+    match=re.search(r"\*\*Statement\.\*\*\s*(.*?)(?=\n\n\*\*|\Z)",str(need.get("content") or ""),flags=re.DOTALL)
+    return " ".join(match.group(1).split()) if match else ""
+
+
+def semantic_contexts(contract_id,target,needs):
+    """What the generator is given for every selected target, and the digest each proposal is bound to."""
+    need=needs.get(contract_id) or {}
+    requirement={"id":contract_id,"revision":need.get("revision"),"statement":need_statement(need)}
+    criteria=[str(value) for _key,value in sorted((target.get("item_descriptions") or {}).items())]
+    return {
+      selection["target"]:SEMANTIC.generation_context(ROOT,requirement,criteria,selection)
+      for selection in target.get("semantic_mutants") or []
+    }
+
+
+def semantic_proposal_set(contract_id,target):
+    """The frozen proposals of a contract, checked against its profile's selection: every proposal
+    names a selected target and class, and no target has more proposals than its budget."""
+    payload=SEMANTIC.load_proposals(contract_id)
+    proposals=list(payload.get("proposals") or [])
+    selections={row["target"]:row for row in target.get("semantic_mutants") or []}
+    per_target=Counter(proposal.get("target") for proposal in proposals)
+    for proposal in proposals:
+        selection=selections.get(proposal.get("target"))
+        if selection is None or selection["class"]!=proposal.get("class"):
+            raise RuntimeError(f"{contract_id}: semantic mutant {proposal.get('id')} names no selected target and class")
+        if per_target[proposal["target"]]>selection["budget"]:
+            raise RuntimeError(f"{contract_id}: {proposal['target']} has more semantic mutants than its budget")
+    return payload,proposals
+
+
+def semantic_binding(contract_id,plan,test_rows,contexts,judgement=None):
+    """Everything a retained cascade result depends on; any change makes it stale."""
+    folder=SEMANTIC.PROPOSAL_ROOT/contract_id
+    sources=sorted({key.split("::",1)[0] for key in contexts})
+    return {
+      "judgement_sha256":sha256_text(stable_json(judgement or {})),
+      "equivalence_sha256":sha256_file(ROOT/".ai-bridge/survivor_equivalence.py"),
+      "module_sha256":SEMANTIC.module_sha256(),
+      "proposals_sha256":sha256_file(folder/"proposals.json"),
+      "drafts_sha256":{path.name:sha256_file(path) for path in sorted((folder/"drafts").glob("*.draft.py"))} if (folder/"drafts").is_dir() else {},
+      "contexts":{key:SEMANTIC.context_sha256(context) for key,context in sorted(contexts.items())},
+      "tests":list(plan.get("tests") or []),
+      "inputs":IMPL_FAULTS.contract_inputs(ROOT,plan,test_rows),
+      "sources":{path:sha256_file(ROOT/path) for path in sources},
+      "shared_inputs_sha256":sha256_text(stable_json(IMPL_FAULTS.shared_inputs(ROOT))),
+    }
+
+
+def load_assessments(path):
+    return json.loads(path.read_text()) if path.is_file() else {}
+
+
+def save_assessments(path,assessments):
+    path.parent.mkdir(parents=True,exist_ok=True)
+    path.write_text(json.dumps(dict(sorted(assessments.items())),indent=1,sort_keys=True)+"\n")
+
+
+def semantic_assessment_prompt(contract_id,proposal,need):
+    """What the assessors are asked about one semantic survivor, or None when it has no harness."""
+    path,qualname=proposal["target"].split("::",1)
+    source=(ROOT/path).read_text()
+    harness=EQ.harness_for(source,qualname)
+    if "reason" in harness:
+        return None
+    mutated=SEMANTIC.apply_replacement(source,qualname,proposal["replacement"]) or source
+    owner=qualname.rpartition(".")[0]
+    guide=EQ.input_guide(str(ROOT/path),harness)
+    return EQ.assessor_prompt(
+      target=qualname,original=EQ.function_source(source,qualname) or "",mutant=EQ.function_source(mutated,qualname) or "",
+      harness=harness,context=f"Requirement {contract_id}: {need_statement(need)}\nRisk the change realizes: {proposal.get('risk')}"+(f"\n{guide}" if guide else ""),
+      owner_source=EQ.class_source(source,owner) if owner else "",tried=SURVIVOR_TRIED,
+    )
+
+
+def current_answers(assessments,key,prompt):
+    """The stored answers for one survivor that answered its current question, without the malformed."""
+    entry=assessments.get(key) or {}
+    if prompt is None or entry.get("prompt_sha256")!=sha256_text(prompt):
+        return {}
+    return {member:answer for member,answer in (entry.get("answers") or {}).items() if not answer.get("problems")}
+
+
+def semantic_judgement_request(contract_id,proposals,needs,policy=None,state=None):
+    """The survivor judgement a cascade run is handed: the Test Plan's settings, the calibration state
+    and the assessors' current answers per proposal."""
+    policy=policy or model_generation_policy()
+    state=state or assessor_calibration_state(policy)
+    assessments=load_assessments(SEMANTIC.PROPOSAL_ROOT/contract_id/"assessments.json")
+    need=needs.get(contract_id) or {}
+    answers={}
+    for proposal in proposals:
+        given=current_answers(assessments,proposal["id"],semantic_assessment_prompt(contract_id,proposal,need))
+        if given:
+            answers[proposal["id"]]=given
+    return {
+      "seconds":policy["judgement"]["symbolic_seconds"],"paths":policy["judgement"]["symbolic_paths"],"members":state["members"],
+      "threshold":state["threshold"],"calibrated":state["calibrated"],"answers":answers,
+    }
+
+
+def ask_assessors(run,policy,*,purpose,contract_id,subject,prompt,entry,response_dir):
+    """Ask every assessor that has not answered this question; return whether one answered."""
+    prompt_sha=sha256_text(prompt)
+    if entry.get("prompt_sha256")!=prompt_sha:
+        entry.clear()
+        entry.update({"prompt_sha256":prompt_sha,"answers":{}})
+    asked=False
+    for member in policy["assessors"]:
+        if member["key"] in entry["answers"]:
+            continue
+        before=len(run.rows)
+        _call,response=run.call(
+          f"assessor:{member['assessor']}",purpose=purpose,contract_id=contract_id,subject=subject,
+          system=EQ.ASSESSOR_SYSTEM,prompt=prompt,schema=EQ.ASSESSOR_SCHEMA,response_dir=response_dir,
+        )
+        print(f"[ASSESS] {contract_id} · {subject} · assessor {member['assessor']}: "+attempts_text(run.rows[before:]),flush=True)
+        if response is not None:
+            entry["answers"][member["key"]]=assessor_answer(response)
+            asked=True
+    return asked
+
+
+def assess_contract_semantic(run,contract_id,target,needs,policy):
+    """Ask the assessors about every undecided semantic survivor of one contract that a harness can
+    judge and no confirmed input decided yet."""
+    path=SEMANTIC_RESULTS_DIR/f"{contract_id}.json"
+    retained=json.loads(path.read_text()) if path.exists() else {}
+    _payload,proposals=semantic_proposal_set(contract_id,target)
+    by_id={proposal["id"]:proposal for proposal in proposals}
+    folder=SEMANTIC.PROPOSAL_ROOT/contract_id
+    assessments=load_assessments(folder/"assessments.json")
+    need=needs.get(contract_id) or {}
+    asked=False
+    for row in retained.get("results") or []:
+        if row.get("outcome")!="undecided" or row["id"] not in by_id or (row.get("judgement") or {}).get("status") in {None,"found","not-applicable"}:
+            continue
+        prompt=semantic_assessment_prompt(contract_id,by_id[row["id"]],need)
+        if prompt is None:
+            continue
+        entry=assessments.setdefault(row["id"],{})
+        asked=ask_assessors(run,policy,purpose="survivor-assessment",contract_id=contract_id,subject=row["id"],prompt=prompt,entry=entry,response_dir=folder/"responses") or asked
+    if asked:
+        save_assessments(folder/"assessments.json",assessments)
+    return asked
+
+
+def semantic_selections(policy=None):
+    policy=policy or project_monitor_policy()
+    found={}
+    for contract_id in verification_profile_contract_ids():
+        target=requirement_monitor_target(contract_id,policy) or {}
+        if target.get("semantic_mutants"):
+            found[contract_id]=target
+    return found
+
+
+def load_symbolic_cache():
+    return json.loads(SYMBOLIC_CACHE_PATH.read_text()) if SYMBOLIC_CACHE_PATH.exists() else {}
+
+
+def save_symbolic_cache(cache):
+    SYMBOLIC_CACHE_PATH.parent.mkdir(parents=True,exist_ok=True)
+    SYMBOLIC_CACHE_PATH.write_text(json.dumps(cache,sort_keys=True))
+
+
+def refresh_semantic_mutants(contract_ids=None):
+    """Run the cascade for every contract whose profile selects semantic mutants. The cascade runs in
+    the mutation engine's environment, so that no proposal repeats a rule mutant."""
+    test_rows=junit_depth_rows()
+    plans=implementation_fault_plans(test_rows)
+    needs=current_needs()
+    SEMANTIC_RESULTS_DIR.mkdir(parents=True,exist_ok=True)
+    cache=load_symbolic_cache()
+    for contract_id,target in sorted(semantic_selections().items()):
+        if contract_ids and contract_id not in contract_ids:
+            continue
+        payload,proposals=semantic_proposal_set(contract_id,target)
+        if not proposals:
+            print(f"[SEMANTIC] {contract_id}: nothing to judge yet; generate its semantic mutants first (--generate-semantic-mutants)",flush=True)
+            continue
+        contexts=semantic_contexts(contract_id,target,needs)
+        plan=plans.get(contract_id) or {}
+        judgement=semantic_judgement_request(contract_id,proposals,needs)
+        request={
+          "root":str(ROOT),"contract_id":contract_id,"proposals":proposals,"tests":list(plan.get("tests") or []),
+          "context_sha256":{key:SEMANTIC.context_sha256(context) for key,context in contexts.items()},
+          "drafts":SEMANTIC.load_drafts(contract_id),
+          "judgement":judgement,
+          # Beside the judgement, not in it: the cache remembers searches, it decides nothing.
+          "symbolic_cache":cache,
+        }
+        with tempfile.TemporaryDirectory(prefix="ternforge-semantic-request-") as scratch:
+            request_path=Path(scratch)/"request.json"
+            result_path=Path(scratch)/"result.json"
+            request_path.write_text(json.dumps(request))
+            started=time.monotonic()
+            completed=subprocess.run(
+              [shutil.which("uv") or "uv","run","--with",f"pytest-gremlins=={IMPL_FAULTS.GREMLINS_VERSION}","--with",CROSSHAIR_REQUIREMENT,"python",
+               str(ROOT/".ai-bridge/semantic_mutants.py"),"run",str(request_path),str(result_path)],
+              cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
+            )
+            if completed.returncode!=0 or not result_path.exists():
+                raise RuntimeError(f"{contract_id}: the semantic mutant cascade failed:\n"+"\n".join((completed.stdout or "").splitlines()[-20:]))
+            outcome=json.loads(result_path.read_text())
+        cache.update(outcome.get("symbolic_cache") or {})
+        save_symbolic_cache(cache)
+        retained={
+          "schema":SEMANTIC.SCHEMA,
+          "contract_id":contract_id,
+          "generator":payload.get("generator") or {},
+          "binding":semantic_binding(contract_id,plan,test_rows,contexts,judgement),
+          "results":outcome["results"],
+          "seconds":round(time.monotonic()-started,1),
+          "ran_at":utc_now(),
+          "head_sha":git_sha(),
+        }
+        (SEMANTIC_RESULTS_DIR/f"{contract_id}.json").write_text(json.dumps(retained,indent=2,sort_keys=True)+"\n")
+        counts=Counter(row["outcome"] for row in outcome["results"])
+        print(f"[SEMANTIC] {contract_id}: "+", ".join(f"{count} {name}" for name,count in sorted(counts.items()))+f" in {retained['seconds']}s",flush=True)
+
+
+def model_generation_policy(text=None):
+    """The Test Plan's model roles, generation budget, survivor assessors and judgement settings, fail-closed."""
+    text=text if text is not None else (ROOT/"docs/test-plan.md").read_text()
+    return {
+      "roles":MODELS.parse_roles(markdown_table_after(text,"##### Model generation")),
+      "budget":MODELS.parse_budget(markdown_table_after(text,"###### Generation budget")),
+      "assessors":MODELS.parse_assessors(markdown_table_after(text,"##### Survivor judgement")),
+      "judgement":MODELS.parse_judgement(markdown_table_after(text,"###### Judgement settings")),
+    }
+
+
+def assessor_prompt_sha256():
+    """What an assessor answer depends on besides its mutant: the question, the system text, the schema."""
+    return sha256_text(EQ.ASSESSOR_TEMPLATE+"\0"+EQ.ASSESSOR_SYSTEM+"\0"+stable_json(EQ.ASSESSOR_SCHEMA))
+
+
+def assessor_roles(policy):
+    """Every assessor is a role of its own: each is asked, none stands in for another."""
+    return {f"assessor:{row['assessor']}":[{"order":1,"backend":row["backend"],"model":row["model"]}] for row in policy["assessors"]}
+
+
+def assessor_calibration_state(policy=None):
+    """Whether the assessors' labels count: a calibration for the Test Plan's assessors, the current
+    question and pairs and the Test Plan's rate, complete, and a qualified ensemble."""
+    policy=policy or model_generation_policy()
+    members=[row["key"] for row in policy["assessors"]]
+    path=ASSESSOR_CALIBRATION_DIR/"calibration.json"
+    record=json.loads(path.read_text()) if path.exists() else {}
+    qualification=load_evidence_qualification()
+    qualified=qualification_is_current(qualification) and all(
+      str(((qualification.get("producers") or {}).get(producer_id) or {}).get("status") or "").upper()=="QUALIFIED"
+      # The ensemble's qualification is bound to the calibration it replayed, not to the shared environment.
+      and (((qualification.get("producers") or {}).get(producer_id) or {}).get("control") or {}).get("calibration_sha256")==assessor_calibration_sha256()
+      for producer_id in ASSESSOR_PRODUCERS
+    )
+    reason=""
+    if not record:
+        reason="the assessors have not been calibrated yet"
+    elif (
+      record.get("members")!=members or record.get("prompt_sha256")!=assessor_prompt_sha256()
+      or record.get("pairs_sha256")!=EQ.calibration_sha256(EQUIVALENCE_PAIRS_DIR)
+      or record.get("alpha")!=policy["judgement"]["alpha"]
+    ):
+        reason="the assessors' calibration no longer matches the Test Plan's assessors, the question, the pairs or the rate"
+    elif not record.get("complete"):
+        reason="the assessors' calibration is not complete: "+str(record.get("missing") or "some pairs are unanswered")
+    elif record.get("threshold") is None:
+        reason="the calibration has too few distinct pairs for the Test Plan's rate"
+    elif not qualified:
+        reason="the assessor ensemble is not currently qualified"
+    return {
+      "calibrated":not reason,"threshold":record.get("threshold"),"members":members,"reason":reason,
+      "record_sha256":sha256_file(path),
+    }
+
+
+def assessor_calibration_prompt(pair,original_source,mutant_source,harness):
+    owner,_,name=pair["target"].rpartition(".")
+    return EQ.assessor_prompt(
+      target=pair["target"],
+      original=EQ.function_source(original_source,pair["target"]) or "",
+      mutant=EQ.function_source(mutant_source,pair["target"]) or "",
+      harness=harness,
+      owner_source=EQ.class_source(original_source,owner) if owner else "",
+      tried=SURVIVOR_TRIED,
+    )
+
+
+# What the assessors are told was tried before them; the same for calibration pairs and semantic survivors.
+SURVIVOR_TRIED="The tests pass on both versions, and generated inputs and a symbolic search found no input that tells them apart."
+# A rule survivor had no differential run of generated inputs: only its tests and the symbolic search.
+RULE_SURVIVOR_TRIED="The tests pass on both versions, and a symbolic search found no input that tells them apart."
+
+
+def assessor_calibration_record(payload,answers,members,policy,prompt_sha,pairs_sha):
+    """The calibration's result: every answer, its witness checked by execution, the ensemble's score
+    per pair and the split-conformal threshold over the distinct pairs."""
+    import tempfile as _tempfile
+    keys=[row["key"] for row in members]
+    scores,rows,missing={}, {}, []
+    with _tempfile.TemporaryDirectory(prefix="ternforge-assessor-calibration-") as scratch:
+        for pair in payload["pairs"]:
+            original_source,mutant_source=EQ.pair_sources(EQUIVALENCE_PAIRS_DIR,pair)
+            given={key:value for key,value in (answers.get(pair["id"]) or {}).items() if key in keys and not value.get("problems")}
+            judged=EQ.judge_survivor(
+              original_source,mutant_source,pair["target"],scratch=Path(scratch),token="cal"+pair["id"].lower(),
+              seconds=0,answers=given,members=keys,threshold=None,calibrated=False,
+            )
+            missing.extend(f"{pair['id']}:{key}" for key in keys if key not in given)
+            scores[pair["id"]]=judged.get("score",0.0) if judged.get("status")!="found" else 0.0
+            # Each assessor's input is checked on its own, so each is credited with what it found.
+            confirmed={
+              key:EQ.judge_survivor(
+                original_source,mutant_source,pair["target"],scratch=Path(scratch),token=f"cal{pair['id'].lower()}m{keys.index(key)}",
+                seconds=0,answers={key:answer},members=[key],threshold=None,calibrated=False,
+              ).get("status")=="found"
+              for key,answer in given.items() if answer.get("verdict")=="distinct"
+            }
+            rows[pair["id"]]={
+              "label":pair["label"],"status":judged.get("status"),"score":scores[pair["id"]],
+              "witness_by":(judged.get("witness") or {}).get("by"),"refuted":[row["by"] for row in judged.get("refuted") or []],
+              "confirmed":confirmed,
+            }
+    alpha=policy["judgement"]["alpha"]
+    distinct=[scores[pair["id"]] for pair in payload["pairs"] if pair["label"]=="distinct"]
+    threshold=EQ.conformal_threshold(distinct,alpha)
+    labelled=lambda label:[pid for pid,row in rows.items() if row["label"]==label and threshold is not None and row["score"]>threshold]
+    metrics={
+      "pairs":len(payload["pairs"]),
+      "distinct":len(distinct),
+      "equivalent_labelled":len(labelled("equivalent")),
+      "distinct_labelled":len(labelled("distinct")),
+      "distinct_confirmed":sum(1 for row in rows.values() if row["label"]=="distinct" and row["status"]=="found"),
+      "members":{
+        key:{
+          "distinct_confirmed":sum(1 for row in rows.values() if row["confirmed"].get(key) is True),
+          "refuted":sum(1 for row in rows.values() if row["confirmed"].get(key) is False),
+          "equivalent_on_distinct":sum(1 for pair in payload["pairs"] if pair["label"]=="distinct" and ((answers.get(pair["id"]) or {}).get(key) or {}).get("verdict")=="equivalent"),
+          "equivalent_on_equivalent":sum(1 for pair in payload["pairs"] if pair["label"]=="equivalent" and ((answers.get(pair["id"]) or {}).get(key) or {}).get("verdict")=="equivalent"),
+          "unsure":sum(1 for pair in payload["pairs"] if ((answers.get(pair["id"]) or {}).get(key) or {}).get("verdict")=="unsure"),
+        }
+        for key in keys
+      },
+    }
+    return {
+      "schema":"ternforge-assessor-calibration-1","members":keys,"prompt_sha256":prompt_sha,"pairs_sha256":pairs_sha,
+      "alpha":alpha,"answers":answers,"pairs":rows,"threshold":threshold,"metrics":metrics,
+      "complete":not missing,"missing":missing[:12],"calibrated_at":utc_now(),
+    }
+
+
+def calibrate_assessors():
+    """Ask every assessor about every labelled pair it has not answered for the current question,
+    then recompute the threshold. An answer already paid for is read again from its stored response,
+    so a corrected reading applies to it without asking again. Only a person or a scheduled job starts it."""
+    policy=model_generation_policy()
+    path=ASSESSOR_CALIBRATION_DIR/"calibration.json"
+    record=json.loads(path.read_text()) if path.exists() else {}
+    prompt_sha=assessor_prompt_sha256()
+    pairs_sha=EQ.calibration_sha256(EQUIVALENCE_PAIRS_DIR)
+    answers=(record.get("answers") or {}) if record.get("prompt_sha256")==prompt_sha and record.get("pairs_sha256")==pairs_sha else {}
+    for pair_answers in answers.values():
+        for key,answer in list(pair_answers.items()):
+            response_path=ASSESSOR_CALIBRATION_DIR/"responses"/f"{answer.get('call_id')}.json"
+            if response_path.is_file():
+                pair_answers[key]=assessor_answer(json.loads(response_path.read_text()))
+    payload=EQ.calibration_payload(EQUIVALENCE_PAIRS_DIR)
+    unanswered=[pair for pair in payload["pairs"] if any(row["key"] not in (answers.get(pair["id"]) or {}) for row in policy["assessors"])]
+    usable=qualified_model_backends()
+    if unanswered and not usable:
+        raise SystemExit("assessor calibration: the model adapter is not currently qualified (run qualify-evidence-confidence.py)")
+    run=MODELS.Run({**policy["roles"],**assessor_roles(policy)},policy["budget"])
+    for name in MODELS.BACKENDS:
+        if name not in usable:
+            run.availability[name]="the adapter has not yet been shown to read this backend's answers"
+    try:
+        for pair in unanswered:
+            original_source,mutant_source=EQ.pair_sources(EQUIVALENCE_PAIRS_DIR,pair)
+            harness=EQ.harness_for(original_source,pair["target"])
+            prompt=assessor_calibration_prompt(pair,original_source,mutant_source,harness)
+            for row in policy["assessors"]:
+                if row["key"] in (answers.get(pair["id"]) or {}):
+                    continue
+                before=len(run.rows)
+                _call,response=run.call(
+                  f"assessor:{row['assessor']}",purpose="assessor-calibration",contract_id="CALIBRATION",subject=pair["id"],
+                  system=EQ.ASSESSOR_SYSTEM,prompt=prompt,schema=EQ.ASSESSOR_SCHEMA,response_dir=ASSESSOR_CALIBRATION_DIR/"responses",
+                )
+                print(f"[CALIBRATE] {pair['id']} · assessor {row['assessor']}: "+attempts_text(run.rows[before:]),flush=True)
+                if response is None:
+                    continue
+                answers.setdefault(pair["id"],{})[row["key"]]=assessor_answer(response)
+    finally:
+        # Answers already paid for are kept even when the run stops early.
+        record=assessor_calibration_record(payload,answers,policy["assessors"],policy,prompt_sha,pairs_sha)
+        ASSESSOR_CALIBRATION_DIR.mkdir(parents=True,exist_ok=True)
+        path.write_text(json.dumps(record,indent=1,sort_keys=True)+"\n")
+    summary=run.summary()
+    print(
+      f"[CALIBRATE] threshold {record['threshold']} at a {record['alpha']:.0%} false-equivalent rate over {record['metrics']['distinct']} distinct pairs; "
+      f"{record['metrics']['equivalent_labelled']} of {record['metrics']['pairs']-record['metrics']['distinct']} equivalent pairs labelled; "
+      f"complete: {record['complete']}; {summary['calls']} calls, ${summary['list_usd'] or 0:.3f} at list price",
+      flush=True,
+    )
+    return record
+
+
+def assessor_answer(response):
+    """What one assessor answered, as stored beside its mutant: the verdict and the call that made it."""
+    structured=response["structured"]
+    return {
+      "verdict":structured.get("verdict"),"confidence":structured.get("confidence"),
+      "arguments":{key:EQ.argument_text(value) for key,value in (structured.get("arguments") or {}).items()},
+      "reason":structured.get("reason"),"call_id":response["call_id"],"backend":response["backend"],"model":response["model"],
+      "response_sha256":MODELS.response_sha256(response),"problems":EQ.answer_problems(structured),
+    }
+
+
+# --- model canaries (ADR_0006) --------------------------------------------------------------
+
+CALIBRATION_PROJECT=ROOT/".ai-bridge/semantic-mutants/calibration"
+CANARY_PATH=CALIBRATION_PROJECT/"canaries.json"
+CANARY_RESULTS_DIR=ROOT/".ai-bridge/semantic-mutants/canary-results"
+
+
+def canary_entries(policy):
+    """Every (role, backend, model) the Test Plan lets answer for a role that has canaries."""
+    return [(role,entry["backend"],entry["model"]) for role in SEMANTIC.CANARY_ROLES for entry in policy["roles"].get(role) or []]
+
+
+def load_canary_results():
+    path=CANARY_RESULTS_DIR/"results.json"
+    return json.loads(path.read_text()) if path.exists() else {}
+
+
+def canary_blocks(policy=None):
+    """Why each role entry may not answer yet: no current, passed canary record for its model."""
+    policy=policy or model_generation_policy()
+    canaries=json.loads(CANARY_PATH.read_text())
+    results=load_canary_results()
+    questions={role:SEMANTIC.canary_questions_sha256(SEMANTIC.canary_questions(CALIBRATION_PROJECT,canaries,role)) for role in SEMANTIC.CANARY_ROLES}
+    # The records count only once the qualification replayed exactly these records.
+    qualification=load_evidence_qualification()
+    producer=(qualification.get("producers") or {}).get("PRODUCER_MODEL_CANARIES") or {}
+    trusted=(
+      qualification_is_current(qualification) and str(producer.get("status") or "").upper()=="QUALIFIED"
+      and (producer.get("control") or {}).get("results_sha256")==sha256_file(CANARY_RESULTS_DIR/"results.json")
+    )
+    blocks={}
+    for role,backend,model in canary_entries(policy):
+        record=results.get(f"{role}|{backend}|{model}") or {}
+        if not trusted:
+            blocks[(role,backend,model)]="the model canaries are not qualified for their current records (run qualify-evidence-confidence.py after --run-canaries)"
+        elif not record:
+            blocks[(role,backend,model)]=f"{model} has not run the {role} canaries yet (--run-canaries)"
+        elif record.get("questions_sha256")!=questions[role]:
+            blocks[(role,backend,model)]=f"the {role} canaries changed since {model} ran them (--run-canaries)"
+        elif not record.get("passed"):
+            failed="; ".join(str(case.get("detail") or "") for case in (record.get("cases") or {}).values() if not case.get("passed"))
+            blocks[(role,backend,model)]=f"{model} failed the {role} canaries: {failed}"
+    return blocks
+
+
+def guarded_run(policy,usable,extra_roles=None):
+    """A run over the Test Plan's roles that skips backends the adapter cannot read and models that
+    have not passed their role's canaries."""
+    run=MODELS.Run({**policy["roles"],**assessor_roles(policy),**(extra_roles or {})},policy["budget"])
+    for name in MODELS.BACKENDS:
+        if name not in usable:
+            run.availability[name]="the adapter has not yet been shown to read this backend's answers"
+    run.blocked.update(canary_blocks(policy))
+    return run
+
+
+def judge_pin_drafts(root,items):
+    """Draft tests judged against whole mutated modules by the cascade, in an isolated copy of ``root``."""
+    if not items:
+        return []
+    with tempfile.TemporaryDirectory(prefix="ternforge-pin-request-") as scratch:
+        request_path=Path(scratch)/"request.json"
+        result_path=Path(scratch)/"result.json"
+        request_path.write_text(json.dumps({"root":str(root),"items":items}))
+        completed=subprocess.run(
+          [shutil.which("uv") or "uv","run","python",str(ROOT/".ai-bridge/semantic_mutants.py"),"judge-pins",str(request_path),str(result_path)],
+          cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,env={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"},
+        )
+        if completed.returncode!=0 or not result_path.exists():
+            raise RuntimeError("judging the pin drafts failed:\n"+"\n".join((completed.stdout or "").splitlines()[-20:]))
+        return json.loads(result_path.read_text())["results"]
+
+
+def run_canaries(roles=None):
+    """Ask every model the Test Plan lists for a role its canaries, and record what it answered and
+    whether it passed. Only a person or a scheduled job starts it; a change of model calls for it."""
+    policy=model_generation_policy()
+    usable=qualified_model_backends()
+    if not usable:
+        raise SystemExit("model canaries: the model adapter is not currently qualified (run qualify-evidence-confidence.py)")
+    canaries=json.loads(CANARY_PATH.read_text())
+    entries=[entry for entry in canary_entries(policy) if not roles or entry[0] in roles]
+    own={f"canary:{role}:{backend}:{model}":[{"order":1,"backend":backend,"model":model}] for role,backend,model in entries}
+    run=MODELS.Run(own,policy["budget"])
+    for name in MODELS.BACKENDS:
+        if name not in usable:
+            run.availability[name]="the adapter has not yet been shown to read this backend's answers"
+    results=load_canary_results()
+    CANARY_RESULTS_DIR.mkdir(parents=True,exist_ok=True)
+    drafts,standing=[],{}
+    try:
+        for role,backend,model in entries:
+            questions=SEMANTIC.canary_questions(CALIBRATION_PROJECT,canaries,role)
+            key=f"{role}|{backend}|{model}"
+            cases,asked={},[]
+            for question in questions:
+                before=len(run.rows)
+                row,response=run.call(
+                  f"canary:{role}:{backend}:{model}",purpose="canary",contract_id="CANARY",subject=f"{role}:{question['id']}",
+                  system=question["system"],prompt=question["prompt"],schema=question["schema"],response_dir=CANARY_RESULTS_DIR/"responses",
+                )
+                print(f"[CANARY] {role} · {model} · {question['id']}: "+attempts_text(run.rows[before:]),flush=True)
+                case={"call_id":row.get("call_id"),"outcome":row.get("outcome"),"response_sha256":row.get("response_sha256") or "","passed":False,"detail":str(row.get("reason") or row.get("outcome"))}
+                if response is not None:
+                    structured=response["structured"]
+                    if role=="generator":
+                        case["passed"],case["detail"]=SEMANTIC.generator_canary_passed(CALIBRATION_PROJECT,question,structured)
+                    elif role=="verdict":
+                        case["passed"],case["detail"]=SEMANTIC.verdict_canary_passed(question,structured)
+                    else:
+                        draft=SEMANTIC.draft_from_answer(question["proposal"]["id"],structured)
+                        case["draft_sha256"]=sha256_text(draft)
+                        case["detail"]="the draft waits for the cascade"
+                        asked.append((key,question,draft))
+                cases[question["id"]]=case
+            record={
+              "role":role,"backend":backend,"model":model,"questions_sha256":SEMANTIC.canary_questions_sha256(questions),
+              "cases":cases,"passed":all(case["passed"] for case in cases.values()),"ran_at":utc_now(),
+            }
+            kept=SEMANTIC.canary_record_after(results.get(key),record)
+            if kept is not record:
+                standing[key]=next(str(case["detail"]) for case in cases.values() if case["outcome"] in SEMANTIC.UNANSWERED)
+                continue
+            results[key]=record
+            drafts.extend(asked)
+        # A draft canary is judged the way every draft is: by the cascade, in the calibration project.
+        items=[]
+        for key,question,draft in drafts:
+            path,qualname=question["proposal"]["target"].split("::",1)
+            source=(CALIBRATION_PROJECT/path).read_text()
+            items.append({"key":key,"path":path,"mutated_source":SEMANTIC.apply_replacement(source,qualname,question["proposal"]["replacement"]),"draft":draft,"tests":question["tests"]})
+        judged={row["key"]:row for row in judge_pin_drafts(CALIBRATION_PROJECT,items)}
+        for key,question,_draft in drafts:
+            verdict=judged.get(key) or {}
+            case=results[key]["cases"][question["id"]]
+            case["passed"]=bool(verdict.get("accepted"))
+            case["detail"]="the cascade keeps the draft" if case["passed"] else "the cascade rejects the draft: "+(SEMANTIC.draft_rejection(verdict) or "it did not run")
+            case["cascade"]={name:verdict.get(name) for name in ("accepted","passes_on_original","fails_on_mutant","imports_beyond_allowed","primitives")}
+            results[key]["passed"]=all(item["passed"] for item in results[key]["cases"].values())
+    finally:
+        (CANARY_RESULTS_DIR/"results.json").write_text(json.dumps(results,indent=1,sort_keys=True)+"\n")
+    for key in sorted(f"{role}|{backend}|{model}" for role,backend,model in entries):
+        record=results.get(key) or {}
+        note=f" (not answered this time: {standing[key]}; the record of {record.get('ran_at')} stands)" if key in standing else ""
+        print(f"[CANARY] {key}: "+("passed" if record.get("passed") else "FAILED: "+"; ".join(str(case.get("detail")) for case in (record.get("cases") or {}).values() if not case.get("passed")))+note,flush=True)
+    return results
+
+
+# --- survivor verdicts and mutation pins (ADR_0006) ------------------------------------------
+
+VERDICTS_DIR=ROOT/".ai-bridge/survivor-verdicts"
+PINS_DIR=ROOT/"tests/llm_router/mutation_pins"
+NEED_KINDS={"goal":"Goal","feature":"Feature","req":"Requirement","treq":"Technical requirement"}
+
+
+def verdict_context(contract_id,needs,policy):
+    """What a verdict weighs a survivor against, top down: the Goal and Feature a requirement
+    serves, the requirement itself and its verification criteria."""
+    chain,current,seen=[],contract_id,set()
+    while current and current not in seen and len(chain)<5:
+        seen.add(current)
+        need=needs.get(current) or {}
+        if not need:
+            break
+        statement=need_statement(need)
+        chain.append(f"{NEED_KINDS.get(need.get('type'),str(need.get('type')))} {current} ({need.get('title')})"+(f": {statement}" if statement else ""))
+        current=(need.get("derives") or [None])[0]
+    criteria=[value for value in ((requirement_monitor_target(contract_id,policy) or {}).get("item_descriptions") or {}).values() if value]
+    return "\n".join([*reversed(chain),*(["Its verification criteria: "+"; ".join(criteria)] if criteria else [])])
+
+
+def verdict_items(needs,policy):
+    """Every judged survivor that asks for a verdict, rule or semantic, with its question."""
+    items=[]
+    triage=survivor_triage_actual()
+    campaign=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
+    for contract_id,entry in sorted((campaign.get("contracts") or {}).items()):
+        state=triage.get(contract_id) or {}
+        if not state.get("current"):
+            continue
+        _report,records=rule_survivors(entry)
+        by_fingerprint={str(record.get("fingerprint")):record for record in records}
+        context=verdict_context(contract_id,needs,policy)
+        for fingerprint,row in sorted((state.get("rows") or {}).items()):
+            record=by_fingerprint.get(fingerprint)
+            if not record:
+                continue
+            source=Path(record["file_path"]).read_text()
+            rebuilt=EQ.rule_mutant_source(source,record)
+            if "reason" in rebuilt:
+                continue
+            qualname=str(record.get("qualname"))
+            items.append({
+              "contract_id":contract_id,"key":fingerprint,"kind":"rule","class":IMPL_FAULTS.CLASS_BY_OPERATOR.get(str(record.get("operator"))),
+              "path":str(Path(record["file_path"]).resolve().relative_to(ROOT)),
+              "qualname":qualname,"original":rebuilt["original"],"mutated":rebuilt["mutated"],"mutated_source":rebuilt["source"],
+              "defect":str(record.get("description") or ""),"confirmed":row.get("status")=="found","judged":row,
+              "prompt":EQ.verdict_prompt(context=context,target=qualname,original=rebuilt["original"],mutant=rebuilt["mutated"],judgement=EQ.judgement_summary(row)),
+            })
+    actual=semantic_mutant_actual(apply_verdicts=False)
+    for contract_id,target in sorted(semantic_selections().items()):
+        state=actual.get(contract_id) or {}
+        if state.get("state")!="current":
+            continue
+        by_id={proposal["id"]:proposal for proposal in state.get("proposals") or []}
+        drafts=SEMANTIC.load_drafts(contract_id)
+        context=verdict_context(contract_id,needs,policy)
+        for row in state.get("results") or []:
+            proposal=by_id.get(row.get("id"))
+            if not proposal or row.get("outcome") not in {"distinguished","undecided"}:
+                continue
+            file_path,qualname=proposal["target"].split("::",1)
+            source=(ROOT/file_path).read_text()
+            mutated_source=SEMANTIC.apply_replacement(source,qualname,proposal["replacement"]) or source
+            found=row.get("differential") or {}
+            judged=row.get("judgement") or (
+              {"status":"found","witness":{"display":found.get("input"),"original":found.get("original"),"mutant":found.get("mutant"),"by":found.get("by") or "the differential property run"}}
+              if found.get("found") else {"status":"unsure"}
+            )
+            original=EQ.function_source(source,qualname) or ""
+            mutated=EQ.function_source(mutated_source,qualname) or ""
+            items.append({
+              "contract_id":contract_id,"key":row["id"],"kind":"semantic","class":proposal["class"],"path":file_path,"qualname":qualname,
+              "original":original,"mutated":mutated,"mutated_source":mutated_source,"defect":str(proposal.get("rationale") or proposal.get("risk") or ""),
+              "confirmed":row.get("outcome")=="distinguished","judged":judged,
+              "kept_draft":drafts.get(row["id"]) if (row.get("draft") or {}).get("accepted") else None,
+              "prompt":EQ.verdict_prompt(context=context,target=qualname,original=original,mutant=mutated,judgement=EQ.judgement_summary(judged)),
+            })
+    return items
+
+
+def verdict_answer(response,confirmed):
+    structured=response["structured"]
+    return {
+      **{key:structured.get(key) for key in ("verdict","level","reason","test_focus")},
+      "call_id":response["call_id"],"backend":response["backend"],"model":response["model"],
+      "response_sha256":MODELS.response_sha256(response),"problems":EQ.verdict_problems(structured,confirmed),
+    }
+
+
+def load_verdicts(contract_id):
+    return load_assessments(VERDICTS_DIR/contract_id/"verdicts.json")
+
+
+def person_decisions(contract_id):
+    """Verdicts a person recorded, by survivor: they win over the model's (ADR_0006)."""
+    return load_assessments(VERDICTS_DIR/contract_id/"decisions.json")
+
+
+def current_verdict(item,verdicts,decisions):
+    """The verdict that counts for one survivor: the person's, else the model's answer to the
+    survivor's current question without problems, else none."""
+    decided=decisions.get(item["key"]) or {}
+    if decided.get("verdict") in EQ.VERDICTS_FINAL and decided.get("reason"):
+        return {**decided,"by":"person"}
+    entry=verdicts.get(item["key"]) or {}
+    answer=entry.get("answer") or {}
+    if entry.get("prompt_sha256")!=sha256_text(item["prompt"]) or answer.get("problems") or answer.get("verdict") not in EQ.VERDICTS_FINAL:
+        return None
+    return {**answer,"by":answer.get("model")}
+
+
+_VERDICT_STATE=None
+
+
+def verdict_state(refresh=False):
+    """Per contract, per survivor: the item, the verdict that counts (if any) and its pin."""
+    global _VERDICT_STATE
+    if _VERDICT_STATE is not None and not refresh:
+        return _VERDICT_STATE
+    state={}
+    try:
+        items=verdict_items(current_needs(),project_monitor_policy())
+    except Exception:  # noqa: BLE001 - a build without the judgement's inputs has no verdicts
+        items=[]
+    for item in items:
+        contract=state.setdefault(item["contract_id"],{"verdicts":load_verdicts(item["contract_id"]),"decisions":person_decisions(item["contract_id"]),"items":{}})
+        verdict=current_verdict(item,contract["verdicts"],contract["decisions"])
+        pin=((contract["verdicts"].get(item["key"]) or {}).get("pin") or {})
+        pin_file=ROOT/str(pin.get("path") or "")
+        contract["items"][item["key"]]={
+          "item":item,"verdict":verdict,
+          "pin":pin if pin and pin_file.is_file() and sha256_text(pin_body(pin_file.read_text()))==pin.get("draft_sha256") else None,
+        }
+    _VERDICT_STATE=state
+    return state
+
+
+def verdict_suppressions(contract_id):
+    """Surviving rule mutants a verdict that counts judged equivalent or irrelevant, by fingerprint."""
+    items=(verdict_state().get(contract_id) or {}).get("items") or {}
+    return {
+      key:{"verdict":entry["verdict"]["verdict"],"reason":entry["verdict"].get("reason"),"by":entry["verdict"].get("by")}
+      for key,entry in items.items()
+      if entry["item"]["kind"]=="rule" and entry["verdict"] and entry["verdict"]["verdict"] in {"equivalent","irrelevant"}
+    }
+
+
+def is_mutation_pin(nodeid):
+    return str(nodeid or "").startswith(str(PINS_DIR.relative_to(ROOT))+"/")
+
+
+def pin_path(contract_id,key):
+    return PINS_DIR/f"test_pin_{contract_id.lower()}_{re.sub(r'\W','_',key).lower()}.py"
+
+
+def pin_body(text):
+    """A pin without its header: the draft test exactly as it was judged."""
+    return "\n".join(line for line in text.splitlines() if not line.startswith(("# mutation-pin:","# pinned-by:","# semantic-mutant:"))).strip()+"\n"
+
+
+def pin_draft_context(item,verdict,tests,need,criteria,previous=None):
+    """What the draft author is given for one survivor a verdict asks to pin: the draft question of
+    ADR_0004 with the survivor's input, or the verdict's focus when no input is confirmed."""
+    witness=(item["judged"].get("witness") or {}) if item["judged"].get("status")=="found" else {}
+    owner=item["qualname"].rpartition(".")[0]
+    source=(ROOT/item["path"]).read_text()
+    return {
+      "requirement":{"id":item["contract_id"],"revision":need.get("revision"),"statement":need_statement(need)},
+      "criteria":criteria,"mutant_id":item["key"],"target":f"{item['path']}::{item['qualname']}",
+      "original":EQ._dedent(item["original"]),"mutated":EQ._dedent(item["mutated"]),
+      "defect":(item["defect"]+". " if item["defect"] else "")+"What the test must check: "+str(verdict.get("test_focus") or ""),
+      "input":str(witness.get("display") or "no input is confirmed yet: find one that tells the versions apart"),
+      "original_result":str(witness.get("original") or "not observed yet"),"mutant_result":str(witness.get("mutant") or "not observed yet"),
+      "owner_source":EQ.class_source(source,owner)[:4000] if owner else "",
+      "example":SEMANTIC.example_test(ROOT,tests),"imports":sorted(SEMANTIC.allowed_imports(ROOT,tests)),"previous":previous or {},
+    }
+
+
+_LEDGER_BY_CALL=None
+
+
+def stored_pin_draft(contract_id,prompt):
+    """The latest stored draft-author answer to exactly this pin question: a response whose digests
+    hold and whose ledger row accepted it, or None."""
+    global _LEDGER_BY_CALL
+    if _LEDGER_BY_CALL is None:
+        _LEDGER_BY_CALL={row["call_id"]:row for row in MODELS.read_ledger()}
+    wanted=sha256_text(prompt)
+    found=[]
+    for path in sorted((VERDICTS_DIR/contract_id/"responses").glob("*.json")) if (VERDICTS_DIR/contract_id/"responses").is_dir() else []:
+        response=json.loads(path.read_text())
+        row=_LEDGER_BY_CALL.get(response.get("call_id")) or {}
+        if (
+          response.get("purpose")=="mutation-pin" and response.get("prompt_sha256")==wanted and not MODELS.verify_response(response)
+          and row.get("outcome")=="ok" and row.get("response_sha256")==MODELS.response_sha256(response)
+        ):
+            found.append(response)
+    return found[-1] if found else None
+
+
+def adopt_pins(run,policy,state,plans,needs,monitor_policy):
+    """Write, check and adopt a mutation pin for every survivor whose verdict is pin and that has
+    none yet: a kept semantic draft directly, otherwise a draft from the draft author, judged by the
+    cascade (passes on the original three times, fails on the mutant), retried once with the reason."""
+    wanted=[
+      (contract_id,key,entry) for contract_id,contract in sorted(state.items()) for key,entry in sorted(contract["items"].items())
+      if entry["verdict"] and entry["verdict"]["verdict"]=="pin" and not entry["pin"]
+    ]
+    adopted=0
+    attempts={key:0 for _contract_id,key,_entry in wanted}
+    previous={}
+    for _round in range(int(policy["budget"]["draft_attempts"])):
+        pending=[]
+        for contract_id,key,entry in wanted:
+            if attempts[key]<0:
+                continue
+            item=entry["item"]
+            tests=list((plans.get(contract_id) or {}).get("tests") or [])
+            if item.get("kept_draft") and not attempts[key]:
+                pending.append((contract_id,key,entry,item["kept_draft"],{"source":"kept semantic draft"}))
+                continue
+            criteria=[value for value in ((requirement_monitor_target(contract_id,monitor_policy) or {}).get("item_descriptions") or {}).values() if value]
+            context=pin_draft_context(item,entry["verdict"],tests,needs.get(contract_id) or {},criteria,previous.get(key))
+            prompt=SEMANTIC.draft_prompt(context)
+            # A draft already paid for, for exactly this question, is judged again instead of asked again.
+            response=stored_pin_draft(contract_id,prompt)
+            if response is not None:
+                print(f"[PIN] {contract_id} · {key}: the stored draft {response['call_id']} answers this question",flush=True)
+            else:
+                before=len(run.rows)
+                _row,response=run.call("draft_author",purpose="mutation-pin",contract_id=contract_id,subject=key,system=SEMANTIC.DRAFT_SYSTEM,prompt=prompt,schema=SEMANTIC.DRAFT_ANSWER_SCHEMA,response_dir=VERDICTS_DIR/contract_id/"responses")
+                print(f"[PIN] {contract_id} · {key}: "+attempts_text(run.rows[before:]),flush=True)
+            attempts[key]+=1
+            if response is None:
+                continue
+            pending.append((contract_id,key,entry,SEMANTIC.draft_from_answer(key,response["structured"]),{"source":"draft author","call_id":response["call_id"],"model":response["model"],"response_sha256":MODELS.response_sha256(response)}))
+        if not pending:
+            break
+        judged={row["key"]:row for row in judge_pin_drafts(ROOT,[
+          {"key":key,"path":entry["item"]["path"],"mutated_source":entry["item"]["mutated_source"],"draft":draft,"tests":list((plans.get(contract_id) or {}).get("tests") or [])}
+          for contract_id,key,entry,draft,_origin in pending
+        ])}
+        for contract_id,key,entry,draft,origin in pending:
+            verdict=judged.get(key) or {}
+            if not verdict.get("accepted"):
+                previous[key]={"reason":SEMANTIC.draft_rejection(verdict) or "it did not run","code":draft}
+                print(f"[PIN] {contract_id} · {key}: the cascade rejects the draft: {previous[key]['reason']}",flush=True)
+                if origin["source"]=="kept semantic draft":
+                    attempts[key]=0
+                continue
+            body=pin_body(draft)
+            target=pin_path(contract_id,key)
+            target.parent.mkdir(parents=True,exist_ok=True)
+            # The path marks a mutation pin: no shared test input changes, so only its contract's campaign goes stale.
+            target.write_text(f"# mutation-pin: {contract_id} {key}\n# pinned-by: {entry['verdict'].get('by')}: {' '.join(str(entry['verdict'].get('reason') or '').split())[:300]}\n"+body)
+            verdicts=load_verdicts(contract_id)
+            verdicts.setdefault(key,{})["pin"]={
+              **origin,"path":str(target.relative_to(ROOT)),"draft_sha256":sha256_text(body),
+              "cascade":{name:verdict.get(name) for name in ("accepted","passes_on_original","fails_on_mutant","imports_beyond_allowed","primitives")},
+              "adopted_at":utc_now(),
+            }
+            save_assessments(VERDICTS_DIR/contract_id/"verdicts.json",verdicts)
+            attempts[key]=-1
+            adopted+=1
+            print(f"[PIN] {contract_id} · {key}: adopted as {target.relative_to(ROOT)}",flush=True)
+    return adopted
+
+
+def decide_survivors(contract_ids=None):
+    """Ask the verdict model about every judged survivor whose question has no current answer, then
+    adopt a mutation pin for every pin verdict (ADR_0006). Only a person or a scheduled job starts it."""
+    policy=model_generation_policy()
+    usable=qualified_model_backends()
+    if not usable:
+        raise SystemExit("survivor verdicts: the model adapter is not currently qualified (run qualify-evidence-confidence.py)")
+    run=guarded_run(policy,usable)
+    needs=current_needs()
+    monitor_policy=project_monitor_policy()
+    items=[item for item in verdict_items(needs,monitor_policy) if not contract_ids or item["contract_id"] in contract_ids]
+    for item in items:
+        verdicts=load_verdicts(item["contract_id"])
+        entry=verdicts.get(item["key"]) or {}
+        if entry.get("prompt_sha256")==sha256_text(item["prompt"]) and entry.get("answer") and not (entry.get("answer") or {}).get("problems"):
+            continue
+        before=len(run.rows)
+        _row,response=run.call(
+          "verdict",purpose="survivor-verdict",contract_id=item["contract_id"],subject=item["key"],
+          system=EQ.VERDICT_SYSTEM,prompt=item["prompt"],schema=EQ.VERDICT_SCHEMA,response_dir=VERDICTS_DIR/item["contract_id"]/"responses",
+        )
+        answer=verdict_answer(response,item["confirmed"]) if response is not None else None
+        print(f"[VERDICT] {item['contract_id']} · {item['key']}: "+attempts_text(run.rows[before:])+(f" → {answer['verdict']} ({answer['level']})"+(" · "+"; ".join(answer["problems"]) if answer["problems"] else "") if answer else ""),flush=True)
+        if answer is None:
+            continue
+        verdicts[item["key"]]={**{name:value for name,value in entry.items() if name=="pin" and entry.get("prompt_sha256")==sha256_text(item["prompt"])},"prompt_sha256":sha256_text(item["prompt"]),"answer":answer}
+        save_assessments(VERDICTS_DIR/item["contract_id"]/"verdicts.json",verdicts)
+    state=verdict_state(refresh=True)
+    if contract_ids:
+        state={contract_id:contract for contract_id,contract in state.items() if contract_id in contract_ids}
+    adopted=adopt_pins(run,policy,state,implementation_fault_plans(),needs,monitor_policy)
+    summary=run.summary()
+    counts=Counter(entry["verdict"]["verdict"] if entry["verdict"] else "none" for contract in state.values() for entry in contract["items"].values())
+    print(f"[VERDICT] {summary['calls']} calls, {tokens_text(summary['tokens']['total'])} tokens"+(f", ${summary['list_usd']:.3f} at list price" if summary["list_usd"] is not None else "")+"; verdicts "+", ".join(f"{count} {name}" for name,count in sorted(counts.items()))+f"; {adopted} pins adopted",flush=True)
+    if adopted:
+        print("[VERDICT] new mutation pins: rerun the retained tests, then --refresh-implementation-faults and --refresh-semantic-mutants",flush=True)
+
+
+def qualified_model_backends():
+    """The backends whose answers the qualified adapter has been shown to read; generation uses no other."""
+    qualification=load_evidence_qualification()
+    record=(qualification.get("producers") or {}).get(MODEL_PRODUCERS[0]) or {}
+    if not qualification_is_current(qualification) or str(record.get("status") or "").upper()!="QUALIFIED":
+        return set()
+    return set(record.get("backends_qualified") or [])
+
+
+def load_draft_provenance(folder):
+    path=folder/"drafts"/"provenance.json"
+    return json.loads(path.read_text()) if path.is_file() else {}
+
+
+def save_draft_provenance(folder,provenance):
+    (folder/"drafts").mkdir(parents=True,exist_ok=True)
+    (folder/"drafts"/"provenance.json").write_text(json.dumps(dict(sorted(provenance.items())),indent=1)+"\n")
+
+
+def retire_drafts(folder,mutant_ids):
+    """Drafts of proposals that were replaced: they tested a mutant that no longer exists."""
+    if not mutant_ids:
+        return
+    provenance=load_draft_provenance(folder)
+    for mutant_id in mutant_ids:
+        (folder/"drafts"/f"{mutant_id}.draft.py").unlink(missing_ok=True)
+        provenance.pop(mutant_id,None)
+    if (folder/"drafts").is_dir():
+        save_draft_provenance(folder,provenance)
+
+
+def attempts_text(rows):
+    """Every backend one call tried, in order, with what each came to."""
+    return "; ".join(
+      f"{row['backend']}:{row['model']} {row['outcome']}"+(f" ({row['reason']})" if row.get("reason") else "")
+      for row in rows if row.get("role")!="probe"
+    )
+
+
+def generate_contract_proposals(run,contract_id,target,needs,force=False):
+    """Ask the generator for every target of one contract that has no current proposal (or for
+    every target, with force); an accepted answer replaces that target's proposals."""
+    payload,proposals=semantic_proposal_set(contract_id,target)
+    contexts=semantic_contexts(contract_id,target,needs)
+    folder=SEMANTIC.PROPOSAL_ROOT/contract_id
+    changed=False
+    for selection in target.get("semantic_mutants") or []:
+        key=selection["target"]
+        context=contexts[key]
+        digest=SEMANTIC.context_sha256(context)
+        current=[proposal for proposal in proposals if proposal["target"]==key and SEMANTIC.proposal_inputs(ROOT,proposal,digest)[0]]
+        if current and not force:
+            continue
+        path,qualname=key.split("::",1)
+        original=SEMANTIC.function_source((ROOT/path).read_text(),qualname) or ""
+        before=len(run.rows)
+        _row,response=run.call(
+          "generator",purpose="semantic-mutants",contract_id=contract_id,subject=key,
+          system=SEMANTIC.GENERATOR_SYSTEM,prompt=SEMANTIC.prompt(context),
+          schema=SEMANTIC.mutant_answer_schema(selection["budget"]),response_dir=folder/"responses",
+        )
+        print(f"[GENERATE] {contract_id} · {qualname}: "+attempts_text(run.rows[before:]),flush=True)
+        if response is None:
+            continue
+        fresh=SEMANTIC.proposals_from_answer(selection,context,response,MODELS.response_sha256(response),original)
+        replaced={proposal["id"] for proposal in proposals if proposal["target"]==key}
+        proposals=[proposal for proposal in proposals if proposal["target"]!=key]+fresh
+        retire_drafts(folder,replaced-{proposal["id"] for proposal in fresh})
+        changed=True
+    if changed:
+        written={"schema":SEMANTIC.PROPOSALS_SCHEMA,"contract_id":contract_id}
+        if payload.get("generator") and any(not proposal.get("generator") for proposal in proposals):
+            written["generator"]=payload["generator"]
+        written["proposals"]=proposals
+        folder.mkdir(parents=True,exist_ok=True)
+        (folder/"proposals.json").write_text(json.dumps(written,indent=1,ensure_ascii=False)+"\n")
+    return changed
+
+
+def generate_contract_drafts(run,contract_id,target,needs,plans,attempts):
+    """Ask the draft author for every distinguished mutant of one contract without a kept draft, within
+    the attempts the budget allows; a rejected draft and its reason go into the next request."""
+    path=SEMANTIC_RESULTS_DIR/f"{contract_id}.json"
+    retained=json.loads(path.read_text()) if path.exists() else {}
+    _payload,proposals=semantic_proposal_set(contract_id,target)
+    by_id={proposal["id"]:proposal for proposal in proposals}
+    folder=SEMANTIC.PROPOSAL_ROOT/contract_id
+    provenance=load_draft_provenance(folder)
+    drafts=SEMANTIC.load_drafts(contract_id)
+    need=needs.get(contract_id) or {}
+    requirement={"id":contract_id,"revision":need.get("revision"),"statement":need_statement(need)}
+    criteria=[str(value) for _key,value in sorted((target.get("item_descriptions") or {}).items())]
+    tests=list((plans.get(contract_id) or {}).get("tests") or [])
+    wrote=False
+    for row in retained.get("results") or []:
+        if row.get("outcome")!="distinguished" or row["id"] not in by_id:
+            continue
+        judged=row.get("draft") or {}
+        if judged.get("accepted") or (row["id"] in drafts and not judged):
+            continue
+        record=provenance.get(row["id"]) or {}
+        made=int(record.get("attempt") or 0) if record.get("kind")=="model" else int(row["id"] in drafts)
+        if made>=attempts:
+            continue
+        previous={"reason":SEMANTIC.draft_rejection(judged),"code":drafts[row["id"]]} if row["id"] in drafts else None
+        context=SEMANTIC.draft_context(ROOT,requirement,criteria,by_id[row["id"]],row.get("differential") or {},tests,previous)
+        before=len(run.rows)
+        _call,response=run.call(
+          "draft_author",purpose="semantic-draft",contract_id=contract_id,subject=row["id"],
+          system=SEMANTIC.DRAFT_SYSTEM,prompt=SEMANTIC.draft_prompt(context),
+          schema=SEMANTIC.DRAFT_ANSWER_SCHEMA,response_dir=folder/"responses",
+        )
+        print(f"[GENERATE] {contract_id} · draft for {row['id']} (attempt {made+1}): "+attempts_text(run.rows[before:]),flush=True)
+        if response is None:
+            continue
+        (folder/"drafts").mkdir(parents=True,exist_ok=True)
+        (folder/"drafts"/f"{row['id']}.draft.py").write_text(SEMANTIC.draft_from_answer(row["id"],response["structured"]))
+        provenance[row["id"]]={
+          "kind":"model","call_id":response["call_id"],"backend":response["backend"],
+          "backend_version":response.get("backend_version") or "","model":response["model"],
+          "response_sha256":MODELS.response_sha256(response),"attempt":made+1,
+        }
+        wrote=True
+    if wrote:
+        save_draft_provenance(folder,provenance)
+    return wrote
+
+
+def generate_semantic_mutants(contract_ids=None,force=False):
+    """One generation run: mutants for every selected target without a current proposal, the cascade
+    over them, then draft tests for the distinguished ones, judged again, as often as the budget allows.
+    Only a person or a scheduled job starts it; the gate and the portal build never do."""
+    policy=model_generation_policy()
+    usable=qualified_model_backends()
+    if not usable:
+        raise SystemExit("model generation: the adapter is not currently qualified (run qualify-evidence-confidence.py)")
+    run=guarded_run(policy,usable)
+    needs=current_needs()
+    scope=sorted(contract_id for contract_id in semantic_selections() if not contract_ids or contract_id in contract_ids)
+    generated={contract_id for contract_id in scope if generate_contract_proposals(run,contract_id,semantic_selections()[contract_id],needs,force)}
+    test_rows=junit_depth_rows()
+    plans=implementation_fault_plans(test_rows)
+    actual=semantic_mutant_actual(plans,test_rows)
+    stale={contract_id for contract_id in scope if (actual.get(contract_id) or {}).get("state") in {"stale","not_run"}}
+    if generated|stale:
+        refresh_semantic_mutants(generated|stale)
+    assessed={contract_id for contract_id in scope if assess_contract_semantic(run,contract_id,semantic_selections()[contract_id],needs,policy)}
+    if assessed:
+        refresh_semantic_mutants(assessed)
+    for _round in range(int(policy["budget"]["draft_attempts"])):
+        drafted={
+          contract_id for contract_id in scope
+          if generate_contract_drafts(run,contract_id,semantic_selections()[contract_id],needs,plans,int(policy["budget"]["draft_attempts"]))
+        }
+        if not drafted:
+            break
+        refresh_semantic_mutants(drafted)
+    summary=run.summary()
+    outcomes=", ".join(f"{count} {name}" for name,count in summary["outcomes"].items() if count) or "no calls"
+    windows=", ".join(f"{key} {values[0]:.0%}→{values[1]:.0%}" for key,values in summary["windows"].items())
+    print(
+      f"[GENERATE] run {summary['run_id']}: {summary['calls']} calls ({outcomes}); "
+      f"{tokens_text(summary['tokens']['total'])} tokens"
+      +(f", ${summary['list_usd']:.3f} at list price" if summary["list_usd"] is not None else "")
+      +(f"; windows {windows}" if windows else ""),
+      flush=True,
+    )
+    return summary
+
+
+def rule_survivors(entry):
+    """The surviving rule mutants of one campaign entry that its tests reach, with the report they come from."""
+    report_path=ROOT/((entry.get("run") or {}).get("report_path") or "")
+    if not report_path.is_file():
+        return report_path,[]
+    report=json.loads(report_path.read_text())
+    return report_path,[row for row in report.get("results") or [] if row.get("status")=="survived" and row.get("covered") is not False]
+
+
+def rule_assessment_prompt(contract_id,record,need):
+    """What the assessors are asked about one surviving rule mutant, or None when it has no harness."""
+    source=Path(record["file_path"]).read_text()
+    rebuilt=EQ.rule_mutant_source(source,record)
+    harness=EQ.harness_for(source,str(record.get("qualname") or ""))
+    if "reason" in rebuilt or "reason" in harness:
+        return None
+    owner=str(record.get("qualname") or "").rpartition(".")[0]
+    # How to build the inputs: without it an assessor guesses the project's constructors.
+    guide=EQ.input_guide(str(record["file_path"]),harness)
+    return EQ.assessor_prompt(
+      target=str(record.get("qualname")),original=rebuilt["original"],mutant=rebuilt["mutated"],harness=harness,
+      context=f"Requirement {contract_id}: {need_statement(need)}"+(f"\n{guide}" if guide else ""),
+      owner_source=EQ.class_source(source,owner) if owner else "",tried=RULE_SURVIVOR_TRIED,
+    )
+
+
+def triage_request(contract_id,records,assessments,needs,policy,state,cache):
+    need=needs.get(contract_id) or {}
+    answers={}
+    for record in records:
+        given=current_answers(assessments,str(record.get("fingerprint")),rule_assessment_prompt(contract_id,record,need))
+        if given:
+            answers[str(record.get("fingerprint"))]=given
+    return {
+      "survivors":records,"seconds":policy["judgement"]["symbolic_seconds"],"paths":policy["judgement"]["symbolic_paths"],"members":state["members"],
+      "threshold":state["threshold"],"calibrated":state["calibrated"],"answers":answers,"symbolic_cache":cache,
+    }
+
+
+def triage_binding(request,report_path,records):
+    """Everything a retained triage depends on; any change makes it stale."""
+    return {
+      "report_sha256":sha256_file(report_path),
+      "sources":{path:sha256_file(Path(path)) for path in sorted({str(record["file_path"]) for record in records})},
+      "judgement_sha256":sha256_text(stable_json({key:value for key,value in request.items() if key not in {"survivors","symbolic_cache"}})),
+      "equivalence_sha256":sha256_file(ROOT/".ai-bridge/survivor_equivalence.py"),
+    }
+
+
+def run_triage(request):
+    with tempfile.TemporaryDirectory(prefix="ternforge-triage-request-") as scratch:
+        request_path=Path(scratch)/"request.json"
+        result_path=Path(scratch)/"result.json"
+        request_path.write_text(json.dumps(request))
+        completed=subprocess.run(
+          [shutil.which("uv") or "uv","run","--with",CROSSHAIR_REQUIREMENT,"python",str(ROOT/".ai-bridge/survivor_equivalence.py"),"triage",str(request_path),str(result_path)],
+          cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,env={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"},
+        )
+        if completed.returncode!=0 or not result_path.exists():
+            raise RuntimeError("the survivor triage failed:\n"+"\n".join((completed.stdout or "").splitlines()[-20:]))
+        return json.loads(result_path.read_text())
+
+
+def assess_survivors(contract_ids=None):
+    """Judge the surviving rule mutants of every contract whose campaign result counts: the symbolic
+    search first, then the assessors for the ones it leaves unsure, within the budget. Nothing here
+    changes a mutant's outcome. Only a person or a scheduled job starts it."""
+    policy=model_generation_policy()
+    state=assessor_calibration_state(policy)
+    usable=qualified_model_backends()
+    run=None
+    if usable:
+        run=MODELS.Run({**policy["roles"],**assessor_roles(policy)},policy["budget"])
+        for name in MODELS.BACKENDS:
+            if name not in usable:
+                run.availability[name]="the adapter has not yet been shown to read this backend's answers"
+    else:
+        print("[TRIAGE] the model adapter is not qualified: symbolic search only",flush=True)
+    campaign=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
+    actual=implementation_fault_actual()
+    needs=current_needs()
+    TRIAGE_RESULTS_DIR.mkdir(parents=True,exist_ok=True)
+    cache=load_symbolic_cache()
+    for contract_id,entry in sorted((campaign.get("contracts") or {}).items()):
+        if contract_ids and contract_id not in contract_ids:
+            continue
+        if (actual.get(contract_id) or {}).get("state")!="current":
+            continue
+        report_path,records=rule_survivors(entry)
+        if not records:
+            # Nothing survives any more: a triage of earlier survivors would describe another run.
+            if (TRIAGE_RESULTS_DIR/f"{contract_id}.json").exists():
+                (TRIAGE_RESULTS_DIR/f"{contract_id}.json").unlink()
+                print(f"[TRIAGE] {contract_id}: no survivors left, its triage removed",flush=True)
+            continue
+        answers_path=TRIAGE_ANSWERS_DIR/contract_id/"assessments.json"
+        assessments=load_assessments(answers_path)
+        started=time.monotonic()
+        result=run_triage(triage_request(contract_id,records,assessments,needs,policy,state,cache))
+        cache.update(result.get("symbolic_cache") or {})
+        asked=False
+        if run is not None:
+            by_fingerprint={str(record.get("fingerprint")):record for record in records}
+            for row in result["rows"]:
+                # A symbolic search that could not run leaves the harness usable: an assessor's input is still checked by execution.
+                if row.get("status")!="unsure":
+                    continue
+                record=by_fingerprint[str(row["fingerprint"])]
+                prompt=rule_assessment_prompt(contract_id,record,needs.get(contract_id) or {})
+                if prompt is None:
+                    continue
+                entry_answers=assessments.setdefault(str(row["fingerprint"]),{})
+                asked=ask_assessors(run,policy,purpose="survivor-assessment",contract_id=contract_id,subject=str(row["fingerprint"]),prompt=prompt,entry=entry_answers,response_dir=TRIAGE_ANSWERS_DIR/contract_id/"responses") or asked
+            if asked:
+                save_assessments(answers_path,assessments)
+                result=run_triage(triage_request(contract_id,records,assessments,needs,policy,state,cache))
+                cache.update(result.get("symbolic_cache") or {})
+        request=triage_request(contract_id,records,assessments,needs,policy,state,{})
+        retained={
+          "schema":"ternforge-survivor-triage-1","contract_id":contract_id,
+          "binding":triage_binding(request,report_path,records),
+          "rows":[{key:value for key,value in row.items() if key not in {"original","mutated"}} for row in result["rows"]],
+          "seconds":round(time.monotonic()-started,1),"judged_at":utc_now(),
+        }
+        (TRIAGE_RESULTS_DIR/f"{contract_id}.json").write_text(json.dumps(retained,indent=1,sort_keys=True)+"\n")
+        counts=Counter(row.get("status") for row in result["rows"])
+        print(f"[TRIAGE] {contract_id}: "+", ".join(f"{count} {name}" for name,count in sorted(counts.items()))+f" in {retained['seconds']}s",flush=True)
+        save_symbolic_cache(cache)
+    if run is not None:
+        summary=run.summary()
+        print(f"[TRIAGE] {summary['calls']} assessor calls, {tokens_text(summary['tokens']['total'])} tokens"+(f", ${summary['list_usd']:.3f} at list price" if summary["list_usd"] is not None else ""),flush=True)
+
+
+def survivor_judgement_counts(triage,semantic,decided=None):
+    """How the survivor judgement stands per fault class: rule survivors by their operator's class,
+    undecided and judged semantic mutants by theirs, and what the verdicts that count decided."""
+    counts={}
+    for entry in (decided or {}).values():
+        verdict=entry.get("verdict")
+        klass=entry["item"].get("class")
+        if not verdict or not klass:
+            continue
+        name={"pin":"pinned" if entry.get("pin") else "pin_pending","equivalent":"suppressed","irrelevant":"suppressed","escalate":"escalated"}[verdict["verdict"]]
+        counts.setdefault(klass,Counter())["verdict_"+name]+=1
+    for row in (triage.get("rows") or {}).values():
+        klass=IMPL_FAULTS.CLASS_BY_OPERATOR.get(str(row.get("operator")))
+        if klass:
+            state=counts.setdefault(klass,Counter())
+            state[str(row.get("status"))]+=1
+    for row in semantic.get("results") or []:
+        status=(row.get("judgement") or {}).get("status")
+        if status:
+            counts.setdefault(row["class"],Counter())[status]+=1
+    return {klass:dict(sorted(state.items())) for klass,state in sorted(counts.items())}
+
+
+def survivor_triage_actual():
+    """Per contract, the retained triage of its surviving rule mutants while it still counts."""
+    policy=model_generation_policy()
+    state=assessor_calibration_state(policy)
+    campaign=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
+    needs=current_needs()
+    result={}
+    for contract_id,entry in sorted((campaign.get("contracts") or {}).items()):
+        path=TRIAGE_RESULTS_DIR/f"{contract_id}.json"
+        if not path.exists():
+            continue
+        retained=json.loads(path.read_text())
+        report_path,records=rule_survivors(entry)
+        assessments=load_assessments(TRIAGE_ANSWERS_DIR/contract_id/"assessments.json")
+        request=triage_request(contract_id,records,assessments,needs,policy,state,{})
+        current=retained.get("binding")==triage_binding(request,report_path,records)
+        result[contract_id]={"current":current,"rows":{str(row["fingerprint"]):row for row in retained.get("rows") or []} if current else {}}
+    return result
+
+
+def semantic_mutant_actual(plans=None,test_rows=None,apply_verdicts=True):
+    """Per contract that selects semantic mutants: whether the retained cascade result still counts,
+    what it says about each class, and where its proposals came from and what they cost. A result
+    that does not count, and a selected target without any proposal, leave their classes undecided."""
+    test_rows=junit_depth_rows() if test_rows is None else test_rows
+    plans=implementation_fault_plans(test_rows) if plans is None else plans
+    needs=current_needs()
+    qualification=load_evidence_qualification()
+    producers_ok=qualification_is_current(qualification) and all(
+      str(((qualification.get("producers") or {}).get(producer_id) or {}).get("status") or "").upper()=="QUALIFIED"
+      for producer_id in SEMANTIC_PRODUCERS
+    )
+    ledger=MODELS.read_ledger()
+    result={}
+    for contract_id,target in semantic_selections().items():
+        payload,proposals=semantic_proposal_set(contract_id,target)
+        path=SEMANTIC_RESULTS_DIR/f"{contract_id}.json"
+        retained=json.loads(path.read_text()) if path.exists() else {}
+        contexts=semantic_contexts(contract_id,target,needs)
+        selections=target.get("semantic_mutants") or []
+        missing=SEMANTIC.targets_without_proposals(selections,proposals)
+        if not proposals:
+            state,reason="not_generated","no semantic mutant has been generated for its targets yet"
+        elif not retained:
+            state,reason="not_run","the semantic mutant cascade has not run for this contract yet"
+        elif retained.get("binding")!=semantic_binding(contract_id,plans.get(contract_id) or {},test_rows,contexts,semantic_judgement_request(contract_id,proposals,needs)):
+            state,reason="stale","its proposals, drafts, target code, tests or generation context changed since the cascade ran"
+        elif not producers_ok:
+            state,reason="unqualified","the semantic mutant cascade is not currently qualified"
+        else:
+            state,reason="current",""
+        classes={}
+        if state=="current" and apply_verdicts:
+            # A verdict that counts and calls a survivor equivalent or irrelevant takes it out of its class (ADR_0006).
+            decided=(verdict_state().get(contract_id) or {}).get("items") or {}
+            retained={**retained,"results":[
+              {**row,"outcome":"equivalent","reason":f"judged {decided[row['id']]['verdict']['verdict']} by {decided[row['id']]['verdict'].get('by')}: {decided[row['id']]['verdict'].get('reason')}","by":decided[row["id"]]["verdict"].get("by")}
+              if row.get("id") in decided and decided[row["id"]]["verdict"] and decided[row["id"]]["verdict"]["verdict"] in {"equivalent","irrelevant"} else row
+              for row in retained.get("results") or []
+            ]}
+        if state=="current":
+            classes=SEMANTIC.class_projection(retained.get("results") or [])
+        else:
+            for proposal in proposals:
+                row=classes.setdefault(proposal["class"],{"exercised":False,"detected":False,"undecided":0,"counts":{}})
+                row["undecided"]+=1
+        classes=SEMANTIC.add_targets_without_proposals(classes,missing)
+        calls=[row for row in ledger if row.get("contract_id")==contract_id and row.get("role")!="probe"]
+        # The attempts of the last call for each target: every backend it tried, in order.
+        last_attempts={}
+        for row in calls:
+            if row.get("purpose")!="semantic-mutants":
+                continue
+            group=last_attempts.get(row.get("subject")) or []
+            last_attempts[row.get("subject")]=[*group,row] if group and group[-1].get("run_id")==row.get("run_id") else [row]
+        # What generating the mutants and drafts cost; judging survivors is counted apart.
+        generation_calls=[row for row in calls if row.get("purpose") in {"semantic-mutants","semantic-draft"}]
+        top=payload.get("generator") or {}
+        origins=Counter(str((proposal.get("generator") or top).get("kind") or "unknown") for proposal in proposals)
+        judged=[row.get("draft") or {} for row in retained.get("results") or [] if state=="current" and row.get("draft")]
+        result[contract_id]={
+          "state":state,"reason":reason,"classes":classes,
+          "results":retained.get("results") or [] if state=="current" else [],
+          "proposals":proposals,"generator":top,
+          "missing":[{**selection,"attempts":last_attempts.get(selection["target"]) or []} for selection in missing],
+          "draft_provenance":load_draft_provenance(SEMANTIC.PROPOSAL_ROOT/contract_id),
+          "calls":{row["call_id"]:row for row in calls},
+          "generation":{
+            "targets":len(selections),
+            "not_generated":len(missing),
+            "mutants":dict(sorted(origins.items())),
+            "drafts":{"kept":sum(bool(row.get("accepted")) for row in judged),"rejected":sum(not row.get("accepted") for row in judged)},
+            "runs":len({row.get("run_id") for row in generation_calls}),
+            "spend":MODELS.spend(generation_calls),
+          },
+        }
+    return result
+
+
 def contracts_asking_for_implementation_classes(policy=None):
     policy=policy or project_monitor_policy()
     asking=set()
@@ -6728,7 +6311,7 @@ def implementation_fault_actual():
         else:
             state,reason=retained_campaign_entry_state(entry,plan,shared_sha256,test_rows)
             if state=="current":
-                classes=IMPL_FAULTS.project_classes(plan,json.loads((ROOT/run["report_path"]).read_text()),ROOT)
+                classes=IMPL_FAULTS.project_classes(plan,json.loads((ROOT/run["report_path"]).read_text()),ROOT,verdict_suppressions(contract_id))
             else:
                 classes=IMPL_FAULTS.blocked_classes(
                   f"The last mutation result no longer counts ({reason}); re-run the campaign."
@@ -6754,11 +6337,28 @@ def implementation_fault_actual():
     return result
 
 
+def contract_index():
+    """Every Requirement and Technical requirement with the title, revision and page a monitor names."""
+    contracts={}
+    for contract_id,need in current_needs().items():
+        if need.get("type") not in {"req","treq"}:
+            continue
+        contracts[contract_id]={
+          "id":contract_id,
+          "title":need.get("title") or contract_id,
+          "revision":need.get("revision"),
+          "contract_url":f"{need.get('docname')}.html#{contract_id}" if need.get("docname") else f"traceability-reader.html#review-{contract_id}",
+        }
+    return {"contracts":contracts}
+
+
 def requirement_monitor_model(base_model):
     policy=project_monitor_policy()
     junit_actual=junit_monitor_actual()
     junit_faults=junit_fault_actual(policy)
     implementation_faults=implementation_fault_actual()
+    semantic_faults=semantic_mutant_actual()
+    triage_faults=survivor_triage_actual()
     fault_model=json.loads(ASSURANCE_FACTS_PATH.read_text()) if ASSURANCE_FACTS_PATH.exists() else {}
     result={
       "schema":"ternforge-requirement-monitor-p34-2",
@@ -6794,9 +6394,7 @@ def requirement_monitor_model(base_model):
           contract_id,raw_contract_fault
         )
         contract_fault=raw_contract_fault if specialized_probe_current else {}
-        groups=list((contract_fault.get("groups") or {}).values())
         layers=contract_fault.get("layers") or {}
-        implementation=layers.get("implementation") or {}
         class_actual={}
         # Implementation classes come from the generic mutation campaign for every
         # contract; a class is detected only when all of its attributable faults are.
@@ -6861,6 +6459,44 @@ def requirement_monitor_model(base_model):
               },
             }
 
+        # Semantic mutants challenge a class beside its retained tests: the class is caught only when every
+        # decided challenge is caught, and a challenge that ran but is undecided (or no longer counts) keeps
+        # it UNKNOWN.
+        semantic=semantic_faults.get(contract_id) or {}
+        for class_id,projected in (semantic.get("classes") or {}).items():
+            previous=class_actual.get(class_id) or {"exercised":False,"detected":False}
+            previous_exercised=bool(previous.get("exercised"))
+            semantic_exercised=bool(projected.get("exercised"))
+            exercised=previous_exercised or semantic_exercised
+            counts=projected.get("counts") or {}
+            not_generated=int(projected.get("not_generated") or 0)
+            semantic_basis=(
+              f"Semantic mutants: {int(counts.get('caught') or 0)} caught, {int(counts.get('distinguished') or 0)} tell apart "
+              f"from the original with no test failing, {int(projected.get('undecided') or 0)} undecided."
+              +(f" {not_generated} selected target{'s have' if not_generated!=1 else ' has'} no generated mutant yet." if not_generated else "")
+              if semantic.get("state")=="current" else
+              f"Semantic mutants do not count yet: {semantic.get('reason')}."
+            )
+            class_actual[class_id]={
+              **previous,
+              "exercised":exercised,
+              "detected":bool(
+                exercised
+                and (not previous_exercised or previous.get("detected"))
+                and (not semantic_exercised or projected.get("detected"))
+              ),
+              "undecided":int(previous.get("undecided") or 0)+int(projected.get("undecided") or 0),
+              # The group's mutant tally counts semantic mutants as the campaign's: caught, and surviving on a
+              # distinguishing input.
+              "caught":int(previous.get("caught") or 0)+int(counts.get("caught") or 0),
+              "survived_reached":int(previous.get("survived_reached") or 0)+int(counts.get("distinguished") or 0),
+              "semantic_state":semantic.get("state"),
+              "semantic_counts":counts,
+              "semantic_not_generated":not_generated,
+              "basis":" ".join(part for part in (str(previous.get("basis") or "") if previous_exercised else "",semantic_basis) if part),
+              "producer_ids":sorted({*(ids if isinstance(ids:=previous.get("producer_ids"),list) else []),*SEMANTIC_PRODUCERS}),
+            }
+
         for fault_group in policy.get("fault_groups") or []:
             for class_id in fault_group.get("classes") or []:
                 class_actual.setdefault(
@@ -6885,14 +6521,12 @@ def requirement_monitor_model(base_model):
             "classes":class_actual,
             "specialized_probe_current":specialized_probe_current,
             "specialized_probe_binding":raw_contract_fault.get("binding"),
-            "groups":contract_fault.get("groups") or {},
             "layers":layers,
-            "detection_overlap":contract_fault.get("detection_overlap") or {},
-            "retained_mutmut":implementation.get("retained_mutmut") or {},
             "retained_challenges":retained_classes,
+            "semantic_generation":(semantic_faults.get(contract_id) or {}).get("generation"),
+            "survivor_judgement":survivor_judgement_counts(triage_faults.get(contract_id) or {},semantic_faults.get(contract_id) or {},(verdict_state().get(contract_id) or {}).get("items")),
             "raw_url":"requirement-monitor-facts.json",
           },
-          "history_url":((fault_model.get("contract_histories") or {}).get(contract_id) or {}).get("url"),
         }
     # Tests that claim to verify a contract but serve none of the profile's cases
     # (and are not goal/capability scenarios or fault challenges) are kept visible:
@@ -6910,7 +6544,7 @@ def requirement_monitor_model(base_model):
             if contract_id not in (row.get("verifies") or []):
                 continue
             binding=bindings.get(row["nodeid"]) or {}
-            if binding.get("assurance_item") or binding.get("fault_challenge"):
+            if binding.get("assurance_item") or binding.get("fault_challenge") or is_mutation_pin(row["nodeid"]):
                 continue
             if criterion_owner.get(binding.get("coverage_item") or ""):
                 continue
@@ -6919,12 +6553,9 @@ def requirement_monitor_model(base_model):
     return result
 
 
-
 def patch_contract_evidence_view():
     if not ASSURANCE_PAGE.exists():
         return
-    if ASSURANCE_TARGETS_PATH.exists():
-        shutil.copy2(ASSURANCE_TARGETS_PATH,ROOT/"docs/_build/html/assurance-targets.json")
     text=ASSURANCE_PAGE.read_text()
     if "TERNFORGE-NO-CACHE" not in text:
         text=text.replace(
@@ -6935,13 +6566,7 @@ def patch_contract_evidence_view():
           '<meta http-equiv="Expires" content="0">',
           1,
         )
-    model=contract_assurance_model()
-    model["assurance_snapshots"]=(
-        json.loads(ASSURANCE_SNAPSHOTS_PATH.read_text())
-        if ASSURANCE_SNAPSHOTS_PATH.exists()
-        else {}
-    )
-    monitor_model=requirement_monitor_model(model)
+    monitor_model=requirement_monitor_model(contract_index())
     (ASSURANCE_PAGE.parent/"requirement-monitor-facts.json").write_text(
         json.dumps(monitor_model,indent=2,sort_keys=True)+"\n"
     )
@@ -7066,7 +6691,7 @@ def patch_verification_contract_evidence_path():
           '<p>Start in <a class="reference internal" href="traceability-reader.html"><span class="doc">Traceability Reader</span></a>. '
           'Requirements and Technical requirements with an accepted Verification Profile expose a <strong>Contract evidence</strong> link to their dedicated Target → Actual monitor; unprofiled contracts do not claim one yet. '
           'Use that page to inspect required verification cells, retained path properties, selected fault checks, and current gaps. '
-          'Execution health stays in Health; verification depth stays in Depth; mutation changes stay in Mutation Analysis.</p>',
+          'The Verification Health Map shows where the system fails and how deep its evidence reaches; the Verification Explorer lists every item behind those counts, mutants included.</p>',
           text,count=1,flags=re.DOTALL
         )
         path.write_text(text)
@@ -7227,7 +6852,6 @@ def patch_living_semantic_pages():
         path.write_text(text)
 
 
-
 def patch_legacy_overview_links():
     """Keep legacy DocOps overview routes out of the normal portal reading flow."""
     html_root = ROOT / "docs/_build/html"
@@ -7257,8 +6881,8 @@ def patch_portal_navigation():
       ROOT/"docs/_build/html/index.html":None,
       ROOT/"docs/_build/html/verification.html":None,
       HEALTH_PAGE:None,
+      EXPLORER_PAGE:None,
       ASSURANCE_PAGE:None,
-      MUTATION_PAGE:"mutation",
     }
     for path,current in pages.items():
         if path.exists():
@@ -7284,8 +6908,179 @@ def ensure_root_favicon():
     path.write_bytes(header+entry+png)
 
 
-def integrate_mutation_portal(summary,feedback):
-    ensure_root_favicon()
+# --- the mutation report (Mutation Testing Report Schema 2) -------------------------
+
+MUTATION_REPORT_JSON=ROOT/"docs/_build/html/mutation-report.json"
+MTE_STATUS={"caught":"Killed","survived":"Survived","notreached":"NoCoverage","invalid":"RuntimeError","suppressed":"Ignored"}
+
+
+def mutation_report():
+    """The retained campaign in the Mutation Testing Report Schema: every mutated source file with the
+    mutants of every contract whose result still counts, the suppressed ones and those arid code kept
+    out as Ignored with their reason. A contract whose result no longer counts is left out and named."""
+    campaign=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
+    actual=implementation_fault_actual()
+    files={}
+    tests=defaultdict(set)
+    ids=set()
+    included,left_out=[],[]
+
+    def add(source,row):
+        base=row["id"]
+        suffix=1
+        while row["id"] in ids:
+            suffix+=1
+            row["id"]=f"{base}-{suffix}"
+        ids.add(row["id"])
+        files.setdefault(source,{"language":"python","source":(ROOT/source).read_text(),"mutants":[]})["mutants"].append(row)
+
+    for contract_id,entry in sorted((campaign.get("contracts") or {}).items()):
+        if (actual.get(contract_id) or {}).get("state")!="current":
+            left_out.append(contract_id)
+            continue
+        plan=entry.get("plan") or {}
+        report=json.loads((ROOT/entry["run"]["report_path"]).read_text())
+        raw_by_id={str(row.get("gremlin_id")):row for row in report.get("results") or []}
+        for mutant in IMPL_FAULTS.contract_mutants(plan,report,ROOT):
+            raw=raw_by_id.get(mutant["id"]) or {}
+            outcome=mutant["outcome"]
+            row={
+              "id":mutant["fingerprint"],
+              "mutatorName":mutant["operator"],
+              "replacement":mutant["replacement"] or "",
+              "location":mutant["location"] or {"start":{"line":mutant["line"],"column":1},"end":{"line":mutant["line"],"column":2}},
+              "status":"Timeout" if raw.get("status")=="timeout" else MTE_STATUS[outcome],
+              "description":f"{contract_id} · {mutant['class']} · {mutant['description']}",
+            }
+            if outcome=="suppressed":
+                suppression=mutant.get("suppression") or {}
+                row["statusReason"]=f"{suppression.get('category') or 'suppressed'}: {suppression.get('reason') or ''}".strip()
+            elif outcome=="notreached":
+                row["statusReason"]="No test of the contract runs this line."
+            elif outcome=="invalid":
+                row["statusReason"]=str(raw.get("error_output") or "The mutated code broke test collection.")[:400]
+            covered=list(raw.get("selected_tests") or []) if raw.get("covered") else []
+            if covered:
+                row["coveredBy"]=covered
+                for nodeid in covered:
+                    tests[nodeid.split("::",1)[0]].add(nodeid)
+            add(mutant["source"],row)
+        for item in IMPL_FAULTS.not_planted_mutants(plan,report,ROOT):
+            add(item["source"],{
+              "id":str(item.get("fingerprint") or item.get("gremlin_id")),
+              "mutatorName":str(item.get("operator")),
+              "replacement":str(item.get("replacement") or ""),
+              "location":item.get("location") or {"start":{"line":int(item["line_number"]),"column":1},"end":{"line":int(item["line_number"]),"column":2}},
+              "status":"Ignored",
+              "statusReason":f"{item.get('rule')}: arid code, not planted",
+              "description":f"{contract_id} · {item['class']} · {item.get('description')}",
+            })
+        included.append(contract_id)
+    for source in files.values():
+        source["mutants"].sort(key=lambda row:(row["location"]["start"]["line"],row["location"]["start"]["column"],row["id"]))
+    return {
+      "schemaVersion":"2",
+      # Every valid mutant must be caught (Test Plan), so anything less shows as not caught.
+      "thresholds":{"high":100,"low":100},
+      "projectRoot":".",
+      "files":dict(sorted(files.items())),
+      "testFiles":{
+        path:{"tests":[{"id":nodeid,"name":nodeid.split("::",1)[1]} for nodeid in sorted(nodeids)]}
+        for path,nodeids in sorted(tests.items())
+      },
+      "framework":{"name":"pytest-gremlins","version":IMPL_FAULTS.GREMLINS_VERSION},
+      "config":{
+        "campaign_schema":campaign.get("schema"),
+        "campaign_head_sha":campaign.get("head_sha"),
+        "contracts":included,
+        "not_current":left_out,
+        "rule":"Mutants on each contract's attributable @impl lines, run with the contract's passing tests; NoCoverage means no test of the contract runs the line; Ignored means suppressed by a pragma or kept out as arid code.",
+      },
+    }
+
+
+def write_mutation_report_page():
+    report=mutation_report()
+    MUTATION_REPORT_JSON.write_text(json.dumps(report,separators=(",",":"))+"\n")
+    mutants=[row for source in report["files"].values() for row in source["mutants"]]
+    judged=[row for row in mutants if row["status"] not in {"Ignored","RuntimeError"}]
+    left_out=report["config"]["not_current"]
+    summary=(
+      f"{len(judged)} judged mutants of {len(report['config']['contracts'])} contracts · "
+      f"{sum(row['status'] in {'Killed','Timeout'} for row in judged)} caught · "
+      f"{sum(row['status']=='Ignored' for row in mutants)} ignored"
+      + (f" · {len(left_out)} contracts left out, their result no longer counts" if left_out else "")
+    )
+    head=str(report["config"].get("campaign_head_sha") or "")[:12]
+    MUTATION_REPORT_PAGE.write_text(f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mutation report · llm-router</title><script defer src="_static/mutation-test-elements.js"></script>
+<style>html,body{{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}}
+.tf-bridge{{display:flex;align-items:baseline;gap:.4rem 1rem;flex-wrap:wrap;padding:.6rem 1rem;border-bottom:1px solid #d0d5dd;background:#f8fafc;color:#172033;font-size:.85rem}}
+.tf-bridge a{{color:#1d4ed8;text-decoration:none}}.tf-bridge a:hover{{text-decoration:underline}}.tf-bridge span{{color:#475467}}
+@media(prefers-color-scheme:dark){{.tf-bridge{{background:#151a21;color:#d0d7de;border-color:#30363d}}.tf-bridge a{{color:#79c0ff}}.tf-bridge span{{color:#9da7b3}}}}</style></head><body>
+<nav class="tf-bridge"><a href="verification-explorer.html#kind=mutant">← Verification Explorer</a><strong>Mutation report</strong>
+<span>{html_escape(summary)} · campaign at {html_escape(head)}</span>
+<a href="verification-health-map.html#faults">Health Map</a><a href="test-plan.html#test-plan-mutation-policy">Mutation policy</a><a href="mutation-report.json">Raw JSON</a></nav>
+<mutation-test-report-app src="mutation-report.json" title-postfix="llm-router"></mutation-test-report-app>
+</body></html>
+""")
+
+
+# mutmut's page, its raw mutant pages and campaign, its Test Strength facts and the P31 trend
+# history are retired (ADR_0003); a build removes what an older build left behind.
+RETIRED_MUTATION_ARTIFACTS=(
+  ROOT/"docs/_build/html/mutation-analysis.html",
+  ROOT/"docs/_build/html/mutation-results",
+  ROOT/"docs/_build/html/verification-test-strength-facts.json",
+  ROOT/"docs/_build/html/assurance-history",
+  ROOT/"docs/_build/html/assurance-snapshots.json",
+  ROOT/"docs/_build/html/assurance-targets.json",
+)
+
+
+def remove_retired_mutation_artifacts():
+    for path in RETIRED_MUTATION_ARTIFACTS:
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink(missing_ok=True)
+
+
+def write_semantic_mutant_files():
+    """Every semantic mutant's frozen patch as a unified diff of its target, and its draft test, as raw files."""
+    import difflib
+    base=ROOT/"docs/_build/html/semantic-mutants"
+    shutil.rmtree(base,ignore_errors=True)
+    for contract_id,_target in semantic_selections().items():
+        payload=SEMANTIC.load_proposals(contract_id)
+        folder=base/contract_id
+        folder.mkdir(parents=True,exist_ok=True)
+        drafts=SEMANTIC.load_drafts(contract_id)
+        for proposal in payload.get("proposals") or []:
+            path,qualname=proposal["target"].split("::",1)
+            original=SEMANTIC.function_source((ROOT/path).read_text(),qualname) or ""
+            diff="".join(difflib.unified_diff(
+              SEMANTIC._dedent(original).splitlines(keepends=True),
+              SEMANTIC._dedent(proposal["replacement"]).splitlines(keepends=True),
+              fromfile=f"a/{path}::{qualname}",tofile=f"b/{path}::{qualname} ({proposal['id']})",
+            ))
+            header=f"# {proposal['id']} · {proposal['class']} · {proposal['risk']}\n"
+            (folder/f"{proposal['id']}.diff").write_text(header+(diff or "# the proposal repeats the current code\n"))
+            if proposal["id"] in drafts:
+                (folder/f"{proposal['id']}.test.py").write_text(drafts[proposal["id"]])
+        results=SEMANTIC_RESULTS_DIR/f"{contract_id}.json"
+        if results.exists():
+            shutil.copy2(results,folder/"cascade.json")
+        # The model answers the proposals and drafts were taken from, with the prompts they answered.
+        responses=SEMANTIC.PROPOSAL_ROOT/contract_id/"responses"
+        if responses.is_dir():
+            (folder/"responses").mkdir(parents=True,exist_ok=True)
+            for response in sorted(responses.glob("*.json")):
+                shutil.copy2(response,folder/"responses"/response.name)
+
+
+def install_mutation_testing_elements():
+    """The pinned Mutation Testing Elements bundle that renders the mutation report."""
     if not MTE_VENDOR_PATH.exists():
         raise RuntimeError("pinned Mutation Testing Elements 3.9.0 asset is missing")
     mte_bytes=gzip.decompress(MTE_VENDOR_PATH.read_bytes())
@@ -7294,11 +7089,14 @@ def integrate_mutation_portal(summary,feedback):
     mte_target=ROOT/"docs/_build/html/_static/mutation-test-elements.js"
     mte_target.parent.mkdir(parents=True,exist_ok=True)
     mte_target.write_bytes(mte_bytes)
-    if ASSURANCE_SNAPSHOTS_PATH.exists():
-        (ROOT/"docs/_build/html/assurance-snapshots.json").write_bytes(
-          ASSURANCE_SNAPSHOTS_PATH.read_bytes()
-        )
-    write_mutation_analysis_page(summary,feedback)
+
+
+def integrate_mutation_portal():
+    ensure_root_favicon()
+    remove_retired_mutation_artifacts()
+    install_mutation_testing_elements()
+    write_mutation_report_page()
+    write_semantic_mutant_files()
     patch_contract_evidence_view()
     subprocess.run(
       [sys.executable,str(ROOT/".ai-bridge/build-requirement-monitor.py")],
@@ -7308,7 +7106,9 @@ def integrate_mutation_portal(summary,feedback):
       [sys.executable,str(ROOT/".ai-bridge/build-upper-assurance-pilot.py")],
       cwd=ROOT,check=True,
     )
-    render_health_map_page()
+    health_payload,_depth_payload=render_health_map_page()
+    explorer=render_explorer_page(health_payload)
+    patch_monitor_history(explorer)
     patch_traceability_contract_evidence_links()
     patch_verification_contract_evidence_path()
     patch_evidence_trust_need_anchors()
@@ -7316,391 +7116,179 @@ def integrate_mutation_portal(summary,feedback):
     patch_legacy_overview_links()
     patch_portal_navigation()
 
-def refresh_freshness(campaign):
-    selected_ids=list(campaign.get("contracts") or {})
-    retained_mutmut_version=(campaign.get("engine") or {}).get("version")
-    current=build_campaign_inputs(
-      campaign["mode"],campaign.get("base_sha"),selected_ids,retained_mutmut_version
-    )
-    allure_ids=allure_report_ids()
 
-    # A new campaign owns only the contracts it actually measured. Other contracts
-    # keep their previous campaign provenance and are freshness-checked independently.
-    for contract_id in selected_ids:
-        recorded=campaign["contracts"][contract_id]
-        fact=STRENGTH["contracts"][contract_id]
-        contract_baseline_run_id=recorded.get("baseline_run_id") or campaign.get("baseline_run_id")
-        contract_baseline=load_run(contract_baseline_run_id)
-        fact.update({
-          "campaign_id":campaign["campaign_id"],
-          "run_id":campaign.get("run_id"),
-          "campaign_mode":campaign["mode"],
-          "campaign_head_sha":campaign["head_sha"],
-          "baseline_run_id":contract_baseline_run_id,
-          "baseline_campaign_id":(contract_baseline or {}).get("campaign_id"),
-          "campaign_provenance_url":"../campaign.json",
-          "source_fingerprint":recorded["source_fingerprint"],
-          "test_set_fingerprint":recorded["test_set_fingerprint"],
-          "config_fingerprint":recorded["config_fingerprint"],
-        })
-
-    for contract_id,spec in CONTRACTS.items():
-        fact=STRENGTH["contracts"][contract_id]
-        current_fp=contract_fingerprints(
-          contract_id,spec,retained_mutmut_version
-        )
-        recorded={
-          "source_fingerprint":fact.get("source_fingerprint"),
-          "test_set_fingerprint":fact.get("test_set_fingerprint"),
-          "config_fingerprint":fact.get("config_fingerprint"),
-        }
-        fresh,reasons=freshness_state(recorded,current_fp)
-        fact["fresh"]=fresh
-        fact["stale_reasons"]=reasons
-        if contract_id in campaign["contracts"]:
-            campaign_record=campaign["contracts"][contract_id]
-            campaign_record["fresh"]=fresh
-            campaign_record["stale_reasons"]=reasons
-            campaign_record["current_fingerprints"]=current_fp
-        write_wrapper(contract_id,spec,allure_ids,fact)
-
-    campaign["current_check"]={
-      "checked_at":utc_now(),
-      "head_sha":git_sha(),
-      "coverage_run_fingerprint":sha256_file(COVERAGE_DB),
-      "allure_run_fingerprint":relevant_allure_run_fingerprint(),
-      "fresh":all(bool(campaign["contracts"][cid].get("fresh")) for cid in selected_ids),
-    }
+def refresh_portal():
+    """Rebuild every fact and page from the retained runs, without running a test or a mutant."""
     depth_payload=refresh_verification_depth_facts()
     print(
-      f"[P34] depth facts: {len(depth_payload.get('tests') or [])} tests · "
+      f"[PORTAL] depth facts: {len(depth_payload.get('tests') or [])} tests · "
       f"{len(depth_payload.get('contracts') or [])} contracts · "
       f"{(depth_payload.get('audit') or {}).get('nodeid_mismatches',0)} nodeid mismatches",
       flush=True,
     )
-    summary=build_summary(campaign)
-    feedback=build_operator_feedback(campaign)
-    summary["operator_feedback"]={
-      "families":len(feedback.get("families") or []),
-      "sample":feedback.get("sample") or {},
-      "filtering_decision":feedback.get("filtering_decision") or {},
-    }
-    triage_payload={
-      "schema_version":"ternforge-mutation-triage-prototype-2",
-      "campaign_id":campaign["campaign_id"],
-      "run_id":campaign.get("run_id"),
-      "baseline_run_id":campaign.get("baseline_run_id"),
-      "baseline_campaign_id":campaign.get("baseline_campaign_id"),
-      "readiness":summary["readiness"],
-      "new_unresolved_survivors":summary["new_unresolved_survivors"],
-      "unresolved_survivors":summary["unresolved_survivors"],
-      "suppressed_survivors":summary["suppressed_survivors"],
-      "resolved_survivors":summary["resolved_survivors"],
-      "actionable_contracts":summary["actionable_contracts"],
-      "suppression_ledger":load_suppressions(),
-      "contracts":{
-        contract_id:(STRENGTH["contracts"][contract_id].get("triage") or {})
-        for contract_id in CONTRACTS
-      },
-    }
-    STRENGTH["schema_version"]="verification-test-strength-spike-5"
-    STRENGTH["campaign"]={
-      "campaign_id":campaign["campaign_id"],
-      "run_id":campaign.get("run_id"),
-      "baseline_run_id":campaign.get("baseline_run_id"),
-      "baseline_campaign_id":campaign.get("baseline_campaign_id"),
-      "mode":campaign["mode"],
-      "head_sha":campaign["head_sha"],
-      "current_head_sha":git_sha(),
-      "selected_contracts":selected_ids,
-      "skipped_contracts":campaign.get("skipped_contracts") or [],
-    }
-    STRENGTH["summary"]=summary
-    STRENGTH_PATH.write_text(json.dumps(STRENGTH,indent=2))
-    SUMMARY_PATH.write_text(json.dumps(summary,indent=2))
-    TRIAGE_PATH.write_text(json.dumps(triage_payload,indent=2))
-    OPERATOR_FEEDBACK_PATH.write_text(json.dumps(feedback,indent=2))
-    campaign["adapter"]={
-      "name":"ternforge-local-mutmut-report-adapter",
-      "version":MUTATION_ADAPTER_VERSION,
-      "mutation_semantics_version":MUTATION_SEMANTICS_VERSION,
-    }
-    CAMPAIGN_PATH.write_text(json.dumps(campaign,indent=2))
     regenerate_verification_maps()
-    integrate_mutation_portal(summary,feedback)
+    integrate_mutation_portal()
+
+
+# --- the pull-request diff --------------------------------------------------------
+
+IMPL_FAULT_DIFF_DIR=IMPL_FAULT_DIR/"diff"
+
+
+def diff_findings(contract_id,mutants):
+    """At most one surviving mutant per changed line, the most productive operator first:
+    the review findings of a pull request (Google's one mutant per line)."""
+    order={name:index for index,name in enumerate(MUTATION_EXTENSION.OPERATOR_PRIORITY)}
+    by_line=defaultdict(list)
+    for mutant in mutants:
+        if mutant["outcome"]=="survived":
+            by_line[(mutant["source"],mutant["line"])].append(mutant)
+    findings=[]
+    for (source,line),rows in sorted(by_line.items()):
+        chosen=min(rows,key=lambda row:(order.get(row["operator"],len(order)),row["id"]))
+        findings.append({
+          "contract_id":contract_id,"source":source,"line":line,"operator":chosen["operator"],
+          "class":chosen["class"],"change":explorer_mutant_change(chosen),"fingerprint":chosen["fingerprint"],
+          "survivors_on_line":len(rows),
+        })
+    return findings
+
+
+def github_annotation(finding):
+    """A GitHub Actions workflow command: the finding appears on the changed line of the pull request."""
+    message=(
+      f"{finding['contract_id']} · {finding['class']}: the contract's tests pass with this change: "
+      f"{finding['change']}. Add or sharpen an assertion, or suppress it with a reason if it is equivalent."
+    )
+    escape=lambda value:str(value).replace("%","%25").replace("\r","%0D").replace("\n","%0A")
+    return (
+      f"::warning file={finding['source']},line={finding['line']},"
+      f"title={escape('Surviving mutant ('+finding['operator']+')').replace(',','%2C').replace(':','%3A')}::{escape(message)}"
+    )
+
+
+def run_diff_campaign(base_ref="main",contract_ids=None):
+    """The pull-request run: mutate only the attributable lines this branch changes against its merge
+    base with base_ref, skip the mutants no test covers, and report surviving mutants per line."""
+    changed,merge_base=working_changed_lines(base_ref)
+    test_rows=junit_depth_rows()
+    plans=implementation_fault_plans(test_rows)
+    asking=contracts_asking_for_implementation_classes()
+    shutil.rmtree(IMPL_FAULT_DIFF_DIR,ignore_errors=True)
+    IMPL_FAULT_DIFF_DIR.mkdir(parents=True,exist_ok=True)
+    started=time.monotonic()
+    contracts={}
+    findings=[]
+    not_covered=0
+    for contract_id,plan in plans.items():
+        if plan.get("blocked") or contract_id not in asking or (contract_ids and contract_id not in contract_ids):
+            continue
+        scope={
+          path:[line for line in lines if (path,line) in changed]
+          for path,lines in (plan.get("attributable_lines") or {}).items()
+        }
+        scope={path:lines for path,lines in scope.items() if lines}
+        if not scope:
+            continue
+        raw_path=IMPL_FAULT_DIFF_DIR/f"{contract_id}.gremlins.json"
+        run=IMPL_FAULTS.run_engine(ROOT,plan,raw_path,scope=scope,skip_uncovered=True)
+        mutants=[]
+        if run["report_retained"]:
+            mutants=IMPL_FAULTS.contract_mutants({**plan,"attributable_lines":scope},json.loads(raw_path.read_text()),ROOT)
+        not_covered+=sum(mutant["outcome"]=="notreached" for mutant in mutants)
+        found=diff_findings(contract_id,mutants)
+        findings.extend(found)
+        contracts[contract_id]={
+          "changed_lines":scope,
+          "returncode":run["returncode"],
+          "duration_seconds":run["duration_seconds"],
+          "report_path":str(raw_path.relative_to(ROOT)) if run["report_retained"] else None,
+          "mutants":{outcome:sum(mutant["outcome"]==outcome for mutant in mutants) for outcome in IMPL_FAULTS.OUTCOMES},
+          "findings":len(found),
+        }
+        print(f"[DIFF] {contract_id}: {len(mutants)} mutants on {sum(len(lines) for lines in scope.values())} changed lines, {len(found)} findings",flush=True)
+    summary={
+      "schema":"ternforge-mutation-diff-1",
+      "base":base_ref,
+      "merge_base":merge_base,
+      "head_sha":git_sha(),
+      "created_at":utc_now(),
+      "changed_source_lines":len(changed),
+      "duration_seconds":round(time.monotonic()-started,1),
+      "rule":"changed, attributable and covered lines; at most one surviving mutant per line, most productive operator first; mutants no test covers are not run",
+      "contracts":contracts,
+      "findings":findings,
+      "not_covered_mutants":not_covered,
+    }
+    (IMPL_FAULT_DIFF_DIR/"summary.json").write_text(json.dumps(summary,indent=2,sort_keys=True)+"\n")
+    (IMPL_FAULT_DIFF_DIR/"annotations.txt").write_text("".join(github_annotation(finding)+"\n" for finding in findings))
+    lines=[
+      f"### Mutation findings on this change ({base_ref} … {git_sha()[:12]})","",
+      f"{len(findings)} surviving mutants on {len({(f['source'],f['line']) for f in findings})} changed lines "
+      f"of {len(contracts)} contracts; {not_covered} mutants on changed lines no test covers were not run.","",
+    ]
+    lines.extend(f"- `{f['source']}:{f['line']}` · {f['contract_id']} · {f['class']}: {f['change']}" for f in findings)
+    (IMPL_FAULT_DIFF_DIR/"summary.md").write_text("\n".join(lines)+"\n")
+    print(f"[DIFF] {len(findings)} findings on {len(changed)} changed source lines in {summary['duration_seconds']}s",flush=True)
     return summary
 
-def build_contract(contract_id,spec,campaign):
-    phase="P23"
-    contract_started=time.monotonic()
-    print(f"[{phase}] running {contract_id}",flush=True)
-    run_mutmut(spec)
-    from mutmut.__main__ import status_by_exit_code  # ty: ignore[unresolved-import]
-    from mutmut.mutation.data import (  # ty: ignore[unresolved-import]
-        SourceFileMutationData,
-    )
-    source_rel=spec["source"]
-    source=ROOT/source_rel
-    line_coverage=coverage_by_test(spec)
-    data=SourceFileMutationData(path=source_rel)
-    data.load()
-    mutants=[]
-    for name,exit_code in data.exit_code_by_key.items():
-        if not scope_matches(name,spec):
-            continue
-        raw=str(status_by_exit_code[exit_code])
-        location,description,replacement=mutant_detail(source,name)
-        line=int(location["start"]["line"])
-        covered=[nodeid for nodeid,lines in line_coverage.items() if line in lines]
-        mutant={
-          "id":name,
-          "mutatorName":"mutmut",
-          "location":location,
-          "status":STATUS.get(raw,"RuntimeError"),
-          "description":description,
-          "replacement":replacement}
-        if covered:
-            mutant["coveredBy"]=covered
-        mutants.append(mutant)
-    if not mutants:
-        raise RuntimeError(
-          f"{contract_id}: mutation engine produced no mutants for required scope "
-          f"{spec['kind']} {spec['scope']}"
-        )
-    records=[mutant_record(contract_id,spec,mutant) for mutant in mutants]
-    killed=sum(m["status"]=="Killed" for m in mutants)
-    survived=sum(m["status"]=="Survived" for m in mutants)
-    valid=killed+survived
-    score=round(100*killed/valid,1) if valid else None
-    state=("high" if score is not None and score>=80 else
-           "moderate" if score is not None and score>=60 else
-           "low" if score is not None else "na")
-    report={
-      "schemaVersion":"2.0",
-      "thresholds":{"low":60,"high":80},
-      "framework":{"name":"mutmut"},
-      "config":{
-        "ternforgeContract":contract_id,
-        "scopeRule":"linked pytest coverage + uniquely attributable @impl owner",
-        "implementationScope":f"{spec['kind']} {spec['scope']}"},
-      "files":{source_rel:{
-        "language":"python",
-        "source":source.read_text(),
-        "mutants":mutants}},
-      "testFiles":report_test_files(spec)}
-    out=OUT/contract_id
-    out.mkdir(parents=True,exist_ok=True)
-    (out/"mutation-report.json").write_text(json.dumps(report,indent=2))
-    STRENGTH["contracts"][contract_id].update({
-      "score":score,
-      "state":state,
-      "killed":killed,
-      "survived":survived,
-      "valid_mutants":valid,
-      "report_url":f"mutation-results/{contract_id}/index.html",
-      "allure_url":f"test-results/index.html?tags=TF_SCOPE__{contract_id}",
-      "report_schema":"Mutation Testing Report Schema 2.0",
-      "report_ui":"Mutation Testing Elements 3.9.0"})
-    campaign["contracts"][contract_id]["result"]={
-      "score":score,
-      "state":state,
-      "killed":killed,
-      "survived":survived,
-      "valid_mutants":valid,
-      "total_scoped_mutants":len(mutants),
-      "report_path":f"mutation-results/{contract_id}/mutation-report.json",
-      "mutants":records,
-      "duration_seconds":round(time.monotonic()-contract_started,3),
-    }
-    print(f"[{phase}] {contract_id}: {killed} killed / {survived} survived = {score}% ; {len(mutants)} scoped mutants",flush=True)
-
-def new_campaign(mode,base_ref):
-    if mode=="diff":
-        selection=resolve_diff_scope(base_ref)
-    else:
-        selection={
-          cid:{
-            "selected":True,
-            "reasons":["full_audit"],
-            "changed_source_lines":[],
-            "changed_linked_tests":[],
-          }
-          for cid in CONTRACTS
-        }
-    selected_ids=[cid for cid,row in selection.items() if row["selected"]]
-    skipped_ids=[cid for cid,row in selection.items() if not row["selected"]]
-    inputs=build_campaign_inputs(mode,base_ref,selected_ids)
-    started_at=utc_now()
-    run_id=f"{inputs['campaign_id']}--{time.time_ns()}"
-    contract_baselines={
-      contract_id:(
-        STRENGTH["contracts"][contract_id].get("run_id")
-        or STRENGTH["contracts"][contract_id].get("campaign_id")
-      )
-      for contract_id in selected_ids
-    }
-    baseline_run_id=archive_previous_run(run_id)
-    baseline_doc=load_run(baseline_run_id)
-    baseline_campaign_id=(baseline_doc or {}).get("campaign_id")
-    contracts={}
-    for contract_id in selected_ids:
-        spec=CONTRACTS[contract_id]
-        contracts[contract_id]={
-          "source_path":spec["source"],
-          "scope_kind":spec["kind"],
-          "scope":spec["scope"],
-          "linked_tests":list(spec["tests"]),
-          "selection":selection[contract_id],
-          "baseline_run_id":contract_baselines.get(contract_id) or baseline_run_id,
-          **inputs["contracts"][contract_id],
-        }
-    return {
-      "schema_version":"ternforge-mutation-campaign-prototype-4",
-      "campaign_id":inputs["campaign_id"],
-      "run_id":run_id,
-      "baseline_run_id":baseline_run_id,
-      "baseline_campaign_id":baseline_campaign_id,
-      "mode":mode,
-      "head_sha":inputs["head_sha"],
-      "base_sha":inputs["base_sha"],
-      "selected_contracts":selected_ids,
-      "skipped_contracts":skipped_ids,
-      "scope_resolution":selection,
-      "started_at":started_at,
-      "finished_at":None,
-      "duration_seconds":None,
-      "engine":{"name":"mutmut","version":mutation_engine_version()},
-      "adapter":{"name":"ternforge-local-mutmut-report-adapter","version":MUTATION_ADAPTER_VERSION,"mutation_semantics_version":MUTATION_SEMANTICS_VERSION},
-      "mutation_config":MUTATION_CONFIG,
-      "mutation_config_fingerprint":inputs["mutation_config_fingerprint"],
-      "source_of_truth":{
-        "requirements":"Sphinx-Needs graph",
-        "test_execution":"retained pytest/Allure run",
-        "line_execution":"Coverage.py dynamic contexts",
-        "mutation_detail":"Mutation Testing Report Schema 2.0",
-      },
-      "input_runs":{
-        "coverage_run_fingerprint":inputs["coverage_run_fingerprint"],
-        "allure_run_fingerprint":inputs["allure_run_fingerprint"],
-      },
-      "contracts":contracts,
-    }
 
 def parse_args():
-    parser=argparse.ArgumentParser(description="llm-router local mutation report prototype")
-    parser.add_argument("--mode",choices=["full","diff"],default="full")
-    parser.add_argument("--base-ref",help="base git ref/SHA for diff campaigns")
-    parser.add_argument("--refresh-freshness",action="store_true",help="recompute freshness/triage without running mutants")
-    parser.add_argument("--refresh-assurance",action="store_true",help="rerun P33 fault-model probes and rebuild assurance history")
-    parser.add_argument("--refresh-implementation-faults",action="store_true",help="run the pytest-gremlins Implementation fault campaign for every attributable contract")
-    parser.add_argument("--contracts",nargs="*",help="limit --refresh-implementation-faults to these contracts")
+    parser=argparse.ArgumentParser(description="llm-router assurance portal: facts, monitors and the mutation campaign")
+    parser.add_argument("--refresh-freshness",action="store_true",help="rebuild every fact and page from the retained runs (the default)")
+    parser.add_argument("--refresh-assurance",action="store_true",help="rerun the specialized fault probes of REQ_INVALID_CONFIGURATION_ERRORS, then rebuild the pages")
+    parser.add_argument("--refresh-implementation-faults",action="store_true",help="run the implementation fault campaign for every contract whose retained result is no longer current")
+    parser.add_argument("--contracts",nargs="*",help="limit the campaign to these contracts")
     parser.add_argument("--full",action="store_true",help="with --refresh-implementation-faults: re-run every contract, not only stale ones")
-    parser.add_argument("--suppress",nargs=2,metavar=("CONTRACT_ID","MUTANT_FINGERPRINT"),help="suppress one current surviving mutant")
-    parser.add_argument("--unsuppress",nargs=2,metavar=("CONTRACT_ID","MUTANT_FINGERPRINT"),help="remove one mutation suppression")
-    parser.add_argument("--reason",help="required suppression reason")
-    parser.add_argument("--owner",help="optional suppression owner")
-    parser.add_argument("--expires-at",help="optional ISO-8601 suppression expiry")
-    args=parser.parse_args()
-    maintenance=bool(args.refresh_freshness or args.refresh_assurance or args.refresh_implementation_faults or args.suppress or args.unsuppress)
-    if args.mode=="diff" and not args.base_ref and not maintenance:
-        parser.error("--base-ref is required for --mode diff")
-    if args.suppress and not str(args.reason or "").strip():
-        parser.error("--reason is required with --suppress")
-    return args
-
-def current_campaign_or_die():
-    if not CAMPAIGN_PATH.exists():
-        raise SystemExit("no retained campaign.json")
-    return json.loads(CAMPAIGN_PATH.read_text())
-
-
-def ensure_mutmut_overlay():
-    if installed_mutmut_version() is not None:
-        return
-    if os.environ.get("TERNFORGE_MUTATION_OVERLAY") == "1":
-        raise RuntimeError("mutmut bootstrap overlay did not expose the mutation engine")
-    env=os.environ.copy()
-    env["TERNFORGE_MUTATION_OVERLAY"]="1"
-    command=[
-      "uv","run","--with",f"mutmut=={MUTMUT_VERSION}",
-      "python",str(Path(__file__).resolve()),*sys.argv[1:],
-    ]
-    print(
-      f"[P21] bootstrapping isolated mutmut {MUTMUT_VERSION} overlay",
-      flush=True,
-    )
-    completed=subprocess.run(command,cwd=ROOT,env=env)
-    raise SystemExit(completed.returncode)
+    parser.add_argument("--diff",nargs="?",const="main",metavar="BASE",help="with --refresh-implementation-faults: the pull-request run over the lines this branch changes against BASE (default main)")
+    parser.add_argument("--refresh-semantic-mutants",action="store_true",help="run the semantic mutant cascade for every contract whose profile selects semantic mutants")
+    parser.add_argument("--generate-semantic-mutants",action="store_true",help="call the model (ADR_0004) for every selected target without a current semantic mutant, judge them, draft tests for the distinguished ones, then rebuild the pages")
+    parser.add_argument("--force",action="store_true",help="with --generate-semantic-mutants: regenerate every selected target, not only those without a current proposal")
+    parser.add_argument("--calibrate-assessors",action="store_true",help="ask every survivor assessor about the labelled calibration pairs it has not answered, then recompute the threshold (ADR_0005)")
+    parser.add_argument("--assess-survivors",action="store_true",help="judge the surviving rule mutants: symbolic search, then the assessors within the budget; outcomes never change")
+    parser.add_argument("--run-canaries",action="store_true",help="ask every model the Test Plan lists for a role its canaries and record whether it passed (ADR_0006); a change of model calls for it")
+    parser.add_argument("--roles",nargs="*",help="with --run-canaries: only these roles (generator, draft_author, verdict)")
+    parser.add_argument("--decide-survivors",action="store_true",help="ask the verdict model about every judged survivor and adopt a mutation pin for every pin verdict (ADR_0006)")
+    return parser.parse_args()
 
 
 def main():
     args=parse_args()
-    OUT.mkdir(parents=True,exist_ok=True)
+    if args.calibrate_assessors:
+        calibrate_assessors()
+        return
+    if args.run_canaries:
+        run_canaries(set(args.roles or []) or None)
+        return
+    if args.decide_survivors:
+        decide_survivors(set(args.contracts or []) or None)
+        refresh_portal()
+        return
+    if args.assess_survivors:
+        assess_survivors(set(args.contracts or []) or None)
+        refresh_portal()
+        return
+    if args.generate_semantic_mutants:
+        generate_semantic_mutants(set(args.contracts or []) or None,force=args.force)
+        refresh_portal()
+        return
+    if args.refresh_semantic_mutants:
+        refresh_semantic_mutants(set(args.contracts or []) or None)
+        return
     if args.refresh_implementation_faults:
         IMPL_FAULT_DIR.mkdir(parents=True,exist_ok=True)
-        refresh_implementation_fault_campaign(set(args.contracts or []) or None,full=args.full)
-        return
-    if args.refresh_freshness or args.refresh_assurance or args.suppress or args.unsuppress:
-        campaign=current_campaign_or_die()
-        if args.refresh_assurance:
-            fault_model=build_fault_model_facts()
-            print(f"[P33] fault-model ladder: {sum(int(row.get('detected') or 0)>0 for row in fault_model.get('layers') or [])}/{len(fault_model.get('layers') or [])} layers exercised",flush=True)
-            print(f"[P33] assurance history: {len((fault_model.get('history') or {}).get('rows') or [])} retained mutation snapshots · DVC plot rebuilt",flush=True)
-        if args.suppress:
-            contract_id,fingerprint=args.suppress
-            result=(campaign.get("contracts",{}).get(contract_id,{}) or {}).get("result") or {}
-            survivors={
-              row.get("fingerprint")
-              for row in result.get("mutants") or []
-              if row.get("status")=="Survived"
-            }
-            if fingerprint not in survivors:
-                raise SystemExit("suppression target is not a current retained survivor in this campaign")
-            upsert_suppression(contract_id,fingerprint,args.reason,args.owner,args.expires_at)
-            print(f"[P21] suppressed {contract_id} {fingerprint[:12]} · {args.reason}",flush=True)
-        if args.unsuppress:
-            contract_id,fingerprint=args.unsuppress
-            removed=remove_suppression(contract_id,fingerprint)
-            print(f"[P21] unsuppressed {contract_id} {fingerprint[:12]} · removed={removed}",flush=True)
-        apply_triage(campaign)
-        summary=refresh_freshness(campaign)
-        print(f"[P21] freshness: {summary['fresh_measured_contracts']} fresh / {summary['stale_measured_contracts']} stale",flush=True)
-        print(f"[P21] triage: {summary['new_unresolved_survivors']} new unresolved · {summary['unresolved_survivors']} unresolved · {summary['suppressed_survivors']} suppressed · {summary['resolved_survivors']} resolved",flush=True)
-        return
-
-    ensure_mutmut_overlay()
-    validate_contract_scope_attribution()
-    validate_linked_test_nodeids()
-    deattribute_shared_scope_strength()
-    setup=ROOT/"setup.cfg"
-    backup=setup.read_bytes() if setup.exists() else None
-    campaign=new_campaign(args.mode,args.base_ref)
-    started=time.monotonic()
-    phase="P21"
-    print(f"[{phase}] campaign {campaign['campaign_id']} · {campaign['mode']} · head {campaign['head_sha'][:12]}",flush=True)
-    print(f"[{phase}] selected {len(campaign['selected_contracts'])}/{len(CONTRACTS)} contracts: {', '.join(campaign['selected_contracts']) or 'none'}",flush=True)
-    if campaign["skipped_contracts"]:
-        print(f"[{phase}] skipped unchanged: {', '.join(campaign['skipped_contracts'])}",flush=True)
-    print(f"[{phase}] exact Allure links: {len(allure_report_ids())}",flush=True)
-    try:
-        for contract_id in campaign["selected_contracts"]:
-            build_contract(contract_id,CONTRACTS[contract_id],campaign)
-        campaign["finished_at"]=utc_now()
-        campaign["duration_seconds"]=round(time.monotonic()-started,3)
-        STRENGTH["engine"].update({
-          "report_schema":"Mutation Testing Report Schema 2.0",
-          "report_ui":"Mutation Testing Elements 3.9.0"})
-        apply_triage(campaign)
-        summary=refresh_freshness(campaign)
-        print(f"[{phase}] retained campaign: {CAMPAIGN_PATH.relative_to(ROOT)}",flush=True)
-        print(f"[{phase}] freshness: {summary['fresh_measured_contracts']} fresh / {summary['stale_measured_contracts']} stale",flush=True)
-        print(f"[{phase}] triage: {summary['new_unresolved_survivors']} new unresolved · {summary['unresolved_survivors']} unresolved · {summary['suppressed_survivors']} suppressed · {summary['resolved_survivors']} resolved",flush=True)
-    finally:
-        shutil.rmtree(ROOT/"mutants",ignore_errors=True)
-        if backup is None:
-            setup.unlink(missing_ok=True)
+        contracts=set(args.contracts or []) or None
+        if args.diff:
+            run_diff_campaign(args.diff,contracts)
         else:
-            setup.write_bytes(backup)
+            refresh_implementation_fault_campaign(contracts,full=args.full)
+        return
+    if args.refresh_assurance:
+        facts=build_fault_model_facts()
+        layers=((facts.get("contracts") or {}).get("REQ_INVALID_CONFIGURATION_ERRORS") or {}).get("layers") or {}
+        print(f"[PROBES] REQ_INVALID_CONFIGURATION_ERRORS: {sum(bool(row.get('detected')) for row in layers.values())}/{len(layers)} specialized probes caught their fault",flush=True)
+    refresh_portal()
+
 
 if __name__=="__main__":
     main()

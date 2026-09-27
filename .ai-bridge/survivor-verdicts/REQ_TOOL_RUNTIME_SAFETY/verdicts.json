@@ -1,0 +1,44 @@
+{
+ "6b53f8e76e60971b": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215454Z-f6d10e",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the tool-failed observability log event. The same ToolExecutionError is still raised, so no further provider turn happens and no sensitive values leak. The round-limit behaviour is also unchanged. A missing log event is an observable difference, so the versions are not equivalent, but REQ_TOOL_RUNTIME_SAFETY does not require a failure log event.",
+   "response_sha256": "65202cdaf787a23c26408606aee772bdd7d203048bb3d8f4a793c65a88bfdd78",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "9d8d1af105993ddcd41aa4bc1df62aec784b1112aa330ab69400d4d9f94451e5"
+ },
+ "cc2237e2e7228b57": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215503Z-4399af",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the per-call 'tool called' log event, so it is observably different, but it still raises the same public ToolExecutionError, still logs failures, and returns the same state. Its output leaks nothing more and the round limit still applies, so this requirement doesn't cover the missing event.",
+   "response_sha256": "3df2239c0d2237b70f10a4e519e21cd98c751e3039e9f261648dccbc0e606ec2",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "1582c6a5e12504d4ac3ec136bace52c3c3969b97eee91286c4f915917450d46d"
+ },
+ "db62c1957a5a14e0": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215512Z-7f5841",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only stops emitting the tool-completed observability event after a successful round. The returned state, the failure path (logging, then re-raising ToolExecutionError) and round limiting are all unchanged. The two versions do differ in the log events they emit, but REQ_TOOL_RUNTIME_SAFETY covers only public failure surfacing, not leaking sensitive values, and stopping at the round limit, so it asks for none of this.",
+   "response_sha256": "121a31330dd3f63108b4f2afd289295f15cdf8a2c1393df7417026110b8241ae",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "1698d922f8010ca6c73bd375cd74082bc4c92ed522b6c5dda6681c3862fb4a7e"
+ }
+}

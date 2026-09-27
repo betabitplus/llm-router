@@ -6,14 +6,27 @@ import importlib.util
 import json
 import re
 import subprocess
+import sys
 import xml.etree.ElementTree as ET
+from collections import Counter
+from html import unescape as html_unescape
 from pathlib import Path
+from urllib.parse import unquote as urllib_unquote
 from typing import Any, cast
 
 ROOT = Path.cwd()
 HTML = ROOT / "docs/_build/html"
-RESULTS = HTML / "mutation-results"
 BRIDGE = ROOT / ".ai-bridge"
+
+
+def load_domain():
+    """The shared assurance algebra the monitors judge with."""
+    spec = importlib.util.spec_from_file_location("gate_assurance_domain", BRIDGE / "assurance_monitor_domain.py")
+    if spec is None or spec.loader is None:
+        raise RuntimeError("could not load the assurance domain module")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def load(path: Path):
@@ -22,10 +35,22 @@ def load(path: Path):
 
 def only_campaign_extras(contract: dict, challenged: set, expected: set) -> bool:
     """Classes challenged beyond the declared retained challenges may only come from
-    the current Implementation fault campaign."""
+    the current Implementation fault campaign, or, for a specification or interface class,
+    from current semantic mutants that the cascade decided (caught or told apart)."""
     classes = (contract.get("fault_actual") or {}).get("classes") or {}
+
+    def semantic_challenge(class_id: str) -> bool:
+        row = classes.get(class_id, {})
+        counts = row.get("semantic_counts") or {}
+        return (
+            class_id.startswith(("spec.", "interface."))
+            and row.get("semantic_state") == "current"
+            and int(counts.get("caught") or 0) + int(counts.get("distinguished") or 0) > 0
+        )
+
     return set(expected) <= set(challenged) and all(
-        class_id.startswith("impl.") and classes.get(class_id, {}).get("campaign_state") == "current"
+        (class_id.startswith("impl.") and classes.get(class_id, {}).get("campaign_state") == "current")
+        or semantic_challenge(class_id)
         for class_id in set(challenged) - set(expected)
     )
 
@@ -34,6 +59,1064 @@ def check(condition: bool, message: str) -> None:
     if not condition:
         raise AssertionError(message)
     print(f"PASS  {message}")
+
+
+def explorer_matches(item: dict, facet: str, value: str, changes: dict | None = None) -> bool:
+    """One filter of the Verification Explorer, as its page applies it: a producer belongs to the owners it served;
+    a change is what the item did since the previous retained run; text is found in what the row says."""
+    attrs = item.get("attrs") or {}
+    if facet == "change":
+        parts = ("up", "down", "new") if value == "any" else value.split(",")
+        return any(item["id"] in set((changes or {}).get(part) or []) for part in parts)
+    if facet == "q":
+        text = " ".join(str(item.get(key) or "") for key in ("name", "what", "note", "state", "owner")).lower()
+        return value.lower() in text
+    holders = [item["owner"]] if item.get("owner") else list(attrs.get("users") or [])
+    if facet == "contract":
+        return value in holders
+    if facet == "kind":
+        return item.get("kind") == value
+    if facet == "layer":
+        return value in (item.get("layers") or [])
+    if facet in {"level", "boundary", "group"}:
+        return attrs.get(facet) == value
+    if facet == "status":
+        return item.get("status") == value
+    if facet == "cause":
+        return value in (item.get("causes") or [])
+    raise AssertionError(f"the gate does not know the explorer filter {facet}")
+
+
+def check_verification_explorer(module: str) -> None:
+    """The Verification Explorer lists every item behind the monitors, judged as the monitors judge them: the gate
+    recounts each kind from the retained facts, refuses a false PASS, wants a cause on every red row, resolves every
+    link and follows every monitor link to a list that is not empty."""
+    page = (HTML / "verification-explorer.html").read_text()
+    start = page.index("const model=") + len("const model=")
+    model, _end = json.JSONDecoder().raw_decode(page, start)
+    items = model["items"]
+    by_kind: dict[str, list[dict]] = {}
+    for item in items:
+        by_kind.setdefault(item["kind"], []).append(item)
+    explorer_js = module.split('EXPLORER_JS = r"""', 1)[-1].split('"""', 1)[0]
+    shared_js = module.split('MAP_SHARED_JS = r"""', 1)[-1].split('"""', 1)[0]
+    check(
+        page.count('<section id="verification-explorer">') == 1
+        and "<h1>Verification Explorer" in page
+        and '<style id="tf-explorer-style">' in page
+        and "explorerPage(model).start();" in page
+        and shared_js in page
+        and explorer_js in page
+        and "#verification-explorer{--tf-map-ease" in page
+        and "#verification-health-map" not in page
+        and 'id="tf-map-changes"' in page
+        and set(model.get("delta") or {}) >= {"baseline", "layers"}
+        and (
+            set(((model["delta"].get("layers") or {}).get("items") or {})) == {"up", "down", "new", "gone"}
+            and all(
+                set(model["delta"]["layers"]["items"][part]) <= {item["id"] for item in items}
+                for part in ("up", "down", "new")
+            )
+            if model["delta"].get("baseline")
+            else not model["delta"].get("layers")
+        )
+        and "No earlier retained run to compare with yet" in explorer_js
+        and "Nothing here changed since" in explorer_js
+        and "const LAYERS=MAP_HEALTH_LAYERS.filter" in explorer_js
+        and "const LAYERS=MAP_HEALTH_LAYERS;" in module,
+        "the Verification Explorer is one section on the map's shared runtime and styles, scoped to itself; it names its "
+        "layers with the Health Map's own questions and compares its items with the previous retained run, saying so "
+        "when there is none yet or nothing changed",
+    )
+    kinds = set(re.findall(r'^  \["(\w+)","fa-', explorer_js, flags=re.MULTILINE))
+    fixes = set(re.findall(r'^  "?([\w:&]+)"?:"', explorer_js.split("const FIX={", 1)[1].split("};", 1)[0], flags=re.MULTILINE))
+    used_causes = {cause for item in items for cause in item["causes"]}
+    check(
+        {item["kind"] for item in items} <= kinds
+        and kinds == {"path", "unbound", "fault", "mutant", "check", "support", "producer"}
+        and used_causes <= set(model["causes"])
+        and used_causes <= fixes
+        and all(item["causes"] for item in items if item["status"] in {"fail", "unknown"})
+        and not any(item["causes"] for item in items if item["status"] in {"pass", "na"})
+        and len({item["id"] for item in items}) == len(items),
+        "every explorer item is of a declared kind with a unique id; every failing or unknown item names a cause that "
+        "says what it means and how to fix it, and a passing or N/A item names none",
+    )
+    facts = json.loads((HTML / "requirement-monitor-facts.json").read_text())["contracts"]
+    upper = json.loads((HTML / "upper-assurance-facts.json").read_text())
+    slots = 0
+    false_pass = []
+    wrong_missing = []
+    for contract_id, contract in facts.items():
+        target = contract.get("target") or {}
+        for cell in target.get("coverage") or []:
+            for criterion in cell.get("items") or []:
+                named = list((cell.get("item_path_ids") or {}).get(criterion) or [])
+                slots += len(named) or int((cell.get("item_path_counts") or {}).get(criterion, 1))
+                rows = [
+                    row
+                    for row in (contract.get("coverage_actual") or {}).get(criterion, [])
+                    if row.get("level") == cell["level"] and row.get("boundary") == cell["boundary"]
+                ]
+                for item in by_kind.get("path", []):
+                    if item["object"] != f"criterion|{contract_id}|{criterion}":
+                        continue
+                    found = [row for row in rows if not named or str(row.get("coverage_path") or "").strip() == item["name"]]
+                    sound = [
+                        row
+                        for row in found
+                        if row.get("result") == "passed"
+                        and str(row.get("freshness") or "").upper() == "CURRENT"
+                        and row.get("provenance_scope") == "full_chain"
+                        and str(row.get("provenance") or "").upper() == "COMPLETE"
+                        and row.get("producer_qualification_scope") == "full_chain"
+                        and str(row.get("producer_qualification") or "").upper() == "QUALIFIED"
+                    ]
+                    if item["status"] == "pass" and not sound:
+                        false_pass.append(item["id"])
+                    if item["state"] == "Missing" and (found if named else len(rows) >= len([
+                        other for other in by_kind["path"] if other["object"] == item["object"]
+                    ])):
+                        wrong_missing.append(item["id"])
+    unexpected = [item for item in by_kind.get("path", []) if item["state"] == "Unexpected"]
+    required_classes = [
+        (contract_id, spec["id"], spec["state"])
+        for contract_id, contract in facts.items()
+        for group in (contract.get("target") or {}).get("fault_groups") or []
+        for spec in group.get("items") or []
+        if spec.get("state") in {"required", "optional"}
+    ]
+    def class_caught(actual: dict) -> bool:
+        return bool(actual.get("exercised") and actual.get("detected") and not int(actual.get("undecided") or 0))
+
+    caught = {
+        (contract_id, class_id)
+        for contract_id, class_id, state in required_classes
+        if state == "required"
+        and class_caught(((facts[contract_id].get("fault_actual") or {}).get("classes") or {}).get(class_id, {}))
+    }
+    fault_pass = {(item["owner"], item["name"]) for item in by_kind.get("fault", []) if item["status"] == "pass"}
+    check(
+        len(by_kind.get("path", [])) == slots + len(unexpected)
+        and not false_pass
+        and not wrong_missing
+        and len(by_kind.get("unbound", [])) == sum(len(contract.get("linked_outside_profile") or []) for contract in facts.values())
+        and len(by_kind.get("fault", [])) == len(required_classes)
+        and fault_pass == caught
+        and all(item["status"] == "na" for item in by_kind.get("fault", []) if item["attrs"]["applicability"] == "optional"),
+        f"the explorer lists every required path of every criterion ({slots}) and every required or optional fault "
+        f"class ({len(required_classes)}): a path passes only on a passing, current, traceable, qualified retained test "
+        "at its cell, a missing path has none, a class passes only when caught, an optional class never judges",
+    )
+    listed = {(contract_id, class_id) for contract_id, class_id, _state in required_classes}
+    campaign = load(ROOT / "test-results/implementation-faults/campaign.json")
+    # A survivor a recorded verdict judged equivalent or irrelevant (ADR_0006) may show as suppressed: the person's
+    # decision wins over the model's answer, and the class says how many of its survivors a verdict suppressed.
+    recorded_verdicts = {}
+    verdict_root = BRIDGE / "survivor-verdicts"
+    for folder in sorted(path for path in verdict_root.iterdir() if path.is_dir()) if verdict_root.is_dir() else []:
+        answered = load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}
+        decided = load(folder / "decisions.json") if (folder / "decisions.json").is_file() else {}
+        for key in set(answered) | set(decided):
+            recorded_verdicts[(folder.name, key)] = (decided.get(key) or {}).get("verdict") or ((answered.get(key) or {}).get("answer") or {}).get("verdict")
+    mutants_expected = []
+    for contract_id, entry in sorted((campaign.get("contracts") or {}).items()):
+        classes_actual = ((facts.get(contract_id) or {}).get("fault_actual") or {}).get("classes") or {}
+        plan = entry.get("plan") or {}
+        allowed = {(path, line) for path, lines in (plan.get("attributable_lines") or {}).items() for line in lines}
+        report_path = ROOT / str((entry.get("run") or {}).get("report_path") or "")
+        for result in (load(report_path).get("results") or []) if report_path.is_file() else []:
+            klass = MUTATION_CLASSES.get(str(result.get("operator")))
+            if (contract_id, klass) not in listed or (relative_path(result.get("file_path")), int(result.get("line_number") or -1)) not in allowed:
+                continue
+            # A result that no longer counts shows on its class, never as mutants.
+            if (classes_actual.get(klass) or {}).get("campaign_state") != "current":
+                continue
+            raw = str(result.get("status"))
+            status = "pass" if raw in {"zapped", "timeout"} else "na" if raw in {"pardoned", "error"} else "fail"
+            cause = [] if status != "fail" else ["notreached" if result.get("covered") is False else "survivors"]
+            fingerprint = str(result.get("fingerprint"))
+            judged = recorded_verdicts.get((contract_id, fingerprint)) if cause == ["survivors"] and raw == "survived" else None
+            mutants_expected.append((contract_id, fingerprint, status, cause, klass, judged if judged in {"equivalent", "irrelevant"} else None))
+    semantic_expected = []
+    for contract_id in sorted(semantic_selections()):
+        retained_path = ROOT / f"test-results/semantic-mutants/{contract_id}.json"
+        for row in (load(retained_path).get("results") or []) if retained_path.is_file() else []:
+            if (contract_id, row["class"]) in listed:
+                semantic_expected.append((contract_id, row["id"], SEMANTIC_OUTCOME_STATUS[row["outcome"]]))
+    mutant_rows = {item["id"]: item for item in by_kind.get("mutant", [])}
+    not_generated = []
+    for contract_id in sorted(semantic_selections()):
+        proposals_path = BRIDGE / f"semantic-mutants/{contract_id}/proposals.json"
+        targets = {row["target"] for row in (load(proposals_path).get("proposals") or [])} if proposals_path.is_file() else set()
+        for selection in ((facts.get(contract_id) or {}).get("target") or {}).get("semantic_mutants") or []:
+            if selection["target"] not in targets and (contract_id, selection["class"]) in listed:
+                not_generated.append(f"mutant|{contract_id}|semantic-target:{selection['target']}")
+    check(
+        all(
+            (mutant_rows.get(row_id) or {}).get("status") == "unknown" and (mutant_rows.get(row_id) or {}).get("causes") == ["generate"]
+            for row_id in not_generated
+        )
+        and {key for key in mutant_rows if "|semantic-target:" in key} == set(not_generated),
+        f"the explorer lists the {len(not_generated)} selected targets without a semantic mutant as Not generated, UNKNOWN, never green",
+    )
+    check(
+        all(
+            (mutant_rows.get(f"mutant|{contract_id}|semantic:{proposal_id}") or {}).get("status") == status
+            and (mutant_rows.get(f"mutant|{contract_id}|semantic:{proposal_id}") or {}).get("attrs", {}).get("origin") == "semantic"
+            for contract_id, proposal_id, status in semantic_expected
+        ),
+        f"the explorer lists the {len(semantic_expected)} semantic mutants under their class, with the cascade's outcome",
+    )
+    mutant_rows = {key: item for key, item in mutant_rows.items() if item.get("attrs", {}).get("origin") != "semantic"}
+
+    def row_right(contract_id: str, fingerprint: str, status: str, cause: list, judged: str | None) -> bool:
+        item = mutant_rows.get(f"mutant|{contract_id}|{fingerprint}") or {}
+        if judged and item.get("status") == "na":
+            return item.get("causes") == [] and item.get("state") == f"Suppressed · {judged}"
+        return item.get("status") == status and item.get("causes") == cause
+
+    by_verdict = Counter(
+        (contract_id, klass) for contract_id, fingerprint, _status, _cause, klass, judged in mutants_expected
+        if judged and (mutant_rows.get(f"mutant|{contract_id}|{fingerprint}") or {}).get("status") == "na"
+    )
+    check(
+        len(mutant_rows) == len(mutants_expected)
+        and all(row_right(contract_id, fingerprint, status, cause, judged) for contract_id, fingerprint, status, cause, _klass, judged in mutants_expected)
+        and all(
+            by_verdict.get((contract_id, klass), 0)
+            == int(((((facts.get(contract_id) or {}).get("fault_actual") or {}).get("classes") or {}).get(klass) or {}).get("suppressed_by_verdict") or 0)
+            for contract_id, klass in {(row[0], row[4]) for row in mutants_expected}
+        )
+        and all(item["object"] in {row["id"] for row in by_kind["fault"]} for item in mutant_rows.values())
+        and all(item["attrs"].get("origin") in {"rule", "semantic"} for item in mutant_rows.values()),
+        f"the explorer lists the {len(mutants_expected)} mutants whose campaign result counts, one row each under its class: "
+        "caught when a test failed on it, survived when its line runs and none did, not reached when no test runs its "
+        f"line, N/A when suppressed or invalid, and suppressed by a recorded verdict ({sum(by_verdict.values())}) exactly as its class counts",
+    )
+    upper_entities = [*upper.get("features", {}).values(), *upper.get("goals", {}).values(), upper.get("product_system") or {}]
+    upper_criteria = sum(
+        len((block or {}).get("criteria") or [])
+        for entity in upper_entities
+        for key, block in entity.items()
+        if isinstance(block, dict) and "criteria" in block
+    )
+    upper_children = sum(
+        len((block or {}).get("children") or [])
+        for entity in upper_entities
+        for key, block in entity.items()
+        if isinstance(block, dict) and "children" in block
+    )
+    qualification = load(HTML / "evidence-confidence-qualification.json")
+    check(
+        len(by_kind.get("check", [])) == upper_criteria
+        and len(by_kind.get("support", [])) == upper_children + sum(len((contract.get("target") or {}).get("required_treqs") or []) for contract in facts.values())
+        and len(by_kind.get("producer", [])) == len(qualification.get("producers") or {})
+        and all(item["status"] == "pass" for item in by_kind.get("producer", []) if (qualification["producers"].get(item["attrs"]["producer"]) or {}).get("status") == "QUALIFIED")
+        and model["rows"][0]["id"] == "PRODUCT_SYSTEM",
+        f"the explorer lists every own check of goals and capabilities ({upper_criteria}), everything each item rests on "
+        "and every evidence producer as qualified now; the product is PRODUCT_SYSTEM, as on its monitor",
+    )
+    texts: dict[str, str] = {}
+    broken = []
+    links = [link for item in items for link in item["links"]] + [link for obj in model["objects"].values() for link in obj.get("links") or []]
+    for link in links:
+        href = link[1]
+        if href.startswith(("http://", "https://", "#")):
+            continue
+        name, _sep, anchor = href.partition("#")
+        path = HTML / name
+        if not path.exists():
+            broken.append(href)
+            continue
+        if name == "mutation-report.html" and anchor.startswith("mutant/"):
+            # Mutation Testing Elements routes by file, not by element id: the file must be in the report.
+            report_files = texts.setdefault("mutation-report.json#files", "\n".join(load(HTML / "mutation-report.json").get("files") or {}))
+            if anchor.removeprefix("mutant/") not in report_files.split("\n"):
+                broken.append(href)
+            continue
+        if anchor and not name.startswith("test-results/"):
+            text = texts.setdefault(name, path.read_text())
+            if f'id="{anchor}"' not in text:
+                broken.append(href)
+    evidence_links = sorted(
+        {
+            str(row.get("evidence_url") or "")
+            for contract in facts.values()
+            for rows in (contract.get("coverage_actual") or {}).values()
+            for row in rows
+        }
+    )
+    evidence_record_page = (HTML / "ternforge-test-evidence.html").read_text()
+    check(
+        bool(evidence_links)
+        and all(
+            url.startswith("ternforge-test-evidence.html#") and f'id="{url.split("#", 1)[1]}"' in evidence_record_page
+            for url in evidence_links
+        ),
+        f"every retained path's evidence link in the monitor facts opens the test's own evidence record ({len(evidence_links)})",
+    )
+    spec_links = sum(1 for link in links if link[0] == "Spec")
+    check(
+        not broken and spec_links > 0,
+        f"every explorer link opens a page that exists at an anchor that exists ({len(links)} links, {spec_links} to "
+        f"Living Specification scenarios): {broken[:5]}",
+    )
+    dead = []
+    monitors = sorted(HTML.glob("contract-evidence-*.html")) + [HTML / "verification-assurance.html"] + sorted(HTML.glob("assurance-*.html"))
+    for monitor in monitors:
+        text = monitor.read_text()
+        # An inspector is embedded as a JSON string, where its quotes are escaped.
+        found = re.findall(r'href=\\?"verification-explorer\.html#([^"\\]+)', text)
+        if not found:
+            dead.append(f"{monitor.name}: no link")
+        changes = (model["delta"].get("layers") or {}).get("items") or {}
+        for query in found:
+            params = [pair.split("=", 1) for pair in html_unescape(query).split("&")]
+            keep = [
+                item
+                for item in items
+                if all(
+                    explorer_matches(item, key, urllib_unquote(value.replace("+", " ")), changes)
+                    for key, value in params
+                )
+            ]
+            # A list of changes may be empty: the page then says there is nothing to compare with yet or that
+            # nothing changed.
+            if not keep and not any(key == "change" for key, _value in params):
+                dead.append(f"{monitor.name}#{query}")
+    check(
+        not dead and len(monitors) >= 88,
+        f"every Contract Evidence and assurance monitor ({len(monitors)}) links to its items in the explorer, and every "
+        f"such link opens a list that is not empty: {dead[:5]}",
+    )
+
+
+MUTATION_OPERATORS = ["comparison", "boundary", "boolean", "return", "statement", "body"]
+MUTATION_CLASSES = {
+    "comparison": "impl.comparison",
+    "boundary": "impl.boundary",
+    "boolean": "impl.control-flow",
+    "return": "impl.control-flow",
+    "statement": "impl.effect",
+    "body": "impl.effect",
+}
+MTE_STATUSES = {"Killed", "Survived", "NoCoverage", "Timeout", "RuntimeError", "CompileError", "Ignored", "Pending"}
+
+
+def relative_path(value: object) -> str:
+    path = Path(str(value or ""))
+    try:
+        return str(path.resolve().relative_to(ROOT.resolve()))
+    except ValueError:
+        return str(path)
+
+
+def expected_mte_status(result: dict) -> str:
+    status = str(result.get("status") or "error")
+    if status == "zapped":
+        return "Killed"
+    if status == "timeout":
+        return "Timeout"
+    if status == "pardoned":
+        return "Ignored"
+    if status == "error":
+        return "RuntimeError"
+    return "NoCoverage" if result.get("covered") is False else "Survived"
+
+
+def check_mutation_system(monitor_facts: dict) -> None:
+    """Mutation testing after ADR_0003: one qualified engine behind the campaign, classes judged by
+    outcome, the standard report recounted from the retained engine reports, visible pragmas, the
+    pull-request diff, and no trace of mutmut or of mutation scores."""
+    campaign = load(ROOT / "test-results/implementation-faults/campaign.json")
+    modules = sorted((BRIDGE / "pytest_plugins").glob("*.py"))
+    extension_digest = hashlib.sha256(
+        b"".join(module.name.encode() + b"\0" + module.read_bytes() for module in modules)
+    ).hexdigest()
+    engine = campaign.get("engine_configuration") or {}
+    check(
+        campaign.get("schema") == "ternforge-implementation-fault-campaign-2"
+        and engine.get("operators") == MUTATION_OPERATORS
+        and engine.get("plugin_sha256") == extension_digest
+        and campaign.get("class_by_operator") == MUTATION_CLASSES,
+        "the campaign runs the six operators of the current engine extension and maps statement and body removal to impl.effect",
+    )
+    entries = campaign.get("contracts") or {}
+    stale_engine = sorted(
+        contract_id for contract_id, entry in entries.items() if (entry.get("engine") or {}).get("plugin_sha256") != extension_digest
+    )
+    check(bool(entries) and not stale_engine, f"every retained campaign entry ran the current engine extension: {stale_engine}")
+    policy = monitor_facts.get("policy") or {}
+    arid_ids = {rule.get("id") for rule in policy.get("arid_rules") or []}
+    check(
+        arid_ids == {"arid.logging", "arid.sleep", "arid.type-checking", "arid.repr"}
+        and "mutation_reach_floor" not in policy
+        and "mutation_sensitivity_floor" not in policy
+        and policy.get("mutation_policy_url") == "test-plan.html#test-plan-mutation-policy",
+        "the monitors read the Test Plan's four arid-code rules and no mutation floor",
+    )
+    contracts = monitor_facts.get("contracts") or {}
+    effect_states = {
+        contract_id: next(
+            (item.get("state") for group in (contract.get("target") or {}).get("fault_groups") or [] for item in group.get("items") or [] if item.get("id") == "impl.effect"),
+            None,
+        )
+        for contract_id, contract in contracts.items()
+    }
+    check(
+        len(effect_states) == 63 and all(state in {"required", "optional", "na"} for state in effect_states.values())
+        and not any("mutation" in (contract.get("target") or {}) for contract in contracts.values()),
+        "every one of the 63 verification profiles classifies impl.effect, and none selects a mutation threshold",
+    )
+    check(
+        not any("### Blocking mutation checks" in path.read_text() for path in (ROOT / "docs/verification-profiles").glob("*.md")),
+        "no verification profile keeps a Blocking mutation checks table",
+    )
+
+    # Every retained entry: its report is the recorded file, every mutant carries the extension's facts,
+    # and every entry uses only Test Plan arid rules.
+    reports = {}
+    for contract_id, entry in sorted(entries.items()):
+        run = entry.get("run") or {}
+        path = ROOT / str(run.get("report_path") or "")
+        ok = path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == run.get("report_sha256")
+        report = load(path) if ok else {}
+        reports[contract_id] = report
+        results = report.get("results") or []
+        check(
+            ok
+            and (report.get("ternforge") or {}).get("schema") == "ternforge-mutation-extension-1"
+            and set((entry.get("plan") or {}).get("arid_rules") or []) <= arid_ids
+            and all(
+                row.get("fingerprint") and row.get("location") and "covered" in row and row.get("origin") == "rule"
+                for row in results
+            ),
+            f"{contract_id}: the retained engine report is the recorded file and every mutant carries its fingerprint, location, reach and origin",
+        )
+
+    # Reach: a mutant the engine reports as not reached sits on a line that none of its contract's tests
+    # ran in the retained run either (Coverage.py dynamic contexts).
+    from coverage import CoverageData
+
+    retained_coverage = CoverageData(basename=str(ROOT / "test-results/.coverage"))
+    retained_coverage.read()
+    measured = {Path(name).resolve(): name for name in retained_coverage.measured_files()}
+    contexts_by_file: dict[str, dict] = {}
+    reach_conflicts = []
+    not_reached = 0
+    for contract_id, entry in sorted(entries.items()):
+        tests = set((entry.get("plan") or {}).get("tests") or [])
+        for row in (reports.get(contract_id) or {}).get("results") or []:
+            if row.get("status") != "survived" or row.get("covered") is not False:
+                continue
+            not_reached += 1
+            name = measured.get(Path(str(row.get("file_path"))).resolve())
+            if name is None:
+                continue
+            if name not in contexts_by_file:
+                contexts_by_file[name] = retained_coverage.contexts_by_lineno(name)
+            ran = {context.split("|", 1)[0] for context in contexts_by_file[name].get(int(row.get("line_number") or -1), [])}
+            if ran & tests:
+                reach_conflicts.append(f"{contract_id}:{relative_path(row.get('file_path'))}:{row.get('line_number')}")
+    check(
+        not reach_conflicts,
+        f"all {not_reached} mutants reported as not reached sit on lines their contract's tests did not run in the retained run either: {reach_conflicts[:5]}",
+    )
+
+    # The standard report, recounted from the retained engine reports of the contracts whose result counts.
+    report = load(HTML / "mutation-report.json")
+    config = report.get("config") or {}
+    current = [
+        contract_id
+        for contract_id, contract in contracts.items()
+        if contract_id in entries
+        and any((row or {}).get("campaign_state") == "current" for row in ((contract.get("fault_actual") or {}).get("classes") or {}).values())
+    ]
+    check(
+        report.get("schemaVersion") == "2"
+        and report.get("thresholds") == {"high": 100, "low": 100}
+        and sorted(config.get("contracts") or []) == sorted(current)
+        and sorted([*(config.get("contracts") or []), *(config.get("not_current") or [])]) == sorted(entries),
+        "the mutation report follows the Mutation Testing Report Schema 2 and holds every contract whose result counts, naming the others",
+    )
+    expected: dict[str, str] = {}
+    for contract_id in config.get("contracts") or []:
+        plan = entries[contract_id].get("plan") or {}
+        allowed = {(path, line) for path, lines in (plan.get("attributable_lines") or {}).items() for line in lines}
+        raw = reports.get(contract_id) or {}
+        for row in raw.get("results") or []:
+            if row.get("operator") in MUTATION_CLASSES and (relative_path(row.get("file_path")), int(row.get("line_number") or -1)) in allowed:
+                expected[str(row.get("fingerprint"))] = expected_mte_status(row)
+        for row in (raw.get("ternforge") or {}).get("not_planted") or []:
+            if (relative_path(row.get("file_path")), int(row.get("line_number") or -1)) in allowed:
+                expected[str(row.get("fingerprint"))] = "Ignored"
+    mutants = [(path, row) for path, source in (report.get("files") or {}).items() for row in source.get("mutants") or []]
+    actual = {str(row.get("id")): str(row.get("status")) for _path, row in mutants}
+    check(
+        bool(expected) and actual == expected and len(actual) == len(mutants),
+        f"the mutation report lists exactly the {len(expected)} mutants of the retained reports (arid ones as Ignored) with their statuses",
+    )
+    check(
+        all(row.get("status") in MTE_STATUSES for _path, row in mutants)
+        and all(row.get("statusReason") for _path, row in mutants if row.get("status") in {"Ignored", "NoCoverage"})
+        and all(source.get("source") == (ROOT / path).read_text() for path, source in (report.get("files") or {}).items()),
+        "every mutant has a schema status, every ignored or uncovered one says why, and every file's source is the current file",
+    )
+    page = (HTML / "mutation-report.html").read_text()
+    check(
+        'src="mutation-report.json"' in page
+        and 'src="_static/mutation-test-elements.js"' in page
+        and 'href="verification-explorer.html#kind=mutant"' in page
+        and 'href="test-plan.html#test-plan-mutation-policy"' in page,
+        "the mutation report page renders the report with the pinned Mutation Testing Elements and leads back to the explorer and the policy",
+    )
+
+    # Pragmas: every `# mutation:` pragma parses and suppresses a mutant; the engine's own pragma is not used.
+    pragma_lines = {
+        (str(path.relative_to(ROOT)), number)
+        for path in (ROOT / "src").rglob("*.py")
+        for number, line in enumerate(path.read_text().splitlines(), 1)
+        if re.search(r"#\s*mutation:", line)
+    }
+    matched, broken = set(), []
+    for raw in reports.values():
+        for path, items in ((raw.get("ternforge") or {}).get("pragmas") or {}).items():
+            for item in items:
+                if item.get("error"):
+                    broken.append(f"{path}:{item.get('line')} {item.get('error')}")
+                if item.get("matched"):
+                    matched.add((path, int(item.get("line") or -1)))
+    check(not broken, f"every mutation pragma names a known category and operators and gives a reason: {broken}")
+    check(pragma_lines <= matched, f"every mutation pragma in the source suppresses at least one mutant: {sorted(pragma_lines - matched)}")
+    check(
+        not any(re.search(r"#\s*gremlin:", path.read_text()) for path in (ROOT / "src").rglob("*.py")),
+        "the engine's own pardon pragma is not used",
+    )
+
+    # The pull-request diff: changed, attributable, covered lines; one finding per line, each on its line.
+    diff = load(ROOT / "test-results/implementation-faults/diff/summary.json")
+    findings = diff.get("findings") or []
+    per_line: dict[tuple, int] = {}
+    for finding in findings:
+        per_line[(finding.get("source"), finding.get("line"))] = per_line.get((finding.get("source"), finding.get("line")), 0) + 1
+    annotations = [line for line in (ROOT / "test-results/implementation-faults/diff/annotations.txt").read_text().splitlines() if line]
+    survived_in_diff = set()
+    for contract_id, row in (diff.get("contracts") or {}).items():
+        raw = load(ROOT / row["report_path"]) if row.get("report_path") else {}
+        survived_in_diff |= {
+            (contract_id, str(result.get("fingerprint")))
+            for result in raw.get("results") or []
+            if result.get("status") == "survived" and result.get("covered") is True
+        }
+        check(
+            all(result.get("run_skipped") == "not covered" for result in raw.get("results") or [] if result.get("covered") is False)
+            and (raw.get("ternforge") or {}).get("skip_uncovered") is True,
+            f"{contract_id}: the diff run does not run the mutants no test covers",
+        )
+    check(
+        diff.get("schema") == "ternforge-mutation-diff-1"
+        and bool(diff.get("merge_base"))
+        and all(count == 1 for count in per_line.values())
+        and all((finding.get("contract_id"), finding.get("fingerprint")) in survived_in_diff for finding in findings)
+        and len(annotations) == len(findings)
+        and all(line.startswith("::warning file=") and ",line=" in line for line in annotations),
+        f"the pull-request diff reports {len(findings)} findings: at most one surviving, covered mutant per changed line, each as one annotation on its line",
+    )
+
+    # Retired: mutmut, its page, raw pages, strength facts, suppression ledger, P31 targets, snapshots and history.
+    for retired in (
+        HTML / "mutation-analysis.html",
+        HTML / "mutation-results",
+        HTML / "verification-test-strength-facts.json",
+        HTML / "assurance-history",
+        HTML / "assurance-snapshots.json",
+        HTML / "assurance-targets.json",
+        BRIDGE / "assurance-targets.json",
+        BRIDGE / "assurance-snapshots.json",
+        BRIDGE / "mutation-suppressions.json",
+    ):
+        check(not retired.exists(), f"retired with mutmut (ADR_0003): {retired.relative_to(ROOT)} is gone")
+    builder = (BRIDGE / "build-mutation-report-prototype.py").read_text()
+    check(
+        all(token not in builder for token in ("def run_mutmut", "MUTMUT_VERSION", "STRENGTH", '"--suppress"', '"--mode"', "write_mutation_analysis_page", "build_dvc_assurance_history"))
+        and all("mutmut" not in (BRIDGE / name).read_text().lower() for name in (
+            "assurance_map_pages.py", "assurance_monitor_ui.py", "assurance_monitor_domain.py",
+            "build-requirement-monitor.py", "build-upper-assurance-pilot.py", "implementation_faults.py",
+        )),
+        "no mutmut campaign, flag, page writer or trend history remains in the builder, and no renderer mentions mutmut",
+    )
+    check_semantic_mutants(monitor_facts)
+    adr = (ROOT / "docs/decisions/0003-mutation-testing-strategy.md").read_text()
+    check(
+        ":id: ADR_0003" in adr
+        and ":status: accepted" in adr
+        and all(section in adr for section in ("**Context.**", "**Decision.**", "**Consequences.**", "**Alternatives considered.**"))
+        and all(owner in adr for owner in ("`py-testkit`", "`ternforge-tooling-docops`", "`ternforge-infra-ci`", "project template"))
+        and "0003-mutation-testing-strategy" in (ROOT / "docs/decisions/index.md").read_text(),
+        "ADR_0003 records the mutation strategy, its alternatives and where each piece moves after the pilot",
+    )
+    adr4 = (ROOT / "docs/decisions/0004-metered-model-generation.md").read_text()
+    check(
+        ":id: ADR_0004" in adr4
+        and ":status: accepted" in adr4
+        and all(section in adr4 for section in ("**Context.**", "**Decision.**", "**Consequences.**", "**Alternatives considered.**"))
+        and all(owner in adr4 for owner in ("`py-testkit`", "`ternforge-tooling-docops`", "`ternforge-infra-ci`", "project template"))
+        and "0004-metered-model-generation" in (ROOT / "docs/decisions/index.md").read_text(),
+        "ADR_0004 records metered model generation through subscription CLIs, its alternatives and where each piece moves after the pilot",
+    )
+    adr5 = (ROOT / "docs/decisions/0005-survivor-judgement.md").read_text()
+    check(
+        ":id: ADR_0005" in adr5
+        and ":status: accepted" in adr5
+        and all(section in adr5 for section in ("**Context.**", "**Decision.**", "**Consequences.**", "**Alternatives considered.**"))
+        and all(owner in adr5 for owner in ("`py-testkit`", "`ternforge-tooling-docops`", "`ternforge-infra-ci`", "project template"))
+        and "advisory" in adr5
+        and "0005-survivor-judgement" in (ROOT / "docs/decisions/index.md").read_text(),
+        "ADR_0005 records the survivor judgement: symbolic search first, calibrated assessors second, their equivalent advisory",
+    )
+    adr6 = (ROOT / "docs/decisions/0006-survivor-verdicts.md").read_text()
+    check(
+        ":id: ADR_0006" in adr6
+        and ":status: accepted" in adr6
+        and all(section in adr6 for section in ("**Context.**", "**Decision.**", "**Consequences.**", "**Alternatives considered.**"))
+        and all(owner in adr6 for owner in ("`py-testkit`", "`ternforge-tooling-docops`", "`ternforge-infra-ci`", "project template"))
+        and "escalate" in adr6 and "canaries" in adr6
+        and "0006-survivor-verdicts" in (ROOT / "docs/decisions/index.md").read_text(),
+        "ADR_0006 records the verdict model: pins, suppressed equivalents, escalations only at Features and Goals, canaries on every model change",
+    )
+
+
+SEMANTIC_OUTCOME_STATUS = {
+    "caught": "pass",
+    "distinguished": "fail",
+    "undecided": "unknown",
+    "stale": "unknown",
+    "equivalent": "na",
+    "identical": "na",
+    "duplicate": "na",
+    "invalid": "na",
+}
+
+
+def semantic_selections() -> set[str]:
+    selected = set()
+    for path in sorted((ROOT / "docs/verification-profiles").glob("*.md")):
+        for section in path.read_text().split("\n## Profile · ")[1:]:
+            if "\n### Semantic mutants\n" in section:
+                selected.add(section.split("\n", 1)[0].strip())
+    return selected
+
+
+# What must never appear in a ledger row or a stored model answer: credentials, tokens, sign-in links.
+SECRET_PATTERNS = re.compile(
+    r"sk-ant-[A-Za-z0-9_-]{8,}|AIza[0-9A-Za-z_-]{30,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{10,}"
+    r"|ya29\.[A-Za-z0-9_-]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY|accounts\.google\.com/signin"
+)
+
+
+def load_bridge_module(name: str, filename: str):
+    spec = importlib.util.spec_from_file_location(name, BRIDGE / filename)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"could not load {filename}")
+    module = importlib.util.module_from_spec(spec)
+    # Its dataclasses resolve their annotations through sys.modules.
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def check_semantic_mutants(monitor_facts: dict) -> None:
+    """Semantic mutants: frozen proposals with their provenance, judged by the qualified cascade, and
+    counted on their class beside its other challenges; an undecided one keeps the class UNKNOWN. A
+    generated mutant or draft is exactly what a ledgered model call returned, and a selected target
+    without any mutant keeps its class UNKNOWN."""
+    models = load_bridge_module("gate_model_generation", "model_generation.py")
+    cascade = load_bridge_module("gate_semantic_mutants", "semantic_mutants.py")
+    selected = semantic_selections()
+    check(bool(selected), f"at least one profile selects semantic mutants: {sorted(selected)}")
+    junit_text = (ROOT / "test-results/pytest-junit.xml").read_text()
+    check(
+        'classname=".ai-bridge' not in junit_text and "semantic-mutants" not in junit_text,
+        "no draft test, calibration check or other .ai-bridge file is part of the retained test run",
+    )
+    qualification = load(HTML / "evidence-confidence-qualification.json")
+    record = (qualification.get("producers") or {}).get("PRODUCER_SEMANTIC_MUTANT_CASCADE") or {}
+    control = record.get("control") or {}
+    check(
+        record.get("status") == "QUALIFIED"
+        and control.get("outcomes") == control.get("expected")
+        and set((control.get("expected") or {}).values()) >= {"identical", "duplicate", "invalid", "caught", "undecided", "distinguished", "stale", "equivalent"}
+        and (control.get("kept_draft") or {}).get("accepted") is True
+        and (control.get("rejected_draft") or {}).get("accepted") is False
+        and (control.get("primitive_draft") or {}).get("ran") is False
+        and "adds an import" in (control.get("reasons") or {}).get("C-CONFINED", "")
+        and (control.get("target_without_proposals") or {}).get("undecided") == 1,
+        "the semantic mutant cascade is qualified: every calibration proposal got its known outcome, model code that reaches "
+        "beyond its module is invalid, a draft is kept or rejected as specified and one that reaches beyond is never run, "
+        "and a target without proposals stays undecided",
+    )
+    adapter = (qualification.get("producers") or {}).get("PRODUCER_MODEL_GENERATION_ADAPTER") or {}
+    usable = set(adapter.get("backends_qualified") or [])
+    check(
+        adapter.get("status") == "QUALIFIED"
+        and "claude-cli" in usable
+        and bool(adapter.get("control"))
+        and all((adapter.get("control") or {}).values()),
+        f"the model generation adapter is qualified for {sorted(usable)}: recorded answers and their failing variants, "
+        "deferral above the budget, fallback in order, the call limit and bound answers all behave as specified",
+    )
+    policy = (monitor_facts.get("policy") or {}).get("model_generation") or {}
+    check(
+        set(policy.get("roles") or {}) == set(models.ROLES.values())
+        and set(policy.get("budget") or {}) == set(models.BUDGET_LABELS.values()),
+        "the Test Plan names every model role with its backends in order and every generation limit",
+    )
+    ledger_path = BRIDGE / "semantic-mutants/model-ledger.jsonl"
+    ledger = models.read_ledger(ledger_path)
+    by_call = {row["call_id"]: row for row in ledger}
+    stored = {
+        path.stem: path
+        for pattern in ("semantic-mutants/*/responses/*.json", "survivor-triage/*/responses/*.json", "survivor-verdicts/*/responses/*.json")
+        for path in BRIDGE.glob(pattern)
+    }
+    check(
+        all(row.get("schema") == models.LEDGER_SCHEMA and row.get("outcome") in models.OUTCOMES and row.get("call_id") and row.get("run_id") for row in ledger)
+        and len(by_call) == len(ledger),
+        f"the model ledger's {len(ledger)} rows are well formed, one per call",
+    )
+    check(
+        all(row["call_id"] in stored for row in ledger if row["outcome"] == "ok" and row.get("role") != "probe")
+        and all(by_call.get(call_id, {}).get("outcome") == "ok" for call_id in stored)
+        and all(not row.get("response_sha256") for row in ledger if row["outcome"] != "ok"),
+        f"each of the {len(stored)} stored model answers belongs to an accepted call, and no failed, deferred or unavailable call left one",
+    )
+    texts = [ledger_path.read_text() if ledger_path.is_file() else ""] + [path.read_text() for path in stored.values()]
+    check(
+        not any(SECRET_PATTERNS.search(text) for text in texts),
+        "no ledger row or stored model answer carries a credential, a token or a sign-in link",
+    )
+    for call_id, path in sorted(stored.items()):
+        response = load(path)
+        check(
+            not models.verify_response(response) and models.response_sha256(response) == by_call[call_id].get("response_sha256"),
+            f"stored answer {call_id}: its prompt, schema and answer match their digests and its ledger row",
+        )
+
+    def bound(generator: dict, contract_id: str) -> dict:
+        """The stored answer a model-made mutant or draft names, when it and its ledger row agree."""
+        response_path = BRIDGE / f"semantic-mutants/{contract_id}/responses/{generator.get('call_id')}.json"
+        response = load(response_path) if response_path.is_file() else {}
+        call = by_call.get(str(generator.get("call_id"))) or {}
+        agrees = (
+            response
+            and models.response_sha256(response) == generator.get("response_sha256") == call.get("response_sha256")
+            and call.get("outcome") == "ok"
+            and generator.get("backend") == response.get("backend") == call.get("backend")
+            and generator.get("model") == response.get("model") == call.get("model")
+            and generator.get("backend") in usable
+        )
+        return response if agrees else {}
+
+    for contract_id in sorted(selected):
+        folder = BRIDGE / f"semantic-mutants/{contract_id}"
+        proposals = load(folder / "proposals.json") if (folder / "proposals.json").is_file() else {}
+        rows_proposed = proposals.get("proposals") or []
+        top = proposals.get("generator") or {}
+        selections = ((monitor_facts.get("contracts") or {}).get(contract_id, {}).get("target") or {}).get("semantic_mutants") or []
+        classes = ((monitor_facts.get("contracts") or {}).get(contract_id, {}).get("fault_actual") or {}).get("classes") or {}
+        missing = [selection for selection in selections if selection["target"] not in {row["target"] for row in rows_proposed}]
+        for class_id in {selection["class"] for selection in missing}:
+            count = sum(selection["class"] == class_id for selection in missing)
+            actual = classes.get(class_id) or {}
+            check(
+                int(actual.get("undecided") or 0) >= count
+                and int(actual.get("semantic_not_generated") or 0) == count
+                and not (actual.get("exercised") and actual.get("detected") and not int(actual.get("undecided") or 0)),
+                f"{contract_id} · {class_id}: {count} selected target(s) without a semantic mutant keep the class undecided",
+            )
+        for proposal in rows_proposed:
+            generator = proposal.get("generator") or top
+            if generator.get("kind") == "model":
+                response = bound(generator, contract_id)
+                items = (response.get("structured") or {}).get("proposals") or []
+                index = int(generator.get("index", -1))
+                item = items[index] if 0 <= index < len(items) else {}
+                check(
+                    bool(response)
+                    and item.get("replacement") == proposal.get("replacement")
+                    and item.get("defect") == proposal.get("rationale")
+                    and proposal.get("prompt_sha256") == response.get("prompt_sha256")
+                    and proposal.get("id") == cascade.proposal_id(proposal.get("replacement") or ""),
+                    f"{contract_id} · {proposal['id']}: the generated mutant is exactly item {index} of what ledgered call {generator.get('call_id')} returned",
+                )
+            else:
+                check(
+                    generator.get("kind") == "agent" and bool(generator.get("model")) and bool(generator.get("prompt_template_sha256")) and bool(proposal.get("prompt_sha256")),
+                    f"{contract_id} · {proposal['id']}: the agent-written mutant names its model and the prompt it answered",
+                )
+        provenance_path = folder / "drafts/provenance.json"
+        provenance = load(provenance_path) if provenance_path.is_file() else {}
+        for draft_path in sorted((folder / "drafts").glob("*.draft.py")) if (folder / "drafts").is_dir() else []:
+            content = draft_path.read_text()
+            match = re.search(r"# semantic-mutant: (\S+)", content)
+            mutant_id = match.group(1) if match else ""
+            origin = provenance.get(mutant_id) or {}
+            if origin.get("kind") == "model":
+                response = bound(origin, contract_id)
+                check(
+                    bool(response) and content == cascade.draft_from_answer(mutant_id, response.get("structured") or {}),
+                    f"{contract_id} · draft for {mutant_id}: it is exactly the test module ledgered call {origin.get('call_id')} returned",
+                )
+            else:
+                check(
+                    bool(mutant_id) and top.get("kind") == "agent",
+                    f"{contract_id} · draft for {mutant_id}: an agent-written draft is covered by its proposal set's agent provenance",
+                )
+        if not rows_proposed:
+            continue
+        retained = load(ROOT / f"test-results/semantic-mutants/{contract_id}.json")
+        rows = {row["id"]: row for row in retained.get("results") or []}
+        check(
+            retained.get("schema") == "ternforge-semantic-mutants-1"
+            and set(rows) == {row["id"] for row in rows_proposed}
+            and all(row["outcome"] in SEMANTIC_OUTCOME_STATUS for row in rows.values())
+            and all(row.get("original_sha256") and row.get("context_sha256") and row.get("prompt_sha256") and row.get("replacement") for row in rows_proposed),
+            f"{contract_id}: every frozen semantic mutant carries its provenance, and the cascade judged each one",
+        )
+        check(
+            all((row.get("differential") or {}).get("found") and (row.get("differential") or {}).get("input") for row in rows.values() if row["outcome"] == "distinguished")
+            and all((row.get("tests") or {}).get("returncode") == 1 for row in rows.values() if row["outcome"] == "caught")
+            and all((row.get("tests") or {}).get("returncode") == 0 for row in rows.values() if row["outcome"] in {"distinguished", "undecided"})
+            and all(
+                (row.get("draft") or {}).get("passes_on_original") == 3 and (row.get("draft") or {}).get("fails_on_mutant") is True
+                for row in rows.values()
+                if (row.get("draft") or {}).get("accepted")
+            )
+            and all((row.get("draft") or {}).get("ran") is False for row in rows.values() if (row.get("draft") or {}).get("primitives") or (row.get("draft") or {}).get("imports_beyond_allowed")),
+            f"{contract_id}: a caught mutant failed a contract test, a survivor passed them all, a distinguished one names its input, "
+            "a kept draft passes three times and fails on its mutant, and a draft that reaches beyond was never run",
+        )
+        for class_id in {row["class"] for row in rows.values()}:
+            counts = {outcome: sum(row["outcome"] == outcome for row in rows.values() if row["class"] == class_id) for outcome in SEMANTIC_OUTCOME_STATUS}
+            actual = classes.get(class_id) or {}
+            check(
+                actual.get("semantic_state") == "current"
+                and actual.get("semantic_counts") == counts
+                and int(actual.get("undecided") or 0) >= counts["undecided"] + counts["stale"]
+                and (not counts["distinguished"] or actual.get("detected") is False)
+                and ((counts["caught"] + counts["distinguished"]) == 0 or actual.get("exercised") is True),
+                f"{contract_id} · {class_id}: the class counts its current semantic mutants, and a distinguished one keeps it from being caught",
+            )
+        for proposal in rows_proposed:
+            check(
+                (HTML / f"semantic-mutants/{contract_id}/{proposal['id']}.diff").is_file(),
+                f"{contract_id} · {proposal['id']}: its frozen patch is published as a raw diff",
+            )
+    published = {path.name for path in (HTML / "semantic-mutants").glob("*/responses/*.json")}
+    own = {path.name for contract_id in selected for path in (BRIDGE / f"semantic-mutants/{contract_id}/responses").glob("*.json")}
+    check(
+        published == own,
+        f"every stored model answer of a semantic mutant is published beside the mutants it produced ({len(published)})",
+    )
+    check_survivor_judgement(monitor_facts, models, by_call, usable)
+    check_survivor_verdicts(models, by_call, usable)
+
+
+JUDGEMENT_STATUSES = {"found", "likely-equivalent", "unsure", "not-applicable"}
+
+
+PIN_HEADERS = ("# mutation-pin:", "# pinned-by:", "# semantic-mutant:")
+
+
+def pin_body(text: str) -> str:
+    """A pin or draft without its header lines: the test exactly as the cascade judged it."""
+    return "\n".join(line for line in text.splitlines() if not line.startswith(PIN_HEADERS)).strip() + "\n"
+
+
+def pin_origin_holds(models, by_call: dict, folder: Path, key: str, pin: dict) -> bool:
+    """A pin's test is what its origin wrote: the draft author's stored, ledgered answer, or the
+    semantic draft the cascade already kept for that mutant."""
+    digest = pin.get("draft_sha256")
+    if pin.get("source") == "draft author":
+        path = folder / "responses" / f"{pin.get('call_id')}.json"
+        response = load(path) if path.is_file() else {}
+        call = by_call.get(str(pin.get("call_id"))) or {}
+        code = str((response.get("structured") or {}).get("test_code") or "")
+        return bool(response) and not models.verify_response(response) and (
+            models.response_sha256(response) == pin.get("response_sha256") == call.get("response_sha256")
+            and call.get("outcome") == "ok" and response.get("purpose") == "mutation-pin" and response.get("subject") == key
+            and hashlib.sha256(pin_body(code).encode()).hexdigest() == digest
+        )
+    if pin.get("source") == "kept semantic draft":
+        drafts = sorted((BRIDGE / "semantic-mutants" / folder.name / "drafts").glob("*.draft.py"))
+        kept = [path.read_text() for path in drafts if re.search(rf"# semantic-mutant: {re.escape(key)}\s", path.read_text())]
+        return len(kept) == 1 and hashlib.sha256(pin_body(kept[0]).encode()).hexdigest() == digest
+    return False
+
+
+def check_survivor_verdicts(models, by_call: dict, usable: set) -> None:
+    """The survivor verdicts (ADR_0006): the model canaries qualified for their current records; every
+    model verdict a stored, ledgered call's answer; every mutation pin naming its contract and mutant,
+    carrying exactly the draft the cascade kept after a pin verdict, that draft its origin's own, and
+    no pin without its record."""
+    qualification = load(HTML / "evidence-confidence-qualification.json")
+    canary = (qualification.get("producers") or {}).get("PRODUCER_MODEL_CANARIES") or {}
+    results_path = BRIDGE / "semantic-mutants/canary-results/results.json"
+    check(
+        canary.get("status") == "QUALIFIED"
+        and (canary.get("control") or {}).get("results_sha256") == (hashlib.sha256(results_path.read_bytes()).hexdigest() if results_path.is_file() else None),
+        f"the model canaries are qualified for their current records {sorted(key for key, passed in ((canary.get('control') or {}).get('records') or {}).items() if passed)}",
+    )
+    verdict_dir = BRIDGE / "survivor-verdicts"
+    recorded: set[str] = set()
+    for folder in sorted(path for path in verdict_dir.iterdir() if path.is_dir()) if verdict_dir.is_dir() else []:
+        verdicts = load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}
+        bound = pins_ok = True
+        for key, entry in verdicts.items():
+            answer = entry.get("answer") or {}
+            response_path = folder / "responses" / f"{answer.get('call_id')}.json"
+            response = load(response_path) if response_path.is_file() else {}
+            call = by_call.get(str(answer.get("call_id"))) or {}
+            structured = response.get("structured") or {}
+            bound = bound and bool(response) and (
+                models.response_sha256(response) == answer.get("response_sha256") == call.get("response_sha256")
+                and call.get("outcome") == "ok" and response.get("backend") in usable
+                and all(structured.get(name) == answer.get(name) for name in ("verdict", "level", "reason", "test_focus"))
+            )
+            pin = entry.get("pin")
+            if not pin:
+                continue
+            recorded.add(str(pin.get("path")))
+            pin_file = ROOT / str(pin.get("path"))
+            pin_text = pin_file.read_text() if pin_file.is_file() else ""
+            pins_ok = pins_ok and (
+                pin_text.startswith(f"# mutation-pin: {folder.name} {key}\n")
+                and hashlib.sha256(pin_body(pin_text).encode()).hexdigest() == pin.get("draft_sha256")
+                and (pin.get("cascade") or {}).get("accepted") is True
+                and answer.get("verdict") == "pin"
+                and pin_origin_holds(models, by_call, folder, key, pin)
+            )
+        check(bound, f"{folder.name}: every verdict about its survivors is a stored, ledgered call's answer")
+        check(pins_ok, f"{folder.name}: every mutation pin names its mutant and is the draft the cascade kept after a pin verdict, as its origin wrote it")
+    pin_files = sorted(str(path.relative_to(ROOT)) for path in (ROOT / "tests/llm_router/mutation_pins").glob("test_pin_*.py"))
+    check(all(path in recorded for path in pin_files), f"every one of the {len(pin_files)} mutation pins is recorded with its verdict")
+
+
+def check_survivor_judgement(monitor_facts: dict, models, by_call: dict, usable: set) -> None:
+    """The survivor judgement (ADR_0005): its two producers qualified; a survivor decided only by an
+    input that execution confirmed; an assessors' equivalent only a label, above the calibrated
+    threshold and unanimous, never an outcome; the rule survivors' triage never changing an outcome;
+    every assessor answer a stored, ledgered call's."""
+    qualification = load(HTML / "evidence-confidence-qualification.json")
+    producers = qualification.get("producers") or {}
+    symbolic = producers.get("PRODUCER_SYMBOLIC_DIFFERENTIAL") or {}
+    ensemble = producers.get("PRODUCER_ASSESSOR_ENSEMBLE") or {}
+    check(
+        symbolic.get("status") == "QUALIFIED" and all(((symbolic.get("control") or {}).get("checks") or {}).values()),
+        "the symbolic search and the witness check are qualified on the labelled pairs",
+    )
+    record_path = BRIDGE / "semantic-mutants/assessor-calibration/calibration.json"
+    record = load(record_path) if record_path.is_file() else {}
+    # The replayed calibration is the whole folder: the record and every stored answer it cites.
+    calibration_files = sorted(path for path in record_path.parent.rglob("*") if path.is_file()) if record_path.is_file() else []
+    calibration_sha256 = hashlib.sha256(
+        b"".join(str(path.relative_to(record_path.parent)).encode() + b"\0" + path.read_bytes() for path in calibration_files)
+    ).hexdigest() if calibration_files else None
+    check(
+        ensemble.get("status") == "QUALIFIED"
+        and all(((ensemble.get("control") or {}).get("checks") or {}).values())
+        and (ensemble.get("control") or {}).get("threshold") == record.get("threshold")
+        and (ensemble.get("control") or {}).get("record_sha256") == hashlib.sha256(record_path.read_bytes()).hexdigest()
+        and (ensemble.get("control") or {}).get("calibration_sha256") == calibration_sha256,
+        f"the assessor ensemble is qualified by its replayed calibration (threshold {record.get('threshold')}, "
+        f"{(record.get('metrics') or {}).get('distinct')} distinct pairs, rate {record.get('alpha')})",
+    )
+    policy = (monitor_facts.get("policy") or {}).get("model_generation") or {}
+    members = [row["key"] for row in policy.get("assessors") or []]
+    check(
+        bool(members) and (policy.get("judgement") or {}).get("assessed_equivalence") == "advisory",
+        f"the Test Plan names the survivor assessors {members} and keeps their equivalent advisory",
+    )
+    threshold = record.get("threshold")
+    judge = load_bridge_module("gate_survivor_equivalence", "survivor_equivalence.py")
+
+    def answers_bound(folder: Path) -> bool:
+        assessments = load(folder / "assessments.json") if (folder / "assessments.json").is_file() else {}
+        for entry in assessments.values():
+            for answer in (entry.get("answers") or {}).values():
+                response_path = folder / "responses" / f"{answer.get('call_id')}.json"
+                response = load(response_path) if response_path.is_file() else {}
+                call = by_call.get(str(answer.get("call_id"))) or {}
+                structured = response.get("structured") or {}
+                # The stored answer is its response read by the current rule, arguments and problems included.
+                if not (
+                    response and models.response_sha256(response) == answer.get("response_sha256") == call.get("response_sha256")
+                    and call.get("outcome") == "ok" and response.get("backend") in usable
+                    and structured.get("verdict") == answer.get("verdict") and structured.get("confidence") == answer.get("confidence")
+                    and {key: judge.argument_text(value) for key, value in (structured.get("arguments") or {}).items()} == answer.get("arguments")
+                    and judge.answer_problems(structured) == answer.get("problems")
+                ):
+                    return False
+        return True
+
+    def judged_right(judged: dict, outcome_ok: bool) -> bool:
+        status = judged.get("status")
+        if status not in JUDGEMENT_STATUSES or not outcome_ok:
+            return False
+        if status == "found":
+            witness = judged.get("witness") or {}
+            return (
+                bool(witness.get("display")) and witness.get("original") != witness.get("mutant")
+                and witness.get("original_sha256") != witness.get("mutant_sha256")
+            )
+        if status == "likely-equivalent":
+            voted = judged.get("members") or []
+            return (
+                judged.get("calibrated") is True and threshold is not None and judged.get("threshold") == threshold
+                and float(judged.get("score") or 0) > threshold and [row.get("member") for row in voted] == members
+                and all(row.get("verdict") == "equivalent" for row in voted)
+            )
+        return True
+
+    for contract_id in sorted(semantic_selections()):
+        retained_path = ROOT / f"test-results/semantic-mutants/{contract_id}.json"
+        rows = (load(retained_path).get("results") or []) if retained_path.is_file() else []
+        judged_rows = [row for row in rows if row.get("judgement")]
+        check(
+            all(
+                judged_right(row["judgement"], row["outcome"] == "distinguished" if row["judgement"].get("status") == "found" else row["outcome"] == "undecided")
+                for row in judged_rows
+            )
+            and all((row.get("differential") or {}).get("by") for row in judged_rows if row["judgement"].get("status") == "found"),
+            f"{contract_id}: {len(judged_rows)} judged survivors: distinguished only by a confirmed input, likely equivalent only above the "
+            "calibrated threshold and unanimous, and every other one undecided",
+        )
+        check(
+            answers_bound(BRIDGE / f"semantic-mutants/{contract_id}"),
+            f"{contract_id}: every assessor answer about its survivors is a stored, ledgered call's answer",
+        )
+    campaign = load(ROOT / "test-results/implementation-faults/campaign.json")
+    triaged = 0
+    for path in sorted((ROOT / "test-results/survivor-triage").glob("*.json")):
+        retained = load(path)
+        contract_id = retained.get("contract_id")
+        entry = (campaign.get("contracts") or {}).get(contract_id) or {}
+        report_path = ROOT / ((entry.get("run") or {}).get("report_path") or "")
+        statuses = {str(row.get("fingerprint")): row.get("status") for row in (load(report_path).get("results") or [])} if report_path.is_file() else {}
+        rows = retained.get("rows") or []
+        triaged += len(rows)
+        check(
+            retained.get("schema") == "ternforge-survivor-triage-1"
+            and all(statuses.get(str(row.get("fingerprint"))) == "survived" for row in rows)
+            and all(judged_right(row, True) for row in rows),
+            f"{contract_id}: its {len(rows)} surviving rule mutants are judged without a changed outcome; a test goal has a confirmed "
+            "input, a likely equivalent is above the calibrated threshold and unanimous",
+        )
+    check(triaged > 0, f"the triage judged {triaged} surviving rule mutants")
+    # Every stored answer, also of a contract with no survivor left: the triage reuses an answer whenever its question returns.
+    for folder in sorted(path for path in (BRIDGE / "survivor-triage").iterdir() if path.is_dir()):
+        check(answers_bound(folder), f"{folder.name}: every assessor answer about its rule survivors is a stored, ledgered call's answer")
 
 
 def declared_provider_capabilities() -> dict[str, dict[str, bool]]:
@@ -97,12 +1180,22 @@ def declared_provider_capabilities() -> dict[str, dict[str, bool]]:
 
 def main() -> None:
     required = [
-        RESULTS / "campaign.json",
-        RESULTS / "summary.json",
-        RESULTS / "triage.json",
-        RESULTS / "operator-feedback.json",
-        HTML / "verification-test-strength-facts.json",
-        HTML / "mutation-analysis.html",
+        ROOT / "test-results/implementation-faults/campaign.json",
+        ROOT / "test-results/implementation-faults/diff/summary.json",
+        HTML / "mutation-report.html",
+        HTML / "mutation-report.json",
+        ROOT / "docs/decisions/0003-mutation-testing-strategy.md",
+        HTML / "decisions/0003-mutation-testing-strategy.html",
+        ROOT / "docs/decisions/0004-metered-model-generation.md",
+        HTML / "decisions/0004-metered-model-generation.html",
+        BRIDGE / "model_generation.py",
+        ROOT / "docs/decisions/0005-survivor-judgement.md",
+        HTML / "decisions/0005-survivor-judgement.html",
+        ROOT / "docs/decisions/0006-survivor-verdicts.md",
+        HTML / "decisions/0006-survivor-verdicts.html",
+        BRIDGE / "survivor_equivalence.py",
+        BRIDGE / "pytest_plugins/ternforge_mutation.py",
+        BRIDGE / "pytest_plugins/gremlins_full_pytest.py",
         HTML / "verification-health-map.html",
         HTML / "verification-assurance.html",
         HTML / "contract-evidence-request-override-precedence.html",
@@ -206,17 +1299,7 @@ def main() -> None:
         HTML / "evidence-run-provenance.json",
         HTML / "evidence-confidence-qualification.json",
         HTML / "assurance-fault-model-facts.json",
-        HTML / "assurance-history/index.html",
-        HTML / "assurance-history/assurance-history.csv",
-        HTML / "assurance-history/REQ_INVALID_CONFIGURATION_ERRORS/index.html",
-        HTML / "assurance-history/REQ_INVALID_CONFIGURATION_ERRORS/assurance-history.csv",
-        HTML / "assurance-history/TREQ_RATE_LIMIT_STATE/index.html",
-        HTML / "assurance-history/TREQ_RATE_LIMIT_STATE/assurance-history.csv",
-        HTML / "assurance-targets.json",
-        HTML / "assurance-snapshots.json",
         HTML / "favicon.ico",
-        BRIDGE / "assurance-targets.json",
-        BRIDGE / "assurance-snapshots.json",
         HTML / "verification-health-map.html",
         HTML / "_static/mutation-test-elements.js",
         BRIDGE / "mutation-testing-platform-extraction-manifest.md",
@@ -247,11 +1330,6 @@ def main() -> None:
     for path in required:
         check(path.exists(), f"artifact exists: {path.relative_to(ROOT)}")
 
-    campaign = load(RESULTS / "campaign.json")
-    summary = load(RESULTS / "summary.json")
-    triage = load(RESULTS / "triage.json")
-    feedback = load(RESULTS / "operator-feedback.json")
-    strength = load(HTML / "verification-test-strength-facts.json")
     depth_facts = load(HTML / "verification-depth-facts.json")
     monitor_facts = load(HTML / "requirement-monitor-facts.json")
     upper_facts = load(HTML / "upper-assurance-facts.json")
@@ -259,10 +1337,6 @@ def main() -> None:
     evidence_qualification = load(HTML / "evidence-confidence-qualification.json")
     evidence_run_inputs = load(ROOT / "test-results/evidence-run-inputs.json")
     fault_model = load(HTML / "assurance-fault-model-facts.json")
-    targets = load(BRIDGE / "assurance-targets.json")
-    generated_targets = load(HTML / "assurance-targets.json")
-    assurance_snapshots = load(BRIDGE / "assurance-snapshots.json")
-    generated_assurance_snapshots = load(HTML / "assurance-snapshots.json")
 
     stale_required = []
     for contract_id, contract in (monitor_facts.get("contracts") or {}).items():
@@ -278,10 +1352,6 @@ def main() -> None:
                     stale_required.append(
                         f"{contract_id}:{item_id}:{row.get('nodeid') or 'unknown'}"
                     )
-        if target.get("mutation"):
-            mutation_fact = (strength.get("contracts") or {}).get(contract_id) or {}
-            if mutation_fact.get("fresh") is False:
-                stale_required.append(f"{contract_id}:mutation")
 
     for collection_name in ("features", "goals"):
         for entity_id, entity in (upper_facts.get(collection_name) or {}).items():
@@ -316,7 +1386,6 @@ def main() -> None:
     test_plan_html = (HTML / "test-plan.html").read_text()
     configuration_source = (ROOT / "docs/requirements/configuration.md").read_text()
     verification_profile_source = (ROOT / "docs/verification-profiles/invalid-configuration.md").read_text()
-    verification_profile_html = (HTML / "verification-profiles/invalid-configuration.html").read_text()
     configuration_profile_source = (ROOT / "docs/verification-profiles/configuration.md").read_text()
     configuration_assurance_profile_source = (
         ROOT / "docs/assurance-profiles/configuration.md"
@@ -404,17 +1473,34 @@ def main() -> None:
         "(test-plan-schema-contract-model)=",
         "(test-plan-content-normalization-model)=",
         "(test-plan-fault-model)=",
-        "Mutation Reach floor",
-        "Mutation Sensitivity floor",
+        "(test-plan-mutation-policy)=",
         "Evidence freshness",
         "relevant inputs current",
-        "Retained mutmut Test Strength",
+        "Implementation fault detection",
+        "every valid mutant caught",
+        "Mutation signal",
+        "surviving mutant on a changed line",
+        "`impl.effect`",
+        "##### Mutant outcomes",
+        "##### Arid code",
+        "##### Validity",
+        "##### Suppression",
+        "##### Cadence and signal",
+        "##### Semantic mutants",
         "impl.comparison",
         "interface.unexpected-interaction",
         "spec.wrong-outcome",
         "required coverage = **100%**",
         "required deterministic fault detection = **100%**",
     )), "project Test Plan keeps only llm-router-specific decisions and reusable domain models")
+    for retired_token in ("mutmut", "Mutation Reach", "Mutation Sensitivity", "Test Strength", "≥ 80%"):
+        check(retired_token not in test_plan_source,
+              f"project Test Plan carries no retired mutation score or engine: {retired_token}")
+    # The retired floors were percentages among the project decisions; a percentage elsewhere (the
+    # generation budget's window limits) is not a mutation score.
+    project_decisions = test_plan_source.split("## Project decisions", 1)[1].split("\n## ", 1)[0]
+    check("%" not in project_decisions,
+          "the Test Plan's project decisions set no percentage floor: no mutation score gates a contract or the project")
     for generic_token in (
         "Scope\n**llm-router**",
         "PASS · FAIL · N/A · UNKNOWN",
@@ -771,8 +1857,8 @@ def main() -> None:
         "VC_INVALID_CONFIGURATION_PUBLIC_REJECTION",
         "### Required technical support",
         "### Fault applicability",
-        "### Blocking mutation checks",
-    )), "Invalid Configuration profile splits the parent public rejection claim from all thirteen first-class Technical requirements")
+    )) and "### Blocking mutation checks" not in verification_profile_source,
+    "Invalid Configuration profile splits the parent public rejection claim from all thirteen first-class Technical requirements and selects no mutation threshold")
     check(
         "## Profile · REQ_CONFIG_INSTALLATION_COHERENCE" in configuration_profile_source
         and "## Profile · TREQ_CONFIG_CACHE_INVALIDATION" in configuration_profile_source
@@ -1192,190 +2278,14 @@ def main() -> None:
         "Parent `REQ_INVALID_CONFIGURATION_ERRORS`: 1 System criterion / 1 retained path",
         "13/13 Component criteria · 16/16 paths",
         "missing child-specific challenges remain red instead of inheriting the parent mutation/fault campaign",
-        "compatibility-only `.ai-bridge/assurance-targets.json`",
+        "`.ai-bridge/assurance-targets.json` is retired (ADR_0003)",
         "Test Coverage → Fault-based Testing → History",
     )), "monitor readiness ledger records the completed P34 target/actual cutover and first-class Configuration ownership")
     check("Test plan" in test_plan_html and "Reusable Test Models" in test_plan_html,
           "generated Test Plan page renders the project-wide strategy")
 
-    adapter = campaign.get("adapter") or {}
-    check(
-        adapter.get("version") == "p34-local-2",
-        "retained mutation campaign uses the current p34-local-2 adapter provenance",
-    )
-    check(adapter.get("mutation_semantics_version") == "p21-local-2",
-          "mutation semantics compatibility version remains explicit")
-    check(
-        campaign.get("mode") in {"full", "diff"},
-        "retained pilot campaign uses a supported full/diff mode",
-    )
-    check(bool(campaign.get("run_id")), "retained pilot campaign has unique run_id")
-    check(bool(campaign.get("baseline_run_id")), "retained pilot campaign has baseline_run_id")
-    check(campaign.get("run_id") != campaign.get("baseline_run_id"), "run_id is not self-baseline")
-    check(bool(campaign.get("finished_at")), "retained pilot campaign finished")
-    check(float(campaign.get("duration_seconds") or 0) > 0, "retained pilot campaign has runtime")
+    check_mutation_system(monitor_facts)
 
-    history_runs = [
-        load(path)
-        for path in sorted((RESULTS / "campaign-history").glob("*.json"))
-    ]
-    retained_runs = [*history_runs, campaign]
-    retained_runs_by_id = {
-        row.get("run_id"): row for row in retained_runs if row.get("run_id")
-    }
-    measured_ids = {"REQ_INVALID_CONFIGURATION_ERRORS", "TREQ_TOOL_REGISTRY"}
-    check(
-        any(
-            row.get("mode") == "full"
-            and set(row.get("selected_contracts") or []) == measured_ids
-            and bool(row.get("finished_at"))
-            for row in retained_runs
-        ),
-        "retained mutation history contains a completed full baseline for every uniquely attributable contract",
-    )
-    if campaign.get("mode") == "diff":
-        selected = set(campaign.get("selected_contracts") or [])
-        skipped = set(campaign.get("skipped_contracts") or [])
-        scope_resolution = campaign.get("scope_resolution") or {}
-        check(
-            bool(selected)
-            and selected <= measured_ids
-            and skipped == measured_ids - selected,
-            "latest diff campaign selects only changed uniquely attributable contracts and skips the rest",
-        )
-        check(
-            bool(campaign.get("base_sha"))
-            and all(
-                (scope_resolution.get(contract_id) or {}).get("selected") is True
-                and bool((scope_resolution.get(contract_id) or {}).get("reasons"))
-                for contract_id in selected
-            ),
-            "latest diff campaign retains its base SHA and objective change-selection reasons",
-        )
-
-    check(
-        summary.get("total_contracts") == 63,
-        "63 contracts are present in the verification-depth / mutation measurement universe",
-    )
-    check(
-        summary.get("measured_contracts") == 2,
-        "exactly 2 uniquely attributable contracts are measured",
-    )
-    check(summary.get("fresh_measured_contracts") == 2, "all measured contracts are fresh")
-    check(summary.get("stale_measured_contracts") == 0, "no measured contract is stale")
-    check(summary.get("new_unresolved_survivors") == 0, "current campaign introduces no new unresolved survivors")
-    check(summary.get("resolved_survivors") == 0, "current comparable content reports no fabricated survivor resolution")
-    check(summary.get("unresolved_survivors") == 29, "current measured mutation debt remains explicit")
-    check(summary.get("suppressed_survivors") == 0, "no acceptance suppression remains")
-    check(summary.get("readiness") == "clear", "mutation readiness is clear when no new unresolved survivor exists")
-
-    suppression_path = BRIDGE / "mutation-suppressions.json"
-    if suppression_path.exists():
-        suppressions = load(suppression_path).get("suppressions") or []
-        check(not suppressions, "suppression ledger contains no acceptance-only suppression")
-    else:
-        check(True, "no suppression ledger remains in current clean pilot state")
-
-    strength_contracts = strength.get("contracts") or {}
-    check(
-        set(strength_contracts) == measured_ids,
-        "retained Test Strength facts contain only the two uniquely attributable pilot contracts",
-    )
-    measured = {}
-    for contract_id, strength_row in strength_contracts.items():
-        owner_run = retained_runs_by_id.get(strength_row.get("run_id"))
-        check(
-            owner_run is not None,
-            f"{contract_id}: retained Test Strength run_id resolves to a retained campaign",
-        )
-        owner_contract = (owner_run.get("contracts") or {}).get(contract_id)
-        check(
-            owner_contract is not None,
-            f"{contract_id}: retained owner campaign contains the measured contract",
-        )
-        measured[contract_id] = owner_contract
-
-    for contract_id, contract in measured.items():
-        result = contract.get("result") or {}
-        report_path = HTML / str(result.get("report_path"))
-        wrapper_path = RESULTS / contract_id / "index.html"
-        check(report_path.exists(), f"{contract_id}: standard mutation report retained")
-        check(wrapper_path.exists(), f"{contract_id}: MTE wrapper retained")
-        report = load(report_path)
-        check(report.get("schemaVersion") == "2.0", f"{contract_id}: Mutation Testing Report Schema 2.0")
-        killed = int(result.get("killed") or 0)
-        survived = int(result.get("survived") or 0)
-        valid = int(result.get("valid_mutants") or 0)
-        check(valid == killed + survived, f"{contract_id}: valid mutant denominator is killed + survived")
-        expected = round(100 * killed / valid, 1) if valid else None
-        check(result.get("score") == expected, f"{contract_id}: Test Strength formula matches retained counts")
-
-        declared = set(contract.get("linked_tests") or [])
-        report_tests = {
-            test.get("id")
-            for row in (report.get("testFiles") or {}).values()
-            for test in row.get("tests") or []
-        }
-        covered_by = {
-            test_id
-            for row in (report.get("files") or {}).values()
-            for mutant in row.get("mutants") or []
-            for test_id in mutant.get("coveredBy") or []
-        }
-        check(report_tests <= declared, f"{contract_id}: report tests are declared linked tests only")
-        check(covered_by <= declared, f"{contract_id}: coveredBy cannot be inflated by unrelated tests")
-        check(result.get("duration_seconds") is not None, f"{contract_id}: direct per-contract runtime retained")
-
-        contract_triage = result.get("triage") or {}
-        check(contract_triage.get("baseline_available") is True, f"{contract_id}: baseline evidence available")
-        check(
-            contract_triage.get("baseline_comparable") is True,
-            f"{contract_id}: current campaign remains comparable with the immediately previous compatible baseline",
-        )
-        check(
-            contract_triage.get("score_delta") == 0.0,
-            f"{contract_id}: comparable campaign retains the unchanged mutation score without fabricated movement",
-        )
-        check(
-            contract_triage.get("new_unresolved_survivors") == 0
-            and contract_triage.get("resolved_survivors") == 0
-            and contract_triage.get("existing_survivors") == survived,
-            f"{contract_id}: survivor identities are retained without fabricated new/resolved changes",
-        )
-
-    unattributed = strength.get("unattributed") or []
-    check(
-        {row.get("contract_id") for row in unattributed}
-        == {"REQ_ROUTE_ATTEMPT_LIMIT", "REQ_CONFIG_INSTALLATION_COHERENCE"},
-        "shared implementation scopes remain diagnostic-only and explicitly unattributed",
-    )
-    shared_reasons = {
-        row.get("contract_id"): str(row.get("reason") or "")
-        for row in unattributed
-    }
-    check(
-        "TREQ_ROUTE_ORDER" in shared_reasons["REQ_ROUTE_ATTEMPT_LIMIT"]
-        and "TREQ_CONFIG_CACHE_INVALIDATION"
-        in shared_reasons["REQ_CONFIG_INSTALLATION_COHERENCE"],
-        "shared-scope diagnostics name the contracts that prevent unique attribution",
-    )
-    check(
-        not (
-            {"REQ_ROUTE_ATTEMPT_LIMIT", "REQ_CONFIG_INSTALLATION_COHERENCE", "TREQ_RATE_LIMIT_STATE"}
-            & set(strength.get("contracts") or {})
-        ),
-        "shared-scope and retired limiter diagnostics do not leak into measured Requirement/TREQ strength facts",
-    )
-
-    filtering = feedback.get("filtering_decision") or {}
-    check(filtering.get("decision") == "none", "P23 makes no operator filtering decision")
-    check(filtering.get("full_audit_preserved") is True, "full audit mode preserved")
-    check(filtering.get("diff_mode_filtering_enabled") is False, "diff operator filtering remains disabled")
-    check((feedback.get("sample") or {}).get("directly_timed_contract_runs", 0) >= 3,
-          "operator feedback includes directly timed contract runs")
-    check(len(feedback.get("families") or []) >= 1, "operator feedback has retained diagnostic families")
-
-    mutation_page = (HTML / "mutation-analysis.html").read_text()
     evidence_trust_page = (HTML / "evidence-trust.html").read_text()
     assurance_page = (HTML / "verification-assurance.html").read_text()
     override_page = (HTML / "contract-evidence-request-override-precedence.html").read_text()
@@ -1541,7 +2451,8 @@ def main() -> None:
         and "function flashTarget" in ui_source
         and "def coverage_card(" in ui_source
         and "def lane(" in ui_source
-        and "def technical_support_card(" in ui_source
+        and "def support_summary(" in ui_source
+        and "def technical_support_card(" not in ui_source
         and "def domain_card(" in ui_source
         and "def history_section(" in ui_source
         and "def inspector_head(" in ui_source
@@ -1550,7 +2461,7 @@ def main() -> None:
         and "def drilldowns(" in ui_source
         and "def section_head(" in ui_source
         and "def verdict_header(" in ui_source
-        and "def support_panel(" in ui_source
+        and "def support_panel(" not in ui_source
         and "def metric_tile(" in ui_source
         and "def assurance_navigation(" in ui_source
         and "ASSURANCE_NAV_STYLE =" in ui_source
@@ -2239,10 +3150,12 @@ def main() -> None:
     check(
         all(
             'class="signal-card ' in page
-            and "technical-support-card" in page
+            and "technical-support-panel" in page
+            and "technical-support-card" not in page
+            and "kind=support" in page
             for page in upper_assurance_pages.values()
         ),
-        "upper child-support sections reuse canonical REQ technical-support cards",
+        "upper child-support sections count how many of their children pass and leave the children to the explorer",
     )
     check(
         "Producer qualification · 8 producers" in sticky_route_page
@@ -2377,104 +3290,6 @@ def main() -> None:
         "upper assurance reuses the canonical REQ coverage-card and state-lane inspector pattern",
     )
 
-    assurance_title_suffix=re.search(
-        r"<title>.*?( &#8212; llm-router [^<]+)</title>",
-        assurance_page,
-        flags=re.DOTALL,
-    )
-    mutation_title_suffix=re.search(
-        r"<title>Mutation Analysis( &#8212; llm-router [^<]+)</title>",
-        mutation_page,
-        flags=re.DOTALL,
-    )
-    check(
-        assurance_title_suffix is not None
-        and mutation_title_suffix is not None
-        and mutation_title_suffix.group(1) == assurance_title_suffix.group(1),
-        "Mutation Analysis title inherits the current portal documentation version",
-    )
-    check(
-        mutation_page.count('id="mutation-') >= 2,
-        "Mutation Analysis exposes the measured contract work queue anchors",
-    )
-    check(
-        "Current signal" in mutation_page
-        and "New 0" in mutation_page
-        and "Debt 29" in mutation_page
-        and "Measured 2/63" in mutation_page,
-        "Mutation Analysis keeps the current measured mutation signal compact and denominator-explicit",
-    )
-    check("How this helps during development" not in mutation_page,
-          "Mutation Analysis no longer duplicates long usage guidance")
-    check('id="mutation-history"' in mutation_page and "Recent changes" in mutation_page,
-          "Mutation Analysis exposes compact retained change history")
-    retained_feedback_runs = list(feedback.get("runs") or [])
-    check(
-        len(retained_feedback_runs) >= 2
-        and all(int(row.get("new_unresolved_survivors") or 0) == 0 for row in retained_feedback_runs[-2:])
-        and all(int(row.get("resolved_survivors") or 0) == 0 for row in retained_feedback_runs[-2:])
-        and all(int(row.get("mutants") or 0) > 0 for row in retained_feedback_runs[-2:]),
-        "retained campaign summaries preserve current full-audit mutation evidence without fabricating New/Resolved history",
-    )
-    mutation_history_match = re.search(
-        r'<section id="mutation-history">.*?</section>',
-        mutation_page,
-        flags=re.DOTALL,
-    )
-    mutation_history_html = mutation_history_match.group(0) if mutation_history_match else ""
-    check(
-        bool(mutation_history_html)
-        and 'href="#"' not in mutation_history_html
-        and (
-            "mutation-results/campaign-history/" in mutation_history_html
-            or "mutation-results/operator-feedback.json" in mutation_history_html
-        ),
-        "Mutation Analysis history has no broken provenance links and uses retained raw history or summary fallback",
-    )
-    check(
-        mutation_page.count("Fresh</strong> · New 0 · Debt ") >= 2,
-        "Mutation Analysis labels each measured contract fresh and keeps survivor debt compact",
-    )
-    check("Why some contracts are N/A" in mutation_page,
-          "Mutation Analysis keeps shared-scope diagnostics behind a compact disclosure")
-    check('id="mutation-operator-feedback"' in mutation_page and "Run cost / mutation diagnostics" in mutation_page,
-          "Mutation Analysis keeps operator diagnostics behind a compact disclosure")
-    mutation_toc_match=re.search(
-        r'<nav class="bd-toc-nav page-toc">.*?</nav>',
-        mutation_page,
-        flags=re.DOTALL,
-    )
-    mutation_toc=mutation_toc_match.group(0) if mutation_toc_match else ""
-    check(
-        (
-            not mutation_toc
-            or all(
-                f'href="#{anchor}"' in mutation_toc
-                for anchor in (
-                    "mutation-work-queue",
-                    "mutation-history",
-                    "mutation-unattributed",
-                    "mutation-operator-feedback",
-                )
-            )
-        )
-        and 'href="#ce-' not in mutation_page
-        and 'id="tf-requirement-monitor-style"' not in mutation_page
-        and 'id="tf-requirement-monitor-script"' not in mutation_page,
-        "Mutation Analysis has no leaked Contract Evidence TOC/runtime assets and any local TOC is mutation-specific",
-    )
-    check(
-        'id="mutation-unattributed"' in mutation_page
-        and "2 shared-scope diagnostics" in mutation_page
-        and "REQ_ROUTE_ATTEMPT_LIMIT" in mutation_page
-        and "REQ_CONFIG_INSTALLATION_COHERENCE" in mutation_page
-        and "cannot be uniquely attributed" in mutation_page
-        and "diagnostic only" in mutation_page,
-        "portal retains concrete shared-scope attribution diagnostics without assigning shared implementation strength to a contract",
-    )
-    check("Assurance Target / Verification Profile" not in mutation_page and
-          "Guarantee Frontier" not in mutation_page,
-          "Mutation Analysis may link outward but does not duplicate Contract Evidence semantics")
     trust_need_ids=set(
         re.findall(r'href="#((?:PRODUCER|QUAL)_[A-Z0-9_]+)"', evidence_trust_page)
     )
@@ -2494,11 +3309,6 @@ def main() -> None:
         not hidden_registry_links,
         f"generated portal routes hidden producer registry deep-links through visible Evidence Trust: {hidden_registry_links}",
     )
-    for contract_id in measured:
-        wrapper=(RESULTS / contract_id / "index.html").read_text()
-        check("verification-assurance.html" not in wrapper,
-              f"{contract_id}: raw MTE wrapper has no Contract Evidence link")
-
     check("Contract Evidence" in assurance_page,
           "assurance page is named Contract Evidence")
     check(monitor_facts.get("schema") == "ternforge-requirement-monitor-p34-2",
@@ -3643,12 +4453,14 @@ def main() -> None:
     session_fault_expectations = {
         "REQ_SESSION_LIFECYCLE": {
             "impl.control-flow",
+            "impl.effect",
             "spec.wrong-outcome",
             "spec.missing-partition",
             "spec.wrong-ordering-boundary",
         },
         "REQ_SESSION_PERSISTENCE": {
             "impl.control-flow",
+            "impl.effect",
             "spec.wrong-outcome",
             "spec.missing-partition",
         },
@@ -3656,6 +4468,7 @@ def main() -> None:
             "impl.comparison",
             "impl.boundary",
             "impl.control-flow",
+            "impl.effect",
             "interface.payload-schema",
             "spec.wrong-outcome",
             "spec.missing-partition",
@@ -4306,7 +5119,7 @@ def main() -> None:
         "canonical Fault model renders all project Test Model groups",
     )
     fault_group_help = (
-        "Checks that small code mistakes—wrong comparisons, limits, branches, returns, or exception paths—are caught.",
+        "Checks that small code mistakes—a wrong comparison, limit, branch or return, a lost call, write or raise—are caught.",
         "Checks that dependency failures—timeouts, disconnects, unavailability, or malformed replies—cannot change the required behavior.",
         "Checks that wrong external calls, error statuses, or malformed payloads are caught at the boundary.",
         "Checks that code cannot bypass a required layer or depend on a forbidden layer.",
@@ -4317,27 +5130,22 @@ def main() -> None:
         and "EXTRA" not in assurance_page,
         "each Fault model group has one distinct plain-language explanation",
     )
-    invalid_config_groups = (
-        (fault_model.get("contracts") or {}).get("REQ_INVALID_CONFIGURATION_ERRORS") or {}
-    ).get("groups") or {}
-    mutation_chain_labels = [
-        label
-        for group in invalid_config_groups.values()
-        for label in (
-            f"{int(group.get('reached') or 0)}/{int(group.get('generated') or 0)}",
-            f"{int(group.get('killed') or 0)}/{int(group.get('reached') or 0)}",
-        )
-    ]
+    invalid_implementation = next(
+        (
+            load_domain().fault_state(contract_monitor, group, monitor_facts.get("policy") or {})
+            for group in contract_monitor["target"]["fault_groups"]
+            if group["label"] == "Implementation"
+        ),
+        {},
+    )
+    tally = invalid_implementation.get("mutants") or {}
     check(
-        len(mutation_chain_labels) == 4
-        and all(label in assurance_page for label in (
-            "Fault classes", "Required", "Challenged", "Detected",
-            "Mutation checks", "Generated", "Reached", "Killed",
-            *mutation_chain_labels,
-        ))
-        and "31/31" not in assurance_page
-        and "27/27" not in assurance_page,
-        "canonical fault detail renders the current retained mutation denominator chains, not the lightweight-runner numbers",
+        bool(tally)
+        and all(label in assurance_page for label in ("Fault classes", "Required", "Challenged", "Detected", "Mutants", "Caught", "Survived", "Not reached"))
+        and "Mutation checks" not in assurance_page
+        and "sensitivity" not in assurance_page.lower().split("<main", 1)[-1]
+        and "Generated" not in assurance_page,
+        "canonical Fault model counts the mutants behind its classes by outcome (caught, survived, not reached) and carries no mutation score",
     )
     optional_faults = {
         item["id"]
@@ -4354,8 +5162,10 @@ def main() -> None:
 
     check(
         "Current" in assurance_page
-        and 'href="assurance-snapshots.json">History ↗</a>' in assurance_page,
-        "canonical History stays compact and links to retained history",
+        and 'href="verification-explorer.html#contract=REQ_INVALID_CONFIGURATION_ERRORS&amp;change=any">Changes ↗</a>'
+        in assurance_page
+        and 'href="assurance-snapshots.json"' not in assurance_page,
+        "canonical History stays compact and routes to what changed since the previous retained run in the explorer",
     )
     check(
         "Assurance is not pass/fail" not in assurance_page
@@ -4365,70 +5175,20 @@ def main() -> None:
         "canonical monitor contains no superseded prose/dashboard sections",
     )
 
-    check(targets == generated_targets,
-          "generated Assurance Target registry is an exact projection of the local versioned source")
-    check(targets.get("schema_version") == "ternforge-assurance-targets-p30-2",
-          "Assurance Target registry keeps the agreed target schema")
-    assignments = targets.get("assignments") or {}
-    profiles = targets.get("profiles") or {}
-    check(set(assignments) == {
-          "REQ_INVALID_CONFIGURATION_ERRORS",
-          "TREQ_RATE_LIMIT_STATE",
-          "REQ_ASYNC_PROVIDER_EXECUTION",
-    }, "P31 retains the three agreed Assurance Target counterexamples")
-    check(all("overrides" in row and "issue_links" in row and "history" in row for row in assignments.values()),
-          "every target assignment retains overrides, issue links and revision history explicitly")
-    check(all((profile.get("cadence") or {}).get("mode") and (profile.get("freshness") or {}).get("policy")
-              for profile in profiles.values()),
-          "every target profile records cadence and freshness policy metadata")
-
-    assignment = assignments["REQ_INVALID_CONFIGURATION_ERRORS"]
-    profile = profiles.get(assignment.get("profile")) or {}
-    obligations = profile.get("obligations") or []
-    check(assignment.get("profile") == "public-preprovider-validation@1" and
-          assignment.get("target_revision") == 1 and len(obligations) == 12,
-          "Invalid Configuration has a versioned 12-obligation pilot Assurance Target")
-    check(not any(
-          o.get("kind") == "frontier_cell" and o.get("boundary") == "direct"
-          for o in obligations
-    ), "Invalid Configuration target intentionally contains no Direct-live obligation")
-    check({
-          (o.get("reach"), o.get("boundary"), o.get("representation_min"))
-          for o in obligations if o.get("kind") == "frontier_cell"
-    } == {("component", "none", "actual"), ("system", "none", "actual")},
-          "Guarantee Frontier target is Component×Local and System×Local with Actual representation")
-    check({
-          (o.get("group"), o.get("kind"), o.get("min"))
-          for o in obligations if o.get("kind") in {"mutation_reach", "mutation_sensitivity"}
-    } == {
-          ("component_local", "mutation_reach", 80.0),
-          ("component_local", "mutation_sensitivity", 80.0),
-          ("system_local", "mutation_reach", 80.0),
-          ("system_local", "mutation_sensitivity", 80.0),
-    }, "target keeps Mutation Reach and Sensitivity as separate obligations")
-    check({
-          o.get("layer") for o in obligations if o.get("kind") == "fault_layer"
-    } == {"specification", "architecture", "interface", "runtime", "implementation"},
-          "target covers the complete 5-layer Fault-model ladder")
-
-    rate_assignment = assignments["TREQ_RATE_LIMIT_STATE"]
-    rate_profile = profiles.get(rate_assignment.get("profile")) or {}
-    rate_obligations = rate_profile.get("obligations") or []
-    check(rate_assignment.get("profile") == "internal-state@1" and len(rate_obligations) == 3,
-          "Rate-limit state uses the narrow internal-state Assurance Target")
-    check(not any(o.get("kind") == "frontier_cell" and o.get("boundary") == "direct"
-                  for o in rate_obligations),
-          "Rate-limit state has no irrelevant Direct-live frontier obligation")
-    check(any(o.get("kind") == "test_strength" and o.get("min") == 80.0
-              for o in rate_obligations),
-          "Rate-limit state targets the honestly available covered-mutant Test Strength instead of fabricating Mutation Reach")
-    check(
-        "TREQ_RATE_LIMIT_STATE" not in (strength.get("contracts") or {}),
-        "legacy Rate-limit state target does not fabricate a current uniquely attributable Test Strength score",
-    )
+    check(fault_model.get("schema_version") == "ternforge-specialized-fault-probes-1"
+          and set(fault_model.get("contracts") or {}) == {"REQ_INVALID_CONFIGURATION_ERRORS"}
+          and "layers" not in fault_model and "history" not in fault_model,
+          "the retained fault probe facts hold only the specialized probes of REQ_INVALID_CONFIGURATION_ERRORS; the P31 ladder, mutation groups and trend history are retired")
+    invalid_config_faults = (fault_model.get("contracts") or {}).get("REQ_INVALID_CONFIGURATION_ERRORS") or {}
+    check("groups" not in invalid_config_faults and "detection_overlap" not in invalid_config_faults and "history" not in invalid_config_faults,
+          "the specialized probe facts carry no mutation Reach/Sensitivity groups, mutmut overlap or DVC history")
+    check(((contract_monitor.get("fault_actual") or {}).get("specialized_probe_current")) is True,
+          "the specialized probes are bound to the current contract, profile, sources and tests, so their classes count")
+    # A mutation pin (ADR_0006) pins one mutant: it verifies its contract but is no evidence of depth.
+    depth_tests = [row for row in depth_facts.get("tests") or [] if not str(row.get("nodeid") or "").startswith("tests/llm_router/mutation_pins/")]
     rate_tests = [
         row
-        for row in depth_facts.get("tests") or []
+        for row in depth_tests
         if "TREQ_RATE_LIMIT_STATE" in (row.get("verifies") or [])
     ]
     check(
@@ -4439,22 +5199,9 @@ def main() -> None:
             and row.get("representation_fidelity") == "actual"
             for row in rate_tests
         ),
-        "Rate-limit state remains backed by current Component×Local×Actual execution paths without an attributed mutation score",
+        "Rate-limit state remains backed by current Component×Local×Actual execution paths",
     )
 
-    async_assignment = assignments["REQ_ASYNC_PROVIDER_EXECUTION"]
-    async_profile = profiles.get(async_assignment.get("profile")) or {}
-    async_obligations = async_profile.get("obligations") or []
-    check(async_assignment.get("profile") == "external-provider-compatibility@1" and len(async_obligations) == 3,
-          "Async provider execution uses the external-provider compatibility Assurance Target")
-    async_frontier = {
-          (o.get("reach"), o.get("boundary"), o.get("representation_min"), o.get("cadence"))
-          for o in async_obligations if o.get("kind") == "frontier_cell"
-    }
-    check(async_frontier == {
-          ("system_integration", "replay", "surrogate_simulated", "continuous_ci"),
-          ("system_integration", "direct", "actual", "pre_release"),
-    }, "provider-facing target requires repeatable Replay plus justified pre-release Direct-live evidence")
     async_tests = [
         row
         for row in depth_facts.get("tests") or []
@@ -4465,7 +5212,7 @@ def main() -> None:
     ]
     async_upper_tests = [
         row
-        for row in depth_facts.get("tests") or []
+        for row in depth_tests
         if "REQ_ASYNC_PROVIDER_EXECUTION" in (row.get("verifies") or [])
         and row not in async_tests
     ]
@@ -4491,82 +5238,12 @@ def main() -> None:
     )
     check(
         not any(row.get("boundary_mode") == "direct" for row in async_tests),
-        "Async provider execution currently has no Direct-live contract path, creating the intended target-derived release gap",
+        "Async provider execution currently has no Direct-live contract path; its profile does not claim one",
     )
-    check(fault_model.get("schema_version") == "ternforge-fault-model-coverage-p31-1",
-          "P31 retained fault-model facts use the expected schema")
-    layers = {row.get("id"): row for row in fault_model.get("layers") or []}
-    check(set(layers) == {"specification", "architecture", "interface", "runtime", "implementation"},
-          "global pilot retains all 5 fault mechanisms")
-    check(all(int(row.get("detected") or 0) > 0 for row in layers.values()),
-          "every global fault mechanism has a real detected pilot challenge")
-    check(layers["specification"].get("engine") == "Agentic Test Forge" and
-          (layers["specification"].get("generated"), layers["specification"].get("detected")) == (6, 6),
-          "Agentic Test Forge remains genuinely validated on Scenario Outline Examples mutation")
-    check(layers["architecture"].get("engine") == "Import Linter" and
-          layers["architecture"].get("baseline_kept") == 9 and
-          layers["architecture"].get("detected") == 1,
-          "global architecture mechanism proves a forbidden dependency negative control")
-    check(layers["interface"].get("generic_mutator") is False and
-          layers["interface"].get("detected") == 3,
-          "global interface mechanism is honestly challenge-backed")
-    check(layers["runtime"].get("engine") == "Toxiproxy" and
-          layers["runtime"].get("detected") == 1,
-          "global runtime mechanism is backed by real Toxiproxy fault injection")
-
-    invalid_config_faults = (fault_model.get("contracts") or {}).get("REQ_INVALID_CONFIGURATION_ERRORS") or {}
-    groups = invalid_config_faults.get("groups") or {}
-    component_faults = groups.get("component_local") or {}
-    system_faults = groups.get("system_local") or {}
-    def consistent_group(group: dict, reach_label: str) -> bool:
-        generated = int(group.get("generated") or 0)
-        reached = int(group.get("reached") or 0)
-        killed = int(group.get("killed") or 0)
-        mutants = group.get("mutants") or []
-        return (
-            generated > 0
-            and killed <= reached <= generated
-            and int(group.get("survived") or 0) == reached - killed
-            and group.get("mutation_reach") == round(100 * reached / generated, 1)
-            and group.get("sensitivity") == (round(100 * killed / reached, 1) if reached else None)
-            and isinstance(group.get("invalid"), int)
-            and len(mutants) == generated
-            and sum(bool(row.get("reached")) for row in mutants) == reached
-            and sum(bool(row.get("killed")) for row in mutants) == killed
-            and group.get("system_reach") == reach_label
-            and group.get("boundary_mode") == "none"
-        )
-
-    check(consistent_group(component_faults, "component"),
-          "Component×Local fault cell is an exact, internally consistent projection of the retained full-pytest mutation run")
-    check(consistent_group(system_faults, "system"),
-          "System×Local fault cell is an exact, internally consistent projection of the retained full-pytest mutation run")
-    check(int(component_faults.get("killed") or 0) < int(component_faults.get("reached") or 0)
-          and int(system_faults.get("killed") or 0) < int(system_faults.get("reached") or 0),
-          "surviving mutants stay visible instead of the former lightweight-runner kills")
-    check(set(component_faults.get("families") or {}) <= {"boundary", "comparison", "boolean", "return"}
-          and {"boundary", "comparison"} <= set(component_faults.get("families") or {})
-          and sum(int(row.get("generated") or 0) for row in (component_faults.get("families") or {}).values())
-          == int(component_faults.get("generated") or 0)
-          and component_faults.get("engine_metadata") == "native pytest-gremlins operator metadata",
-          "fault-family classifier uses engine-native pytest-gremlins metadata and partitions the whole denominator")
-    overlap = invalid_config_faults.get("detection_overlap") or {}
-    implementation_layer = (invalid_config_faults.get("layers") or {}).get("implementation") or {}
-    detail_rows = implementation_layer.get("mutant_detail") or []
-    component_killed_ids = {row.get("gremlin_id") for row in detail_rows if row.get("component_killed")}
-    system_killed_ids = {row.get("gremlin_id") for row in detail_rows if row.get("system_killed")}
-    check((overlap.get("mutant_universe"), overlap.get("detected_union"), overlap.get("corroborated"),
-           overlap.get("component_only"), overlap.get("system_only")) ==
-          (max(int(component_faults.get("generated") or 0), int(system_faults.get("generated") or 0)),
-           len(component_killed_ids | system_killed_ids), len(component_killed_ids & system_killed_ids),
-           len(component_killed_ids - system_killed_ids), len(system_killed_ids - component_killed_ids))
-          and overlap.get("undetected") == int(overlap.get("mutant_universe") or 0) - int(overlap.get("detected_union") or 0),
-          "fault-model overlap uses exact engine-native mutant IDs for unique/corroborated/undetected detection")
-
     req_layers = invalid_config_faults.get("layers") or {}
-    check(set(req_layers) == {"specification", "architecture", "interface", "runtime", "implementation"} and
+    check(set(req_layers) == {"specification", "architecture", "interface", "runtime"} and
           all(int(row.get("detected") or 0) > 0 for row in req_layers.values()),
-          "profiled Requirement has real evidence on all 5 targeted fault layers")
+          "REQ_INVALID_CONFIGURATION_ERRORS keeps real, caught specialized probes for its specification, architecture, interface and runtime classes; implementation faults are the campaign's")
     check(req_layers["specification"].get("engine") == "Cucumber Gherkin parser + pytest-bdd" and
           (req_layers["specification"].get("generated"), req_layers["specification"].get("detected")) == (1, 1) and
           req_layers["specification"].get("ast_validated") is True and
@@ -4589,46 +5266,6 @@ def main() -> None:
           float(req_layers["runtime"].get("elapsed_seconds")) < 1.0 and
           req_layers["runtime"].get("detected") == 1,
           "Toxiproxy proves provider degradation is irrelevant to the pre-provider claim")
-    check((req_layers["implementation"].get("generated"), req_layers["implementation"].get("detected"))
-          == (overlap.get("mutant_universe"), overlap.get("detected_union")),
-          "Requirement implementation fault layer is backed by the same mutant universe with exact union detection")
-    implementation = req_layers["implementation"]
-    impl_reach = implementation.get("implementation_reach") or {}
-    check(int(impl_reach.get("covered_statements") or 0) <= int(impl_reach.get("executable_statements") or 0) and
-          int(impl_reach.get("executable_statements") or 0) > 0 and
-          impl_reach.get("percent") == round(100 * int(impl_reach.get("covered_statements") or 0) / int(impl_reach.get("executable_statements") or 1), 1) and
-          len(impl_reach.get("missing_statements") or []) == int(impl_reach.get("executable_statements") or 0) - int(impl_reach.get("covered_statements") or 0) and
-          impl_reach.get("metric") == "implementation_statement_reach" and
-          "coverage.py executable statements" in impl_reach.get("basis", ""),
-          "Implementation statement reach has an explicit coverage.py denominator")
-    check(implementation.get("overall_detection")
-          == round(100 * int(overlap.get("detected_union") or 0) / max(1, int(overlap.get("mutant_universe") or 0)), 1),
-          "Overall Detection is retained as the secondary killed/generated metric")
-    native_mutants = implementation.get("mutant_detail") or []
-    check(len(native_mutants) == overlap.get("mutant_universe")
-          and len({row.get("gremlin_id") for row in native_mutants}) == len(native_mutants),
-          "exact native mutant detail retains every engine-native gremlin ID without tuple-key collapse")
-    check(sum(bool(row.get("component_killed")) for row in native_mutants) == component_faults.get("killed") and
-          sum(bool(row.get("system_killed")) for row in native_mutants) == system_faults.get("killed") and
-          sum(bool(row.get("system_reached")) for row in native_mutants) == system_faults.get("reached"),
-          "exact native mutant table agrees with Component/System killed and reached counts")
-    check(all("covering_tests" in row for group in (component_faults, system_faults) for row in group.get("mutants") or []),
-          "per-mutant retained facts include covering tests without inventing killing tests")
-    retained_mutmut = implementation.get("retained_mutmut") or {}
-    check(
-        (
-            retained_mutmut.get("killed"),
-            retained_mutmut.get("survived"),
-            retained_mutmut.get("valid_mutants"),
-        )
-        == (84, 26, 110)
-        and retained_mutmut.get("new_survivors") == 0
-        and retained_mutmut.get("existing_survivors") == 26
-        and retained_mutmut.get("resolved_survivors") == 0
-        and "mutate_only_covered_lines=true"
-        in retained_mutmut.get("denominator_warning", ""),
-        "retained mutmut Test Strength keeps its separate covered-lines denominator without fabricating triage across the adapter-fingerprint change",
-    )
     for layer_id, required_fields in {
         "specification": ("claim_section", "mutation", "parser_validity", "execution_command", "detector", "source_url", "test_source_url"),
         "architecture": ("declared_rule", "baseline_summary", "injected_violation", "execution_command", "detector", "source_url"),
@@ -4637,112 +5274,6 @@ def main() -> None:
     }.items():
         check(all(req_layers[layer_id].get(field) not in (None, "", []) for field in required_fields),
               f"{layer_id} fault detail retains all promised claim/challenge/detector/drill-down fields")
-
-    # Evaluate current blocking mutation checks from retained facts.
-    current_actual = {
-        "component-reach": component_faults.get("mutation_reach"),
-        "component-sensitivity": component_faults.get("sensitivity"),
-        "system-reach": system_faults.get("mutation_reach"),
-        "system-sensitivity": system_faults.get("sensitivity"),
-    }
-    unmet_mutation_checks = sorted(
-        name for name, value in current_actual.items() if float(value or 0.0) < 80.0
-    )
-    invalid_config_page = (HTML / "verification-assurance.html").read_text()
-    check(
-        all(value is not None for value in current_actual.values())
-        and (not unmet_mutation_checks or '<div class="overall not-met">FAIL</div>' in invalid_config_page),
-        f"Invalid Configuration mutation Reach/Sensitivity are judged against the 80% floor; unmet checks fail the monitor: {unmet_mutation_checks}",
-    )
-
-    check(assurance_snapshots == generated_assurance_snapshots,
-          "generated assurance snapshot registry is an exact projection of the retained local source")
-    check(assurance_snapshots.get("schema_version") == "ternforge-assurance-history-p31-1" and
-          assurance_snapshots.get("history_starts_at_checkpoint") == "p31-local-1",
-          "P31 assurance snapshot/event history starts explicitly without historical back-fill")
-    snapshots = assurance_snapshots.get("snapshots") or []
-    current_by_contract = {}
-    for row in snapshots:
-        current_by_contract[row.get("contract_id")] = row
-    check(set(current_by_contract) == {
-          "REQ_INVALID_CONFIGURATION_ERRORS",
-          "TREQ_RATE_LIMIT_STATE",
-          "REQ_ASYNC_PROVIDER_EXECUTION",
-    }, "P31 snapshot history covers all three explicit Assurance Targets")
-    invalid_snapshot = current_by_contract["REQ_INVALID_CONFIGURATION_ERRORS"]
-    check((invalid_snapshot.get("obligations_met"), invalid_snapshot.get("obligations_total")) == (11, 12) and
-          invalid_snapshot.get("blocking_gap_ids") == ["component-mutation-sensitivity"] and
-          (invalid_snapshot.get("component_mutation_reach"), invalid_snapshot.get("component_mutation_sensitivity")) == (87.1, 40.7) and
-          (invalid_snapshot.get("system_mutation_reach"), invalid_snapshot.get("system_mutation_sensitivity")) == (87.1, 100.0) and
-          invalid_snapshot.get("test_strength") == 59.8 and
-          (invalid_snapshot.get("fault_layers_detected"), invalid_snapshot.get("fault_layers_total")) == (5, 5),
-          "historical P31 primary-Requirement snapshot remains immutable and preserves its original obligations, gaps, Reach/Sensitivity and Test Strength")
-    rate_snapshot = current_by_contract["TREQ_RATE_LIMIT_STATE"]
-    check((rate_snapshot.get("obligations_met"), rate_snapshot.get("obligations_total")) == (2, 3) and
-          rate_snapshot.get("blocking_gap_ids") == ["covered-mutant-strength"] and
-          rate_snapshot.get("test_strength") == 51.0,
-          "internal-state snapshot retains only the honest covered-mutant Test Strength gap")
-    async_snapshot = current_by_contract["REQ_ASYNC_PROVIDER_EXECUTION"]
-    check((async_snapshot.get("obligations_met"), async_snapshot.get("obligations_total")) == (2, 3) and
-          async_snapshot.get("blocking_gap_ids") == ["frontier-system-integration-live"],
-          "provider-facing snapshot retains the justified pre-release Direct-live gap")
-    check(all(any(
-              row.get("contract_id") == contract_id and
-              any(event.get("type") == "history_started" for event in row.get("events") or [])
-              for row in snapshots)
-              for contract_id in current_by_contract),
-          "each target has an explicit P31 history-start event without requiring later snapshots to repeat it")
-    component_fault = contract_monitor["fault_actual"]["groups"]["component_local"]
-    model_declaration_contract = monitor_facts["contracts"][
-        "TREQ_CONFIG_MODEL_DECLARATION"
-    ]
-    component_target = next(
-        row
-        for row in model_declaration_contract["target"]["coverage"]
-        if row["level"] == "component" and row["boundary"] == "none"
-    )
-    check(
-        component_fault["sensitivity"] == component_faults.get("sensitivity")
-        and "VC_CONFIG_MODEL_DECLARATION" in component_target["items"]
-        and len(
-            model_declaration_contract["coverage_actual"].get(
-                "VC_CONFIG_MODEL_DECLARATION"
-            )
-            or []
-        )
-        == 1,
-        "parent mutation history and first-class model-declaration TREQ retain their distinct current facts",
-    )
-
-    history = fault_model.get("history") or {}
-    check(
-        history.get("tool") == "DVC plots"
-        and len(history.get("rows") or []) == 3
-        and {row.get("run_id") for row in history.get("rows") or []}
-        == {"p31-local-1", "p32-local-1", "p33-local-1"},
-        "system Assurance History is rendered by DVC from the retained P31-P33 assurance snapshot registry",
-    )
-    history_page = (HTML / "assurance-history/index.html").read_text()
-    check(("Assurance history · Test Strength" in history_page or
-           "Assurance history \\u00b7 Test Strength" in history_page) and
-          '"width": "container"' in history_page and
-          ".vega-embed { width: 100%; max-width: 100%; }" in history_page and
-          'rel="icon" href="data:,"' in history_page,
-          "system DVC trend is standard, responsive, and clean")
-    req_history = invalid_config_faults.get("history") or {}
-    req_history_page = (HTML / "assurance-history/REQ_INVALID_CONFIGURATION_ERRORS/index.html").read_text()
-    check(req_history.get("tool") == "DVC plots" and len(req_history.get("rows") or []) >= 1 and
-          "REQ_INVALID_CONFIGURATION_ERRORS" in req_history_page and
-          '"width": "container"' in req_history_page and
-          'rel="icon" href="data:,"' in req_history_page,
-          "Requirement-specific DVC trend is retained and responsive")
-    rate_history = (fault_model.get("contract_histories") or {}).get("TREQ_RATE_LIMIT_STATE") or {}
-    rate_history_page = (HTML / "assurance-history/TREQ_RATE_LIMIT_STATE/index.html").read_text()
-    check(rate_history.get("tool") == "DVC plots" and len(rate_history.get("rows") or []) >= 1 and
-          "TREQ_RATE_LIMIT_STATE" in rate_history_page and
-          '"width": "container"' in rate_history_page and
-          'rel="icon" href="data:,"' in rate_history_page,
-          "internal-state retained DVC Test Strength history remains available outside the P34 Requirement monitor")
 
     check("TERNFORGE-P27-CONTRACT-EVIDENCE-START" not in assurance_page and
           "TERNFORGE-P29-ASSURANCE-EVIDENCE-START" not in assurance_page and
@@ -4921,7 +5452,11 @@ def main() -> None:
           "Living semantic projection removes boundary/producer details from the visible semantic narrative")
 
     index_page = (HTML / "index.html").read_text()
-    check('href="mutation-analysis.html"' in health_page, "Health: portal navigation links Mutation Analysis")
+    check(
+        'href="mutation-analysis.html"' not in health_page.split('<main id="main-content"', 1)[0]
+        and not (HTML / "mutation-analysis.html").exists(),
+        "Mutation Analysis is retired: the navigation carries no item and the build leaves no page (ADR_0003)",
+    )
     check(
         'href="verification-health-map.html"' in index_page
         and "Verification Health Map" in index_page
@@ -5140,7 +5675,8 @@ def main() -> None:
             if binding.get("assurance_item") or (owner and owner != contract_id):
                 continue
             owned += 1
-            unbound_count += 0 if owner or binding.get("fault_challenge") else 1
+            # A mutation pin (ADR_0006) is bound by the mutant it pins, not by a coverage case.
+            unbound_count += 0 if owner or binding.get("fault_challenge") or nodeid.startswith("tests/llm_router/mutation_pins/") else 1
         row = health_rows.get(contract_id) or {}
         execution_metrics = ((row.get("own") or {}).get("execution") or {}).get("metrics") or []
         shown = sum(int(metric.get("total") or 0) for metric in execution_metrics if metric.get("label") == "Tests")
@@ -5180,14 +5716,18 @@ def main() -> None:
         and class_map.get("comparison") == "impl.comparison"
         and class_map.get("boundary") == "impl.boundary"
         and class_map.get("boolean") == "impl.control-flow"
-        and class_map.get("return") == "impl.control-flow",
-        "Implementation fault campaign is retained and maps native operator families onto all three Implementation classes",
+        and class_map.get("return") == "impl.control-flow"
+        and class_map.get("statement") == "impl.effect"
+        and class_map.get("body") == "impl.effect",
+        "Implementation fault campaign is retained and maps its operator families onto all four Implementation classes",
     )
     full_pytest_plugin = BRIDGE / "pytest_plugins/gremlins_full_pytest.py"
+    faults_source = (BRIDGE / "implementation_faults.py").read_text()
     check(
         full_pytest_plugin.exists()
-        and "build_lightweight_command" in full_pytest_plugin.read_text()
-        and "IMPL_FAULTS.engine_command" in adapter_source
+        and "build_lightweight_command = _no_lightweight_runner" in full_pytest_plugin.read_text()
+        and '"-p", "gremlins_full_pytest"' in faults_source
+        and "IMPL_FAULTS.run_engine" in adapter_source
         and '"--with","pytest-gremlins","pytest"' not in adapter_source,
         "every gremlins run executes each mutant with full pytest, never the fixture-less lightweight runner",
     )
@@ -5305,10 +5845,15 @@ def main() -> None:
     )
     primary_monitor_page = (HTML / "verification-assurance.html").read_text()
     check(
-        "fault-class-row" in primary_monitor_page
-        and "Not caught:" in primary_monitor_page
-        and "impl.control-flow" in primary_monitor_page,
-        "the fault inspector lists each required class with its state, plain reason, and surviving mutants",
+        "fault-class-row" not in primary_monitor_page
+        and "Not caught:" not in primary_monitor_page
+        and "is also claimed by" not in primary_monitor_page
+        and "technical-support-card" not in primary_monitor_page
+        and "mutation-analysis.html" not in primary_monitor_page
+        and "fault-chain" in primary_monitor_page
+        and "layer=faults&amp;group=Implementation" in primary_monitor_page,
+        "the fault inspector counts required, challenged and detected classes and routes to the explorer, which lists "
+        "each class with its reason and surviving mutants; the monitor carries no class list, prose or Mutation Analysis link",
     )
 
     goal_short_labels = {
@@ -5968,27 +6513,39 @@ def main() -> None:
         "Changes compares health and the measures each with its own snapshot of the previous retained run, in one shape: what went up and what went down in every layer",
     )
     health_nav = health_page.split('<main id="main-content"', 1)[0]
-    # The theme renders the navigation twice (header and mobile sidebar): Mutation Analysis follows the Health Map in both.
-    # The theme separates items with two blank lines and an inserted item brings one more; a longer run of blank lines
-    # means a patch landed on top of an earlier one.
+    explorer_page_text = (HTML / "verification-explorer.html").read_text()
+    # The theme renders the navigation twice (header and mobile sidebar): the Verification Explorer follows the Health
+    # Map and Mutation Analysis follows the explorer in both, on the map's page and on the explorer's. The theme
+    # separates items with two blank lines and an inserted item brings one more; a longer run of blank lines means a
+    # patch landed on top of an earlier one.
+    nav_run = r">\s*Verification Health Map\s*</a>\s*</li>\s*<li[^>]*>\s*<a[^>]*>\s*Verification Explorer\s*</a>"
     check(
-        len(re.findall(r">\s*Verification Health Map\s*</a>", health_nav))
-        == len(re.findall(r">\s*Verification Health Map\s*</a>\s*</li>\s*<li[^>]*>\s*<a[^>]*>\s*Mutation Analysis\s*</a>", health_nav))
-        > 0
+        all(
+            len(re.findall(r">\s*Verification Health Map\s*</a>", nav)) == len(re.findall(nav_run, nav)) > 0
+            for nav in (health_nav, explorer_page_text.split('<main id="main-content"', 1)[0])
+        )
+        and "Mutation Analysis" not in health_nav
+        and "Mutation Analysis" not in explorer_page_text.split('<main id="main-content"', 1)[0]
         and "Verification Depth Map" not in health_nav
-        and all("\n" * 5 not in page.split('<main id="main-content"', 1)[0] for page in (health_page, index_page)),
-        "the Health Map page lists itself once in each portal navigation, Mutation Analysis right after it, and no Depth "
-        "Map; patching an already patched navigation adds nothing",
+        and all(
+            "\n" * 5 not in page.split('<main id="main-content"', 1)[0]
+            for page in (health_page, index_page, explorer_page_text)
+        ),
+        "the Health Map and the Verification Explorer are listed once in each portal navigation, the explorer right after "
+        "the map, and neither Mutation Analysis nor a Depth Map; patching an already patched navigation adds nothing",
     )
+    check_verification_explorer(map_pages_module)
     qualification_harness_source = (BRIDGE / "qualify-evidence-confidence.py").read_text()
     check(
         "'<section id=\"verification-health-map\">\\n<h1>Verification Health Map'" in map_pages_module
         and "f'<style id=\"tf-health-map-style\">\\n{css}\\n</style>\\n'" in map_pages_module
-        and re.findall(r"^def (\w+)\(", map_pages_module, flags=re.MULTILINE) == ["map_tools", "map_frame", "map_strip", "health_map_article"]
+        and re.findall(r"^def (\w+)\(", map_pages_module, flags=re.MULTILINE)
+        == ["map_tools", "map_panel", "map_find", "map_frame", "map_strip", "health_map_article", "explorer_article"]
         and "verification-depth-map" not in map_pages_module
         and '<section id="verification-health-map">' not in health_builder_source
         and "MAP_PAGES.health_map_article(" in health_builder_source
-        and health_builder_source.count("MAP_PAGES.") == 1
+        and "MAP_PAGES.explorer_article(" in health_builder_source
+        and health_builder_source.count("MAP_PAGES.") == 2
         and "assurance_map_pages" not in qualification_harness_source
         and "assurance_monitor_ui" not in qualification_harness_source
         and '"assurance_monitor_ui_sha256"' not in health_builder_source
@@ -6005,7 +6562,7 @@ def main() -> None:
         ),
         "page markup lives outside the evidence-producer fingerprint: the builder passes only facts, every file that computes facts stays fingerprinted",
     )
-    layers_block = re.search(r"const LAYERS=\[(.*?)\];", health_page, flags=re.DOTALL)
+    layers_block = re.search(r"const MAP_HEALTH_LAYERS=\[(.*?)\];", health_page, flags=re.DOTALL)
     layer_tips = re.findall(r'\["(\w+)","[^"]+","([^"]+)"\]', layers_block.group(1) if layers_block else "")
     check(
         len(layer_tips) == len(health_layer_keys)
@@ -6099,7 +6656,9 @@ def main() -> None:
           "Current portal build: **P34**" in manifest and
           "1. Test Coverage → 2. Fault-based Testing → 3. History" in manifest and
           "collectively **13/13 criteria PASS · 16/16 paths**" in manifest and
-          "old custom Assurance Target/Profile registry is compatibility-only" in manifest,
+          "old custom Assurance Target/Profile registry is retired (ADR_0003)" in manifest
+          and "Mutation strategy: ADR_0003" in manifest
+          and "mutmut" not in manifest.split("## Premature platform spike cleanup", 1)[0].replace("mutmut, its Test Strength score", ""),
           "manifest active checkpoint matches the current P34 Requirement monitor")
     check("all feature development happens inside" in manifest,
           "manifest forbids normal platform implementation during the active pilot")
@@ -6111,9 +6670,10 @@ def main() -> None:
         check(f"**{step} " in manifest, f"extraction manifest retains post-pilot migration step {step}")
 
     expected_bridge_files = {
-        "assurance-targets.json",
-        "assurance-snapshots.json",
         "build-mutation-report-prototype.py",
+        "semantic_mutants.py",
+        "model_generation.py",
+        "survivor_equivalence.py",
         "assurance_monitor_domain.py",
         "assurance_monitor_registry.py",
         "assurance_monitor_ui.py",
@@ -6130,6 +6690,7 @@ def main() -> None:
         "verification-depth-map-local-prototype.md",
         "verification-depth-methodology-audit.md",
         "verification-health-map-local-prototype.md",
+        "verification-explorer-local-prototype.md",
     }
     actual_bridge_files = {path.name for path in BRIDGE.iterdir() if path.is_file()}
     check(actual_bridge_files == expected_bridge_files,
@@ -6140,49 +6701,43 @@ def main() -> None:
     )
 
     generated_paths = [
-        str(path.relative_to(ROOT))
-        for path in RESULTS.rglob("*")
-        if path.is_file()
-    ]
-    generated_paths += [
-        "docs/_build/html/mutation-analysis.html",
-        "docs/_build/html/verification-test-strength-facts.json",
+        "docs/_build/html/mutation-report.html",
+        "docs/_build/html/mutation-report.json",
         "docs/_build/html/verification-health-map.html",
         "docs/_build/html/verification-assurance.html",
         "docs/_build/html/contract-evidence-request-override-precedence.html",
         "docs/_build/html/contract-evidence-credential-resolution.html",
         "docs/_build/html/contract-evidence-config-installation-coherence.html",
         "docs/_build/html/assurance-fault-model-facts.json",
-        "docs/_build/html/assurance-history/index.html",
-        "docs/_build/html/assurance-history/assurance-history.csv",
-        "docs/_build/html/assurance-history/REQ_INVALID_CONFIGURATION_ERRORS/index.html",
-        "docs/_build/html/assurance-history/REQ_INVALID_CONFIGURATION_ERRORS/assurance-history.csv",
-        "docs/_build/html/assurance-history/TREQ_RATE_LIMIT_STATE/index.html",
-        "docs/_build/html/assurance-history/TREQ_RATE_LIMIT_STATE/assurance-history.csv",
-        "docs/_build/html/assurance-targets.json",
-        "docs/_build/html/assurance-snapshots.json",
         "docs/_build/html/favicon.ico",
         "docs/_build/html/verification-health-map.html",
         "docs/_build/html/test-plan.html",
         "docs/_build/html/_static/mutation-test-elements.js",
         "docs/_build/html/evidence-classification-facts.json",
         "test-results/implementation-faults/campaign.json",
+        "test-results/implementation-faults/diff/summary.json",
+        "test-results/implementation-faults/diff/annotations.txt",
+        "test-results/implementation-faults/diff/summary.md",
     ]
     generated_paths += [
         str(path.relative_to(ROOT))
         for path in (ROOT / "test-results/health-map/runs").glob("*.json")
     ]
-    history_glob = "`docs/_build/html/mutation-results/campaign-history/*.json`"
+    generated_paths += [
+        str(path.relative_to(ROOT))
+        for path in (ROOT / "test-results/implementation-faults").glob("*.gremlins.json")
+    ]
     contract_evidence_glob = "`docs/_build/html/contract-evidence-*.html`"
     health_run_glob = "`test-results/health-map/runs/*.json`"
+    gremlins_glob = "`test-results/implementation-faults/*.gremlins.json`"
     missing_artifacts = sorted(
         path
         for path in generated_paths
         if f"`{path}`" not in manifest
         and not (
-            path.startswith("docs/_build/html/mutation-results/campaign-history/")
-            and path.endswith(".json")
-            and history_glob in manifest
+            path.startswith("test-results/implementation-faults/")
+            and path.endswith(".gremlins.json")
+            and gremlins_glob in manifest
         )
         and not (
             path.startswith("docs/_build/html/contract-evidence-")
@@ -6197,9 +6752,10 @@ def main() -> None:
     )
     check(not missing_artifacts, f"extraction manifest inventories all retained generated artifact classes: {missing_artifacts}")
 
-    check(not (ROOT / "mutants").exists(), "temporary mutmut workspace absent")
+    check(not (ROOT / "mutants").exists(), "no leftover mutmut workspace")
     setup = ROOT / "setup.cfg"
-    check(not setup.exists() or "[mutmut]" not in setup.read_text(), "temporary mutmut setup config absent")
+    check(not setup.exists() or "[mutmut]" not in setup.read_text(), "no leftover mutmut setup config")
+    check(not (ROOT / "coverage").exists(), "no leftover engine report directory in the repository root")
 
     # With -z a rename or a copy names its source in the record after its own, which carries no status of its own.
     status = []
@@ -6216,6 +6772,9 @@ def main() -> None:
         source_follows = "R" in record[:2] or "C" in record[:2]
     approved_pilot_sources = {
         ".ai-bridge/build-mutation-report-prototype.py",
+        # Retired with mutmut and the P31 assurance model (ADR_0003): deleted, not replaced.
+        ".ai-bridge/assurance-targets.json",
+        ".ai-bridge/assurance-snapshots.json",
         ".ai-bridge/assurance_monitor_domain.py",
         ".ai-bridge/assurance_monitor_registry.py",
         ".ai-bridge/assurance_monitor_ui.py",
@@ -6230,15 +6789,28 @@ def main() -> None:
         ".ai-bridge/validate-mutation-pilot.py",
         ".ai-bridge/verification-health-map-local-prototype.md",
         ".ai-bridge/verification-depth-map-local-prototype.md",
+        ".ai-bridge/verification-explorer-local-prototype.md",
         ".ai-bridge/implementation_faults.py",
+        ".ai-bridge/semantic_mutants.py",
+        ".ai-bridge/model_generation.py",
+        ".ai-bridge/survivor_equivalence.py",
+        ".ai-bridge/survivor-triage/",
+        ".ai-bridge/survivor-verdicts/",
+        ".ai-bridge/semantic-mutants/",
         ".ai-bridge/pytest_plugins/",
         ".ai-bridge/vendor/",
         ".ai-bridge/development-history/",
         ".ai-bridge/exemplars/",
         "docs/index.md",
         "docs/README.md",
+        "docs/decisions/index.md",
+        "docs/decisions/0003-mutation-testing-strategy.md",
+        "docs/decisions/0004-metered-model-generation.md",
+        "docs/decisions/0005-survivor-judgement.md",
+        "docs/decisions/0006-survivor-verdicts.md",
         "docs/test-plan.md",
         "docs/verification-health-map.md",
+        "docs/verification-explorer.md",
         "docs/verification-depth-map.md",
         "docs/assurance-profiles/",
         "docs/experiments/index.md",
@@ -6299,6 +6871,10 @@ def main() -> None:
         "tests/llm_router/bdd/execution/cassettes/",
         "tests/llm_router/bdd/structured_output/cassettes/",
         "tests/llm_router/property_based/internal/test_invariants.py",
+        "tests/llm_router/mutation_pins/",
+        # flake8 leaves the mutation pins as the cascade kept them (ADR_0006).
+        ".flake8",
+        ".github/workflows/mutation-pilot.yml",
         "tests/llm_router/support/fault_server.py",
         "tests/llm_router/support/fault_observation.py",
         "tests/llm_router/support/_vcr_body_matching.py",

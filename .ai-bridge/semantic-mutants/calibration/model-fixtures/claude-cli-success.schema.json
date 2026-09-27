@@ -1,0 +1,33 @@
+{
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "proposals"
+ ],
+ "properties": {
+  "proposals": {
+   "type": "array",
+   "maxItems": 3,
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "summary",
+     "replacement",
+     "risk_realized"
+    ],
+    "properties": {
+     "summary": {
+      "type": "string"
+     },
+     "replacement": {
+      "type": "string"
+     },
+     "risk_realized": {
+      "type": "string"
+     }
+    }
+   }
+  }
+ }
+}

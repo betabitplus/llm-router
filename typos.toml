@@ -6,4 +6,10 @@ extend-exclude = [
   ".copier-answers.yml",
   # Lockfile; dependency validation owns this file.
   "uv.lock",
+  # Stored model answers, ledgers and verdict records are machine-written data full of hex digests.
+  ".ai-bridge/semantic-mutants/",
+  ".ai-bridge/survivor-triage/",
+  ".ai-bridge/survivor-verdicts/",
+  # Mutation pins are kept byte for byte as the cascade kept them (ADR_0006).
+  "tests/llm_router/mutation_pins/",
 ]

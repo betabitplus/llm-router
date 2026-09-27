@@ -1,0 +1,44 @@
+{
+ "1ea89b29a7c49441": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215611Z-12d485",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only narrows when the 'Route cooldown cleared' info log is emitted. The limiter state (next_available_at, failure_count reset) is unchanged, so the isolation, spacing and reset criteria behave the same. The log output does differ, but none of the given requirements asks for this observability event.",
+   "response_sha256": "e124212c5ceb8862b465b8c5602c57f7b8eb3d2a1f625daad430d1a58f222273",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "f72d006716c7a35b44b67fb5f806c1ee11d71d3229329c42a13cb592a5013a70"
+ },
+ "2e8807d144d81f1d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215618Z-80a9bc",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant changes only whether the \"Route cooldown cleared\" log line is written when failure_count is 0 and cooldown_until exactly equals the current time, so the versions do differ in that one case. The limiter state is untouched either way: next_available_at and the failure_count reset come out the same. None of REQ_RATE_LIMIT_ROUTING, TREQ_RATE_LIMIT_STATE or their verification criteria say anything about logging.",
+   "response_sha256": "1f95e6058c17d6a889c391090975e29a09b710c1ffe30e33f436c5057163579d",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "718387ea3d5eded4a0e239fc6721847148c37e2cf60e6f0c7b882a4629403b37"
+ },
+ "7cd0a40c605b3f65": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215625Z-ab8634",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The flipped comparison only changes when the \"Route cooldown cleared\" info log fires. The mutant logs it on routine successes where no cooldown was active. The limiter state stays the same: next_available_at is still set and failure_count is still reset. So the versions differ only in log output, and neither TREQ_RATE_LIMIT_STATE nor REQ_RATE_LIMIT_ROUTING says anything about log output.",
+   "response_sha256": "fe1484326f4cc70d71571ff353c20e3ff4625bee2dcf315e1de97ee501bac7f1",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "0b3146306b578003f2d0e101c0ad7abb350d103e99735ecb50681c7249378055"
+ }
+}

@@ -95,4 +95,8 @@ strict Sphinx graph build; it never executes the project test suite itself.
 
 0001-provider-adapters-own-provider-protocols
 0002-separate-provider-retry-from-route-fallback
+0003-mutation-testing-strategy
+0004-metered-model-generation
+0005-survivor-judgement
+0006-survivor-verdicts
 ```

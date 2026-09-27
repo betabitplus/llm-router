@@ -1,4 +1,4 @@
-"""Markup, styles and scripts of the Verification Health Map.
+"""Markup, styles and scripts of the Verification Health Map and the Verification Explorer.
 
 Presentation only: the builder computes every fact and passes it in as a JSON payload. The
 file stays outside the evidence-producer qualification fingerprint on purpose, because no
@@ -9,6 +9,11 @@ side panel, rings and map views, contracts table, hover card and Find) and one s
 runs it. Health judges every layer (healthMap: failing or passing); beside it the measures say how
 deep, how realistic and how strong the evidence is (depthMap, once the Verification Depth Map); and
 pairsMap puts each layer's health and its measures on the layer's card.
+
+The Verification Explorer is where a monitor sends a reader for the items behind its counts: every
+evidence path, fault class, mutant, own check, support and evidence producer, one row each, with
+what it is, how it stands, why it fails and where the details are. It runs on the map's tools line,
+filters panel, hints and Find, so both pages filter, link and speak alike.
 """
 
 MAP_SHARED_CSS = r"""/* The Verification Health Map's shared styles: the tools line, hints, the layer strip, both views, the side panel,
@@ -515,6 +520,16 @@ function mapColumns(root,children,isLeaf){
 }
 // The tree the map draws, from rows in tree order with the product first: goals, capabilities and contracts.
 const MAP_KIND={product:"Product / System",goal:"Goal",feature:"Capability",requirement:"Requirement",treq:"Technical requirement"};
+// The health layers and the question each answers: the Health Map judges them and the Verification Explorer files its
+// items under them.
+const MAP_HEALTH_LAYERS=[
+ ["overall","Overall","Overall health; the rings show which layers fail where."],
+ ["execution","Execution","Did the tests and scenarios that ran pass?"],
+ ["coverage","Coverage","Does every required case have a passing test?"],
+ ["faults","Fault model","Do the tests catch the errors they should?"],
+ ["evidence","Evidence quality","Is the evidence realistic, traceable, qualified, up to date?"],
+ ["assurance","Assurance","Do goals and capabilities pass their integration and validation checks?"]
+];
 // Every kind has its glyph wherever a mark is named: the Kind switch, the card, the contracts table and Find.
 const MAP_KIND_ICON={product:"fa-cubes",goal:"fa-bullseye",feature:"fa-puzzle-piece",requirement:"fa-file-contract",treq:"fa-gear"};
 const mapKindIcon=level=>'<i class="fa-solid '+MAP_KIND_ICON[level]+' tf-map-kind-icon" aria-hidden="true"></i>';
@@ -1302,7 +1317,8 @@ function mapFrame(o){
 // {label, options or name and valid, test(row,value), swatch(value), tip(value), keepEmpty(value), title, help,
 // empty, pipe, panel(), switch: one value or none, where the empty value is all of them}. The side panel follows the view and shows only the facets that fit it, so pointing at an
 // option always lights something; the table previews nothing and a click filters it.
-//   rows: what the filters keep or dim; leaves: what the count counts; view(), panel(view), previews(view)
+//   rows: what the filters keep or dim; leaves: what the count counts, named by noun (contracts on the map);
+//   view(), panel(view), previews(view)
 //   rendered(): the page redraws its own switches; changed(): the page redraws what depends on the filters
 //   mark(row,panel): page marks for a hovered contract
 function mapFilters(o){
@@ -1331,9 +1347,9 @@ function mapFilters(o){
  const lead=$("tf-map-lead"),box=$("tf-map-filters"),chips=$("tf-map-chips"),badge=$("tf-map-filter-badge"),count=$("tf-map-total");
  const body=$("tf-map-body"),panel=$("tf-map-panel"),toggleButton=$("tf-map-panel-toggle"),panelBody=$("tf-map-panel-body");
  const help=text=>' <span class="tf-map-help" aria-hidden="true" data-tip="'+escapeHtml(text)+'">?</span>';
- const counted=o.leaves.length;
+ const counted=o.leaves.length,noun=o.noun||"contracts";
  let chipsHtml="";
- // Chips and how many contracts they keep in place of the run stamp, and the badge on Filters.
+ // Chips and how many rows they keep in place of the run stamp, and the badge on Filters.
  f.render=()=>{
    const list=[];
    for(const key in sets)for(const value of sets[key]){
@@ -1344,7 +1360,7 @@ function mapFilters(o){
    box.hidden=!list.length;
    if(list.join("")!==chipsHtml){chipsHtml=list.join("");chips.innerHTML=chipsHtml}
    const shown=f.shown(false);
-   count.innerHTML=shown?"<b>"+o.leaves.filter(row=>shown.has(row.id)).length+"</b> of "+counted+" contracts":"<b>"+counted+"</b> contracts";
+   count.innerHTML=shown?"<b>"+o.leaves.filter(row=>shown.has(row.id)).length+"</b> of "+counted+" "+noun:"<b>"+counted+"</b> "+noun;
    badge.hidden=!list.length;
    badge.textContent=list.length;
    o.rendered();
@@ -2069,9 +2085,16 @@ function mapPage(o){
 }"""
 
 
-def map_tools(about: str) -> str:
-    """The tools line: the retained run, or the active filters and how many contracts they keep in its
-    place, and the actions."""
+def map_tools(
+    about: str,
+    *,
+    filters_tip: str = "Open the filters that fit the current layer beside it (F).",
+    find_tip: str = "Find a goal, capability or contract and show it in the current layer (/).",
+    copy_tip: str = "Copy a link to this layer, its filters and the selected contract.",
+    changes: bool = True,
+) -> str:
+    """The tools line: the retained run, or the active filters and how many rows they keep in its
+    place, and the actions. A page without an earlier run to compare with leaves Changes out."""
     return (
         '<div class="tf-map-tools" id="tf-map-tools"><span class="tf-map-lead" id="tf-map-lead">'
         '<span class="tf-map-stamp" id="tf-map-stamp"></span>'
@@ -2082,17 +2105,46 @@ def map_tools(about: str) -> str:
         '<button type="button" class="tf-map-clear" data-clear>Clear all</button></span></span>'
         '<span class="tf-map-actions">'
         '<button type="button" class="tf-map-action" id="tf-map-panel-toggle" aria-expanded="false" '
-        'aria-controls="tf-map-panel" data-tip="Open the filters that fit the current layer beside it (F).">'
+        f'aria-controls="tf-map-panel" data-tip="{filters_tip}">'
         '<i class="fa-solid fa-filter" aria-hidden="true"></i>Filters'
         '<span class="tf-map-badge" id="tf-map-filter-badge" hidden></span><kbd>F</kbd></button>'
         '<button type="button" class="tf-map-action" id="tf-map-find-open" aria-haspopup="dialog" '
-        'aria-controls="tf-map-find" data-tip="Find a goal, capability or contract and show it in the current layer (/).">'
+        f'aria-controls="tf-map-find" data-tip="{find_tip}">'
         '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>Find<kbd>/</kbd></button>'
-        '<button type="button" class="tf-map-action" id="tf-map-changes" aria-pressed="false">'
-        '<i class="fa-solid fa-code-compare" aria-hidden="true"></i>Changes</button>'
-        '<button type="button" class="tf-map-action" id="tf-map-copy" data-tip="Copy a link to this layer, its filters and the selected contract.">'
+        + (
+            '<button type="button" class="tf-map-action" id="tf-map-changes" aria-pressed="false">'
+            '<i class="fa-solid fa-code-compare" aria-hidden="true"></i>Changes</button>'
+            if changes
+            else ""
+        )
+        + f'<button type="button" class="tf-map-action" id="tf-map-copy" data-tip="{copy_tip}">'
         '<i class="fa-solid fa-link" aria-hidden="true"></i><span>Copy link</span></button>'
         "</span></div>"
+    )
+
+
+def map_panel(title: str, kinds_label: str, label: str) -> str:
+    """The side panel: the kind switch under its title, the same in every view, then the view's own filters."""
+    return (
+        f'<aside class="tf-map-panel" id="tf-map-panel" aria-label="{label}" inert>'
+        '<div class="tf-map-panel-inner"><div class="tf-map-panel-kinds">'
+        f'<div class="tf-map-panel-top"><span class="tf-map-facet-title">{title}</span>'
+        '<button type="button" class="tf-map-close" id="tf-map-panel-close" aria-label="Close the filters">&times;</button></div>'
+        f'<span class="tf-map-kinds" id="tf-map-kinds" role="group" aria-label="{kinds_label}"></span></div>'
+        '<div class="tf-map-panel-head"><span class="tf-map-panel-title" id="tf-map-panel-title"></span></div>'
+        '<div id="tf-map-panel-body"></div></div></aside>'
+    )
+
+
+def map_find(label: str, placeholder: str, foot: str) -> str:
+    """Find: a dialog over the page that picks a goal, capability or contract by name or ID."""
+    return (
+        f'<div class="tf-map-find" id="tf-map-find" role="dialog" aria-modal="true" aria-label="{label}" hidden>'
+        '<div class="tf-map-find-box"><input class="tf-map-find-input" id="tf-map-find-input" type="search" '
+        f'placeholder="{placeholder}" autocomplete="off" spellcheck="false" '
+        'role="combobox" aria-expanded="true" aria-controls="tf-map-find-list">'
+        '<div class="tf-map-find-list" id="tf-map-find-list" role="listbox" aria-label="Matches"></div>'
+        f'<div class="tf-map-find-foot">{foot}</div></div></div>'
     )
 
 
@@ -2106,14 +2158,8 @@ def map_frame(rings_label: str, tiles_label: str) -> str:
         '<div class="tf-map-legend" id="tf-map-legend" aria-hidden="true"></div>'
         '<div class="tf-map-more-pop" id="tf-map-more-pop" aria-hidden="true" hidden></div></div>'
         '<div class="tf-map-body" id="tf-map-body">'
-        '<aside class="tf-map-panel" id="tf-map-panel" aria-label="Filters for the current layer" inert>'
-        '<div class="tf-map-panel-inner"><div class="tf-map-panel-kinds">'
-        '<div class="tf-map-panel-top"><span class="tf-map-facet-title">Contracts</span>'
-        '<button type="button" class="tf-map-close" id="tf-map-panel-close" aria-label="Close the filters">&times;</button></div>'
-        '<span class="tf-map-kinds" id="tf-map-kinds" role="group" aria-label="Contracts by kind"></span></div>'
-        '<div class="tf-map-panel-head"><span class="tf-map-panel-title" id="tf-map-panel-title"></span></div>'
-        '<div id="tf-map-panel-body"></div></div></aside>'
-        '<div class="tf-map-stage" id="tf-map-stage">'
+        + map_panel("Contracts", "Contracts by kind", "Filters for the current layer")
+        + '<div class="tf-map-stage" id="tf-map-stage">'
         f'<svg class="tf-map-view tf-map-rings" id="tf-map-rings" role="group" aria-label="{rings_label}"></svg>'
         f'<svg class="tf-map-view tf-map-tiles" id="tf-map-tiles" role="group" aria-label="{tiles_label}" hidden></svg>'
         '<div class="tf-map-list-view" id="tf-map-list-view" hidden><div class="tf-map-list-bar">'
@@ -2123,13 +2169,12 @@ def map_frame(rings_label: str, tiles_label: str) -> str:
         '<i class="fa-solid fa-download" aria-hidden="true"></i>CSV</button></div>'
         '<div class="tf-map-list-wrap" id="tf-map-list"></div></div>'
         "</div></div>"
-        '<div class="tf-map-find" id="tf-map-find" role="dialog" aria-modal="true" aria-label="Find on the map" hidden>'
-        '<div class="tf-map-find-box"><input class="tf-map-find-input" id="tf-map-find-input" type="search" '
-        'placeholder="Find a goal, capability or contract by name or ID" autocomplete="off" spellcheck="false" '
-        'role="combobox" aria-expanded="true" aria-controls="tf-map-find-list">'
-        '<div class="tf-map-find-list" id="tf-map-find-list" role="listbox" aria-label="Matches"></div>'
-        '<div class="tf-map-find-foot">↑ ↓ move · Enter shows it in the current layer · Esc closes</div></div></div>'
-        '<div id="tf-map-card" class="tf-map-card" role="tooltip" aria-hidden="true"></div>'
+        + map_find(
+            "Find on the map",
+            "Find a goal, capability or contract by name or ID",
+            "↑ ↓ move · Enter shows it in the current layer · Esc closes",
+        )
+        + '<div id="tf-map-card" class="tf-map-card" role="tooltip" aria-hidden="true"></div>'
     )
 
 
@@ -2204,6 +2249,9 @@ html[data-theme=dark] #verification-health-map{--tf-hm-alert:#f59e0b}
 .tf-health-chip.failed{color:var(--tf-hm-fail-ink);background:color-mix(in srgb,var(--tf-hm-fail) 16%,transparent)}
 .tf-health-chip.passed{color:var(--tf-hm-pass-ink);background:color-mix(in srgb,var(--tf-hm-pass) 24%,transparent)}
 .tf-health-why{margin-top:.45rem;padding-top:.4rem;border-top:1px solid var(--tf-map-line)}
+/* A layer panel opens its items in the explorer: one quiet line above its filters, in the same place on every layer. */
+.tf-health-items{display:inline-block;margin:0 0 .7rem;font-size:.8rem;font-weight:600;color:var(--tf-map-link,var(--pst-color-link));text-decoration:none}
+.tf-health-items:hover,.tf-health-items:focus-visible{text-decoration:underline}
 .tf-health-why b{font-weight:700}
 .tf-health-find-marks{display:inline-flex;gap:2px}
 .tf-health-find-marks i{width:9px;height:9px;border-radius:2px;background:var(--tf-hm-na-strong)}
@@ -2228,14 +2276,7 @@ html[data-theme=dark] #verification-health-map{--tf-hm-alert:#f59e0b}
 HEALTH_MAP_JS = r"""// Health judges: every layer says whether each contract's evidence is enough. It is every layer's first view.
 function healthMap(model){
 let map=null;
-const LAYERS=[
- ["overall","Overall","Overall health; the rings show which layers fail where."],
- ["execution","Execution","Did the tests and scenarios that ran pass?"],
- ["coverage","Coverage","Does every required case have a passing test?"],
- ["faults","Fault model","Do the tests catch the errors they should?"],
- ["evidence","Evidence quality","Is the evidence realistic, traceable, qualified, up to date?"],
- ["assurance","Assurance","Do goals and capabilities pass their integration and validation checks?"]
-];
+const LAYERS=MAP_HEALTH_LAYERS;
 const METRIC_LABELS={
  "Tests":"Tests passed",
  "Scenarios":"Scenarios passed",
@@ -2436,7 +2477,15 @@ LAYERS.forEach(([key,label])=>{
 });
 // The panel follows the layer. Overall shows the layer × verdict matrix, health's counterpart of the depth rings'
 // test level × boundary: one row per ring, one column per colour.
-const PANELS=Object.fromEntries(LAYERS.map(([key,label])=>[key,{title:label,help:"Point at Fail, Pass, N/A or a cause to light its marks on the map, or click it to keep only them.",facets:[key,"why-"+key]}]));
+// The items behind a layer's red marks, one row each in the Verification Explorer: the layer's failing and unknown
+// items, narrowed to the causes chosen here.
+function explorerLink(key){
+ const chosen=[...(map.filters.sets["why-"+key]||[])];
+ const params=new URLSearchParams({layer:key,status:"fail,unknown"});
+ if(chosen.length)params.set("cause",chosen.join(","));
+ return '<a class="tf-health-items" href="verification-explorer.html#'+escapeHtml(params.toString())+'" data-tip="'+escapeHtml((chosen.length?"The items with the causes chosen here":"The failing and unknown items of this layer")+", one row each: what each one is, why it fails and how to fix it.")+'">Items in the explorer ↗</a>';
+}
+const PANELS=Object.fromEntries(LAYERS.map(([key,label])=>[key,{title:label,help:"Point at Fail, Pass, N/A or a cause to light its marks on the map, or click it to keep only them.",before:()=>explorerLink(key),facets:[key,"why-"+key]}]));
 PANELS.overall={title:"Layer × health",help:"Point at a cell to light its ring in every ray, or click it to keep only those marks there.",before:()=>matrixHtml(),facets:[]};
 function matrixHtml(){
  const filters=map.filters;
@@ -3127,5 +3176,553 @@ def health_map_article(model_json: str, d3_hierarchy: str) -> str:
         '<a class="headerlink" href="#verification-health-map" title="Link to this heading">#</a></h1>\n'
         f'<style id="tf-health-map-style">\n{css}\n</style>\n'
         f"{markup}\n<script>{d3_hierarchy}</script>\n"
+        f"<script>\n(()=>{{\n{script}\n}})();\n</script>\n</section>"
+    )
+
+
+EXPLORER_CSS = r"""/* The explorer's own layout: the list beside the shared filters panel, then groups, blocks, objects and rows. The
+   shared map styles give the tools line, the panel, chips, options, hints and Find; the health palette gives the marks. */
+#verification-explorer .tf-ex-main{flex:1 1 auto;min-width:0}
+#verification-explorer .tf-ex-bar{gap:.7rem}
+#verification-explorer .tf-ex-search{flex:0 1 15rem;min-width:6rem;height:26px;padding:0 .55rem;border:1px solid var(--tf-map-line);border-radius:7px;background:var(--pst-color-background);color:var(--pst-color-text-base);font:inherit;font-size:.74rem}
+#verification-explorer .tf-ex-search:hover{border-color:var(--tf-map-line-strong)}
+#verification-explorer .tf-ex-search:focus-visible{outline:2px solid var(--tf-map-ring);outline-offset:1px}
+#verification-explorer .tf-map-summary b{font-weight:650}
+#verification-explorer .tf-map-kinds{flex-wrap:wrap}
+#verification-explorer .tf-map-kind{flex:1 1 calc(25% - 2px);padding-left:.4rem;padding-right:.4rem}
+#verification-explorer .tf-map-sw.unknown{background:repeating-linear-gradient(45deg,var(--tf-hm-fail) 0 2px,transparent 2px 4px)}
+#verification-explorer .tf-ex-define{margin:0 0 .6rem;padding:.5rem .75rem;border:1px solid var(--tf-map-line);border-radius:10px;background:var(--tf-map-goal);font-size:.78rem}
+#verification-explorer .tf-ex-define[hidden]{display:none}
+#verification-explorer :is(.tf-ex-define,.tf-ex-define-body) p{margin:.15rem 0 0;max-width:80ch}
+#verification-explorer .tf-ex-define-body{padding:.4rem .75rem .5rem;border-bottom:1px solid var(--tf-map-line);font-size:.76rem;color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-define-body b,#verification-explorer .tf-ex-define p b{color:var(--pst-color-text-base);font-weight:650}
+#verification-explorer .tf-ex-list{min-height:12rem}
+#verification-explorer .tf-ex-group{margin:0 0 .9rem;border:1px solid var(--tf-map-line);border-radius:12px;background:var(--tf-map-goal);overflow:hidden}
+#verification-explorer .tf-ex-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.15rem .6rem;padding:.55rem .75rem .5rem;border-bottom:1px solid var(--tf-map-line)}
+#verification-explorer .tf-ex-title{display:inline-flex;align-items:baseline;gap:.4rem;min-width:0;font-size:.88rem;font-weight:700;overflow-wrap:anywhere}
+#verification-explorer .tf-ex-head code,#verification-explorer .tf-ex-object-head code,#verification-explorer .tf-ex-context code{padding:0 .3rem;border:0;border-radius:4px;background:var(--tf-map-feature);color:inherit;font-size:.68rem;overflow-wrap:anywhere}
+#verification-explorer .tf-ex-path{flex:1 1 12rem;min-width:0;font-size:.72rem;color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-tally{font-size:.72rem;color:var(--pst-color-text-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#verification-explorer :is(.tf-ex-tally,.tf-map-summary) :is(.failed,.unknown){color:var(--tf-hm-fail-ink);font-weight:650}
+#verification-explorer :is(.tf-ex-tally,.tf-map-summary) .passed{color:var(--tf-hm-pass-ink);font-weight:650}
+#verification-explorer .tf-ex-open{font-size:.74rem;font-weight:600;white-space:nowrap}
+#verification-explorer .tf-ex-block{padding:.45rem .75rem .55rem;background:var(--pst-color-background)}
+#verification-explorer .tf-ex-block+.tf-ex-block{border-top:1px solid var(--tf-map-line)}
+#verification-explorer .tf-ex-block-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.1rem .5rem;margin:.1rem 0 .3rem;font-size:.62rem;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-block-head span{font-size:.72rem;font-weight:500;letter-spacing:0;text-transform:none}
+#verification-explorer .tf-ex-object{margin:.3rem 0 .55rem}
+#verification-explorer .tf-ex-object:last-child{margin-bottom:.1rem}
+#verification-explorer .tf-ex-object-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.1rem .6rem;font-size:.76rem}
+#verification-explorer .tf-ex-object-head>span{color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-object-links{display:inline-flex;flex-wrap:wrap;gap:.1rem .55rem;margin-left:auto;font-size:.72rem}
+#verification-explorer .tf-ex-object-what{margin:.1rem 0 .2rem;max-width:80ch;font-size:.76rem;color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-rows{margin:0;padding:0;list-style:none}
+#verification-explorer .tf-ex-row{display:grid;grid-template-columns:1rem 7.5rem minmax(0,1fr) auto;align-items:baseline;gap:.05rem .5rem;padding:.28rem .4rem;border-radius:7px;font-size:.78rem}
+#verification-explorer .tf-ex-row:hover{background:var(--tf-map-goal)}
+#verification-explorer .tf-ex-mark{font-weight:800;text-align:center}
+#verification-explorer .tf-ex-mark:is(.failed,.unknown),#verification-explorer .tf-ex-row:is(.failed,.unknown) .tf-ex-state{color:var(--tf-hm-fail-ink)}
+#verification-explorer .tf-ex-mark.passed,#verification-explorer .tf-ex-row.passed .tf-ex-state{color:var(--tf-hm-pass-ink)}
+#verification-explorer .tf-ex-mark.na,#verification-explorer .tf-ex-row.na .tf-ex-state{color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-row.na .tf-ex-name{font-weight:550}
+#verification-explorer .tf-ex-state{font-size:.72rem;font-weight:650;line-height:1.3}
+#verification-explorer .tf-ex-body{min-width:0}
+#verification-explorer .tf-ex-line{display:block}
+#verification-explorer .tf-ex-kind{margin-right:.35rem;font-size:.7rem;color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-name{font-weight:650;overflow-wrap:anywhere}
+#verification-explorer .tf-ex-meta{margin-left:.55rem;font-size:.7rem;color:var(--pst-color-text-muted)}
+#verification-explorer :is(.tf-ex-what,.tf-ex-why,.tf-ex-context){display:block;max-width:90ch;font-size:.74rem}
+#verification-explorer .tf-ex-what{color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-context{margin-bottom:.05rem;font-size:.7rem;color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-context .tf-map-kind-icon{margin-right:.25rem}
+#verification-explorer .tf-ex-note{color:var(--pst-color-text-base)}
+#verification-explorer :is(.tf-ex-cause,.tf-ex-for){display:inline;margin:0 .35rem 0 0;padding:0 .4rem;border:1px solid var(--tf-map-line-strong);border-radius:999px;background:var(--pst-color-background);color:var(--pst-color-text-base);font:inherit;font-size:.7rem;font-weight:600;line-height:1.5;cursor:pointer}
+#verification-explorer .tf-ex-cause{border-color:color-mix(in srgb,var(--tf-hm-fail) 55%,transparent)}
+#verification-explorer .tf-ex-for{margin:0 .15rem 0 0;padding:0 .3rem;border-color:transparent;background:none;font-weight:600;color:inherit}
+#verification-explorer :is(.tf-ex-cause,.tf-ex-for):hover{border-color:var(--tf-map-selected)}
+#verification-explorer :is(.tf-ex-cause,.tf-ex-for):focus-visible{outline:2px solid var(--tf-map-ring);outline-offset:1px}
+#verification-explorer .tf-ex-links{display:inline-flex;flex-wrap:wrap;justify-content:flex-end;gap:.1rem .55rem;font-size:.72rem;white-space:nowrap}
+#verification-explorer .tf-ex-links a.raw{color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-nest{padding:0}
+#verification-explorer .tf-ex-rows.nested{margin:.05rem 0 .25rem 1.5rem;padding-left:.5rem;border-left:1px solid var(--tf-map-line)}
+#verification-explorer .tf-ex-rows.nested .tf-ex-row{padding-top:.18rem;padding-bottom:.18rem;font-size:.75rem}
+#verification-explorer .tf-ex-change{font-size:.66rem;font-weight:800;cursor:help}
+#verification-explorer .tf-ex-change.up{color:var(--tf-hm-fail-ink)}
+#verification-explorer .tf-ex-change.down{color:var(--tf-hm-pass-ink)}
+#verification-explorer .tf-ex-change.new{color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-badge{font-size:.72rem;font-weight:700;font-variant-numeric:tabular-nums}
+#verification-explorer .tf-ex-badge.failed{color:var(--tf-hm-fail-ink)}
+#verification-explorer .tf-ex-badge.passed{color:var(--tf-hm-pass-ink)}
+#verification-explorer .tf-ex-empty{padding:1.4rem;border:1px dashed var(--tf-map-line-strong);border-radius:12px;text-align:center;font-size:.8rem;color:var(--pst-color-text-muted)}
+#verification-explorer .tf-ex-more{margin:.3rem 0 1rem;font-size:.74rem;color:var(--pst-color-text-muted)}
+@media(max-width:640px){
+ #verification-explorer .tf-ex-bar{flex-wrap:wrap;height:auto}
+ #verification-explorer .tf-ex-search{flex:1 1 100%}
+ #verification-explorer .tf-map-kind{flex-basis:calc(50% - 2px)}
+ #verification-explorer .tf-ex-row{grid-template-columns:1rem minmax(0,1fr)}
+ #verification-explorer :is(.tf-ex-state,.tf-ex-body,.tf-ex-links){grid-column:2}
+ #verification-explorer .tf-ex-links{justify-content:flex-start;white-space:normal}
+ #verification-explorer .tf-ex-object-links{margin-left:0}
+}"""
+
+EXPLORER_JS = r"""// The Verification Explorer: every item behind the monitors, one row each. A monitor judges and counts; here each
+// item says what it is, how it stands, why it fails and where its details are. The tools line, the filters panel,
+// chips, hints, Find and the address are the map's own, so a list is narrowed, shared and read like the map.
+function explorerPage(model){
+ const $=id=>document.getElementById(id);
+ const tree=mapTree(model.rows),{rowById}=tree;
+ const items=model.items,objects=model.objects,CAUSES=model.causes,itemById=new Map(items.map(item=>[item.id,item]));
+ // Each kind of item: its key, glyph, name on the kind switch, plural, singular and what it is in one sentence.
+ const KINDS=[
+  ["path","fa-route","Paths","Evidence paths","Evidence path","One way a criterion of a verification profile must be proven, such as one provider family. It passes when its own retained test passed and its evidence is sound."],
+  ["unbound","fa-link-slash","Unbound","Tests outside the profiles","Test outside the profile","A test that verifies a contract outside every case its profile requires. It proves no case, but its failure fails the contract."],
+  ["fault","fa-shield-halved","Faults","Fault classes","Fault class","A kind of defect a contract's tests must be able to catch, as its verification profile requires."],
+  ["mutant","fa-bug","Mutants","Mutants","Mutant","A small change planted in a contract's own code. Its tests should fail on it and so catch it."],
+  ["check","fa-diagram-project","Checks","Assurance checks","Assurance check","A goal's or capability's own integration or validation scenario: what its contracts cannot prove one by one."],
+  ["support","fa-sitemap","Support","Support","Support","A contract, capability or goal this one rests on. It cannot pass while that fails."],
+  ["producer","fa-industry","Producers","Evidence producers","Evidence producer","A tool that captures or judges evidence. Qualified means a control showed it does not turn a wrong result into a pass."]
+ ];
+ const KIND=Object.fromEntries(KINDS.map(([key,icon,short,many,one,what])=>[key,{icon,short,many,one,what}]));
+ // How to fix what a cause says; what it means is the Health Map's own sentence.
+ const FIX={
+  uncovered:"Write a test for this case at the required level and boundary and bind it to the case with coverage_item.",
+  scenario:"Make the required scenario pass, or write it if it does not exist yet.",
+  unbound:"Name in the profile the case this test proves, or make the test pass.",
+  unexpected:"Declare the path in the profile, or bind the test to a path the profile declares.",
+  unchallenged:"Add a test that injects this fault for the contract (fault_item) and fails when the fault goes unnoticed.",
+  shared:"Give the contract its own, narrower @impl scope, so that no other contract claims its code.",
+  survivors:"Add or sharpen an assertion on what the mutant changes, so that a test fails on it; if no input can tell it apart, suppress it as equivalent with the reason.",
+  notreached:"Add a test that runs this code through the contract's public path, or narrow the @impl scope to the code the contract owns.",
+  unproven:"Find an input on which the original and the mutant differ and pin it in a test, or record the mutant as equivalent with the proof.",
+  generate:"Generate the semantic mutants for this target (--generate-semantic-mutants). If the budget deferred them, wait for the plan's usage window to reset; if no model was available, sign in to a backend the Test Plan lists.",
+  regenerate:"Generate the semantic mutants again for the current code and requirement (--generate-semantic-mutants); the run judges them with the cascade.",
+  suppressed:"Review the suppression pragmas: a class whose every mutant is suppressed proves nothing; keep only the ones whose reason holds.",
+  invalid:"Make the mutated code importable or narrow the scope: a mutant that breaks test collection cannot be judged.",
+  nosite:"Check the profile's fault applicability; if the class still applies, mark the code where the fault can occur with @impl.",
+  noimpl:"Mark the code that implements the contract with @impl.",
+  notests:"Make the contract's own tests pass: faults are judged only with passing tests.",
+  missed:"Strengthen the assertions so that the injected fault fails a test.",
+  campaign:"Run the implementation fault campaign again.",
+  blocked:"Find out why the campaign could not run for this contract, then run it again.",
+  support:"Open the supporting item and fix what fails there.",
+  "metric:Representation":"Run the case against the kind of target the profile requires.",
+  "metric:Provenance":"Retain the evidence again, so that its result, source and artifacts belong to one run.",
+  "metric:Producers":"Qualify the evidence producers again.",
+  "metric:Freshness":"Run the evidence again: its inputs changed after the retained run.",
+  "metric:M&S":"Validate the model behind the evidence against its referent to the required level.",
+  "metric:Integration":"Make the integration scenario pass.",
+  "metric:Validation":"Make the validation scenario pass."
+ };
+ // What a link opens, in one sentence.
+ const LINK_TIP={
+  Spec:"The scenario in the Living Specification: what this behaviour is.",
+  Evidence:"The test's evidence record: what it checked, how far it reached and what was real.",
+  Allure:"This test's result in Allure: steps, attachments and timing.",
+  Source:"The code at the commit of the retained run.",
+  Profile:"The verification or assurance profile that asks for this.",
+  "Test model":"The Test Plan model this criterion follows.",
+  "Test plan":"What each fault class means, in the Test Plan's fault model.",
+  Opens:"The monitor of the item this one rests on.",
+  "Evidence trust":"What the tool is for, what it risks and how it is qualified.",
+  Qualification:"The retained qualification record, as raw JSON.",
+  Items:"The items of the item this one rests on, here."
+ };
+ const STATUS={fail:{mark:"✕",word:"Fail",cls:"failed"},unknown:{mark:"?",word:"Unknown",cls:"unknown"},pass:{mark:"✓",word:"Pass",cls:"passed"},na:{mark:"–",word:"N/A",cls:"na"}};
+ const STATUS_ORDER=["fail","unknown","pass","na"];
+ const LAYERS=MAP_HEALTH_LAYERS.filter(([key])=>key!=="overall");
+ const LAYER=Object.fromEntries(LAYERS.map(([key,label,ask])=>[key,{label,ask}]));
+ const LEVEL=Object.fromEntries(model.levels),BOUND=Object.fromEntries(model.boundaries);
+ const REPRESENTATION={synthetic_abstract:"Synthetic",surrogate_simulated:"Surrogate",representative:"Representative",actual:"Actual"};
+ const OWNERS=[["requirement","Requirements"],["treq","Technical requirements"],["feature","Capabilities"],["goal","Goals"],["product","Product / System"]];
+ const GROUPS=["Implementation","Runtime / dependency","Interface / protocol","Architecture","Specification / model"];
+ // The engine's operators, most productive first, and what each one changes.
+ const OPERATORS=[["comparison","Comparison"],["boolean","Boolean"],["statement","Statement removed"],["return","Return value"],["boundary","Boundary"],["body","Body replaced"],["semantic","Semantic"]];
+ const OPERATOR_TIP={
+  comparison:"Swaps a comparison operator, such as < for <=.",
+  boolean:"Swaps and for or, drops a not, or flips True and False.",
+  statement:"Removes a statement with an effect: a call, a write, a raise.",
+  return:"Replaces a returned value with None or its negation.",
+  boundary:"Shifts a compared constant by one.",
+  body:"Replaces a whole function body with a default of its return type.",
+  semantic:"A realistic defect proposed for the risk the profile names."
+ };
+ const GROUP_BY=[
+  ["owner","Contract","One group per contract, capability or goal in the order of the tree; the evidence producers last."],
+  ["cause","Cause","One group per reason for failing, most items first, with what it means and how to fix it."],
+  ["kind","Kind","One group per kind of item, with what that kind is."]
+ ];
+ const ownerOf=item=>rowById.get(item.owner);
+ const goalOf=id=>id?tree.goalOf.get(id)||"":"";
+ const capabilityOf=id=>{const row=rowById.get(id);if(!row)return"";if(row.level==="feature")return row.id;return tree.ancestors(row).find(up=>up.level==="feature")?.id||""};
+ // A producer belongs to no contract, but For keeps it with every item whose evidence it made; the goal and capability
+ // filters follow the item's own owner only, or the producers every goal shares would count in each of them.
+ const holders=item=>item.owner?[item.owner]:item.attrs?.users||[];
+ const searchText=item=>item.search??=[item.name,item.what,item.note,item.state,item.owner,ownerOf(item)?.label,objects[item.object]?.name,...item.causes.map(cause=>CAUSES[cause]?.label)].filter(Boolean).join(" ").toLowerCase();
+ // What changed since the previous retained run: up fails now, down passes now, new was not there. Each run keeps one
+ // snapshot of its items, so drawing the same run again never moves the baseline.
+ const delta=model.delta||{},changes=(delta.layers||{}).items||{up:[],down:[],new:[],gone:0};
+ const CHANGED={up:new Set(changes.up),down:new Set(changes.down),new:new Set(changes.new)};
+ const changeOf=item=>CHANGED.up.has(item.id)?"up":CHANGED.down.has(item.id)?"down":CHANGED.new.has(item.id)?"new":"";
+ const since=delta.baseline?"the run of "+mapRunLabel(delta.baseline.started_at):"";
+ const CHANGE_WORDS={up:["▲","Fails now","It did not fail in "],down:["▼","Passes now","It failed in "],new:["+","New","It was not there in "]};
+ const causeCount=id=>items.filter(item=>item.causes.includes(id)).length;
+ const causeIds=[...new Set(items.flatMap(item=>item.causes))].sort((a,b)=>causeCount(b)-causeCount(a));
+ const facets={
+  kind:{label:"Kind",switch:true,options:KINDS.map(([key,,,many])=>[key,many]),test:(item,value)=>item.kind===value},
+  status:{label:"Status",options:STATUS_ORDER.map(key=>[key,STATUS[key].word]),test:(item,value)=>item.status===value,swatch:value=>mapSwatch(STATUS[value].cls)},
+  cause:{label:"Why it fails",options:causeIds.map(id=>[id,CAUSES[id]?.label||id]),test:(item,value)=>item.causes.includes(value),tip:value=>CAUSES[value]?.hint||""},
+  layer:{label:"Layer",options:LAYERS.map(([key,label])=>[key,label]),test:(item,value)=>item.layers.includes(value),tip:value=>LAYER[value].ask},
+  owner:{label:"Belongs to",options:OWNERS,test:(item,value)=>ownerOf(item)?.level===value},
+  goal:{label:"Goal",options:tree.goals.map(row=>[row.id,row.short||row.label]),test:(item,value)=>goalOf(item.owner)===value},
+  capability:{label:"Capability",options:tree.rows.filter(row=>row.level==="feature").map(row=>[row.id,row.short||row.label]),test:(item,value)=>capabilityOf(item.owner)===value},
+  contract:{label:"For",options:tree.rows.map(row=>[row.id,row.short||row.label]),test:(item,value)=>holders(item).includes(value)},
+  level:{label:"Test level",options:model.levels,test:(item,value)=>item.attrs?.level===value},
+  boundary:{label:"Boundary",options:model.boundaries,test:(item,value)=>item.attrs?.boundary===value},
+  group:{label:"Fault group",options:GROUPS.map(group=>[group,group]),test:(item,value)=>item.attrs?.group===value},
+  klass:{label:"Fault class",options:[...new Set(items.filter(item=>item.kind==="mutant").map(item=>item.attrs?.class))].filter(Boolean).sort().map(value=>[value,value]),test:(item,value)=>item.attrs?.class===value},
+  operator:{label:"Operator",options:OPERATORS.filter(([key])=>items.some(item=>item.attrs?.operator===key)),test:(item,value)=>item.attrs?.operator===value,tip:value=>OPERATOR_TIP[value]||""},
+  origin:{label:"Origin",options:[["rule","Rule operator"],["semantic","Semantic mutant"]],test:(item,value)=>item.attrs?.origin===value,
+   tip:value=>value==="rule"?"Planted by a rule operator of the engine.":"Proposed by a generator for a risk the profile names, frozen as a patch and filtered by the cascade."},
+  diff:{label:"In this change",options:[["yes","Changed lines"]],test:(item,value)=>item.attrs?.diff===value,
+   help:model.change_base?.merge_base?"Mutants on lines this branch changes against "+model.change_base.base+".":"No merge base with main, so no change to compare."},
+  change:{label:"Since the previous run",options:[["any","Any change"],["up","Fails now"],["down","Passes now"],["new","New"]],keepEmpty:()=>true,test:(item,value)=>value==="any"?changeOf(item)!=="":changeOf(item)===value,
+   help:delta.baseline?"Compared with "+since+".":"No earlier retained run to compare with yet: changes show here after the next retained run."},
+  q:{label:"Text",switch:true,name:value=>"“"+value+"”",valid:value=>value.length>0,test:(item,value)=>searchText(item).includes(value.toLowerCase())}
+ };
+ // The panel shows the filters that fit the kind on the switch.
+ const PANEL_FACETS={
+  "":["status","cause","change","layer","owner","goal","capability","level","boundary","group"],
+  path:["status","cause","change","layer","owner","goal","capability","level","boundary"],
+  unbound:["status","cause","change","owner","goal","capability"],
+  fault:["status","cause","change","owner","goal","capability","group"],
+  mutant:["status","cause","change","diff","origin","klass","operator","owner","goal","capability"],
+  check:["status","cause","change","owner","goal","capability","level","boundary"],
+  support:["status","change","owner","goal","capability"],
+  producer:["status","cause","change","goal","capability"]
+ };
+ const hint=mapHint($("tf-map-hint"));
+ const listBox=$("tf-ex-list"),groupBox=$("tf-ex-group-by"),search=$("tf-ex-search"),kindBox=$("tf-map-kinds");
+ let groupBy="owner",filters=null;
+ const chosen=key=>{const set=filters.sets[key];return set.size===1?[...set][0]:""};
+ filters=mapFilters({
+  facets,rows:items,leaves:items,noun:"items",
+  view:()=>"items",
+  panel:()=>({title:"Filters",help:"Point at an option to see what it keeps; a click keeps only those items. Options of one filter add up, filters narrow each other.",before:()=>"",facets:PANEL_FACETS[chosen("kind")]||PANEL_FACETS[""]}),
+  previews:()=>false,previewed:()=>{},
+  hideTip:()=>hint.hide(),
+  rendered:()=>renderKinds(),
+  changed:()=>{syncSearch();render();writeHash()}
+ });
+ // The kind switch at the top of the panel: each kind with its glyph and how many items it holds under the other
+ // filters. It is drawn once; a filter changes only its numbers and which kind is chosen.
+ kindBox.innerHTML=[["","fa-list-check","All","Every item of every kind."],...KINDS.map(([key,icon,short,,,what])=>[key,icon,short,what])]
+  .map(([value,icon,name,tip])=>'<button type="button" class="tf-map-kind" data-facet="kind" data-value="'+value+'" aria-pressed="false" data-tip="'+escapeHtml(tip)+'">'
+   +'<span class="tf-map-kind-name"><i class="fa-solid '+icon+'" aria-hidden="true"></i>'+name+"</span><b></b></button>").join("");
+ const kindButtons=[...kindBox.querySelectorAll("[data-facet]")];
+ function renderKinds(){
+  const kind=chosen("kind"),others=items.filter(item=>filters.matches(item,"kind"));
+  kindButtons.forEach(button=>{
+   const value=button.dataset.value,found=value?others.filter(item=>item.kind===value).length:others.length,pressed=value===kind;
+   button.setAttribute("aria-pressed",String(pressed));
+   button.disabled=!found&&!pressed;
+   button.querySelector("b").textContent=found;
+  });
+ }
+ groupBox.innerHTML=GROUP_BY.map(([key,label,tip])=>'<button type="button" data-group="'+key+'" aria-pressed="'+(key===groupBy)+'" data-tip="'+escapeHtml(tip)+'">'+label+"</button>").join("");
+ function setGroup(key){
+  groupBy=GROUP_BY.some(([value])=>value===key)?key:"owner";
+  groupBox.querySelectorAll("[data-group]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.group===groupBy)));
+ }
+ groupBox.addEventListener("click",event=>{const button=event.target.closest("[data-group]");if(button){setGroup(button.dataset.group);render();writeHash()}});
+ // Text narrows like any filter and shows as a chip; commas would split it in the address, so they become spaces.
+ const typed=()=>search.value.replace(/,/g," ").trim();
+ function syncSearch(){const value=[...filters.sets.q][0]||"";if(typed()!==value)search.value=value}
+ let searchTimer=0;
+ search.addEventListener("input",()=>{
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(()=>{
+   const value=typed(),set=filters.sets.q;
+   if(value===([...set][0]||""))return;
+   set.clear();
+   if(value)set.add(value);
+   filters.render();filters.renderPanel(false);render();writeHash();
+  },160);
+ });
+ const tally=list=>{
+  const counts={};
+  list.forEach(item=>{counts[item.status]=(counts[item.status]||0)+1});
+  return STATUS_ORDER.filter(key=>counts[key]).map(key=>'<span class="'+STATUS[key].cls+'">'+counts[key]+" "+STATUS[key].word.toLowerCase()+"</span>").join(" · ");
+ };
+ const cellName=(level,bound)=>level?(LEVEL[level]||level)+(bound?" × "+(BOUND[bound]||bound):""):"";
+ function metaOf(item,context){
+  const a=item.attrs||{},parts=[];
+  // Under its criterion a path does not repeat the criterion's cell.
+  const cell=cellName(a.level,a.boundary);
+  if(cell&&(context||item.kind!=="path"))parts.push(cell);
+  if(a.representation)parts.push(REPRESENTATION[a.representation]||a.representation);
+  if(a.ms&&a.representation==="surrogate_simulated")parts.push("M&S "+String(a.ms).toUpperCase());
+  // Current evidence is the norm and stays silent.
+  if(a.freshness&&a.freshness!=="CURRENT")parts.push(String(a.freshness));
+  if(a.operator)parts.push(a.operator);
+  if(item.kind==="producer"){
+   const users=(a.users||[]).map(id=>rowById.get(id)).filter(Boolean),contracts=users.filter(row=>row.level==="requirement"||row.level==="treq").length;
+   parts.push("evidence for "+plural(contracts,"contract","contracts")+(users.length>contracts?" and "+plural(users.length-contracts,"goal or capability","goals or capabilities"):""));
+  }
+  return parts.join(" · ");
+ }
+ const linkHtml=([label,href,kind])=>'<a class="'+kind+'" href="'+escapeHtml(href)+'" data-tip="'+escapeHtml(LINK_TIP[label]||"")+'">'+escapeHtml(label)+(kind==="explorer"?" ›":" ↗")+"</a>";
+ function linksHtml(item){
+  const links=item.links.filter(link=>link[1]);
+  if(item.kind==="support"&&item.attrs?.child)links.push(["Items","#contract="+encodeURIComponent(item.attrs.child),"explorer"]);
+  return links.map(linkHtml).join("");
+ }
+ function contextHtml(item){
+  const row=ownerOf(item),object=objects[item.object]||itemById.get(item.object);
+  if(!row)return'<span class="tf-ex-context">'+escapeHtml(KIND.producer.many)+"</span>";
+  return'<span class="tf-ex-context">'+mapKindIcon(row.level)+'<button type="button" class="tf-ex-for" data-for="'+escapeHtml(row.id)+'" data-tip="Show only the items of '+escapeHtml(row.short||row.label)+'.">'+escapeHtml(row.short||row.label)+"</button><code>"+escapeHtml(row.id)+"</code>"+(object?" › "+escapeHtml(object.name):"")+"</span>";
+ }
+ function changeMark(item){
+  const change=changeOf(item);
+  if(!change)return"";
+  const [mark,word,before]=CHANGE_WORDS[change];
+  // A row that failed and now counts for nothing (suppressed by a verdict or a pragma, invalid) does not pass.
+  const said=change==="down"&&item.status==="na"?"No longer counts":word;
+  return' <span class="tf-ex-change '+change+'" data-tip="'+escapeHtml(said+". "+before+since+".")+'" aria-label="'+escapeHtml(said)+'">'+mark+"</span>";
+ }
+ function rowHtml(item,context,shownCause){
+  const status=STATUS[item.status]||STATUS.unknown,kind=KIND[item.kind],meta=metaOf(item,context);
+  const causes=item.causes.filter(cause=>cause!==shownCause).map(cause=>'<button type="button" class="tf-ex-cause" data-cause="'+escapeHtml(cause)+'" data-tip="'+escapeHtml((CAUSES[cause]?.hint||"")+" A click shows every item with this cause.")+'">'+escapeHtml(CAUSES[cause]?.label||cause)+"</button>").join("");
+  return'<li class="tf-ex-row '+status.cls+'" data-id="'+escapeHtml(item.id)+'">'
+   +'<span class="tf-ex-mark '+status.cls+'" aria-label="'+status.word+'">'+status.mark+"</span>"
+   +'<span class="tf-ex-state">'+escapeHtml(item.state)+changeMark(item)+"</span>"
+   +'<span class="tf-ex-body">'+(context?contextHtml(item):"")
+   +'<span class="tf-ex-line">'+(context?'<i class="fa-solid '+kind.icon+' tf-ex-kind" aria-hidden="true"></i>':"")+'<span class="tf-ex-name">'+escapeHtml(item.name)+"</span>"+(meta?'<span class="tf-ex-meta">'+escapeHtml(meta)+"</span>":"")+"</span>"
+   +(item.what?'<span class="tf-ex-what">'+escapeHtml(item.what)+"</span>":"")
+   +(causes||item.note?'<span class="tf-ex-why">'+causes+(item.note?'<span class="tf-ex-note">'+escapeHtml(item.note)+"</span>":"")+"</span>":"")
+   +"</span>"
+   +'<span class="tf-ex-links">'+linksHtml(item)+"</span></li>";
+ }
+ const byObject=list=>{const groups=new Map();list.forEach(item=>{if(!groups.has(item.object))groups.set(item.object,[]);groups.get(item.object).push(item)});return[...groups.entries()]};
+ const ranked=list=>list.map((item,index)=>[item,index]).sort((a,b)=>STATUS_ORDER.indexOf(a[0].status)-STATUS_ORDER.indexOf(b[0].status)||a[1]-b[1]).map(([item])=>item);
+ const rows=(list,context,shownCause)=>'<ul class="tf-ex-rows">'+list.map(item=>rowHtml(item,context,shownCause)).join("")+"</ul>";
+ // An object is what a few rows share: a criterion and its paths, a fault group and its classes, a section of checks.
+ function objectHtml(objectId,list,inner){
+  const object=objects[objectId]||{},links=(object.links||[]).map(([label,href,kind])=>linkHtml([label,href,kind||"semantic"])).join("");
+  let head;
+  if(object.kind==="criterion"){
+   const all=items.filter(item=>item.object===objectId),passing=all.filter(item=>item.status==="pass").length;
+   head="<code>"+escapeHtml(object.name)+"</code><span>"+escapeHtml(cellName(object.level,object.boundary))+'</span><span class="tf-ex-tally">'+passing+" of "+plural(all.length,"path","paths")+" pass</span>";
+  }else head="<b>"+escapeHtml(object.name||"")+"</b>";
+  return'<div class="tf-ex-object"><div class="tf-ex-object-head">'+head+(links?'<span class="tf-ex-object-links">'+links+"</span>":"")+"</div>"
+   +(object.what?'<p class="tf-ex-object-what">'+escapeHtml(object.what)+"</p>":"")+(inner??rows(list))+"</div>";
+ }
+ // Mutants sit under their fault class; the ones whose class the filters leave out show under its name.
+ function faultsHtml(list){
+  const classes=list.filter(item=>item.kind==="fault"),mutants=ranked(list.filter(item=>item.kind==="mutant"));
+  const shown=new Set(classes.map(item=>item.id));
+  // A mutant under its class does not repeat the cause its class already names.
+  const nested=parent=>{const inside=mutants.filter(item=>item.object===parent.id);return inside.length?'<li class="tf-ex-nest"><ul class="tf-ex-rows nested">'+inside.map(item=>rowHtml(item,false,parent.causes[0])).join("")+"</ul></li>":""};
+  let html=byObject(classes).map(([objectId,group])=>objectHtml(objectId,group,'<ul class="tf-ex-rows">'+group.map(item=>rowHtml(item)+nested(item)).join("")+"</ul>")).join("");
+  byObject(mutants.filter(item=>!shown.has(item.object))).forEach(([classId,group])=>{
+   const parent=items.find(item=>item.id===classId);
+   html+='<div class="tf-ex-object"><div class="tf-ex-object-head"><code>'+escapeHtml(parent?.name||"")+"</code><span>"+escapeHtml(parent?.what||"")+"</span></div>"+rows(group)+"</div>";
+  });
+  return html;
+ }
+ const BLOCKS=[
+  ["coverage","Coverage",["path","unbound"]],
+  ["faults","Fault model",["fault","mutant"]],
+  ["assurance","Assurance",["check"]],
+  ["support","Support",["support"]]
+ ];
+ const blockAsk={coverage:LAYER.coverage.ask,faults:LAYER.faults.ask,assurance:LAYER.assurance.ask,support:"What does it rest on, and does that pass?"};
+ function blocksHtml(list){
+  return BLOCKS.map(([key,label,kinds])=>{
+   const inside=list.filter(item=>kinds.includes(item.kind));
+   if(!inside.length)return"";
+   let body;
+   if(key==="coverage"){
+    const unbound=inside.filter(item=>item.kind==="unbound");
+    body=byObject(inside.filter(item=>item.kind==="path")).map(([objectId,group])=>objectHtml(objectId,group)).join("")
+     +(unbound.length?'<div class="tf-ex-object"><div class="tf-ex-object-head"><b>'+escapeHtml(KIND.unbound.many)+'</b></div><p class="tf-ex-object-what">'+escapeHtml(KIND.unbound.what)+"</p>"+rows(unbound)+"</div>":"");
+   }else if(key==="faults")body=faultsHtml(inside);
+   else if(key==="assurance")body=byObject(inside).map(([objectId,group])=>objectHtml(objectId,group)).join("");
+   else body=rows(inside);
+   return'<div class="tf-ex-block"><h3 class="tf-ex-block-head">'+label+"<span>"+escapeHtml(blockAsk[key])+"</span></h3>"+body+"</div>";
+  }).join("");
+ }
+ function ownerGroups(list){
+  const groups=new Map();
+  list.forEach(item=>{const key=item.owner||"";if(!groups.has(key))groups.set(key,[]);groups.get(key).push(item)});
+  const order=[...tree.rows.filter(row=>row.level!=="product"),tree.root].map(row=>row.id).filter(id=>groups.has(id));
+  if(groups.has(""))order.push("");
+  return order.map(id=>{
+   const row=rowById.get(id),group=groups.get(id);
+   if(!row)return'<section class="tf-ex-group"><header class="tf-ex-head"><span class="tf-ex-title"><i class="fa-solid '+KIND.producer.icon+' tf-map-kind-icon" aria-hidden="true"></i>'+escapeHtml(KIND.producer.many)+'</span><span class="tf-ex-path">'+escapeHtml(KIND.producer.what)+'</span><span class="tf-ex-tally">'+tally(group)+'</span></header><div class="tf-ex-block">'+rows(group)+"</div></section>";
+   const path=tree.ancestors(row).map(up=>up.short||up.label).join(" › ");
+   return'<section class="tf-ex-group" data-owner="'+escapeHtml(id)+'"><header class="tf-ex-head"><span class="tf-ex-title">'+mapKindIcon(row.level)+escapeHtml(row.label)+"</span><code>"+escapeHtml(row.id)+"</code>"
+    +'<span class="tf-ex-path">'+escapeHtml(path)+'</span><span class="tf-ex-tally">'+tally(group)+'</span><a class="tf-ex-open" href="'+escapeHtml(row.href)+'" data-tip="Its monitor: the verdict and the counts these items add up to.">'+escapeHtml(mapOpens(row,row.href))+" ↗</a></header>"
+    +blocksHtml(group)+"</section>";
+  }).join("");
+ }
+ const causeDefinition=id=>"<p><b>What it means.</b> "+escapeHtml(CAUSES[id]?.hint||"")+"</p>"+(FIX[id]?"<p><b>How to fix.</b> "+escapeHtml(FIX[id])+"</p>":"");
+ function causeGroups(list){
+  const judged=list.filter(item=>item.causes.length),rest=list.length-judged.length;
+  const ids=[...new Set(judged.flatMap(item=>item.causes))];
+  const counts=Object.fromEntries(ids.map(id=>[id,judged.filter(item=>item.causes.includes(id)).length]));
+  ids.sort((a,b)=>counts[b]-counts[a]);
+  return ids.map(id=>'<section class="tf-ex-group"><header class="tf-ex-head"><span class="tf-ex-title">'+escapeHtml(CAUSES[id]?.label||id)+'</span><span class="tf-ex-tally">'+plural(counts[id],"item","items")+"</span></header>"
+   +'<div class="tf-ex-define-body">'+causeDefinition(id)+'</div><div class="tf-ex-block">'+rows(ranked(judged.filter(item=>item.causes.includes(id))),true,id)+"</div></section>").join("")
+   +(rest?'<p class="tf-ex-more">'+plural(rest,"item passes","items pass")+" or "+(rest===1?"is":"are")+" not judged, so "+(rest===1?"it has":"they have")+" no cause. Group by contract or kind to see "+(rest===1?"it":"them")+".</p>":"");
+ }
+ function kindGroups(list){
+  return KINDS.map(([key])=>{
+   const group=list.filter(item=>item.kind===key),kind=KIND[key];
+   if(!group.length)return"";
+   return'<section class="tf-ex-group"><header class="tf-ex-head"><span class="tf-ex-title"><i class="fa-solid '+kind.icon+' tf-map-kind-icon" aria-hidden="true"></i>'+escapeHtml(kind.many)+'</span><span class="tf-ex-tally">'+tally(group)+"</span></header>"
+    +'<div class="tf-ex-define-body"><p>'+escapeHtml(kind.what)+'</p></div><div class="tf-ex-block">'+rows(ranked(group),true)+"</div></section>";
+  }).join("");
+ }
+ // Grouped by contract, a chosen cause or kind says first what it is: the cause and kind groups already say so.
+ function definition(){
+  if(filters.sets.change.size&&delta.baseline)return"<b>Since "+escapeHtml(since)+"</b><p>"+[[changes.up.length,"fails now","fail now"],[changes.down.length,"passes now","pass now"],[changes.new.length,"is new","are new"]].map(([count,one,many])=>plural(count,"item","items")+" "+(count===1?one:many)).join(" · ")+(changes.gone?" · "+plural(changes.gone,"item","items")+" of that run "+(changes.gone===1?"is":"are")+" gone":"")+".</p>";
+  if(groupBy!=="owner")return"";
+  const cause=chosen("cause"),kind=chosen("kind");
+  if(cause)return"<b>"+escapeHtml(CAUSES[cause]?.label||cause)+"</b>"+causeDefinition(cause);
+  if(kind)return"<b>"+escapeHtml(KIND[kind].many)+"</b><p>"+escapeHtml(KIND[kind].what)+"</p>";
+  return"";
+ }
+ function render(){
+  const shown=filters.shown(false),list=shown?items.filter(item=>shown.has(item.id)):items;
+  $("tf-ex-summary").innerHTML=tally(list);
+  const define=definition(),box=$("tf-ex-define");
+  box.hidden=!define;
+  box.innerHTML=define;
+  syncChanges();
+  listBox.innerHTML=!list.length
+   ?(filters.sets.change.size
+    ?'<div class="tf-ex-empty">'+(delta.baseline?"Nothing here changed since "+escapeHtml(since)+".":"No earlier retained run to compare with yet: what changes shows here after the next retained run.")
+     +' <button type="button" class="tf-map-clear" data-ex-unchange>Show all these items</button></div>'
+    :'<div class="tf-ex-empty">No items match these filters. <button type="button" class="tf-map-clear" data-ex-clear>Clear all</button></div>')
+   :groupBy==="cause"?causeGroups(list):groupBy==="kind"?kindGroups(list):ownerGroups(list);
+ }
+ // The list has an address: its filters and, when not by contract, its grouping. A monitor opens it with the contract.
+ function writeHash(){
+  const params=new URLSearchParams();
+  filters.write(params);
+  if(groupBy!=="owner")params.set("group",groupBy);
+  const query=params.toString();
+  if(location.hash.slice(1)!==query)history.replaceState(history.state,"",query?"#"+query:location.pathname+location.search);
+ }
+ function readHash(){
+  const params=new URLSearchParams(location.hash.slice(1));
+  setGroup(params.get("group")||"owner");
+  filters.read(params);
+  syncSearch();
+  render();
+ }
+ listBox.addEventListener("click",event=>{
+  const cause=event.target.closest("[data-cause]");
+  if(cause){filters.only("cause",cause.dataset.cause);return}
+  const holder=event.target.closest("[data-for]");
+  if(holder){filters.only("contract",holder.dataset.for);return}
+  if(event.target.closest("[data-ex-clear]"))filters.clear();
+  if(event.target.closest("[data-ex-unchange]")){filters.sets.change.clear();filters.render();filters.renderPanel(false);render();writeHash()}
+ });
+ // Changes keeps only what changed since the previous retained run: the same button as on the map, which outlines them.
+ const changesButton=$("tf-map-changes");
+ if(delta.baseline)changesButton.dataset.tip="Keep only what changed since "+since+".";
+ else{changesButton.setAttribute("aria-disabled","true");changesButton.dataset.tip="No earlier retained run to compare with yet."}
+ changesButton.addEventListener("click",()=>{
+  if(!delta.baseline)return;
+  const set=filters.sets.change,on=set.size>0;
+  set.clear();
+  if(!on)set.add("any");
+  filters.render();filters.renderPanel(false);render();writeHash();
+ });
+ function syncChanges(){changesButton.setAttribute("aria-pressed",String(filters.sets.change.size>0))}
+ // Find picks a goal, capability or contract and keeps its items, most failing first.
+ const find=mapFind({
+  hint,
+  items:()=>tree.rows.filter(row=>row.level!=="product").map(row=>{
+   const fails=items.filter(item=>item.owner===row.id&&(item.status==="fail"||item.status==="unknown")).length;
+   return{row,path:tree.ancestors(row).map(up=>up.short||up.label).join(" › "),kind:MAP_KIND[row.level],rank:-fails,
+    badge:()=>fails?'<span class="tf-ex-badge failed">✕ '+fails+"</span>":'<span class="tf-ex-badge passed">✓</span>'};
+  }),
+  pick:id=>{
+   const row=rowById.get(id);
+   if(!row)return;
+   ["goal","capability","contract"].forEach(key=>filters.sets[key].clear());
+   filters.sets[row.level==="goal"?"goal":row.level==="feature"?"capability":"contract"].add(id);
+   filters.render();filters.renderPanel(false);render();writeHash();
+  }
+ });
+ const page={filters,find,render};
+ page.start=()=>{
+  $("tf-map-stamp").innerHTML=mapStamp(model.run);
+  ["tf-map-tools","tf-map-panel","tf-ex-main"].forEach(id=>hint.watch($(id)));
+  mapCopy($("tf-map-copy"),writeHash);
+  window.addEventListener("hashchange",readHash);
+  // Keys: / finds, F opens the filters, Esc closes a hint.
+  document.addEventListener("keydown",event=>{
+   if(event.key==="Escape"){hint.hide();return}
+   if(event.defaultPrevented||event.metaKey||event.ctrlKey||event.altKey||find.isOpen())return;
+   if(event.target.closest?.("input,textarea,select,[contenteditable]"))return;
+   if(event.key==="/"){event.preventDefault();find.open();return}
+   if(event.key==="f"||event.key==="F"){event.preventDefault();filters.setPanel(!filters.open,true)}
+  });
+  // The panel opens as the reader left it, without sliding in.
+  const body=$("tf-map-body");
+  body.classList.add("tf-map-still");
+  filters.setPanel(filters.startOpen,false);
+  readHash();
+  filters.render();
+  setTimeout(()=>body.classList.remove("tf-map-still"),200);
+ };
+ return page;
+}"""
+
+
+def explorer_article(model_json: str) -> str:
+    """The Verification Explorer: every item behind the monitors, one row each, on the map's tools line, filters
+    panel, hints and Find. One section holds the heading, the map's shared styles and health palette scoped to the
+    explorer, then its own, the markup and one script: the shared runtime, the facts and the explorer."""
+    scope = "#verification-explorer"
+    css = "\n".join(
+        (
+            MAP_SHARED_CSS.replace("#verification-health-map", scope),
+            HEALTH_MAP_CSS.replace("#verification-health-map", scope),
+            EXPLORER_CSS,
+        )
+    )
+    markup = (
+        map_tools(
+            "Every item behind the monitors, one row each: what it is, how it stands, why it fails and where its "
+            "details are.",
+            filters_tip="Open the filters beside the list (F).",
+            find_tip="Find a goal, capability or contract and keep only its items (/).",
+            copy_tip="Copy a link to this list with its filters and grouping.",
+        )
+        + '<div class="tf-map-body" id="tf-map-body">'
+        + map_panel("Items", "Items by kind", "Filters for the list")
+        + '<div class="tf-ex-main" id="tf-ex-main"><div class="tf-map-list-bar tf-ex-bar">'
+        '<span class="tf-map-list-bar-label">Group by</span><span class="tf-map-seg" id="tf-ex-group-by"></span>'
+        '<input class="tf-ex-search" id="tf-ex-search" type="search" placeholder="Filter by text" '
+        'aria-label="Filter the items by text" autocomplete="off" spellcheck="false">'
+        '<span class="tf-map-summary" id="tf-ex-summary" aria-live="polite"></span></div>'
+        '<div class="tf-ex-define" id="tf-ex-define" hidden></div>'
+        '<div class="tf-ex-list" id="tf-ex-list"></div></div></div>'
+        + map_find(
+            "Find in the explorer",
+            "Find a goal, capability or contract by name or ID",
+            "↑ ↓ move · Enter keeps its items · Esc closes",
+        )
+        + '<div id="tf-map-hint" class="tf-map-hint" role="tooltip" aria-hidden="true"></div>'
+    )
+    script = "\n".join((MAP_SHARED_JS, f"const model={model_json};", EXPLORER_JS, "explorerPage(model).start();"))
+    return (
+        '<section id="verification-explorer">\n<h1>Verification Explorer'
+        '<a class="headerlink" href="#verification-explorer" title="Link to this heading">#</a></h1>\n'
+        f'<style id="tf-explorer-style">\n{css}\n</style>\n'
+        f"{markup}\n"
         f"<script>\n(()=>{{\n{script}\n}})();\n</script>\n</section>"
     )

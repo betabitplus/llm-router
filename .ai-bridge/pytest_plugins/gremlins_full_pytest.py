@@ -1,4 +1,4 @@
-"""pytest plugin: make pytest-gremlins run every mutant through real pytest.
+"""pytest plugin: pytest-gremlins as the project's qualified mutation engine.
 
 pytest-gremlins 1.9 ships a "lightweight runner" that imports test modules and calls
 test functions without pytest. It cannot provide fixtures, parametrization or
@@ -11,17 +11,60 @@ only mutants on those lines are kept. The filter runs after the engine generated
 numbered every mutant of the target files, so a kept mutant has the same id, the same
 instrumented source and the same selected tests as in an unfiltered run; the others
 are simply never executed.
+
+The plugin also adds what the engine lacks (see ``ternforge_mutation``):
+
+* the ``statement`` and ``body`` operators, planted by the engine's own switching
+  transformer;
+* the arid-code rules of TERNFORGE_MUTATION_POLICY: a mutant in arid code is not
+  planted and the report lists it under its rule;
+* the ``# mutation:`` pragma: a covered mutant is pardoned, so it never runs, and the
+  report carries its category and reason;
+* reach: every report entry says whether the contract's tests cover the mutated line.
+  With TERNFORGE_GREMLIN_SKIP_UNCOVERED=1 (the pull-request diff) an uncovered mutant
+  is not run and is reported as not covered;
+* for each mutant a stable fingerprint, its enclosing function or class, its exact
+  location, the original code and the replacement.
 """
 
 from __future__ import annotations
 
+import ast
+import copy
+import dataclasses
 import json
 import os
+from collections import Counter
 from pathlib import Path
 
+import pytest
 import pytest_gremlins.plugin as _gremlins_plugin  # ty: ignore[unresolved-import]
+import ternforge_mutation as tm
+from pytest_gremlins.instrumentation import transformer as _transformer  # ty: ignore[unresolved-import]
+from pytest_gremlins.instrumentation.gremlin import Gremlin  # ty: ignore[unresolved-import]
+from pytest_gremlins.reporting.json_reporter import JsonReporter  # ty: ignore[unresolved-import]
+from pytest_gremlins.reporting.results import (  # ty: ignore[unresolved-import]
+    GremlinResult,
+    GremlinResultStatus,
+)
 
 SCOPE_ENV = "TERNFORGE_GREMLIN_SCOPE"
+POLICY_ENV = "TERNFORGE_MUTATION_POLICY"
+SKIP_UNCOVERED_ENV = "TERNFORGE_GREMLIN_SKIP_UNCOVERED"
+EXTENSION_SCHEMA = "ternforge-mutation-extension-1"
+SIDECAR = "coverage/gremlins/ternforge-extension.json"
+
+STATE: dict = {
+    "sources": {},
+    "meta": {},
+    "body_spans": {},
+    "reach": {},
+    "skipped": set(),
+    "not_planted": [],
+    "filtered": Counter(),
+    "pragmas": {},
+    "policy": {},
+}
 
 
 def _no_lightweight_runner(*_args: object, **_kwargs: object) -> None:
@@ -40,20 +83,303 @@ def _scope_lines() -> set[tuple[str, int]] | None:
     }
 
 
+def _policy() -> dict:
+    policy_file = os.environ.get(POLICY_ENV)
+    if not policy_file:
+        return {"arid_rules": list(tm.ARID_RULES)}
+    payload = json.loads(Path(policy_file).read_text())
+    rules = list(payload.get("arid_rules") or [])
+    unknown = sorted(set(rules) - set(tm.ARID_RULES))
+    if unknown:
+        raise pytest.UsageError(f"unknown arid rule(s) in {policy_file}: {', '.join(unknown)}")
+    return {"arid_rules": rules}
+
+
+# --- the two operators, planted by the engine's own transformer ---------------------
+
+_registry = _transformer.get_default_registry()
+for _operator in (tm.StatementRemoval, tm.BodyRemoval):
+    if _operator().name not in _registry.available():
+        _registry.register(_operator)
+
+
+def _enabled(transformer, name: str):
+    return next((operator for operator in transformer._operators if operator.name == name), None)
+
+
+def _visit_statement(self, node):
+    self.generic_visit(node)
+    operator = _enabled(self, "statement")
+    if operator is None or not operator.can_mutate(node):
+        return node
+    source = STATE["sources"].get(self.file_path)
+    start, end = tm.node_span(node)
+    text = tm.source_segment(source.splitlines(), start, end) if source else tm.clean_source(node)
+    gremlin = Gremlin(
+        gremlin_id=self._next_gremlin_id(),
+        file_path=self.file_path,
+        line_number=node.lineno,
+        original_node=node,
+        mutated_node=ast.Pass(),
+        operator_name="statement",
+        description="removed " + tm.compact(text, 70),
+    )
+    self.gremlins.append(gremlin)
+    return _transformer.build_switching_statement(node, [gremlin])
+
+
+def _visit_function(self, node):
+    operator = _enabled(self, "body")
+    plan = tm.body_mutation_plan(node)[0] if operator is not None else []
+    first = tm.first_executable(node.body)
+    body = node.body[tm._docstring_offset(node.body):]
+    body_span = (tm.node_span(body[0])[0], tm.node_span(body[-1])[1]) if body else None
+    self.generic_visit(node)
+    if not plan or first is None or body_span is None:
+        return node
+    guards = []
+    for label, value in plan:
+        gremlin = Gremlin(
+            gremlin_id=self._next_gremlin_id(),
+            file_path=self.file_path,
+            # The first line the body runs: coverage marks it only when the function is called.
+            line_number=first.lineno,
+            original_node=node,
+            mutated_node=ast.Return(value=value),
+            operator_name="body",
+            description=f"body → return {label}",
+        )
+        self.gremlins.append(gremlin)
+        STATE["body_spans"][gremlin.gremlin_id] = body_span
+        guards.append(
+            ast.If(
+                test=ast.Compare(
+                    left=ast.Name(id="__gremlin_active__", ctx=ast.Load()),
+                    ops=[ast.Eq()],
+                    comparators=[ast.Constant(value=gremlin.gremlin_id)],
+                ),
+                body=[ast.Return(value=copy.deepcopy(value))],
+                orelse=[],
+            )
+        )
+    offset = tm._docstring_offset(node.body)
+    node.body[offset:offset] = guards
+    return node
+
+
+_Transformer = _transformer.MutationSwitchingTransformer
+for _name in ("visit_Expr", "visit_Assign", "visit_AnnAssign", "visit_AugAssign", "visit_Raise", "visit_Delete"):
+    setattr(_Transformer, _name, _visit_statement)
+_Transformer.visit_FunctionDef = _visit_function
+_Transformer.visit_AsyncFunctionDef = _visit_function
+
+
+# --- scope, arid code, suppression and identity -------------------------------------
+
+
+def _relative(path: str) -> str:
+    resolved = Path(path).resolve()
+    try:
+        return str(resolved.relative_to(Path.cwd().resolve()))
+    except ValueError:
+        return str(resolved)
+
+
+def _span(gremlin) -> tuple[tuple[int, int], tuple[int, int], int]:
+    """Where a mutant sits: the span rules and pragmas judge, and its anchor line."""
+    node = gremlin.original_node
+    start, end = tm.node_span(node)
+    anchor = int(getattr(node, "lineno", gremlin.line_number)) if gremlin.operator_name == "body" else start[0]
+    return start, end, anchor
+
+
+def _replacement(gremlin) -> str:
+    if gremlin.operator_name == "statement":
+        return "pass"
+    if gremlin.operator_name == "body":
+        return "return " + gremlin.description.split("return ", 1)[-1]
+    if isinstance(gremlin.mutated_node, ast.Return) and gremlin.mutated_node.value is None:
+        return "return None"
+    return tm.clean_source(gremlin.mutated_node)
+
+
 _generate_all_gremlins = _gremlins_plugin._generate_gremlins
 
 
 def _generate_gremlins_in_scope(gremlin_session, source_files, rootdir) -> None:  # noqa: ANN001
+    STATE["sources"].update(source_files)
     _generate_all_gremlins(gremlin_session, source_files, rootdir)
     scope = _scope_lines()
-    if scope is None:
-        return
-    gremlin_session.gremlins = [
-        gremlin
-        for gremlin in gremlin_session.gremlins
-        if (str(Path(gremlin.file_path).resolve()), int(gremlin.line_number)) in scope
-    ]
+    policy = _policy()
+    STATE["policy"] = policy
+    operators = {operator.name for operator in gremlin_session.operators}
+    trees, lines, regions, pragmas, qualnames = {}, {}, {}, {}, {}
+    for path, source in source_files.items():
+        try:
+            trees[path] = ast.parse(source)
+        except SyntaxError:
+            continue
+        lines[path] = source.splitlines()
+        regions[path] = tm.arid_regions(trees[path], set(policy["arid_rules"]))
+        pragmas[path] = tm.parse_pragmas(source, trees[path])
+        qualnames[path] = tm.qualname_index(trees[path])
+
+    def in_scope(path: str, line: int) -> bool:
+        return scope is None or (str(Path(path).resolve()), int(line)) in scope
+
+    kept = []
+    occurrences: Counter = Counter()
+    for gremlin in gremlin_session.gremlins:
+        path = gremlin.file_path
+        if not in_scope(path, gremlin.line_number) or path not in trees:
+            continue
+        start, end, anchor = _span(gremlin)
+        location = STATE["body_spans"].get(gremlin.gremlin_id) or (start, end)
+        qualname = tm.enclosing_qualname(qualnames[path], location[0], location[1])
+        original = tm.compact(tm.source_segment(lines[path], start, end), 200)
+        identity = (qualname, gremlin.operator_name, original if gremlin.operator_name != "body" else "", gremlin.description)
+        occurrences[identity] += 1
+        meta = {
+            "fingerprint": tm.fingerprint(_relative(path), *identity, occurrences[identity]),
+            "qualname": qualname,
+            "location": location,
+            "anchor_line": anchor,
+            "original": original,
+            "replacement": _replacement(gremlin),
+        }
+        rule = next((region.rule for region in regions[path] if region.contains(start, end)), None)
+        if rule:
+            STATE["not_planted"].append(
+                {
+                    "gremlin_id": gremlin.gremlin_id,
+                    "file_path": path,
+                    "line_number": gremlin.line_number,
+                    "operator": gremlin.operator_name,
+                    "description": gremlin.description,
+                    "rule": rule,
+                    **{key: meta[key] for key in ("fingerprint", "qualname", "original", "replacement")},
+                    "location": _mte_location(location),
+                }
+            )
+            continue
+        pragma = next(
+            (item for item in pragmas[path] if item.covers(gremlin.operator_name, anchor, start, end)),
+            None,
+        )
+        if pragma is not None:
+            pragma.matched += 1
+            gremlin = dataclasses.replace(
+                gremlin, pardoned=True, pardon_reason=f"{pragma.category}: {pragma.reason}"
+            )
+            meta["suppression"] = {"category": pragma.category, "reason": pragma.reason, "line": pragma.line}
+        STATE["meta"][gremlin.gremlin_id] = meta
+        kept.append(gremlin)
+    gremlin_session.gremlins = kept
+
+    # What the validity filter kept out of the body operator in the scoped code.
+    if "body" in operators:
+        for path, tree in trees.items():
+            for node in ast.walk(tree):
+                if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
+                first = tm.first_executable(node.body)
+                if first is None or not in_scope(path, first.lineno):
+                    continue
+                plan, reason = tm.body_mutation_plan(node)
+                if not plan and reason:
+                    STATE["filtered"][f"body: {reason}"] += 1
+    STATE["pragmas"] = {
+        _relative(path): [pragma.record() for pragma in items]
+        for path, items in pragmas.items()
+        if items
+    }
+    # The engine writes no report when nothing is left to run; what the rules, the filter and the
+    # pragmas decided is kept beside it anyway, for the adapter to retain.
+    sidecar = Path.cwd() / SIDECAR
+    sidecar.parent.mkdir(parents=True, exist_ok=True)
+    sidecar.write_text(json.dumps({"ternforge": _extension_section()}, indent=2, sort_keys=True))
+
+
+# --- reach, the pull-request skip, and the enriched report ---------------------------
+
+_select_tests = _gremlins_plugin._select_tests_for_gremlin_prioritized
+
+
+def _select_tests_recording_reach(gremlin, gremlin_session):  # noqa: ANN001
+    selector = gremlin_session.prioritized_selector
+    if selector is not None and not gremlin_session.no_coverage_filter:
+        STATE["reach"][gremlin.gremlin_id] = bool(selector.select_tests_prioritized(gremlin))
+    return _select_tests(gremlin, gremlin_session)
+
+
+_test_gremlin = _gremlins_plugin._test_gremlin
+
+
+def _test_gremlin_unless_uncovered(gremlin, test_command, rootdir, instrumented_dir):  # noqa: ANN001
+    if os.environ.get(SKIP_UNCOVERED_ENV) == "1" and STATE["reach"].get(gremlin.gremlin_id) is False:
+        STATE["skipped"].add(gremlin.gremlin_id)
+        return GremlinResult(gremlin=gremlin, status=GremlinResultStatus.SURVIVED)
+    return _test_gremlin(gremlin, test_command, rootdir, instrumented_dir)
+
+
+def _mte_location(location) -> dict:
+    (start_line, start_col), (end_line, end_col) = location
+    return {
+        "start": {"line": start_line, "column": start_col + 1},
+        "end": {"line": end_line, "column": end_col + 1},
+    }
+
+
+_build_result = JsonReporter._build_result
+
+
+def _build_result_enriched(self, result):  # noqa: ANN001
+    entry = _build_result(self, result)
+    gremlin_id = result.gremlin.gremlin_id
+    meta = STATE["meta"].get(gremlin_id) or {}
+    if meta:
+        entry.update(
+            {
+                "fingerprint": meta["fingerprint"],
+                "qualname": meta["qualname"],
+                "location": _mte_location(meta["location"]),
+                "anchor_line": meta["anchor_line"],
+                "original": meta["original"],
+                "replacement": meta["replacement"],
+            }
+        )
+        if meta.get("suppression"):
+            entry["suppression"] = meta["suppression"]
+    entry["origin"] = "rule"
+    entry["covered"] = STATE["reach"].get(gremlin_id)
+    if gremlin_id in STATE["skipped"]:
+        entry["run_skipped"] = "not covered"
+    return entry
+
+
+_build_report_data = JsonReporter._build_report_data
+
+
+def _extension_section() -> dict:
+    return {
+        "schema": EXTENSION_SCHEMA,
+        "arid_rules": list((STATE["policy"] or {}).get("arid_rules") or []),
+        "skip_uncovered": os.environ.get(SKIP_UNCOVERED_ENV) == "1",
+        "not_planted": list(STATE["not_planted"]),
+        "filtered": dict(sorted(STATE["filtered"].items())),
+        "pragmas": STATE["pragmas"],
+    }
+
+
+def _build_report_data_enriched(self, score):  # noqa: ANN001
+    data = _build_report_data(self, score)
+    data["ternforge"] = _extension_section()
+    return data
 
 
 _gremlins_plugin.build_lightweight_command = _no_lightweight_runner
 _gremlins_plugin._generate_gremlins = _generate_gremlins_in_scope
+_gremlins_plugin._select_tests_for_gremlin_prioritized = _select_tests_recording_reach
+_gremlins_plugin._test_gremlin = _test_gremlin_unless_uncovered
+JsonReporter._build_result = _build_result_enriched
+JsonReporter._build_report_data = _build_report_data_enriched

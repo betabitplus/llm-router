@@ -55,22 +55,19 @@ implementation. No external dependency representation is needed for the contract
 
 ### Fault applicability
 
-| REQUIRED                                                                                               | OPTIONAL        | N/A                                                                                                                                                                                                                                                                        |
-| ------------------------------------------------------------------------------------------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | `impl.boundary` | `impl.comparison` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
+| REQUIRED                                                                                                               | OPTIONAL        | N/A                                                                                                                                                                                                                                                                        |
+| ---------------------------------------------------------------------------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | `impl.boundary` | `impl.comparison` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                      |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Implementation        | Lifecycle branch/control flow selects whether and where history is copied or cleared; numeric comparison is not central. |
-| Runtime / dependency  | The contract is local state semantics rather than dependency availability.                                               |
-| Interface / protocol  | No external protocol is part of session lifecycle behavior.                                                              |
-| Architecture          | The public state semantics do not prescribe an internal module graph.                                                    |
-| Specification / model | Wrong history, a missing lifecycle partition, or wrong before/after ordering directly violates the Requirement.          |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
+| Group                 | Why                                                                                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Lifecycle branch/control flow selects whether and where history is copied or cleared; numeric comparison is not central. A dropped copy or clear leaves history shared or stale. |
+| Runtime / dependency  | The contract is local state semantics rather than dependency availability.                                                                                                       |
+| Interface / protocol  | No external protocol is part of session lifecycle behavior.                                                                                                                      |
+| Architecture          | The public state semantics do not prescribe an internal module graph.                                                                                                            |
+| Specification / model | Wrong history, a missing lifecycle partition, or wrong before/after ordering directly violates the Requirement.                                                                  |
 
 (verification-profile-req-session-persistence)=
 
@@ -126,22 +123,19 @@ of the public persistence claim.
 
 ### Fault applicability
 
-| REQUIRED                                                              | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                           |
-| --------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                              | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                      |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Public save/load control flow must restore the intended state; serializer encoding/version mechanics belong to the derived TREQ.                         |
-| Runtime / dependency  | Persistence is local state behavior and does not depend on a live external dependency.                                                                   |
-| Interface / protocol  | Serialized payload/schema compatibility is owned by the technical serialization contract, not by this public Requirement.                                |
-| Architecture          | The Requirement constrains observable restored state rather than internal package-layer topology.                                                        |
-| Specification / model | Wrong restored values or an omitted public state/media partition directly violate persistence semantics; serializer/version mechanics remain TREQ-owned. |
-
-No blocking mutation threshold is selected; required deterministic fault obligations remain
-blocking.
+| Group                 | Why                                                                                                                                                                                            |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Public save/load control flow must restore the intended state; serializer encoding/version mechanics belong to the derived TREQ. A dropped state write on load restores an incomplete session. |
+| Runtime / dependency  | Persistence is local state behavior and does not depend on a live external dependency.                                                                                                         |
+| Interface / protocol  | Serialized payload/schema compatibility is owned by the technical serialization contract, not by this public Requirement.                                                                      |
+| Architecture          | The Requirement constrains observable restored state rather than internal package-layer topology.                                                                                              |
+| Specification / model | Wrong restored values or an omitted public state/media partition directly violate persistence semantics; serializer/version mechanics remain TREQ-owned.                                       |
 
 (verification-profile-treq-session-serialization)=
 
@@ -187,19 +181,16 @@ is involved.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                 | OPTIONAL | N/A                                                                                                                                                                                                                                                        |
-| ---------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                                                                 | OPTIONAL | N/A                                                                                                                                                                                                                                                        |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                              |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Version comparisons, type/shape branches, and encode/decode boundaries directly implement compatibility behavior.                |
-| Runtime / dependency  | Serialization is a local compatibility boundary and has no live dependency failure mode.                                         |
-| Interface / protocol  | The persisted JSON/media representation is the technical payload schema; incompatible shapes must not be silently accepted.      |
-| Architecture          | No package-layer edge is normative for the serializer contract.                                                                  |
-| Specification / model | Missing media partitions, corrupted round-trip values, or accepting an unsupported version directly violate the technical claim. |
-
-No blocking mutation threshold is selected; deterministic technical fault obligations remain
-blocking.
+| Group                 | Why                                                                                                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Version comparisons, type/shape branches, and encode/decode boundaries directly implement compatibility behavior. An encoder or decoder whose body returns a default loses the data. |
+| Runtime / dependency  | Serialization is a local compatibility boundary and has no live dependency failure mode.                                                                                             |
+| Interface / protocol  | The persisted JSON/media representation is the technical payload schema; incompatible shapes must not be silently accepted.                                                          |
+| Architecture          | No package-layer edge is normative for the serializer contract.                                                                                                                      |
+| Specification / model | Missing media partitions, corrupted round-trip values, or accepting an unsupported version directly violate the technical claim.                                                     |

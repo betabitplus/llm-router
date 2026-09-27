@@ -1,0 +1,102 @@
+{
+ "1d6328ad0f851ffd": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215017Z-0b1d45",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The pool only ever holds one task, which has either finished or already been cancelled by future.cancel() when shutdown runs. So cancel_futures has nothing queued to cancel, and no success, error or timeout path behaves differently.",
+   "response_sha256": "f1a8ba60090f5f1594aba63188bb22220eb2117e36ad9916b202416be9e4c7a4",
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "prompt_sha256": "77deae57c6919207db21f03305361aa972696543ecd31d1840bcd5fe66f315af"
+ },
+ "ac82539c9e31aa00": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215027Z-febe80",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Removing pool.shutdown only changes worker-thread cleanup. On timeout, the original shutdown(wait=False) never waited, so both versions stop waiting and raise TimeoutError at once. On success, the idle worker is freed by garbage collection instead of an explicit join. Only a short-lived thread-count difference is observable, and the requirement does not ask about that.",
+   "response_sha256": "09c69df95c44c809f8432f227de4ce641755bdcd2a077cb66cf0800ee64f1321",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "8dae83fd018bc6d0597004ed32ea19bbd57843f080d3f9d82150c9c268e3b494"
+ },
+ "b39c78844ce0f60e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215042Z-81673b",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Removing `future.cancel()` changes nothing the contract can see. A future that has already started running can't be cancelled, and one still pending is cancelled anyway by the following `pool.shutdown(wait=False, cancel_futures=True)`. Either way, the mutant stops waiting, raises the same TimeoutError and hands control to fallback in the same way; the only difference is a tiny scheduling race that no requirement observes.",
+   "response_sha256": "db30814f1bdc53e9a9883a8edb6485cbe43a675f21cd11806c9c9dd1db2aeb40",
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "prompt_sha256": "4429563abb48cb82f0aae70277b4c7ad4f05ddcaf1be2786413f4361721cbe61"
+ },
+ "b9accd29af1a644f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215054Z-2734e4",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "After a timeout, the mutant leaves timed_out False, so the finally block calls pool.shutdown(wait=True) and blocks until the timed-out executor call finishes. The sync path therefore keeps waiting on the timed-out route, against the requirement that it stop waiting. The existing tests likely pass only because their slow executor returns soon anyway.",
+   "response_sha256": "406136ade9f21bd73fbfbc8d6f1e05da2225a37fe0722ccebf337da0438b712b",
+   "test_focus": "Use a sync executor whose first route blocks on an event that is only released after the test's assertions. Check that the request falls back to the second route and succeeds, or raises TimeoutError when no fallback remains, within a bounded time well below the blocked call's duration.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.629496Z",
+   "call_id": "20260926T230115Z-08c48b",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "b0c3c84d39011592d369fce9bfd4559330a10febb5f5a3145e01bf549c890192",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_b9accd29af1a644f.py",
+   "response_sha256": "c634d43ad09ca01fa5ccedc6a4545e8ecb9ecaa06915d64a38306bca54344732",
+   "source": "draft author"
+  },
+  "prompt_sha256": "fa13670112cfd3b32fef451206a7ea2333ea479a832e9aed0398573d1e59cacc"
+ },
+ "ec71df1dcf7f4fd5": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215101Z-5aadf6",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "On timeout the mutant calls pool.shutdown(wait=True), and this runs in the finally block before the TimeoutError propagates. So the sync path keeps blocking until the hung executor call finishes. That breaks \"stop waiting on the current route\": fallback, or the timeout error, is delayed for as long as the slow route runs, and forever if it never returns.",
+   "response_sha256": "fad03cecc6500a53305071bf8b6f55530f4eecdf2acb4cc4a383b21e9059537d",
+   "test_focus": "Use a sync executor whose first route blocks on an event that is only released after the assertion, or that sleeps well past the timeout. Check that the request falls back to the next route, or raises the timeout, within about timeout_seconds and before the blocked call returns.",
+   "verdict": "pin"
+  },
+  "prompt_sha256": "d0661fb7bc4e6dcdfdd73a8bbd79916a61d9506b69c9315a77cdd8e18dcb8e06"
+ },
+ "f793def41400b418": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215109Z-6e0ebc",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes how shutdown behaves when the attempt does not time out. At that point the future is already finished, so shutdown(wait=False) just skips joining a worker that is idle and about to exit. The same value is returned and the same exception is raised, and the timeout path behaves exactly as before, so the contract cannot tell the two versions apart.",
+   "response_sha256": "ae538fe79cb5c2401bbc30e1def9efc990572fc6213c511dd7ff56221a324e62",
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "prompt_sha256": "1f881ac5267da9bf96066c0a96b721a4ff03faf89a4aa4ee9d92f14795da994e"
+ }
+}

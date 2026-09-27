@@ -1,0 +1,31 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "arguments": {
+      "type": "object"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "reason": {
+      "maxLength": 600,
+      "minLength": 5,
+      "type": "string"
+    },
+    "verdict": {
+      "enum": [
+        "distinct",
+        "equivalent",
+        "unsure"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "verdict",
+    "confidence",
+    "arguments",
+    "reason"
+  ],
+  "type": "object"
+}

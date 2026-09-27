@@ -1,0 +1,116 @@
+{
+ "1356bcae910da7c0": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215704Z-99aaa9",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant replaces a nonzero total_tokens reported by the provider with input+output whenever input or output tokens are present. Totals that include other token counts, such as Gemini thought tokens, are silently lost (3 becomes 2). The original fills in the total only when the provider gives none, and the normalization requirement depends on that difference.",
+   "response_sha256": "f78eda0421a3886b21e640b8faf56eb40d42e11cb9e470e55ea43cb2a2410cfd",
+   "test_focus": "Check that a usage payload with a nonzero reported total_tokens that differs from input+output (e.g. input 1, output 1, total 3) keeps total_tokens=3, and that a payload with no total gets input+output.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.639088Z",
+   "call_id": "20260926T231551Z-15ed90",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "ed27d4e405b8c8fcb03981796717ed914c29e75c7483d2be0095fe232be47985",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_1356bcae910da7c0.py",
+   "response_sha256": "145cdc658841777538c8b1d96c4ce0b8092cacd43092c1ccf742eb607eb62077",
+   "source": "draft author"
+  },
+  "prompt_sha256": "2e040fc7dd31033e20c0406e46840c5d9086dcc792041ed4a0601ae3096039aa"
+ },
+ "SM-4151C6BB": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T221303Z-cb13ae",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Normalization is supposed to produce the stable common usage model, and the helper's contract is to return non-negative counts. The mutant lets negative provider token values through into the usage statistics and the total. That breaks the stable model and the consistent total that TREQ_USAGE_NORMALIZATION requires.",
+   "response_sha256": "7dbdee4b75a678ccbd61f83775d4dbb331a7384b5c8cbaee1824069fcd6aa9dd",
+   "test_focus": "Normalize a provider usage payload that has a negative token count, such as prompt_tokens=-1. Check that the common usage field comes out as 0 and that the total token count stays consistent and non-negative.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.639894Z",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "0c8a49d17d2e6aac60e0e6ca5301cae95b62c7de9e0584a7a7a0fc0ce2064574",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_sm_4151c6bb.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "4edbdd7ad515731a354b1f387ee365aea7c9a2f36b755b6ae4309e83b8e7661b"
+ },
+ "SM-67E8442B": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T221252Z-a3cf52",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant ignores any total the provider reports and always recomputes it as input + output. A total-only payload such as {'total_tokens': 42} becomes 0. A Gemini payload whose totalTokenCount includes thought tokens gets undercounted. This breaks the requirement that every supported usage shape normalizes to the common model with a correct, consistent total.",
+   "response_sha256": "86e0740fca6e0010a040a50c51e34ba03c2d5b7f4a0ef77072141191f4a8418b",
+   "test_focus": "The test must check that a usage payload with an explicit total (total-only, or a total larger than input + output) keeps the provider-reported total_tokens, and that the total is derived from input + output only when none is reported.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.640784Z",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "3f409c54ab93517c23c333c789d55966eaa2059ea4960561a9ac48470169ac05",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_sm_67e8442b.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "e1b0001ea38b660f68165040f43ed74d67e1971527582239d8027c329c702a56"
+ },
+ "f3d4b39e06f3f013": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215713Z-6f3f44",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "TREQ_USAGE_NORMALIZATION requires a consistent total token count. The mutant only fills in the missing total when both input and output tokens are nonzero. So a usage payload with input 1, output 0 and no total comes back with total_tokens 0 instead of 1, which contradicts the reported token counts.",
+   "response_sha256": "f8291f5a790ebc2290c33108ed5819757a7ef448189e9972b1ba052c81dc9481",
+   "test_focus": "Normalize a usage payload that has nonzero input tokens, zero output tokens and a total of zero or no total, and check that total_tokens equals input_tokens. Also check the reverse case, with zero input and nonzero output.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.642046Z",
+   "call_id": "20260926T231605Z-c65cb9",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "6add062e640547f6af8030995490da1a2c413cb53ad8a36e85339b5e39ad8c5c",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_f3d4b39e06f3f013.py",
+   "response_sha256": "2a5adfd1bec333bf70ae9f57698c170cddeca37223e8fb45ae1fa0d0d2708304",
+   "source": "draft author"
+  },
+  "prompt_sha256": "1ec07d5340dab4f9432749604d4dba932c7126887d66c11c3e619a436f22a8d5"
+ }
+}

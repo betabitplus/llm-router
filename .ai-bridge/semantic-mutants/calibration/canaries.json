@@ -1,0 +1,46 @@
+{
+  "schema": "ternforge-model-canaries-1",
+  "generator": {
+    "id": "G-SUMMARY",
+    "requirement": {"id": "TREQ_CALIBRATION_SUMMARY", "revision": 1, "statement": "A record's summary shows its name, shows its level only above 2, and never shows its secret."},
+    "criteria": ["the secret never appears in a summary", "the level appears only above 2"],
+    "selection": {"class": "spec.wrong-outcome", "target": "src/calibration_target.py::Record.summary", "budget": 2, "risk": "the secret or a wrong value becomes observable"}
+  },
+  "draft_author": {
+    "id": "D-SECRET",
+    "requirement": {"id": "TREQ_CALIBRATION_SUMMARY", "revision": 1, "statement": "A record's summary shows its name, shows its level only above 2, and never shows its secret."},
+    "criteria": ["the secret never appears in a summary"],
+    "proposal": "C-DISTINGUISHED",
+    "found": {"input": "Record(name='a', secret='s', level=0).summary()", "original": "{'name': 'a'}", "mutant": "{'name': 'a', 'secret': 's'}"},
+    "tests": ["checks/calibration_checks.py"]
+  },
+  "verdict": [
+    {
+      "id": "V-PIN",
+      "expected": "pin",
+      "context": "Technical requirement CALIBRATION_RETRY (Retry bounds): A retry policy allows at least one attempt and never more than its configured maximum.\nIts verification criteria: a policy with a maximum of 1 makes exactly one attempt",
+      "target": "attempts_allowed",
+      "original": "def attempts_allowed(maximum: int, used: int) -> bool:\n    return used < maximum",
+      "mutant": "def attempts_allowed(maximum: int, used: int) -> bool:\n    return used <= maximum",
+      "judgement": "an input is confirmed by execution: attempts_allowed(maximum=1, used=1); the original gives False and the mutant gives True (found by symbolic search)."
+    },
+    {
+      "id": "V-EQUIVALENT",
+      "expected": "equivalent",
+      "context": "Technical requirement CALIBRATION_DOUBLE (Counts double): A count is doubled.\nIts verification criteria: doubling 3 gives 6",
+      "target": "double",
+      "original": "def double(value: int) -> int:\n    return value * 2",
+      "mutant": "def double(value: int) -> int:\n    return value + value",
+      "judgement": "the symbolic search ended exhausted after 3 paths; every assessor answered equivalent (0.99): both return two times the value; its label is likely-equivalent."
+    },
+    {
+      "id": "V-ESCALATE",
+      "expected": "escalate",
+      "context": "Goal CALIBRATION_FAIR_BILLING (Fair billing): Users are billed only for what they use.\nFeature CALIBRATION_BILLING (Request billing): Completed requests are billed; whether a cancelled request is billed is still open and is the product owner's decision.\nTechnical requirement CALIBRATION_BILL_TOTAL (Bill total): The bill adds the price of every billed request.\nIts verification criteria: a bill of two completed requests adds both prices",
+      "target": "billed",
+      "original": "def billed(status: str) -> bool:\n    return status == \"completed\"",
+      "mutant": "def billed(status: str) -> bool:\n    return status in {\"completed\", \"cancelled\"}",
+      "judgement": "an input is confirmed by execution: billed(status='cancelled'); the original gives False and the mutant gives True (found by symbolic search)."
+    }
+  ]
+}

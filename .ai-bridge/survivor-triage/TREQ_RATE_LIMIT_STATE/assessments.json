@@ -1,0 +1,193 @@
+{
+ "1ea89b29a7c49441": {
+  "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260927T083453Z-bcfd44",
+    "confidence": 0.95,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The `or`\u2192`and` change only affects whether `logger.info` is called; all state mutations (next_available_at, failure_count reset) and the return value (None) are identical, so no input can distinguish the two versions under the given behavioral definition.",
+    "response_sha256": "ca69c4594ba4975078f92599ca58b9bf886fe6cd3054aa384e15779b20ca8a4c",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260927T010053Z-5fb764",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The difference only affects the local variable `should_log_cleared` used exclusively for triggering an external logger, which does not alter the method's return value, modify the object's state, or raise exceptions.",
+    "response_sha256": "c2a687252ad6def0f3513be93b16412040fabfcfc78105c64869c744530bf87e",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T200819Z-fbbcbe",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The only difference between the two versions is the boolean condition for logging, which does not affect the method's return value, exceptions, or the state of the object.",
+    "response_sha256": "5d9fce45c22100b9cdf89f07d5842d35229f6232ff461eadfdd5251f78728438",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=2)",
+     "now": "5",
+     "prior_setup_required": "Call record_failure twice at times 0.0 and 1.0 with the same provider/key_id/limits to establish bucket state with cooldown_until=11.0 and failure_count=0",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T200610Z-f3f587",
+    "confidence": 0.85,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The logical operator changed from `or` to `and` in the logging condition. This causes different behavior when calling record_success while in cooldown (cooldown_until > current) with no recent failures (failure_count=0): original logs \"Route cooldown cleared\" while changed does not, due to the AND condition evaluating False.",
+    "response_sha256": "ef69b265433de5ac8d0d1d217ba1ef9ffac67b6bfff9534a77fb52c232105c2f",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T200811Z-5dbd49",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only observable difference is whether the internal logger.info call fires when failure_count==0 but cooldown_until>current (or vs and); return value, exception behavior, and the object's post-call state (next_available_at set, failure_count reset to 0) are identical in all cases, so per the defined behavior criteria the versions are equivalent.",
+    "response_sha256": "0690bfb9d21d2df9259a7debb6c4e4368a835688bb42feb7523c425b43bbf6c9",
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "3ca9a81676c3b1c9f76dd370c2c5a7b192c1bd17618768738e62dc407c564b1b"
+ },
+ "2e8807d144d81f1d": {
+  "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T213921Z-4a63dd",
+    "confidence": 0.95,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The only difference is `>` vs `>=` in `bucket.cooldown_until > current` vs `bucket.cooldown_until >= current`, which solely controls whether `logger.info` is called. Since logging is a side effect and does not affect the method's return value (always `None`), the object's state (`bucket.next_available_at` and `bucket.failure_count` are set identically), or the type of any raised exception, the two versions are behaviorally equivalent.",
+    "response_sha256": "28ae5a868482c940042252104a76dace90220b6acb6edd34fdfbaa0441416d9d",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260927T005748Z-4acb70",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The only difference between the versions is the condition for logging (`>` vs `>=`), which solely affects whether a log message is emitted; since logging does not change the return value, the state of the object, or raise an exception, the defined behavior remains identical for all inputs.",
+    "response_sha256": "ce968a3cd27c4fdbb10d62e12c221f57c85f276dad5eb8d019ef24734d8d1731",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T200327Z-2acb4a",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The difference between `>` and `>=` only affects the local flag `should_log_cleared` for logging, without modifying the method's return value, the state of the object, or raised exceptions.",
+    "response_sha256": "a3e59dd607d71b32f03fbe420902087a0ab3d1d697d7d58e1e08f7768c02d8f0",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T200149Z-9d76bd",
+    "confidence": 0.95,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Both versions produce identical object state changes and return values; the `>` vs `>=` difference only affects logging (excluded from the defined behavior), not the state of the _buckets dictionary.",
+    "response_sha256": "569239f6fa4cd293895781c499c39fe7d9b8f677e474cebef7250be1e135eb46",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T200311Z-f20ce9",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only textual difference is `cooldown_until > current` vs `>= current` in computing the local `should_log_cleared` flag, which only controls whether `logger.info` is invoked; it does not affect the return value (always None), the mutated bucket state (next_available_at, failure_count are set identically in both branches), or any raised exception, so no input distinguishes the two versions under the defined behavior criteria.",
+    "response_sha256": "712466a6daff964ce3eba11b9c1f790fc287eb2de3ff31eb924771197c986ebe",
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "8c82268a1e8ef2c44f70fcd0b062ec2f4534d0796bbfa9147d1964b8cb42d51d"
+ },
+ "7cd0a40c605b3f65": {
+  "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T214021Z-de23a4",
+    "confidence": 0.95,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The only difference (`cooldown_until > current` vs `< current`) affects solely the `should_log_cleared` flag, which controls a `logger.info` call\u2014a side effect outside the defined behaviour (return value, object state, exception type). All state mutations (next_available_at, failure_count) are identical in both versions.",
+    "response_sha256": "a58bdb5393a172caa41770e032b598fa21c59bd291d3a2230a303da734f7148b",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T214042Z-4140a0",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The mutation only alters the condition for calling logger.info, which only produces side effects (logging) and does not affect the method's return value, the object's state, or the type of any exception raised.",
+    "response_sha256": "24ec6fee64e15bcb5667d6e854a54a93df49dcd49ea72ad90b0b724bc8cb0a6b",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T200528Z-63606c",
+    "confidence": 0.98,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions modify the LimiterState instance identically and return None without raising exceptions, as the changed condition only affects a local variable controlling logging.",
+    "response_sha256": "48d9d6324f92c585ec09b47f99bca2156cf3b537890eda747ab63f9dd1035d12",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=5.0, cooldown_after_failures=3)",
+     "now": "1",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T200407Z-03cdff",
+    "confidence": 0.85,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "On a fresh bucket with default state (failure_count=0, cooldown_until=0.0), the original version does not log because `0 > 1.0` is false, while the changed version logs because `0 < 1.0` is true; the operator change from `>` to `<` inverts the logging condition.",
+    "response_sha256": "f664ff2f556dd953218f11010712ecec4e5b802cd8170515bea75f08df6a25f9",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T200515Z-83c341",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only difference is the boolean condition controlling whether a log line is emitted (cooldown_until > current vs < current); the bucket's actual state mutations (next_available_at, failure_count=0) and return value (None) are identical in both versions regardless of that condition, so no input differs in return value, object state, or exception type.",
+    "response_sha256": "c1a020fee7e798f85f0cb2a3f939c61a645adb48ec209480bbae890778a68532",
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "82dd7a49f4ae7c344bcedcab66ef5a90baa701cf22a5f2c247486e39a6a49bf6"
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "53c4293e1a144b74": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215632Z-0eb0a1",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes the key order in the schema preview. The preview is still cut to 500 characters, so every dynamic part of the repair prompt stays within its cap, and no requirement here says anything about key order or deterministic serialisation.",
+   "response_sha256": "4bfc9cbf91810fb847b1f89a22bced6116b4a61832eb98f9b83e3bc6c81b0da6",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "8e2f8dc2e01914c7dbdf498eb51c2cb9880f30d89b358a0a8b3621ede764f1ce"
+ },
+ "9341379044dfc2f2": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215638Z-7823e0",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "TREQ_REPAIR_PROMPT_BOUNDS assumes the repair prompt includes the schema identity and preview, the invalid output and the validation details, and then requires each of them to be bounded. An empty prompt passes the size cap only because it drops all of them, so it gives no repair guidance and breaks the bounded-repair behaviour the requirement asks for.",
+   "response_sha256": "59a6a05265c12db58b49f84991fd3c123a822fe77ab4435da672c5acde88a0f6",
+   "test_focus": "For short inputs, the test must check that the prompt contains the schema name, the schema preview, the validation error and the invalid output preview. For property-generated oversized inputs, it must check that the prompt stays within the cap and still contains each truncated component.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-27T00:39:19.756670Z",
+   "call_id": "20260927T003601Z-02f026",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "f736e834b6bd25d73f751beef8937fdf41f1924a725a062acc3b36ab1360e7a3",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_9341379044dfc2f2.py",
+   "response_sha256": "b4935b2ee51e9ca897a7a2526aff3f975fb11aca288ce51dc7b0bbc2f8880e6c",
+   "source": "draft author"
+  },
+  "prompt_sha256": "75768039bf273609aac5b36894a5736009b05c9dba0883e3829f154305152968"
+ }
+}

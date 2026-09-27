@@ -1,0 +1,83 @@
+{
+ "SM-LOG-01": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T221230Z-affc5e",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "TREQ_RUNTIME_LOG_SAFETY's verification criterion says the provider request log context may expose only declared safe identifiers and must never contain provider kwargs. When kwargs include a truthy 'debug', the mutant copies every provider kwarg into the log context, and execution confirmed this happens, so the requirement is broken.",
+   "response_sha256": "2eb54623756ab50ff14d7ed3c971cf382a39b4a9c15ad006fdc8b11e4e161a7d",
+   "test_focus": "Build a ProviderRequest whose kwargs include a truthy 'debug' plus a sentinel value. Assert that log_context() has exactly the keys request_id, provider, model, key_id (and route_index when it is set), and that neither kwargs nor the sentinel value appears in it.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.635749Z",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "0fabde1b9863c92e1b1a97a1d05e32f5f8e49e7c7b3dea5b399ada29e933ac9d",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_01.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "9b7e82160cb4009d891409792bfc79e5943d395b3b570aabaef7fb1211e305e7"
+ },
+ "SM-LOG-02": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T221239Z-d6784e",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When key_id is falsy (for example 0 or \"\"), the mutant puts the raw credential value into the provider log context. TREQ_RUNTIME_LOG_SAFETY explicitly says log context cannot contain credentials, so the mutant breaks the requirement.",
+   "response_sha256": "0174c302824de046776f3a401a7842e8f0df74c5290c5cad48c6710880bea34e",
+   "test_focus": "Build a ProviderRequest whose credential has a falsy key_id (0 or \"\") and a distinctive secret value. Check that no log_context() value contains or equals the secret, and that key_id is still reported as the original key_id.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.636908Z",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "840aa24bf854ce154bb314b0e04957f65d4e2032755fd81de8f49350f3bfaeb3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_02.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "4416f793d826d8c79bb6b4b439d5203589f023b4661998cb7a9b8d2157bef145"
+ },
+ "SM-LOG-04": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T221246Z-22fdfa",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When status_code is None, the mutant adds the provider-supplied message to the public failure text. TREQ_RUNTIME_LOG_SAFETY explicitly forbids copying provider error text into public failure messages, so this change breaks the requirement.",
+   "response_sha256": "cbbff19fc1f7a2e2306833249848f31e9dcb4bfff644f73965b2cbd2ad77c02f",
+   "test_focus": "Build a ProviderFailure with status_code=None and a message containing a distinctive secret or prompt string. Assert that the resulting message is exactly \"Provider request failed.\" and does not contain that string.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.637419Z",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "d3d60ec29e71df946d5cd773597272285687b492d37ed41fa09df873c299a761",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_04.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "79fc7d5dae9d23687d45d0eace3a1a8a132370c52627c47f0d3514ea1724a024"
+ }
+}

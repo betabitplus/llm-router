@@ -1,0 +1,59 @@
+{
+ "1482e5f7eb7771b5": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "choice": "{'name': 'my_tool', 'type': 'function', 'function': {'name': 'my_tool'}}",
+     "registry": "ToolRegistry()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T185518Z-388b07",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When choice is a mapping specifying a tool name that is not present in the registry, the original version raises an exception via _require_tool_exists while the changed version does not validate tool existence and returns a ToolChoice.",
+    "response_sha256": "77d69727c7361a6e8d23139455d2effc524fb1ba012adda443abead3f895ec90",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "daa44ec4bcd53a3ea504cec9873c1fb9c3bcabb40f76efaf7137355114488836"
+ },
+ "1651891a2bad0ae9": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "choice": "'my_tool'",
+     "registry": "ToolRegistry()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T185400Z-e66462",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When choice is a tool name not present in the registry and registry is a ToolRegistry instance, the original version raises an exception through _require_tool_exists whereas the changed version bypasses validation and returns a named ToolChoice.",
+    "response_sha256": "c0c08649c6f46ebe908934b8ad72a52aed44951809452d78b327e74747ca67bb",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "eb8870a95a0bf00b108dc991cf826d76cd3c9ae606607b2c357e4be7d3d4cbdc"
+ },
+ "617eaa60ca22a0da": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "choice": "None",
+     "registry": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T185337Z-6637a4",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When choice is None, the original version returns ToolChoice(kind='auto') while the changed version raises a TypeError because the condition was changed to 'choice is None and choice == \\\"auto\\\"', which is impossible to satisfy.",
+    "response_sha256": "c648b61d1a97d2194d0bacb3976121f729bacf455d21f357a27a43c6ed1b8967",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "608a68a7d5796a0bc63a0c378877c89cee6bb727dc9b94b3e03f15773ae16f50"
+ }
+}

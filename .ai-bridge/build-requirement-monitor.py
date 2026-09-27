@@ -57,9 +57,6 @@ CONTRACT_URL = "requirements/configuration.html#REQ_INVALID_CONFIGURATION_ERRORS
 PROFILE_URL = "verification-profiles/invalid-configuration.html"
 HEALTH_MAP_URL = "verification-health-map.html"
 MODEL_URL = "test-plan.html#test-plan-configuration-validation-model"
-MUTATION_URL: str | None = (
-    "mutation-analysis.html#mutation-req_invalid_configuration_errors"
-)
 
 LEVELS = [
     ("component", "Component"),
@@ -75,7 +72,7 @@ BOUNDARIES = [
     ("direct", "Direct live"),
 ]
 FAULT_GROUP_HELP = {
-    "Implementation": "Checks that small code mistakes—wrong comparisons, limits, branches, returns, or exception paths—are caught.",
+    "Implementation": "Checks that small code mistakes—a wrong comparison, limit, branch or return, a lost call, write or raise—are caught.",
     "Runtime / dependency": "Checks that dependency failures—timeouts, disconnects, unavailability, or malformed replies—cannot change the required behavior.",
     "Interface / protocol": "Checks that wrong external calls, error statuses, or malformed payloads are caught at the boundary.",
     "Architecture": "Checks that code cannot bypass a required layer or depend on a forbidden layer.",
@@ -171,6 +168,15 @@ def cell_inspector(state: dict) -> str:
         + f'<div class="signal-grid">{signals}</div>'
         + ui.drilldowns(
             (
+                (
+                    "Explorer ↗",
+                    ui.explorer_href(
+                        CONTRACT_ID,
+                        layer="coverage",
+                        level=state["key"].split("|")[0],
+                        boundary=state["key"].split("|")[1],
+                    ),
+                ),
                 ("Requirement ↗", CONTRACT_URL),
                 ("Verification profile ↗", PROFILE_URL),
                 ("Test model ↗", MODEL_URL),
@@ -216,62 +222,97 @@ def fault_inspector(state: dict) -> str:
         )
         + "</div>"
     )
-    class_rows = []
-    for row in state.get("classes") or []:
-        survivors = " · ".join(
-            f"{Path(str(item.get('source') or '')).name}:{item.get('line')} {item.get('description')}"
-            for item in row.get("survivors") or []
-        )
-        class_rows.append(
-            f'<li class="fault-class-row {status_class(row["status"])}">'
-            f'<code>{esc(row["id"])}</code><span class="fc-state">{esc(row["state"])}</span>'
-            + (f'<p>{esc(row["basis"])}</p>' if row.get("basis") else "")
-            + (f"<small>Not caught: {esc(survivors)}</small>" if survivors else "")
-            + "</li>"
-        )
-    class_list = (
-        f'<ul class="fault-class-list">{"".join(class_rows)}</ul>' if class_rows else ""
-    )
+    # The inspector counts; which classes fail and why, with their surviving mutants, are the explorer's rows.
     sections = [
         ui.signal_group(
             title="Fault classes",
-            body=class_chain + class_list,
+            body=class_chain,
             class_name="fault-class-group",
         )
     ]
-    if state.get("mutation"):
-        cards = []
-        for item in state["mutation"]:
-            cards.append(
-                '<div class="mutation-chain">'
-                f'<div class="mutation-chain-head"><strong>{esc(item["label"])} mutation</strong></div>'
-                '<div class="fault-chain">'
-                + fault_stage("Generated", str(item["generated"]))
-                + "<i>→</i>"
-                + fault_stage(
-                    "Reached",
-                    f"{item['reached']}/{item['generated']}",
-                    item["reach_status"],
-                    target=f"{item['reach']:.1f}% · ≥ {item['reach_target']:.0f}%",
-                )
-                + "<i>→</i>"
-                + fault_stage(
-                    "Killed",
-                    f"{item['killed']}/{item['reached']}" if item["reached"] else "0/0",
-                    item["sensitivity_status"],
-                    target=f"{item['sensitivity']:.1f}% · ≥ {item['sensitivity_target']:.0f}%",
-                )
-                + "</div></div>"
-            )
+    # The mutants behind the classes, counted by outcome; each one is a row in the explorer.
+    if state.get("mutants"):
+        tally = state["mutants"]
+        stages = [
+            ("Caught", tally["caught"], None),
+            ("Survived", tally["survived"], "NOT MET" if tally["survived"] else None),
+            ("Not reached", tally["unreached"], "NOT MET" if tally["unreached"] else None),
+            ("Undecided", tally["unknown"], "UNKNOWN" if tally["unknown"] else None),
+            ("Suppressed", tally["suppressed"], None),
+            ("Invalid", tally["invalid"], None),
+        ]
         sections.append(
             ui.signal_group(
-                title="Mutation checks",
-                body=f'<div class="mutation-grid">{"".join(cards)}</div>',
-                class_name="mutation-group",
+                title="Mutants",
+                body='<div class="fault-chain mutant-tally">'
+                + "".join(
+                    fault_stage(label, str(count), status)
+                    for label, count, status in stages
+                    if count or label in {"Caught", "Survived", "Not reached"}
+                )
+                + "</div>",
+                class_name="mutant-group",
+            )
+        )
+    # Where the group's semantic mutants came from and what generating them cost (ADR_0004).
+    generation = state.get("semantic_generation")
+    if generation:
+        spend = generation.get("spend") or {}
+        origins = generation.get("mutants") or {}
+        tokens = int((spend.get("tokens") or {}).get("total") or 0)
+        stages = [
+            ("Targets", str(generation.get("targets") or 0), None),
+            ("Not generated", str(generation.get("not_generated") or 0), "UNKNOWN" if generation.get("not_generated") else None),
+            ("By a model", str(origins.get("model") or 0), None),
+            ("By an agent", str(origins.get("agent") or 0), None),
+            ("Model calls", str(spend.get("calls") or 0), None),
+            ("Deferred", str(spend.get("deferred") or 0), None),
+            ("Tokens", f"{tokens / 1000:.1f}k" if tokens >= 1000 else str(tokens), None),
+            ("List price", f"${spend['list_usd']:.2f}" if spend.get("list_usd") is not None else "—", None),
+        ]
+        sections.append(
+            ui.signal_group(
+                title="Semantic generation",
+                body='<div class="fault-chain mutant-tally">'
+                + "".join(
+                    fault_stage(label, value, status)
+                    for label, value, status in stages
+                    if value not in {"0", "—"} or label in {"Targets", "Model calls"}
+                )
+                + "</div>",
+                class_name="mutant-group",
+            )
+        )
+    # What the survivor judgement found about the group's survivors (ADR_0005).
+    judgement = state.get("survivor_judgement")
+    if judgement:
+        stages = [
+            ("Input found", str(judgement.get("found") or 0), None),
+            ("Likely equivalent", str(judgement.get("likely-equivalent") or 0), None),
+            ("Unsure", str(judgement.get("unsure") or 0), None),
+            ("Not judged", str(judgement.get("not-applicable") or 0), None),
+        ]
+        # What the verdicts that count decided (ADR_0006); only an escalation waits for the person.
+        verdicts = [
+            ("Pinned", int(judgement.get("verdict_pinned") or 0), None),
+            ("Pin pending", int(judgement.get("verdict_pin_pending") or 0), None),
+            ("Suppressed", int(judgement.get("verdict_suppressed") or 0), None),
+            ("For you", int(judgement.get("verdict_escalated") or 0), "fail" if judgement.get("verdict_escalated") else None),
+        ]
+        if any(value for _label, value, _status in verdicts):
+            stages += [(label, str(value), status) for label, value, status in verdicts]
+        sections.append(
+            ui.signal_group(
+                title="Survivor judgement",
+                body='<div class="fault-chain mutant-tally">'
+                + "".join(fault_stage(label, value, status) for label, value, status in stages)
+                + "</div>",
+                class_name="mutant-group",
             )
         )
     fault_profile_url = PROFILE_URL.split("#", 1)[0] + "#fault-applicability"
     links = [
+        ("Explorer ↗", ui.explorer_href(CONTRACT_ID, layer="faults", group=state["label"])),
         ("Verification profile ↗", fault_profile_url),
         ("Fault model ↗", "test-plan.html#test-plan-fault-model"),
         (
@@ -279,8 +320,6 @@ def fault_inspector(state: dict) -> str:
             str(state.get("raw_url") or "requirement-monitor-facts.json"),
         ),
     ]
-    if state["label"] == "Implementation" and MUTATION_URL:
-        links.insert(2, ("Mutation analysis ↗", MUTATION_URL))
     return (
         ui.inspector_head(
             eyebrow="Selected fault group",
@@ -310,7 +349,7 @@ def contract_output_path(contract_id: str) -> Path:
 
 
 def render_current() -> None:
-    global CONTRACT_URL, MODEL_URL, MUTATION_URL, PROFILE_URL
+    global CONTRACT_URL, MODEL_URL, PROFILE_URL
 
     data = json.loads(FACTS.read_text())
     for contract_data in (data.get("contracts") or {}).values():
@@ -333,15 +372,6 @@ def render_current() -> None:
         or "verification-profiles/index.html"
     )
     MODEL_URL = target.get("model_url") or "test-plan.html#test-plan"
-    mutation_selected = any(
-        check.get("reach") or check.get("sensitivity")
-        for check in (target.get("mutation") or {}).values()
-    )
-    MUTATION_URL = (
-        f"mutation-analysis.html#mutation-{CONTRACT_ID.lower()}"
-        if mutation_selected
-        else None
-    )
 
     cells = {}
     for coverage_target in contract["target"]["coverage"]:
@@ -352,8 +382,19 @@ def render_current() -> None:
     cell_domain = combine(cell_statuses + [linked["status"]])
 
     faults = {}
+    generation = (contract.get("fault_actual") or {}).get("semantic_generation")
+    semantic_classes = {row["class"] for row in target.get("semantic_mutants") or []}
     for index, group in enumerate(contract["target"]["fault_groups"]):
         faults[str(index)] = fault_state(contract, group, policy)
+        if generation and semantic_classes & {item["id"] for item in group["items"]}:
+            faults[str(index)]["semantic_generation"] = generation
+        judged = (contract.get("fault_actual") or {}).get("survivor_judgement") or {}
+        group_counts: dict[str, int] = {}
+        for item in group["items"]:
+            for status, count in (judged.get(item["id"]) or {}).items():
+                group_counts[status] = group_counts.get(status, 0) + int(count)
+        if group_counts:
+            faults[str(index)]["survivor_judgement"] = group_counts
     fault_statuses = [state["status"] for state in faults.values()]
     fault_domain = combine(fault_statuses)
 
@@ -429,20 +470,6 @@ def render_current() -> None:
         )
         secondary_target = "" if state["detection_actual"] is None else "100%"
         secondary_status = state["detection_status"]
-        if state["label"] == "Implementation":
-            component_sensitivity = next(
-                (item for item in state["mutation"] if item["label"] == "Component"),
-                None,
-            )
-            if component_sensitivity and component_sensitivity.get(
-                "sensitivity_selected"
-            ):
-                secondary_label = "C sensitivity"
-                secondary_actual = f"{component_sensitivity['sensitivity']:.1f}%"
-                secondary_target = (
-                    f"≥{component_sensitivity['sensitivity_target']:.0f}%"
-                )
-                secondary_status = component_sensitivity["sensitivity_status"]
         fault_tiles.append(
             ui.metric_tile(
                 title=state["label"],
@@ -486,10 +513,6 @@ def render_current() -> None:
     linked_note = ""
     if linked["rows"]:
         failed_count = len(linked["failed"])
-        names = " · ".join(
-            f"{str(row['nodeid']).split('::')[-1]} ({row.get('result')})"
-            for row in linked["rows"]
-        )
         count = len(linked["rows"])
         if failed_count:
             headline = (
@@ -509,7 +532,8 @@ def render_current() -> None:
             )
         linked_note = (
             f'<div class="linked-note {"not-met" if failed_count else "na"}">'
-            f"<strong>{esc(headline)}</strong><small>{esc(names)}</small></div>"
+            f"<strong>{esc(headline)}</strong>"
+            f'<a class="section-link" href="{esc(ui.explorer_href(CONTRACT_ID, kind="unbound"))}">Explorer ↗</a></div>'
         )
 
     contract_key = CONTRACT_ID.lower()
@@ -539,38 +563,36 @@ def render_current() -> None:
                 f"/ {len(technical_support_rows)} pass"
             ),
         )
-        technical_cards = []
-        for row in technical_support_rows:
-            technical_cards.append(
-                ui.technical_support_card(
-                    item_id=row["id"],
-                    title=row["title"],
-                    status=row["status"],
-                    href=row["href"],
-                    metrics=(
-                        ("Verification", status_label(row["coverage"])),
-                        ("Fault model", status_label(row["fault"])),
-                    ),
-                )
+        support_parts = tuple(
+            (
+                label,
+                combine([row[key] for row in technical_support_rows]),
+                sum(row[key] == "MET" for row in technical_support_rows),
+                sum(row[key] == "NOT MET" for row in technical_support_rows),
+                len(technical_support_rows),
             )
+            for label, key in (("Verification", "coverage"), ("Fault model", "fault"))
+        )
         technical_support_section = (
             f'<section class="section" id="ce-technical-support-{contract_key}">'
             + ui.section_head(
                 title="Technical support",
                 links=(
+                    ("Explorer ↗", ui.explorer_href(CONTRACT_ID, kind="support")),
                     ("Profile ↗", PROFILE_URL),
                     ("Raw ↗", "requirement-monitor-facts.json"),
                 ),
             )
-            + ui.support_panel("".join(technical_cards))
+            + ui.support_summary(noun="technical requirements", parts=support_parts)
             + "</section>"
         )
 
     history_section = ui.history_section(
         section_id=f"ce-history-{contract_key}",
         status=overall,
-        link_href="assurance-snapshots.json",
-        link_label="History ↗",
+        link_href=ui.explorer_href(CONTRACT_ID, change="any"),
+        link_label="Changes ↗",
+        owner_id=CONTRACT_ID,
     )
     verdict_header = ui.verdict_header(
         kicker="Verification status",
@@ -581,12 +603,14 @@ def render_current() -> None:
         ),
         domain_strip_class=domain_strip_class,
         map_href=f"{HEALTH_MAP_URL}#overall:{CONTRACT_ID}",
+        explorer_href=ui.explorer_href(CONTRACT_ID),
     )
     coverage_section_head = ui.section_head(
         title="Verification matrix",
         links=(
             ("Health Map ↗", f"{HEALTH_MAP_URL}#coverage:{CONTRACT_ID}"),
             ("Depth ↗", f"{HEALTH_MAP_URL}#overall/depth:{CONTRACT_ID}"),
+            ("Explorer ↗", ui.explorer_href(CONTRACT_ID, layer="coverage")),
             (f"{contract_noun} ↗", CONTRACT_URL),
             ("Profile ↗", PROFILE_URL),
             ("Raw ↗", "requirement-monitor-facts.json"),
@@ -597,6 +621,7 @@ def render_current() -> None:
         links=(
             ("Health Map ↗", f"{HEALTH_MAP_URL}#faults:{CONTRACT_ID}"),
             ("Mutants caught ↗", f"{HEALTH_MAP_URL}#faults/detect:{CONTRACT_ID}"),
+            ("Explorer ↗", ui.explorer_href(CONTRACT_ID, layer="faults")),
             ("Profile ↗", PROFILE_URL),
             ("Model ↗", "test-plan.html#test-plan-fault-model"),
             ("Raw ↗", "requirement-monitor-facts.json"),

@@ -52,23 +52,21 @@ and trace ordering, not fidelity of provider reasoning.
 
 ### Fault applicability
 
-| REQUIRED                                                                              | OPTIONAL | N/A                                                                                      |
-| ------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `runtime.unavailable-disconnect` · `runtime.malformed-response` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout`                          |
-| `interface.unexpected-interaction` · `interface.error-status`                         | —        | `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
-| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary`      | —        | —                                                                                        |
+| REQUIRED                                                                                              | OPTIONAL | N/A                                                                                      |
+| ----------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `runtime.unavailable-disconnect` · `runtime.malformed-response` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout`                          |
+| `interface.unexpected-interaction` · `interface.error-status`                                         | —        | `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary`                      | —        | —                                                                                        |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                              |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Fallback is a control-flow obligation; numeric thresholds are owned by the timeout/attempt-limit contracts.                                                      |
-| Runtime / dependency  | Disconnect/unavailability and malformed provider results are distinct route-failure mechanisms that must still permit fallback; timeout is specified separately. |
-| Interface / protocol  | A provider error status must not stop eligible fallback, and no additional external route may run after the successful fallback result.                          |
-| Architecture          | This Requirement constrains observable routing behavior rather than a particular internal layering topology.                                                     |
-| Specification / model | Successful fallback, failure-mechanism partitions, and failed→successful trace order are all normative semantics.                                                |
-
-No blocking mutation threshold is selected; the required deterministic fault classes remain blocking.
+| Group                 | Why                                                                                                                                                                                |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Fallback is a control-flow obligation; numeric thresholds are owned by the timeout/attempt-limit contracts. A dropped attempt record or terminal raise loses the fallback outcome. |
+| Runtime / dependency  | Disconnect/unavailability and malformed provider results are distinct route-failure mechanisms that must still permit fallback; timeout is specified separately.                   |
+| Interface / protocol  | A provider error status must not stop eligible fallback, and no additional external route may run after the successful fallback result.                                            |
+| Architecture          | This Requirement constrains observable routing behavior rather than a particular internal layering topology.                                                                       |
+| Specification / model | Successful fallback, failure-mechanism partitions, and failed→successful trace order are all normative semantics.                                                                  |
 
 (verification-profile-req-route-timeout-fallback)=
 
@@ -117,20 +115,18 @@ external provider fidelity.
 
 | REQUIRED                                                                                                              | OPTIONAL | N/A                                                                                                                 |
 | --------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
-| `impl.boundary` · `impl.control-flow` · `runtime.latency-timeout`                                                     | —        | `impl.comparison` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                 |
+| `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout`                                     | —        | `impl.comparison` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                 |
 | `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                            |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | The configured timeout boundary and branch from timeout to fallback/terminal outcome are the implementation mechanisms under test.             |
-| Runtime / dependency  | Delayed dependency behavior is the defining runtime fault; disconnect and malformed-response behavior belong to the generic fallback contract. |
-| Interface / protocol  | Timeout must not create an extra route interaction beyond the declared fallback/terminal topology.                                             |
-| Architecture          | The contract does not prescribe a particular timeout implementation layer.                                                                     |
-| Specification / model | Fallback-vs-terminal and sync-vs-async partitions plus timeout-before-next-attempt ordering are normative.                                     |
-
-No blocking mutation threshold is selected; the required deterministic fault classes remain blocking.
+| Group                 | Why                                                                                                                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The configured timeout boundary and branch from timeout to fallback/terminal outcome are the implementation mechanisms under test. A dropped timeout raise or attempt record changes the outcome. |
+| Runtime / dependency  | Delayed dependency behavior is the defining runtime fault; disconnect and malformed-response behavior belong to the generic fallback contract.                                                    |
+| Interface / protocol  | Timeout must not create an extra route interaction beyond the declared fallback/terminal topology.                                                                                                |
+| Architecture          | The contract does not prescribe a particular timeout implementation layer.                                                                                                                        |
+| Specification / model | Fallback-vs-terminal and sync-vs-async partitions plus timeout-before-next-attempt ordering are normative.                                                                                        |
 
 (verification-profile-req-route-attempt-limit)=
 
@@ -180,20 +176,18 @@ is sufficient.
 
 | REQUIRED                                                                             | OPTIONAL | N/A                                                                                                                                                  |
 | ------------------------------------------------------------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow`                            | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                                          |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`            | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                                          |
 | `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | The contract is a numeric boundary implemented by truncation/comparison/control-flow decisions.                                 |
-| Runtime / dependency  | Provider failure is useful to expose multiple attempts, but dependency failure modes do not define the cap itself.              |
-| Interface / protocol  | Any provider request beyond the configured limit is directly forbidden by the contract.                                         |
-| Architecture          | No internal layering topology is part of the route-attempt-count claim.                                                         |
-| Specification / model | Minimum/intermediate limit partitions and the observable capped outcome are normative; route ordering itself belongs elsewhere. |
-
-No blocking mutation threshold is selected; the required deterministic fault classes remain blocking.
+| Group                 | Why                                                                                                                                                       |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The contract is a numeric boundary implemented by truncation/comparison/control-flow decisions. A dropped attempt update or truncation removes the limit. |
+| Runtime / dependency  | Provider failure is useful to expose multiple attempts, but dependency failure modes do not define the cap itself.                                        |
+| Interface / protocol  | Any provider request beyond the configured limit is directly forbidden by the contract.                                                                   |
+| Architecture          | No internal layering topology is part of the route-attempt-count claim.                                                                                   |
+| Specification / model | Minimum/intermediate limit partitions and the observable capped outcome are normative; route ordering itself belongs elsewhere.                           |
 
 (verification-profile-req-route-sticky-start)=
 
@@ -245,9 +239,9 @@ Surrogate/L0 evidence for the public routing-order claim.
 
 ### Fault applicability
 
-| REQUIRED                                                                                   | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                      |
-| ------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.wrong-ordering-boundary` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` |
+| REQUIRED                                                                                   | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.wrong-ordering-boundary` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` |
 
 #### Fault-group rationale
 
@@ -258,8 +252,6 @@ Surrogate/L0 evidence for the public routing-order claim.
 | Interface / protocol  | Calling a route before the previously successful route is a directly forbidden public interaction.                                                 |
 | Architecture          | No internal layering topology is normative for the public sticky-start outcome.                                                                    |
 | Specification / model | The visible next-start outcome and before/after ordering define the Requirement; broader route-order partitions belong to the TREQ/Feature levels. |
-
-No blocking mutation threshold is selected for the public Requirement.
 
 (verification-profile-treq-route-order)=
 
@@ -304,21 +296,19 @@ without an external dependency or surrogate model.
 
 ### Fault applicability
 
-| REQUIRED                                                                                            | OPTIONAL | N/A                                                                                                                                                                                                                                                                                             |
-| --------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.control-flow` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-outcome` |
+| REQUIRED                                                                                                            | OPTIONAL | N/A                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.control-flow` · `impl.effect` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-outcome` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                         |
-| --------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Implementation        | Comparison and branch/order changes can move or lose the selected route identity.                           |
-| Runtime / dependency  | No external runtime behavior is part of this local ordering invariant.                                      |
-| Interface / protocol  | Provider interaction order is verified at the parent/Feature level, not by this local technical contract.   |
-| Architecture          | Route ordering does not require a particular package-layer edge.                                            |
-| Specification / model | Missing ordering partitions or wrong before/after ordering directly invalidate the technical invariant set. |
-
-No blocking mutation threshold is selected; deterministic technical fault obligations remain blocking.
+| Group                 | Why                                                                                                                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Comparison and branch/order changes can move or lose the selected route identity. A dropped start-position update loses the sticky order. |
+| Runtime / dependency  | No external runtime behavior is part of this local ordering invariant.                                                                    |
+| Interface / protocol  | Provider interaction order is verified at the parent/Feature level, not by this local technical contract.                                 |
+| Architecture          | Route ordering does not require a particular package-layer edge.                                                                          |
+| Specification / model | Missing ordering partitions or wrong before/after ordering directly invalidate the technical invariant set.                               |
 
 (verification-profile-req-rate-limit-routing)=
 
@@ -374,9 +364,9 @@ Requirement claims local availability policy and externally visible interaction 
 
 ### Fault applicability
 
-| REQUIRED                                                                             | OPTIONAL                         | N/A                                                                                                                                                                                                                                                                         |
-| ------------------------------------------------------------------------------------ | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `interface.unexpected-interaction` · `interface.error-status` · `spec.wrong-outcome` | `runtime.unavailable-disconnect` | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `runtime.latency-timeout` · `runtime.malformed-response` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                             | OPTIONAL                         | N/A                                                                                                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `interface.unexpected-interaction` · `interface.error-status` · `spec.wrong-outcome` | `runtime.unavailable-disconnect` | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.malformed-response` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
@@ -387,8 +377,6 @@ Requirement claims local availability policy and externally visible interaction 
 | Interface / protocol  | A blocked route must not be contacted and provider error status is a concrete public failure source.                                 |
 | Architecture          | No internal layering edge is itself part of the direct public Requirement.                                                           |
 | Specification / model | A wrong visible routing outcome invalidates the Requirement; detailed state/ordering partitions belong to TREQ profiles.             |
-
-No blocking mutation threshold is selected for the public Requirement.
 
 (verification-profile-treq-rate-limit-state)=
 
@@ -432,21 +420,19 @@ there is no external model or provider boundary.
 
 ### Fault applicability
 
-| REQUIRED                                                                             | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                            |
-| ------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `spec.missing-partition` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                             | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `spec.missing-partition` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                |
-| --------------------- | -------------------------------------------------------------------------------------------------- |
-| Implementation        | Comparisons, thresholds, and branch/reset logic directly implement the technical state invariants. |
-| Runtime / dependency  | The invariants are local state behavior and do not depend on an external provider fault mode.      |
-| Interface / protocol  | No external payload or interaction shape is normative for this TREQ.                               |
-| Architecture          | No package-layer edge is part of the state invariant.                                              |
-| Specification / model | Missing provider/key or interval partitions would leave part of the technical contract unproved.   |
-
-No blocking mutation threshold is selected in this profile; retained class-wide mutation evidence is not attributed to this TREQ unless objective scope attribution becomes available.
+| Group                 | Why                                                                                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Comparisons, thresholds, and branch/reset logic directly implement the technical state invariants. A dropped state write or reset leaves stale limiter state. |
+| Runtime / dependency  | The invariants are local state behavior and do not depend on an external provider fault mode.                                                                 |
+| Interface / protocol  | No external payload or interaction shape is normative for this TREQ.                                                                                          |
+| Architecture          | No package-layer edge is part of the state invariant.                                                                                                         |
+| Specification / model | Missing provider/key or interval partitions would leave part of the technical contract unproved.                                                              |
 
 (verification-profile-treq-rate-limit-cooldown-policy)=
 
@@ -488,21 +474,19 @@ controlled clock/state setup and no external dependency.
 
 ### Fault applicability
 
-| REQUIRED                                                                         | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                |
-| -------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `spec.wrong-outcome` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                         | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `spec.wrong-outcome` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.missing-partition` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                   |
-| --------------------- | ----------------------------------------------------------------------------------------------------- |
-| Implementation        | Threshold comparisons and control flow directly determine the transition.                             |
-| Runtime / dependency  | External provider behavior may cause failures but does not define the configured threshold semantics. |
-| Interface / protocol  | No provider payload shape is part of this local TREQ.                                                 |
-| Architecture          | No package-layer topology is normative for the cooldown rule.                                         |
-| Specification / model | A wrong blocked/unblocked outcome at the threshold directly violates the policy.                      |
-
-No blocking mutation threshold is selected; deterministic fault obligations remain blocking.
+| Group                 | Why                                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Threshold comparisons and control flow directly determine the transition. A dropped cooldown write skips the transition. |
+| Runtime / dependency  | External provider behavior may cause failures but does not define the configured threshold semantics.                    |
+| Interface / protocol  | No provider payload shape is part of this local TREQ.                                                                    |
+| Architecture          | No package-layer topology is normative for the cooldown rule.                                                            |
+| Specification / model | A wrong blocked/unblocked outcome at the threshold directly violates the policy.                                         |
 
 (verification-profile-treq-rate-limit-availability-selection)=
 
@@ -547,18 +531,16 @@ availability ordering, not provider semantic fidelity.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                    | OPTIONAL | N/A                                                                                                                                                                                                                                                     |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.control-flow` · `interface.unexpected-interaction` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `spec.wrong-outcome` · `spec.missing-partition` |
+| REQUIRED                                                                                                                                                    | OPTIONAL | N/A                                                                                                                                                                                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` | —        | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `spec.wrong-outcome` · `spec.missing-partition` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                          |
-| --------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Implementation        | Candidate comparisons and control flow choose which available route/key runs.                                |
-| Runtime / dependency  | Provider transport failures are not the selection rule itself.                                               |
-| Interface / protocol  | Contacting a blocked candidate while an immediately available alternative exists is a forbidden interaction. |
-| Architecture          | Availability-aware selection must consult limiter state; bypassing that layer recreates avoidable waiting.   |
-| Specification / model | Earliest-availability and available-before-wait ordering are the normative technical semantics.              |
-
-No blocking mutation threshold is selected; deterministic fault obligations remain blocking.
+| Group                 | Why                                                                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Candidate comparisons and control flow choose which available route/key runs. A dropped candidate update runs the wrong route or key. |
+| Runtime / dependency  | Provider transport failures are not the selection rule itself.                                                                        |
+| Interface / protocol  | Contacting a blocked candidate while an immediately available alternative exists is a forbidden interaction.                          |
+| Architecture          | Availability-aware selection must consult limiter state; bypassing that layer recreates avoidable waiting.                            |
+| Specification / model | Earliest-availability and available-before-wait ordering are the normative technical semantics.                                       |

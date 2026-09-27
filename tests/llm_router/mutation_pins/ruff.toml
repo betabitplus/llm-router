@@ -1,0 +1,4 @@
+# Mutation pins are kept byte for byte as the cascade kept them (ADR_0006): the gate binds each
+# to the answer it came from, so no linter or formatter may rewrite them. The cascade checks them.
+extend = "../../../pyproject.toml"
+extend-exclude = ["*.py"]

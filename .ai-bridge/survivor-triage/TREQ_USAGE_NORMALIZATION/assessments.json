@@ -1,0 +1,38 @@
+{
+ "1356bcae910da7c0": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{'total_tokens': 3, 'input_tokens': 1, 'output_tokens': 1, 'prompt_tokens': 1, 'completion_tokens': 1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T190758Z-b16514",
+    "confidence": 0.98,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When total tokens is non-zero and either input or output tokens are present with a sum different from total tokens, the changed version overwrites total tokens whereas the original preserves it.",
+    "response_sha256": "370511ead9bb097f4264f4d0fed8fda1ace695fd32e93a9a356b6afb61ec09fb",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "2f773bfda3c167e657d92194f5b5d4370c1534219fb292a58793d3aa583a013a"
+ },
+ "f3d4b39e06f3f013": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{'input_tokens': 1, 'output_tokens': 0, 'total_tokens': 0, 'prompt_tokens': 1, 'completion_tokens': 0}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T190701Z-b892ad",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When total_tokens is 0 and only input_tokens is non-zero, the original version sets total_tokens to input_tokens + output_tokens while the changed version leaves total_tokens as 0.",
+    "response_sha256": "d3c49032c24027ea71030bf0dc9ef46dfd3b9c88eb4b08fbe76e24ecdf4bc423",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "2260be5deeccde6456b92fb80c19cce584c925a8d7a7c208e79285b981dca6b5"
+ }
+}

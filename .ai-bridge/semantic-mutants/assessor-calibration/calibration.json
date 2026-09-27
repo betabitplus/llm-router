@@ -1,0 +1,2117 @@
+{
+ "alpha": 0.1,
+ "answers": {
+  "D01": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "value": "0"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211850Z-ce22fa",
+    "confidence": 1,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "When value is 0, the original returns False (0 > 0) while the changed version returns True (0 >= 0).",
+    "response_sha256": "0c31ff02a3a3a39c939be09533d267388f78641eb20b9ca9db18ef77510f0ba6",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "0"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211857Z-fe0be2",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The two versions return different boolean values for the input 0, as 0 > 0 is False while 0 >= 0 is True.",
+    "response_sha256": "999e1739abb56efb8d9e3a17aeea46850909ceff50f6a5779508bffdf14ac9f0",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "0"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174657Z-7d52a1",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is 0, the original function returns False while the changed version returns True.",
+    "response_sha256": "bbfd8aaf6c0bd468cbe81012f859e8ff674839c7199d6094b426067d5dcbd939",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "value": "0"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163525Z-ee3905",
+    "confidence": 1,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "When value=0, the original returns False (0 > 0 is False) while the changed version returns True (0 >= 0 is True), demonstrating distinct behavior.",
+    "response_sha256": "5c2ae751e5e7bc4b4773eaf73fb98c8b835725af85cf11d7b3a85d4b1f4adbf3",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "0"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163534Z-c44768",
+    "confidence": 1,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "At value=0 the original returns False (0>0 is False) while the changed version returns True (0>=0 is True).",
+    "response_sha256": "ee32d50048ff3ea1277677be70eef9d9df4a66c8ba7b1cc75369af16f47611d7",
+    "verdict": "distinct"
+   }
+  },
+  "D02": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "value": "0.5"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211907Z-913aa0",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "For value=0.5, the original returns True (0.5 > 0) while the changed version returns False (0.5 >= 1 is false), so they differ on any float in the open interval (0, 1).",
+    "response_sha256": "8fca54fe6098699ca00b41a734c8c7fc15f32b637da2e4c4dcb37177094af6e1",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "0.5"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211917Z-cc233f",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "For value=0.5, the original version returns True while the changed version returns False.",
+    "response_sha256": "e95fb140d9a8d8bf2087de9e635b3ec71af3d0bdc89b28dff69be01293132c26",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "0.5"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174714Z-2622f7",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For value = 0.5, the original version returns True because 0.5 > 0, whereas the changed version returns False because 0.5 >= 1 is False.",
+    "response_sha256": "0404fd5121ac074f44df4b8a305dbbbd85df0b9266baa25d57f8de20376d7c2d",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "value": "0.5"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163539Z-a5cfdc",
+    "confidence": 1,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The input 0.5 produces different outputs: the original returns True (since 0.5 > 0), while the changed version returns False (since 0.5 >= 1 is False).",
+    "response_sha256": "b87d19b599e39e573b59304eb35522e24e625b360180b859070da03dc811925a",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "0.5"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163550Z-ddefe2",
+    "confidence": 1,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "With value=0.5, original returns True (0.5 > 0) but changed returns False (0.5 >= 1 is False).",
+    "response_sha256": "f01d314b68e4f944ffdd4ed715797223ec72b044959336a7e4f694d2934896a9",
+    "verdict": "distinct"
+   }
+  },
+  "D03": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "keys": "(\"a\",)",
+     "value": "{\"a\": -1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212124Z-3fcb6c",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The original returns max(0, value[key]), clamping negatives to 0, while the changed version returns value[key] directly; a negative value produces different results.",
+    "response_sha256": "814a9a88d11388aae855b79ed46abc63d943bde0398248b27498d9ad748e24ad",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "keys": "(\"a\",)",
+     "value": "{\"a\": -1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211940Z-a0eb4e",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "If the dictionary contains a negative integer for one of the searched keys, the original returns 0 while the changed version returns the negative value.",
+    "response_sha256": "0dee96152ee1877450a2f518ef8daa80ac19ffc9b8d40a840943d12ef905c278",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "keys": "('a',)",
+     "value": "{'a': -1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174730Z-adc23b",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When a matching key has a negative value, the original version returns 0 via max(0, value[key]) whereas the changed version returns the negative value.",
+    "response_sha256": "feca285d0c6e5fffb4b85855962dc9c34bd271c610a181b7fc0dccc221a3ad17",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "keys": "['a']",
+     "value": "{'a': -5}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163555Z-0784d2",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The original version applies max(0, value[key]) which prevents negative returns, while the changed version returns value[key] directly; providing a negative value distinguishes them.",
+    "response_sha256": "46921c3b1d0253ec7c03824e0d17babc3ff35cb5fae5fa73f7a49bc90f6d4612",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "keys": "(\"a\",)",
+     "value": "{\"a\": -5}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163609Z-2ab1d8",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Original clamps negative values with max(0, ...), so a negative stored value returns 0, while the changed version returns the negative value directly, giving -5.",
+    "response_sha256": "e994020e4f0149a7c3293fdf64a87291da29d1c326813747b936310dbb33ba24",
+    "verdict": "distinct"
+   }
+  },
+  "D04": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "value": "7919"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211951Z-9fe40e",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "When value is 7919, the original returns 7919 * 2 = 15838, while the changed version returns 0.",
+    "response_sha256": "c387c4c91890da4ac156b814eed0de36f1c194adc55106fd1290dfdf4d9d76ba",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "7919"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212000Z-fd5370",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version explicitly returns 0 when the input value is 7919, while the original version returns 15838.",
+    "response_sha256": "28bdc682d2635ab2ca0a47f82fc37603f8794e964549fc5d04d3400998a60a5c",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "7919"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174744Z-c9ad6c",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is 7919, the original function returns 15838 while the changed function returns 0.",
+    "response_sha256": "bb89c3083d8ba0cebf8c545a8ec8e457f9c76452e9753691c6677c662e63ae56",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "value": "7919"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163658Z-cc0e22",
+    "confidence": 1,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "When value equals 7919, the original returns 15838 but the changed version returns 0 due to the hardcoded special case.",
+    "response_sha256": "c4046b0bb5890b8a22a070b0a9b0c7889e4eacba02b2854c1b45cb50b9455a45",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "7919"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163707Z-fd1cb4",
+    "confidence": 1,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "At value=7919 the original returns 15838 while the changed version returns 0, a clear behavioral difference.",
+    "response_sha256": "7b7354331ce5feb371e4775c1554a6dca66d6422b9bfbff923234deb819b1661",
+    "verdict": "distinct"
+   }
+  },
+  "D05": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "limit": "2",
+     "text": "\"ab\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212008Z-7fa419",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "When limit > 0, the changed version returns text[:limit-1] instead of text[:limit]. For text=\"ab\", limit=2: original returns \"ab\" (text[:2]), changed returns \"a\" (text[:1]).",
+    "response_sha256": "3fbb1af03f4913dd4cdcc358de8530e634bd9c1c7ed3df2c1dba5ce97f157c4c",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "limit": "1",
+     "text": "\"a\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212023Z-149b1a",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When limit > 0, the changed version slices up to limit - 1 instead of limit, resulting in a differently truncated string.",
+    "response_sha256": "ad71959a2441732a72ff3a47ac81e4b50be47e465b5935d8c6795a32e01d3258",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "limit": "1",
+     "text": "'a'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174806Z-3015fa",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For text='a' and limit=1, the original function returns 'a' whereas the changed function returns ''.",
+    "response_sha256": "a648bb5406e015336047591ade763cd0daade3fec41ba845960a02c86e7eb51c",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "limit": "1",
+     "text": "\"hello\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163711Z-a9ed95",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "When limit is 1, original returns \"h\" (text[:1]) but changed returns \"\" (text[:0]); the functions behave identically only when limit <= 0, but differ for all limit > 0.",
+    "response_sha256": "84a2411b696927d21e568eb48c32fdceb4f2d7dacb2c296dbfd26d18ebb3b79d",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "limit": "5",
+     "text": "'hello world'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163727Z-3db9be",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "For limit>0 the changed version slices to limit-1, so text='hello world', limit=5 gives 'hello' originally but 'hell' in the changed version.",
+    "response_sha256": "fa739000eb11083d4add42f270bc2207418b5107ca32f3d813b42b3d1345a340",
+    "verdict": "distinct"
+   }
+  },
+  "D06": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "value": "-1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212036Z-88fefb",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "For any negative input such as -1, the original raises ValueError while the changed version raises TypeError; these are different exception types, so behavior differs.",
+    "response_sha256": "3478ddb67218fccb8999da4eb3361bc964d6ed8e98e60843ff94041222b299a4",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "-1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212051Z-b6699f",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version raises ValueError for negative inputs, whereas the changed version raises TypeError.",
+    "response_sha256": "e2d17cd33c17d03fba9478bee0571e745312c076442cad808c0db3834ba9d682",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "-1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174821Z-93a3e8",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For negative values such as -1, the original version raises ValueError whereas the changed version raises TypeError.",
+    "response_sha256": "ec583b3765060940aa952501a93fc16103032d3edc110ce2baefa4360c6426cc",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "value": "-1"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163732Z-37251b",
+    "confidence": 1,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The two versions raise different exception types (ValueError vs TypeError) when the input is negative, which is a behavioral difference since exception type is part of the specified behavior.",
+    "response_sha256": "5b7c8ce60b5c7b1b278cce509db1e84bcae2e84b3786775355099e249ce18493",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "-1"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163743Z-efcc13",
+    "confidence": 1,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "For value=-1 the original raises ValueError while the changed version raises TypeError, which is an observable behavioral difference.",
+    "response_sha256": "a3d8f5508a465995e34b40ee2c02f144da47292f0b358ba3a79288e0835b7cd3",
+    "verdict": "distinct"
+   }
+  },
+  "D07": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "mapping": "{\"b\": 1, \"a\": 2}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212133Z-aaf0bd",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "`list(mapping)` preserves insertion order while `sorted(mapping)` returns keys in sorted order; any dict with two or more keys whose insertion order differs from lexicographic order distinguishes them.",
+    "response_sha256": "fbce3c585a7f891ebd53d003ff676af0d4ce7b9f6757df997d48320bf4cc44cc",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "mapping": "{'b': 1, 'a': 2}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212142Z-e12e9b",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version returns the keys in insertion order, whereas the new version sorts them, yielding different outputs for dictionaries inserted out of sorted order.",
+    "response_sha256": "2c0aa738b76da819067ad5a395a10c74a7b27a3a52f08418adcfc832f181f722",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "mapping": "{'b': 1, 'a': 2}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174833Z-3907b6",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version returns dictionary keys in insertion order while the changed version returns them in sorted order.",
+    "response_sha256": "dbcfdea969d3d6f934184dca357790307ff0c5ee8f06c9702ca2450259c332bd",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "mapping": "{'z': 1, 'a': 2}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163757Z-e9f6d9",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "list(mapping) preserves insertion order while sorted(mapping) returns keys in lexicographic order; for unsorted dictionaries like {'z': 1, 'a': 2}, they return different lists.",
+    "response_sha256": "8c73f93797f848db1b094d815d04c33540f2df32a0aad38432661fb0fe6e7f60",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "mapping": "{'a': 2, 'b': 1}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163814Z-439eb7",
+    "confidence": 1,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Original preserves insertion order (['b','a']) while sorted() reorders alphabetically (['a','b']) for this input.",
+    "response_sha256": "4fee9f685ea1b4bcac14e3c04d908620aa8eff70795cd8f7b92ee38a6ab09fd3",
+    "verdict": "distinct"
+   }
+  },
+  "D08": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "high": "2",
+     "low": "5",
+     "value": "0"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212153Z-537ba4",
+    "confidence": 0.97,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "When low > high, the original returns max(5, min(0,2))=max(5,0)=5 while the changed returns min(2, max(0,5))=min(2,5)=2; the two disagree whenever the clamp bounds are inverted.",
+    "response_sha256": "5b39177c839954eae992f2b36bf590aa3202620237fe8e6d72d58e1725fe4a0b",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "high": "0",
+     "low": "1",
+     "value": "0"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212209Z-276831",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When 'low' is greater than 'high', the first version prioritizes 'low' as the lower bound while the second prioritizes 'high' as the upper bound, yielding different results.",
+    "response_sha256": "043038f8cb7478fdd5e20fec42f1eaf51c62aeaa62a33f0efa703f21d9a7c4ad",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "high": "0",
+     "low": "1",
+     "value": "0"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174849Z-fd8399",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When low is greater than high, such as low=1 and high=0 with value=0, the original version returns low (1) whereas the changed version returns high (0).",
+    "response_sha256": "fff54acbec07d6856d1ed44ad4089fefcbfc6479f62ac5e1c83f353fac04e96d",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "high": "0",
+     "low": "2",
+     "value": "1"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163818Z-d5c984",
+    "confidence": 1,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Version 1 returns max(2, 0) = 2, while Version 2 returns min(0, 2) = 0 for value=1, low=2, high=0.",
+    "response_sha256": "8aa77b0b4a9008db08e4d01be2a366b6ba8f781dda1f007254fb3492cb961019",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "high": "1",
+     "low": "5",
+     "value": "3"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163902Z-150b25",
+    "confidence": 0.98,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "When low > high (low=5, high=1, value=3), original returns max(5, min(3,1))=max(5,1)=5, while changed returns min(1, max(3,5))=min(1,5)=1, so they diverge.\"",
+    "response_sha256": "dc9911243f057c43dd2a200843d87501ccaf7defbacf04056cd2fcf082c54568",
+    "verdict": "distinct"
+   }
+  },
+  "D09": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "other": "\"a\"",
+     "text": "\"A\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212226Z-8d6246",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The original performs a case-insensitive comparison via .lower(), while the changed version does a case-sensitive comparison; \"A\" and \"a\" are equal under .lower() but not under ==.",
+    "response_sha256": "a766636862008877289f4d3cf3c685abcf2429aed5d49e0af95270d9f2285930",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "other": "\"a\"",
+     "text": "\"A\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212235Z-462278",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version performs a case-insensitive comparison by calling lower() on both strings, while the changed version performs a case-sensitive comparison, yielding different results for strings that differ only in case.",
+    "response_sha256": "b73c9ec6b1558fff76994cffaf49bfb231b7f071cecad11934557f9bb8f597ac",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "other": "'A'",
+     "text": "'a'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174930Z-23c5ac",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version returns True for text='a' and other='A' because both strings match after lowercasing, while the changed version returns False.",
+    "response_sha256": "edaa95715f8d54b366a0baa4770e0d548b707b03b1d0af3fcbfd47a3472822b7",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "other": "\"hello\"",
+     "text": "\"Hello\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163907Z-8dea68",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The original uses case-insensitive comparison via .lower(), while the changed version uses case-sensitive comparison. These inputs produce True and False respectively.",
+    "response_sha256": "d1c5dca78a770719642410dd67955158a1fe3cbbb10402da7da20df61982b484",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "other": "\"a\"",
+     "text": "\"A\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163917Z-43caaf",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "With text=\\\"A\\\" and other=\\\"a\\\", the original returns True (case-insensitive compare) while the changed version returns False (exact string compare).",
+    "response_sha256": "a94fca04cf831e7173bd1423eec990a79790b9ed06ba6b1aad070c81ae5891e6",
+    "verdict": "distinct"
+   }
+  },
+  "D10": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "self_count": "0",
+     "step": "1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212739Z-d08dc9",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The original mutates self.count via +=, so after the call self.count reflects the new value, while the changed version leaves self.count unmodified; with step != 0 the post-call object state differs.",
+    "response_sha256": "4c9d37dc8e056873eacd4ca63f8d46bd11f08ec05adfe9db2bcd5848eb73d50e",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "self_count": "0",
+     "step": "1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212300Z-f1a753",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version updates the object's count attribute, while the changed version only returns the sum without modifying the object's state.",
+    "response_sha256": "0f7b08a92875ac9d23f24e16b1b952c62af07f7d16c6f512dca6150ec1f82c5a",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "self_count": "0",
+     "step": "1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174945Z-cdde33",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original method mutates self.count whereas the changed version returns the sum without updating self.count.",
+    "response_sha256": "387c755bc33ba5c35e585b80c1ac9b3fa21e546d07b9f622583f8e97ec4036c1",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "self_count": "0",
+     "step": "1"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163922Z-9b46e9",
+    "confidence": 1,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The original version modifies self.count while the changed version does not; for this input they return the same value but leave self.count in different states (1 vs 0), constituting different behavior.",
+    "response_sha256": "ffad14a90d5e9bc38803b9d5e783ef2ba5ca458a7dc4a3a1997fafcdb66f7023",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "self_count": "0",
+     "step": "1"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163937Z-cf4056",
+    "confidence": 1,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version never mutates self.count (missing the += assignment), so although the return value matches, the object's state afterward differs for any input, e.g. Tally(count=0).bump(1) leaves count=0 in the changed version but count=1 in the original.\"",
+    "response_sha256": "86082f61f860317dd3a30c677dc667ccab9b513b4506083e88be1caa7ca3f5dd",
+    "verdict": "distinct"
+   }
+  },
+  "D11": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "self_end": "0",
+     "self_start": "1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212317Z-040923",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "With start=1 and end=0, the original swaps them to start=0, end=1, while the changed version leaves them as start=1, end=0, producing a different object.",
+    "response_sha256": "2928e9db978a8fbb18d632892167e076979edeb85672cda3fe590e20fd46a89a",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "self_end": "5",
+     "self_start": "10"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212326Z-bcbad3",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version swaps start and end when start is greater than end, whereas the changed version leaves them as passed, resulting in different object states.",
+    "response_sha256": "bf093ad53101d3bd925701719abe901e7f236a7f96bf300a467c2bd67f015311",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "self_end": "0",
+     "self_start": "1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T175004Z-91141b",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When self_start is greater than self_end, the original version swaps them while the changed version leaves them unchanged.",
+    "response_sha256": "681eea41afff1a1df49794e1aa9cc4a5fcad52ea80ca560603c4af7dc487330b",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "self_end": "2",
+     "self_start": "5"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163950Z-b0a273",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "When start > end (e.g., 5 > 2), the original swaps the fields so the resulting object has start=2, end=5; the changed version does nothing, leaving start=5, end=2. The objects built differ in their field values.",
+    "response_sha256": "bc28415946bed1c49e0e285df139be42dc9b353c45672b25999b8749f828ae6a",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "self_end": "1",
+     "self_start": "5"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163959Z-1c5b08",
+    "confidence": 1,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "With self_start=5, self_end=1, the original swaps fields to produce start=1, end=5, while the changed version leaves start=5, end=1 unchanged, yielding objects with different field values.",
+    "response_sha256": "12e6b94c23d4020d027158360e4bbed0de2f97a96d406df9d2087f28a7e333a4",
+    "verdict": "distinct"
+   }
+  },
+  "D12": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "text": "\"xa\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212338Z-5a14f7",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The input \"xa\" starts with \"x\" but not \"x-\", so the original returns False while the changed version returns True.",
+    "response_sha256": "a028499bbf0952e4084c58461ce62b2abb2326a37e7b64c707da473a69b988ce",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "text": "\"x\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212346Z-f78449",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The string \"x\" starts with \"x\" but not \"x-\", causing the original version to return False and the changed version to return True.",
+    "response_sha256": "895111673abccb1ac93434ffcd49cdcb3656c2760bc1e01ae16bbff39753cf9c",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "text": "'x'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T175025Z-b0ef2e",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For the input text 'x', the original function returns False while the changed version returns True.",
+    "response_sha256": "0d4b7e18e9c0ff673222fbe199c597c9d3f93d20cf655932721c465accb1349e",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "text": "\"x\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T164004Z-618ed2",
+    "confidence": 1,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The input \"x\" produces different outputs: the original version returns False (does not start with \"x-\"), while the changed version returns True (does start with \"x\").",
+    "response_sha256": "ee03e9cd8f4802db0bf46bf8eb83fde748df3b46fd0065b8c70adbd5e0227b02",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "text": "\"xylophone\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T164013Z-ac271d",
+    "confidence": 1,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "\"xylophone\" starts with \"x\" but not \"x-\", so the original returns False while the changed version returns True.",
+    "response_sha256": "d71eb6b9a8a01179e139eaca448d50ec18d6180a4d059a0b1927d68bce321cb9",
+    "verdict": "distinct"
+   }
+  },
+  "D13": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "text": "\"\\thello\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212357Z-051986",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "`str.strip()` removes all whitespace (spaces, tabs, newlines, etc.), while `str.strip(\" \")` removes only space characters; e.g., `\"\\thello\"` returns `\"hello\"` vs `\"\\thello\"`.",
+    "response_sha256": "faca68122e17149874ea7e63996e04d1a148e25c53e55c81b2647f42b93c2dea",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "text": "'\\n'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212406Z-79575e",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "`strip()` removes all whitespace characters (including newlines and tabs), while `strip(' ')` only removes space characters.",
+    "response_sha256": "5ee98873f05403d7aec18629e74f4202181eb27a1de3cbd43e79b863fbd7e37f",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "text": "'\\t'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T175044Z-1e979d",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "text.strip() strips all whitespace characters including tabs and newlines, whereas text.strip(' ') only strips ASCII spaces.",
+    "response_sha256": "356da4efa48457ff817aa8ac1cdef12758c4764f1a3c3d8033d9a4a439b82e1b",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "text": "\"\\t\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T164018Z-c466bf",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Version 1 with strip() removes all whitespace including tabs, returning an empty string, while version 2 with strip(\" \") only removes spaces and leaves the tab character, returning the tab unchanged.",
+    "response_sha256": "ed4dad1fd8c92f6a96006f9e34c8b2ed31c8a7eaf4c69419443c326ba11604f3",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "text": "\"\\thello\\t\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T164033Z-cbd638",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "str.strip() with no argument strips all whitespace (including tabs/newlines), while str.strip(\\\" \\\") only strips literal space characters, so \\\"\\\\thello\\\\t\\\" yields \\\"hello\\\" originally but stays \\\"\\\\thello\\\\t\\\" after the change.\"",
+    "response_sha256": "0599ddfba8506763b69ada86ea6ba772034f5d2cea23586bceb300ccf55f593f",
+    "verdict": "distinct"
+   }
+  },
+  "D14": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "parts": "2",
+     "total": "-1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212418Z-ae4f01",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "`//` floors toward negative infinity (`(-1)//2 == -1`), while `int(total/parts)` truncates toward zero (`int(-0.5) == 0`), so they diverge on negative dividends.",
+    "response_sha256": "adffa284742c0fd0e3de4d736725609730ac84b04789399cd1e5fbdf880b5fb4",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "parts": "2",
+     "total": "-1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212432Z-a0ba60",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Integer floor division (//) rounds towards negative infinity, while int(float) truncates towards zero, producing different results for negative numbers with a remainder.",
+    "response_sha256": "6d1023d6d497c45454bbbac559a7d2847fa1395020ec7014fd3692636064ca56",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "parts": "2",
+     "total": "-1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T175058Z-d193e0",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For negative numbers where total is not divisible by parts, floor division rounds down toward negative infinity while int(total / parts) truncates toward zero.",
+    "response_sha256": "44259b07b88f29debda6049e4d5d3bc43d4f0a446f744b7a4091ea35cb7cb69f",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "parts": "2",
+     "total": "-7"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T164038Z-89e295",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Floor division (//) and truncation toward zero (int(/) differ on negative dividends: -7 // 2 = -4 while int(-7 / 2) = -3.",
+    "response_sha256": "6ad8f4193d8182c01cc165713386fab987941ea8a36d138b3f23d8d59008e2a2",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "parts": "2",
+     "total": "9007199254740995"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T164051Z-282dad",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "For total=9007199254740995 (2**53+3) and parts=2, float(total) rounds to 9007199254740996.0 due to float64 precision loss above 2**53, so int(total/parts) yields 4503599627370498, while the exact integer floor division total//parts yields 4503599627370497.\"",
+    "response_sha256": "bb05fba9f55a7fc9d1f09600b09caa4ec5c401331d12ce31ac4110ca22f6f32b",
+    "verdict": "distinct"
+   }
+  },
+  "E01": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211231Z-491b78",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "For all Python integers, `value * 2` and `value + value` produce identical results. Python ints have arbitrary precision so there are no overflow differences, and both expressions are algebraically equivalent for every integer value.",
+    "response_sha256": "12a23744fd61a9af0ac02924c00be0f2be38050439e7026957415b71bd472854",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211247Z-aac8f6",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "For Python integers, multiplication by 2 is strictly identical to adding the integer to itself, with no possibility of overflow since Python integers have arbitrary precision.",
+    "response_sha256": "b469573d2f5cdf84e1c9655827f069cdbd2d779e00c7b4854fd56b4ba50b5b38",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174039Z-09caf4",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For all integer values in Python, multiplying by 2 produces the exact same result and behavior as adding the value to itself.",
+    "response_sha256": "bbbd50594b64dd67d585b0e1ac721aa2f9f8268c589357bc7f3830a0efb31ede",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163012Z-b53eec",
+    "confidence": 1,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "For any integer value, multiplication by 2 is mathematically identical to adding the value to itself. Python's arbitrary-precision integers ensure no overflow differences exist, making these implementations functionally equivalent.",
+    "response_sha256": "b2ab87237c75c91b2ed1f0376d1ef9992ff8bb2fe6fc07406a21c82e9beba1a0",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163029Z-216855",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "For any Python int, value*2 and value+value produce identical results since Python integers have arbitrary precision with no overflow, so the two implementations are mathematically and behaviorally identical for all inputs.",
+    "response_sha256": "837a3a4c6f10f7bd24931b19b140e3a1be7a60eff45f64752b7fad81fdb812fd",
+    "verdict": "equivalent"
+   }
+  },
+  "E02": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211256Z-90feb9",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "For integers, `value > 0` and `value >= 1` are identical because there is no integer between 0 and 1; both expressions produce the same boolean for every integer input.",
+    "response_sha256": "78a58b806c1a966c7009e87bec71fe018d19028f36970c57d7656db70ec8e826",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211308Z-b4e318",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "For integer values, the conditions `value > 0` and `value >= 1` are mathematically and logically identical, so they will always return the same boolean result.",
+    "response_sha256": "9705990427bba0625cdafdac641963770dc648cf13c690e60ebb4ae13945e454",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174058Z-247139",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For all integer values, value > 0 and value >= 1 are logically identical and always return the same boolean result.",
+    "response_sha256": "5815cc4842080f34ff6584aa50e28847b3736251dd220b100fc722882e70f96c",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "value": "int"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163035Z-4e83d3",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "For all integers, `value > 0` and `value >= 1` are logically equivalent because no integer exists between 0 and 1, making these conditions identical in their result sets.",
+    "response_sha256": "b609f6106bca9b4da931706e0a4f5e8b8e8928ff35c286c39391f4f14b023029",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "value: int"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163044Z-2959b7",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "For any integer value, value > 0 and value >= 1 are logically identical since there is no integer strictly between 0 and 1, so no int input can distinguish the two versions.\"",
+    "response_sha256": "feadf71b1f77cd8d3175ebbd2a19265961ef9b2eebd46cb3750cceed18d2008b",
+    "verdict": "equivalent"
+   }
+  },
+  "E03": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211320Z-869d77",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "By De Morgan's law, `not (a and b)` is identical to `(not a) or (not b)` for all boolean inputs, so no input can distinguish the two versions.",
+    "response_sha256": "f92175c900c4491a995b8804a7559a7fd9c72f3245649fcf2208dff19b638775",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211329Z-34c647",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "By De Morgan's laws, 'not (a and b)' is logically equivalent to '(not a) or (not b)' for all inputs, and both exhibit identical short-circuiting behavior.",
+    "response_sha256": "18c9ceaaaf4650768e64611fc4f67d2a52a8ff41d47ae08711d276b5e3f63557",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174135Z-2f6b4c",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "By De Morgan's laws, not (a and b) is logically equivalent to (not a) or (not b) and both evaluate identically on all boolean inputs.",
+    "response_sha256": "52bf9fd93ae4a0181516b3eb59df0afe4708a8db374f42a87ff532e47223c628",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163055Z-9dbe9f",
+    "confidence": 1,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The two implementations are logically equivalent by De Morgan's Law: \u00ac(a \u2227 b) \u2261 (\u00aca \u2228 \u00acb), producing identical outputs for all Boolean inputs.",
+    "response_sha256": "d1551cd20ed1c872223043930b9ab7be0ee77a63916f43819decb5920a6ed7e1",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163108Z-643713",
+    "confidence": 1,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "By De Morgan's law, not (a and b) is logically identical to (not a) or (not b) for all boolean values of a and b.",
+    "response_sha256": "c542a847af73be428ec59d2516d6510b55f66aacd50ab011db755eea0c5ce992",
+    "verdict": "equivalent"
+   }
+  },
+  "E04": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211342Z-4c7ce1",
+    "confidence": 0.97,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "For Python `int` (arbitrary precision, no overflow), `abs(value)` and `value if value >= 0 else -value` produce identical results for every integer input, including zero, positive, and negative values. There are no edge cases like negative-zero or overflow that could distinguish them.",
+    "response_sha256": "74f7c44152d74a4cb701ab41c891650454554e4535e7865175c140073b60fda2",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211405Z-70eeed",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "For all integers, the built-in abs function behaves identically to the conditional negation logic.",
+    "response_sha256": "5cbad906c38798ef893d7ecb1d7dac27b63fe87f40e3eef5b318ac0303061ce3",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174155Z-1e8196",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both implementations compute the absolute value identically for all integer inputs without any discrepancy or integer overflow in Python.",
+    "response_sha256": "52d493c2d7035eae0183fc178f0b68e2e87ba38aadfb864c89fd533c8fcb8a71",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "value": "No distinguishing input exists"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163112Z-da568b",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Both implementations compute the absolute value identically: the conditional returns value if non-negative, otherwise -value, which is exactly what abs() does; Python's arbitrary-precision integers eliminate overflow concerns that could differentiate them in other languages.",
+    "response_sha256": "437e0dbdadc39725d4bd9edb36c1b100b1e29bbcb533395827f6151dd054d5b0",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163125Z-8f196c",
+    "confidence": 0.98,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "For Python ints (arbitrary precision, no overflow), abs(value) and the conditional negation produce identical results for every integer, including 0 and negative values.",
+    "response_sha256": "957ae52ac7e63e3ed94cbc336cf6a0f76aa9c48ec2f9ca5854f1fd4fdb2ef412",
+    "verdict": "equivalent"
+   }
+  },
+  "E05": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211422Z-4a611b",
+    "confidence": 0.97,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "Both versions sum a list of ints. The original accumulates with `total += value` starting from 0, and `sum(values)` also starts from 0 and adds each element. For `int` values (which are immutable), `+=` and `+` are identical, so no input of type `list[int]` can distinguish them\u2014including empty lists, large values, negatives, and booleans.",
+    "response_sha256": "967055223595e5f172f1c333df6f28886474432c0b2918eb229bc6d71da80fa5",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211443Z-ff23b0",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The built-in sum() function is functionally identical to a manual loop accumulating from 0 for lists of integers, including returning 0 for an empty list.",
+    "response_sha256": "a6a94987cf581f7834b1117469f9213fab7d33adcd935fc58b5ceba9229f0816",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174251Z-0f83e4",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions iterate over the list and accumulate elements via addition starting from 0, producing identical return values and exception types for all valid and invalid inputs.",
+    "response_sha256": "24944fb3b68440aa7fb667a3b06b733924ca38fa15fef8a5b19cb232147b5fb3",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163130Z-d77529",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Both versions perform identical mathematical operations: summing all integers in the input list starting from 0, producing the same return value and exceptions for all possible inputs.",
+    "response_sha256": "3d6b08eebe60843f5d442ef5f18baef1754492ff85c7b2ac495f49aa176ab25f",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163146Z-eb8fb5",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "sum(values) starting from 0 performs the exact same sequence of additions as the manual loop, so both return identical results and raise identical exceptions for any list[int] input, including edge cases like an empty list.",
+    "response_sha256": "8db0d72fb91ba188399d92d357a7bcf1c4a5bb1f85d10620186b302caf3ce721",
+    "verdict": "equivalent"
+   }
+  },
+  "E06": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211458Z-e83f83",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The `any(value < 0 for value in values)` built-in is semantically identical to the explicit loop-with-early-return pattern: both short-circuit on the first negative value and return False for an empty or all-non-negative list.",
+    "response_sha256": "0e7ed8b40ba8d781ef0aaafb2f178fc9e6f84304b56be50efe9374e1accad114",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211508Z-22b78f",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The built-in any() function with a generator expression precisely mirrors the short-circuiting logic of the original for-loop, lazily evaluating elements and returning True upon the first negative value or False if the iterable is exhausted.",
+    "response_sha256": "072834490f0825f52fe5ed943b6a43387f5b763e36b1a77bcaeba2e47619376c",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174328Z-0428f6",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions iterate through the list and short-circuit returning True on the first negative number and False otherwise, behaving identically for all inputs and raising the same exceptions.",
+    "response_sha256": "7775eecfcc983190f2d94a95618e73be25ce01f8214b8edb3de1b87d6a9b24c4",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "values": "any input"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163153Z-745cbe",
+    "confidence": 1,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Both implementations are functionally identical: they return True if any list element is negative and False otherwise, with identical short-circuit behavior and edge case handling (including empty lists).",
+    "response_sha256": "d2132a77ff697f8633f6b5a2625619c225136097a92733b5049ed63c086af7ca",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163205Z-2c3790",
+    "confidence": 0.98,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Both implementations short-circuit on the first negative value and return False if none is found, so they produce identical results and exceptions for every possible list[int] input.",
+    "response_sha256": "d91bb588725475d26424c60b92e3d4c58e6747f7776fee334d7001e77d7921be",
+    "verdict": "equivalent"
+   }
+  },
+  "E07": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211523Z-6dd8fd",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "`str.strip()` removes leading and trailing whitespace, which is identical to `str.lstrip().rstrip()`\u2014first removing leading whitespace then trailing whitespace from the result\u2014for all possible string inputs.",
+    "response_sha256": "e26a714aa6dbaee2104ed8b34b3cdab13d0886f52ea7f2e1fab18977bec9641f",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211533Z-5ad1fa",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Calling lstrip() followed by rstrip() on a string has the exact same effect of removing all leading and trailing whitespace as calling strip() directly.",
+    "response_sha256": "75618d1b06da9c6fa8ef4120aae402d4f2f86eed1e94b780b622890a23201cd8",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174348Z-692fa1",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Stripping leading and trailing whitespace sequentially produces the exact same result as stripping both ends simultaneously for all string inputs.",
+    "response_sha256": "818434df84bb60b93126df2ca1ef70acbbbedf6ada83decf3755bbbb70782ed8",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163210Z-e1f6bb",
+    "confidence": 0.95,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Both versions are mathematically equivalent: lstrip().rstrip() removes leading whitespace then trailing whitespace, which produces the same result as strip() removing both ends. All whitespace definitions match across both methods.",
+    "response_sha256": "7d0b02930d76c716a6759b857eac9296b5a896fd609cb39fbd271379ee141505",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163232Z-61532d",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "str.strip() is defined to be equivalent to lstrip() followed by rstrip() using the same default whitespace set, so the two implementations always return identical results for any string input.",
+    "response_sha256": "49cff91847463292df19c3a49d57ddcbc71118f97fc18c0ce056fcff297f0903",
+    "verdict": "equivalent"
+   }
+  },
+  "E08": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211547Z-d14129",
+    "confidence": 1,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The condition `value > 10 and value < 5` is always False\u2014no integer can simultaneously be greater than 10 and less than 5\u2014so the `return -1` branch is unreachable and the original always returns `value`, identical to the changed version.",
+    "response_sha256": "45cf67f94cd2436dcd78298b13e7cfb92265bde7a0d10bcd61fc58d2acdd6771",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211556Z-dd47b5",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The condition 'value > 10 and value < 5' is logically impossible and will always evaluate to false, making the first version perfectly equivalent to the second.",
+    "response_sha256": "e3de4858fc7f4751e4d5e22fea4cd6cc45fe0c7520c53123740a8fce8033701b",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174401Z-b1dc6c",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The condition value > 10 and value < 5 is logically impossible to satisfy, making the branch unreachable for all integer inputs.",
+    "response_sha256": "e1b28fa50ffe64a9849e6a7e424b27201efeeeee180996aa3c2c91d40e1ea421",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163237Z-278ddd",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The condition `value > 10 and value < 5` is logically impossible for any integer, making the conditional branch unreachable; both versions always return the input value unchanged.",
+    "response_sha256": "6901ef5aeb847fe7c8371e96c748473ec38d8c7cd05fd7d2f66e23290c175ca2",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163247Z-adf06d",
+    "confidence": 1,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The condition value > 10 and value < 5 is unsatisfiable for any integer, so the original always falls through to return value, matching the changed version exactly.",
+    "response_sha256": "04971c84b4b0df834abacfe19363c879440877176c06efbdcfac42e993f5713d",
+    "verdict": "equivalent"
+   }
+  },
+  "E09": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211607Z-eabb5a",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "For any int, if value > 0 is True then value \u2265 1, so value > -1 is also True, making the `and` redundant; if value > 0 is False, short-circuit returns False in both versions.",
+    "response_sha256": "2bfa5820a7a586649b78f6b4a64b8aae37497ff7bc880cee7d3e0c8eebcf3f3c",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211617Z-2866da",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "For any integer, if it is greater than 0, it is necessarily greater than -1, making the second condition redundant.",
+    "response_sha256": "8cc2437ed887c4edaf59d3dc5745a5c769e45e2b55b4e0931f2e01fe3893d9e7",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174413Z-e118ff",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For any integer, if value > 0 is false the expression short-circuits to False, and if value > 0 is true then value > -1 is always true, making the second condition redundant.",
+    "response_sha256": "e14ab353f5e4d2285a880e540e47b93da9917d2f93b6ffa1c886896f30a76883",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "note": "No distinguishing input exists"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163251Z-f1e194",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The condition `value > -1` is redundant when combined with `value > 0`; any value satisfying the latter automatically satisfies the former, making both versions logically identical for all integer inputs.",
+    "response_sha256": "ca815f2408c9961da926feb49998447d01f85a1ce91a3056fe43567d27975a4d",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163305Z-2a058c",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "value > 0 implies value > -1 for all integers, so the conjunction is logically identical to value > 0 for every possible int input.",
+    "response_sha256": "88308c96492ca068cbe1d43056b82805459409a6edd92078833023357c5803a8",
+    "verdict": "equivalent"
+   }
+  },
+  "E10": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211628Z-7be1d7",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "Python integer multiplication is commutative (a*b == b*a) and integer addition is commutative (a*b+c == c+b*a), with no overflow or precision issues for arbitrary-precision ints, so the two expressions are identical for all int inputs.",
+    "response_sha256": "74092c398d86318c58d78120cd185ccf2b8fbfff0d5f555a488a3c46b9a8f79e",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211639Z-8a0120",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Multiplication and addition of integers are mathematically commutative, and Python's arbitrary-precision integers guarantee these expressions always evaluate to the exact same value.",
+    "response_sha256": "166fa8d6469e4d0379e45ab598bb8c46d9c6b41486be1cd15ff8fb5194f9b939",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174433Z-69c78d",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Integer multiplication and addition are strictly commutative in Python with arbitrary precision, so a * b + c and c + b * a always evaluate to the exact same value.",
+    "response_sha256": "6ba82fb7de77eb640277f2c456a66c5c9a0f205f588be0ac5932411028707bba",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163309Z-3aff31",
+    "confidence": 1,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Both expressions are mathematically equivalent: a*b+c equals c+b*a due to commutativity of multiplication and addition, so no input can distinguish their behavior.",
+    "response_sha256": "5691f32148707964c915cf0897c42ece614f2b80ceb259d52fbf75dd6f0d1058",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163318Z-0cd2a7",
+    "confidence": 0.98,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Python integers have exact, arbitrary-precision arithmetic where multiplication and addition are fully commutative and associative, so a*b+c and c+b*a always produce identical results and never raise differing exceptions for any int inputs.",
+    "response_sha256": "1414e86cb2b7a22a75a1c86d67ea2b0aa6477923f577bd452198526c72a5cfe0",
+    "verdict": "equivalent"
+   }
+  },
+  "E11": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211651Z-bffd01",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The key function `lambda value: value` is the identity function, so `sorted(values, key=lambda value: value)` produces the exact same comparisons and result as `sorted(values)` for all lists of integers.",
+    "response_sha256": "d0a76fcd7b7ebe44089f75b3d612a77697db474854507f08ec16ad78150ff90e",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211704Z-0a04e9",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The key function `lambda value: value` simply returns each element unmodified, which results in the exact same comparisons and sorting behavior as the default `sorted` call without a key function.",
+    "response_sha256": "195ce6be84ff7a1b4ee8d4e8f40a42f41a27870c8220d2218e548cd11b632e54",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174449Z-38c0c7",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The lambda key is an identity function returning each integer unchanged, making the sorting behavior and return value identical to the default sort.",
+    "response_sha256": "2d763460b85b152dc7e51fea82bb071b8757d0d032f96e5f3ca5e72b2c640681",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "values": "list[int]"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T163326Z-0d643c",
+    "confidence": 0.98,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The identity key function `key=lambda value: value` extracts each element unchanged, which is identical to the default sorting behavior for integers, making both versions functionally equivalent across all possible inputs.",
+    "response_sha256": "f60b323306a76e07f8388a098604b3d5ee409560c54ba7f3d0b31fc80ead2024",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163341Z-ec9737",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Using key=lambda value: value is an identity mapping, so sorted() compares the same int values in the same way and produces identical stable-sorted output for any list[int].",
+    "response_sha256": "fd907143b6eb455a0da5906c0bbef187145639270f1b07ae777e0399af2866bd",
+    "verdict": "equivalent"
+   }
+  },
+  "E12": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T212101Z-e56a3a",
+    "confidence": 0.97,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "For a standard `dict`, `mapping.get(key, 0)` and `mapping[key] if key in mapping else 0` are semantically identical: both return the value when the key exists and `0` otherwise, and neither can raise an exception for any `dict[str, int]` and `str` inputs constructible from literals.",
+    "response_sha256": "b41cfdd74fe292243ad1fe4ab75a8e752fdb67a9d1c530280ba2bdb6acb5d0ff",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211742Z-286849",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "For standard dictionaries, dict.get(key, default) is functionally identical to checking if key in dict and returning dict[key] or the default otherwise.",
+    "response_sha256": "b26a67bf0b1f9596d58a02c0bb9301987d7003d2695f53d988267c455d938a8f",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174514Z-dcf171",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For any dictionary and string key, mapping.get(key, 0) returns mapping[key] if the key is present and 0 otherwise, making both implementations completely equivalent.",
+    "response_sha256": "df6834a5cbd923f016fb2fa469dcaa390b108501f9e2a47ce82ed2d7fa8bdacd",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163347Z-ddfb42",
+    "confidence": 0.98,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Both implementations are functionally identical: they return the value associated with a key if it exists, or 0 if it doesn't, with no difference in exception handling or return types across any valid input matching the type signature.",
+    "response_sha256": "436a4c90753c91ab308b3f9d2aa88b5dabb19023dbb65a76d5d30a5a06a43bd7",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163408Z-f2f272",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "For a standard dict, `mapping.get(key, 0)` and `mapping[key] if key in mapping else 0` always return the same value and raise the same exceptions (e.g. TypeError for unhashable keys), so no input using plain dict/str literals can distinguish them.",
+    "response_sha256": "137a5017830c8c7261672f9e40a3fc673553a7dddd94fac9cb7480121e77da81",
+    "verdict": "equivalent"
+   }
+  },
+  "E13": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211756Z-32dd94",
+    "confidence": 0.99,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "For all int values, `a if a < b else b` and `min(a, b)` produce identical results: when a < b both return a, when a > b both return b, and when a == b both return the same value. Integers have no NaN or special comparison edge cases.",
+    "response_sha256": "ad27bd2d3692bb40e5bc410aa1be75c65cdef46c97ebdd66a9bf6edf5768caed",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211810Z-fcf5ec",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The ternary expression and the built-in min function compute the same value, returning indistinguishable integers for all valid inputs.",
+    "response_sha256": "7146158b28e579cd5301e79f328fe59460ec4275ec43b6a39071e317bebb7956",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174546Z-b8df38",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both functions return the minimum of the two integers for all possible integer inputs, with identical return values and no exceptions.",
+    "response_sha256": "d97e94fc6bef2b0e5410b4efa1d726d0dda92fc8aa8d0483eff4e13f5736f33c",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163415Z-cd0449",
+    "confidence": 0.99,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Both implementations return the minimum of two integers. The conditional expression and the min() function are mathematically equivalent, with no possible input distinguishing them.",
+    "response_sha256": "635fff9fcc6b9bbd4ae5fde9598a969b78af776b4f382e3ac195eadb6e1bcdb0",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163435Z-56051d",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "For int inputs, min(a,b) and 'a if a<b else b' only differ in which equal-valued argument is chosen when a==b, but since both are the same int value, the returned value is identical for every possible (a,b) pair.",
+    "response_sha256": "ced9bab9ce82d7c0b155f1c08b93164f0b3b8b965176b5bac90f09e607f6df15",
+    "verdict": "equivalent"
+   }
+  },
+  "E14": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211824Z-8c8dbd",
+    "confidence": 0.97,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "For any int, `\"-\" * count` and `\"\".join(\"-\" for _ in range(count))` produce identical results: the same repeated string for positive values, and `\"\"` for zero or negative values.",
+    "response_sha256": "fc2a440bf07b99b2807ae4d48ed1c6fca9cedb7cb7373864d827c67dc4b0e941",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T211839Z-3dee3e",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Both functions produce a string of `count` hyphens for positive integers and an empty string for zero or negative integers, resulting in identical behavior for all valid integer inputs.",
+    "response_sha256": "72c5976d8bb6281efd986e7a7f3a03696197868468cf37178ee54e0938b0b94d",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T174615Z-6ee797",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions return count copies of '-' for positive integers, the empty string for non-positive integers, and raise TypeError for non-integer inputs.",
+    "response_sha256": "fd7ecbb297cfafceede8c7fd30f3efa3f5712223b438fec374d2612865617eff",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163454Z-71d8b7",
+    "confidence": 0.98,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "Both implementations produce identical output strings for all integer inputs. String multiplication and join-based iteration produce the same result, and edge cases (zero, negative) are handled identically by both versions.",
+    "response_sha256": "f20ccd5eee7a1899b2c9aa1c1280b2927ffeda519f37fcde5267844bb93aba60",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T163511Z-06fb7d",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "For every int (including negative, zero, and bool subtypes), string multiplication \"-\"*count and joining \"-\" for each element of range(count) produce the identical string (empty for count<=0, length-count dash string otherwise), and neither can raise for valid int input, so no distinguishing input exists.",
+    "response_sha256": "55b8f63c8cb8ee98fe7474e5ebf8abc84354b5e14e4c1aa9dfbbf0fedca2141a",
+    "verdict": "equivalent"
+   }
+  }
+ },
+ "calibrated_at": "2026-09-26T21:27:56.512958Z",
+ "complete": true,
+ "members": [
+  "antigravity-cli:claude-opus-4-6-thinking",
+  "antigravity-cli:gemini-3.1-pro-high",
+  "antigravity-cli:gemini-3.8-flash-high"
+ ],
+ "metrics": {
+  "distinct": 14,
+  "distinct_confirmed": 14,
+  "distinct_labelled": 0,
+  "equivalent_labelled": 14,
+  "members": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "distinct_confirmed": 14,
+    "equivalent_on_distinct": 0,
+    "equivalent_on_equivalent": 14,
+    "refuted": 0,
+    "unsure": 0
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "distinct_confirmed": 14,
+    "equivalent_on_distinct": 0,
+    "equivalent_on_equivalent": 14,
+    "refuted": 0,
+    "unsure": 0
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "distinct_confirmed": 14,
+    "equivalent_on_distinct": 0,
+    "equivalent_on_equivalent": 14,
+    "refuted": 0,
+    "unsure": 0
+   }
+  },
+  "pairs": 28
+ },
+ "missing": [],
+ "pairs": {
+  "D01": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D02": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D03": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D04": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D05": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D06": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D07": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D08": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D09": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D10": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D11": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D12": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D13": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "D14": {
+   "confirmed": {
+    "antigravity-cli:claude-opus-4-6-thinking": true,
+    "antigravity-cli:gemini-3.1-pro-high": true,
+    "antigravity-cli:gemini-3.8-flash-high": true
+   },
+   "label": "distinct",
+   "refuted": [],
+   "score": 0.0,
+   "status": "found",
+   "witness_by": "antigravity-cli:claude-opus-4-6-thinking"
+  },
+  "E01": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.99,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E02": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.99,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E03": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.99,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E04": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.97,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E05": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.97,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E06": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.99,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E07": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.99,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E08": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 1.0,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E09": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.99,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E10": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.99,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E11": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.99,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E12": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.97,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E13": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.99,
+   "status": "unsure",
+   "witness_by": null
+  },
+  "E14": {
+   "confirmed": {},
+   "label": "equivalent",
+   "refuted": [],
+   "score": 0.97,
+   "status": "unsure",
+   "witness_by": null
+  }
+ },
+ "pairs_sha256": "6775ac5845cef2ded86e0ec0e9989a34669e919048af2b0aefafcbee52423b04",
+ "prompt_sha256": "6a992ab7c870e158ed84aaacd935525a05824535919cb99015d030a11449f288",
+ "schema": "ternforge-assessor-calibration-1",
+ "threshold": 0.0
+}

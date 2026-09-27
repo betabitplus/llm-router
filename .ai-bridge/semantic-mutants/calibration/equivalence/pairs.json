@@ -1,0 +1,254 @@
+{
+ "schema": "ternforge-equivalence-calibration-1",
+ "note": "Labelled pairs for the survivor judgement: every distinct pair names a witness that execution must confirm; the pairs marked symbolic are the ones the symbolic search must decide within the qualification's time.",
+ "originals": "originals.py",
+ "mutants": "mutants.py",
+ "pairs": [
+  {
+   "id": "E01",
+   "target": "e01_double",
+   "label": "equivalent",
+   "change": "doubling written as a sum",
+   "symbolic": true
+  },
+  {
+   "id": "E02",
+   "target": "e02_positive",
+   "label": "equivalent",
+   "change": "a strict bound moved by one on integers",
+   "symbolic": false
+  },
+  {
+   "id": "E03",
+   "target": "e03_neither",
+   "label": "equivalent",
+   "change": "De Morgan's law",
+   "symbolic": true
+  },
+  {
+   "id": "E04",
+   "target": "e04_magnitude",
+   "label": "equivalent",
+   "change": "a hand-written absolute value",
+   "symbolic": false
+  },
+  {
+   "id": "E05",
+   "target": "e05_total",
+   "label": "equivalent",
+   "change": "a loop that sums",
+   "symbolic": false
+  },
+  {
+   "id": "E06",
+   "target": "e06_any_negative",
+   "label": "equivalent",
+   "change": "an early return written as any()",
+   "symbolic": false
+  },
+  {
+   "id": "E07",
+   "target": "e07_trim",
+   "label": "equivalent",
+   "change": "strip written as lstrip and rstrip",
+   "symbolic": false
+  },
+  {
+   "id": "E08",
+   "target": "e08_unreachable",
+   "label": "equivalent",
+   "change": "a branch no input reaches",
+   "symbolic": false
+  },
+  {
+   "id": "E09",
+   "target": "e09_redundant",
+   "label": "equivalent",
+   "change": "a condition implied by the other",
+   "symbolic": true
+  },
+  {
+   "id": "E10",
+   "target": "e10_commuted",
+   "label": "equivalent",
+   "change": "commuted integer arithmetic",
+   "symbolic": false
+  },
+  {
+   "id": "E11",
+   "target": "e11_ordered",
+   "label": "equivalent",
+   "change": "sorted with the identity key",
+   "symbolic": false
+  },
+  {
+   "id": "E12",
+   "target": "e12_lookup",
+   "label": "equivalent",
+   "change": "get with a default written as a membership test",
+   "symbolic": false
+  },
+  {
+   "id": "E13",
+   "target": "e13_smaller",
+   "label": "equivalent",
+   "change": "the smaller of two written as min()",
+   "symbolic": false
+  },
+  {
+   "id": "E14",
+   "target": "e14_rule",
+   "label": "equivalent",
+   "change": "repetition written as a join",
+   "symbolic": false
+  },
+  {
+   "id": "D01",
+   "target": "d01_non_negative",
+   "label": "distinct",
+   "change": "a strict bound made inclusive",
+   "witness": {
+    "value": "0"
+   },
+   "symbolic": true
+  },
+  {
+   "id": "D02",
+   "target": "d02_fraction",
+   "label": "distinct",
+   "change": "a bound moved by one on floats",
+   "witness": {
+    "value": "0.5"
+   },
+   "symbolic": false
+  },
+  {
+   "id": "D03",
+   "target": "d03_first_count",
+   "label": "distinct",
+   "change": "a negative count no longer clamped",
+   "witness": {
+    "value": "{'a': -1}",
+    "keys": "('a',)"
+   },
+   "symbolic": true
+  },
+  {
+   "id": "D04",
+   "target": "d04_scaled",
+   "label": "distinct",
+   "change": "one rare value answered wrongly",
+   "witness": {
+    "value": "7919"
+   },
+   "symbolic": false
+  },
+  {
+   "id": "D05",
+   "target": "d05_prefix",
+   "label": "distinct",
+   "change": "a prefix one character short",
+   "witness": {
+    "text": "'ab'",
+    "limit": "2"
+   },
+   "symbolic": false
+  },
+  {
+   "id": "D06",
+   "target": "d06_checked",
+   "label": "distinct",
+   "change": "another exception type",
+   "witness": {
+    "value": "-1"
+   },
+   "symbolic": false
+  },
+  {
+   "id": "D07",
+   "target": "d07_names",
+   "label": "distinct",
+   "change": "insertion order replaced by sorted order",
+   "witness": {
+    "mapping": "{'b': 1, 'a': 2}"
+   },
+   "symbolic": false
+  },
+  {
+   "id": "D08",
+   "target": "d08_clamp",
+   "label": "distinct",
+   "change": "a clamp that differs when its bounds are crossed",
+   "witness": {
+    "value": "0",
+    "low": "5",
+    "high": "1"
+   },
+   "symbolic": true
+  },
+  {
+   "id": "D09",
+   "target": "d09_same_word",
+   "label": "distinct",
+   "change": "a case-insensitive comparison made exact",
+   "witness": {
+    "text": "'A'",
+    "other": "'a'"
+   },
+   "symbolic": false
+  },
+  {
+   "id": "D10",
+   "target": "Tally.bump",
+   "label": "distinct",
+   "change": "a method that no longer updates its object",
+   "witness": {
+    "self_count": "0",
+    "step": "1"
+   },
+   "symbolic": true
+  },
+  {
+   "id": "D11",
+   "target": "Window.__post_init__",
+   "label": "distinct",
+   "change": "an initializer that no longer orders its bounds",
+   "witness": {
+    "self_start": "2",
+    "self_end": "1"
+   },
+   "symbolic": true
+  },
+  {
+   "id": "D12",
+   "target": "d12_header",
+   "label": "distinct",
+   "change": "a prefix check one character shorter",
+   "witness": {
+    "text": "'xy'"
+   },
+   "symbolic": false
+  },
+  {
+   "id": "D13",
+   "target": "d13_trim",
+   "label": "distinct",
+   "change": "whitespace narrowed to spaces",
+   "witness": {
+    "text": "'\\t'"
+   },
+   "symbolic": false
+  },
+  {
+   "id": "D14",
+   "target": "d14_share",
+   "label": "distinct",
+   "change": "floor division replaced by truncation",
+   "witness": {
+    "total": "-3",
+    "parts": "2"
+   },
+   "symbolic": false
+  }
+ ]
+}

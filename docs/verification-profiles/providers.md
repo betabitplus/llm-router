@@ -59,10 +59,10 @@ therefore remain Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                     | OPTIONAL | N/A                                                                                                                                                                                |
-| ---------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
-| —                                                                            | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                  |
+| REQUIRED                                                                     | OPTIONAL | N/A                                                                                                                                                                                                |
+| ---------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
+| —                                                                            | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                  |
 
 #### Fault-group rationale
 
@@ -73,9 +73,6 @@ therefore remain Surrogate at L0.
 | Interface / protocol  | A successful provider payload still has to normalize into the common adapter result shape.                                            |
 | Architecture          | The parent contract does not prescribe internal module topology.                                                                      |
 | Specification / model | Omitting a supported provider family or returning a different normalized outcome violates the portability claim.                      |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
 
 (verification-profile-treq-openai-adapter-boundary)=
 
@@ -118,22 +115,20 @@ scripted HTTP provider boundary; the external participant is Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                      | OPTIONAL | N/A                                                                                                                           |
-| --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
-| `spec.wrong-outcome` · `spec.missing-partition`                                                                                               | —        | `interface.unexpected-interaction` · `spec.wrong-ordering-boundary`                                                           |
+| REQUIRED                                                                                                                                                      | OPTIONAL | N/A                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
+| `spec.wrong-outcome` · `spec.missing-partition`                                                                                                               | —        | `interface.unexpected-interaction` · `spec.wrong-ordering-boundary`                                                           |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                              |
-| --------------------- | ------------------------------------------------------------------------------------------------ |
-| Implementation        | Sync/async/tool/error dispatch branches implement the declared adapter boundary.                 |
-| Runtime / dependency  | Disconnect and malformed successful responses are distinct dependency failure shapes.            |
-| Interface / protocol  | Provider status and payload shape are direct protocol obligations.                               |
-| Architecture          | No internal module edge is normative.                                                            |
-| Specification / model | Every named OpenAI-compatible partition must exist and preserve the intended normalized outcome. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Sync/async/tool/error dispatch branches implement the declared adapter boundary. A dropped request-field write or error translation loses part of the boundary. |
+| Runtime / dependency  | Disconnect and malformed successful responses are distinct dependency failure shapes.                                                                           |
+| Interface / protocol  | Provider status and payload shape are direct protocol obligations.                                                                                              |
+| Architecture          | No internal module edge is normative.                                                                                                                           |
+| Specification / model | Every named OpenAI-compatible partition must exist and preserve the intended normalized outcome.                                                                |
 
 (verification-profile-treq-qwenchat-adapter-boundary)=
 
@@ -177,22 +172,20 @@ proxy and upload HTTP endpoints; the external participant is Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                            | OPTIONAL | N/A                                                                                            |
-| --------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `runtime.unavailable-disconnect` · `interface.error-status` · `interface.payload-schema` · `interface.unexpected-interaction` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.malformed-response` |
-| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary`                                                                    | —        | `architecture.forbidden-edge` · `architecture.layer-bypass`                                    |
+| REQUIRED                                                                                                                                                            | OPTIONAL | N/A                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `runtime.unavailable-disconnect` · `interface.error-status` · `interface.payload-schema` · `interface.unexpected-interaction` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.malformed-response` |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary`                                                                                    | —        | `architecture.forbidden-edge` · `architecture.layer-bypass`                                    |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                             |
-| --------------------- | ----------------------------------------------------------------------------------------------- |
-| Implementation        | Proxy/upload/tool routing branches implement the technical contract.                            |
-| Runtime / dependency  | Upload/proxy transport loss is a relevant dependency failure.                                   |
-| Interface / protocol  | Status, payload shape, and an unexpected chat/upload interaction directly violate the boundary. |
-| Architecture          | Internal module topology is not normative.                                                      |
-| Specification / model | All partitions and upload-before-chat ordering are required semantics.                          |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Proxy/upload/tool routing branches implement the technical contract. A dropped upload or proxy setup call breaks the order the boundary requires. |
+| Runtime / dependency  | Upload/proxy transport loss is a relevant dependency failure.                                                                                     |
+| Interface / protocol  | Status, payload shape, and an unexpected chat/upload interaction directly violate the boundary.                                                   |
+| Architecture          | Internal module topology is not normative.                                                                                                        |
+| Specification / model | All partitions and upload-before-chat ordering are required semantics.                                                                            |
 
 (verification-profile-treq-aistudio-adapter-boundary)=
 
@@ -234,22 +227,20 @@ and native HTTP endpoints; the external participant is Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                              | OPTIONAL | N/A                                                                                                                               |
-| ------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.unexpected-interaction` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
-| —                                                                                                                                     | —        | `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`         |
+| REQUIRED                                                                                                                                              | OPTIONAL | N/A                                                                                                                               |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| —                                                                                                                                                     | —        | `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`         |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                             |
-| --------------------- | ----------------------------------------------------------------------------------------------- |
-| Implementation        | Transport-selection control flow is the central technical rule.                                 |
-| Runtime / dependency  | Generic dependency-loss handling belongs to resilience; native status translation remains here. |
-| Interface / protocol  | Wrong endpoint selection or native error translation violates the adapter boundary.             |
-| Architecture          | No particular internal layering is required.                                                    |
-| Specification / model | Text/native/error partitions must all exist and produce the specified transport behavior.       |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                               |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Transport-selection control flow is the central technical rule. A dropped transport setup call leaves the wrong transport in use. |
+| Runtime / dependency  | Generic dependency-loss handling belongs to resilience; native status translation remains here.                                   |
+| Interface / protocol  | Wrong endpoint selection or native error translation violates the adapter boundary.                                               |
+| Architecture          | No particular internal layering is required.                                                                                      |
+| Specification / model | Text/native/error partitions must all exist and produce the specified transport behavior.                                         |
 
 (verification-profile-treq-gemini-webapi-adapter-boundary)=
 
@@ -291,22 +282,20 @@ WebAPI SDK substitute; the external participant remains Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                      | OPTIONAL | N/A                                                                                                                               |
-| ----------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.error-status` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
-| —                                                                                                                             | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                                                      | OPTIONAL | N/A                                                                                                                               |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.error-status` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| —                                                                                                                                             | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                  |
-| --------------------- | ---------------------------------------------------------------------------------------------------- |
-| Implementation        | Sync/async/media/tool/error branches implement the declared SDK boundary.                            |
-| Runtime / dependency  | Generic dependency loss is outside this adapter-shape claim.                                         |
-| Interface / protocol  | Provider-specific status/error and normalized payload shape are direct interface obligations.        |
-| Architecture          | Internal module topology is not normative.                                                           |
-| Specification / model | Omitting any declared SDK partition or producing the wrong normalized outcome violates the contract. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Sync/async/media/tool/error branches implement the declared SDK boundary. A dropped media or tool translation statement loses that part of the request. |
+| Runtime / dependency  | Generic dependency loss is outside this adapter-shape claim.                                                                                            |
+| Interface / protocol  | Provider-specific status/error and normalized payload shape are direct interface obligations.                                                           |
+| Architecture          | Internal module topology is not normative.                                                                                                              |
+| Specification / model | Omitting any declared SDK partition or producing the wrong normalized outcome violates the contract.                                                    |
 
 (verification-profile-treq-google-genai-adapter-boundary)=
 
@@ -348,22 +337,20 @@ GenAI SDK substitute; the external participant remains Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                         | OPTIONAL | N/A                                                                                                                                                            |
-| ------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                              |
-| —                                                                                                | —        | `interface.unexpected-interaction` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                         | OPTIONAL | N/A                                                                                                                                                            |
+| ---------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                              |
+| —                                                                                                                | —        | `interface.unexpected-interaction` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                          |
-| --------------------- | -------------------------------------------------------------------------------------------- |
-| Implementation        | Sync/async SDK dispatch and exception translation are direct technical branches.             |
-| Runtime / dependency  | Generic transport loss is outside this selected SDK-boundary partition set.                  |
-| Interface / protocol  | SDK status translation is the direct interface obligation.                                   |
-| Architecture          | Internal layering is not normative.                                                          |
-| Specification / model | Sync, async, and retryable-failure partitions must all be represented with correct outcomes. |
-
-No blocking mutation threshold is selected.
+| Group                 | Why                                                                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Sync/async SDK dispatch and exception translation are direct technical branches. A dropped exception translation lets the SDK error escape. |
+| Runtime / dependency  | Generic transport loss is outside this selected SDK-boundary partition set.                                                                 |
+| Interface / protocol  | SDK status translation is the direct interface obligation.                                                                                  |
+| Architecture          | Internal layering is not normative.                                                                                                         |
+| Specification / model | Sync, async, and retryable-failure partitions must all be represented with correct outcomes.                                                |
 
 (verification-profile-req-async-provider-execution)=
 
@@ -412,21 +399,19 @@ adapter against retained provider interactions. Replay remains Surrogate/L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                           | OPTIONAL                            | N/A                                                                                                                                                                                                                                                        |
-| -------------------------------------------------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `impl.comparison` · `impl.boundary` | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                           | OPTIONAL                            | N/A                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `impl.comparison` · `impl.boundary` | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
 | Group                 | Why                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Async dispatch/await control flow must preserve the result.                                                   |
+| Implementation        | Async dispatch/await control flow must preserve the result. A dropped await or result write loses the result. |
 | Runtime / dependency  | Retry/availability behavior belongs to resilience/routing rather than this successful async-capability claim. |
 | Interface / protocol  | Provider response shape must normalize correctly.                                                             |
 | Architecture          | No particular async implementation layering is normative.                                                     |
 | Specification / model | Wrong public result or omission of a provider/capability partition violates the Requirement.                  |
-
-No blocking mutation threshold is selected.
 
 (verification-profile-req-response-normalization)=
 
@@ -477,10 +462,10 @@ Surrogate at L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                     | OPTIONAL | N/A                                                                                                                                                                                          |
-| ---------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` |
-| —                                                                            | —        | `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                      |
+| REQUIRED                                                                     | OPTIONAL | N/A                                                                                                                                                                                                          |
+| ---------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` |
+| —                                                                            | —        | `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                                                                                      |
 
 #### Fault-group rationale
 
@@ -491,8 +476,6 @@ Surrogate at L0.
 | Interface / protocol  | Provider payload shape must produce the same public response semantics.                            |
 | Architecture          | No internal normalization topology is prescribed.                                                  |
 | Specification / model | A wrong normalized result or a missing supported provider comparison violates portability.         |
-
-No blocking mutation threshold is selected.
 
 (verification-profile-treq-usage-normalization)=
 
@@ -534,22 +517,32 @@ external participant or model substitute is involved.
 
 ### Fault applicability
 
-| REQUIRED                                                                                           | OPTIONAL | N/A                                                                                                                                                          |
-| -------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `impl.control-flow` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
-| —                                                                                                  | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                            |
+| REQUIRED                                                                                                           | OPTIONAL | N/A                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` |
+| —                                                                                                                  | —        | `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary`                            |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                               |
-| --------------------- | --------------------------------------------------------------------------------- |
-| Implementation        | Shape-selection branches directly implement usage normalization.                  |
-| Runtime / dependency  | Normalization is local and does not depend on external runtime behavior.          |
-| Interface / protocol  | Provider-specific usage payload shape is the input contract.                      |
-| Architecture          | Internal module topology is not normative.                                        |
-| Specification / model | Every declared usage-shape partition must normalize to the correct stable values. |
+| Group                 | Why                                                                                                                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Shape-selection branches directly implement usage normalization. A normalizer whose body returns an empty default loses the usage totals. |
+| Runtime / dependency  | Normalization is local and does not depend on external runtime behavior.                                                                  |
+| Interface / protocol  | Provider-specific usage payload shape is the input contract.                                                                              |
+| Architecture          | Internal module topology is not normative.                                                                                                |
+| Specification / model | Every declared usage-shape partition must normalize to the correct stable values.                                                         |
 
-No blocking mutation threshold is selected.
+### Semantic mutants
+
+| Fault class              | Target                                                            | Budget | Risk                                                                                         |
+| ------------------------ | ----------------------------------------------------------------- | -----: | -------------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`     | `src/llm_router/_internal/capabilities/usage.py::normalize_usage` |      3 | an input, output or total token count is taken from the wrong field or computed wrongly      |
+| `spec.wrong-outcome`     | `src/llm_router/_internal/capabilities/usage.py::_first_int`      |      2 | a negative, non-numeric or missing count is reported instead of skipped or clamped to zero   |
+| `spec.missing-partition` | `src/llm_router/_internal/capabilities/usage.py::_get_value`      |      2 | one supported usage shape (a mapping, an object or a nested usage payload) is no longer read |
+
+Rule operators flip comparisons and drop statements; they cannot read a provider's output
+count as its input count or stop looking into a nested usage payload. These targets are
+where the fields are chosen and where each payload shape is read.
 
 (verification-profile-req-provider-error-boundary)=
 
@@ -594,19 +587,16 @@ SDK redirected to the scripted provider. External behavior remains Surrogate/L0.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                                        | OPTIONAL | N/A                                                                                                                                                                                                                                 |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                                                                                        | OPTIONAL | N/A                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `interface.error-status` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------ |
-| Implementation        | Exception-translation control flow must converge on ProviderError.                                     |
-| Runtime / dependency  | Timeout and disconnect are provider failures that must not leak dependency-specific exception types.   |
-| Interface / protocol  | Error status is the direct interface stimulus.                                                         |
-| Architecture          | The public error type is normative, not a particular internal module edge.                             |
-| Specification / model | Both HTTP and SDK transport families must be represented and produce the same public failure category. |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
+| Group                 | Why                                                                                                                                |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Exception-translation control flow must converge on ProviderError. A dropped translation raise lets the original exception escape. |
+| Runtime / dependency  | Timeout and disconnect are provider failures that must not leak dependency-specific exception types.                               |
+| Interface / protocol  | Error status is the direct interface stimulus.                                                                                     |
+| Architecture          | The public error type is normative, not a particular internal module edge.                                                         |
+| Specification / model | Both HTTP and SDK transport families must be represented and produce the same public failure category.                             |

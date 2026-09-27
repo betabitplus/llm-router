@@ -1,0 +1,146 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "TREQ_USAGE_NORMALIZATION",
+ "proposals": [
+  {
+   "id": "SM-E9558A01",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/usage.py::normalize_usage",
+   "risk": "an input, output or total token count is taken from the wrong field or computed wrongly",
+   "rationale": "Input and output token counts are read from each other's key sets (swapped), so input_tokens is populated from the output-token field names and vice versa, silently mislabeling the two counts while total may still look plausible.",
+   "original_sha256": "cd885edae06dd543d756d8362318b6959a196dcef6c53bb3c83b10d35e85770b",
+   "context_sha256": "a455e9b83a4fe03563afdd3b77ca2baa526be2846616b7953e70698b21d6205d",
+   "prompt_sha256": "deb3d97e32532e623404aec4bd1a509d9f6e02aca6918019643ce4a83228d2fa",
+   "replacement": "def normalize_usage(value: object) -> UsageStats | None:\n    \"\"\"Normalize common provider usage payloads into public usage stats.\"\"\"\n    if value is None:\n        return None\n    if isinstance(value, UsageStats):\n        return value\n\n    input_tokens = _first_int(value, _OUTPUT_KEYS)\n    output_tokens = _first_int(value, _INPUT_KEYS)\n    total_tokens = _first_int(value, _TOTAL_KEYS)\n    if total_tokens == 0 and (input_tokens or output_tokens):\n        total_tokens = input_tokens + output_tokens\n\n    return UsageStats(\n        input_tokens=input_tokens,\n        output_tokens=output_tokens,\n        total_tokens=total_tokens,\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260926T142208Z-ccbc67",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5",
+    "response_sha256": "5d0303be71664759c06e315062ae56c8b817adf2c10669a6566532e5b179ef69",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-67E8442B",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/usage.py::normalize_usage",
+   "risk": "an input, output or total token count is taken from the wrong field or computed wrongly",
+   "rationale": "The explicit total-token field is looked up but then unconditionally discarded and replaced by input+output, so payloads that only carry a provider-reported total (with input/output fields absent or zero) end up with total_tokens forced to 0 instead of the reported value.",
+   "original_sha256": "cd885edae06dd543d756d8362318b6959a196dcef6c53bb3c83b10d35e85770b",
+   "context_sha256": "a455e9b83a4fe03563afdd3b77ca2baa526be2846616b7953e70698b21d6205d",
+   "prompt_sha256": "deb3d97e32532e623404aec4bd1a509d9f6e02aca6918019643ce4a83228d2fa",
+   "replacement": "def normalize_usage(value: object) -> UsageStats | None:\n    \"\"\"Normalize common provider usage payloads into public usage stats.\"\"\"\n    if value is None:\n        return None\n    if isinstance(value, UsageStats):\n        return value\n\n    input_tokens = _first_int(value, _INPUT_KEYS)\n    output_tokens = _first_int(value, _OUTPUT_KEYS)\n    total_tokens = _first_int(value, _TOTAL_KEYS)\n    total_tokens = input_tokens + output_tokens\n\n    return UsageStats(\n        input_tokens=input_tokens,\n        output_tokens=output_tokens,\n        total_tokens=total_tokens,\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260926T142208Z-ccbc67",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5",
+    "response_sha256": "5d0303be71664759c06e315062ae56c8b817adf2c10669a6566532e5b179ef69",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-20FB7E3E",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/usage.py::normalize_usage",
+   "risk": "an input, output or total token count is taken from the wrong field or computed wrongly",
+   "rationale": "When the total-token field is missing and a fallback must be computed, only input_tokens is used instead of the sum of input_tokens and output_tokens, so any output tokens are silently dropped from the fallback total.",
+   "original_sha256": "cd885edae06dd543d756d8362318b6959a196dcef6c53bb3c83b10d35e85770b",
+   "context_sha256": "a455e9b83a4fe03563afdd3b77ca2baa526be2846616b7953e70698b21d6205d",
+   "prompt_sha256": "deb3d97e32532e623404aec4bd1a509d9f6e02aca6918019643ce4a83228d2fa",
+   "replacement": "def normalize_usage(value: object) -> UsageStats | None:\n    \"\"\"Normalize common provider usage payloads into public usage stats.\"\"\"\n    if value is None:\n        return None\n    if isinstance(value, UsageStats):\n        return value\n\n    input_tokens = _first_int(value, _INPUT_KEYS)\n    output_tokens = _first_int(value, _OUTPUT_KEYS)\n    total_tokens = _first_int(value, _TOTAL_KEYS)\n    if total_tokens == 0 and (input_tokens or output_tokens):\n        total_tokens = input_tokens\n\n    return UsageStats(\n        input_tokens=input_tokens,\n        output_tokens=output_tokens,\n        total_tokens=total_tokens,\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260926T142208Z-ccbc67",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5",
+    "response_sha256": "5d0303be71664759c06e315062ae56c8b817adf2c10669a6566532e5b179ef69",
+    "index": 2
+   }
+  },
+  {
+   "id": "SM-45102913",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/usage.py::_get_value",
+   "risk": "one supported usage shape (a mapping, an object or a nested usage payload) is no longer read",
+   "rationale": "The nested-usage-payload lookup is dropped from the Mapping branch, so when the top-level key is absent, mapping-shaped usage payloads that nest their data under a key like 'usage' are no longer traversed and always return None instead of the nested value.",
+   "original_sha256": "127274f590ab376157efc61385e118347f887fd7bf3409d62bfdf3cb47f36151",
+   "context_sha256": "5b21c16914e4bbebd35688764624738bcb0d984939bb26bd0b18ec76a05c46b7",
+   "prompt_sha256": "587a529919205ca5f19feacdf2379806ed6f84900ae2c05ac109bfe4ffc927e4",
+   "replacement": "def _get_value(value: object, key: str) -> object | None:\n    \"\"\"Read a usage field from mappings, objects, or nested `usage` payloads.\"\"\"\n    if isinstance(value, Mapping):\n        if key in value:\n            return value[key]\n        return None\n\n    if hasattr(value, key):\n        return getattr(value, key)\n    for nested_key in _NESTED_USAGE_KEYS:\n        nested = getattr(value, nested_key, None)\n        if nested is not None and hasattr(nested, key):\n            return getattr(nested, key)\n    return None\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260926T142242Z-83ac28",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5",
+    "response_sha256": "b5cc03974955dc2d6cef4e5f928b2daba5cae5efb48f4163407100755335f82d",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-AAD4B7AC",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/usage.py::_get_value",
+   "risk": "one supported usage shape (a mapping, an object or a nested usage payload) is no longer read",
+   "rationale": "The direct attribute check on plain objects is removed, so an object that carries the requested field directly (not nested under a usage-like attribute) is no longer read and the function falls straight to nested lookups, returning None for that supported shape.",
+   "original_sha256": "127274f590ab376157efc61385e118347f887fd7bf3409d62bfdf3cb47f36151",
+   "context_sha256": "5b21c16914e4bbebd35688764624738bcb0d984939bb26bd0b18ec76a05c46b7",
+   "prompt_sha256": "587a529919205ca5f19feacdf2379806ed6f84900ae2c05ac109bfe4ffc927e4",
+   "replacement": "def _get_value(value: object, key: str) -> object | None:\n    \"\"\"Read a usage field from mappings, objects, or nested `usage` payloads.\"\"\"\n    if isinstance(value, Mapping):\n        if key in value:\n            return value[key]\n        for nested_key in _NESTED_USAGE_KEYS:\n            nested = value.get(nested_key)\n            if isinstance(nested, Mapping) and key in nested:\n                return nested[key]\n        return None\n\n    for nested_key in _NESTED_USAGE_KEYS:\n        nested = getattr(value, nested_key, None)\n        if nested is not None and hasattr(nested, key):\n            return getattr(nested, key)\n    return None\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260926T142242Z-83ac28",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5",
+    "response_sha256": "b5cc03974955dc2d6cef4e5f928b2daba5cae5efb48f4163407100755335f82d",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-4151C6BB",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/usage.py::_first_int",
+   "risk": "a negative, non-numeric or missing count is reported instead of skipped or clamped to zero",
+   "rationale": "Removes the max(0, parsed) clamp so a negative token count parsed from a provider payload is returned as-is instead of being clamped to zero.",
+   "original_sha256": "b622374020cd7b4e5140a5ff1a88e84ed57082538b73822409eb212f6111f321",
+   "context_sha256": "240882c8047a941fa2454ffcef29a091825fb5f0fa5757d7034c7703ec9370fe",
+   "prompt_sha256": "f7d46b6ce5894dfa98e626561a0696088ef7c3c04f2b299b8e55fb25fc87f023",
+   "replacement": "def _first_int(value: object, keys: tuple[str, ...]) -> int:\n    \"\"\"Return the first non-negative integer-like value from a payload.\"\"\"\n    for key in keys:\n        raw = _get_value(value, key)\n        if raw is None:\n            continue\n        try:\n            parsed = int(raw)\n        except (TypeError, ValueError):\n            continue\n        return parsed\n    return 0",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260926T143837Z-f853cb",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5",
+    "response_sha256": "6e7b193594245458497a0763fb34335ce290dcf0b696e814471642fb6bba2e9d",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-AAD697E9",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/usage.py::_first_int",
+   "risk": "a negative, non-numeric or missing count is reported instead of skipped or clamped to zero",
+   "rationale": "Treats a missing/None value for a key as literal 0 and immediately returns it instead of skipping to the next candidate key, so a missing count short-circuits the lookup rather than being skipped in favor of a later valid key.",
+   "original_sha256": "b622374020cd7b4e5140a5ff1a88e84ed57082538b73822409eb212f6111f321",
+   "context_sha256": "240882c8047a941fa2454ffcef29a091825fb5f0fa5757d7034c7703ec9370fe",
+   "prompt_sha256": "f7d46b6ce5894dfa98e626561a0696088ef7c3c04f2b299b8e55fb25fc87f023",
+   "replacement": "def _first_int(value: object, keys: tuple[str, ...]) -> int:\n    \"\"\"Return the first non-negative integer-like value from a payload.\"\"\"\n    for key in keys:\n        raw = _get_value(value, key)\n        if raw is None:\n            raw = 0\n        try:\n            parsed = int(raw)\n        except (TypeError, ValueError):\n            continue\n        return max(0, parsed)\n    return 0",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260926T143837Z-f853cb",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5",
+    "response_sha256": "6e7b193594245458497a0763fb34335ce290dcf0b696e814471642fb6bba2e9d",
+    "index": 1
+   }
+  }
+ ]
+}

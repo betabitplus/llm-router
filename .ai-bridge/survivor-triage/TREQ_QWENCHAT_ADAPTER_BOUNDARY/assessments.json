@@ -1,0 +1,129 @@
+{
+ "2038c0b46cff816b": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='QWEN_API_KEY', value='secret'), messages=(), kwargs={})",
+     "self_base_url": "'http://localhost'",
+     "self_timeout_seconds": "600.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T190231Z-fa3647",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version sets the stream flag in the payload to True instead of False when kwargs does not override it.",
+    "response_sha256": "896fb7774a6523918a60a4920e4904c0c7da85903c97d768603a407bf509cdbb",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "1b6e4eb05d90be9a0b7d571ceff2ff278edeaad83833e438214e128045ca6c5d"
+ },
+ "40231175bc1ce35e": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max-latest', credential=ProviderCredential(key_id=1, env_var='QWEN_API_KEY', value='secret'), messages=(), tool_registry=ToolRegistry(tools={'test_tool': ToolDefinition(name='test_tool', description=None, parameters={}, descriptor={'type': 'function'})}), kwargs={})",
+     "self_base_url": "'http://localhost:8000'",
+     "self_timeout_seconds": "600.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T190311Z-06e57c",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When request.tool_registry contains tools, the original version populates the tools field in the payload while the changed version executes pass and omits it.",
+    "response_sha256": "a51e8ff342ed2ac08b2008aeb89d7648a68ef1e4e3359af412a31e5956fbc40b",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "3d2ec278925131a9a2bd21aae8617b56882d4829766c7d61b27c1d7e2b1b3ef2"
+ },
+ "7f08bc96d2f666c5": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='val'), messages=(), kwargs={'extra': 'value'})",
+     "self_base_url": "'http://localhost:8000'",
+     "self_timeout_seconds": "600.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T190359Z-a38191",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version updates the payload with request.kwargs, whereas the changed version omits request.kwargs from the payload.",
+    "response_sha256": "aaa91a6d59ffad544140f2ef816cae0b5b0afce27c8182949bf4f068819647c6",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "13009ee380553e924b437d1f3723c7b6e6b817e693b7764b797fa820123359ee"
+ },
+ "aeeb7e44dc927403": {
+  "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T213747Z-e7b8a1",
+    "confidence": 0.2,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The sole difference is trust_env=False vs trust_env=True in httpx.Client; this controls reading of proxy/SSL environment variables (HTTP_PROXY, etc.), which is external runtime state not controllable through the specified input parameters (self_base_url, self_timeout_seconds, request), so no input value can guarantee different behavior.",
+    "response_sha256": "f5453b30ea61ec4869295054b21ff8edc36a95b6beed3281ecb5e063cb57ceec",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T213859Z-ce5b0a",
+    "confidence": 0.9,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The parameter trust_env in httpx.Client only changes behavior based on the external system environment (like proxy variables or .netrc), so there is no input to the function itself that will cause them to behave differently.",
+    "response_sha256": "fbc7dac86f743de1bcd523ad4921424a7c8374aea148936e2cd022cab3a5c4dc",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T190451Z-b81458",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The only difference is setting trust_env=True versus trust_env=False on httpx.Client, which affects reading proxy and SSL settings from environment variables rather than method arguments, so no input can tell the versions apart.",
+    "response_sha256": "1311b78828f4365995c6d03a5c580fc737f9aab1e0389a050995ead2c88be2ad",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260926T192353Z-57cc46",
+    "confidence": 0.55,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The change from trust_env=False to trust_env=True alters proxy behavior at the code level, but the distinction would only manifest if system proxy environment variables are configured\u2014a factor external to the function parameters. Since no proxy configuration can be expressed via the required input parameters and tests/symbolic search found no distinguishing input, distinguishable behavior cannot be demonstrated with the available constraints.",
+    "response_sha256": "ceae46093e0eb3531d5c0528cf38d87415cfe5d22d5e24f06818a57bc24f8b97",
+    "verdict": "unsure"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "request": "ProviderRequest(request_id=\"r1\", provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model=\"qwen-max-latest\", credential=ProviderCredential(key_id=1, env_var=\"QWEN_KEY\", value=\"secret\"), messages=())",
+     "self_base_url": "\"http://localhost:8080\"",
+     "self_timeout_seconds": "600.0"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T192437Z-8caa28",
+    "confidence": 0.62,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only code change is httpx.Client(trust_env=False) -> trust_env=True, which only alters behavior when OS-level proxy/.netrc/cert environment variables are set; none of the available input parameters (base_url, timeout, request) can encode or trigger such environment state, so for any concrete input in this parameter space and a fixed test environment (no proxy env vars), both versions produce identical payloads, requests, and results.",
+    "response_sha256": "90ea7f5b4854ecc45db646d8bdab582e48945fb40f3457f6ccc47d6c43a68b1c",
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "b1501ea6e892f9f21251ea4595303d51d53bbb657edf50aceae1d43283209167"
+ }
+}

@@ -1,0 +1,92 @@
+{
+ "779116a1f28d187b": {
+  "answers": {
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "key_id": "0",
+     "provider": "Provider.GOOGLE",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='CUSTOM_KEY', api_key_env_vars={}, base_url=None)}, provider_base_urls={}, models={}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T184101Z-b6f4c0",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When a provider spec defines api_key_env_var and key_id equals default_key_id, the original returns spec.api_key_env_var while the changed version returns the default formatted key name due to the inverted inequality condition.",
+    "response_sha256": "4f5c1236d77633cb552a8cea1611146d1377d1dac6cc478bc9d30c52c7cf4310",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "437637cfd2d682e27e1d72e7be9d6996fd2afc20469436563addfbc46e1fdc9c"
+ },
+ "b249b8ff900bff0b": {
+  "answers": {
+   "antigravity-cli:claude-opus-4-6-thinking": {
+    "arguments": {
+     "provider": "Provider.GOOGLE",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_vars={0: 'GOOGLE_API_KEY_main'})}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260926T213019Z-6201e2",
+    "confidence": 0.93,
+    "model": "claude-opus-4-6-thinking",
+    "problems": [],
+    "reason": "The filter condition changed from `and` to `or`. When an env var like GOOGLE_API_KEY_main (set in environment) is iterated in os.environ, the original requires both startswith(prefix) AND suffix.isdigit(), skipping it. The changed version only requires startswith(prefix) OR suffix.isdigit(); since startswith is True, it passes the filter and int(\"main\") raises ValueError, while the original returns [0].",
+    "response_sha256": "c89948d26b521b5b4734ef8dc3a0739892260f6001791d435ef7d3aabae694b5",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T213214Z-083470",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The difference between the two versions relies entirely on the contents of `os.environ` (e.g. containing a key that starts with the prefix but has non-numeric suffix, or a purely numeric key), which cannot be controlled via the explicit `self_config` and `provider` arguments. Therefore, no input for these parameters can cause divergent behavior.",
+    "response_sha256": "38d07b2d64cad632b916ebde4be3f3203bc1d8f10a7b72f93fc7e356ee835c1d",
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260926T183947Z-1534f1",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "No input can tell the two versions apart because KeyResolver._available_keys depends only on catalog providers and environment variables, and the changed condition evaluates identically to the original for all environment keys across all Provider enum members.",
+    "response_sha256": "2d4000467050522b826a934f8c6874773063a619b99f414b24e2ba7adf56512e",
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-haiku-4-5-20251001": {
+    "arguments": {
+     "environment_assumption": "os.environ contains a variable named '42' with any value",
+     "provider": "Provider.GOOGLE",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.1, max_wait_seconds=1.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=100.0, rpm=10000.0, cooldown_seconds=1.0, cooldown_after_failures=3), limits_by_provider={}), default_max_tool_rounds=10, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=100.0, rpm=10000.0, cooldown_seconds=1.0, cooldown_after_failures=3), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var=None, api_key_env_vars={}, base_url=None)}, provider_base_urls={}, models={}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T191551Z-7fe920",
+    "confidence": 0.95,
+    "model": "claude-haiku-4-5-20251001",
+    "problems": [],
+    "reason": "The changed version uses `or` instead of `and` in the filter condition, making it accept numeric environment variable names that don't start with the expected prefix. When an environment variable with a purely numeric name (like '42') exists, the original returns an empty list while the changed version includes it as a discovered key_id.",
+    "response_sha256": "2990462d8bf71f0e35d2af0a19d628afd1b54e6500c9a70038035af9c2151eda",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "provider": "Provider.GOOGLE",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=5.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=30.0, cooldown_after_failures=3), limits_by_provider={}), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=30.0, cooldown_after_failures=3), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var=None, api_key_env_vars={1: 'GOOGLE_API_KEY_CUSTOM'}, base_url=None)}, provider_base_urls={}, models={}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260926T191705Z-19f8a3",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "If the environment variable 'GOOGLE_API_KEY_CUSTOM' (a custom-named credential env var starting with the provider prefix 'GOOGLE_API_KEY_' but with a non-digit suffix) is present in os.environ, the original AND-based filter excludes it from 'discovered' (suffix 'CUSTOM' is not a digit) and returns normally with keys=[1], while the changed OR-based filter includes it (since startswith is True) and then crashes with an uncaught ValueError from int('CUSTOM'), a behavior the original never exhibits for this input.",
+    "response_sha256": "0f1f9777fd43d1d18397f06885d54f5914f0edea514fdcc1904e94c7647cc137",
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "464a2b3fcc26d74921ea356026ac41f4e3ce43b94542f5992d3bbc9e756c82d0"
+ }
+}

@@ -1,0 +1,100 @@
+{
+ "2ca4c1c6fadf0c35": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215313Z-1a986d",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only removes the `_log_attempt_succeeded` logging call. Fallback to the next route, the returned response and the failed \u2192 successful trace order all stay the same, and REQ_SYNC_ROUTE_FALLBACK asks nothing about success logging.",
+   "response_sha256": "be74b22d783ca612681ca923977b820e01dfc5ad922e8ec74676e7cf6c48f93c",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "5824eaf471986e8af7161b13ee147fdbc5880ee81ac4d00fe30831c05c1ea4d9"
+ },
+ "3c2b50b3cad06fe8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215323Z-2a912a",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the \"request started\" log call. Route order, fallback to the next eligible route, and the failed-then-successful trace entries in the result all stay the same. The log output does change, but REQ_SYNC_ROUTE_FALLBACK doesn't require that log event.",
+   "response_sha256": "ddb19eb57e7c783c5efe6d86885a3e562c266c3ccbc46f3a5da6a4a4a4d78b47",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "e717d34c9b2d0a67bff4a0f6bb75ceb6953d18775339133f83e7390845b45d5e"
+ },
+ "4d881c5bf4db6b9f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215330Z-19b061",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only removes the _log_route_blocked diagnostic log call for routes that are blocked by a wait. Fallback order, the blocked-request bookkeeping and the failed \u2192 successful trace entries all stay the same, so the only difference is log output, which REQ_SYNC_ROUTE_FALLBACK does not ask for.",
+   "response_sha256": "1e6f81c039c5e184a1a257bf58cff919fde4aef6326e94029649a38f9be4321d",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "78fc56a39f787ded87020c401ee689e201a6beb74fba1469c30999827f19aad9"
+ },
+ "80df5312d68d38ac": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215336Z-c6c0ad",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only removes the `_record_failure` bookkeeping call. The failed attempt is still caught, logged and traced, the loop still moves on to the next eligible route, and the successful result still lists the failed trace before the successful one. So everything REQ_SYNC_ROUTE_FALLBACK asks for still holds. What does change (key/route health or cooldown for later requests) belongs to failure-tracking behaviour, not to this fallback requirement, and nothing in this requirement pins it.",
+   "response_sha256": "ac6a590495be09b3f487970b2a664ce47d8f669a8d9f2e91e1539820ed9700f3",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "5ad4b6ad1e798135c9d411031d4e4d545c673ef10c2a5b720f77bc50a8a10103"
+ },
+ "834c9b394dfc9a07": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215357Z-160d76",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the `_log_attempt_started` logging call before the provider call. Fallback to the next route, the failed-trace collection and the failed \u2192 successful trace order all stay the same. Only the log output differs, and REQ_SYNC_ROUTE_FALLBACK doesn't ask for any logging.",
+   "response_sha256": "34278563e30fc3b89573aab489365898592d874613fcb16f41a3fa0917b1dac6",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "5bc955125427e4cd41330d919dc79d2ccad3f1fe232a31fc71e1d9ef08493956"
+ },
+ "86c4d637be94597d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215404Z-65554e",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only removes the failure log line (_log_attempt_failed) after a failed sync provider call. Fallback to the next route still happens, the failure is still recorded, and the trace order (failed, then successful) is unchanged. REQ_SYNC_ROUTE_FALLBACK only asks for fallback and trace entries, not for logging.",
+   "response_sha256": "b80cc64a8c6d00331932643515c616345bc3bd88f390b8966e6cfac81c4939d4",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "a542aa4f2e7d9eab3ac2345c7f3fee92612cf43009f72240a7f6d2339a861454"
+ },
+ "8cd80dd6be920260": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215410Z-30fd5b",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only removes the `_log_route_selected` log call. Fallback to the next route, the failed-then-successful trace order and the returned result all stay the same. Only diagnostic log output differs, and REQ_SYNC_ROUTE_FALLBACK doesn't ask for that.",
+   "response_sha256": "20ef78f6458c44aa95df3b9ccd8e9406fa1bf9b4098ff24d0659bcea587dd4b6",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "3cd98c9c2a52163ac6561fbaaf49a2ad0d26255c73cd7bc0c63525d002e937e6"
+ }
+}

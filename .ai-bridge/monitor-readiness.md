@@ -10,11 +10,11 @@ Status: **P34 MONITOR CUTOVER COMPLETE**
 | Verification criteria                  | C→D link | declared `VC_*` criteria in the Verification Profile  | `coverage_item(...)` declarations retained as standard JUnit properties + test result                                                                       | READY                                                                        |
 | Test Level / Boundary mode             | D        | —                                                     | current coverage context + retained boundary observations/sentinels; depth facts only where current runtime evidence cannot establish the value             | READY                                                                        |
 | Representation / M&S                   | D        | —                                                     | current coverage context for Actual target execution; retained model-validation facts only when a surrogate/model participates                              | READY                                                                        |
-| Fault classes / mutation               | D        | —                                                     | `assurance-fault-model-facts.json` + fresh retained mutation campaign                                                                                       | READY                                                                        |
+| Fault classes / mutation               | D        | —                                                     | current Implementation fault campaign (outcomes per mutant) + specialized probes + semantic mutants                                                         | READY                                                                        |
 | Producer qualification                 | D        | —                                                     | `evidence-confidence-qualification.json`: executable intended-use false-green controls pinned to current tool/code fingerprints                             | READY                                                                        |
 | Provenance                             | D        | —                                                     | `evidence-run-provenance.json` + exact JUnit/Allure/coverage/input-snapshot/test-source digests and same-run identity                                       | READY                                                                        |
 | Freshness                              | D        | —                                                     | exact JUnit/Allure execution window + per-evidence comparison against the run-start input snapshot; only changed relevant inputs make a retained path stale | READY                                                                        |
-| History                                | D        | —                                                     | legacy P31–P33 snapshots retained                                                                                                                           | READY · new Test Plan target history starts at monitor cutover; no back-fill |
+| History                                | D        | —                                                     | the explorer's retained run snapshots: what changed since the previous run, counted on every monitor's History                                              | READY · new Test Plan target history starts at monitor cutover; no back-fill |
 
 ## Actual → display mapping
 
@@ -42,7 +42,7 @@ Runtime binding is retained without inferring semantics from test names or direc
 
 ## P34 cutover
 
-Contract Evidence now reads normative Requirements/Technical requirements + the Level-B Test Plan + the Level-C Verification Profile + retained Level-D Actual facts. The compatibility-only `.ai-bridge/assurance-targets.json` registry is not used for P34 monitor status.
+Contract Evidence now reads normative Requirements/Technical requirements + the Level-B Test Plan + the Level-C Verification Profile + retained Level-D Actual facts. `.ai-bridge/assurance-targets.json` is retired (ADR_0003) together with its snapshots; the monitor never read it after P34.
 
 Visible sections: `Test Coverage → Fault-based Testing → History`.
 

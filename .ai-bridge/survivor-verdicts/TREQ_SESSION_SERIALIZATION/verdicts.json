@@ -1,0 +1,16 @@
+{
+ "a2ea086ea892f112": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215646Z-a7eb4f",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes the order of keys in the serialized JSON text. JSON objects are unordered, so loading the output gives back the same version, system prompt and history. No requirement asks for canonical or sorted text, and insertion order stays deterministic anyway.",
+   "response_sha256": "e0c97236fad691dc5adf50df61df5bb8448065738ef60ade97db3149781eb3bb",
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "prompt_sha256": "244b7dd8215a6b247c5114e9206208133c42d525ba34a659612571c1edc36ea4"
+ }
+}

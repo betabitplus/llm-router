@@ -350,110 +350,75 @@ def cell_state(contract: dict, target: dict) -> dict:
     }
 
 
+MUTANT_TALLY = (
+    ("caught", "caught"),
+    ("survived", "survived_reached"),
+    ("unreached", "unreached"),
+    ("unknown", "undecided"),
+    ("suppressed", "suppressed"),
+    ("invalid", "invalid"),
+)
+
+
+def class_verdict(actual: dict) -> str:
+    """How one fault class stands for a contract.
+
+    A decided challenge that no test catches is missed. A challenge that ran but
+    cannot be decided (a semantic mutant with no input that tells it apart from the
+    original) keeps the class UNKNOWN until it is decided; it is never caught.
+    """
+    exercised = bool(actual.get("exercised"))
+    undecided = int(actual.get("undecided") or 0)
+    if exercised and not actual.get("detected"):
+        return "missed"
+    if undecided:
+        return "unknown"
+    if exercised:
+        return "caught"
+    return "not challenged"
+
+
 def fault_state(contract: dict, group: dict, policy: dict) -> dict:
     classes = contract["fault_actual"]["classes"]
     required = [item for item in group["items"] if item["state"] == "required"]
     if not required:
         return {"label": group["label"], "status": "N/A"}
 
-    exercised = sum(
-        1 for item in required if classes.get(item["id"], {}).get("exercised")
-    )
-    detected = sum(
-        1
-        for item in required
-        if classes.get(item["id"], {}).get("exercised")
-        and classes.get(item["id"], {}).get("detected")
-    )
+    verdicts = {item["id"]: class_verdict(classes.get(item["id"], {}) or {}) for item in required}
+    exercised = sum(1 for verdict in verdicts.values() if verdict in {"caught", "missed", "unknown"})
+    detected = sum(1 for verdict in verdicts.values() if verdict == "caught")
+    missed = sum(1 for verdict in verdicts.values() if verdict == "missed")
+    unknown = sum(1 for verdict in verdicts.values() if verdict == "unknown")
     class_status = "MET" if exercised == len(required) else "NOT MET"
-    # Detection is only defined for classes that were actually challenged: 0 of 0
-    # is "nothing tried yet", not "0% of faults caught".
-    detection_actual = detected * 100.0 / exercised if exercised else None
-    detection_status = (
-        "N/A"
-        if detection_actual is None
-        else ("MET" if detection_actual == 100.0 else "NOT MET")
-    )
+    # Detection is only defined for classes whose challenges were decided: 0 of 0 is
+    # "nothing tried yet", not "0% of faults caught".
+    decided = exercised - unknown
+    detection_actual = detected * 100.0 / decided if decided else None
+    if not exercised:
+        detection_status = "N/A"
+    elif missed:
+        detection_status = "NOT MET"
+    elif unknown:
+        detection_status = "UNKNOWN"
+    else:
+        detection_status = "MET"
+    overall = combine([class_status, detection_status])
 
-    mutation = []
-    if group["label"] == "Implementation":
-        for level_key, label in (("component", "Component"), ("system", "System")):
-            actual = contract["fault_actual"]["groups"].get(f"{level_key}_local", {})
-            checks = contract["target"].get("mutation", {}).get(level_key, {})
-            if not (checks.get("reach") or checks.get("sensitivity")):
-                continue
-            generated = int(actual.get("generated", 0) or 0)
-            reached = int(actual.get("reached", 0) or 0)
-            killed = int(actual.get("killed", 0) or 0)
-            reach = float(actual.get("mutation_reach", 0) or 0)
-            sensitivity = float(actual.get("sensitivity", 0) or 0)
-            reach_selected = bool(checks.get("reach"))
-            sensitivity_selected = bool(checks.get("sensitivity"))
-            reach_target_raw = policy.get("mutation_reach_floor")
-            sensitivity_target_raw = policy.get("mutation_sensitivity_floor")
-            reach_target = (
-                float(reach_target_raw) if reach_target_raw is not None else None
-            )
-            sensitivity_target = (
-                float(sensitivity_target_raw)
-                if sensitivity_target_raw is not None
-                else None
-            )
-            reach_status = (
-                "N/A"
-                if not reach_selected
-                else (
-                    "UNKNOWN"
-                    if reach_target is None
-                    else ("MET" if reach >= reach_target else "NOT MET")
-                )
-            )
-            sensitivity_status = (
-                "N/A"
-                if not sensitivity_selected
-                else (
-                    "UNKNOWN"
-                    if sensitivity_target is None
-                    else ("MET" if sensitivity >= sensitivity_target else "NOT MET")
-                )
-            )
-            mutation.append(
-                {
-                    "label": label,
-                    "generated": generated,
-                    "reached": reached,
-                    "killed": killed,
-                    "reach": reach,
-                    "reach_selected": reach_selected,
-                    "reach_target": reach_target,
-                    "reach_status": reach_status,
-                    "sensitivity": sensitivity,
-                    "sensitivity_selected": sensitivity_selected,
-                    "sensitivity_target": sensitivity_target,
-                    "sensitivity_status": sensitivity_status,
-                }
-            )
-
-    mutation_statuses = [
-        status
-        for item in mutation
-        for selected, status in (
-            (item["reach_selected"], item["reach_status"]),
-            (item["sensitivity_selected"], item["sensitivity_status"]),
-        )
-        if selected
-    ]
-    overall = combine([class_status, detection_status] + mutation_statuses)
+    # How many mutants stand behind the classes: caught, surviving where the tests run
+    # them, never reached, undecided, suppressed and invalid, each counted apart.
+    tally = {
+        key: sum(int((classes.get(item["id"], {}) or {}).get(field) or 0) for item in required)
+        for key, field in MUTANT_TALLY
+    }
     class_rows = []
     for item in required:
         actual = classes.get(item["id"], {}) or {}
-        challenged = bool(actual.get("exercised"))
-        caught = challenged and bool(actual.get("detected"))
+        verdict = verdicts[item["id"]]
         class_rows.append(
             {
                 "id": item["id"],
-                "state": "caught" if caught else ("missed" if challenged else "not challenged"),
-                "status": "MET" if caught else "NOT MET",
+                "state": verdict,
+                "status": {"caught": "MET", "unknown": "UNKNOWN"}.get(verdict, "NOT MET"),
                 "basis": str(actual.get("basis") or ""),
                 "survivors": list(actual.get("survivors") or [])[:4],
             }
@@ -465,10 +430,11 @@ def fault_state(contract: dict, group: dict, policy: dict) -> dict:
         "required": len(required),
         "exercised": exercised,
         "detected": detected,
+        "undecided": unknown,
         "class_status": class_status,
         "detection_actual": detection_actual,
         "detection_status": detection_status,
-        "mutation": mutation,
+        "mutants": tally if any(tally.values()) else None,
         "raw_url": contract["fault_actual"].get("raw_url")
         or "requirement-monitor-facts.json",
     }

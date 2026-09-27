@@ -51,22 +51,19 @@ inferred from a cassette.
 
 ### Fault applicability
 
-| REQUIRED                                                                                           | OPTIONAL        | N/A                                                                                                                                                                                                                                                                            |
-| -------------------------------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `impl.control-flow` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `impl.boundary` | `impl.comparison` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                           | OPTIONAL        | N/A                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `impl.boundary` | `impl.comparison` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                    |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Schema-present/result-normalization control flow directly selects the structured path; numeric comparisons are not defining semantics. |
-| Runtime / dependency  | Transport/retry failures belong to resilience/provider-error contracts; this profile is the successful structured-result claim.        |
-| Interface / protocol  | A provider payload that cannot yield the requested structure directly challenges the structured boundary.                              |
-| Architecture          | No particular internal module topology is normative for the public result.                                                             |
-| Specification / model | A wrong structured result or an omitted supported provider family invalidates the claim.                                               |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
+| Group                 | Why                                                                                                                                                                                          |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Schema-present/result-normalization control flow directly selects the structured path; numeric comparisons are not defining semantics. A dropped schema write sends an unstructured request. |
+| Runtime / dependency  | Transport/retry failures belong to resilience/provider-error contracts; this profile is the successful structured-result claim.                                                              |
+| Interface / protocol  | A provider payload that cannot yield the requested structure directly challenges the structured boundary.                                                                                    |
+| Architecture          | No particular internal module topology is normative for the public result.                                                                                                                   |
+| Specification / model | A wrong structured result or an omitted supported provider family invalidates the claim.                                                                                                     |
 
 (verification-profile-req-document-input)=
 
@@ -111,22 +108,19 @@ input document.
 
 ### Fault applicability
 
-| REQUIRED                                                                                           | OPTIONAL                           | N/A                                                                                                                                                                                                                                                         |
-| -------------------------------------------------------------------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `interface.unexpected-interaction` | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                           | OPTIONAL                           | N/A                                                                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `interface.unexpected-interaction` | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                               |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Media-vs-text dispatch and result parsing are branch-sensitive; numeric thresholds are not the document contract. |
-| Runtime / dependency  | This profile covers successful grounded extraction rather than provider availability.                             |
-| Interface / protocol  | Wrong media/schema payload shape can destroy grounding; extra calls are secondary but diagnostically useful.      |
-| Architecture          | No particular internal module graph is required.                                                                  |
-| Specification / model | Wrong document facts or omission of a declared file-capable provider family violates the Requirement.             |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
+| Group                 | Why                                                                                                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Media-vs-text dispatch and result parsing are branch-sensitive; numeric thresholds are not the document contract. A dropped document-part write loses the document. |
+| Runtime / dependency  | This profile covers successful grounded extraction rather than provider availability.                                                                               |
+| Interface / protocol  | Wrong media/schema payload shape can destroy grounding; extra calls are secondary but diagnostically useful.                                                        |
+| Architecture          | No particular internal module graph is required.                                                                                                                    |
+| Specification / model | Wrong document facts or omission of a declared file-capable provider family violates the Requirement.                                                               |
 
 (verification-profile-req-image-input)=
 
@@ -169,22 +163,19 @@ facts are checked against visible, deterministic properties of the retained inpu
 
 ### Fault applicability
 
-| REQUIRED                                                                                           | OPTIONAL                           | N/A                                                                                                                                                                                                                                                         |
-| -------------------------------------------------------------------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `interface.unexpected-interaction` | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                           | OPTIONAL                           | N/A                                                                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `interface.unexpected-interaction` | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                              |
-| --------------------- | ------------------------------------------------------------------------------------------------ |
-| Implementation        | Media translation/result parsing branches determine whether image semantics survive.             |
-| Runtime / dependency  | Successful understanding is the claim; availability/retry failures are owned elsewhere.          |
-| Interface / protocol  | An incorrect media/schema payload shape directly challenges image handling.                      |
-| Architecture          | Internal layering is not part of the public image claim.                                         |
-| Specification / model | Incorrect visible facts or an omitted image-capable provider family invalidates the Requirement. |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
+| Group                 | Why                                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Media translation/result parsing branches determine whether image semantics survive. A dropped image-part write loses the image. |
+| Runtime / dependency  | Successful understanding is the claim; availability/retry failures are owned elsewhere.                                          |
+| Interface / protocol  | An incorrect media/schema payload shape directly challenges image handling.                                                      |
+| Architecture          | Internal layering is not part of the public image claim.                                                                         |
+| Specification / model | Incorrect visible facts or an omitted image-capable provider family invalidates the Requirement.                                 |
 
 (verification-profile-req-video-input)=
 
@@ -232,22 +223,19 @@ dependency evidence.
 
 ### Fault applicability
 
-| REQUIRED                                                                                           | OPTIONAL                                                            | N/A                                                                                                                                                                                                                        |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `interface.unexpected-interaction` · `spec.wrong-ordering-boundary` | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
+| REQUIRED                                                                                                           | OPTIONAL                                                            | N/A                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `spec.wrong-outcome` · `spec.missing-partition` | `interface.unexpected-interaction` · `spec.wrong-ordering-boundary` | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
 
 #### Fault-group rationale
 
 | Group                 | Why                                                                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Local-vs-remote media dispatch and provider translation are branch-sensitive.                                                                                 |
+| Implementation        | Local-vs-remote media dispatch and provider translation are branch-sensitive. A dropped video-part write or upload call loses the video.                      |
 | Runtime / dependency  | This profile is the successful video-understanding claim rather than availability/retry behavior.                                                             |
 | Interface / protocol  | Wrong video/schema payload shape invalidates the request; unexpected extra interactions are secondary diagnostics.                                            |
 | Architecture          | No internal topology is prescribed.                                                                                                                           |
 | Specification / model | Each local/remote partition is mandatory only for provider families that declare that exact input form; unsupported provider/input combinations are not gaps. |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
 
 (verification-profile-req-structured-schema-contract)=
 
@@ -293,22 +281,19 @@ not require an external dependency.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                                               | OPTIONAL | N/A                                                                                                                                                                                                                          |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `interface.payload-schema` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                                                                                               | OPTIONAL | N/A                                                                                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------ |
-| Implementation        | Constraint comparisons/bounds and validation branches define accept/reject behavior.                   |
-| Runtime / dependency  | Schema semantics are local and dependency availability is irrelevant.                                  |
-| Interface / protocol  | Caller schema/output shape is the data contract being validated.                                       |
-| Architecture          | Bypassing router-side validation in favor of provider-only validation can weaken caller semantics.     |
-| Specification / model | Wrong acceptance/rejection or omission of mapping/Pydantic partitions invalidates the schema contract. |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
+| Group                 | Why                                                                                                                                                |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Constraint comparisons/bounds and validation branches define accept/reject behavior. A dropped rejection raise accepts an invalid schema or value. |
+| Runtime / dependency  | Schema semantics are local and dependency availability is irrelevant.                                                                              |
+| Interface / protocol  | Caller schema/output shape is the data contract being validated.                                                                                   |
+| Architecture          | Bypassing router-side validation in favor of provider-only validation can weaken caller semantics.                                                 |
+| Specification / model | Wrong acceptance/rejection or omission of mapping/Pydantic partitions invalidates the schema contract.                                             |
 
 (verification-profile-req-multimodal-content-normalization)=
 
@@ -360,19 +345,16 @@ material provider interaction.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                                                                                        | OPTIONAL | N/A                                                                                                                                                                                 |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `interface.unexpected-interaction` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` |
+| REQUIRED                                                                                                                                                                                                                        | OPTIONAL | N/A                                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                 |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Image bounds, branch selection, and ordered-part construction directly implement the normalized semantics.          |
-| Runtime / dependency  | Invalid content must terminate locally, so dependency failures are outside this claim.                              |
-| Interface / protocol  | Any provider interaction after locally invalid input is explicitly forbidden.                                       |
-| Architecture          | Bypassing provider-neutral normalization before adapter execution breaks the required boundary.                     |
-| Specification / model | Wrong order/metadata, missing invalid-input partitions, or reject-after-provider ordering violates the Requirement. |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
+| Group                 | Why                                                                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Image bounds, branch selection, and ordered-part construction directly implement the normalized semantics. A dropped part append loses content or its order. |
+| Runtime / dependency  | Invalid content must terminate locally, so dependency failures are outside this claim.                                                                       |
+| Interface / protocol  | Any provider interaction after locally invalid input is explicitly forbidden.                                                                                |
+| Architecture          | Bypassing provider-neutral normalization before adapter execution breaks the required boundary.                                                              |
+| Specification / model | Wrong order/metadata, missing invalid-input partitions, or reject-after-provider ordering violates the Requirement.                                          |

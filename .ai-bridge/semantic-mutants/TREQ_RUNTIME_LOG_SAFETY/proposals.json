@@ -1,0 +1,68 @@
+{
+  "schema": "ternforge-semantic-mutant-proposals-1",
+  "contract_id": "TREQ_RUNTIME_LOG_SAFETY",
+  "generator": {
+    "kind": "agent",
+    "model": "claude-opus-5-5",
+    "created_at": "2026-09-26T11:01:35.024666Z",
+    "prompt_template_sha256": "7ffee92a9320e262b8e342a9fbd8e9fcb66761cf8afc4f23d33f4a3322c04736",
+    "note": "Proposed in the pilot session from the prompt the cascade builds for each selected target; no proposal was run before it was frozen."
+  },
+  "proposals": [
+    {
+      "id": "SM-LOG-01",
+      "class": "spec.wrong-outcome",
+      "target": "src/llm_router/_internal/providers/base.py::ProviderRequest.log_context",
+      "risk": "a credential, prompt, provider argument or model detail enters the safe log context",
+      "rationale": "A debug switch that dumps the provider arguments into the log context, added to troubleshoot one provider.",
+      "original_sha256": "d95dd880e22ba93d28962fe5643b9631593d461c1ddd24858ba41a38576b09ad",
+      "context_sha256": "85e190416759805e1d586fb78c65095a982d77c0f99cc0774d99909572564429",
+      "prompt_sha256": "5d99089a5e0c228cc85f5f7512daf4878e34e87c481667a647184a52c797e27a",
+      "replacement": "def log_context(self) -> dict[str, object]:\n    \"\"\"Return common safe fields for provider and capability logs.\"\"\"\n    context: dict[str, object] = {\n        \"request_id\": self.request_id,\n        \"provider\": self.provider.value,\n        \"model\": self.model.value,\n        \"key_id\": self.credential.key_id,\n    }\n    if self.route_index is not None:\n        context[\"route_index\"] = self.route_index\n    if self.kwargs.get(\"debug\"):\n        context[\"kwargs\"] = dict(self.kwargs)\n    return context"
+    },
+    {
+      "id": "SM-LOG-02",
+      "class": "spec.wrong-outcome",
+      "target": "src/llm_router/_internal/providers/base.py::ProviderRequest.log_context",
+      "risk": "a credential, prompt, provider argument or model detail enters the safe log context",
+      "rationale": "A fallback identifier for an unnumbered key that logs the credential itself when the key id is 0.",
+      "original_sha256": "d95dd880e22ba93d28962fe5643b9631593d461c1ddd24858ba41a38576b09ad",
+      "context_sha256": "85e190416759805e1d586fb78c65095a982d77c0f99cc0774d99909572564429",
+      "prompt_sha256": "5d99089a5e0c228cc85f5f7512daf4878e34e87c481667a647184a52c797e27a",
+      "replacement": "def log_context(self) -> dict[str, object]:\n    \"\"\"Return common safe fields for provider and capability logs.\"\"\"\n    context: dict[str, object] = {\n        \"request_id\": self.request_id,\n        \"provider\": self.provider.value,\n        \"model\": self.model.value,\n        \"key_id\": self.credential.key_id or self.credential.value,\n    }\n    if self.route_index is not None:\n        context[\"route_index\"] = self.route_index\n    return context"
+    },
+    {
+      "id": "SM-LOG-03",
+      "class": "spec.wrong-outcome",
+      "target": "src/llm_router/_internal/providers/base.py::ProviderRequest.log_context",
+      "risk": "a credential, prompt, provider argument or model detail enters the safe log context",
+      "rationale": "The provider's own model name added to the log context for troubleshooting routing.",
+      "original_sha256": "d95dd880e22ba93d28962fe5643b9631593d461c1ddd24858ba41a38576b09ad",
+      "context_sha256": "85e190416759805e1d586fb78c65095a982d77c0f99cc0774d99909572564429",
+      "prompt_sha256": "5d99089a5e0c228cc85f5f7512daf4878e34e87c481667a647184a52c797e27a",
+      "replacement": "def log_context(self) -> dict[str, object]:\n    \"\"\"Return common safe fields for provider and capability logs.\"\"\"\n    context: dict[str, object] = {\n        \"request_id\": self.request_id,\n        \"provider\": self.provider.value,\n        \"model\": self.model.value,\n        \"provider_model\": self.provider_model,\n        \"key_id\": self.credential.key_id,\n    }\n    if self.route_index is not None:\n        context[\"route_index\"] = self.route_index\n    return context"
+    },
+    {
+      "id": "SM-LOG-04",
+      "class": "spec.wrong-outcome",
+      "target": "src/llm_router/_internal/providers/base.py::ProviderFailure.__post_init__",
+      "risk": "provider-controlled text survives into the public failure message",
+      "rationale": "An SDK failure without a status code keeps the provider's text, to make such failures debuggable.",
+      "original_sha256": "e6e57ff75d571e0e1ae392cf27532267ed01b31230b259fb132bf3e024a7b6c3",
+      "context_sha256": "d48aa03457c05afd27641483450a4b3b5770e9ca3be1fb4c7b17a2c7f4e67d42",
+      "prompt_sha256": "ff8ee17a3671c7dfea437791c91d5dde8946c5456a3521765ffbb90df3d54b94",
+      "replacement": "def __post_init__(self) -> None:\n    \"\"\"Discard provider-controlled text before the failure can become observable.\"\"\"\n    safe_message = (\n        f\"Provider request failed with status code {self.status_code}.\"\n        if self.status_code is not None\n        else f\"Provider request failed: {self.message}\"\n    )\n    object.__setattr__(self, \"message\", safe_message)"
+    },
+    {
+      "id": "SM-LOG-05",
+      "class": "spec.wrong-outcome",
+      "target": "src/llm_router/_internal/providers/base.py::ProviderFailure.__post_init__",
+      "risk": "provider-controlled text survives into the public failure message",
+      "rationale": "A client error (4xx) keeps the provider's explanation, so that the caller can fix the request.",
+      "original_sha256": "e6e57ff75d571e0e1ae392cf27532267ed01b31230b259fb132bf3e024a7b6c3",
+      "context_sha256": "d48aa03457c05afd27641483450a4b3b5770e9ca3be1fb4c7b17a2c7f4e67d42",
+      "prompt_sha256": "ff8ee17a3671c7dfea437791c91d5dde8946c5456a3521765ffbb90df3d54b94",
+      "replacement": "def __post_init__(self) -> None:\n    \"\"\"Discard provider-controlled text before the failure can become observable.\"\"\"\n    if self.status_code is not None and 400 <= self.status_code < 500:\n        safe_message = f\"Provider request failed with status code {self.status_code}: {self.message}\"\n    elif self.status_code is not None:\n        safe_message = f\"Provider request failed with status code {self.status_code}.\"\n    else:\n        safe_message = \"Provider request failed.\"\n    object.__setattr__(self, \"message\", safe_message)"
+    }
+  ]
+}

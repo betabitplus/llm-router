@@ -380,7 +380,8 @@ repos:
       - id: check-added-large-files
         args: [--maxkb=1000]
         stages: [pre-commit]
-        exclude: ^(tests/[^/]+/(e2e/.*/cassettes/|data/)|experiments/[^/]+/exp_[^/]+/inputs/)
+        # The model ledger is append-only evidence the gate binds stored answers to (ADR_0004).
+        exclude: ^(tests/[^/]+/(e2e/.*/cassettes/|data/)|experiments/[^/]+/exp_[^/]+/inputs/|\.ai-bridge/semantic-mutants/model-ledger\.jsonl$)
 
       # Check for files that would conflict on case-insensitive filesystems
       - id: check-case-conflict

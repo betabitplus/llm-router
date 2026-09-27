@@ -48,22 +48,19 @@ public API under test.
 
 ### Fault applicability
 
-| REQUIRED                                                                      | OPTIONAL            | N/A                                                                                                                                                                                                                                                                                             |
-| ----------------------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` | `impl.control-flow` | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                      | OPTIONAL                            | N/A                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` | `impl.control-flow` · `impl.effect` | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                     |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| Implementation        | Export assembly can fail through control flow, but numeric/operator boundaries are not meaningful here. |
-| Runtime / dependency  | Root import resolution is local and dependency availability is not the contract.                        |
-| Interface / protocol  | No external protocol is exercised.                                                                      |
-| Architecture          | Requiring callers to bypass the package root is the explicit architectural failure mode.                |
-| Specification / model | A missing declared symbol or wrong root resolution directly violates the Requirement.                   |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
+| Group                 | Why                                                                                                                                                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Export assembly can fail through control flow, but numeric/operator boundaries are not meaningful here. A lost export statement is worth challenging where the surface is assembled, but it is mostly declared. |
+| Runtime / dependency  | Root import resolution is local and dependency availability is not the contract.                                                                                                                                |
+| Interface / protocol  | No external protocol is exercised.                                                                                                                                                                              |
+| Architecture          | Requiring callers to bypass the package root is the explicit architectural failure mode.                                                                                                                        |
+| Specification / model | A missing declared symbol or wrong root resolution directly violates the Requirement.                                                                                                                           |
 
 (verification-profile-req-example-import-safety)=
 
@@ -107,19 +104,16 @@ semantics being claimed.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                   | OPTIONAL | N/A                                                                                                                                                                                                                                                                                      |
-| ---------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                   | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                      |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Implementation        | The `__main__`/import control-flow guard is the primary implementation safety boundary.                                  |
-| Runtime / dependency  | Import must not start a runtime dependency workflow at all, so dependency outcome classes are not the selected stimulus. |
-| Interface / protocol  | Any network/live-router interaction during import is itself the forbidden interface event.                               |
-| Architecture          | No internal dependency edge is prescribed.                                                                               |
-| Specification / model | Executing a workflow or omitting one shipped example from verification invalidates the claim.                            |
-
-No blocking mutation threshold is selected; required deterministic fault classes remain
-blocking.
+| Group                 | Why                                                                                                                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The `__main__`/import control-flow guard is the primary implementation safety boundary. Removing an effect cannot make an import call the network or the router, so a lost effect does not apply. |
+| Runtime / dependency  | Import must not start a runtime dependency workflow at all, so dependency outcome classes are not the selected stimulus.                                                                          |
+| Interface / protocol  | Any network/live-router interaction during import is itself the forbidden interface event.                                                                                                        |
+| Architecture          | No internal dependency edge is prescribed.                                                                                                                                                        |
+| Specification / model | Executing a workflow or omitting one shipped example from verification invalidates the claim.                                                                                                     |

@@ -1,12 +1,13 @@
 """Implementation fault classes for every contract with an attributable @impl scope.
 
-The engine is pytest-gremlins: its native operator families are mapped to the test
-plan's Implementation fault classes and run against the contract's own passing tests.
-This module owns what the engine cannot know: which source lines belong to which
-contract (from the graph's IMPL needs), which tests may challenge them, and how a
-retained engine report projects onto fault classes. It never infers ownership from
-names; a line shared with a contract that does not derive from the challenged one is
-not attributable and is reported as such.
+The engine is pytest-gremlins with the project's extension (``pytest_plugins``): its
+native operator families and the extension's statement and body operators are mapped
+to the Test Plan's Implementation fault classes and run against the contract's own
+passing tests. This module owns what the engine cannot know: which source lines belong
+to which contract (from the graph's IMPL needs), which tests may challenge them, which
+arid-code rules apply to the contract, and how a retained engine report projects onto
+fault classes. It never infers ownership from names; a line shared with a contract that
+does not derive from the challenged one is not attributable and is reported as such.
 """
 
 from __future__ import annotations
@@ -23,25 +24,31 @@ from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
 
-SCHEMA = "ternforge-implementation-fault-campaign-1"
+SCHEMA = "ternforge-implementation-fault-campaign-2"
 GREMLINS_VERSION = "1.9.0"
-OPERATORS = ("comparison", "boundary", "boolean", "return")
+OPERATORS = ("comparison", "boundary", "boolean", "return", "statement", "body")
 CLASS_BY_OPERATOR = {
     "comparison": "impl.comparison",
     "boundary": "impl.boundary",
     "boolean": "impl.control-flow",
     "return": "impl.control-flow",
+    "statement": "impl.effect",
+    "body": "impl.effect",
 }
-CLASSES = ("impl.comparison", "impl.boundary", "impl.control-flow")
+CLASSES = ("impl.comparison", "impl.boundary", "impl.control-flow", "impl.effect")
 CLASS_NOUNS = {
     "impl.comparison": "comparison",
     "impl.boundary": "boundary",
     "impl.control-flow": "branch/return",
+    "impl.effect": "effect",
 }
 KILLED = {"zapped", "timeout"}
 # A mutant whose run ends in a collection/import/internal error is invalid (as in
 # Stryker's RuntimeError/CompileError): neither caught nor missed, and reported apart.
 INVALID = {"error"}
+# What one mutant came to, in the Test Plan's words: caught, survived (its line runs and
+# every test passes), not reached (no test of the contract runs its line), invalid, suppressed.
+OUTCOMES = ("caught", "survived", "notreached", "invalid", "suppressed")
 PRODUCERS = ("PRODUCER_PYTEST_GREMLINS", "PRODUCER_IMPLEMENTATION_FAULT_ADAPTER")
 
 
@@ -237,14 +244,30 @@ def blocked_basis(plan: dict) -> str:
 # --- projection --------------------------------------------------------------------
 
 
-def project_classes(plan: dict, report: dict, root: Path) -> dict[str, dict]:
-    """Project one retained engine report onto the contract's Implementation classes.
+def mutant_outcome(result: dict) -> str:
+    """One engine result in the Test Plan's words."""
+    status = str(result.get("status") or "error")
+    if status in KILLED:
+        return "caught"
+    if status == "pardoned":
+        return "suppressed"
+    if status in INVALID:
+        return "invalid"
+    # Reach is the coverage fact the extension records per mutant; without it (an
+    # engine run without coverage) a surviving mutant counts as reached, never as better.
+    return "notreached" if result.get("covered") is False else "survived"
 
-    A class is exercised when at least one of its attributable faults is reached by a
-    selected test, and detected only when every judged fault of that class is caught:
-    an unreached fault is an undetected fault. Pardoned faults and faults that broke
-    test collection are not judged, and are counted apart.
-    """
+
+def relative_source(root: Path, file_path: object) -> str:
+    raw_path = Path(str(file_path or ""))
+    try:
+        return str(raw_path.resolve().relative_to(root.resolve()))
+    except ValueError:
+        return str(raw_path)
+
+
+def contract_mutants(plan: dict, report: dict, root: Path) -> list[dict]:
+    """The report's mutants on the contract's attributable lines, one row each."""
     allowed = {
         (path, line)
         for path, lines in (plan.get("attributable_lines") or {}).items()
@@ -252,78 +275,141 @@ def project_classes(plan: dict, report: dict, root: Path) -> dict[str, dict]:
     }
     rows = []
     for result in report.get("results") or []:
-        raw_path = Path(str(result.get("file_path") or ""))
-        try:
-            relative = str(raw_path.resolve().relative_to(root.resolve()))
-        except ValueError:
-            relative = str(raw_path)
+        relative = relative_source(root, result.get("file_path"))
         line = int(result.get("line_number") or -1)
         fault_class = CLASS_BY_OPERATOR.get(str(result.get("operator") or ""))
         if fault_class is None or (relative, line) not in allowed:
             continue
-        status = str(result.get("status") or "error")
         rows.append(
             {
                 "id": str(result.get("gremlin_id") or ""),
+                "fingerprint": str(result.get("fingerprint") or result.get("gremlin_id") or ""),
                 "class": fault_class,
                 "operator": str(result.get("operator")),
                 "description": str(result.get("description") or ""),
                 "source": relative,
                 "line": line,
-                "status": status,
-                "reached": bool(result.get("selected_tests")) or status in KILLED,
+                "qualname": str(result.get("qualname") or ""),
+                "location": result.get("location"),
+                "original": str(result.get("original") or ""),
+                "replacement": str(result.get("replacement") or ""),
+                "status": str(result.get("status") or "error"),
+                "outcome": mutant_outcome(result),
+                "covered": result.get("covered"),
+                "suppression": result.get("suppression"),
+                "run_skipped": result.get("run_skipped"),
                 "selected_tests": len(result.get("selected_tests") or []),
             }
         )
+    return rows
+
+
+def not_planted_mutants(plan: dict, report: dict, root: Path) -> list[dict]:
+    """Mutants the arid-code rules kept out of the contract's attributable lines."""
+    allowed = {
+        (path, line)
+        for path, lines in (plan.get("attributable_lines") or {}).items()
+        for line in lines
+    }
+    rows = []
+    for item in (report.get("ternforge") or {}).get("not_planted") or []:
+        relative = relative_source(root, item.get("file_path"))
+        fault_class = CLASS_BY_OPERATOR.get(str(item.get("operator") or ""))
+        if fault_class is None or (relative, int(item.get("line_number") or -1)) not in allowed:
+            continue
+        rows.append({**item, "source": relative, "class": fault_class})
+    return rows
+
+
+def suppress_by_verdict(rows: list[dict], verdicts: dict[str, dict] | None) -> list[dict]:
+    """Mutant rows with every survivor a current verdict judged equivalent or irrelevant
+    (ADR_0006) suppressed, with the verdict, its reason and who gave it."""
+    for row in rows:
+        verdict = (verdicts or {}).get(row["fingerprint"])
+        if verdict and row["outcome"] == "survived":
+            row["outcome"] = "suppressed"
+            row["suppression"] = {"verdict": verdict.get("verdict"), "reason": verdict.get("reason"), "by": verdict.get("by")}
+    return rows
+
+
+def project_classes(plan: dict, report: dict, root: Path, verdicts: dict[str, dict] | None = None) -> dict[str, dict]:
+    """Project one retained engine report onto the contract's Implementation classes.
+
+    A class is caught only when it has at least one valid, unsuppressed mutant and
+    every such mutant is caught; a mutant no test of the contract reaches is not
+    caught. Invalid and suppressed mutants are counted apart and never count as
+    caught; mutants in arid code were never planted and are counted by rule.
+    ``verdicts`` names, by fingerprint, surviving mutants a current verdict judged
+    equivalent or irrelevant (ADR_0006): they are suppressed, with the verdict.
+    """
+    rows = suppress_by_verdict(contract_mutants(plan, report, root), verdicts)
+    arid = not_planted_mutants(plan, report, root)
     classes = {}
     for fault_class in CLASSES:
         class_rows = [row for row in rows if row["class"] == fault_class]
-        invalid = [row for row in class_rows if row["status"] in INVALID]
-        judged = [row for row in class_rows if row["status"] != "pardoned" and row["status"] not in INVALID]
-        killed = [row for row in judged if row["status"] in KILLED]
-        reached = [row for row in judged if row["reached"]]
-        survivors = [row for row in judged if row["status"] not in KILLED]
-        unreached = [row for row in survivors if not row["reached"]]
+        counts = {outcome: sum(row["outcome"] == outcome for row in class_rows) for outcome in OUTCOMES}
+        judged = counts["caught"] + counts["survived"] + counts["notreached"]
+        reached = counts["caught"] + counts["survived"]
+        not_planted: dict[str, int] = defaultdict(int)
+        for item in arid:
+            if item["class"] == fault_class:
+                not_planted[str(item.get("rule"))] += 1
         noun = CLASS_NOUNS[fault_class]
 
         def faults(count: int) -> str:
             return f"{count} {noun} fault" + ("" if count == 1 else "s")
 
-        if not judged and invalid:
-            basis = f"Every {noun} fault ({len(invalid)}) broke test collection, so none could be judged."
+        if not judged and counts["suppressed"]:
+            basis = f"Every {noun} fault ({counts['suppressed']}) is suppressed, so none is judged."
+        elif not judged and counts["invalid"]:
+            basis = f"Every {noun} fault ({counts['invalid']}) broke test collection, so none could be judged."
         elif not judged:
             basis = f"No {noun} fault site in the attributable code, so this class cannot be challenged here."
         elif not reached:
-            basis = f"The contract's tests never reach its {faults(len(judged))}."
-        elif len(killed) == len(judged):
+            basis = f"The contract's tests never reach its {faults(judged)}."
+        elif counts["caught"] == judged:
             basis = (
                 f"The contract's tests catch its only {noun} fault."
-                if len(judged) == 1
-                else f"The contract's tests catch all {faults(len(judged))}."
+                if judged == 1
+                else f"The contract's tests catch all {faults(judged)}."
             )
         else:
-            basis = (
-                f"The contract's tests catch {len(killed)} of {faults(len(judged))}; "
-                f"{len(survivors)} survive"
-                + (f" ({len(unreached)} never reached)" if unreached else "")
-                + "."
-            )
-        if judged and invalid:
-            basis += f" {len(invalid)} more broke test collection and are not judged."
+            parts = []
+            if counts["survived"]:
+                parts.append(f"{counts['survived']} survive")
+            if counts["notreached"]:
+                parts.append(f"{counts['notreached']} are never reached")
+            basis = f"The contract's tests catch {counts['caught']} of {faults(judged)}; " + " and ".join(parts) + "."
+        extra = []
+        if judged and counts["suppressed"]:
+            extra.append(f"{counts['suppressed']} more are suppressed")
+        if judged and counts["invalid"]:
+            extra.append(f"{counts['invalid']} more broke test collection")
+        if extra:
+            basis += " " + "; ".join(extra).capitalize() + "."
         classes[fault_class] = {
             "exercised": bool(reached),
-            "detected": bool(judged) and len(killed) == len(judged),
+            "detected": bool(judged) and counts["caught"] == judged,
             "generated": len(class_rows),
-            "judged": len(judged),
-            "reached": len(reached),
-            "killed": len(killed),
-            "survived": len(survivors),
-            "unreached": len(unreached),
-            "pardoned": len(class_rows) - len(judged) - len(invalid),
-            "invalid": len(invalid),
+            "judged": judged,
+            "reached": reached,
+            "killed": counts["caught"],
+            "caught": counts["caught"],
+            "survived": counts["survived"] + counts["notreached"],
+            "survived_reached": counts["survived"],
+            "unreached": counts["notreached"],
+            "pardoned": counts["suppressed"],
+            "suppressed": counts["suppressed"],
+            "suppressed_by_verdict": sum(1 for row in class_rows if row["outcome"] == "suppressed" and (row.get("suppression") or {}).get("verdict")),
+            "invalid": counts["invalid"],
+            "not_planted": dict(sorted(not_planted.items())),
             "survivors": [
-                {k: row[k] for k in ("source", "line", "operator", "description", "reached")}
-                for row in sorted(survivors, key=lambda row: (row["source"], row["line"], row["id"]))
+                {k: row[k] for k in ("source", "line", "operator", "description", "fingerprint", "qualname")}
+                | {"reached": row["outcome"] == "survived"}
+                for row in sorted(
+                    (row for row in class_rows if row["outcome"] in {"survived", "notreached"}),
+                    key=lambda row: (row["source"], row["line"], row["id"]),
+                )
             ][:25],
             "basis": basis,
         }
@@ -426,20 +512,31 @@ def contract_inputs(root: Path, plan: dict, test_rows: list[dict]) -> dict[str, 
     return digest_map(root, paths)
 
 
+def plugin_sha256() -> str | None:
+    """One digest over every module of the engine extension."""
+    modules = sorted(PLUGIN_DIR.glob("*.py"))
+    if not modules:
+        return None
+    return sha256_bytes(b"".join(module.name.encode() + b"\0" + module.read_bytes() for module in modules))
+
+
 def engine_configuration() -> dict:
-    plugin = Path(__file__).resolve().parent / "pytest_plugins/gremlins_full_pytest.py"
     return {
         "engine": GREMLINS_VERSION,
         "mode": "full pytest per mutant",
         "scope": "attributable @impl lines only",
         "operators": list(OPERATORS),
-        "plugin_sha256": sha256_bytes(plugin.read_bytes()) if plugin.exists() else None,
+        "plugin_sha256": plugin_sha256(),
         "hermetic_options": list(HERMETIC_OPTIONS),
     }
 
 
 def plan_key(plan: dict) -> dict:
-    return {"attributable_lines": plan.get("attributable_lines"), "tests": plan.get("tests")}
+    return {
+        "attributable_lines": plan.get("attributable_lines"),
+        "tests": plan.get("tests"),
+        "arid_rules": plan.get("arid_rules"),
+    }
 
 
 def entry_state(entry: dict, plan: dict, shared_sha256: str, own_inputs: dict) -> tuple[str, str]:
@@ -476,13 +573,16 @@ def engine_env(
     *,
     hermetic: bool = True,
     scope: dict[str, list[int]] | None = None,
+    arid_rules: list[str] | None = None,
+    skip_uncovered: bool = False,
 ) -> dict[str, str]:
     """Environment shared by the outer engine run and every per-mutant pytest run.
 
     PYTEST_ADDOPTS reaches the per-mutant subprocesses too, so each of them runs
     with full pytest (lightweight runner disabled), fixed order, and, for the
     project suite, the same hermetic network rules as the retained run. A scope
-    keeps only the mutants on those source lines.
+    keeps only the mutants on those source lines; the arid rules are the ones that
+    apply to the contract; skipping uncovered mutants is the pull-request diff.
     """
     scratch.mkdir(parents=True, exist_ok=True)
     scope_env: dict[str, str] = {}
@@ -490,6 +590,13 @@ def engine_env(
         scope_file = scratch / f"gremlin-scope-{sha256_bytes(stable_json(scope).encode())[:16]}.json"
         scope_file.write_text(stable_json(scope))
         scope_env["TERNFORGE_GREMLIN_SCOPE"] = str(scope_file)
+    if arid_rules is not None:
+        policy = {"arid_rules": sorted(arid_rules)}
+        policy_file = scratch / f"mutation-policy-{sha256_bytes(stable_json(policy).encode())[:16]}.json"
+        policy_file.write_text(stable_json(policy))
+        scope_env["TERNFORGE_MUTATION_POLICY"] = str(policy_file)
+    if skip_uncovered:
+        scope_env["TERNFORGE_GREMLIN_SKIP_UNCOVERED"] = "1"
     addopts = ["-p", "no:randomly", "-p", "no:cacheprovider", "-p", "gremlins_full_pytest"]
     if hermetic:
         addopts.extend(HERMETIC_OPTIONS)
@@ -522,15 +629,30 @@ def engine_command(root: Path, tests: list[str], targets: list[str], *, project:
     ]
 
 
-def run_engine(root: Path, plan: dict, raw_path: Path, timeout: int = 5400) -> dict:
-    """Run pytest-gremlins for one contract in place and retain its JSON report."""
+def run_engine(
+    root: Path,
+    plan: dict,
+    raw_path: Path,
+    timeout: int = 5400,
+    *,
+    scope: dict[str, list[int]] | None = None,
+    skip_uncovered: bool = False,
+) -> dict:
+    """Run pytest-gremlins for one contract in place and retain its JSON report.
+
+    The scope defaults to the contract's attributable lines; the pull-request diff
+    narrows it to the changed ones and skips the mutants no test covers.
+    """
     report_dir = root / "coverage/gremlins"
     coverage_dir_existed = (root / "coverage").exists()
     env = engine_env(
         Path(os.environ.get("TMPDIR", "/tmp")) / "ternforge-probe-scratch",
-        scope=plan["attributable_lines"],
+        scope=scope if scope is not None else plan["attributable_lines"],
+        arid_rules=plan.get("arid_rules"),
+        skip_uncovered=skip_uncovered,
     )
-    command = [*engine_command(root, plan["tests"], plan["files"]), "--no-cov"]
+    files = sorted(scope) if scope is not None else plan["files"]
+    command = [*engine_command(root, plan["tests"], files), "--no-cov"]
     started = time.monotonic()
     shutil.rmtree(report_dir, ignore_errors=True)
     try:
@@ -549,6 +671,8 @@ def run_engine(root: Path, plan: dict, raw_path: Path, timeout: int = 5400) -> d
         output = str(exc.stdout or "")
         returncode = None
     report_file = report_dir / "gremlins.json"
+    sidecar_file = report_dir / "ternforge-extension.json"
+    sidecar = json.loads(sidecar_file.read_text()) if sidecar_file.exists() else {}
     retained = False
     if report_file.exists():
         raw_path.parent.mkdir(parents=True, exist_ok=True)
@@ -560,7 +684,13 @@ def run_engine(root: Path, plan: dict, raw_path: Path, timeout: int = 5400) -> d
         raw_path.parent.mkdir(parents=True, exist_ok=True)
         raw_path.write_text(
             json.dumps(
-                {"results": [], "summary": {"total": 0}, "note": "no mutation site in the targets"},
+                {
+                    "results": [],
+                    "summary": {"total": 0},
+                    "note": "no mutation site in the targets",
+                    # What the extension decided before the engine found nothing to run.
+                    **({"ternforge": sidecar["ternforge"]} if sidecar.get("ternforge") else {}),
+                },
                 indent=2,
                 sort_keys=True,
             )

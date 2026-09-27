@@ -1,0 +1,122 @@
+{
+ "2038c0b46cff816b": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215538Z-5d4ce2",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant sets 'stream': True, which asks the QwenChat proxy for a streamed (SSE) reply. The adapter expects one complete JSON response, so this breaks the proxy HTTP behaviour and the normalized response semantics that TREQ_QWENCHAT_ADAPTER_BOUNDARY requires the adapter to preserve.",
+   "response_sha256": "cb28224a698f75628f45f8ce7fbd5f9de73cc9cde4ae219e8ce735dc93651f5b",
+   "test_focus": "Check that build_payload, and the request actually sent to the proxy for a text-only request, has 'stream' set to False.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.632364Z",
+   "call_id": "20260926T231112Z-1a4a43",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "8c76dd6fd3fd40e8a2ec21f7848f0d7ef8ef3fb1fe9f9be79db2d26f2b98ad6b",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_2038c0b46cff816b.py",
+   "response_sha256": "660f857850ef901cffc6e2325e0b202b8ee75607d2333203749707947f6589a7",
+   "source": "draft author"
+  },
+  "prompt_sha256": "399786764d21b46f537684a2d9ad7834f7f327b959344a721522ba713a61d004"
+ },
+ "40231175bc1ce35e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215543Z-53630a",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant quietly removes the registered tool descriptors from the QwenChat payload. The provider never sees the tools, so the normalized request is not carried across the native boundary, which REQ_PROVIDER_ADAPTER_INTEROPERABILITY requires. Running the confirmed input shows the 'tools' key is missing, and without tools QwenChat can't produce the tool outputs that TREQ_QWENCHAT_ADAPTER_BOUNDARY expects to be normalized.",
+   "response_sha256": "59b86232cbf8be1a31e8ee6ca0287fef89d9d3c43a79176ba277497ad8f9d41a",
+   "test_focus": "Build a payload from a request whose tool registry has at least one tool, and check that payload['tools'] equals the list of the registered tool descriptors.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.633473Z",
+   "call_id": "20260926T231142Z-7df71d",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "a103753fda297f952a9039e79e4088ab46631adc3dc8e79437fa20ccaeca5bf4",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_40231175bc1ce35e.py",
+   "response_sha256": "60eaf882ce59bcaa5545d58642f095431727cc636c80e5cda9a81ce5f169fa60",
+   "source": "draft author"
+  },
+  "prompt_sha256": "1f6b7eb1879af1c326bad8e0c7d05e9b57aff6d4ba8ea9a655dcf4392bb98133"
+ },
+ "7f08bc96d2f666c5": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215552Z-7e5997",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant silently drops the caller's provider kwargs from the QwenChat payload. The confirmed input shows `extra: 'value'` missing from the payload, so the normalized request no longer reaches the provider intact. That breaks REQ_PROVIDER_ADAPTER_INTEROPERABILITY's promise to keep request semantics across the adapter's HTTP boundary.",
+   "response_sha256": "d73896802b9b5a993886f93716b3d4693e0fc9f15e8b5c9eb1c1798d7779d59c",
+   "test_focus": "Call build_payload with a ProviderRequest whose kwargs include an extra option such as {'extra': 'value'}, and check that the returned payload contains that key and value next to model, messages and stream.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-26T23:24:57.634590Z",
+   "call_id": "20260926T231155Z-9847d9",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "db63d3eecf75ced16166d0667be45e54d33c3333e79f02a21314eff243ce8948",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7f08bc96d2f666c5.py",
+   "response_sha256": "cc790d7ccf051fc81c3fd52e310a8bcbf994b60ce5dc561fb25e2eebbdd28d1b",
+   "source": "draft author"
+  },
+  "prompt_sha256": "617ae49656e7c5140563496b5a97d04615d501b98894d5e5827c0d3e63e8299c"
+ },
+ "aeeb7e44dc927403": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260926T215559Z-732f1f",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "This mutant is not equivalent. A test can set the process environment, and with trust_env=True, variables such as HTTP_PROXY, HTTPS_PROXY, ALL_PROXY, NO_PROXY, SSL_CERT_FILE and NETRC change where and how the adapter's upload and chat requests travel. TREQ_QWENCHAT_ADAPTER_BOUNDARY requires the adapter to preserve proxy HTTP behavior and transport selection, and ignoring the environment is a deliberate boundary choice.",
+   "response_sha256": "dd3153941b29d0d71d37810ac4114b5e3c2b84eb914b2b283674bf99858c601d",
+   "test_focus": "With HTTP_PROXY, HTTPS_PROXY and ALL_PROXY set to an unreachable address, execute (with a media upload) should still reach the configured base_url directly and return the normalized result, not a transport ProviderError; alternatively, assert that httpx.Client is built with trust_env=False.",
+   "verdict": "pin"
+  },
+  "pin": {
+   "adopted_at": "2026-09-27T00:39:19.755717Z",
+   "call_id": "20260927T003457Z-e62172",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "passes_on_original": 3,
+    "primitives": []
+   },
+   "draft_sha256": "6ace5cb1c7abe89e0015bac0f63610e5da4ab02e3b1bc81a0001546ecadc1e30",
+   "model": "gemini-3.8-flash-medium",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_aeeb7e44dc927403.py",
+   "response_sha256": "f04bcc4c9b65ae4d806b30df6786f6c866c628064bfb3e1025eba445156e5599",
+   "source": "draft author"
+  },
+  "prompt_sha256": "2e6a99585048b7828d02d343ae39e94689cad18c02eff8fae509f144d0c6d166"
+ }
+}

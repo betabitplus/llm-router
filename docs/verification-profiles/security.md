@@ -65,9 +65,9 @@ external provider reasoning.
 
 ### Fault applicability
 
-| REQUIRED                                                                         | OPTIONAL                    | N/A                                                                                                                                                                                                                                                                                  |
-| -------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | `architecture.layer-bypass` | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` |
+| REQUIRED                                                                         | OPTIONAL                    | N/A                                                                                                                                                                                                                                                                                                  |
+| -------------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | `architecture.layer-bypass` | `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` |
 
 #### Fault-group rationale
 
@@ -78,9 +78,6 @@ external provider reasoning.
 | Interface / protocol  | Provider/auth/body protocol details belong to the corresponding Technical requirements.                                                                                  |
 | Architecture          | A bypass of all required sanitization layers could violate the combined outcome and is worth observing, but the parent does not prescribe one package dependency edge.   |
 | Specification / model | Wrong retained content, a missing artifact partition, or sanitization occurring only after persistence directly violates the product-level confidentiality outcome.      |
-
-No blocking mutation threshold is selected; required deterministic fault obligations remain
-blocking.
 
 (verification-profile-treq-runtime-log-safety)=
 
@@ -131,22 +128,29 @@ the contract concerns local logging/error behavior.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                                                                                                      | OPTIONAL                            | N/A                                                                                                                             |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` | `impl.comparison` · `impl.boundary` | `runtime.latency-timeout` · `interface.unexpected-interaction` · `architecture.forbidden-edge` · `spec.wrong-ordering-boundary` |
+| REQUIRED                                                                                                                                                                                                                                      | OPTIONAL                            | N/A                                                                                                                             |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` | `impl.comparison` · `impl.boundary` | `runtime.latency-timeout` · `interface.unexpected-interaction` · `architecture.forbidden-edge` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                                                       |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Safe-field and exception-flow branches decide whether protected values enter diagnostics; comparison/boundary mutations can be useful but are not defining confidentiality partitions.    |
-| Runtime / dependency  | Disconnect and malformed-response paths can surface raw dependency detail; latency without failure does not independently change the leak boundary.                                       |
-| Interface / protocol  | Error-status bodies and schema-invalid payloads are explicit hostile/sensitive partitions; an extra interaction is a routing concern rather than this diagnostic-content claim.           |
-| Architecture          | Bypassing the centralized safe diagnostic boundary can leak even when helper-level tests pass; no package dependency edge is itself normative.                                            |
-| Specification / model | Wrong diagnostic content or omission of provider/tool/schema partitions directly violates this Technical requirement; ordering before persistence belongs to the VCR technical contracts. |
+| Group                 | Why                                                                                                                                                                                                                                                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Safe-field and exception-flow branches decide whether protected values enter diagnostics; comparison/boundary mutations can be useful but are not defining confidentiality partitions. A dropped redaction write lets the protected value into the record; dropping a log call itself is arid and not mutated. |
+| Runtime / dependency  | Disconnect and malformed-response paths can surface raw dependency detail; latency without failure does not independently change the leak boundary.                                                                                                                                                            |
+| Interface / protocol  | Error-status bodies and schema-invalid payloads are explicit hostile/sensitive partitions; an extra interaction is a routing concern rather than this diagnostic-content claim.                                                                                                                                |
+| Architecture          | Bypassing the centralized safe diagnostic boundary can leak even when helper-level tests pass; no package dependency edge is itself normative.                                                                                                                                                                 |
+| Specification / model | Wrong diagnostic content or omission of provider/tool/schema partitions directly violates this Technical requirement; ordering before persistence belongs to the VCR technical contracts.                                                                                                                      |
 
-No blocking mutation threshold is selected; required deterministic fault obligations remain
-blocking.
+### Semantic mutants
+
+| Fault class          | Target                                                                      | Budget | Risk                                                                                |
+| -------------------- | --------------------------------------------------------------------------- | -----: | ----------------------------------------------------------------------------------- |
+| `spec.wrong-outcome` | `src/llm_router/_internal/providers/base.py::ProviderRequest.log_context`   |      3 | a credential, prompt, provider argument or model detail enters the safe log context |
+| `spec.wrong-outcome` | `src/llm_router/_internal/providers/base.py::ProviderFailure.__post_init__` |      2 | provider-controlled text survives into the public failure message                   |
+
+Rule operators can only remove or invert what the code already does; a leak is code that is
+added. These targets are where the safe fields and the safe message are chosen.
 
 (verification-profile-treq-vcr-auth-redaction)=
 
@@ -192,22 +196,19 @@ semantic reasoning is outside this claim.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                                          | OPTIONAL          | N/A                                                                                                                                                                                                           |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.payload-schema` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | `impl.comparison` | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` |
+| REQUIRED                                                                                                                                                                          | OPTIONAL          | N/A                                                                                                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | `impl.comparison` | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                             |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Scrub control flow decides whether protected headers/account fields survive; threshold-style boundaries are not part of the contract.                           |
-| Runtime / dependency  | Recorder confidentiality is about pre-persistence transformation, not dependency timing or availability.                                                        |
-| Interface / protocol  | Authentication/account material arrives in protocol fields and response payload shapes; HTTP success vs error status is not itself the redaction requirement.   |
-| Architecture          | Bypassing the pre-serialization scrub layer would expose secrets; no particular package dependency edge is normative.                                           |
-| Specification / model | Persisting protected material, omitting an auth/account partition, or scrubbing only after the cassette is written directly violates the Technical requirement. |
-
-No blocking mutation threshold is selected; required deterministic fault obligations remain
-blocking.
+| Group                 | Why                                                                                                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Implementation        | Scrub control flow decides whether protected headers/account fields survive; threshold-style boundaries are not part of the contract. A dropped header or field scrub persists the secret. |
+| Runtime / dependency  | Recorder confidentiality is about pre-persistence transformation, not dependency timing or availability.                                                                                   |
+| Interface / protocol  | Authentication/account material arrives in protocol fields and response payload shapes; HTTP success vs error status is not itself the redaction requirement.                              |
+| Architecture          | Bypassing the pre-serialization scrub layer would expose secrets; no particular package dependency edge is normative.                                                                      |
+| Specification / model | Persisting protected material, omitting an auth/account partition, or scrubbing only after the cassette is written directly violates the Technical requirement.                            |
 
 (verification-profile-treq-vcr-request-content-redaction)=
 
@@ -253,22 +254,19 @@ claim, so Surrogate/L0 is appropriate.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                             | OPTIONAL          | N/A                                                                                                                                                                                                                                        |
-| ------------------------------------------------------------------------------------------------------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `impl.control-flow` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | `impl.comparison` | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` |
+| REQUIRED                                                                                                                                             | OPTIONAL          | N/A                                                                                                                                                                                                                                        |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `impl.control-flow` · `impl.effect` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | `impl.comparison` | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                                        |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Request-body replacement control flow determines whether raw content is persisted; numeric thresholds are not part of the contract.                                        |
-| Runtime / dependency  | Fingerprinting/persistence semantics are local recorder behavior and do not depend on dependency timing or availability.                                                   |
-| Interface / protocol  | The contract intentionally hashes the complete raw request body regardless of its provider-specific schema, so protocol-shape faults are not separate required partitions. |
-| Architecture          | Bypassing the pre-serialization request scrub layer would persist raw content; no particular package dependency edge is normative.                                         |
-| Specification / model | Raw content persistence, omission of a request/tool partition, or replacement after serialization directly violates the Technical requirement.                             |
-
-No blocking mutation threshold is selected; required deterministic fault obligations remain
-blocking.
+| Group                 | Why                                                                                                                                                                                      |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Request-body replacement control flow determines whether raw content is persisted; numeric thresholds are not part of the contract. A dropped body replacement persists the raw content. |
+| Runtime / dependency  | Fingerprinting/persistence semantics are local recorder behavior and do not depend on dependency timing or availability.                                                                 |
+| Interface / protocol  | The contract intentionally hashes the complete raw request body regardless of its provider-specific schema, so protocol-shape faults are not separate required partitions.               |
+| Architecture          | Bypassing the pre-serialization request scrub layer would persist raw content; no particular package dependency edge is normative.                                                       |
+| Specification / model | Raw content persistence, omission of a request/tool partition, or replacement after serialization directly violates the Technical requirement.                                           |
 
 (verification-profile-treq-vcr-response-content-redaction)=
 
@@ -315,19 +313,16 @@ claim, so Surrogate/L0 is appropriate.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                                                                          | OPTIONAL          | N/A                                                                                                                                                                                                           |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.control-flow` · `interface.payload-schema` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | `impl.comparison` | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` |
+| REQUIRED                                                                                                                                                                          | OPTIONAL          | N/A                                                                                                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `interface.payload-schema` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | `impl.comparison` | `impl.boundary` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.unexpected-interaction` · `interface.error-status` · `architecture.forbidden-edge` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                             |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | Response-scrub control flow decides whether reflected protected values survive; threshold-style boundaries are not part of the contract.        |
-| Runtime / dependency  | The confidentiality boundary is local pre-persistence transformation rather than dependency timing or availability.                             |
-| Interface / protocol  | Provider response payload shape is the ingress that may carry echoed caller values; HTTP status itself is not the confidentiality partition.    |
-| Architecture          | Bypassing the response scrub before serialization would retain raw values; no package dependency edge is itself normative.                      |
-| Specification / model | Persisting the echo, omitting the response-echo partition, or sanitizing only after serialization directly violates this Technical requirement. |
-
-No blocking mutation threshold is selected; required deterministic fault obligations remain
-blocking.
+| Group                 | Why                                                                                                                                                                                    |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | Response-scrub control flow decides whether reflected protected values survive; threshold-style boundaries are not part of the contract. A dropped scrub persists the reflected value. |
+| Runtime / dependency  | The confidentiality boundary is local pre-persistence transformation rather than dependency timing or availability.                                                                    |
+| Interface / protocol  | Provider response payload shape is the ingress that may carry echoed caller values; HTTP status itself is not the confidentiality partition.                                           |
+| Architecture          | Bypassing the response scrub before serialization would retain raw values; no package dependency edge is itself normative.                                                             |
+| Specification / model | Persisting the echo, omitting the response-echo partition, or sanitizing only after serialization directly violates this Technical requirement.                                        |
