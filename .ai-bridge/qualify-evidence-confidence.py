@@ -9,6 +9,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
@@ -1930,6 +1932,43 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         second_row, second_response = run.call("generator", response_dir=temp / "limit", **request)
         checks["the run's call limit defers the next call"] = (
             first["outcome"] == "ok" and second_row["outcome"] == "deferred" and second_response is None and steady.calls == 2
+        )
+
+        # Calls made at once: a backend takes at most its parallel calls, the run's limit is never
+        # overrun by calls reserved together, and the results come back in the order asked.
+        class Concurrent(Scripted):
+            def __init__(self, answers):
+                super().__init__(answers)
+                self.active = self.most = 0
+                self.guard = threading.Lock()
+
+            def invoke(self, **request):
+                with self.guard:
+                    self.active += 1
+                    self.most = max(self.most, self.active)
+                time.sleep(0.2)
+                with self.guard:
+                    self.active -= 1
+                    return super().invoke(**request)
+
+        busy = Concurrent([probe(), answered(), answered(), answered(), answered()])
+        run = run_with(both[:1], {"claude-cli": busy}, "parallel", {**budget, "calls_per_run": 4, "parallel_calls": 2})
+        results = run.call_many([{"role": "generator", "response_dir": temp / "parallel", **request, "subject": subject} for subject in "abcde"])
+        checks["calls made at once respect each backend's parallel limit and the run's call limit, in the order asked"] = (
+            busy.most == 2
+            and sorted(row["outcome"] for row, _response, _attempts in results) == ["deferred", "ok", "ok", "ok", "ok"]
+            and [row["subject"] for row, _response, _attempts in results] == list("abcde")
+            and busy.calls == 5
+            and all(row.get("parallel_limit") == 2 and row.get("in_flight") in {1, 2} for row, _response, _attempts in results if row["outcome"] == "ok")
+        )
+        # An overloaded backend (capacity or rate, not quota) halves its parallel limit for the rest of the run.
+        strained = Concurrent([probe(), invocation("error", "the call failed: UNAVAILABLE (code 503): No capacity available"), *[answered() for _ in range(5)]])
+        run = run_with(both[:1], {"claude-cli": strained}, "strained", {**budget, "calls_per_run": 10, "parallel_calls": 2})
+        results = run.call_many([{"role": "generator", "response_dir": temp / "strained", **request, "subject": subject} for subject in "abcdef"])
+        checks["a backend that answers overloaded halves its parallel limit for the rest of the run, and the ledger says so"] = (
+            run.limits.get("claude-cli") == 1
+            and sum(bool(row.get("backed_off")) for row, _response, _attempts in results) == 1
+            and [row.get("parallel_limit") for row, _response, _attempts in results][-1] == 1
         )
 
         sloppy = Scripted([probe(), invocation("invalid", "the answer breaks its schema")])

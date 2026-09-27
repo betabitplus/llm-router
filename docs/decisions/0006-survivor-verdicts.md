@@ -50,6 +50,11 @@ verdict and escalation views go to `ternforge-tooling-docops`. The pull-request 
 applies the recorded verdicts goes to `ternforge-infra-ci`; verdict and canary runs stay local
 runs on request. The default roles and canaries go to the project template.
 
+A requirement's new revision retires the pins of the old one: `--revise-pins` removes every pin
+that verifies an older revision than the docs declare, with its record, and rebuilds the
+assessors' calibration from stored answers without asking a model; the next decision asks the
+new question and pins the mutant anew.
+
 **Alternatives considered.** A person reviewing every survivor was rejected: it blocks
 Features on decisions the person does not own. Taking the assessors' unanimous equivalent as
 the verdict was rejected: they are calibrated on hand-made pairs and cannot see effects, and a

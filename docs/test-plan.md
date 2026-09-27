@@ -510,23 +510,31 @@ prompt or its conversation history: the adapter tells it to answer from the text
 puts the system text before the prompt, and refuses a call that reaches for a tool. Every
 answer is validated again on receipt. Which Claude subscription a call uses is the machine's
 choice, a named profile of the CLI with its own sign-in (`model_generation.py profile`), and
-every ledger row names the profile; the windows the budget reads are that subscription's.
+every ledger row names it by a label that carries no profile name; the windows the budget
+reads are that subscription's.
 
 ###### Generation budget
 
-| Budget                    | Limit |
-| ------------------------- | ----: |
-| 5-hour window             |   80% |
-| Weekly window             |   70% |
-| Calls per run             |    40 |
-| List price per call       | $0.50 |
-| Draft attempts per mutant |     2 |
+| Budget                     | Limit |
+| -------------------------- | ----: |
+| 5-hour window              |   80% |
+| Weekly window              |   70% |
+| Calls per run              |    40 |
+| List price per call        | $0.50 |
+| Draft attempts per mutant  |     2 |
+| Parallel calls per backend |     2 |
 
 Every call appends one row to the consumption ledger. The row records the role,
 backend, model, outcome, tokens, the list-price equivalent where the backend reports
 one, the duration and the plan windows. A window at or above its limit, or a run that
 reached its call limit, defers the call; a backend that reports no windows is bounded by
-the call limit alone. A deferred, rejected or invalid generation is never a pass. The
+the call limit alone. Independent questions (the assessors of one survivor, the verdicts of a
+chunk of survivors, the drafts of one round) are asked at once, each backend taking at most
+its parallel calls: Antigravity documents no limit on simultaneous requests and counts its
+quota by the work done, so two at a time only spend the same quota sooner and leave a margin.
+A backend that answers overloaded (a 503 without capacity, a 429, a rate limit) halves its
+limit for the rest of the run; the limit never grows by itself. Every ledger row records how
+many calls its backend ran at once and under which limit, the evidence for raising it. A deferred, rejected or invalid generation is never a pass. The
 target keeps no current proposal, and its class stays UNKNOWN. Generation runs only on
 request and only for targets whose proposals are missing or stale; the gate, the cascade
 and the portal build never call a model. A proposal or draft names the call that

@@ -33,7 +33,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -63,6 +65,7 @@ BUDGET_LABELS = {
     "Calls per run": "calls_per_run",
     "List price per call": "usd_per_call",
     "Draft attempts per mutant": "draft_attempts",
+    "Parallel calls per backend": "parallel_calls",
 }
 # Test Plan labels of the Survivor judgement settings.
 JUDGEMENT_LABELS = {
@@ -535,6 +538,30 @@ class Run:
         self.rejected_models: dict[tuple[str, str], str] = {}
         self.versions: dict[str, str] = {}
         self.rows: list[dict] = []
+        # Several calls may run at once (call_many): the budget, the windows and the ledger change
+        # under one lock. Each backend takes at most the Test Plan's parallel calls at a time, and
+        # halves that for the rest of the run when it answers overloaded; it never grows by itself.
+        self.lock = threading.RLock()
+        self.parallel = max(1, int(budget.get("parallel_calls", 1)))
+        self.turns = threading.Condition(self.lock)
+        self.in_flight: dict[str, int] = {}
+        self.limits: dict[str, int] = {}
+
+    def enter(self, name: str) -> tuple[int, int]:
+        """Wait for a free place on the backend; return how many calls it runs now and its limit."""
+        with self.turns:
+            self.limits.setdefault(name, self.parallel)
+            while self.in_flight.get(name, 0) >= self.limits[name]:
+                self.turns.wait()
+            self.in_flight[name] = self.in_flight.get(name, 0) + 1
+            return self.in_flight[name], self.limits[name]
+
+    def leave(self, name: str, overloaded: bool) -> None:
+        with self.turns:
+            self.in_flight[name] -= 1
+            if overloaded:
+                self.limits[name] = max(1, self.limits[name] // 2)
+            self.turns.notify_all()
 
     def backend(self, name: str):
         if name not in self.backends:
@@ -546,15 +573,20 @@ class Run:
         return account_label(str(getattr(self.backend(name), "profile", "") or ""))
 
     def record(self, row: dict) -> dict:
-        row = {"schema": LEDGER_SCHEMA, "run_id": self.run_id, "at": self.clock(), **row}
-        self.ledger_path.parent.mkdir(parents=True, exist_ok=True)
-        with self.ledger_path.open("a") as handle:
-            handle.write(json.dumps(row, sort_keys=True) + "\n")
-        self.rows.append(row)
-        return row
+        with self.lock:
+            row = {"schema": LEDGER_SCHEMA, "run_id": self.run_id, "at": self.clock(), **row}
+            self.ledger_path.parent.mkdir(parents=True, exist_ok=True)
+            with self.ledger_path.open("a") as handle:
+                handle.write(json.dumps(row, sort_keys=True) + "\n")
+            self.rows.append(row)
+            return row
 
     def probe(self, name: str) -> str:
         """Availability and windows of a backend, read once per run with its cheapest model."""
+        with self.lock:
+            return self._probe(name)
+
+    def _probe(self, name: str) -> str:
         if name in self.availability:
             return self.availability[name]
         backend = self.backend(name)
@@ -609,6 +641,22 @@ class Run:
         """Try the role's backends in order. Return the ledger row of the last attempt and, when a
         backend answered within its schema, the stored response.
         """
+        row, response, _attempts = self.call_with_attempts(
+            role, purpose=purpose, contract_id=contract_id, subject=subject, system=system, prompt=prompt, schema=schema, response_dir=response_dir,
+        )
+        return row, response
+
+    def call_many(self, requests: list[dict]) -> list[tuple[dict, dict | None, list[dict]]]:
+        """Make independent calls at once, each as ``call_with_attempts`` makes it, and return their
+        results in the order asked. Each backend still takes at most the parallel calls at a time,
+        and every call is guarded and ledgered on its own."""
+        if len(requests) <= 1 or self.parallel == 1:
+            return [self.call_with_attempts(**request) for request in requests]
+        with ThreadPoolExecutor(max_workers=min(len(requests), self.parallel * len(BACKENDS))) as pool:
+            return list(pool.map(lambda request: self.call_with_attempts(**request), requests))
+
+    def call_with_attempts(self, role: str, *, purpose: str, contract_id: str, subject: str, system: str, prompt: str, schema: dict, response_dir: Path) -> tuple[dict, dict | None, list[dict]]:
+        """``call``, and the ledger rows of every attempt it made, in order."""
         schema_sha = sha256_text(stable_json(schema))
         attempts = []
         for entry in self.roles[role]:
@@ -618,25 +666,34 @@ class Run:
                 "backend": name, "account": self.account(name), "model": model, "prompt_sha256": sha256_text(prompt), "system_sha256": sha256_text(system),
                 "schema_sha256": schema_sha, "response_sha256": "",
             }
-            skipped = self.blocked.get((role, name, model))
-            if skipped:
-                attempts.append(self.record({**base, "backend_version": self.versions.get(name, ""), "outcome": "unavailable", "reason": skipped, "tokens": {}, "list_usd": None, "seconds": 0.0, "windows": None}))
-                continue
-            unavailable = self.probe(name)
-            if unavailable:
-                attempts.append(self.record({**base, "backend_version": self.versions.get(name, ""), "outcome": "unavailable", "reason": unavailable, "tokens": {}, "list_usd": None, "seconds": 0.0, "windows": self.windows.get(name)}))
-                continue
-            deferred = self.deferral(name, model)
-            if deferred:
-                attempts.append(self.record({**base, "backend_version": self.versions.get(name, ""), "outcome": "deferred", "reason": deferred, "tokens": {}, "list_usd": None, "seconds": 0.0, "windows": self.windows.get(name)}))
-                continue
-            self.calls += 1
-            invocation = self.backend(name).invoke(model=model, system=system, prompt=prompt, schema=schema, usd_cap=self.budget["usd_per_call"])
-            if invocation.windows is not None:
-                self.windows[name] = invocation.windows
-            if invocation.outcome == "rejected":
-                self.reject(name, model, invocation)
-            version = invocation.backend_version or self.versions.get(name, "")
+            # The guard decides and reserves the call under the lock, so calls made at once never
+            # overrun the run's limit or a window another call has just reported full.
+            with self.lock:
+                skipped = self.blocked.get((role, name, model))
+                if skipped:
+                    attempts.append(self.record({**base, "backend_version": self.versions.get(name, ""), "outcome": "unavailable", "reason": skipped, "tokens": {}, "list_usd": None, "seconds": 0.0, "windows": None}))
+                    continue
+                unavailable = self._probe(name)
+                if unavailable:
+                    attempts.append(self.record({**base, "backend_version": self.versions.get(name, ""), "outcome": "unavailable", "reason": unavailable, "tokens": {}, "list_usd": None, "seconds": 0.0, "windows": self.windows.get(name)}))
+                    continue
+                deferred = self.deferral(name, model)
+                if deferred:
+                    attempts.append(self.record({**base, "backend_version": self.versions.get(name, ""), "outcome": "deferred", "reason": deferred, "tokens": {}, "list_usd": None, "seconds": 0.0, "windows": self.windows.get(name)}))
+                    continue
+                self.calls += 1
+            in_flight, limit = self.enter(name)
+            invocation = None
+            try:
+                invocation = self.backend(name).invoke(model=model, system=system, prompt=prompt, schema=schema, usd_cap=self.budget["usd_per_call"])
+            finally:
+                self.leave(name, invocation is not None and overloaded(invocation))
+            with self.lock:
+                if invocation.windows is not None:
+                    self.windows[name] = invocation.windows
+                if invocation.outcome == "rejected":
+                    self.reject(name, model, invocation)
+                version = invocation.backend_version or self.versions.get(name, "")
             response = None
             if invocation.outcome == "ok":
                 response = {
@@ -649,21 +706,31 @@ class Run:
                 base["response_sha256"] = response_sha256(response)
                 response_dir.mkdir(parents=True, exist_ok=True)
                 (response_dir / f"{base['call_id']}.json").write_text(json.dumps(response, indent=2, sort_keys=True) + "\n")
+            # How busy the backend was, for deciding its parallel limit later from what happened.
             row = self.record({
                 **base, "backend_version": version, "outcome": invocation.outcome, "reason": invocation.reason,
                 "tokens": invocation.tokens, "list_usd": invocation.list_usd, "seconds": invocation.seconds,
-                "windows": invocation.windows,
+                "windows": invocation.windows, "in_flight": in_flight, "parallel_limit": limit,
+                "backed_off": overloaded(invocation),
             })
             attempts.append(row)
             if response is not None:
-                return row, response
+                return row, response, attempts
             if invocation.outcome in {"rejected", "unavailable"}:
                 continue
-            return row, None
-        return attempts[-1], None
+            return row, None, attempts
+        return attempts[-1], None, attempts
 
     def summary(self) -> dict:
         return {"run_id": self.run_id, **spend(self.rows)}
+
+
+# What a backend says when it is overloaded rather than out of quota: capacity or rate, not budget.
+OVERLOAD = re.compile(r"\b(?:429|503)\b|RESOURCE_EXHAUSTED|UNAVAILABLE|no capacity|rate.?limit|overloaded", re.IGNORECASE)
+
+
+def overloaded(invocation) -> bool:
+    return invocation.outcome not in {"ok", "invalid"} and bool(OVERLOAD.search(invocation.reason or ""))
 
 
 def response_sha256(response: dict) -> str:

@@ -5115,16 +5115,16 @@ def ask_assessors(run,policy,*,purpose,contract_id,subject,prompt,entry,response
     if entry.get("prompt_sha256")!=prompt_sha:
         entry.clear()
         entry.update({"prompt_sha256":prompt_sha,"answers":{}})
+    members=[member for member in policy["assessors"] if member["key"] not in entry["answers"]]
+    # The assessors answer the same question independently, so they are asked at once.
+    results=run.call_many([
+      {"role":f"assessor:{member['assessor']}","purpose":purpose,"contract_id":contract_id,"subject":subject,
+       "system":EQ.ASSESSOR_SYSTEM,"prompt":prompt,"schema":EQ.ASSESSOR_SCHEMA,"response_dir":response_dir}
+      for member in members
+    ])
     asked=False
-    for member in policy["assessors"]:
-        if member["key"] in entry["answers"]:
-            continue
-        before=len(run.rows)
-        _call,response=run.call(
-          f"assessor:{member['assessor']}",purpose=purpose,contract_id=contract_id,subject=subject,
-          system=EQ.ASSESSOR_SYSTEM,prompt=prompt,schema=EQ.ASSESSOR_SCHEMA,response_dir=response_dir,
-        )
-        print(f"[ASSESS] {contract_id} · {subject} · assessor {member['assessor']}: "+attempts_text(run.rows[before:]),flush=True)
+    for member,(_call,response,attempts) in zip(members,results):
+        print(f"[ASSESS] {contract_id} · {subject} · assessor {member['assessor']}: "+attempts_text(attempts),flush=True)
         if response is not None:
             entry["answers"][member["key"]]=assessor_answer(response)
             asked=True
@@ -5411,10 +5411,12 @@ def observed_calibration_pairs():
     return pairs
 
 
-def calibrate_assessors():
+def calibrate_assessors(ask=True):
     """Ask every assessor about every labelled pair it has not answered for the current question,
     then recompute the threshold. An answer already paid for is read again from its stored response,
-    so a corrected reading applies to it without asking again. Only a person starts it, on request."""
+    so a corrected reading applies to it without asking again. Without ``ask`` nothing is asked: the
+    record is rebuilt from the answers already stored, a pair still missing one stays pending (as
+    after retired pins, revise_pins). Only a person starts it, on request."""
     policy=model_generation_policy()
     path=ASSESSOR_CALIBRATION_DIR/"calibration.json"
     record=json.loads(path.read_text()) if path.exists() else {}
@@ -5433,6 +5435,8 @@ def calibrate_assessors():
         assessments=load_assessments(TRIAGE_ANSWERS_DIR/pair["contract_id"]/"assessments.json")
         observed.append({**{name:value for name,value in pair.items() if name!="prompt"},"prompt":pair["prompt"],"prompt_sha256":sha256_text(pair["prompt"]),"answers":current_answers(assessments,pair["fingerprint"],pair["prompt"])})
     unanswered_observed=[pair for pair in observed if any(row["key"] not in pair["answers"] for row in policy["assessors"])]
+    if not ask:
+        unanswered,unanswered_observed=[],[]
     usable=qualified_model_backends()
     if (unanswered or unanswered_observed) and not usable:
         raise SystemExit("assessor calibration: the model adapter is not currently qualified (run qualify-evidence-confidence.py)")
@@ -5934,7 +5938,7 @@ def draft_pins(run,policy,wanted,plans,needs,monitor_policy,first=None,replace=F
     previous,done,adopted,unanswered={}, set(), 0, set()
     normalizer=SEMANTIC.ruff_version()
     for round_index in range(budget+1):
-        pending=[]
+        pending,answered,asking=[],[],[]
         for contract_id,key,entry in wanted:
             if key in done:
                 continue
@@ -5951,11 +5955,15 @@ def draft_pins(run,policy,wanted,plans,needs,monitor_policy,first=None,replace=F
             response=stored_pin_draft(contract_id,prompt)
             if response is not None:
                 print(f"[PIN] {contract_id} · {key}: the stored draft {response['call_id']} answers this question",flush=True)
+                answered.append((contract_id,key,entry,response))
             else:
                 role="draft_author" if asked[key]==0 else "draft_author_retry"
-                before=len(run.rows)
-                _row,response=run.call(role,purpose="mutation-pin",contract_id=contract_id,subject=key,system=SEMANTIC.DRAFT_SYSTEM,prompt=prompt,schema=SEMANTIC.DRAFT_ANSWER_SCHEMA,response_dir=VERDICTS_DIR/contract_id/"responses")
-                print(f"[PIN] {contract_id} · {key}: "+attempts_text(run.rows[before:]),flush=True)
+                asking.append(((contract_id,key,entry),{"role":role,"purpose":"mutation-pin","contract_id":contract_id,"subject":key,"system":SEMANTIC.DRAFT_SYSTEM,"prompt":prompt,"schema":SEMANTIC.DRAFT_ANSWER_SCHEMA,"response_dir":VERDICTS_DIR/contract_id/"responses"}))
+        # The drafts no stored answer covers are asked at once, as many as the backends take.
+        for (contract_id,key,entry),(_row,response,attempts) in zip([owner for owner,_request in asking],run.call_many([request for _owner,request in asking])):
+            print(f"[PIN] {contract_id} · {key}: "+attempts_text(attempts),flush=True)
+            answered.append((contract_id,key,entry,response))
+        for contract_id,key,entry,response in answered:
             asked[key]+=1
             if response is None:
                 unanswered.add(key)
@@ -6008,6 +6016,61 @@ def draft_pins(run,policy,wanted,plans,needs,monitor_policy,first=None,replace=F
             save_assessments(VERDICTS_DIR/contract_id/"verdicts.json",verdicts)
             print(f"[PIN] {contract_id} · {key}: no draft meets the rules, the pin is removed and its mutant survives again",flush=True)
     return adopted
+
+
+def source_revisions(root=ROOT):
+    """Every Requirement's and Technical requirement's revision as the docs source declares it, read
+    without the portal: a pin of an older revision is exactly what keeps the portal from building."""
+    revisions={}
+    for path in sorted((root/"docs").rglob("*.md")):
+        if "_build" in path.parts:
+            continue
+        need=None
+        for line in path.read_text().splitlines():
+            if line.startswith("```"):
+                need=None
+            if match:=re.fullmatch(r":id: (T?REQ_[A-Z0-9_]+)",line.strip()):
+                need=match.group(1)
+            elif need and (match:=re.fullmatch(r":revision: (\d+)",line.strip())):
+                revisions[need]=int(match.group(1))
+    return revisions
+
+
+def stale_pin_revisions(pin_text,revisions):
+    """The requirements a pin verifies at a revision the docs no longer declare."""
+    return sorted({
+      contract_id for contract_id,revision in re.findall(r"(T?REQ_[A-Z0-9_]+)\[revision==(\d+)\]",pin_text)
+      if contract_id in revisions and revisions[contract_id]!=int(revision)
+    })
+
+
+def revise_pins():
+    """A requirement's new revision retires the pins of the old one (ADR_0006): each pin that
+    verifies an older revision than the docs declare is removed with its record, so its mutant
+    survives again and the next --decide-survivors asks the new question and pins it anew; the
+    assessors' calibration is rebuilt from stored answers without the pairs those pins proved.
+    Asks no model. Only a person starts it, on request, after changing a revision."""
+    revisions=source_revisions()
+    removed=0
+    for folder in sorted(path for path in VERDICTS_DIR.iterdir() if path.is_dir()) if VERDICTS_DIR.is_dir() else []:
+        verdicts=load_verdicts(folder.name)
+        changed=False
+        for key,entry in sorted(verdicts.items()):
+            pin=entry.get("pin") or {}
+            pin_file=ROOT/str(pin.get("path") or "")
+            stale=stale_pin_revisions(pin_file.read_text(),revisions) if pin and pin_file.is_file() else []
+            if not stale:
+                continue
+            pin_file.unlink()
+            entry.pop("pin")
+            changed=True
+            removed+=1
+            print(f"[PIN] {folder.name} · {key}: verifies "+", ".join(f"{contract_id} below revision {revisions[contract_id]}" for contract_id in stale)+"; the pin is removed and its mutant survives again",flush=True)
+        if changed:
+            save_assessments(folder/"verdicts.json",verdicts)
+    if removed:
+        calibrate_assessors(ask=False)
+    print(f"[PIN] {removed} pins of an older revision removed; rerun the retained tests, the portal, --refresh-implementation-faults and --decide-survivors",flush=True)
 
 
 def refresh_pins(contract_ids=None):
@@ -6078,6 +6141,13 @@ def refresh_pins(contract_ids=None):
     print(f"[PIN] {len(wanted)} pins checked against the current rules, {adopted} kept or rewritten; {summary['calls']} calls",flush=True)
 
 
+def verdict_request(role,purpose,item):
+    """One verdict or review question about a survivor, as ``Run.call_many`` asks it."""
+    return {"role":role,"purpose":purpose,"contract_id":item["contract_id"],"subject":item["key"],
+            "system":EQ.VERDICT_SYSTEM,"prompt":item["prompt"],"schema":EQ.VERDICT_SCHEMA,
+            "response_dir":VERDICTS_DIR/item["contract_id"]/"responses"}
+
+
 def decide_survivors(contract_ids=None):
     """Ask the verdict model about every judged survivor whose question has no current answer, then
     adopt a mutation pin for every pin verdict (ADR_0006). Only a person starts it, on request."""
@@ -6089,36 +6159,39 @@ def decide_survivors(contract_ids=None):
     needs=current_needs()
     monitor_policy=project_monitor_policy()
     items=[item for item in verdict_items(needs,monitor_policy) if not contract_ids or item["contract_id"] in contract_ids]
-    for item in items:
-        verdicts=load_verdicts(item["contract_id"])
-        entry=dict(verdicts.get(item["key"]) or {})
-        prompt_sha256=sha256_text(item["prompt"])
-        if not (entry.get("prompt_sha256")==prompt_sha256 and entry.get("answer") and not (entry.get("answer") or {}).get("problems")):
-            before=len(run.rows)
-            _row,response=run.call(
-              "verdict",purpose="survivor-verdict",contract_id=item["contract_id"],subject=item["key"],
-              system=EQ.VERDICT_SYSTEM,prompt=item["prompt"],schema=EQ.VERDICT_SCHEMA,response_dir=VERDICTS_DIR/item["contract_id"]/"responses",
-            )
+    # Verdicts and reviews are asked a chunk at a time, as many at once as the backends take, and a
+    # chunk is saved before the next, so a run that stops keeps every answer it paid for.
+    chunk=2*run.parallel
+    for start in range(0,len(items),chunk):
+        rows: list[list[Any]]=[]
+        for item in items[start:start+chunk]:
+            entry=dict(load_verdicts(item["contract_id"]).get(item["key"]) or {})
+            prompt_sha256=sha256_text(item["prompt"])
+            current=bool(entry.get("prompt_sha256")==prompt_sha256 and entry.get("answer") and not (entry.get("answer") or {}).get("problems"))
+            rows.append([item,entry,prompt_sha256,current])
+        asking=[row for row in rows if not row[3]]
+        for row,(_call,response,attempts) in zip(asking,run.call_many([verdict_request("verdict","survivor-verdict",row[0]) for row in asking])):
+            item,entry,prompt_sha256,_current=row
             answer=verdict_answer(response,item["confirmed"]) if response is not None else None
-            print(f"[VERDICT] {item['contract_id']} · {item['key']}: "+attempts_text(run.rows[before:])+(f" → {answer['verdict']} ({answer['level']})"+(" · "+"; ".join(answer["problems"]) if answer["problems"] else "") if answer else ""),flush=True)
-            if answer is None:
-                continue
+            print(f"[VERDICT] {item['contract_id']} · {item['key']}: "+attempts_text(attempts)+(f" → {answer['verdict']} ({answer['level']})"+(" · "+"; ".join(answer["problems"]) if answer["problems"] else "") if answer else ""),flush=True)
             same=entry.get("prompt_sha256")==prompt_sha256
-            entry={**{name:value for name,value in entry.items() if name in {"pin","review"} and same},"prompt_sha256":prompt_sha256,"answer":answer}
-        entry["operator"]=item.get("operator")
+            # No answer, nothing to keep: the survivor stays as it was until a later run answers.
+            row[1]={**{name:value for name,value in entry.items() if name in {"pin","review"} and same},"prompt_sha256":prompt_sha256,"answer":answer} if answer else None
         # A verdict that would hide a survivor asks a model of another family the same question.
-        if (entry.get("answer") or {}).get("verdict") in SUPPRESSING and (entry.get("review") or {}).get("prompt_sha256")!=prompt_sha256:
-            before=len(run.rows)
-            _row,response=run.call(
-              "verdict_review",purpose="survivor-verdict-review",contract_id=item["contract_id"],subject=item["key"],
-              system=EQ.VERDICT_SYSTEM,prompt=item["prompt"],schema=EQ.VERDICT_SCHEMA,response_dir=VERDICTS_DIR/item["contract_id"]/"responses",
-            )
+        reviewing=[row for row in rows if row[1] is not None and (row[1].get("answer") or {}).get("verdict") in SUPPRESSING and (row[1].get("review") or {}).get("prompt_sha256")!=row[2]]
+        for row,(_call,response,attempts) in zip(reviewing,run.call_many([verdict_request("verdict_review","survivor-verdict-review",row[0]) for row in reviewing])):
+            item,entry,prompt_sha256,_current=row
             review=verdict_answer(response,item["confirmed"]) if response is not None else None
-            print(f"[REVIEW] {item['contract_id']} · {item['key']}: "+attempts_text(run.rows[before:])+(f" → {review['verdict']}" if review else ""),flush=True)
+            print(f"[REVIEW] {item['contract_id']} · {item['key']}: "+attempts_text(attempts)+(f" → {review['verdict']}" if review else ""),flush=True)
             if review is not None:
                 entry["review"]={**review,"prompt_sha256":prompt_sha256}
-        verdicts[item["key"]]=entry
-        save_assessments(VERDICTS_DIR/item["contract_id"]/"verdicts.json",verdicts)
+        for item,entry,_prompt_sha256,_current in rows:
+            if entry is None:
+                continue
+            entry["operator"]=item.get("operator")
+            verdicts=load_verdicts(item["contract_id"])
+            verdicts[item["key"]]=entry
+            save_assessments(VERDICTS_DIR/item["contract_id"]/"verdicts.json",verdicts)
     state=verdict_state(refresh=True)
     if contract_ids:
         state={contract_id:contract for contract_id,contract in state.items() if contract_id in contract_ids}
@@ -7603,6 +7676,7 @@ def parse_args():
     parser.add_argument("--run-canaries",action="store_true",help="ask every model the Test Plan lists for a role its canaries and record whether it passed (ADR_0006); a change of model calls for it")
     parser.add_argument("--roles",nargs="*",help="with --run-canaries: only these roles (generator, draft_author, verdict)")
     parser.add_argument("--decide-survivors",action="store_true",help="ask the verdict model about every judged survivor and adopt a mutation pin for every pin verdict (ADR_0006)")
+    parser.add_argument("--revise-pins",action="store_true",help="remove the mutation pins that verify an older revision of their requirement than the docs declare, with their records, and rebuild the calibration from stored answers; asks no model (ADR_0006)")
     parser.add_argument("--refresh-pins",action="store_true",help="bring every mutation pin to the current pin rules: normalized, lint-clean and judged again; the draft author retries with the reason (ADR_0006)")
     return parser.parse_args()
 
@@ -7624,6 +7698,9 @@ def main():
     if args.decide_survivors:
         decide_survivors(set(args.contracts or []) or None)
         portal_left_for_refresh()
+        return
+    if args.revise_pins:
+        revise_pins()
         return
     if args.refresh_pins:
         refresh_pins(set(args.contracts or []) or None)
