@@ -57,7 +57,10 @@ and models are replaced often. A model counts for its assessor once it answered 
 calibration pair. Each combination of usable models, one per assessor, gets its own threshold
 (Mondrian conformal prediction), and the highest labels, so a label keeps the rate whichever
 models answered. The judgement of rule survivors runs on request,
-apart from the campaign, and never changes a mutant's outcome.
+apart from the campaign, and never changes a mutant's outcome. Every assessor answer cites the
+lines of the code it rests on, copied word for word, one of them a line the change touches; an
+answer whose sources are not in its question does not count (amended 2026-09-28). The question no
+longer carries the requirement, on which equivalence does not depend.
 
 **Consequences.** UNKNOWN shrinks only through confirmed inputs or a person's verdict, never
 through a model's opinion. Rule survivors become test goals with inputs, or candidates for an

@@ -1,54 +1,28 @@
 {
  "9a81553c4311e34e": {
   "answers": {
-   "antigravity-cli:claude-opus-4-6-thinking": {
-    "arguments": {},
-    "backend": "antigravity-cli",
-    "call_id": "20260927T141023Z-ce84bb",
-    "confidence": 0.92,
-    "model": "claude-opus-4-6-thinking",
-    "problems": [
-     "it answers distinct without an input"
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.OPENROUTER, default_model=Model.DEEPSEEK_V3, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=SchemaSpec(), tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='req-1', provider=Provider.OPENROUTER, model=Model.DEEPSEEK_V3, provider_model='deepseek-v3', credential=ProviderCredential(key_id=1, env_var='OPENROUTER_API_KEY', value='secret'), messages=(NormalizedMessage(role='user', parts=(), meta={}),))",
+     "result": "ProviderResult(data={}, provider=Provider.OPENROUTER, model=Model.DEEPSEEK_V3, provider_model='deepseek-v3', output_text='{}')",
+     "state": "_ExecutionLoopState(messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=SchemaSpec(), structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T155258Z-43562b",
+    "confidence": 0.65,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Swapping `or` for `and` means: when validation fails with a real non-empty message m != 'Validation failed.', original keeps m for the repair prompt but changed discards m and always substitutes the literal 'Validation failed.', yielding different state.messages/_ResultStep content for the same failing schema result.",
+    "response_sha256": "873e038c676e9b8f45ec5a39c0f93e174b6ab4b03a773a3d50d6d0fa1300412b",
+    "sources": [
+     "error_message = validated.error_message or \"Validation failed.\"",
+     "error_message = validated.error_message and 'Validation failed.'"
     ],
-    "reason": "The change from `or` to `and` alters the `error_message` value: when `validated.error_message` is `None`, the original yields `\"Validation failed.\"` while the changed version yields `None`; when it's a truthy string like `\"Schema mismatch\"`, the original keeps it but the changed version replaces it with `\"Validation failed.\"`. This different `error_message` is passed to `append_repair_message`, producing a different `messages` tuple in the returned `_ResultStep`.",
-    "response_sha256": "af83c3a5c48bddfe4482d7cb9b9bf69d3e1da03d4de0490444fe87f838adf5e1",
-    "verdict": "distinct"
-   },
-   "antigravity-cli:gemini-3.1-pro-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_PRO, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=0, structured_output_max_attempts=10, provider_limits=None), catalog=ProviderCatalog())",
-     "plan": "_ExecutionPlan(schema={'type': 'object'}, tool_registry=None, tool_choice=None, max_tool_rounds=0)",
-     "provider_request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model=\"gemini\", credential=ProviderCredential(key_id=1, env_var=\"E\", value=\"V\"), messages=())",
-     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model=\"gemini\", output_text=\"invalid\")",
-     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=None, schema={'type': 'object'}, structured_attempts=0)"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260927T141144Z-c736ff",
-    "confidence": 0.95,
-    "model": "gemini-3.1-pro-high",
-    "problems": [],
-    "reason": "The original version uses 'or' and the changed version uses 'and' when evaluating error_message, which produces a different state when structured output validation fails and maximum attempts have not been reached.",
-    "response_sha256": "9a0115f2394d64c4bd41bbd384cdd1ad32f7f4a22d2ef37255ee18d5b49c4395",
-    "verdict": "distinct"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=0, structured_output_max_attempts=2, provider_limits=None), catalog=ProviderCatalog())",
-     "plan": "_ExecutionPlan(schema={\"type\": \"object\"}, tool_registry=None, tool_choice=None, max_tool_rounds=0)",
-     "provider_request": "ProviderRequest(request_id=\"req_1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", credential=ProviderCredential(key_id=0, env_var=\"KEY\", value=\"val\"), messages=(), schema={\"type\": \"object\"})",
-     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", output_text=\"invalid json\")",
-     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=None, schema={\"type\": \"object\"}, structured_attempts=0)"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260927T141245Z-0d4db6",
-    "confidence": 0.95,
-    "model": "gemini-3.8-flash-high",
-    "problems": [],
-    "reason": "When structured output validation fails and repair attempts remain, changing 'or' to 'and' replaces the actual validation error message with the generic fallback string 'Validation failed.' in the repair message, altering the returned execution state.",
-    "response_sha256": "9effefa4f2b4f1dff92d408610e8145b79d4d6aa1273323d770e40193c1f35ae",
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "3c14100c8694f283c2943b9e4acaf02e1258c66f43bd52e7fdb54ccaeff16885"
+  "prompt_sha256": "b1ae3079ecfd938cb00c895586f669efdb6e2b86b7ccaa345ec2020bb5b3a1dc"
  }
 }

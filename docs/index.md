@@ -40,6 +40,11 @@ The Verification Explorer lists every item behind those counts, one row each.
 
 ::::
 
+The mutation evidence behind those counts is partly written and judged by language
+models; {doc}`Model roles <model-roles>` shows whether each of them does its job and,
+when a draft test fails, whether the model misread the task or its question lacked
+what it needed.
+
 ## The normal reading direction
 
 Goal → Capability → Requirement → Technical requirement → Implementation / Verification
@@ -155,6 +160,7 @@ requirements/index
 traceability-reader
 verification-health-map
 verification-explorer
+model-roles
 experiments/index
 decisions/index
 specifications

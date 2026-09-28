@@ -1,0 +1,151 @@
+{
+ "62fc1baca32629b1": [
+  {
+   "at": "2026-09-28T10:39:06.982140Z",
+   "call_id": "20260928T103258Z-ed7d4b",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "7c58c9ed6121af8af8b5387c8afda4a580d176a57d6c9e2f6b08cd8217cdf158",
+   "reason": "it does not fail on the mutant",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-28T10:42:29.897472Z",
+   "call_id": "20260928T103907Z-e25468",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "860bcf3842f8abe1d88c2df2a671d8af90246775ed93d2d4275a24b45e2c8e5e",
+   "reason": "it does not fail on the mutant",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_error_response",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-28T10:59:07.453863Z",
+   "call_id": "20260928T105635Z-f65e4f",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "6c8097e6e708060336c262b0844598eba49cd64f3aa470345349c920d96f25b9",
+   "reason": "it does not fail on the mutant",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-28T11:02:57.711587Z",
+   "call_id": "20260928T105907Z-83214e",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "535cacf07dbaf5302eddf5e76b07585a94979622643c907a083f21b0e14d14c1",
+   "reason": "it does not fail on the mutant",
+   "sources": [
+    "__future__.annotations",
+    "pytest",
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_error_response",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-28T16:10:44.272993Z",
+   "call_id": "20260928T160627Z-d3cb2a",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "4263bbecd74271f80175d1e3c67b603c1077b3e82e22ac23888ac2cafdbfb321",
+   "reason": "it does not fail on the mutant: of the changed lines 552\u2013556 it runs line 552 but never line 556",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_error_response",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker",
+    "tests.llm_router.support.workers.retry.RetryWorkerResult",
+    "src/llm_router/_internal/runtime/executor.py::_provider_boundary_error"
+   ]
+  },
+  {
+   "at": "2026-09-28T16:31:48.480258Z",
+   "call_id": "20260928T162929Z-7c3d50",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "cb7ccb6dce4c30b3961de9c577079fe40a8ee47e78cbf60fb850f27e35a74081",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert 'ValueError' == 'ProviderError' | - ProviderError | + ValueError)",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.error_boundary.run_error_boundary_inprocess",
+    "tests.llm_router.support.workers.error_boundary.ErrorBoundaryWorkerResult",
+    "tests.llm_router.support.workers.retry.google_error_response",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response"
+   ]
+  },
+  {
+   "at": "2026-09-28T17:00:21.139936Z",
+   "call_id": "20260928T165118Z-91458d",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5",
+   "question_sha256": "3caa86fc17bf20c9ee5d577ddb796e503c6152ec52b0724d346c1647ac7d358b",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker",
+    "tests.llm_router.support.workers.retry.RetryWorkerResult",
+    "src.llm_router._internal.runtime.executor._provider_boundary_error",
+    "src.llm_router._internal.runtime.executor._execute_provider_sync",
+    "src.llm_router._internal.providers.openai_compatible.OpenAICompatibleAdapter.execute",
+    "src.llm_router._internal.providers.google_genai.GoogleGenAIAdapter.execute",
+    "src.llm_router._internal.capabilities.tools.parse_tool_call",
+    "src.llm_router._api.errors.ProviderError",
+    "src.llm_router._api.errors.LLMRouterError"
+   ]
+  }
+ ]
+}

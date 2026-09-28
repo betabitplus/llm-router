@@ -12,6 +12,25 @@
    "verdict": "pin"
   },
   "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-28T09:53:15.398276Z",
+   "answer_sha256": "f19847c12430c0411516dc72f5610e63d41714ae083b763ae6205481196eac9e",
+   "call_id": "20260928T094628Z-fe503c",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "f19847c12430c0411516dc72f5610e63d41714ae083b763ae6205481196eac9e",
+   "model": "gemini-3.1-pro-high",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_c64b7deb7394ba40.py",
+   "response_sha256": "f63c2720cc2ee3163aae4c1ee47921decb0d256012c3e1b7ea31a1a41f896de0",
+   "source": "draft author"
+  },
   "prompt_sha256": "d0eacb28691a15b5047d0ae11fa364f2a6d80ba8089555e24dc55848ac5c3801"
  },
  "ee8c1e76f998e445": {
@@ -27,6 +46,25 @@
    "verdict": "pin"
   },
   "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-28T09:46:25.330328Z",
+   "answer_sha256": "bacb029c79b9b2ff3d70fb29a7885d5d492ef601cfebe2c760751c951fc69b0a",
+   "call_id": "20260928T093415Z-b48208",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "18a61c4446475ff9b08c39dfd41837117cede6ef1211e3704e5e02c733ecdfde",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_ee8c1e76f998e445.py",
+   "response_sha256": "817887571a31f5390649b19cca1e8a8d204dc1e0b97f145fce487d47734f2bc0",
+   "source": "draft author"
+  },
   "prompt_sha256": "590a2ffd0edd6838de30638923f4544545f47784ca6aaf772448e869b3dce8c8"
  }
 }

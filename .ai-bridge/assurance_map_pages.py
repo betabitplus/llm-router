@@ -3726,3 +3726,230 @@ def explorer_article(model_json: str) -> str:
         f"{markup}\n"
         f"<script>\n(()=>{{\n{script}\n}})();\n</script>\n</section>"
     )
+
+
+MODEL_ROLES_CSS = r"""#model-roles{font-variant-numeric:tabular-nums}
+#model-roles .tf-mr-lead{max-width:82ch;color:var(--pst-color-text-muted)}
+#model-roles .tf-mr-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.6rem;margin:.8rem 0 1.4rem}
+#model-roles .tf-mr-card{border:1px solid var(--tf-map-line);border-radius:var(--tf-map-radius);background:var(--tf-map-goal);padding:.6rem .8rem}
+#model-roles .tf-mr-card .tf-mr-label{display:block;font-size:.74rem;color:var(--pst-color-text-muted)}
+#model-roles .tf-mr-card b{display:block;margin:.1rem 0;font-size:1.3rem;font-weight:700}
+#model-roles .tf-mr-card p{margin:0;font-size:.76rem;color:var(--pst-color-text-muted)}
+#model-roles .tf-mr-card.pass b{color:var(--tf-hm-pass-ink)}
+#model-roles .tf-mr-card.fail b{color:var(--tf-hm-fail-ink)}
+#model-roles .tf-mr-card.fail{border-color:color-mix(in srgb,var(--tf-hm-fail) 55%,transparent)}
+#model-roles .tf-mr-card.unknown b{color:var(--pst-color-text-muted)}
+#model-roles .tf-mr-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--tf-hm-na);margin:.4rem 0 .3rem}
+#model-roles .tf-mr-bar i{display:block;height:100%}
+#model-roles .tf-mr-legend{display:flex;flex-wrap:wrap;gap:.2rem .9rem;margin:0 0 .8rem;font-size:.76rem;color:var(--pst-color-text-muted)}
+#model-roles .tf-mr-legend i{display:inline-block;width:.7rem;height:.7rem;border-radius:2px;margin-right:.3rem;vertical-align:-1px}
+#model-roles .tf-mr-table{overflow-x:auto}
+#model-roles table{width:100%;border-collapse:collapse;font-size:.8rem;margin:.3rem 0 1.1rem}
+#model-roles th,#model-roles td{padding:.3rem .5rem;border-bottom:1px solid var(--tf-map-line);text-align:left;vertical-align:top}
+#model-roles th{font-weight:650;color:var(--pst-color-text-muted)}
+#model-roles .num,#model-roles .nowrap{text-align:right;white-space:nowrap}
+#model-roles .nowrap{text-align:left}
+#model-roles td.fail{color:var(--tf-hm-fail-ink)}
+#model-roles td.pass{color:var(--tf-hm-pass-ink)}
+#model-roles code{font-size:.74rem;overflow-wrap:anywhere}
+#model-roles .tf-mr-note{max-width:82ch;font-size:.78rem;color:var(--pst-color-text-muted)}"""
+
+# The tone of each cause on the bar: the health palette only, kept in the pass colour and every
+# rejection in the fail colour, the stronger the more it says the question lacked something.
+MODEL_ROLES_TONES = {
+    "kept": "var(--tf-hm-pass)",
+    "grounding": "var(--tf-hm-fail)",
+    "runtime-api": "color-mix(in srgb,var(--tf-hm-fail) 78%,var(--tf-hm-na))",
+    "syntax": "color-mix(in srgb,var(--tf-hm-fail) 64%,var(--tf-hm-na))",
+    "behaviour": "color-mix(in srgb,var(--tf-hm-fail) 50%,var(--tf-hm-na))",
+    # Apart from the fail tones by pattern, not only by strength: its test runs, it only misses.
+    "weak": "repeating-linear-gradient(45deg,color-mix(in srgb,var(--tf-hm-fail) 55%,var(--tf-hm-na)) 0 3px,var(--tf-hm-na) 3px 6px)",
+    "rules": "var(--tf-hm-na-strong)",
+    "lint": "var(--tf-hm-na-strong)",
+    "unknown": "var(--tf-hm-na)",
+}
+
+
+def _palette(scope: str) -> str:
+    """The map's own variables and health palette, scoped to another page: its declarations only."""
+    return "\n".join(
+        line.replace("#verification-health-map", scope)
+        for css in (MAP_SHARED_CSS, HEALTH_MAP_CSS)
+        for line in css.splitlines()
+        if line.startswith(("#verification-health-map{--", "html[data-theme=dark] #verification-health-map{--"))
+    )
+
+
+def model_roles_article(facts: dict, facts_json: str) -> str:
+    """The Model roles page: whether the models the pipeline asks do their job, and when a draft fails,
+    whether the model misread or the question lacked what it needed. Static, from the builder's facts,
+    which the page also carries for the gate to recount."""
+    from html import escape
+
+    draft = facts["draft"]
+    causes = facts["causes"]
+    # A reason quoting markup must not close the facts' script element.
+    embedded = facts_json.replace("</", "<\\/")
+
+    def share(part: int, whole: int) -> str:
+        return f"{part / whole:.0%}" if whole else "—"
+
+    def card(label: str, value: str, tone: str, note: str) -> str:
+        return (f'<div class="tf-mr-card {tone}"><span class="tf-mr-label">{escape(label)}</span><b>{escape(value)}</b>'
+                f"<p>{escape(note)}</p></div>")
+
+    def table(head: list[str], rows: list[list[tuple[str, str]]], numeric: frozenset[int] | set[int] = frozenset(),
+              nowrap: frozenset[int] | set[int] = frozenset()) -> str:
+        def kind(index: int) -> str:
+            return "num " if index in numeric else "nowrap " if index in nowrap else ""
+
+        cells = "".join(
+            "<tr>" + "".join(f'<td class="{kind(index)}{tone}">{value}</td>' for index, (value, tone) in enumerate(row)) + "</tr>"
+            for row in rows
+        )
+        return ('<div class="tf-mr-table"><table><thead><tr>'
+                + "".join(f'<th class="{"num" if index in numeric else ""}">{escape(name)}</th>' for index, name in enumerate(head))
+                + f"</tr></thead><tbody>{cells}</tbody></table></div>")
+
+    def plain(value) -> tuple[str, str]:
+        return escape(str(value)), ""
+
+    word = {"pass": "healthy", "fail": "failing", "unknown": "too few recorded drafts"}[draft["status"]]
+    health_note = (
+        f"{draft['kept']} of its last {draft['recent']} recorded drafts kept ({share(draft['kept'], draft['recent'])}); "
+        f"failing below {draft['floor']:.0%} of the last {draft['window']}, judged from {draft['minimum']} on."
+    )
+    invented = draft["invented"]
+    canaries_failed = [row for row in facts["canaries"] if not row["passed"]]
+    calibration = facts["calibration"]
+    judging = facts["judging"]
+    judged_answers = sum(row["answers"] for row in judging["roles"])
+    judged_troubled = sum(row["troubled"] for row in judging["roles"])
+    cards = "".join((
+        card("Draft author", word, draft["status"], health_note),
+        card("Invented project API", str(len(invented)), "fail" if invented else "pass" if draft["recent"] else "unknown",
+             "names, members or arguments the project does not define, in the recent drafts: the question lacked them"
+             if invented else "no recent draft used a name the project does not define"),
+        card("Context gaps", str(len(draft["gaps"])), "fail" if draft["gaps"] else "pass" if draft["recorded"] else "unknown",
+             "project names drafts used that their question did not show" if draft["gaps"] else "every project name a draft used was in its question"),
+        card("Canaries", f"{len(facts['canaries']) - len(canaries_failed)} of {len(facts['canaries'])}", "fail" if canaries_failed else "pass",
+             "every model the Test Plan lists passed its canaries for the current questions" if not canaries_failed
+             else "models that have not passed their canaries for the current questions do not answer"),
+        card("Assessor calibration", "calibrated" if calibration["calibrated"] else "not calibrated", "pass" if calibration["calibrated"] else "fail",
+             f"threshold {calibration['threshold']}, {len(calibration['usable'])} usable models" if calibration["calibrated"] else str(calibration["reason"])),
+        card("Judges' sources", f"{judged_answers - judged_troubled} of {judged_answers}", "fail" if judged_troubled else "pass" if judged_answers else "unknown",
+             "verdicts, reviews and assessor answers whose sources are found in their own question"
+             + (": the others do not count and are asked again" if judged_troubled else "")),
+    ))
+    total = sum(draft["causes"].values())
+    order = [cause for cause in causes if draft["causes"].get(cause)]
+    bar = "".join(
+        f'<i style="width:{draft["causes"][cause] / total * 100:.2f}%;background:{MODEL_ROLES_TONES[cause]}" title="{escape(causes[cause])}: {draft["causes"][cause]}"></i>'
+        for cause in order
+    ) if total else ""
+    legend = "".join(
+        f'<span><i style="background:{MODEL_ROLES_TONES[cause]}"></i>{escape(causes[cause])} · {draft["causes"][cause]}</span>' for cause in order
+    )
+    models = table(
+        ["Model", "Recorded drafts", "Kept", "Kept share", "Why the others were not kept", "Earlier drafts", "Earlier kept", "Earlier with invented API"],
+        [
+            [
+                plain(row["model"]), plain(sum(row["recorded"].values())), plain(row["recorded"].get("kept", 0)),
+                plain(share(row["recorded"].get("kept", 0), sum(row["recorded"].values()))),
+                plain("; ".join(f"{causes[cause]}: {count}" for cause, count in sorted(row["recorded"].items(), key=lambda item: -item[1]) if cause != "kept") or "—"),
+                plain(sum(row["earlier"].values())), plain(row["earlier"].get("kept", 0)),
+                (escape(str(row["earlier"].get("grounding", 0))), "fail" if row["earlier"].get("grounding") else ""),
+            ]
+            for row in draft["models"]
+        ],
+        numeric={1, 2, 3, 5, 6, 7},
+    )
+    rejected = table(
+        ["When", "Contract", "Mutant", "Model", "Cause", "Why"],
+        [
+            [
+                plain(str(row.get("at") or "")[:16].replace("T", " ")), plain(row.get("contract_id")), (f"<code>{escape(str(row.get('key')))}</code>", ""),
+                plain(row.get("model")), (escape(causes.get(str(row.get("cause")), str(row.get("cause")))), "fail" if row.get("cause") == "grounding" else ""),
+                (escape(str(row.get("reason") or "")) + (f' <a href="{escape(str(row["answer"]))}">Question and answer</a>' if row.get("answer") else ""), ""),
+            ]
+            for row in draft["rejected"]
+        ],
+        nowrap={0, 2},
+    ) if draft["rejected"] else "<p>No recorded draft has been rejected yet.</p>"
+    gaps = table(
+        ["Project name a draft used that its question did not show", "Drafts"],
+        [[(f"<code>{escape(name)}</code>", ""), plain(count)] for name, count in draft["gaps"]],
+        numeric={1},
+    ) if draft["gaps"] else "<p>Every project name a recorded draft used was in its question.</p>"
+    canaries = table(
+        ["Role · backend · model", "Passed", "When", "What failed", "Questions and answers"],
+        [[plain(row["entry"]), ("yes", "pass") if row["passed"] else ("no", "fail"), plain(row["ran_at"][:16].replace("T", " ")), plain(row["detail"] or "—"),
+          (" ".join(f'<a href="{escape(str(path))}">{escape(str(case))}</a>' for case, path in row.get("answers") or []) or "—", "")]
+         for row in facts["canaries"]],
+    )
+    rungs = {1: "without tools", 2: "the draft author with tools", 3: "the last resort, the verdict's own model with tools"}
+    ladder = table(
+        ["Rung", "Recorded drafts", "Kept"],
+        [[plain(f"{level} · {rungs[level]}"), plain(draft["levels"][str(level)]["attempts"]), plain(draft["levels"][str(level)]["kept"])] for level in (1, 2, 3)],
+        numeric={1, 2},
+    )
+    last_resort = table(
+        ["Contract", "Mutant", "Model", "Pin", "When"],
+        [[plain(row.get("contract_id")), (f"<code>{escape(str(row.get('key')))}</code>", ""), plain(row.get("model")),
+          (f"<code>{escape(str(row.get('path')))}</code>" + (f' <a href="{escape(str(row["answer"]))}">Question and answer</a>' if row.get("answer") else ""), ""),
+          plain(str(row.get("at") or "")[:16].replace("T", " "))] for row in draft["last_resort"]],
+        nowrap={1, 4},
+    ) if draft["last_resort"] else "<p>The last resort has written no pin.</p>"
+    roles_cite = table(
+        ["Role", "Answers that cite", "Sources not found in the question"],
+        [[plain(row["role"]), plain(row["answers"]), (escape(str(row["troubled"])), "fail" if row["troubled"] else "")] for row in judging["roles"]],
+        numeric={1, 2},
+    ) if judging["roles"] else "<p>No current verdict, review or assessor answer cites its sources yet.</p>"
+    troubled = table(
+        ["Role", "Contract", "Survivor", "Model", "What does not hold up"],
+        [[plain(row["role"]), plain(row["contract_id"]), (f"<code>{escape(str(row['key']))}</code>", ""), plain(row["model"]),
+          (escape("; ".join(row["problems"])) + (f' <a href="{escape(str(row["answer"]))}">Question and answer</a>' if row.get("answer") else ""), "fail")]
+         for row in judging["troubled"]],
+        nowrap={2},
+    ) if judging["troubled"] else "<p>Every current answer's sources are found in its own question.</p>"
+    calls = table(
+        ["Role", "Model", "Last call", "Calls made", "Deferred", "Unavailable", "Failed", "List price"],
+        [[plain(row["role"]), plain(row["model"]), plain(str(row.get("last") or "")[:10]), plain(row["calls"]), plain(row["deferred"]),
+          plain(row["unavailable"]), (escape(str(row["failed"])), "fail" if row["failed"] else ""), plain(f"${row['usd']:.2f}")]
+         for row in facts["calls"]],
+        numeric={3, 4, 5, 6, 7},
+        nowrap={2},
+    )
+    return (
+        '<section id="model-roles">\n<h1>Model roles<a class="headerlink" href="#model-roles" title="Link to this heading">#</a></h1>\n'
+        f'<style id="tf-model-roles-style">\n{_palette("#model-roles")}\n{MODEL_ROLES_CSS}\n</style>\n'
+        '<p class="tf-mr-lead">Whether the models the mutation pipeline asks do their job: the generator writes mutants, the '
+        "draft author writes the tests that pin survivors, the assessors and the verdict judge survivors. A draft counts only "
+        "when the cascade keeps it: in the project's style, passing on the original five times and failing on the mutant. When "
+        "one is not kept, the cause says whether the model misread the task or its question lacked what it needed.</p>\n"
+        f'<div class="tf-mr-cards">{cards}</div>\n'
+        '<h2 id="draft-author">Draft author</h2>\n'
+        f"<p>{draft['recorded']} drafts recorded with their cause, {draft['earlier']} earlier drafts read back from their stored "
+        f"answers ({draft['earlier_invented']} of them use a name the project does not define).</p>\n"
+        f'<div class="tf-mr-bar" role="img" aria-label="Recorded drafts by cause">{bar}</div><div class="tf-mr-legend">{legend}</div>\n'
+        f"{models}\n<h3>Latest rejected drafts</h3>\n{rejected}\n<h3>Context gaps</h3>\n{gaps}\n"
+        '<h3 id="ladder">The ladder</h3>\n<p class="tf-mr-note">A mutant every draft without tools missed gets one draft from the '
+        "draft author with tools, working in a copy of the project where it reads the code and runs the cascade's own check, and "
+        "then one from the last resort, the verdict's own model with the same tools. A pin the last resort wrote says so in its "
+        "header, so a later verdict model can look at it again.</p>\n"
+        f"{ladder}\n<h3>Pins the last resort wrote</h3>\n{last_resort}\n"
+        '<h2 id="judging">Judges\' sources</h2>\n<p class="tf-mr-note">The verdict, its review and every assessor cite what their '
+        "answer rests on, copied word for word from their question: a line the change touches and, for a verdict, the words of the "
+        "requirement. An answer whose sources are not in its question does not count and is asked again.</p>\n"
+        f"{roles_cite}\n<h3>Latest answers whose sources do not hold up</h3>\n{troubled}\n"
+        '<h2 id="canaries">Canaries</h2>\n<p class="tf-mr-note">Each model a role lists answers in earnest only after it '
+        "passes its canaries, the role's very question on cases whose outcome is known.</p>\n"
+        f"{canaries}\n"
+        '<h2 id="calls">Calls by role and model</h2>\n<p class="tf-mr-note">From the consumption ledger: every call made, and every '
+        "call the budget deferred or no backend could take.</p>\n"
+        f"{calls}\n"
+        '<p class="tf-mr-note">Read from the retained records only: each contract\'s drafts.json and stored answers under '
+        ".ai-bridge/survivor-verdicts, the survivor triage, the canary results, the assessors' calibration and the model ledger. "
+        "Every stored question and answer a record names is published beside this page, and the explorer links each survivor's.</p>\n"
+        f'<script type="application/json" id="tf-model-roles-facts">{embedded}</script>\n</section>'
+    )

@@ -1,0 +1,22 @@
+{
+ "e1a047184fcbb294": [
+  {
+   "at": "2026-09-28T10:39:06.981119Z",
+   "call_id": "20260928T103258Z-23a181",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "82533c6d6345d8d825bbb90c363991026bd59325047d9b7b4615ddf66c743d76",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.LLMRouterResponse",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.UsageStats"
+   ]
+  }
+ ]
+}

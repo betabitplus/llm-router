@@ -70,17 +70,24 @@
  "d8f7199ce8dc26c9": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260927T152943Z-641eaf",
-   "level": "requirement",
+   "call_id": "20260928T160609Z-cbb01e",
+   "confirmed": false,
+   "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Changing `>=` to `>` means a status exactly equal to _SERVER_ERROR_STATUS_MIN (500) that is in neither explicit set is now classed as non-retryable. A temporary server failure would then be treated as permanent, which breaks REQ_PROVIDER_RETRY. The mutant would be equivalent only if 500 is already in the retryable set, and I couldn't confirm that because the set's contents weren't shown.",
-   "response_sha256": "2f1c2ac2a195527039c1a094099e2e69852490404c4969943c014f6fbea46fb2",
-   "test_focus": "Check that a status equal to _SERVER_ERROR_STATUS_MIN (500) is classified RETRYABLE with reason 'server_status' when it is in neither explicit set; also check that a status just below that threshold is NON_RETRYABLE.",
-   "verdict": "pin"
+   "reason": "The two versions can only differ when status_code equals _SERVER_ERROR_STATUS_MIN. The proposed input (the threshold value 500) was refuted, which means that value is already caught by one of the explicit status sets first. The symbolic search also found no path that tells the versions apart, so no status code gets a different classification.",
+   "response_sha256": "45f416d2c603251312e5cbb0228b6493adde13fc7972d94234a88522ff222b31",
+   "sources": [
+    "if status_code > _SERVER_ERROR_STATUS_MIN:",
+    "if status_code >= _SERVER_ERROR_STATUS_MIN:",
+    "an input by claude-cli:claude-sonnet-5 was refuted: both versions behave the same on it",
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
   },
   "operator": "comparison",
-  "prompt_sha256": "e32066f9a851395250aa6a30c1976d152cb2504af15823c19fbb79a79cc69c59"
+  "prompt_sha256": "e9e1788221c1cfc52a996b58502dd7576538af56847eb6184e9d33d77673b5a6"
  },
  "f49ab970d70faf89": {
   "answer": {

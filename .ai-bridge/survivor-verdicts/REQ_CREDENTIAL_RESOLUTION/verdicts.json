@@ -236,5 +236,39 @@
    "source": "draft author"
   },
   "prompt_sha256": "18f37ae236c3d566486b654d636cb7ddf6089f30194f4f46a609f4781b800d04"
+ },
+ "f6c26fefc186db93": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T233317Z-60239d",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "After each pick, the mutant moves the stored offset back one position (-1) where the original moves it forward (+1). With three or more keys, the rotation runs in reverse (1,3,2 instead of 1,2,3). With a preferred subset such as keys [1,2,3] and preferred {2,3}, it picks key 2 on every call and never rotates, which breaks the requirement that automatic key selection rotates deterministically.",
+   "response_sha256": "473eb7014eb9fbb6b154fac14e47216fc91c45a4477cfc96e7fdead866e095f9",
+   "test_focus": "With three or more discovered keys, repeated automatic resolution must return keys in ascending round-robin order (1,2,3,1). With preferred IDs {2,3}, consecutive calls must alternate 2 then 3.",
+   "verdict": "pin"
+  },
+  "operator": "arithmetic",
+  "pin": {
+   "adopted_at": "2026-09-28T08:19:08.287467Z",
+   "answer_sha256": "7574ebb609bd5e38bb46b97430c1bee3c86d2fe87eee5d752b0331ad3b364f97",
+   "call_id": "20260928T080840Z-8865da",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "7574ebb609bd5e38bb46b97430c1bee3c86d2fe87eee5d752b0331ad3b364f97",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_f6c26fefc186db93.py",
+   "response_sha256": "3593741856578d8cc385c653e6adda3e8d39f129f87b6ebd810130ce20e6239e",
+   "source": "draft author"
+  },
+  "prompt_sha256": "801e4f63e608f097ebd9f4d98d12485855493a840cd15eb0aeeecdffcb9e9e71"
  }
 }

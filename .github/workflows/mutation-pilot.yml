@@ -38,7 +38,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: mutation-pilot-${{ github.ref }}
+  # A push and the pull request of the same branch mutate the same lines: the later run replaces
+  # the earlier one instead of both running.
+  group: mutation-pilot-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -69,6 +71,12 @@ jobs:
           client-id: ${{ vars.TERNFORGE_SOURCE_READ_CLIENT_ID }}
           private-key: ${{ secrets.TERNFORGE_SOURCE_READ_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
+          # Only the private repositories the locked environment fetches (uv.lock), read-only.
+          repositories: |
+            ternforge-tooling-docops
+            ternforge-tooling-py-policy
+            ternforge-tooling-py-runtime
+            ternforge-tooling-py-testkit
           permission-contents: read
 
       - name: Configure Git authentication
@@ -100,12 +108,30 @@ jobs:
           --allure-results test-results/allure-results
           --coverage test-results/coverage.json
 
+      - name: Restore the mutation results of earlier runs
+        # A contract whose inputs and changed lines match an earlier run reads that run's result
+        # back instead of mutating again, as PIT's history files do.
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: test-results/implementation-faults/diff-cache
+          key: mutation-diff-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            mutation-diff-${{ github.ref_name }}-
+            mutation-diff-
+
       - name: Mutate the changed lines
         env:
           # A pull request against its base; a push against main, like the pull request it becomes: the
           # change is the branch's, not only its latest push.
           BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || 'origin/main' }}
         run: uv run --no-sync python .ai-bridge/build-mutation-report-prototype.py --refresh-implementation-faults --diff "$BASE"
+
+      - name: Keep the mutation results for later runs
+        if: always()
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: test-results/implementation-faults/diff-cache
+          key: mutation-diff-${{ github.ref_name }}-${{ github.sha }}-${{ github.run_attempt }}
 
       - name: Report surviving mutants as review findings
         if: always()

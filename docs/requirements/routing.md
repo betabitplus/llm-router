@@ -214,13 +214,13 @@ Contracts in this capability:
 :id: TREQ_RATE_LIMIT_STATE
 :collapse: true
 :status: accepted
-:revision: 1
+:revision: 2
 :required_evidence: impl;unit
 :derives: REQ_RATE_LIMIT_ROUTING
 
-**Statement.** Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, and reset transient failure state after success.
+**Statement.** Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, record every failed attempt in the transient failure state of its provider and key, and reset that state after success.
 
-**Rationale.** Sharing limiter state across unrelated providers or keys would create false throttling, while retaining transient failure state after recovery would make routing progressively less accurate.
+**Rationale.** Sharing limiter state across unrelated providers or keys would create false throttling, a failure left unrecorded would keep sending requests to a failing key, and retaining transient failure state after recovery would make routing progressively less accurate.
 ```
 
 ::::{dropdown} Follow this contract to proof

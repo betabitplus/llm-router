@@ -2,17 +2,49 @@
  "a3f68e4f70d254ab": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260926T215519Z-c17943",
+   "call_id": "20260928T160609Z-2692b1",
+   "confirmed": false,
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "With reraise=False, the async retrier makes the same number of attempts, but once they run out it raises tenacity's RetryError instead of the provider's own error. TREQ_PROVIDER_RETRY_BOUNDS says the final failure itself is surfaced to routing, so routing would get a wrapper it may not classify as a provider failure.",
-   "response_sha256": "e433f01f9e61c23e28fbdc57f6a3056c5be90c2be266f5149391adffb6555b5e",
-   "test_focus": "Make an async provider fail with a retryable error until max_attempts runs out. Check that it makes exactly max_attempts calls and that the exception raised is the last provider error, not a tenacity RetryError.",
+   "reason": "The attempt count stays the same, but with reraise=False Tenacity raises a RetryError wrapper once retries run out, instead of the original provider exception. So routing no longer receives \"the final failure\" the requirement says must be surfaced. Routing then cannot classify that failure as temporary or permanent.",
+   "response_sha256": "80519c29e32c490460134e9c6fa4ffd7901f12b2627e346a467eaf86755e77a5",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "reraise=True,",
+    "reraise=False)"
+   ],
+   "test_focus": "After async retries run out on a temporary provider error, the test must check that the exception raised is the original provider exception (same type and instance), not a tenacity RetryError, and that exactly max_attempts calls were made.",
    "verdict": "pin"
   },
   "operator": "boolean",
-  "prompt_sha256": "23d036cbc867f230e5e3b968d1f03e05ddf33bf1f0f3f32b4a8747e6bec17d75"
+  "pin": {
+   "adopted_at": "2026-09-28T16:18:52.778143Z",
+   "answer_sha256": "2bfb1108c9917a970822d2382d6bcf793c1b169d7ac6abb07b9863e611f4071d",
+   "call_id": "20260928T161748Z-04e57c",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "2bfb1108c9917a970822d2382d6bcf793c1b169d7ac6abb07b9863e611f4071d",
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_a3f68e4f70d254ab.py",
+   "response_sha256": "3119b3c24e7a41e302d9dc6d93ecd61289a0ce87c2206aa89f5f74b9c3b543ea",
+   "source": "last resort",
+   "sources": [
+    "llm_router._internal.providers.retry.build_provider_async_retrying",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._api.errors.ProviderError"
+   ]
+  },
+  "prompt_sha256": "5e3e55965497b04063fd8f0681565d8d3ca395a0f34430c3badc0315743fc685"
  },
  "cdebfb831ae4dc16": {
   "answer": {
@@ -27,6 +59,25 @@
    "verdict": "pin"
   },
   "operator": "boolean",
+  "pin": {
+   "adopted_at": "2026-09-28T00:46:13.117422Z",
+   "answer_sha256": "623f3e2e6350dae4da18f82c7f13663919d7b9c9f56541ed712e57f5f08f1618",
+   "call_id": "20260928T003709Z-282f89",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "29323006e0704b1cbc4712dbb4711d7bd024b776049e526355a76907ab54d3eb",
+   "model": "gemini-3.1-pro-high",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_cdebfb831ae4dc16.py",
+   "response_sha256": "36be17a71171a039ff63da8c7546c914fec03f69e358ea86c9755c9a1d6f9822",
+   "source": "draft author"
+  },
   "prompt_sha256": "447f0a36466c91255af9abf267191eccb17d8672f9884523262a3af6891c7150"
  }
 }

@@ -385,8 +385,8 @@ Requirement claims local availability policy and externally visible interaction 
 
 ## Profile · TREQ_RATE_LIMIT_STATE
 
-**Verification intent.** Prove provider/key isolation, conservative request spacing, and
-success reset as local limiter-state invariants.
+**Verification intent.** Prove provider/key isolation, conservative request spacing, failure
+recording and success reset as local limiter-state invariants.
 
 **Models:** {ref}`Rate-limit-aware routing <test-plan-rate-limit-routing-model>`
 
@@ -394,9 +394,9 @@ success reset as local limiter-state invariants.
 
 | Test level | Boundary | Representation | M&S target |         Target |
 | ---------- | -------- | -------------- | ---------- | -------------: |
-| Component  | Local    | Actual         | —          | **3 criteria** |
+| Component  | Local    | Actual         | —          | **4 criteria** |
 
-**Coverage basis.** The technical contract owns three state invariants with explicit
+**Coverage basis.** The technical contract owns four state invariants with explicit
 provider/key and RPS/RPM partitions.
 
 **Representation basis.** Unit tests execute the actual local limiter implementation;
@@ -404,11 +404,12 @@ there is no external model or provider boundary.
 
 ### Verification criteria
 
-| Criterion                              | Contract                               | Test level | Boundary | Required paths | Required path IDs                                     | Success criterion                                                                                                       |
-| -------------------------------------- | -------------------------------------- | ---------- | -------- | -------------: | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `VC_RATE_LIMIT_PROVIDER_KEY_ISOLATION` | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>` | Component  | Local    |              2 | `same-provider-other-key` · `same-key-other-provider` | State in one provider/key bucket does not block another key of that provider or the same key ID under another provider. |
-| `VC_RATE_LIMIT_CONSERVATIVE_INTERVAL`  | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>` | Component  | Local    |              2 | `rpm-dominant` · `rps-dominant`                       | The limiter uses the longer spacing interval in both RPS-dominant and RPM-dominant configurations.                      |
-| `VC_RATE_LIMIT_SUCCESS_RESET`          | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>` | Component  | Local    |              1 | —                                                     | A success clears transient failure count so a later failure sequence must reach the configured threshold again.         |
+| Criterion                              | Contract                               | Test level | Boundary | Required paths | Required path IDs                                     | Success criterion                                                                                                               |
+| -------------------------------------- | -------------------------------------- | ---------- | -------- | -------------: | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `VC_RATE_LIMIT_PROVIDER_KEY_ISOLATION` | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>` | Component  | Local    |              2 | `same-provider-other-key` · `same-key-other-provider` | State in one provider/key bucket does not block another key of that provider or the same key ID under another provider.         |
+| `VC_RATE_LIMIT_CONSERVATIVE_INTERVAL`  | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>` | Component  | Local    |              2 | `rpm-dominant` · `rps-dominant`                       | The limiter uses the longer spacing interval in both RPS-dominant and RPM-dominant configurations.                              |
+| `VC_RATE_LIMIT_FAILURE_RECORDED`       | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>` | Component  | Local    |              1 | —                                                     | A failed attempt counts in the transient failure state of its own provider and key: at the threshold that key alone is blocked. |
+| `VC_RATE_LIMIT_SUCCESS_RESET`          | {need}`[[id]] <TREQ_RATE_LIMIT_STATE>` | Component  | Local    |              1 | —                                                     | A success clears transient failure count so a later failure sequence must reach the configured threshold again.                 |
 
 ### Evidence aggregation
 

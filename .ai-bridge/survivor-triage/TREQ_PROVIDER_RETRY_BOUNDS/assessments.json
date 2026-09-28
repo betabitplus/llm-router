@@ -1,43 +1,31 @@
 {
  "a3f68e4f70d254ab": {
   "answers": {
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "arguments": {
-     "context_getter": "None",
-     "logger": "None",
-     "policy": "RetryPolicy(min_wait_seconds=0.1, max_wait_seconds=1.0, max_attempts=3)",
-     "state_sink": "None"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260926T190104Z-081b10",
-    "confidence": 0.95,
-    "model": "gemini-3.8-flash-high",
-    "problems": [],
-    "reason": "The original version configures AsyncRetrying with reraise=True while the changed version sets reraise=False, resulting in different return values and causing retries to raise RetryError instead of surfacing the underlying provider error when attempts are exhausted.",
-    "response_sha256": "ef70e2be10466556f48144d8daa2435b7220685d2a49cb5950935c0944a44b2a",
-    "verdict": "distinct"
-   }
-  },
-  "prompt_sha256": "9b78d60bfe1a4c3511497c7e8bf2beb1aa923b5737e9997fd6fa2dd2f0139e62"
- },
- "cdebfb831ae4dc16": {
-  "answers": {
-   "antigravity-cli:claude-opus-4-6-thinking": {
+   "claude-cli:claude-sonnet-5": {
     "arguments": {
      "context_getter": "None",
      "logger": "RetryLogger()",
-     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1)",
+     "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=1)",
      "state_sink": "None"
     },
-    "backend": "antigravity-cli",
-    "call_id": "20260926T213611Z-398993",
-    "confidence": 0.85,
-    "model": "claude-opus-4-6-thinking",
+    "backend": "claude-cli",
+    "call_id": "20260928T155724Z-dcff36",
+    "confidence": 0.75,
+    "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "The original passes reraise=True and the changed version passes reraise=False. When the Retrying object exhausts max_attempts on a retryable error, reraise=True re-raises the original exception while reraise=False raises tenacity.RetryError, producing a different exception type at the routing boundary.",
-    "response_sha256": "4f813d56294c894965e1c8f64dfb1ebaee5f174b940c1e19ed436211d98afeca",
+    "reason": "The only functional change is reraise=True -> reraise=False, so the returned AsyncRetrying object is configured to reraise the original exception on retry exhaustion in the original version but to raise a tenacity RetryError wrapping it in the changed version, for any valid inputs.",
+    "response_sha256": "c7296aa619c5fe5ca957f5d8f2e8620e7532ae0e03c30fa130a78954cc1b1f04",
+    "sources": [
+     "reraise=True,",
+     "reraise=False)"
+    ],
     "verdict": "distinct"
-   },
+   }
+  },
+  "prompt_sha256": "05d9180e593cd1cb0a3a253d37abe0fab70d26bea1a8157e0a6b7321194a162a"
+ },
+ "cdebfb831ae4dc16": {
+  "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
      "context_getter": "None",
@@ -46,40 +34,37 @@
      "state_sink": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260926T213722Z-106b53",
+    "call_id": "20260928T154433Z-6311dd",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The functions always return Retrying objects with different internal configurations (reraise=True versus reraise=False), so any valid input tells them apart.",
-    "response_sha256": "b73fcb95dc23a2a6fb7d5750a51beb6c65ac32740ac952174b6a6b47fa599b16",
+    "reason": "The two versions unconditionally construct and return Retrying objects with different reraise flags (True versus False).",
+    "response_sha256": "3715e4814f5cc819b0d0a122a968979db50677aad8ed33c9a0994ebefa51a516",
+    "sources": [
+     "        reraise=True,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=False)"
+    ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
      "context_getter": "None",
-     "logger": "RetryLogger()",
+     "logger": "None",
      "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
      "state_sink": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260926T185910Z-4649d2",
-    "confidence": 0.95,
+    "call_id": "20260928T154433Z-cb2d52",
+    "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The original version configures Tenacity with reraise=True to re-raise the underlying provider error when retries are exhausted, whereas the changed version sets reraise=False which causes Tenacity to raise a RetryError instead.",
-    "response_sha256": "5fc1c916a703c318d68d4979d1ea5358c56e4956c24b24585098dd223c896539",
+    "reason": "The original version initializes the Retrying instance with reraise=True while the changed version sets reraise=False, producing returned Retrying objects with differing reraise configurations.",
+    "response_sha256": "c93a8ae56791e7b5ad004c54c24d38365443fe6ce5bdc588232c5f668d0f0934",
+    "sources": [
+     "        reraise=True,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=False)"
+    ],
     "verdict": "distinct"
-   },
-   "claude-cli:claude-haiku-4-5-20251001": {
-    "arguments": {},
-    "backend": "claude-cli",
-    "call_id": "20260926T192238Z-408356",
-    "confidence": 0.62,
-    "model": "claude-haiku-4-5-20251001",
-    "problems": [],
-    "reason": "Both versions construct and return a Retrying object identically; the reraise parameter difference affects only how the returned object behaves when executed, not the function's immediate behavior of construction and return.",
-    "response_sha256": "1b6bc7a2f685a1c13aede5345f141763777c348f42142b661e7036efd00db005",
-    "verdict": "equivalent"
    },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
@@ -89,15 +74,19 @@
      "state_sink": "None"
     },
     "backend": "claude-cli",
-    "call_id": "20260926T192332Z-4d709e",
+    "call_id": "20260928T154433Z-7a8a1a",
     "confidence": 0.9,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "With these inputs, calling the returned Retrying object on a callable that always raises a retryable error exhausts the single attempt and then the original version (reraise=True) re-raises that original exception, while the changed version (reraise=False) instead raises tenacity.RetryError wrapping it, so the exception type surfaced to routing differs even though max_attempts is respected in both.",
-    "response_sha256": "e7458a272a1d9548b9015c0134bfc87a7532959a179636e07c4453cc39d06e54",
+    "reason": "The changed version sets reraise=False instead of reraise=True; when the returned Retrying object is later used to run attempts that exhaust (e.g. policy with max_attempts=1 and a retryable exception raised by the wrapped call), the original re-raises the original exception while the changed version raises tenacity.RetryError wrapping it, and even without invoking, the returned Retrying instances differ in their .reraise attribute for identical inputs.",
+    "response_sha256": "3039dabd6c2808f9767772375df11bb34378f241e305bf3170ca7b719aa951fa",
+    "sources": [
+     "reraise=True,",
+     "reraise=False)"
+    ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "c4bfb218dd30445cec77badb38b8b30ad6ee34337334c0028533cccfb4e697f5"
+  "prompt_sha256": "bf768167a9df7a9c1f852ad5b03bc5f029851b41e619503fd65e64d8153fc752"
  }
 }

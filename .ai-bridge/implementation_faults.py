@@ -65,11 +65,32 @@ def sha256_bytes(value: bytes) -> str:
 # often: a comment, a docstring or a reformatting changes them and changes nothing a run does.
 
 
+# A fingerprint stays with its file until the file changes: a refresh asks for the same modules'
+# fingerprints hundreds of times, and each would parse them again.
+_DIGESTS: dict[tuple[str, str, int, int], str] = {}
+
+
+def _remembered(kind: str, path: Path, compute) -> str | None:
+    """The fingerprint ``compute`` gives a file, kept by its path, size and modification time."""
+    try:
+        stat = path.stat()
+    except OSError:
+        return None
+    if not path.is_file():
+        return None
+    key = (kind, str(path.resolve()), stat.st_size, stat.st_mtime_ns)
+    if key not in _DIGESTS:
+        _DIGESTS[key] = compute(path)
+    return _DIGESTS[key]
+
+
 def code_digest(path: Path) -> str | None:
     """What a tool's module does, not how it reads: its syntax tree without comments,
     docstrings, positions or formatting. A module that does not parse counts by its bytes."""
-    if not path.is_file():
-        return None
+    return _remembered("code", path, _code_digest)
+
+
+def _code_digest(path: Path) -> str:
     source = path.read_bytes()
     try:
         tree = ast.parse(source)
@@ -92,8 +113,10 @@ def source_digest(path: Path) -> str | None:
     ``# mutation:`` pragmas, without other comments. A comment edited in place moves no
     mutant and changes nothing; a line added or removed moves every mutant below it and
     does. A module that does not tokenize counts by its bytes."""
-    if not path.is_file():
-        return None
+    return _remembered("source", path, _source_digest)
+
+
+def _source_digest(path: Path) -> str:
     source = path.read_bytes()
     kept = []
     try:

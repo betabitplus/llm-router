@@ -167,7 +167,7 @@ def _allows_missing_key(provider: Provider) -> bool:
     return provider in {Provider.GEMINI_WEBAPI, Provider.QWENCHAT}
 
 
-# @impl Isolated limiter state, IMPL_RATE_LIMIT_STATE, [TREQ_RATE_LIMIT_STATE[revision==1]]
+# @impl Isolated limiter state, IMPL_RATE_LIMIT_STATE, [TREQ_RATE_LIMIT_STATE[revision==2]]
 class LimiterState:
     """Owns limiter buckets for one router runtime."""
 

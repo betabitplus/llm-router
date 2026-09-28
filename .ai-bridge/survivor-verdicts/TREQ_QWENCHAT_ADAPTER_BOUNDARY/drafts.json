@@ -1,0 +1,86 @@
+{
+ "1e1bd3200d2722cb": [
+  {
+   "at": "2026-09-28T10:39:06.983271Z",
+   "call_id": "20260928T103258Z-1949da",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "36b7c01af92d74dc24be15eca9119dc2f8cd44a490f6c83fb09dfd6fea1c7bbe",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: Regex pattern did not match. | Expected regex: 'server error' | Actual message: \"Provider 'qwenchat' failed for model 'qwen-max-latest'. Reason: Provider request failed with status code 500.\")",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  {
+   "at": "2026-09-28T10:42:29.898697Z",
+   "call_id": "20260928T103907Z-673d90",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "85f762d85e7e90c7af3ea9368b41c8134140b12e630ab13ec37324a9a928c4a9",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "8920c14adbe7aa36": [
+  {
+   "at": "2026-09-28T10:39:06.983303Z",
+   "call_id": "20260928T103258Z-2b61ed",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "969c64fe916fc743157c015765544d9d7e39e1a7940eb362f140b91b218b036f",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "cbd3f30a9cbff5df": [
+  {
+   "at": "2026-09-28T10:39:06.983318Z",
+   "call_id": "20260928T103258Z-af6ac9",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "37fa73a06f3d1ab9c9ef46acd89b56672675f820b4578ab8a60f65b1c50e4e69",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ]
+}

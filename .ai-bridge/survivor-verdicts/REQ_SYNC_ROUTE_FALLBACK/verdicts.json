@@ -32,17 +32,36 @@
  "45f4eab791155bbe": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260927T152643Z-2ef01e",
+   "call_id": "20260927T233503Z-27d5e3",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Say one route fails and the only eligible route left is blocked, waiting on a cooldown or rate limit. The original waits for that route and runs it through `_run_blocked_sync`. The mutant returns None instead, so the request never continues to the next route and no success trace is produced, which breaks REQ_SYNC_ROUTE_FALLBACK.",
-   "response_sha256": "6cf8f738e9538d4acb8bbdbaf50a09d239cca2be6cb4b423ba89d5872747f3af",
-   "test_focus": "Make the first sync route fail and the second route blocked with a short wait. The result must be the second route's successful response, not None, with trace entries in the order failed, then the blocked route that succeeded.",
+   "reason": "When a route is rate-limited and still waiting, the mutant returns None instead of handing off to the blocked-route path. The request then finishes with no result and no error. The requirement says a remaining eligible route must still be tried, and that the request must never return without a result.",
+   "response_sha256": "f56a682dd8875c217683ade35d2021ed3d49532615383b17822aa52585e75e5d",
+   "test_focus": "With a sync request where one route fails and another route is rate-limited with a positive wait, check that the router waits for and uses the blocked route: it returns that route's response with failed \u2192 successful traces, or it raises the last error. It must never return None.",
    "verdict": "pin"
   },
   "operator": "return",
-  "prompt_sha256": "83654f63deb24b401a496f7c0e87e96b2f76940fc2056cf0606b1c8c2974d0df"
+  "pin": {
+   "adopted_at": "2026-09-27T23:57:15.355576Z",
+   "answer_sha256": "3c6b72db6c2b0775c0a48136b666849f22b33a8b0cc01529d27954124ff1da61",
+   "call_id": "20260927T234031Z-2910b2",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "418bdf13b8f9e3cb2768fb520b8caa88ba10bcad4a95c8617f982edbda79f114",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_45f4eab791155bbe.py",
+   "response_sha256": "7a76280207589882eb5d376cdb880342e7b4eb61908026ccb22e4aec293f6027",
+   "source": "draft author"
+  },
+  "prompt_sha256": "85e6db6cfc794b8a7bc14bd55b1131ea3920ae825d84fac732821e04dd78b505"
  },
  "4d881c5bf4db6b9f": {
   "answer": {
@@ -62,17 +81,17 @@
  "80df5312d68d38ac": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260926T215336Z-c6c0ad",
-   "level": "requirement",
+   "call_id": "20260927T233503Z-682770",
+   "level": "feature",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only removes the `_record_failure` bookkeeping call. The failed attempt is still caught, logged and traced, the loop still moves on to the next eligible route, and the successful result still lists the failed trace before the successful one. So everything REQ_SYNC_ROUTE_FALLBACK asks for still holds. What does change (key/route health or cooldown for later requests) belongs to failure-tracking behaviour, not to this fallback requirement, and nothing in this requirement pins it.",
-   "response_sha256": "ac6a590495be09b3f487970b2a664ce47d8f669a8d9f2e91e1539820ed9700f3",
+   "reason": "The mutant stops calling _record_failure when a synchronous provider call fails. Fallthrough, the failed \u2192 successful trace order and re-raising the last error all still work, so REQ_SYNC_ROUTE_FALLBACK is still met. What changes is the failure bookkeeping (route health and key cooldown) that should steer later routing away from failed routes. That is part of the Route fallback feature and the reliability goal, but no stated requirement covers it, so it can't be decided within this requirement.",
+   "response_sha256": "eb6efef8a0f354c869b86eb4bf4d5dff83ad21163aaa134763447f817563b452",
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "escalate"
   },
   "operator": "statement",
-  "prompt_sha256": "5ad4b6ad1e798135c9d411031d4e4d545c673ef10c2a5b720f77bc50a8a10103"
+  "prompt_sha256": "502248081adf702ddc0db1842798e279d97564d15b93372974ca13c39de430dd"
  },
  "834c9b394dfc9a07": {
   "answer": {
@@ -122,17 +141,36 @@
  "b4662840626becac": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260927T152651Z-7b7a47",
+   "call_id": "20260927T233503Z-5aaf5b",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "This mutant stops recording a trace entry when request preparation fails on a route. Routing still falls through to the next route, but the successful result no longer shows the failed attempt. The requirement says a route that fails before producing a successful response must appear in the trace ahead of the route that succeeds, and a failure during preparation counts as that kind of failure.",
-   "response_sha256": "c793987a06b681db95b8da04343d931af8e9c85bbab58fd4d2aa228caf7dca8a",
-   "test_focus": "Make `_prepare_request` raise for the first route (for example, no usable key or credential) and let the second route succeed. Then check that the returned routing trace has an error entry for the first route followed by the success entry for the second route.",
+   "reason": "The mutant drops the failed trace entry when a route fails during request preparation. The router still moves on to the next route, but the successful result no longer shows the failed attempt. The requirement says a successful result must expose trace entries for both the failed attempt and the route that succeeded.",
+   "response_sha256": "d32e386c85d09021df753452927970b445d19d38d59355ad94415903cb695252",
+   "test_focus": "Make the first route's preparation step (_prepare_request) raise, for example because no key is available, and let the second route succeed. Check that the result's routing trace has an error entry for the first route followed by the success entry for the second route.",
    "verdict": "pin"
   },
   "operator": "statement",
-  "prompt_sha256": "0fc755391f4764c2e1c1404ae45611689484c91ce9765516c92e77026d260939"
+  "pin": {
+   "adopted_at": "2026-09-27T23:57:15.356316Z",
+   "answer_sha256": "0ec5a53625d32da9de9606b9b1da00aa3e0637a42a352be731cc9beb03bbc736",
+   "call_id": "20260927T234117Z-0dbd87",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "6ff38cb9610579bbd54694dea2cfc22823f3756a91008866d8117f051109fd40",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py",
+   "response_sha256": "07e65302c846350874bbf4bbe741f0da3e8b2ca5cc64d161e86bde9bf49a7ca7",
+   "source": "draft author"
+  },
+  "prompt_sha256": "54a7a11044b4fd9d15e7a317b3cb44c3b47f6e8d18db256155c7d30c03070d1d"
  },
  "b9c20a38b4b7e255": {
   "answer": {
@@ -152,28 +190,22 @@
  "bfb51170ab51a102": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260927T152716Z-a5bcbe",
-   "level": "requirement",
+   "call_id": "20260928T160557Z-6c28e3",
+   "confirmed": false,
+   "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only matters when no route attempt was made at all (last_error is None and nothing was blocked). In that case it ends up running `raise None`, which throws a TypeError, where the original raised a TimeoutError. REQ_SYNC_ROUTE_FALLBACK only covers an attempted route failing while another eligible route remains, plus the trace order failed \u2192 successful, so which exception an empty route set raises is outside what this requirement asks for.",
-   "response_sha256": "9d49c27a9405be1b930ebc7fcf7271ba34cba1f22dbfc541aef6dc1dc8abe7cd",
+   "reason": "The mutant only differs when no route was attempted at all (last_error is None): it raises TypeError from `raise None` instead of TimeoutError. The requirement covers attempted routes that failed, and the request still fails rather than returning. Nothing here specifies the exception type for the empty-route case.",
+   "response_sha256": "16c44669697f80e6cb5d8b96e22d2fc4d6a5716b6ef179c222f76a92ecb57814",
+   "sources": [
+    "When every attempted route has failed and no rate-limited route remains to wait for, the request shall fail with the last route's error rather than return without a result.",
+    "raise TimeoutError(msg)",
+    "if last_error is None:"
+   ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "statement",
-  "prompt_sha256": "5c9caf95128f99f355cb18bfb0f29cb5591ed809a4586127d67dad02ab9833da",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260927T152729Z-c1642d",
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "5c9caf95128f99f355cb18bfb0f29cb5591ed809a4586127d67dad02ab9833da",
-   "reason": "The mutant alters the exception raised (from TimeoutError to TypeError) when the router has no routes available to attempt. This empty-route scenario is outside the scope of the synchronous route fallback requirement, which specifically governs the transition from a failed route attempt to a subsequent eligible route.",
-   "response_sha256": "bfd527f0231b332e6f4cc71be1bcb584e5ca119a15c8dfa54ecc8ebd71d7cca1",
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "82334e6464ebae4e5b9c0dcee28580c3d5bd86033543a7e922a364ac58221f7e"
  }
 }

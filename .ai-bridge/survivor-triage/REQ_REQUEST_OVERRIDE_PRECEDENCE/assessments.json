@@ -1,170 +1,205 @@
 {
  "39cd06b3a9c8bc51": {
   "answers": {
-   "antigravity-cli:claude-opus-4-6-thinking": {
-    "arguments": {
-     "call_overrides": "{}",
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=3), limits_by_provider={}), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=3), limits_by_provider={}), catalog=ProviderCatalog())",
-     "route_defaults": "RouteGenerationDefaults(key_id=0)",
-     "route_policy_defaults": "{'max_attempts': 99}",
-     "router_defaults": "RouterDefaults()"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260927T144434Z-0cf692",
-    "confidence": 0.98,
-    "model": "claude-opus-4-6-thinking",
-    "problems": [],
-    "reason": "The changed version replaces `_apply_non_null(values, route_policy_defaults)` with `pass`, so route_policy_defaults is entirely ignored. Any non-null entry in route_policy_defaults produces a different result.",
-    "response_sha256": "c667b93160c780c5f0830887f2189014a585c54d7177dfeda0dcc5ecb0fdc34f",
-    "verdict": "distinct"
-   },
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
      "call_overrides": "{}",
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog())",
-     "route_defaults": "RouteGenerationDefaults(key_id=1, kwargs={})",
-     "route_policy_defaults": "{\"max_attempts\": 2}",
-     "router_defaults": "RouterDefaults(values={}, kwargs={})"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog())",
+     "route_defaults": "RouteGenerationDefaults(key_id=1)",
+     "route_policy_defaults": "{\"temperature\": 0.5}",
+     "router_defaults": "RouterDefaults()"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260927T144505Z-3f65d5",
+    "call_id": "20260928T153903Z-3189e6",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version omits the application of route_policy_defaults, so any overrides contained in it (like max_attempts) are ignored, resulting in different EffectiveSettings outputs.",
-    "response_sha256": "a71ad27029afe973b8f2df01ea5ff86fee64aa80d2e8706a169e690103f6f638",
+    "reason": "The original version applies non-null values from `route_policy_defaults` to the `values` dictionary, whereas the changed version skips this step, causing fields like `temperature` to remain unmodified if they were supplied in `route_policy_defaults`.",
+    "response_sha256": "ebfcb5bceb2750b8677a48c3dd44cfc93d78cebe66ca00a729a6479bf04bacd6",
+    "sources": [
+     "    _apply_route_generation_defaults(values, route_defaults)\n    _apply_non_null(values, route_policy_defaults)\n    _apply_non_null(values, router_defaults.values)",
+     "    _apply_route_generation_defaults(values, route_defaults)\n    pass\n    _apply_non_null(values, router_defaults.values)"
+    ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
      "call_overrides": "{}",
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog())",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog())",
      "route_defaults": "RouteGenerationDefaults(key_id=0)",
-     "route_policy_defaults": "{\"max_attempts\": 5}",
+     "route_policy_defaults": "{\"max_attempts\": 2}",
      "router_defaults": "RouterDefaults()"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260926T185109Z-f2164b",
+    "call_id": "20260928T154433Z-550861",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The changed version replaces the application of route_policy_defaults with pass, causing route-level policy defaults like max_attempts to be ignored.",
-    "response_sha256": "7e676de0d1a463c43cf58c2cc5e97b160456e93511853fa0d8570acacd14154d",
+    "reason": "In the changed version, the call to _apply_non_null(values, route_policy_defaults) is replaced with pass, so non-null route policy defaults are not applied to the resolved settings.",
+    "response_sha256": "e77b2a3f3e2056331b52f99ed431a61d4d21c708c59486ac81ebe76fc946cb43",
+    "sources": [
+     "    _apply_non_null(values, route_policy_defaults)",
+     "    pass"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "call_overrides": "{}",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=3), limits_by_provider={}), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=3), limits_by_provider={}), catalog=ProviderCatalog())",
+     "route_defaults": "RouteGenerationDefaults(key_id=1)",
+     "route_policy_defaults": "{'max_attempts': 5}",
+     "router_defaults": "RouterDefaults()"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T153853Z-4d0b5f",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version replaces `_apply_non_null(values, route_policy_defaults)` with `pass`, so any non-null keys in route_policy_defaults (e.g. max_attempts) are silently dropped instead of overriding the config default, producing a different EffectiveSettings.max_attempts than the original.",
+    "response_sha256": "45677560a964bd04fc4b52b2e3a83c39980753cbfd8609f2150efba6003c1370",
+    "sources": [
+     "_apply_non_null(values, route_policy_defaults)",
+     "pass"
+    ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "178c081c42e4bebe2b67a9ff5a8ace825814227598c913d7f8aff6716c3a9663"
+  "prompt_sha256": "7fff86cfcde1719aeb4356aff305d236203beebf4946e8ba97cb8be739608d3f"
  },
  "bf8a96501e88d45d": {
   "answers": {
-   "antigravity-cli:claude-opus-4-6-thinking": {
-    "arguments": {
-     "call_overrides": "{\"custom_provider_param\": \"hello\"}",
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.1, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=3)), catalog=ProviderCatalog())",
-     "route_defaults": "RouteGenerationDefaults(key_id=0)",
-     "route_policy_defaults": "{}",
-     "router_defaults": "RouterDefaults()"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260927T144555Z-caaedf",
-    "confidence": 0.97,
-    "model": "claude-opus-4-6-thinking",
-    "problems": [],
-    "reason": "The changed version removes `kwargs.update(call_provider_kwargs)` (replaced by `pass`), so any key in `call_overrides` that is not in `CALL_OVERRIDE_FIELDS` will be merged into the returned `EffectiveSettings.kwargs` in the original but absent in the changed version.",
-    "response_sha256": "6c4307bc1a1c3c8a30d79dd25bb1c6ab1a80483b45b1ce58ea842548d9138e27",
-    "verdict": "distinct"
-   },
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "call_overrides": "{'some_custom_kwarg': 42}",
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=100.0, cooldown_seconds=60.0, cooldown_after_failures=5)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=100.0, cooldown_seconds=60.0, cooldown_after_failures=5)), catalog=ProviderCatalog())",
+     "call_overrides": "{'X_NOT_IN_CALL_OVERRIDE_FIELDS': 42}",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 1.0, 1), policy=RouterPolicyDefaults(1, 1.0, False, False, False, 1, ProviderLimits(1.0, 1.0, 1.0, 1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(1.0, 1.0, 1.0, 1)), catalog=ProviderCatalog())",
      "route_defaults": "RouteGenerationDefaults(key_id=1)",
      "route_policy_defaults": "{}",
      "router_defaults": "RouterDefaults()"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260927T144625Z-e6dd74",
+    "call_id": "20260928T154433Z-706ac2",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The modified version removes the call to `kwargs.update(call_provider_kwargs)`, causing any keys in `call_overrides` that aren't in `CALL_OVERRIDE_FIELDS` to be lost rather than being added to `kwargs` in the resulting `EffectiveSettings`.",
-    "response_sha256": "bc9337f7e642601ddc7b7dc27096c4cd54e293ec8774e1c1472016602031144c",
+    "reason": "The modified version removes the call to `kwargs.update(call_provider_kwargs)`, causing any parameters in `call_overrides` not present in `CALL_OVERRIDE_FIELDS` to be incorrectly omitted from the `kwargs` of the returned `EffectiveSettings`.",
+    "response_sha256": "9f2cc086e62d13a7a8449548c4ee9b136e3bb60dc04930cbf145a1ee3ca0d68a",
+    "sources": [
+     "    call_provider_kwargs = {\n        key: value\n        for key, value in call_overrides.items()\n        if key not in CALL_OVERRIDE_FIELDS\n    }\n    _apply_call_overrides(values, call_overrides)\n    kwargs.update(call_provider_kwargs)"
+    ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "call_overrides": "{\"custom_kwarg\": \"value\"}",
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={}, provider_base_urls={}, models={}))",
+     "call_overrides": "{'custom_kwarg': 1}",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3), limits_by_provider={}), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3), limits_by_provider={}), catalog=ProviderCatalog(providers={}, provider_base_urls={}, models={}))",
      "route_defaults": "RouteGenerationDefaults(key_id=0, kwargs={})",
      "route_policy_defaults": "{}",
      "router_defaults": "RouterDefaults(values={}, kwargs={})"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260926T185249Z-a7ea65",
+    "call_id": "20260928T154433Z-801a89",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The changed version replaces kwargs.update(call_provider_kwargs) with pass, omitting custom provider kwargs in call_overrides from EffectiveSettings.kwargs.",
-    "response_sha256": "735498993a83c61c3da9b5a891b5496516c38dee067a1976fbe6f2bd8878ce48",
+    "reason": "The changed version replaces kwargs.update(call_provider_kwargs) with pass, omitting keys not in CALL_OVERRIDE_FIELDS from the resolved kwargs.",
+    "response_sha256": "e2b74c9fa215304d4a5f5eb57c674fa5a628071b6b5a1ab3afb73d968f3e2203",
+    "sources": [
+     "    kwargs.update(call_provider_kwargs)",
+     "    pass"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "call_overrides": "{'custom_extra_param': 123}",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.1, max_wait_seconds=1.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=5.0, cooldown_after_failures=3), limits_by_provider={}), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=5.0, cooldown_after_failures=3), limits_by_provider={}), catalog=ProviderCatalog(providers={}, provider_base_urls={}, models={}))",
+     "route_defaults": "RouteGenerationDefaults(key_id=0, kwargs={})",
+     "route_policy_defaults": "{}",
+     "router_defaults": "RouterDefaults(values={}, kwargs={})"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T154433Z-2f2b6d",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version computes call_provider_kwargs but replaces the original's 'kwargs.update(call_provider_kwargs)' with a no-op 'pass', so extra provider kwargs from call_overrides (keys not in CALL_OVERRIDE_FIELDS) are silently dropped from the returned kwargs in the changed version but present in the original.",
+    "response_sha256": "15786499bbbb3e9d098a4562e23ca77f427a8c0336e9255f6e708a0d2f7cee70",
+    "sources": [
+     "kwargs.update(call_provider_kwargs)",
+     "pass"
+    ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "4b4264835a8a6f01dd03820b5d7b8d78a879fb75bf2e9a92fce08a4f691d184c"
+  "prompt_sha256": "3bab3b8e38ff253d1fbc447401ed0dbb793032844c424482e4b73858dede078e"
  },
  "e238ff65d72c6c1f": {
   "answers": {
-   "antigravity-cli:claude-opus-4-6-thinking": {
-    "arguments": {
-     "call_overrides": "{}",
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=5.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=5.0, cooldown_after_failures=3)), catalog=ProviderCatalog())",
-     "route_defaults": "RouteGenerationDefaults(key_id=0, kwargs={})",
-     "route_policy_defaults": "{}",
-     "router_defaults": "RouterDefaults(values={}, kwargs={\"extra_param\": \"router_value\"})"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260927T144717Z-d7936a",
-    "confidence": 0.97,
-    "model": "claude-opus-4-6-thinking",
-    "problems": [],
-    "reason": "The changed version replaces `kwargs.update(router_defaults.kwargs)` with `pass`, so router-level provider kwargs are never merged into the final kwargs dict. Any input where `router_defaults.kwargs` is non-empty will produce a different `EffectiveSettings.kwargs`.",
-    "response_sha256": "069c80fca6281e2b7d2aaa8be453b53a3273fe6e5831ed049b219c30b3036c01",
-    "verdict": "distinct"
-   },
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
      "call_overrides": "{}",
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog())",
-     "route_defaults": "RouteGenerationDefaults(key_id=0)",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 2.0, 3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(10.0, 60.0, 5.0, 1)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(10.0, 60.0, 5.0, 1)), catalog=ProviderCatalog())",
+     "route_defaults": "RouteGenerationDefaults(key_id=1)",
      "route_policy_defaults": "{}",
-     "router_defaults": "RouterDefaults(kwargs={\"a\": 1})"
+     "router_defaults": "RouterDefaults(kwargs={'k': 'v'})"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260927T144804Z-4a3032",
+    "call_id": "20260928T154433Z-8417a2",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version omits `kwargs.update(router_defaults.kwargs)`, so passing a non-empty `kwargs` in `router_defaults` results in a different `kwargs` dictionary in the returned `EffectiveSettings`.",
-    "response_sha256": "f214aa7777e81c8f643d3daf09d6d5a15b1e3451ab9e618ee1907b8ac6d34188",
+    "reason": "The modified version removes the line that updates the kwargs dictionary with router_defaults.kwargs, causing any kwargs provided in router_defaults to be omitted from the final EffectiveSettings.",
+    "response_sha256": "765338c140ffb750a6dd4c4d45a4b8d4fa9342d543db4a96afaf29125afd6c66",
+    "sources": [
+     "    _apply_non_null(values, router_defaults.values)",
+     "    kwargs.update(router_defaults.kwargs)"
+    ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
      "call_overrides": "{}",
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog())",
-     "route_defaults": "RouteGenerationDefaults(key_id=0)",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=3), limits_by_provider={}), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=3), limits_by_provider={}), catalog=ProviderCatalog(providers={}, provider_base_urls={}, models={}))",
+     "route_defaults": "RouteGenerationDefaults(key_id=0, kwargs={})",
      "route_policy_defaults": "{}",
-     "router_defaults": "RouterDefaults(values={}, kwargs={'custom_kwarg': 'test_val'})"
+     "router_defaults": "RouterDefaults(values={}, kwargs={'a': 1})"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260926T185209Z-a82f10",
+    "call_id": "20260928T154433Z-b7d6bc",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The changed version replaces kwargs.update(router_defaults.kwargs) with pass, failing to propagate router_defaults kwargs into the returned EffectiveSettings.",
-    "response_sha256": "4bc6825dd6cb173ff79b349890c900bf209b87363c2deac631557d9556230947",
+    "reason": "The changed version replaces kwargs.update(router_defaults.kwargs) with pass, failing to propagate keyword arguments from router_defaults into kwargs.",
+    "response_sha256": "45ddf572022fc70243b1f0a8d8b7446d390f71ba2d650320356bf3568ae781dc",
+    "sources": [
+     "kwargs.update(router_defaults.kwargs)",
+     "pass"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "call_overrides": "{}",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog())",
+     "route_defaults": "RouteGenerationDefaults(key_id=1, kwargs={})",
+     "route_policy_defaults": "{}",
+     "router_defaults": "RouterDefaults(values={}, kwargs={'extra_param': 'value'})"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T154433Z-b57985",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version replaces the statement `kwargs.update(router_defaults.kwargs)` with a bare `pass`, so any non-empty `router_defaults.kwargs` (e.g. {'extra_param': 'value'}) is silently dropped in the new version but merged into the result in the original, producing different `kwargs` on the returned EffectiveSettings.",
+    "response_sha256": "87c6bfe9091393585204f63c225c9e6dc051d654def93492942bf325268f592f",
+    "sources": [
+     "kwargs.update(router_defaults.kwargs)",
+     "pass"
+    ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "ed1bfaba494a07fd8118c1bc826306abc660b790ed4ca245d490ee4fd5169b5f"
+  "prompt_sha256": "c3fad3c0b3ded7a96c764a0e00e6cc5b1c19a1f7cb852399da1b7a66908153e4"
  }
 }

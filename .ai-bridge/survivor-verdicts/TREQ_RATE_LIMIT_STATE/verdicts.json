@@ -2,46 +2,65 @@
  "1ea89b29a7c49441": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260926T215611Z-12d485",
+   "call_id": "20260928T160609Z-f1687a",
+   "confirmed": false,
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only narrows when the 'Route cooldown cleared' info log is emitted. The limiter state (next_available_at, failure_count reset) is unchanged, so the isolation, spacing and reset criteria behave the same. The log output does differ, but none of the given requirements asks for this observability event.",
-   "response_sha256": "e124212c5ceb8862b465b8c5602c57f7b8eb3d2a1f625daad430d1a58f222273",
+   "reason": "The mutant only changes when the \"Route cooldown cleared\" log event is emitted. The failure count is still reset and next_available_at is still scheduled the same way. No requirement or criterion says anything about this log event, so the versions differ only in logging that nothing asks for.",
+   "response_sha256": "6ddd65b34e8db1d40689c79ecdfb16437faf6c34b8cc9c978b9dddc39c072f2b",
+   "sources": [
+    "should_log_cleared = bool(bucket.failure_count and bucket.cooldown_until > current)",
+    "bucket.failure_count = 0",
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again."
+   ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "boolean",
-  "prompt_sha256": "f72d006716c7a35b44b67fb5f806c1ee11d71d3229329c42a13cb592a5013a70"
+  "prompt_sha256": "8c0ade4308375f6bea313d6966aed2c743f51e23e0aa2ef77eb17eeb1e7dfecf"
  },
  "2e8807d144d81f1d": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260926T215618Z-80a9bc",
+   "call_id": "20260928T160609Z-54a2bd",
+   "confirmed": false,
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant changes only whether the \"Route cooldown cleared\" log line is written when failure_count is 0 and cooldown_until exactly equals the current time, so the versions do differ in that one case. The limiter state is untouched either way: next_available_at and the failure_count reset come out the same. None of REQ_RATE_LIMIT_ROUTING, TREQ_RATE_LIMIT_STATE or their verification criteria say anything about logging.",
-   "response_sha256": "1f95e6058c17d6a889c391090975e29a09b710c1ffe30e33f436c5057163579d",
+   "reason": "The change only affects the edge case where failure_count is 0 and cooldown_until equals current exactly. In that case the mutant also emits the \"Route cooldown cleared\" log. Limiter state stays the same (next_available_at, failure_count reset), and no requirement or criterion asks for anything about this log event.",
+   "response_sha256": "d0010691ebfe78d1c05a86a7dfd68c4a2a87cc9ac57817028aca8a151c9c7340",
+   "sources": [
+    "should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until >= current)",
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success."
+   ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "comparison",
-  "prompt_sha256": "718387ea3d5eded4a0e239fc6721847148c37e2cf60e6f0c7b882a4629403b37"
+  "prompt_sha256": "fbdeed837dd70ea11436e51cf3142235fffb1b6a11d519cc71f0d3d102961616"
  },
  "7cd0a40c605b3f65": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260926T215625Z-ab8634",
+   "call_id": "20260928T160617Z-3c28a7",
+   "confirmed": false,
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The flipped comparison only changes when the \"Route cooldown cleared\" info log fires. The mutant logs it on routine successes where no cooldown was active. The limiter state stays the same: next_available_at is still set and failure_count is still reset. So the versions differ only in log output, and neither TREQ_RATE_LIMIT_STATE nor REQ_RATE_LIMIT_ROUTING says anything about log output.",
-   "response_sha256": "fe1484326f4cc70d71571ff353c20e3ff4625bee2dcf315e1de97ee501bac7f1",
+   "reason": "The flipped comparison only changes whether the \"Route cooldown cleared\" log line is emitted. Bucket state (next_available_at, failure_count reset) is set the same way in both versions. The two versions can differ in log output, but no requirement or criterion asks for that log.",
+   "response_sha256": "ddab07eb3647318d621b058aab359dbe86b1ea8ca55d6eb16abd0f6908f547ab",
+   "sources": [
+    "should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until < current)",
+    "bucket.failure_count or bucket.cooldown_until > current",
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+    "reset that state after success"
+   ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "comparison",
-  "prompt_sha256": "0b3146306b578003f2d0e101c0ad7abb350d103e99735ecb50681c7249378055"
+  "prompt_sha256": "9845a91abbf6a931a966e54409cf10ab982f2fce0b80b4e6e2fdbabb772ae5a3"
  }
 }

@@ -49,7 +49,12 @@ cascade and the portal build never call a model. The cascade confines model code
 running it. A replacement may use only the names and capabilities its module already
 has. A draft test may use only the allowed imports and no process, file-system or
 dynamic-code primitives. A draft the cascade rejects is regenerated at most once, with
-the reason.
+the reason. A mutant every draft missed climbs a ladder (amended 2026-09-28): one draft from the
+draft author with tools, then one from the last resort, the verdict's own model, each working
+in a copy of the project where it may read and search, write the one file its pin will be and run
+the cascade's own check, with nothing allowed under the person's home. Only `claude-cli` serves
+them, since its permissions hold the tools to the copy; the cascade judges the final answer
+again, and a pin the last resort wrote says so.
 
 **Consequences.** Proposal sets become reproducible: one command regenerates a stale
 target, and its drafts follow. The portal shows which model generated each mutant, links
@@ -73,5 +78,7 @@ products. GitHub Models was retired on 30 July 2026. An agent session writing pr
 by hand from the rendered prompt, as in the pilot, stays possible as generator kind
 `agent`, but it is neither reproducible nor metered. One fixed backend without a
 fallback order would stop all generation whenever that account's window is full or its
-login lapses.
+login lapses. Tools for every draft were rejected: a fixed pipeline with the right context
+settles most mutants for less (Agentless), so tools are a rung for what it cannot settle; a
+person writing the rest by hand was rejected as a hack that does not scale.
 ```

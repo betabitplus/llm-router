@@ -2,16 +2,22 @@
  "a2ea086ea892f112": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260926T215646Z-a7eb4f",
+   "call_id": "20260928T160617Z-65ce37",
+   "confirmed": true,
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes the order of keys in the serialized JSON text. JSON objects are unordered, so loading the output gives back the same version, system prompt and history. No requirement asks for canonical or sorted text, and insertion order stays deterministic anyway.",
-   "response_sha256": "e0c97236fad691dc5adf50df61df5bb8448065738ef60ade97db3149781eb3bb",
+   "reason": "The mutant only changes the order of keys in the serialized JSON. Loading the file gives back the same system prompt, history and version, so round-trip preservation and version rejection are unaffected. No requirement asks for a canonical byte layout.",
+   "response_sha256": "71bdcb383657657fe95e303dd9f33f02d23a3161c945370ef08d2845c8d014b1",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "return json.dumps(payload, indent=2, sort_keys=False)",
+    "Unsupported serialization versions raise SessionSerializationError instead of loading incompatible state."
+   ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "boolean",
-  "prompt_sha256": "244b7dd8215a6b247c5114e9206208133c42d525ba34a659612571c1edc36ea4"
+  "prompt_sha256": "c45f6e71c765c18f82971b09bedcdf4227bb01f8e77e5289db6010b8274bdf74"
  }
 }

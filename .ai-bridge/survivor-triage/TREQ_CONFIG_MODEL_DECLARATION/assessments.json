@@ -1,96 +1,122 @@
 {
  "3cc16a6300b216ed": {
   "answers": {
-   "antigravity-cli:claude-opus-4-6-thinking": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=10, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))",
-     "model": "Model.GEMINI_FLASH"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260927T185725Z-45f269",
-    "confidence": 0.99,
-    "model": "claude-opus-4-6-thinking",
-    "problems": [],
-    "reason": "The original returns `resolved` (a Model enum member) while the changed version returns `None`; any input where the model is valid and present in config.models reaches the return statement and exposes the difference.",
-    "response_sha256": "fbbfca58259c8fc7d771b6d055e5d485be6b4917eb4295b0d3409192c13a2711",
-    "verdict": "distinct"
-   },
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "config": "ProviderCatalog(models={Model.GEMINI_FLASH: {}})",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))",
      "model": "Model.GEMINI_FLASH"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260927T185759Z-474ffb",
+    "call_id": "20260928T154433Z-0d4e44",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The original version returns the resolved model if it is in config.models, while the changed version returns None for the same condition, behaving differently when given a valid model present in the config.",
-    "response_sha256": "f690c97f874a10c0e99cef0d35fdf9940938e5246964e15c5d466ed4cccc3222",
+    "reason": "The original version returns the resolved model if it is found in the configuration's models, whereas the changed version always returns None in that case.",
+    "response_sha256": "3bdb67f2a2a632107157b06c7498ddd25bb5f4e74fa355d05cb8014f240eace1",
+    "sources": [
+     "    return resolved",
+     "    return None"
+    ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://generativelanguage.googleapis.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-1.5-flash'}}))",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))",
      "model": "Model.GEMINI_FLASH"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260927T185947Z-ed6436",
+    "call_id": "20260928T154433Z-9dd800",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "For any model declared in config.models, the original function returns the resolved Model enum member while the changed version returns None.",
-    "response_sha256": "8e06d04f565b4c0f6a3b132b3ed57c9c85694612d530eda493691c5b93808db5",
+    "reason": "When the resolved model is present in config.models, the original version returns the resolved Model enum member, whereas the changed version returns None.",
+    "response_sha256": "d6e163aa0fa8da6f7769b59f3aaa34c852c18431e49ae4704c0a4d08fe1b3073",
+    "sources": [
+     "    return resolved",
+     "    return None"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.1, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-1.5-flash'}}))",
+     "model": "Model.GEMINI_FLASH_LITE"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T154433Z-a7cd0f",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "On the success path the original returns 'resolved' (the resolved Model enum) while the changed version always returns None, so any valid model present in config.models yields differing return values.",
+    "response_sha256": "e0402f935af19485f9383fc221cd08fbaad9765c6877ed13c2b64d56cf3fd75b",
+    "sources": [
+     "return resolved",
+     "return None"
+    ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "c0963697e5bae8f0da2684bdf885d258ab712ac62c872fe926a12877995389d5"
+  "prompt_sha256": "a1e88302dec53ce7ff98fba1fe567702e2224ce20c7d3ee9f14b113a825f79d3"
  },
  "5ed9365a38636da5": {
   "answers": {
-   "antigravity-cli:claude-opus-4-6-thinking": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=10, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog())",
-     "model": "\"not_a_valid_model\""
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260927T190110Z-591733",
-    "confidence": 0.97,
-    "model": "claude-opus-4-6-thinking",
-    "problems": [],
-    "reason": "When model is a string not matching any Model member, the original raises ConfigurationError from the except block, while the changed version executes `pass`, leaving `resolved` unbound, so `if resolved not in config.models` raises UnboundLocalError \u2014 a different exception type.",
-    "response_sha256": "ca0919fe2e84c0c14d3ea290ae9eb2d70b777dab69a4ffd14bec838eaac5218a",
-    "verdict": "distinct"
-   },
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog())",
-     "model": "'invalid'"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_PRO, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog())",
+     "model": "'invalid_model'"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260927T190147Z-f6ae8a",
+    "call_id": "20260928T154433Z-1db3a6",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When an invalid model string is passed, the original version catches the ValueError and raises a ConfigurationError, whereas the changed version suppresses it and later raises an UnboundLocalError when attempting to access the unassigned 'resolved' variable.",
-    "response_sha256": "596e5783c36640228087ad4c91abfe7c1b8c37e6b7986515c25798ece1e863d9",
+    "reason": "When given an unknown model string, the original version raises a ConfigurationError, whereas the changed version suppresses the ValueError and proceeds to evaluate the unassigned local variable `resolved`, raising an UnboundLocalError.",
+    "response_sha256": "1985f3e969923a54e41a24a294554bc9f5428c80cdabb7e8b7ec407b820271a9",
+    "sources": [
+     "            raise ConfigurationError(msg) from exc",
+     "            pass",
+     "    if resolved not in config.models:"
+    ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog())",
+     "config": "LLMRouterConfig(Provider.GOOGLE, Model.GEMINI_FLASH, 0, BehaviorDefaults(RetryPolicy(0.0, 0.0, 1), RouterPolicyDefaults(None, None, False, False, False, 1, ProviderLimits(0.0, 0.0, 0.0, 0)), 1, 1, ProviderLimits(0.0, 0.0, 0.0, 0)), ProviderCatalog())",
      "model": "'unknown'"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260927T190232Z-efa888",
+    "call_id": "20260928T154433Z-d7c305",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When passed an unknown model string, the original version raises ConfigurationError while the changed version suppresses ValueError with pass and subsequently raises UnboundLocalError when referencing the unassigned local variable resolved.",
-    "response_sha256": "44b58ff444d6078d0ed517b7f2aebe3a32d131a9e4d73ce07a434641da012bf4",
+    "reason": "When passed an unknown model string, the original version raises ConfigurationError while the changed version executes pass and subsequently raises an UnboundLocalError when referencing resolved.",
+    "response_sha256": "a0464a434a48d3b519c69cd17dcda8ed83d49bc4f93dcd7cda8e5878b9b8441f",
+    "sources": [
+     "            raise ConfigurationError(msg) from exc",
+     "            pass",
+     "    if resolved not in config.models:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.1, max_wait_seconds=1.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=3)), catalog=ProviderCatalog())",
+     "model": "\"not_a_real_model\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T154433Z-1dd06f",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "When model is a string not matching any Model value, the original raises ConfigurationError, but the changed version's except block only does 'pass' leaving 'resolved' unbound, so the subsequent 'if resolved not in config.models' raises UnboundLocalError instead.",
+    "response_sha256": "256517077c24155a1d4db92289a050d997fbd2cee650c23b88b2947af0dfd6e3",
+    "sources": [
+     "msg = f'Unknown model: {model}'\n            pass",
+     "if resolved not in config.models:"
+    ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "8889c542e79e1ae149aa6d79543accd5e8485ffd890937440b28d7e0df7781c9"
+  "prompt_sha256": "acbf8762c5fc4a543782fd81ed3a12238e685dddc55a5149192cc6a88aa80808"
  }
 }

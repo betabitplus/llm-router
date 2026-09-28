@@ -481,24 +481,82 @@ passes on the original five times in a row (TestGen-LLM's reliability filter), f
 frozen patch, imports nothing beyond the public API, the modules the contract's own tests
 already import and, for a Technical requirement, the module of the code it tests and the
 project modules that module imports itself, and uses no process, file-system or
-dynamic-code primitive. Its author sees the shortest of the
-contract's tests as an example, or the step definitions of the scenarios pytest-bdd
-generates, and a rejected draft is asked for again with the reason, the errors pytest
-reported on the original and the lint rules it broke, from the role's next model.
+dynamic-code primitive. The author has no tools, so the question carries what a person would
+look up. Its example is a test that runs the mutant's line, else one that runs its function,
+the contract's own first (the shortest of the contract's tests when none does; for a
+scenario pytest-bdd generates, its step definitions), with the helpers, fixtures and
+constants of its module, as ACH hands its author the whole test class. When no test runs
+the line, a second test shows how the project reaches such a line: the one that runs most of
+the function's rarer lines, each weighed by how few tests run it. A function outside a class
+comes with the functions of its module that call it, which show what reaches it, and those
+it calls or hands on, which show what it relies on. An API card says where
+every name the examples import, and the verdict's focus and the defect mention, lives and
+how it is built, with every member of an enum and what each method returns, two steps deep;
+and how the project's types the function takes are built unless the pin may not import it;
+then the question says to reach the function through the public API. The answer cites under
+`sources` every project name it uses, each from the examples or the card. Before anything
+runs, a grounding check looks each name up in the source tree, as De-Hallucinator grounds a
+model's code in the project's own APIs: a name its module does not bind, a member its enum
+lacks, an argument its constructor does not take or one it cannot be built without, also
+through a subclass the draft declares and its `super().__init__`, rejects the draft, and the reason names what exists
+instead. What the tree alone cannot settle (a name from an outside package, a
+lazy module, an inherited or aliased constructor) is never a problem. The check is qualified
+on a small project with known answers, and the gate runs it over the project's own tests
+and pins, where it must find nothing. A rejected draft is asked for again with the reason,
+the errors pytest reported on the original, the lint rules it broke and the API card of
+every project name those errors mention, from the role's next model. A failure that prints
+no error lines is reported with the reason pytest's summary gives, and a run that does not
+finish is reported as such. The rules say that an async test needs its pytest-asyncio marker
+while the project runs it in strict mode.
+
+Every judged draft is recorded beside its contract's verdicts (`drafts.json`) with its
+cause: kept, invented project API, misused project API, wrong behaviour on the original,
+does not catch the mutant, outside the pin rules, or lint. The record also keeps the names
+the draft used that appear nowhere in its question, and its sources. The
+{doc}`Model roles <model-roles>` page shows each role's calls and each model's drafts by
+cause. It marks the draft author failing when fewer than one in five of its last twenty
+recorded drafts is kept, judged from ten on: TestGen-LLM's filters (builds, passes
+reliably, adds coverage) keep about a quarter of its tests.
+
+For a line of a function, the question also says what must hold for that line to run: the
+conditions of the branches, loops, handlers and cases around it and the early exits before it,
+read from the code (SymPrompt's path constraints, approximated without running anything). A
+draft that passes on the original and on the mutant alike is run once more on the mutant under
+coverage, and its reason says whether it never reached the changed lines, reached only some of
+them, or ran them all without checking what they do (CoverUp's coverage feedback). The project's
+type checkers are not a filter: on the project's own tests pyright flags 4% of the modules and
+ty 2%, and with attribute checks on 10%, while the grounding check flags none, and neither sees an
+invented enum member under the project's settings (2026-09-28, 279 stored drafts). griffe, the
+API reader behind mkdocstrings, was measured as the grounding check's resolver and flagged 45 of
+the 125 test modules out of the box, so it is not used.
+
+A mutant every draft without tools missed climbs a ladder. First the Draft test author with
+tools writes one draft, then the Draft test author, last resort, the verdict's own model, writes
+one more; a pipeline first and an agent only for what it cannot settle, as Agentless and CoverUp's
+lookup tool suggest. Each works in a copy of the project (its code, tests and settings, no
+history and nothing under the person's home) where it may read and search the copy, write the one
+file its pin will be and run one command, the cascade's own check of that file: the project's
+rules, five runs on the original, one on the mutant, what the test reached, and pyright's findings
+as advice. Only the claude CLI serves these roles, since its permissions hold the tools to the
+copy without asking anyone; agy cannot switch its own tools off. Whatever the model reports, the
+cascade judges its final answer again. A pin the last resort wrote says so in its first lines and
+on the Model roles page, so a later verdict model can look at it again.
 
 ##### Model generation
 
-| Role                      | Order | Backend           | Model                     |
-| ------------------------- | ----: | ----------------- | ------------------------- |
-| Semantic mutant generator |     1 | `antigravity-cli` | `gemini-3.1-pro-high`     |
-| Semantic mutant generator |     2 | `antigravity-cli` | `gemini-3.8-flash-high`   |
-| Semantic mutant generator |     3 | `claude-cli`      | `claude-sonnet-5`         |
-| Draft test author         |     1 | `antigravity-cli` | `gemini-3.8-flash-medium` |
-| Draft test author         |     2 | `antigravity-cli` | `gemini-3.1-pro-high`     |
-| Draft test author         |     3 | `claude-cli`      | `claude-sonnet-5`         |
-| Survivor verdict          |     1 | `claude-cli`      | `claude-opus-5-5`         |
-| Survivor verdict review   |     1 | `antigravity-cli` | `gemini-3.1-pro-high`     |
-| Survivor verdict review   |     2 | `antigravity-cli` | `gemini-3.8-flash-high`   |
+| Role                           | Order | Backend           | Model                     |
+| ------------------------------ | ----: | ----------------- | ------------------------- |
+| Semantic mutant generator      |     1 | `antigravity-cli` | `gemini-3.1-pro-high`     |
+| Semantic mutant generator      |     2 | `antigravity-cli` | `gemini-3.8-flash-high`   |
+| Semantic mutant generator      |     3 | `claude-cli`      | `claude-sonnet-5`         |
+| Draft test author              |     1 | `antigravity-cli` | `gemini-3.8-flash-medium` |
+| Draft test author              |     2 | `antigravity-cli` | `gemini-3.1-pro-high`     |
+| Draft test author              |     3 | `claude-cli`      | `claude-sonnet-5`         |
+| Draft test author with tools   |     1 | `claude-cli`      | `claude-sonnet-5`         |
+| Draft test author, last resort |     1 | `claude-cli`      | `claude-opus-5-5`         |
+| Survivor verdict               |     1 | `claude-cli`      | `claude-opus-5-5`         |
+| Survivor verdict review        |     1 | `antigravity-cli` | `gemini-3.1-pro-high`     |
+| Survivor verdict review        |     2 | `antigravity-cli` | `gemini-3.8-flash-high`   |
 
 Semantic mutants, their draft tests and the verdicts on survivors come from a model called
 through one adapter (ADR_0004). Antigravity serves Gemini and Claude models from two quotas,
@@ -512,7 +570,8 @@ last model of the generator, the draft author and the first assessor, so a full 
 pool leaves no role waiting for its reset. Each role tries its backends in order. A backend that is unavailable (not
 signed in, account not eligible) or whose budget defers the call is skipped for the next.
 A `claude-cli` call runs without tools, plugins, MCP servers or memory, with a replaced
-system prompt and a JSON schema. `agy` cannot be started without its tools, its own system
+system prompt and a JSON schema; only a call of the draft author's rungs with tools works in its
+copy of the project with the tools that copy allows. `agy` cannot be started without its tools, its own system
 prompt or its conversation history: the adapter tells it to answer from the text alone,
 puts the system text before the prompt, and refuses a call that reaches for a tool. Every
 answer is validated again on receipt. Which Claude subscription a call uses is the machine's
@@ -522,29 +581,36 @@ reads are that subscription's.
 
 ###### Generation budget
 
-| Budget                      | Limit |
-| --------------------------- | ----: |
-| 5-hour window               |   80% |
-| Weekly window               |   70% |
-| Calls per run               |    40 |
-| List price per call         | $0.50 |
-| Draft attempts per mutant   |     2 |
-| Parallel calls per backend  |     2 |
-| Smaller-pool calls per week |    30 |
+| Budget                         | Limit |
+| ------------------------------ | ----: |
+| 5-hour window                  |  100% |
+| Weekly window                  |  100% |
+| Calls per run                  |    40 |
+| List price per call            | $0.50 |
+| List price per call with tools | $5.00 |
+| Draft attempts per mutant      |     2 |
+| Parallel calls to start with   |     2 |
+| Parallel calls at most         |     8 |
+| Smaller-pool calls per week    |    30 |
 
 Every call appends one row to the consumption ledger. The row records the role,
 backend, model, outcome, tokens, the list-price equivalent where the backend reports
 one, the duration and the plan windows. A window at or above its limit, or a run that
 reached its call limit, defers the call; a backend that reports no windows is bounded by
-the call limit alone. Antigravity reports neither of its quotas, so its smaller pool is also
+the call limit alone. Since 2026-09-28 both window limits stand at 100%, the person's
+decision to be reviewed later: a call is deferred only when its window is full, so the
+pipeline no longer leaves room for the person's own work on the same subscription. Antigravity reports neither of its quotas, so its smaller pool is also
 bounded by its calls in the last seven days, counted from the ledger's calls actually made:
-30 is about half of that pool's week and leaves the rest to the person's own work on it. Independent questions (the assessors of one survivor, the verdicts of a
-chunk of survivors, the drafts of one round) are asked at once, each backend taking at most
-its parallel calls: Antigravity documents no limit on simultaneous requests and counts its
-quota by the work done, so two at a time only spend the same quota sooner and leave a margin.
-A backend that answers overloaded (a 503 without capacity, a 429, a rate limit) halves its
-limit for the rest of the run; the limit never grows by itself. Every ledger row records how
-many calls its backend ran at once and under which limit, the evidence for raising it. A deferred, rejected or invalid generation is never a pass. The
+30 is about half of that pool's week and leaves the rest to the person's own work on it. Independent questions (the assessors of
+survivors, the calibration's pairs, the verdicts of a chunk of survivors, the drafts of one
+round) are asked at once. Asking at once spends no more quota, only sooner, and no
+subscription publishes how many calls it takes at a time, so each quota pool (the Claude
+account, Antigravity's Gemini pool and its smaller one) finds it the way TCP finds its window:
+it starts at its parallel calls to start with and doubles while every call at the limit is
+answered; an overload answer (a 503 without capacity, a 429, a rate limit) halves it once per
+burst, and from then on it grows by one at a time. It never passes the parallel calls at
+most, which also keeps the machine's CLI processes in bounds. Every ledger row records how
+many calls its pool ran at once and under which limit. A deferred, rejected or invalid generation is never a pass. The
 target keeps no current proposal, and its class stays UNKNOWN. Generation runs only on
 request and only for targets whose proposals are missing or stale; the gate, the cascade
 and the portal build never call a model. A proposal or draft names the call that
@@ -567,7 +633,10 @@ answers through its first model that can, as a role does: a later one only when 
 before it are deferred, unavailable or not calibrated yet. The assessors
 see the parameters as the code declares them and how the project's types the target takes
 or names are built; an input may use any of the project's dataclasses, exceptions and enum
-members. None of this
+members. The question shows both versions as code, not the requirement: whether two versions
+behave the same does not depend on it. Every answer cites, copied word for word from the code
+it was shown, the lines it rests on, one of them a line the change touches; an answer whose
+sources are not in its question does not count and its assessor is asked again. None of this
 can make a survivor caught. An input counts only when execution confirms it: called with
 it twice, each version repeats itself, and the original and the mutant return different
 values, leave their object in different states or raise different exception types. A clock
@@ -620,7 +689,13 @@ input execution confirmed; for an unreached mutant, that no test runs its line. 
 that would take a mutant out of its class, equivalent or irrelevant, counts only when the
 Survivor verdict review, a model of another family asked the same question, agrees: a panel
 of models from different families is less biased toward its own (PoLL). When the review does
-not agree, the mutant is pinned.
+not agree, the mutant is pinned. The verdict and the review each cite what they rest on,
+copied word for word from the question: the words of the requirement, Feature, Goal or criterion
+the verdict turns on and at least one line the change touches. A check finds every source in the
+question; an answer that breaks it, or another rule the schema cannot state, does not count and
+is asked once more, saying what broke. Every stored question and answer a record names is
+published beside the {doc}`Model roles <model-roles>` page, which also counts the answers
+whose sources do not hold up, and the explorer links each survivor's.
 
 | Verdict      | Meaning                                                                                        | Effect                                                                                                                                                           |
 | ------------ | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -644,8 +719,8 @@ again, and a pin that no draft brings within them is removed.
 
 A model's answers count for a role only after it passed that role's canaries, a few cases
 with a known outcome. The generator must propose a well-formed, confined defect for a canary
-target; the draft author must write a test the cascade keeps for a known distinguishable
-mutant; the verdict model and the verdict review must pin a known gap, judge a known
+target; the draft author, and each of its rungs with tools in a copy of the canary's project,
+must write a test the cascade keeps for a known distinguishable mutant; the verdict model and the verdict review must pin a known gap, judge a known
 equivalent equivalent and escalate a known product decision. An assessor must meet the
 calibration floors: an input confirmed for at least 80% of the labelled distinct pairs, and
 at most the false-equivalent rate of all distinct pairs, labelled or observed, judged

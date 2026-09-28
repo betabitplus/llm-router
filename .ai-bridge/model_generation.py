@@ -53,9 +53,18 @@ BACKENDS = ("claude-cli", "antigravity-cli")
 ROLES = {
     "Semantic mutant generator": "generator",
     "Draft test author": "draft_author",
+    # A mutant whose drafts all missed climbs a ladder: the draft author with tools, then the last
+    # resort, the verdict's own model, with the same tools.
+    "Draft test author with tools": "draft_author_tools",
+    "Draft test author, last resort": "draft_author_last",
     "Survivor verdict": "verdict",
     "Survivor verdict review": "verdict_review",
 }
+# The roles whose calls work in a copy of the project with tools, and the backends that can hold
+# those tools to what the builder allows (agy cannot switch its own tools off, so it serves none).
+TOOL_ROLES = ("draft_author_tools", "draft_author_last")
+TOOL_BACKENDS = ("claude-cli",)
+TOOLS = "Read,Grep,Glob,Write,Edit,Bash"
 
 
 def model_family(model: str) -> str:
@@ -68,8 +77,10 @@ BUDGET_LABELS = {
     "Weekly window": "seven_day",
     "Calls per run": "calls_per_run",
     "List price per call": "usd_per_call",
+    "List price per call with tools": "usd_per_tool_call",
     "Draft attempts per mutant": "draft_attempts",
-    "Parallel calls per backend": "parallel_calls",
+    "Parallel calls to start with": "parallel_calls",
+    "Parallel calls at most": "parallel_calls_max",
     "Smaller-pool calls per week": "pool_calls_per_week",
 }
 # Test Plan labels of the Survivor judgement settings.
@@ -85,6 +96,25 @@ PROBE_MODELS = {"claude-cli": "claude-haiku-4-5-20251001", "antigravity-cli": "g
 # Variables that would bill an API account instead of the subscription.
 API_KEY_VARIABLES = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "GEMINI_API_KEY", "GOOGLE_API_KEY")
 TIMEOUT = 300
+# A call with tools reads, writes and runs its check several times before it answers.
+TOOL_TIMEOUT = 1500
+
+
+@dataclass(frozen=True)
+class Workspace:
+    """The copy of the project a call with tools works in. It may read the copy, write the one file
+    ``write`` names (relative to it) and run the one command ``command`` names; nothing else, and
+    never anything under the person's home, where sign-ins and keys live."""
+
+    root: Path
+    write: str
+    command: str
+
+    def permissions(self) -> dict:
+        return {
+            "allow": ["Read(./**)", "Glob", "Grep", f"Write(./{self.write})", f"Edit(./{self.write})", f"Bash({self.command})"],
+            "deny": ["Read(~/**)", "Write(~/**)", "Edit(~/**)"],
+        }
 
 
 def sha256_text(value: str) -> str:
@@ -161,6 +191,9 @@ class Invocation:
     windows: dict | None = None
     backend_version: str = ""
     model_reported: str = ""
+    # A call with tools: how often it used each, and what its permissions refused.
+    tools_used: dict = field(default_factory=dict)
+    denied: list = field(default_factory=list)
 
 
 def _clip(text: str, limit: int = 240) -> str:
@@ -228,10 +261,16 @@ class ClaudeCli:
         match = re.search(r"\d+\.\d+\.\d+", done.stdout or "")
         return match.group(0) if match else ""
 
-    def command(self, model: str, system: str, schema: dict | None, usd_cap: float | None) -> list[str]:
+    def command(self, model: str, system: str, schema: dict | None, usd_cap: float | None, workspace: Workspace | None = None) -> list[str]:
+        # Without a workspace a call has no tools at all; with one, only what its permissions allow,
+        # without asking anyone and without the person's own settings.
+        tools = ["--tools", ""] if workspace is None else [
+            "--tools", TOOLS, "--permission-mode", "dontAsk",
+            "--settings", json.dumps({"permissions": workspace.permissions()}, sort_keys=True), "--setting-sources", "",
+        ]
         command = [
             self.executable, "-p", "--output-format", "stream-json", "--verbose",
-            "--tools", "", "--strict-mcp-config", "--safe-mode", "--disable-slash-commands",
+            *tools, "--strict-mcp-config", "--safe-mode", "--disable-slash-commands",
             "--no-session-persistence", "--model", model, "--system-prompt", system,
         ]
         if schema is not None:
@@ -240,17 +279,18 @@ class ClaudeCli:
             command += ["--max-budget-usd", f"{usd_cap:.2f}"]
         return command
 
-    def invoke(self, *, model: str, system: str, prompt: str, schema: dict | None, usd_cap: float | None = None, timeout: int = TIMEOUT) -> Invocation:
+    def invoke(self, *, model: str, system: str, prompt: str, schema: dict | None, usd_cap: float | None = None, timeout: int = TIMEOUT, workspace: Workspace | None = None) -> Invocation:
         if not self.executable:
             return Invocation("unavailable", "the claude CLI is not installed")
         if self.profile != "default" and not (CLAUDE_PROFILES_DIR / self.profile).is_dir():
             return Invocation("unavailable", "the chosen Claude CLI profile is not signed in (see `model_generation.py profile`, then sign it in with --login)")
         started = time.monotonic()
+        timeout = TOOL_TIMEOUT if workspace is not None else timeout
         with tempfile.TemporaryDirectory(prefix="ternforge-model-call-") as empty:
             try:
                 done = self.runner(
-                    self.command(model, system, schema, usd_cap), input=prompt, capture_output=True, text=True,
-                    cwd=empty, env=claude_env(self.profile), timeout=timeout,
+                    self.command(model, system, schema, usd_cap, workspace), input=prompt, capture_output=True, text=True,
+                    cwd=str(workspace.root) if workspace is not None else empty, env=claude_env(self.profile), timeout=timeout,
                 )
             except subprocess.TimeoutExpired:
                 return Invocation("timeout", f"no answer within {timeout} s", seconds=round(time.monotonic() - started, 1))
@@ -262,6 +302,7 @@ class ClaudeCli:
 def parse_claude_stream(stdout: str, stderr: str, returncode: int, schema: dict | None) -> Invocation:
     """Read a ``claude -p --output-format stream-json --verbose`` run into one Invocation."""
     init, limit, result = {}, {}, {}
+    used: dict[str, int] = {}
     for line in stdout.splitlines():
         try:
             event = json.loads(line)
@@ -273,6 +314,10 @@ def parse_claude_stream(stdout: str, stderr: str, returncode: int, schema: dict 
             limit = event.get("rate_limit_info") or {}
         elif event.get("type") == "result":
             result = event
+        elif event.get("type") == "assistant":
+            for block in (event.get("message") or {}).get("content") or []:
+                if isinstance(block, dict) and block.get("type") == "tool_use":
+                    used[str(block.get("name"))] = used.get(str(block.get("name")), 0) + 1
     windows = None
     if limit:
         unified = limit.get("unifiedWindows") or {}
@@ -297,6 +342,8 @@ def parse_claude_stream(stdout: str, stderr: str, returncode: int, schema: dict 
         "windows": windows,
         "backend_version": str(init.get("claude_code_version") or ""),
         "model_reported": str(init.get("model") or ""),
+        "tools_used": used,
+        "denied": sorted({str(item.get("tool_name") or "a tool") for item in result.get("permission_denials") or [] if isinstance(item, dict)}),
     }
     if init and init.get("apiKeySource") not in {None, "none"}:
         return Invocation("error", "the call billed an API key instead of the subscription", **common)
@@ -363,7 +410,9 @@ class AntigravityCli:
             command += ["--json-schema", json.dumps(schema)]
         return command
 
-    def invoke(self, *, model: str, system: str, prompt: str, schema: dict | None, usd_cap: float | None = None, timeout: int = TIMEOUT) -> Invocation:
+    def invoke(self, *, model: str, system: str, prompt: str, schema: dict | None, usd_cap: float | None = None, timeout: int = TIMEOUT, workspace: Workspace | None = None) -> Invocation:
+        if workspace is not None:
+            return Invocation("unavailable", "a call with tools goes only through the claude CLI, whose permissions hold its tools to the copy")
         if not self.executable:
             return Invocation("unavailable", "the agy CLI is not installed")
         started = time.monotonic()
@@ -443,6 +492,8 @@ def parse_roles(rows: list[dict]) -> dict[str, list[dict]]:
         order = row.get("Order", "")
         if role is None or backend not in BACKENDS or not model or not order.isdigit():
             raise RuntimeError(f"Test Plan: a Model generation row names an unknown role, backend, order or model: {row}")
+        if role in TOOL_ROLES and backend not in TOOL_BACKENDS:
+            raise RuntimeError(f"Test Plan: the {role} role works with tools, which only {', '.join(TOOL_BACKENDS)} can hold to the copy: {row}")
         roles.setdefault(role, []).append({"order": int(order), "backend": backend, "model": model})
     if set(roles) != set(ROLES.values()):
         raise RuntimeError(f"Test Plan: Model generation must list every role {sorted(ROLES)}")
@@ -463,7 +514,7 @@ def parse_budget(rows: list[dict]) -> dict[str, float]:
         if key is None:
             raise RuntimeError(f"Test Plan: unknown Generation budget row {row.get('Budget')!r}")
         match = re.fullmatch(r"(\d+(?:\.\d+)?)%", value) if key in {"five_hour", "seven_day"} else (
-            re.fullmatch(r"\$(\d+(?:\.\d+)?)", value) if key == "usd_per_call" else re.fullmatch(r"(\d+)", value)
+            re.fullmatch(r"\$(\d+(?:\.\d+)?)", value) if key in {"usd_per_call", "usd_per_tool_call"} else re.fullmatch(r"(\d+)", value)
         )
         if not match:
             raise RuntimeError(f"Test Plan: Generation budget {row.get('Budget')!r} has an unreadable limit {value!r}")
@@ -580,28 +631,55 @@ class Run:
         self.versions: dict[str, str] = {}
         self.rows: list[dict] = []
         # Several calls may run at once (call_many): the budget, the windows and the ledger change
-        # under one lock. Each backend takes at most the Test Plan's parallel calls at a time, and
-        # halves that for the rest of the run when it answers overloaded; it never grows by itself.
+        # under one lock. Each quota pool finds how many calls it takes at a time the way TCP finds
+        # its window: it starts at the Test Plan's parallel calls, doubles while every call at the
+        # limit is answered (slow start), grows by one after its first overload answer and halves
+        # on every overload answer, never above the Test Plan's ceiling nor below one.
         self.lock = threading.RLock()
         self.parallel = max(1, int(budget.get("parallel_calls", 1)))
+        self.parallel_max = max(self.parallel, int(budget.get("parallel_calls_max", self.parallel)))
         self.turns = threading.Condition(self.lock)
         self.in_flight: dict[str, int] = {}
         self.limits: dict[str, int] = {}
+        self.slow_start: dict[str, bool] = {}
+        self.at_limit: dict[str, int] = {}
+        # Every halving opens a new epoch: an answer to a call made before it is old news.
+        self.epochs: dict[str, int] = {}
 
-    def enter(self, name: str) -> tuple[int, int]:
-        """Wait for a free place on the backend; return how many calls it runs now and its limit."""
+    def concurrency_pool(self, name: str, model: str) -> str:
+        """What a limit on simultaneous calls applies to: the whole account where its plan window is
+        one, otherwise the quota pool the model draws on."""
+        return name if getattr(self.backend(name), "account_windows", False) else f"{name}:{self.quota_pool(name, model)}"
+
+    def enter(self, pool: str) -> tuple[int, int, int]:
+        """Wait for a free place in the pool; return how many calls it runs now, its limit and epoch."""
         with self.turns:
-            self.limits.setdefault(name, self.parallel)
-            while self.in_flight.get(name, 0) >= self.limits[name]:
+            self.limits.setdefault(pool, self.parallel)
+            self.epochs.setdefault(pool, 0)
+            while self.in_flight.get(pool, 0) >= self.limits[pool]:
                 self.turns.wait()
-            self.in_flight[name] = self.in_flight.get(name, 0) + 1
-            return self.in_flight[name], self.limits[name]
+            self.in_flight[pool] = self.in_flight.get(pool, 0) + 1
+            return self.in_flight[pool], self.limits[pool], self.epochs[pool]
 
-    def leave(self, name: str, overloaded: bool) -> None:
+    def leave(self, pool: str, epoch: int, overloaded: bool, answered_at_limit: bool) -> None:
+        """Free the place and adjust the pool's limit: halve it on an overload answer; after as many
+        answered calls made at the limit as the limit, double it or, after an overload, add one.
+        Calls made below the limit say nothing about more, and an answer to a call made before the
+        last halving says nothing new: one burst of overload halves the limit once, as in TCP."""
         with self.turns:
-            self.in_flight[name] -= 1
-            if overloaded:
-                self.limits[name] = max(1, self.limits[name] // 2)
+            self.in_flight[pool] -= 1
+            if epoch == self.epochs[pool]:
+                if overloaded:
+                    self.limits[pool] = max(1, self.limits[pool] // 2)
+                    self.slow_start[pool] = False
+                    self.at_limit[pool] = 0
+                    self.epochs[pool] += 1
+                elif answered_at_limit:
+                    self.at_limit[pool] = self.at_limit.get(pool, 0) + 1
+                    if self.at_limit[pool] >= self.limits[pool]:
+                        grown = self.limits[pool] * 2 if self.slow_start.get(pool, True) else self.limits[pool] + 1
+                        self.limits[pool] = min(self.parallel_max, grown)
+                        self.at_limit[pool] = 0
             self.turns.notify_all()
 
     def backend(self, name: str):
@@ -699,12 +777,12 @@ class Run:
                 return f"the {label} window is at {used:.0%}, at or above its {self.budget[key]:.0%} limit"
         return ""
 
-    def call(self, role: str, *, purpose: str, contract_id: str, subject: str, system: str, prompt: str, schema: dict, response_dir: Path) -> tuple[dict, dict | None]:
+    def call(self, role: str, *, purpose: str, contract_id: str, subject: str, system: str, prompt: str, schema: dict, response_dir: Path, workspace: Workspace | None = None) -> tuple[dict, dict | None]:
         """Try the role's backends in order. Return the ledger row of the last attempt and, when a
         backend answered within its schema, the stored response.
         """
         row, response, _attempts = self.call_with_attempts(
-            role, purpose=purpose, contract_id=contract_id, subject=subject, system=system, prompt=prompt, schema=schema, response_dir=response_dir,
+            role, purpose=purpose, contract_id=contract_id, subject=subject, system=system, prompt=prompt, schema=schema, response_dir=response_dir, workspace=workspace,
         )
         return row, response
 
@@ -712,13 +790,16 @@ class Run:
         """Make independent calls at once, each as ``call_with_attempts`` makes it, and return their
         results in the order asked. Each backend still takes at most the parallel calls at a time,
         and every call is guarded and ledgered on its own."""
-        if len(requests) <= 1 or self.parallel == 1:
+        if len(requests) <= 1 or self.parallel_max == 1:
             return [self.call_with_attempts(**request) for request in requests]
-        with ThreadPoolExecutor(max_workers=min(len(requests), self.parallel * len(BACKENDS))) as pool:
+        # Enough workers for every pool at its ceiling (Antigravity has two pools); each pool's own
+        # limit decides how many of them call at once.
+        with ThreadPoolExecutor(max_workers=min(len(requests), self.parallel_max * (len(BACKENDS) + 1))) as pool:
             return list(pool.map(lambda request: self.call_with_attempts(**request), requests))
 
-    def call_with_attempts(self, role: str, *, purpose: str, contract_id: str, subject: str, system: str, prompt: str, schema: dict, response_dir: Path) -> tuple[dict, dict | None, list[dict]]:
-        """``call``, and the ledger rows of every attempt it made, in order."""
+    def call_with_attempts(self, role: str, *, purpose: str, contract_id: str, subject: str, system: str, prompt: str, schema: dict, response_dir: Path, workspace: Workspace | None = None) -> tuple[dict, dict | None, list[dict]]:
+        """``call``, and the ledger rows of every attempt it made, in order. With a workspace the call
+        works in that copy of the project with the tools its permissions allow."""
         schema_sha = sha256_text(stable_json(schema))
         attempts = []
         for entry in self.roles[role]:
@@ -747,12 +828,17 @@ class Run:
                 pool = self.smaller_pool(name, model)
                 if pool:
                     self.pool_calls[(name, pool)] = self.pool_week(name, pool) + 1
-            in_flight, limit = self.enter(name)
+            pool = self.concurrency_pool(name, model)
+            in_flight, limit, epoch = self.enter(pool)
             invocation = None
             try:
-                invocation = self.backend(name).invoke(model=model, system=system, prompt=prompt, schema=schema, usd_cap=self.budget["usd_per_call"])
+                invocation = self.backend(name).invoke(
+                    model=model, system=system, prompt=prompt, schema=schema, workspace=workspace,
+                    usd_cap=self.budget["usd_per_tool_call" if workspace is not None else "usd_per_call"],
+                )
             finally:
-                self.leave(name, invocation is not None and overloaded(invocation))
+                answered = invocation is not None and invocation.outcome in {"ok", "invalid"}
+                self.leave(pool, epoch, invocation is not None and overloaded(invocation), answered and in_flight == limit)
             with self.lock:
                 if invocation.windows is not None:
                     self.windows[name] = invocation.windows
@@ -768,6 +854,8 @@ class Run:
                     "prompt_sha256": base["prompt_sha256"], "system_sha256": base["system_sha256"], "schema_sha256": schema_sha,
                     "structured": invocation.structured,
                 }
+                if workspace is not None:
+                    response["workspace"] = {"write": workspace.write, "command": workspace.command, "tools_used": invocation.tools_used, "denied": invocation.denied}
                 base["response_sha256"] = response_sha256(response)
                 response_dir.mkdir(parents=True, exist_ok=True)
                 (response_dir / f"{base['call_id']}.json").write_text(json.dumps(response, indent=2, sort_keys=True) + "\n")
@@ -777,6 +865,7 @@ class Run:
                 "tokens": invocation.tokens, "list_usd": invocation.list_usd, "seconds": invocation.seconds,
                 "windows": invocation.windows, "in_flight": in_flight, "parallel_limit": limit,
                 "backed_off": overloaded(invocation),
+                **({"tools_used": invocation.tools_used, "denied": invocation.denied} if workspace is not None else {}),
             })
             attempts.append(row)
             if response is not None:

@@ -1,4 +1,58 @@
 {
+ "draft_author_last|claude-cli|claude-opus-5-5": {
+  "backend": "claude-cli",
+  "cases": {
+   "D-SECRET": {
+    "call_id": "20260928T164751Z-933546",
+    "cascade": {
+     "accepted": true,
+     "context_gaps": [],
+     "fails_on_mutant": true,
+     "grounding": [],
+     "imports_beyond_allowed": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "detail": "the cascade keeps the draft",
+    "draft_sha256": "cb0c6aafe0dfd2eca6c5afe7268e1b7b99ae5d0530b3e0cceb47d15686f8c70e",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "1d096d6d791779dc15453bbe7908450648818517f37258c5f8be507386da8601"
+   }
+  },
+  "model": "claude-opus-5-5",
+  "passed": true,
+  "questions_sha256": "27000dcb24a8b7a7480a11071d50da8c7eeb2c58251d7d208e4ab356cd82ee3f",
+  "ran_at": "2026-09-28T16:48:11.008371Z",
+  "role": "draft_author_last"
+ },
+ "draft_author_tools|claude-cli|claude-sonnet-5": {
+  "backend": "claude-cli",
+  "cases": {
+   "D-SECRET": {
+    "call_id": "20260928T164712Z-98d8e1",
+    "cascade": {
+     "accepted": true,
+     "context_gaps": [],
+     "fails_on_mutant": true,
+     "grounding": [],
+     "imports_beyond_allowed": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "detail": "the cascade keeps the draft",
+    "draft_sha256": "4be0fa0f3309fef6bc292f04be62712b72fdb9de2cfb5c76e332d4d1cdbdb50f",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "53243a206f5a6e2397230b8860c9197da872803285e35231e0ab78af9b21ee5a"
+   }
+  },
+  "model": "claude-sonnet-5",
+  "passed": true,
+  "questions_sha256": "27000dcb24a8b7a7480a11071d50da8c7eeb2c58251d7d208e4ab356cd82ee3f",
+  "ran_at": "2026-09-28T16:47:51.457235Z",
+  "role": "draft_author_tools"
+ },
  "draft_author|antigravity-cli|claude-sonnet-4-6": {
   "backend": "antigravity-cli",
   "cases": {
@@ -28,25 +82,27 @@
   "backend": "antigravity-cli",
   "cases": {
    "D-SECRET": {
-    "call_id": "20260927T215626Z-8c8ad1",
+    "call_id": "20260928T105529Z-8ac1c2",
     "cascade": {
      "accepted": true,
+     "context_gaps": [],
      "fails_on_mutant": true,
+     "grounding": [],
      "imports_beyond_allowed": [],
      "passes_on_original": 5,
      "primitives": []
     },
     "detail": "the cascade keeps the draft",
-    "draft_sha256": "bb6af133d53e3a8e407c4736133ff4362d7907f15c2d913c4345b0ad1898f1e7",
+    "draft_sha256": "19e61fa4e89d9abf92a5045c5fde460c543e157d22ea9910a2f4fa01ae92b438",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "fb7721b2ecdb0f79c4085f4da293f12ebe92cb1caf2f33d02e2b0da868c38d6f"
+    "response_sha256": "be406642cc65fb2b938a429d489a03a0440a95bfd8f66961cd993cc4d0be5755"
    }
   },
   "model": "gemini-3.1-pro-high",
   "passed": true,
-  "questions_sha256": "b43f47cf1eab540a2dfb461018b58ffb6909ec3bd22a2cad9f7644bec1ac45a4",
-  "ran_at": "2026-09-27T21:56:55.398818Z",
+  "questions_sha256": "f028da4aff02fc881cb978466dbc630038f744d6cb4d734f4b564ea09d6bde18",
+  "ran_at": "2026-09-28T10:55:51.521520Z",
   "role": "draft_author"
  },
  "draft_author|antigravity-cli|gemini-3.8-flash-high": {
@@ -78,25 +134,54 @@
   "backend": "antigravity-cli",
   "cases": {
    "D-SECRET": {
-    "call_id": "20260927T133902Z-d5c11d",
+    "call_id": "20260928T105504Z-de83d0",
     "cascade": {
      "accepted": true,
+     "context_gaps": [],
      "fails_on_mutant": true,
+     "grounding": [],
      "imports_beyond_allowed": [],
      "passes_on_original": 5,
      "primitives": []
     },
     "detail": "the cascade keeps the draft",
-    "draft_sha256": "cc79db31075f1b4c5bb1bd3f3bb11673919af8af207044543a70cfd669f20c12",
+    "draft_sha256": "37b5fc6e9002e63f0d2b82d2c3892057b4a4d4228339f270d27cb8cb258b81d9",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "a40fc8ec7031cec517e5e374d66cdc7b23cd509946d37b38002fe418316dcd0a"
+    "response_sha256": "f74e5f88d76270466397b755540195448a0c8a6946fbcba1cce4f88539f5b470"
    }
   },
   "model": "gemini-3.8-flash-medium",
   "passed": true,
-  "questions_sha256": "b43f47cf1eab540a2dfb461018b58ffb6909ec3bd22a2cad9f7644bec1ac45a4",
-  "ran_at": "2026-09-27T13:39:27.748509Z",
+  "questions_sha256": "f028da4aff02fc881cb978466dbc630038f744d6cb4d734f4b564ea09d6bde18",
+  "ran_at": "2026-09-28T10:55:29.479866Z",
+  "role": "draft_author"
+ },
+ "draft_author|claude-cli|claude-sonnet-5": {
+  "backend": "claude-cli",
+  "cases": {
+   "D-SECRET": {
+    "call_id": "20260928T105551Z-ce17fb",
+    "cascade": {
+     "accepted": true,
+     "context_gaps": [],
+     "fails_on_mutant": true,
+     "grounding": [],
+     "imports_beyond_allowed": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "detail": "the cascade keeps the draft",
+    "draft_sha256": "04e3f113e3f465131199e4dd8bce494948864031e71634e93f2d75b1210d31a1",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "1cd4b8605b8d96b508a4fa8a783dc9975ce87d17878d7af974b596c193b19fdd"
+   }
+  },
+  "model": "claude-sonnet-5",
+  "passed": true,
+  "questions_sha256": "f028da4aff02fc881cb978466dbc630038f744d6cb4d734f4b564ea09d6bde18",
+  "ran_at": "2026-09-28T10:56:04.279305Z",
   "role": "draft_author"
  },
  "generator|antigravity-cli|gemini-3.1-pro-high": {
@@ -133,97 +218,114 @@
   "ran_at": "2026-09-26T21:11:49.926349Z",
   "role": "generator"
  },
+ "generator|claude-cli|claude-sonnet-5": {
+  "backend": "claude-cli",
+  "cases": {
+   "G-SUMMARY": {
+    "call_id": "20260927T233212Z-5050ad",
+    "detail": "1 well-formed, confined proposals",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "9342c4cde73be3354d21db1ad79d47ff274378f655bb5e0e5a8860d4a314da12"
+   }
+  },
+  "model": "claude-sonnet-5",
+  "passed": true,
+  "questions_sha256": "f3b1d358f6db9f3916ba936c747ac3e8fa6261f37d70acec6cb0de7721a9e3e5",
+  "ran_at": "2026-09-27T23:32:29.890551Z",
+  "role": "generator"
+ },
  "verdict_review|antigravity-cli|gemini-3.1-pro-high": {
   "backend": "antigravity-cli",
   "cases": {
    "V-EQUIVALENT": {
-    "call_id": "20260927T132725Z-063de5",
+    "call_id": "20260928T144224Z-435e18",
     "detail": "expected equivalent, got equivalent",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "29309a36ab0b47d30cd6834e325372c5f862de494c2f05f11334e8ea481beb32"
+    "response_sha256": "faf69bc0e7c8f47c64581f99b7ae07fbc8345794cb98e4760cd2a5a0c7f96b89"
    },
    "V-ESCALATE": {
-    "call_id": "20260927T132737Z-e97f00",
+    "call_id": "20260928T144235Z-7e401c",
     "detail": "expected escalate, got escalate",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "90a4a9b3808204e2fb72db354b927deff9755e5a1fdb05013cd66ca612c7af59"
+    "response_sha256": "103c62837de3e18fa7a7a22401caf92b2042f070f23c908d17d4e16e453dc93b"
    },
    "V-PIN": {
-    "call_id": "20260927T132710Z-f2b4ab",
+    "call_id": "20260928T144204Z-e119c1",
     "detail": "expected pin, got pin",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "a65b857af284f7959f4c5763306a54d39b72e9bdb906b6dbfd7dc0bc31117831"
+    "response_sha256": "ef7cfedda2b593ed7199de397f0bed6b78ffdfb4940bf2c37bc8ae0121724adf"
    }
   },
   "model": "gemini-3.1-pro-high",
   "passed": true,
-  "questions_sha256": "558051ec84d77ad406617fedb5d06287551ebcc2f926e410d1a0bcfbdd0570e0",
-  "ran_at": "2026-09-27T13:27:50.786708Z",
+  "questions_sha256": "24fcbccbfa03747198ebf7725f8626c1237dbaa9026f412c7a5c78d5da9c6b0b",
+  "ran_at": "2026-09-28T14:42:51.276648Z",
   "role": "verdict_review"
  },
  "verdict_review|antigravity-cli|gemini-3.8-flash-high": {
   "backend": "antigravity-cli",
   "cases": {
    "V-EQUIVALENT": {
-    "call_id": "20260927T132833Z-cd3dab",
+    "call_id": "20260928T144328Z-953332",
     "detail": "expected equivalent, got equivalent",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "dd15ee45aa3c11f4f8d5c2461578ca00d9aa07186386d7109bdae30b2b297648"
+    "response_sha256": "18fe3b392c7164a28528a2e290ba7a5dc4e35dec625be1532fe766073fd5994e"
    },
    "V-ESCALATE": {
-    "call_id": "20260927T132904Z-6dc201",
+    "call_id": "20260928T144450Z-a24c5a",
     "detail": "expected escalate, got escalate",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "5ca0100da1b77d166b0342b792dc10f350c26708b6253e407b7577c1408a30d7"
+    "response_sha256": "974f31d05c3f80b4016b7288486bd599179ce1f0a9b18c9b8036b9c8f0aef025"
    },
    "V-PIN": {
-    "call_id": "20260927T132750Z-76de0a",
+    "call_id": "20260928T144251Z-d1d59c",
     "detail": "expected pin, got pin",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "f9005667806509c4a64fd4397c4cdb448e29c42b0a88f8752fbe1f6274f06cad"
+    "response_sha256": "884110b6a340b09d84073691df9aa3fc5c43add39caecd9f93b95073528377db"
    }
   },
   "model": "gemini-3.8-flash-high",
   "passed": true,
-  "questions_sha256": "558051ec84d77ad406617fedb5d06287551ebcc2f926e410d1a0bcfbdd0570e0",
-  "ran_at": "2026-09-27T13:29:41.127488Z",
+  "questions_sha256": "24fcbccbfa03747198ebf7725f8626c1237dbaa9026f412c7a5c78d5da9c6b0b",
+  "ran_at": "2026-09-28T14:45:55.593472Z",
   "role": "verdict_review"
  },
  "verdict|claude-cli|claude-opus-5-5": {
   "backend": "claude-cli",
   "cases": {
    "V-EQUIVALENT": {
-    "call_id": "20260926T205735Z-4af008",
+    "call_id": "20260928T152405Z-e965c7",
     "detail": "expected equivalent, got equivalent",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "90e2f131a578dd054598e8e4c1b591b04fc301f912feef182a97b9421faba20a"
+    "response_sha256": "d00e9a7c2fd71b0df6f3948c16efe8fb731297411cbced33de958de506270e16"
    },
    "V-ESCALATE": {
-    "call_id": "20260926T205740Z-ba7db9",
+    "call_id": "20260928T152410Z-2474d5",
     "detail": "expected escalate, got escalate",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "17c3cb7aba0bb1bf14a444cd7fd052629c773c550a4984efc2af229b60033e2b"
+    "response_sha256": "a26b97cfe495f996b1c46e0b6dbd04d4bf6b2e373f7f95900dee549bccefdb0f"
    },
    "V-PIN": {
-    "call_id": "20260926T205727Z-03fab3",
+    "call_id": "20260928T152400Z-db1f98",
     "detail": "expected pin, got pin",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "3c64f212a1a40b712723cf065d299e4008ed2d1ceebe8a139ffb0716fd294646"
+    "response_sha256": "aabe1dbdb3a741015509f2cf70251f7b90f82cb7b64b59689f59ab895c52c24f"
    }
   },
   "model": "claude-opus-5-5",
   "passed": true,
-  "questions_sha256": "558051ec84d77ad406617fedb5d06287551ebcc2f926e410d1a0bcfbdd0570e0",
-  "ran_at": "2026-09-26T20:57:45.706271Z",
+  "questions_sha256": "24fcbccbfa03747198ebf7725f8626c1237dbaa9026f412c7a5c78d5da9c6b0b",
+  "ran_at": "2026-09-28T15:24:15.053340Z",
   "role": "verdict"
  }
 }

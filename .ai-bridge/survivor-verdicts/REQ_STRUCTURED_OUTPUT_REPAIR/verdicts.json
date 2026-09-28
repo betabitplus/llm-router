@@ -1,0 +1,24 @@
+{
+ "9a81553c4311e34e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T160557Z-b79593",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes the error message text put into the repair prompt: it uses the generic fallback instead of the validator's own message. The attempt counting and the finite stop at structured_output_max_attempts are unchanged, so the bounded-repair requirement and its budget-2 check are unaffected.",
+   "response_sha256": "435f647cb34130fded7eb5969ebd2e891bc042b9c703d492d626ab25fb8ea7d7",
+   "sources": [
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "error_message = validated.error_message and 'Validation failed.'",
+    "error_message = validated.error_message or \"Validation failed.\"",
+    "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "76c1370c90d114a4e336345c23b4eb4634cba577a87c3584e68eaff5e3ddf02f"
+ }
+}

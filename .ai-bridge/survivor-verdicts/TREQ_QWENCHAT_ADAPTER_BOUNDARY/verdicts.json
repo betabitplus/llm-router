@@ -12,6 +12,25 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T00:37:08.579534Z",
+   "answer_sha256": "26e8baf7aac539d85b1c6369230435b20444ef603d249806528e7d3775f0adc6",
+   "call_id": "20260928T002640Z-d60e91",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "26e8baf7aac539d85b1c6369230435b20444ef603d249806528e7d3775f0adc6",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_14f4d9793d873316.py",
+   "response_sha256": "13435e20b354b94eabee3f8732716627c3a7026546318fa1c9b3fcf3520bed2e",
+   "source": "draft author"
+  },
   "prompt_sha256": "e6fe9cdfa2f04cf9eb40ffb9a1748c00806e46f76112b73927ffed5a56bf3d3f"
  },
  "1e1bd3200d2722cb": {
@@ -27,6 +46,35 @@
    "verdict": "pin"
   },
   "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-28T10:42:29.900469Z",
+   "answer_sha256": "f822b0fe2f9482c950b6344565115d40a7c908acb4452d61c41ed077402c5399",
+   "call_id": "20260928T103907Z-673d90",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "f822b0fe2f9482c950b6344565115d40a7c908acb4452d61c41ed077402c5399",
+   "model": "gemini-3.1-pro-high",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_1e1bd3200d2722cb.py",
+   "response_sha256": "8679eb9c6cbf2fb9c1a3b2470fb1d0b347af907d0e80525a3467a73b748118f0",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
   "prompt_sha256": "a8d15cccf7ff8f20b27ea2de315dff2122ca0abe32688daaa9c39b45e4862f5b"
  },
  "2038c0b46cff816b": {
@@ -76,6 +124,25 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T09:46:25.331381Z",
+   "answer_sha256": "fbc306c09f810a5d46de497618f3bd2de51d0195662cdaef22dab3a0988f11a9",
+   "call_id": "20260928T093415Z-6fcc01",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "fbc306c09f810a5d46de497618f3bd2de51d0195662cdaef22dab3a0988f11a9",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_2fe5c64afc7ed393.py",
+   "response_sha256": "a8adc5a459e40ffe61a8a8afa70dd1df32087f6e855f469739ea4fcbe6e1afba",
+   "source": "draft author"
+  },
   "prompt_sha256": "59a3be2611d1fc2d40bb5b6608349cb0bc47b55e8991b3c71084c93d41996009"
  },
  "40231175bc1ce35e": {
@@ -125,6 +192,25 @@
    "verdict": "pin"
   },
   "operator": "boolean",
+  "pin": {
+   "adopted_at": "2026-09-28T09:46:25.332631Z",
+   "answer_sha256": "d4d55597749f78bcde25030b824646bbe897189db9ab848c04c56fb4c378963d",
+   "call_id": "20260928T093415Z-c8d6b6",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "d4d55597749f78bcde25030b824646bbe897189db9ab848c04c56fb4c378963d",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_4f1c2e37ad20c744.py",
+   "response_sha256": "b523a16ee3e5da00a4fa389e9cf712f6ec42aaf74c1087d667c8467b8b6d6fd4",
+   "source": "draft author"
+  },
   "prompt_sha256": "825fb3bf6b633c2ffcf1299d9178ee31d6ceef2ca332764c39c5fa3b6f8e9a0a"
  },
  "5e7fd67e19872a42": {
@@ -140,6 +226,25 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T09:46:25.333301Z",
+   "answer_sha256": "eac1ac6a159c5d52b9af440bfb095340371ce9d7dc3dedbea62b022e75294993",
+   "call_id": "20260928T093415Z-43755e",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "eac1ac6a159c5d52b9af440bfb095340371ce9d7dc3dedbea62b022e75294993",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_5e7fd67e19872a42.py",
+   "response_sha256": "e674be682fd2c33822224da276fea74fbcb6820cd46f8da17dc3f7937b05bac2",
+   "source": "draft author"
+  },
   "prompt_sha256": "6e9c4376ff39d912de2d4d73b009c2406f3cdd92342a65f1fe41dc50c12b6c03"
  },
  "76cf360dbfb7ff62": {
@@ -155,6 +260,25 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T09:53:15.400086Z",
+   "answer_sha256": "ebd657fc997e7be69e87f3fba0de319aa2c845a5aaae7f4409023604d50ee843",
+   "call_id": "20260928T094628Z-eedf62",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "ebd657fc997e7be69e87f3fba0de319aa2c845a5aaae7f4409023604d50ee843",
+   "model": "gemini-3.1-pro-high",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_76cf360dbfb7ff62.py",
+   "response_sha256": "c1fe2c6c85e1ada01a713028a561a53d8c6f05af7764305bf6ea728686a072b8",
+   "source": "draft author"
+  },
   "prompt_sha256": "78e6655a734759be4f18459c93d083e9fe17fda981308b60cd07c3b5532f7337"
  },
  "7879b343f0d7cac0": {
@@ -170,6 +294,25 @@
    "verdict": "pin"
   },
   "operator": "boolean",
+  "pin": {
+   "adopted_at": "2026-09-28T09:46:25.333902Z",
+   "answer_sha256": "fdfa401c3de8f28c9db06b74198830fe33fa76fc53b3ebb574237ddc383d97b0",
+   "call_id": "20260928T093415Z-cc5ed7",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "8a2051501113c9b225841de850d78918b29e04ca57b4f4fe00526923eb300d94",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7879b343f0d7cac0.py",
+   "response_sha256": "5a07474b26edb377952022fa5553df89218a16a02ac1843f4fb941a2401a35d2",
+   "source": "draft author"
+  },
   "prompt_sha256": "f59aac5cdd6812815b1d94497ebc1396d942b4b096d5b46bf5af9fda6929916d"
  },
  "7f08bc96d2f666c5": {
@@ -219,22 +362,69 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T09:46:25.334480Z",
+   "answer_sha256": "156177515d987975b6e061cadb27494bece5de0d3926dcb9755cc6925a5a46f7",
+   "call_id": "20260928T093415Z-8d96f4",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "156177515d987975b6e061cadb27494bece5de0d3926dcb9755cc6925a5a46f7",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8916bf123bb5af04.py",
+   "response_sha256": "02239a2300ffd11d8dd8dca6516b00226683b63a94ac48a20510d4de59ac0fa0",
+   "source": "draft author"
+  },
   "prompt_sha256": "8fd48c5b5ed804158720ed1f4e1d7b8b4c4d224528a373b78d81dc2b79444ef0"
  },
  "8920c14adbe7aa36": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260927T153056Z-79fd84",
+   "call_id": "20260928T103235Z-3bd6b3",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Switching to trust_env=True makes the async client pick up proxy variables (HTTP(S)_PROXY, ALL_PROXY), .netrc credentials and SSL environment settings. Chat and upload traffic could then be sent through another proxy or carry injected auth instead of going straight to the configured QwenChat proxy base_url. That breaks the \"proxy HTTP behavior\" and transport-boundary behavior that TREQ_QWENCHAT_ADAPTER_BOUNDARY requires.",
-   "response_sha256": "749eec7a0a2d6486babe39fc909c15d4099c73bb4e92f347e566d30a0fb7e843",
-   "test_focus": "Set HTTPS_PROXY/HTTP_PROXY/ALL_PROXY to an unreachable proxy and run aexecute (with a media upload). Check that both the upload and chat requests still reach the configured base_url directly and succeed, e.g. by asserting the AsyncClient is created with trust_env=False.",
+   "reason": "Changing trust_env=False to True makes the QwenChat client honor HTTP(S)_PROXY/ALL_PROXY, NO_PROXY and .netrc, so uploads and chat requests can be rerouted or get extra credentials instead of going straight to the configured base_url. TREQ_QWENCHAT_ADAPTER_BOUNDARY requires preserving that transport-boundary proxy behavior.",
+   "response_sha256": "2abcda542a39beecfc0d73f8b345f1609322b9fc7304e6057fe903886669deb0",
+   "test_focus": "With HTTP_PROXY/HTTPS_PROXY/ALL_PROXY set to an unreachable address, aexecute (including a media upload) must still send its requests directly to the configured base_url and return the normalized result, not a transport ProviderError.",
    "verdict": "pin"
   },
   "operator": "boolean",
-  "prompt_sha256": "48e17ee6c91157d67d07d5dc5fd2f4ed1b343eb1dd773d9cf06f04bffd3125f1"
+  "pin": {
+   "adopted_at": "2026-09-28T10:39:06.986029Z",
+   "answer_sha256": "fc9e6e7586dd1acc6e27e994f0088a53f4920070c02d60b8b1f5f69350539903",
+   "call_id": "20260928T103258Z-2b61ed",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "fc9e6e7586dd1acc6e27e994f0088a53f4920070c02d60b8b1f5f69350539903",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8920c14adbe7aa36.py",
+   "response_sha256": "6c7508b5785794c44f37850d304a10853d1150eda55b26cd665ecdfcb8950190",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "28154fcda03892ecdbd79d35699fd3a628510dfd1ee5e7f8d4a2aa16915e06f5"
  },
  "97f91dfe57fdbb0a": {
   "answer": {
@@ -264,6 +454,25 @@
    "verdict": "pin"
   },
   "operator": "boolean",
+  "pin": {
+   "adopted_at": "2026-09-28T00:46:13.119078Z",
+   "answer_sha256": "3882cfc574b7daa880f600ce749162d3e0b8840cbfbad3fd322b1352a37101cb",
+   "call_id": "20260928T003709Z-75a470",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "3882cfc574b7daa880f600ce749162d3e0b8840cbfbad3fd322b1352a37101cb",
+   "model": "gemini-3.1-pro-high",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_aeeb7e44dc927403.py",
+   "response_sha256": "6c80c4dd2a27cd028f7ef39c52b90af20263294e5c5b4f40bdb576e172f9ae63",
+   "source": "draft author"
+  },
   "prompt_sha256": "2e6a99585048b7828d02d343ae39e94689cad18c02eff8fae509f144d0c6d166"
  },
  "cbd3f30a9cbff5df": {
@@ -279,6 +488,34 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T10:39:06.986766Z",
+   "answer_sha256": "f36d5d87d5c97340ac4d3932a9bdcf930134b6b8fd5db39949326d3e3329cf2f",
+   "call_id": "20260928T103258Z-af6ac9",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "f36d5d87d5c97340ac4d3932a9bdcf930134b6b8fd5db39949326d3e3329cf2f",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cbd3f30a9cbff5df.py",
+   "response_sha256": "a5f3535e7c74d2ce5c14899ded47ab859c2754ceecccae8962fc65b5eeb27687",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
   "prompt_sha256": "3ba005880b95685f139c5e2a4ee5a03611d1930b6bf1c665edee080f0724fcd1"
  },
  "cebb90925a422d7e": {
@@ -294,6 +531,25 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T09:53:15.401642Z",
+   "answer_sha256": "150591064faebcb8b828d5f171536ece22fe5ef0cacbde6fcc207c8a6be85677",
+   "call_id": "20260928T094628Z-be6968",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "150591064faebcb8b828d5f171536ece22fe5ef0cacbde6fcc207c8a6be85677",
+   "model": "gemini-3.1-pro-high",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cebb90925a422d7e.py",
+   "response_sha256": "a455ac6519e302b252ac974daf514771f1c671e2fa6a1388ec59cbec418a1be9",
+   "source": "draft author"
+  },
   "prompt_sha256": "2084a187238aa84870a4a70f7607c6c66005b540580828c591d2bb320c55076f"
  },
  "d0d545a61d998262": {
@@ -309,6 +565,25 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T09:46:25.335176Z",
+   "answer_sha256": "c726fa62b132c8819a29c220f3fe6d8ad7d74a50b691ba07eba3e59e5ce3ae48",
+   "call_id": "20260928T093415Z-a700bd",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "c726fa62b132c8819a29c220f3fe6d8ad7d74a50b691ba07eba3e59e5ce3ae48",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_d0d545a61d998262.py",
+   "response_sha256": "ab437e469bcf4f497b8e0f3fc951e0fddf3e86089d23cc30e66964da514fc521",
+   "source": "draft author"
+  },
   "prompt_sha256": "c1ba8b1cf41a6e7fc2424286d65e3f407bf3eadd7d0aa9f624e54b13fb610316"
  },
  "d19c86a3969c8208": {
@@ -339,6 +614,25 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T09:53:15.402742Z",
+   "answer_sha256": "4b1e3853bba6cb2f65d87679847e173e6387e2ca7368b540d58902fa18e2be62",
+   "call_id": "20260928T094628Z-dddd3c",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "4b1e3853bba6cb2f65d87679847e173e6387e2ca7368b540d58902fa18e2be62",
+   "model": "gemini-3.1-pro-high",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_d553c778448d4a6c.py",
+   "response_sha256": "e3b32567d7bdc1dea41432d5f4b60d3443c2e4323e88677a27a7f08ce5de764d",
+   "source": "draft author"
+  },
   "prompt_sha256": "b32ac718e18f42637fee55d27058c4ed967b99e0a94cc2ca3668465a4cad7dea"
  }
 }

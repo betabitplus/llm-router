@@ -12,6 +12,25 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T00:46:13.120525Z",
+   "answer_sha256": "60a980df3b8547b36d2789c14d7313553bc0dc8c39821d9e277798437d62c2a2",
+   "call_id": "20260928T003709Z-8d3b3b",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "60a980df3b8547b36d2789c14d7313553bc0dc8c39821d9e277798437d62c2a2",
+   "model": "gemini-3.1-pro-high",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77252785424d95f7.py",
+   "response_sha256": "6679db3a1bf39ed71a0bbbacb82d852331b9be706a507313eb810ddbd2d6c82a",
+   "source": "draft author"
+  },
   "prompt_sha256": "34f7add073a6a97512ba4a323c8461b7d5fae8b67724541a2d06ecd7b3846017"
  },
  "77986b22a0ac6322": {

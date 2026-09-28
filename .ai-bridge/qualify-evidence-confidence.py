@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import enum
 import hashlib
 import json
@@ -1704,6 +1705,145 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
         and cascade["draft_imports"]("from pkg.sub import mod\n", {"pkg.sub.mod"}) == {"pkg.sub.mod"}
         and cascade["draft_imports"]("from pkg.sub import mod\n") == {"pkg.sub"}
     )
+    # The grounding check finds, before anything runs, each name, member and argument a draft uses that
+    # the project does not define, and nothing else: whatever the tree alone cannot settle (a name from
+    # an outside package, a constant, a submodule, an inherited constructor) is never a problem.
+    with tempfile.TemporaryDirectory(prefix="ternforge-grounding-") as grounding_dir:
+        project = Path(grounding_dir)
+        for name, text in {
+            "src/pkg/__init__.py": "from outside_lib import Helper\n\nfrom .types import Child, Kind, Limits, Record\n",
+            "src/pkg/types.py": (
+                "from dataclasses import dataclass\nfrom enum import StrEnum\n\nfrom pydantic import BaseModel\n\nCONSTANT = 1\n\n\n"
+                "class Kind(StrEnum):\n    A = \"a\"\n    B = \"b\"\n\n    def label(self) -> str:\n        return self.value\n\n\n"
+                "@dataclass\nclass Limits:\n    rate: float\n    burst: int = 1\n\n\n"
+                "class Record(BaseModel):\n    name: str\n\n\n"
+                "class Base:\n    def __init__(self, *, size: int) -> None:\n        self.size = size\n\n\n"
+                "class Child(Base):\n    pass\n"
+            ),
+            "src/pkg/_internal/__init__.py": "",
+            "src/pkg/_internal/deep.py": "class Hidden:\n    pass\n",
+            "tests/support/helpers.py": "VALUE = 1\n\n\ndef helper() -> None:\n    return None\n",
+        }.items():
+            (project / name).parent.mkdir(parents=True, exist_ok=True)
+            (project / name).write_text(text)
+        grounded, grounded_used = cascade["grounding_problems"](project, (
+            "from pkg import Child, Helper, Kind, Limits, Record, _internal\nfrom pkg.types import CONSTANT\n"
+            "from tests.support.helpers import VALUE, helper\n\n\ndef test_good():\n"
+            "    assert Kind.A.value == \"a\" and Kind.B and Kind.label\n    Limits(rate=1.0, burst=2)\n    Record(name=\"x\")\n"
+            "    Child(size=1)\n    Helper(anything=1)\n    assert CONSTANT == VALUE and helper() is None and _internal\n"
+        ), "pkg")
+        invented, _invented_used = cascade["grounding_problems"](project, (
+            "from pkg import Child, Kind, Limits\nfrom pkg.types import Hidden\nfrom pkg.nowhere import Thing\n\n\n"
+            "def test_bad():\n    assert Kind.C and Hidden and Thing\n    Limits(rate=1.0, limit=2)\n    Child(width=1)\n"
+        ), "pkg")
+        # A call that leaves out what a constructor needs, directly or through the draft's own subclass;
+        # a positional argument fills its field, and a subclass with fields of its own is not judged.
+        unbuilt, _unbuilt_used = cascade["grounding_problems"](project, (
+            "from pkg import Child, Limits, Record\n\n\nclass Wider(Child):\n    label = \"w\"\n\n\n"
+            "class Own(Child):\n    extra: int = 0\n\n\n"
+            "class Short(Child):\n    def __init__(self, label: str) -> None:\n        super().__init__(width=label)\n\n\n"
+            "def test_unbuilt():\n    Limits(burst=2)\n    Limits(1.0)\n    Record()\n    Wider(width=1)\n    Own(depth=1)\n"
+        ), "pkg")
+        (project / "pyproject.toml").write_text("[tool.pytest.ini_options]\nasyncio_mode = \"auto\"\n")
+        auto_rule = cascade["asyncio_rule"](project)
+        (project / "pyproject.toml").write_text("[tool.pytest.ini_options]\naddopts = \"-q\"\n")
+        strict_rule = cascade["asyncio_rule"](project)
+        callers = cascade["module_callers"](
+            "def helper(value):\n    return value\n\n\ndef caller():\n    return helper(1)\n\n\n"
+            "class Owner:\n    def method(self):\n        return helper(2)\n",
+            "helper",
+        )
+        callees = cascade["module_callees"](
+            "def check(value):\n    return value > 0\n\n\ndef unused():\n    return 0\n\n\n"
+            "def target(values):\n    return list(filter(check, values))\n",
+            "target",
+        )
+        summary_errors = cascade["test_errors"](
+            "F\n=== short test summary info ===\n"
+            "FAILED tests/test_x.py::test_x - Failed: async def functions are not natively supported.\n1 failed\n",
+            Path("/tmp/ternforge-copy"),
+        )
+        card = cascade["api_card"](project, "from pkg import Kind, Limits\n", package="pkg")
+        gaps = cascade["context_gaps"](["pkg.Kind", "pkg.types.Limits", "tests.support.helpers.helper"], "Build it with Kind and helper().")
+    grounding_ok = (
+        grounded == []
+        and {"pkg.Kind", "pkg.Helper", "pkg.types.CONSTANT", "tests.support.helpers.helper"} <= set(grounded_used)
+        and invented == [
+            "Child cannot be built without size",
+            "Child takes no argument width; it takes size",
+            "Kind has no member C; its members are A, B",
+            "Limits takes no argument limit; it takes burst, rate",
+            "pkg.types has no Hidden (it lives in pkg._internal.deep)",
+            "the project has no module pkg.nowhere",
+        ]
+        and unbuilt == [
+            "Child cannot be built without size",
+            "Child takes no argument width; it takes size",
+            "Limits cannot be built without rate",
+            "Record cannot be built without name",
+            "Wider cannot be built without size",
+            "Wider takes no argument width; it takes size",
+        ]
+        and auto_rule == "" and "@pytest.mark.asyncio" in strict_rule
+        and "def caller():" in callers and "def method(self):" in callers and "def helper" not in callers
+        and "def check(value):" in callees and "def unused" not in callees and "def target" not in callees
+        and summary_errors == ["Failed: async def functions are not natively supported."]
+        and "`Kind` (from pkg.types): an enum whose only members are A, B" in card
+        and "`Limits` (from pkg.types): Limits(rate: float, burst: int = …)" in card
+        and gaps == ["pkg.types.Limits"]
+        and "sources" in cascade["DRAFT_ANSWER_SCHEMA"]["required"]
+        and cascade["draft_rejection"]({"ran": False, "grounding": invented[:1]}).startswith("it does not fit the project's code as written: Child cannot")
+    )
+    # The draft author's aids: the path to a changed line, read from the function's code, and what a
+    # weak draft reached, a statement counted on its first line and a function's def not as a call.
+    demo = (
+        "def f(x, items):\n    if x is None:\n        return 0\n    for item in items:\n        try:\n            value = int(item)\n"
+        "        except ValueError:\n            continue\n        except TypeError:\n            if x > 1:\n                return -1\n    return 1\n"
+    )
+    path_text = cascade["path_to_line"](demo, "f", 11)
+    spread = "def g(flag):\n    return dict(\n        a=1,\n        b=flag,\n    )\n"
+    spread_defect = spread.replace("b=flag", "b=not flag")
+    reach_all = cascade["reach_text"](cascade["draft_reach"](spread_defect, spread, "g", [2]))
+    reach_none = cascade["reach_text"](cascade["draft_reach"](spread_defect, spread, "g", [1]))
+    # The check a model with tools runs in its copy: a forbidden primitive is refused unrun, a weak draft
+    # is told what it reached of the defect.
+    proposal = next(row for row in payload["proposals"] if row["id"] == "C-DISTINGUISHED")
+    target_path, target_name = proposal["target"].split("::", 1)
+    defect = cascade["apply_replacement"]((calibration / target_path).read_text(), target_name, proposal["replacement"])
+    weak_draft = (
+        "from calibration_target import Record  # ty: ignore[unresolved-import]\n\n\n"
+        "def test_summary_names_the_record() -> None:\n    value = \"s\"\n    assert Record(name=\"n\", secret=value, level=3).summary()[\"name\"] == \"n\"\n"
+    )
+    agent_reports = {}
+    with tempfile.TemporaryDirectory(prefix="ternforge-agent-check-qualification-") as temp_dir:
+        room = cascade["prepare_workspace"](calibration, Path(temp_dir) / "copy", {
+            "path": target_path, "qualname": target_name, "mutated_source": defect, "tests": ["checks/calibration_checks.py"],
+            "as_path": cascade["DRAFT_PATH"], "extra_imports": [],
+        })
+        for name, draft_text in (("primitive", (calibration / "rejected-primitive.draft.py").read_text()), ("weak", weak_draft)):
+            (Path(room["root"]) / room["write"]).write_text(draft_text)
+            done = subprocess.run(room["command"].split(), cwd=room["root"], text=True, capture_output=True, timeout=900, check=False)
+            agent_reports[name] = done.stdout
+        copied = sorted(item.name for item in Path(room["root"]).iterdir())
+    aids_ok = (
+        path_text == (
+            "The changed line 11 runs only when `x is None` is false (else line 2 leaves first); the loop over `items` runs (line 4); "
+            "the block under the try at line 5 raises TypeError and not ValueError, which are caught first; `x > 1` is true (line 10)."
+        )
+        and reach_all == ": it runs the changed line 4, yet nothing it checks depends on what the change does"
+        and reach_none == ": it never runs the function under test, so it never reaches the changed line 4"
+        and cascade["line_ranges"]([2, 4, 5, 6, 12]) == "2, 4–6 and 12"
+        and room["command"] == cascade["CHECK_COMMAND"] and room["write"] == cascade["DRAFT_PATH"]
+        # The copy holds the project's code, tests and settings and the check, and nothing else: no history, no keys.
+        and ".draft-tools" in copied and set(copied) <= {".draft-tools", "src", "tests", "features", "checks", "pyproject.toml", "uv.lock"}
+    )
+    agent_ok = (
+        "- not run: " in agent_reports.get("primitive", "") and "exec" in agent_reports.get("primitive", "")
+        and "- on the original: passes 5 of 5 runs" in agent_reports.get("weak", "")
+        and "passes, so the test misses it: of the changed lines" in agent_reports.get("weak", "") and "but never line" in agent_reports.get("weak", "")
+        and "The cascade would reject it" in agent_reports.get("weak", "")
+        and cascade["CHECK_COMMAND"] in cascade["with_tools"]("Q", "tests/test_x.py") and "tests/test_x.py" in cascade["with_tools"]("Q", "tests/test_x.py")
+    )
     ok = (
         outcomes == expected
         and "adds an import" in reasons.get("C-CONFINED", "")
@@ -1736,17 +1876,23 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
         and failing_reason == "it does not pass on the original 5 times in a row (pytest: AssertionError: in ./tests/t.py for <Record> | KeyError: 'name')"
         and style_ok
         and imports_ok
+        and grounding_ok
+        and aids_ok
+        and agent_ok
     )
     return {
         "PRODUCER_SEMANTIC_MUTANT_CASCADE": {
             "status": "QUALIFIED" if ok else "NOT QUALIFIED",
             "intended_use": "judge frozen semantic mutant proposals for a named risk without a model: reject identical, duplicate, invalid and unconfined ones, run the rest against the contract's passing tests in an isolated copy, and look for an input that tells a survivor apart from the original",
-            "false_green_control": "a calibration set with a known outcome for every proposal: an identical, a rule-duplicate, an invalid, a confined one that adds an import, one whose module no longer imports, a caught, an equivalent (must stay undecided, never caught, and only be labelled likely equivalent by unanimous assessors), a distinguishable (must be found), one only the symbolic search finds, one whose assessor input is refuted, a stale and a reviewer-judged equivalent; a kept draft, a draft that imports beyond the allowed and one that uses exec, both rejected without being run; a selected target without proposals that must keep its class undecided; a scenario pytest-bdd generates, whose example for a draft must be its module's step definitions; a draft failing on the original, rejected with pytest's errors free of the copy's path and memory addresses; a draft in the project's style only, formatted and safely fixed, rejected for a lint rule it still breaks; and the imports a draft may use, where `from package import module` imports the module and a Technical requirement's module brings the project modules it imports itself",
+            "false_green_control": "a calibration set with a known outcome for every proposal: an identical, a rule-duplicate, an invalid, a confined one that adds an import, one whose module no longer imports, a caught, an equivalent (must stay undecided, never caught, and only be labelled likely equivalent by unanimous assessors), a distinguishable (must be found), one only the symbolic search finds, one whose assessor input is refuted, a stale and a reviewer-judged equivalent; a kept draft, a draft that imports beyond the allowed and one that uses exec, both rejected without being run; a selected target without proposals that must keep its class undecided; a scenario pytest-bdd generates, whose example for a draft must be its module's step definitions; a draft failing on the original, rejected with pytest's errors free of the copy's path and memory addresses; a draft in the project's style only, formatted and safely fixed, rejected for a lint rule it still breaks; the imports a draft may use, where `from package import module` imports the module and a Technical requirement's module brings the project modules it imports itself; and a small project on which the grounding check must find exactly the invented member, the two unknown arguments, the misplaced import and the missing module of one draft, the arguments a call leaves out (also through the draft's own subclass and its super().__init__, not for a positional argument or a subclass with fields of its own) in another, and nothing in a third that uses a name from an outside package, a constant, a submodule, a test helper and an inherited constructor, with the API card naming every enum member and field, and a name the draft uses that its question never shows counted as a gap; pytest's reason for a failure without error lines; the async test rule only for pytest-asyncio's strict mode; the callers of a module-level function and the functions of its module it calls or hands on; the path to a changed line read from its function's branches, loops, handlers and early exits; what a weak draft reached of its defect, a statement counted on its first line and a function's def not as a call; and the check a model with tools runs in its copy of the calibration project, refusing a forbidden primitive unrun and telling a weak draft which changed lines it never reached",
             "control": {
                 "outcomes": outcomes, "expected": expected, "reasons": reasons, "kept_draft": kept, "rejected_draft": rejected,
                 "primitive_draft": primitive, "projection": projection, "target_without_proposals": unchallenged,
                 "judgement": {key: {"status": value.get("status"), "found_by": found_by.get(key)} for key, value in judged.items() if value},
                 "scenario_example_lines": len(scenario_example.splitlines()),
+                "grounding": {"grounded": grounded, "invented": invented, "unbuilt": unbuilt},
+                "aids": {"path": path_text, "reach_all": reach_all, "reach_none": reach_none},
+                "agent_check": agent_reports,
             },
         }
     }
@@ -1961,14 +2107,28 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
             and busy.calls == 5
             and all(row.get("parallel_limit") == 2 and row.get("in_flight") in {1, 2} for row, _response, _attempts in results if row["outcome"] == "ok")
         )
-        # An overloaded backend (capacity or rate, not quota) halves its parallel limit for the rest of the run.
+        # A pool that answers overloaded (capacity or rate, not quota) halves its limit, then grows back
+        # by one at a time, never above the ceiling; the ledger says so.
         strained = Concurrent([probe(), invocation("error", "the call failed: UNAVAILABLE (code 503): No capacity available"), *[answered() for _ in range(5)]])
         run = run_with(both[:1], {"claude-cli": strained}, "strained", {**budget, "calls_per_run": 10, "parallel_calls": 2})
         results = run.call_many([{"role": "generator", "response_dir": temp / "strained", **request, "subject": subject} for subject in "abcdef"])
-        checks["a backend that answers overloaded halves its parallel limit for the rest of the run, and the ledger says so"] = (
-            run.limits.get("claude-cli") == 1
-            and sum(bool(row.get("backed_off")) for row, _response, _attempts in results) == 1
-            and [row.get("parallel_limit") for row, _response, _attempts in results][-1] == 1
+        # The ledger in the order calls finished: threads take their turn in any order of the requests.
+        timeline = [row for row in run.rows if row.get("role") == "generator"]
+        backed = [index for index, row in enumerate(timeline) if row.get("backed_off")]
+        checks["a pool that answers overloaded halves its limit and grows back one at a time, and the ledger says so"] = (
+            len(backed) == 1 and any(row.get("parallel_limit") == 1 for row in timeline[backed[0] + 1:])
+            and max(row.get("parallel_limit") or 0 for row in timeline) == 2
+            and run.limits.get(run.concurrency_pool("claude-cli", both[0]["model"])) == 2 and strained.most <= 2
+        )
+        # Slow start: a pool whose calls at the limit are all answered doubles its limit up to the ceiling.
+        eager = Concurrent([probe(), *[answered() for _ in range(12)]])
+        run = run_with(both[:1], {"claude-cli": eager}, "eager", {**budget, "calls_per_run": 20, "parallel_calls": 2, "parallel_calls_max": 4})
+        results = run.call_many([{"role": "generator", "response_dir": temp / "eager", **request, "subject": f"s{index}"} for index in range(12)])
+        eager_limits = [row.get("parallel_limit") for row in run.rows if row.get("role") == "generator"]
+        checks["a pool whose calls are answered grows its limit from the start value to the ceiling and never past it"] = (
+            eager.most == 4 and eager_limits[0] == 2 and max(eager_limits) == 4
+            and run.limits.get(run.concurrency_pool("claude-cli", both[0]["model"])) == 4
+            and all(row["outcome"] == "ok" for row, _response, _attempts in results)
         )
 
         sloppy = Scripted([probe(), invocation("invalid", "the answer breaks its schema")])
@@ -2068,7 +2228,7 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         {"Role": role, "Order": "1", "Backend": "`claude-cli`", "Model": "`m`"} for role in models["ROLES"]
     ]
     budget_ok = [
-        {"Budget": label, "Limit": {"five_hour": "80%", "seven_day": "70%", "usd_per_call": "$0.50"}.get(key, "2")}
+        {"Budget": label, "Limit": {"five_hour": "80%", "seven_day": "70%", "usd_per_call": "$0.50", "usd_per_tool_call": "$5.00"}.get(key, "2")}
         for label, key in models["BUDGET_LABELS"].items()
     ]
 
@@ -2125,12 +2285,48 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         and semantic["draft_from_answer"]("SM-1", {"test_code": "def test_x():\n    pass"}).startswith("# semantic-mutant: SM-1\n")
     )
 
+    # A call with tools (the draft author's ladder) is held to its copy of the project: it may read the
+    # copy, write one file and run one command, without asking anyone and without the person's own
+    # settings, never under the person's home; a call without tools keeps no tool at all; only the
+    # claude CLI serves a role with tools; and what the tools did is read back from the stream.
+    workspace = models["Workspace"](root=Path("/tmp/copy"), write="tests/test_pin.py", command="python3 .draft-tools/check.py")
+    cli = models["ClaudeCli"](executable="claude", profile="default")
+    with_tools = cli.command("m", "s", {"type": "object"}, 5.0, workspace)
+    without = cli.command("m", "s", {"type": "object"}, 0.5)
+    settings = json.loads(with_tools[with_tools.index("--settings") + 1])
+    agy = models["AntigravityCli"](executable="agy")
+    tool_stream = "\n".join(json.dumps(event) for event in (
+        {"type": "system", "subtype": "init", "claude_code_version": "2.1.0", "model": "m", "apiKeySource": "none"},
+        {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read"}, {"type": "text", "text": "x"}]}},
+        {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Bash"}, {"type": "tool_use", "name": "Read"}]}},
+        {"type": "result", "subtype": "success", "is_error": False, "result": "", "structured_output": {"test_code": "x" * 30},
+         "usage": {"input_tokens": 1, "output_tokens": 1}, "permission_denials": [{"tool_name": "WebFetch"}]},
+    ))
+    used = models["parse_claude_stream"](tool_stream, "", 0, {"type": "object"})
+    roles_with_tools = [{"Role": role, "Order": "1", "Backend": "`claude-cli`", "Model": "`m`"} for role in models["ROLES"]]
+    checks["a call with tools is held to its copy of the project, through the claude CLI only, and what its tools did is read back"] = (
+        with_tools[with_tools.index("--tools") + 1] == models["TOOLS"] == "Read,Grep,Glob,Write,Edit,Bash"
+        and with_tools[with_tools.index("--permission-mode") + 1] == "dontAsk"
+        and with_tools[with_tools.index("--setting-sources") + 1] == ""
+        and settings == {"permissions": {
+            "allow": ["Read(./**)", "Glob", "Grep", "Write(./tests/test_pin.py)", "Edit(./tests/test_pin.py)", "Bash(python3 .draft-tools/check.py)"],
+            "deny": ["Read(~/**)", "Write(~/**)", "Edit(~/**)"],
+        }}
+        and {"--strict-mcp-config", "--safe-mode", "--disable-slash-commands", "--no-session-persistence"} <= set(with_tools)
+        and "--dangerously-skip-permissions" not in with_tools and "bypassPermissions" not in with_tools
+        and without[without.index("--tools") + 1] == "" and "--permission-mode" not in without and "--settings" not in without
+        and agy.invoke(model="m", system="s", prompt="p", schema=None, workspace=workspace).outcome == "unavailable"
+        and bool(parse_roles(roles_with_tools))
+        and refuses(parse_roles, [{**row, "Backend": "`antigravity-cli`"} if row["Role"] == "Draft test author with tools" else row for row in roles_with_tools])
+        and used.outcome == "ok" and used.tools_used == {"Read": 2, "Bash": 1} and used.denied == ["WebFetch"]
+    )
+
     ok = all(checks.values()) and "claude-cli" in backends_qualified
     return {
         "PRODUCER_MODEL_GENERATION_ADAPTER": {
             "status": "QUALIFIED" if ok else "NOT QUALIFIED",
             "intended_use": "call a subscription CLI model for semantic mutants and draft tests (ADR_0004), store only answers within their schema, and ledger and budget every call",
-            "false_green_control": "recorded real answers and their failing variants (schema break, rejected window, API-key billing, missing result, usage limit, ineligible account) must never read as an answer; scripted runs must defer above the budget (a window, the run's calls, the smaller pool's week), fall back in order, store nothing from a failure, and bind every stored answer to its prompt, schema and content",
+            "false_green_control": "recorded real answers and their failing variants (schema break, rejected window, API-key billing, missing result, usage limit, ineligible account) must never read as an answer; scripted runs must defer above the budget (a window, the run's calls, the smaller pool's week), fall back in order, store nothing from a failure, and bind every stored answer to its prompt, schema and content; a call with tools is held to its copy of the project (read and search it, write one file, run one command, nothing under the person's home, no one asked), only the claude CLI serves a role with tools, and what the tools did and what was refused is read back from the stream",
             "backends_qualified": backends_qualified,
             "control": checks,
         }
@@ -2309,14 +2505,15 @@ def survivor_judgement_controls() -> dict[str, dict[str, object]]:
         tree.mkdir(parents=True)
         (tree / "models.py").write_text(
             "from dataclasses import dataclass, field\nfrom enum import Enum\n\n\nclass Shade(Enum):\n    DARK = 1\n    LIGHT = 2\n\n\n"
-            "@dataclass\nclass Box:\n    shade: Shade\n    size: int = 1\n    tag: str = field(default='', init=False)\n"
+            "@dataclass\nclass Box:\n    shade: Shade\n    size: int = 1\n    tag: str = field(default='', init=False)\n\n"
+            "    @property\n    def area(self) -> int:\n        return self.size * self.size\n"
         )
         use = "from tfq_guide.models import Box\n\n\ndef pack(box: Box) -> int:\n    return box.size\n\n\ndef loose(thing: object) -> bool:\n    return isinstance(thing, Box)\n"
         (tree / "use.py").write_text(use)
         guide = judge["input_guide"](str(tree / "use.py"), judge["harness_for"](use, "pack"))
         loose_guide = judge["input_guide"](str(tree / "use.py"), judge["harness_for"](use, "loose"))
-        checks["the assessors are told how the project's types their target takes or names are built"] = (
-            "Box(shade: Shade, size: int = …)" in guide and "Shade is an enum: DARK, LIGHT" in guide and "tag" not in guide
+        checks["the assessors are told how the project's types their target takes or names are built, their properties included"] = (
+            "Box(shade: Shade, size: int = …); its properties: area -> int" in guide and "Shade is an enum: DARK, LIGHT" in guide and "tag" not in guide
             and "Box(shade: Shade" in loose_guide
             and judge["input_guide"](str(folder / "originals.py"), judge["harness_for"](originals_source, "e01_double")) == ""
         )
@@ -2329,6 +2526,38 @@ def survivor_judgement_controls() -> dict[str, dict[str, object]]:
             and bool(judge["answer_problems"]({"verdict": "distinct", "confidence": 1, "arguments": {}, "reason": "r"}))
             and bool(judge["answer_problems"]({"verdict": "equivalent", "confidence": 1.5, "arguments": {}, "reason": "r"}))
         )
+        # An answer's sources are its own question's words: copied as they stand, long enough to show
+        # something, and quoting a line the change touches; a verdict's also the requirement it turns on.
+        clip_original = 'def clip(value: int) -> str:\n    if value > 0:\n        return "```" + str(value)\n    return ""'
+        clip_mutant = 'def clip(value: int) -> str:\n    if value >= 0:\n        return "```" + str(value)\n    return ""'
+        clip_harness = judge["harness_for"](clip_original + "\n", "clip")
+        asked_clip = judge["assessor_prompt"](target="clip", original=clip_original, mutant=clip_mutant, harness=clip_harness, context="Risk the change realizes: zero")
+        answer = {"verdict": "distinct", "confidence": 0.9, "arguments": {"value": 0}, "reason": "zero is shown"}
+        sourced = {
+            name: judge["answer_problems"]({**answer, "sources": sources}, asked_clip)
+            for name, sources in (
+                ("grounded", ["if value >= 0:"]), ("invented", ["if value > 1:"]), ("beside", ['return "```" + str(value)']),
+                ("short", ["value"]), ("none", []),
+            )
+        }
+        verdict_question = judge["verdict_prompt"](
+            context="Requirement R (Clip): A positive value is shown with its fence.", target="clip", original=clip_original,
+            mutant=clip_mutant, judgement="nothing was found; its label is unsure.",
+        )
+        pin = {"verdict": "pin", "level": "requirement", "reason": "zero is shown now", "test_focus": "zero shows nothing"}
+        pinned = judge["verdict_problems"]({**pin, "sources": ["A positive value is shown with its fence.", "if value > 0:"]}, False, verdict_question)
+        unmoored = judge["verdict_problems"]({**pin, "sources": ["if value > 0:"]}, False, verdict_question)
+        again = judge["asked_again"](verdict_question, ["x"])
+        checks["an answer's sources are its own question's words: a line the change touches, and for a verdict the requirement it turns on"] = (
+            sourced["grounded"] == []
+            and sourced["invented"] == ["its source «if value > 1:» is not in the question", "none of its sources quotes a line the change touches"]
+            and sourced["beside"] == ["none of its sources quotes a line the change touches"]
+            and sourced["short"] == ["its source «value» is too short to show anything", "none of its sources quotes a line the change touches"]
+            and sourced["none"] == ["it cites no source"]
+            and pinned == [] and unmoored == ["none of its sources quotes the requirement, Feature, Goal or criterion it turns on"]
+            and judge["asked_question"](again) == verdict_question and judge["verdict_problems"]({**pin, "sources": ["x"]}, False, again)[0] == "its source «x» is not in the question"
+            and "Requirement R" not in asked_clip
+        )
     threshold = judge["conformal_threshold"]
     checks["the split-conformal threshold follows its rank"] = (
         threshold([0.0] * 14, 0.1) == 0.0 and threshold([0.1, 0.9], 0.1) is None
@@ -2339,7 +2568,7 @@ def survivor_judgement_controls() -> dict[str, dict[str, object]]:
         "PRODUCER_SYMBOLIC_DIFFERENTIAL": {
             "status": "QUALIFIED" if ok else "NOT QUALIFIED",
             "intended_use": "decide surviving mutants without a model: a symbolic search (CrossHair) over a typed harness, and every proposed input confirmed by execution before it counts",
-            "false_green_control": "labelled pairs: every distinct pair's input confirmed, the symbolic search finding and confirming inputs for its distinct pairs and none for its equivalent pairs; witnesses that reach beyond plain values never evaluated; non-finite inputs never counting; a rule mutant rebuilt exactly from its location; an assessor's equivalent only labelling, calibrated and unanimous",
+            "false_green_control": "labelled pairs: every distinct pair's input confirmed, the symbolic search finding and confirming inputs for its distinct pairs and none for its equivalent pairs; witnesses that reach beyond plain values never evaluated; non-finite inputs never counting; a rule mutant rebuilt exactly from its location; an assessor's equivalent only labelling, calibrated and unanimous; an answer's sources found word for word in its own question, one of them on a line the change touches and, for a verdict, one on the requirement it turns on",
             "control": {"checks": checks, "symbolic": symbolic},
         }
     }
@@ -2386,7 +2615,7 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
                 and row.get("outcome") == "ok" and structured.get("verdict") == answer.get("verdict")
                 and structured.get("confidence") == answer.get("confidence")
                 and {key: judge["argument_text"](value) for key, value in (structured.get("arguments") or {}).items()} == answer.get("arguments")
-                and judge["answer_problems"](structured) == answer.get("problems")
+                and judge["answer_problems"](structured, str(response.get("prompt") or "")) == answer.get("problems")
             )
     checks["every calibration answer is a stored, ledgered call's answer"] = bound and bool(record.get("answers"))
     # Which models may answer for their assessor, recomputed from the answers: every labelled pair
@@ -2429,7 +2658,7 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
                 models["response_sha256"](response) == answer.get("response_sha256") == row.get("response_sha256")
                 and row.get("outcome") == "ok" and response.get("prompt_sha256") == pair.get("prompt_sha256")
                 and structured.get("verdict") == answer.get("verdict") and structured.get("confidence") == answer.get("confidence")
-                and judge["answer_problems"](structured) == answer.get("problems") == []
+                and judge["answer_problems"](structured, str(response.get("prompt") or "")) == answer.get("problems") == []
             )
         observed_ok = observed_ok and caught and (pin.get("cascade") or {}).get("accepted") is True and pin.get("path") == pair.get("pin_path")
         # Only what the triage puts to the assessors is exchangeable with its questions.
@@ -2525,6 +2754,8 @@ def model_canary_controls() -> dict[str, dict[str, object]]:
     bound = recomputed = True
     for record in results.values():
         role = record.get("role")
+        if record.get("questions_sha256") != semantic["canary_questions_sha256"](questions.get(role) or []):
+            continue
         by_id = {question["id"]: question for question in questions.get(role) or []}
         for case_id, case in (record.get("cases") or {}).items():
             question = by_id.get(case_id)
@@ -2552,6 +2783,9 @@ def model_canary_controls() -> dict[str, dict[str, object]]:
         "every canary answer is a stored, ledgered call's answer, by the model its record names": bound,
         "every canary case recomputes to its record": recomputed,
         "a wrong verdict fails its canary": not semantic["verdict_canary_passed"](questions["verdict"][0], {"verdict": "equivalent", "level": "requirement", "reason": "both are the same", "test_focus": ""})[0],
+        "the right verdict fails its canary when a source is not in its question": not semantic["verdict_canary_passed"](
+            next(question for question in questions["verdict"] if question["expected"] == "pin"),
+            {"verdict": "pin", "level": "requirement", "reason": "as the question shows", "test_focus": "the case", "sources": ["a sentence nobody wrote here"]})[0],
         "an escalation inside a requirement's scope fails its canary": not semantic["verdict_canary_passed"](
             next(question for question in questions["verdict"] if question["expected"] == "escalate"), {"verdict": "escalate", "level": "requirement", "reason": "a product decision", "test_focus": ""})[0],
         "a proposal that imports fails the generator canary": not semantic["generator_canary_passed"](calibration, questions["generator"][0], {"proposals": [{"defect": "d", "replacement": "    def summary(self) -> dict[str, object]:\n        import os\n        return {\"name\": os.sep}"}]})[0],
@@ -2584,14 +2818,73 @@ def model_canary_controls() -> dict[str, dict[str, object]]:
     return {"PRODUCER_MODEL_CANARIES": {**base, "status": "QUALIFIED" if ok else "NOT QUALIFIED", "control": control}}
 
 
+# The three control groups that run the engine, the cascade and the symbolic search take nearly all
+# of a qualification's time. Each is read back when nothing it depends on changed, as a build cache
+# reads back an action: its code here with every function of this script it calls, the tool files it
+# runs, read by meaning, the locked environment and the Python it runs on.
+CONTROL_CACHE = ROOT / "test-results/qualification-controls.json"
+CONTROL_INPUTS = {
+    "implementation_fault_controls": (".ai-bridge/implementation_faults.py", ".ai-bridge/pytest_plugins/*.py"),
+    "semantic_mutant_controls": (
+        ".ai-bridge/semantic_mutants.py", ".ai-bridge/survivor_equivalence.py", ".ai-bridge/pytest_plugins/*.py",
+        ".ai-bridge/semantic-mutants/calibration/**/*",
+    ),
+    "survivor_judgement_controls": (".ai-bridge/survivor_equivalence.py", ".ai-bridge/semantic-mutants/calibration/equivalence/**/*"),
+}
+
+
+def control_code_digest(name: str) -> str:
+    """A control group's code by meaning, with every function, class and constant of this script it reaches."""
+    tree = ast.parse(Path(__file__).read_text())
+    definitions: dict[str, ast.AST] = {}
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+            definitions[node.name] = node
+        elif isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    definitions[target.id] = node
+    seen: set[str] = set()
+    queue = [name]
+    while queue:
+        current = queue.pop()
+        if current in seen or current not in definitions:
+            continue
+        seen.add(current)
+        queue.extend(node.id for node in ast.walk(definitions[current]) if isinstance(node, ast.Name))
+    return hashlib.sha256("\n".join(ast.dump(definitions[current]) for current in sorted(seen)).encode()).hexdigest()
+
+
+def cached_controls(controls) -> dict[str, dict[str, object]]:
+    """Run a heavy control group, or read back its last result when it qualified and nothing it
+    depends on has changed since."""
+    name = controls.__name__
+    files = sorted({path for pattern in (*CONTROL_INPUTS[name], "pyproject.toml", "uv.lock") for path in ROOT.glob(pattern) if path.is_file() and "__pycache__" not in path.parts})
+    key = hashlib.sha256(json.dumps({
+        "code": control_code_digest(name),
+        "inputs": {str(path.relative_to(ROOT)): FINGERPRINTS["input_digest"](path) for path in files},
+        "python": sys.version,
+    }, sort_keys=True).encode()).hexdigest()
+    cache = json.loads(CONTROL_CACHE.read_text()) if CONTROL_CACHE.exists() else {}
+    entry = cache.get(name) or {}
+    if entry.get("key") == key and entry.get("producers") and all(row.get("status") == "QUALIFIED" for row in entry["producers"].values()):
+        print(f"[QUALIFY] {name}: nothing it depends on changed since {entry.get('ran_at')}, its result read back", flush=True)
+        return entry["producers"]
+    producers = controls()
+    cache[name] = {"key": key, "producers": producers, "ran_at": datetime.now(UTC).isoformat().replace("+00:00", "Z")}
+    CONTROL_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    CONTROL_CACHE.write_text(json.dumps(cache, indent=1, sort_keys=True, default=str) + "\n")
+    return producers
+
+
 def main() -> None:
     external, details = external_controls()
     internal = internal_controls()
     project_sdk = project_sdk_controls()
-    implementation = implementation_fault_controls()
-    semantic = semantic_mutant_controls()
+    implementation = cached_controls(implementation_fault_controls)
+    semantic = cached_controls(semantic_mutant_controls)
     generation = model_generation_controls()
-    judgement = survivor_judgement_controls()
+    judgement = cached_controls(survivor_judgement_controls)
     ensemble = assessor_ensemble_controls()
     canaries = model_canary_controls()
     producers = {**external, **internal, **project_sdk, **implementation, **semantic, **generation, **judgement, **ensemble, **canaries}

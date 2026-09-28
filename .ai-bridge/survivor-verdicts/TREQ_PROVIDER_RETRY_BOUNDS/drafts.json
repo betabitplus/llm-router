@@ -1,0 +1,146 @@
+{
+ "a3f68e4f70d254ab": [
+  {
+   "at": "2026-09-28T10:39:06.982829Z",
+   "call_id": "20260928T103258Z-8f375f",
+   "cause": "behaviour",
+   "context_gaps": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ],
+   "grounding": [],
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "5b93e64dedd1f6368d83c2f8f79de0b769e5b41b83505e413b2bd92ec26d83fd",
+   "reason": "it does not pass on the original 5 times in a row",
+   "sources": [
+    "llm_router._internal.providers.retry.build_provider_async_retrying",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._api.errors.ProviderError"
+   ]
+  },
+  {
+   "at": "2026-09-28T10:42:29.898276Z",
+   "call_id": "20260928T103907Z-bc1076",
+   "cause": "behaviour",
+   "context_gaps": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ],
+   "grounding": [],
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "e950e1ea31810d88d37dcaaadc3fd78d9e808a55fd37e497ca6ba07fbf4e1587",
+   "reason": "it does not pass on the original 5 times in a row",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  {
+   "at": "2026-09-28T10:59:07.454857Z",
+   "call_id": "20260928T105635Z-a440b3",
+   "cause": "runtime-api",
+   "context_gaps": [
+    "llm_router._api.errors.ProviderError"
+   ],
+   "grounding": [],
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "ffe0742032aef003d6c70de422c8c3160c19d141ce5fcb9377f511a0cb0a56cc",
+   "reason": "it does not pass on the original 5 times in a row (pytest: TypeError: ProviderError.__init__() missing 2 required positional arguments: 'provider' and 'model')",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  {
+   "at": "2026-09-28T11:02:57.712740Z",
+   "call_id": "20260928T105907Z-df0b29",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "d7618a6838883aed72ad43716553d453b84c3884c7c1965fa7458a6b77738cdd",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert 1 == 3)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  {
+   "at": "2026-09-28T16:10:44.274179Z",
+   "call_id": "20260928T160627Z-e76591",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "529ee7c604e46f5e2812b273e58d499cee6dfd0e660fd452e9156b3b52d6cefd",
+   "reason": "it breaks the project's lint rules (ruff: line 12: N818 Exception name `_ProviderFailure` should be named with an Error suffix | line 16: ARG001 Unused function argument: `exc`)",
+   "sources": [
+    "llm_router._internal.providers.retry.build_provider_async_retrying",
+    "llm_router._internal.providers.retry.is_retryable_provider_error",
+    "llm_router._internal.config.models.RetryPolicy"
+   ]
+  },
+  {
+   "at": "2026-09-28T16:16:02.207987Z",
+   "call_id": "20260928T161044Z-d06005",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "8a652d32c3ccda852b457c4cc7fc7860f0f13a25fae5ec9ef930b89ce8c46972",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: 'object' object has no attribute 'warning')",
+   "sources": [
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying",
+    "llm_router._internal.providers.retry.is_retryable_provider_error",
+    "pytest.mark.verification_kind",
+    "pytest.mark.verifies",
+    "pytest.mark.asyncio",
+    "pytest.raises",
+    "pytest.MonkeyPatch"
+   ]
+  },
+  {
+   "at": "2026-09-28T16:17:48.741001Z",
+   "call_id": "20260928T161602Z-1f53e6",
+   "cause": "syntax",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5",
+   "question_sha256": "ef4910dc6d436b62239f6b98357deae333e0289d6c9b2e7ae2ae257220b43339",
+   "reason": "it does not parse: invalid syntax",
+   "sources": [
+    "llm_router._internal.providers.retry.build_provider_async_retrying",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._api.errors.ProviderError",
+    "llm_router.Provider",
+    "llm_router.Model",
+    "llm_router._internal.providers.retry.RetryLogger"
+   ]
+  },
+  {
+   "at": "2026-09-28T16:18:52.776153Z",
+   "call_id": "20260928T161748Z-04e57c",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "6a912d39b130c6af398668f06b6f3daea4d2b28200c9eabab3797ab0fd61868c",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.retry.build_provider_async_retrying",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._api.errors.ProviderError"
+   ]
+  }
+ ]
+}

@@ -943,12 +943,176 @@ def check_semantic_mutants(monitor_facts: dict) -> None:
     )
     check_survivor_judgement(monitor_facts, models, by_call, usable)
     check_survivor_verdicts(models, by_call, usable)
+    check_draft_attempts(by_call)
+    check_ladder(monitor_facts)
+
+
+DRAFT_CAUSES = {"kept", "syntax", "grounding", "runtime-api", "rules", "lint", "behaviour", "weak", "unknown"}
+
+
+def check_draft_attempts(by_call: dict) -> None:
+    """The draft attempts and their check (049): every recorded attempt a ledgered draft-author call
+    with a known cause, a grounding problem only behind that cause; and the grounding check, which
+    rejects a draft before it runs, finding nothing in the project's own tests and pins, all of which
+    run green: a false alarm there would reject good drafts."""
+    semantic = semantic_module()
+    verdict_dir = BRIDGE / "survivor-verdicts"
+    attempts = [
+        (folder.name, key, row)
+        for folder in sorted(path for path in verdict_dir.iterdir() if path.is_dir()) if verdict_dir.is_dir()
+        for key, rows in (load(folder / "drafts.json") if (folder / "drafts.json").is_file() else {}).items()
+        for row in rows
+    ]
+    check(
+        all(
+            (by_call.get(str(row.get("call_id"))) or {}).get("purpose") == "mutation-pin"
+            and str((by_call.get(str(row.get("call_id"))) or {}).get("role") or "").startswith("draft_author")
+            and row.get("cause") in DRAFT_CAUSES - {"unknown"}
+            and bool(row.get("grounding")) == (row.get("cause") == "grounding")
+            and len(str(row.get("question_sha256") or "")) == 64
+            # The rung an attempt names is the role its call was made in.
+            and str((by_call.get(str(row.get("call_id"))) or {}).get("role")) in {1: ("draft_author", "draft_author_retry"), 2: ("draft_author_tools",), 3: ("draft_author_last",)}.get(int(row.get("level") or 1), ())
+            for _contract, _key, row in attempts
+        ),
+        f"every one of the {len(attempts)} recorded draft attempts is a ledgered draft-author call with a known cause, made on the rung it names",
+    )
+    corpus = [
+        path for path in sorted((ROOT / "tests").rglob("test_*.py"))
+        if "__pycache__" not in path.parts
+    ]
+    flagged = {
+        str(path.relative_to(ROOT)): problems
+        for path in corpus
+        if (problems := semantic.grounding_problems(ROOT, path.read_text())[0])
+    }
+    check(
+        not flagged,
+        f"the grounding check finds nothing in the project's {len(corpus)} test modules and pins, which all run green: {flagged}",
+    )
+
+
+def check_ladder(monitor_facts: dict) -> None:
+    """The draft author's ladder (ADR_0004): its rungs with tools served only by the claude CLI, whose
+    permissions hold the tools to the copy, and its last resort the verdict's own model."""
+    roles = ((monitor_facts.get("policy") or {}).get("model_generation") or {}).get("roles") or {}
+    tools = [entry for role in ("draft_author_tools", "draft_author_last") for entry in roles.get(role) or []]
+    check(
+        bool(tools) and all(entry.get("backend") == "claude-cli" for entry in tools)
+        and [entry.get("model") for entry in roles.get("draft_author_last") or []][:1] == [entry.get("model") for entry in roles.get("verdict") or []][:1],
+        "the draft author's rungs with tools run only through the claude CLI, and its last resort is the verdict's own model "
+        f"({[entry.get('model') for entry in roles.get('draft_author_last') or []]})",
+    )
+
+
+def recorded_answer_files() -> dict[tuple[str, str], Path]:
+    """Every stored answer a current record names, by the page folder it is published in and its
+    call: draft attempts, verdicts, reviews and pins by contract, assessor answers by contract, the
+    calibration's and the canaries'."""
+    found: dict[tuple[str, str], Path] = {}
+
+    def add(group: str, folder: Path, call_id: object) -> None:
+        path = folder / "responses" / f"{call_id}.json"
+        if call_id and path.is_file():
+            found[(group, str(call_id))] = path
+
+    verdict_dir = BRIDGE / "survivor-verdicts"
+    for folder in sorted(path for path in verdict_dir.iterdir() if path.is_dir()) if verdict_dir.is_dir() else []:
+        for rows in (load(folder / "drafts.json") if (folder / "drafts.json").is_file() else {}).values():
+            for row in rows:
+                add(folder.name, folder, row.get("call_id"))
+        for entry in (load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}).values():
+            for part in ("answer", "review", "pin"):
+                add(folder.name, folder, (entry.get(part) or {}).get("call_id"))
+    for store in (BRIDGE / "survivor-triage", BRIDGE / "semantic-mutants"):
+        for path in sorted(store.glob("*/assessments.json")) if store.is_dir() else []:
+            for entry in load(path).values():
+                for answer in (entry.get("answers") or {}).values():
+                    add(path.parent.name, path.parent, answer.get("call_id"))
+    calibration = BRIDGE / "semantic-mutants/assessor-calibration"
+    record = load(calibration / "calibration.json") if (calibration / "calibration.json").is_file() else {}
+    for answers in (record.get("answers") or {}).values():
+        for answer in answers.values():
+            add("calibration", calibration, answer.get("call_id"))
+    canaries = BRIDGE / "semantic-mutants/canary-results"
+    for canary in (load(canaries / "results.json") if (canaries / "results.json").is_file() else {}).values():
+        for case in (canary.get("cases") or {}).values():
+            add("canaries", canaries, case.get("call_id"))
+    return found
+
+
+def check_model_roles_page() -> None:
+    """The Model roles page (049): one section drawn from the retained records, whose draft counts
+    and health the gate recounts from the recorded attempts, with each canary as its record says."""
+    page_path = HTML / "model-roles.html"
+    page = page_path.read_text() if page_path.is_file() else ""
+    marker = '<script type="application/json" id="tf-model-roles-facts">'
+    check(
+        page.count('<section id="model-roles">') == 1 and "<h1>Model roles" in page and marker in page
+        and '<style id="tf-model-roles-style">' in page and "#model-roles{--tf-map-ease" in page,
+        "the Model roles page is one section with its own scoped styles and the facts it was drawn from",
+    )
+    if marker not in page:
+        return
+    facts = json.loads(page.split(marker, 1)[1].split("</script>", 1)[0].replace("<\\/", "</"))
+    verdict_dir = BRIDGE / "survivor-verdicts"
+    recorded = sorted(
+        (row for folder in sorted(path for path in verdict_dir.iterdir() if path.is_dir()) if verdict_dir.is_dir()
+         for rows in (load(folder / "drafts.json") if (folder / "drafts.json").is_file() else {}).values() for row in rows),
+        key=lambda row: (str(row.get("at") or ""), str(row.get("call_id") or "")),
+    )
+    draft = facts.get("draft") or {}
+    recent = recorded[-int(draft.get("window") or 0):] if draft.get("window") else []
+    kept = sum(row.get("cause") == "kept" for row in recent)
+    status = "unknown" if len(recent) < int(draft.get("minimum") or 0) else "fail" if kept / len(recent) < float(draft.get("floor") or 0) else "pass"
+    check(
+        draft.get("recorded") == len(recorded) and draft.get("recent") == len(recent) and draft.get("kept") == kept
+        and draft.get("status") == status and (draft.get("window"), draft.get("floor"), draft.get("minimum")) == (20, 0.2, 10),
+        f"the Model roles page counts the {len(recorded)} recorded draft attempts as they are: {kept} of the last {len(recent)} kept, {status}",
+    )
+    canaries = load(BRIDGE / "semantic-mutants/canary-results/results.json")
+    check(
+        all(row.get("passed") == bool((canaries.get(row.get("entry")) or {}).get("passed")) for row in facts.get("canaries") or [])
+        and bool(facts.get("canaries")),
+        "every canary on the Model roles page stands as its record says",
+    )
+    # Every stored question and answer a record names is published byte for byte beside the page,
+    # and every link the page gives to one is there.
+    stored = recorded_answer_files()
+    published = {(path.parent.name, path.stem) for path in (HTML / "model-roles").glob("*/*.json")}
+    linked = [
+        *(row.get("answer") for row in [*(draft.get("rejected") or []), *(draft.get("last_resort") or []), *((facts.get("judging") or {}).get("troubled") or [])]),
+        *(path for row in facts.get("canaries") or [] for _case, path in row.get("answers") or []),
+    ]
+    check(
+        published == set(stored)
+        and all((HTML / "model-roles" / group / f"{call}.json").read_bytes() == stored[(group, call)].read_bytes() for group, call in published)
+        and all(f'href="{link}"' in page and (HTML / str(link)).is_file() for link in linked if link),
+        f"every stored question and answer a record names is published beside the Model roles page ({len(published)}), and every link to one resolves",
+    )
+    # The page recounts the judging roles' sources from their records.
+    judged = [
+        answer
+        for folder in sorted(path for path in verdict_dir.iterdir() if path.is_dir()) if verdict_dir.is_dir()
+        for entry in (load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}).values()
+        for answer in (entry.get("answer") or {}, entry.get("review") or {}) if answer.get("call_id") and "sources" in answer
+    ] + [
+        answer
+        for path in sorted((BRIDGE / "survivor-triage").glob("*/assessments.json"))
+        for entry in load(path).values() for answer in (entry.get("answers") or {}).values() if answer.get("call_id") and "sources" in answer
+    ]
+    roles = (facts.get("judging") or {}).get("roles") or []
+    check(
+        sum(row.get("answers", 0) for row in roles) == len(judged) and sum(row.get("troubled", 0) for row in roles) == sum(bool(answer.get("problems")) for answer in judged),
+        f"the Model roles page counts the {len(judged)} judging answers that cite, {sum(bool(answer.get('problems')) for answer in judged)} of them not holding up, as their records are",
+    )
 
 
 JUDGEMENT_STATUSES = {"found", "likely-equivalent", "unsure", "not-applicable"}
 
 
-PIN_HEADERS = ("# mutation-pin:", "# pinned-by:", "# semantic-mutant:")
+PIN_HEADERS = ("# mutation-pin:", "# pinned-by:", "# written-by:", "# semantic-mutant:")
+# The draft author's rungs: who may have written a pin, and through which role (ADR_0004).
+PIN_WRITERS = {"draft author": ("draft_author", "draft_author_retry"), "draft author with tools": ("draft_author_tools",), "last resort": ("draft_author_last",)}
 
 
 def pin_body(text: str) -> str:
@@ -998,14 +1162,18 @@ def pin_origin_holds(models, by_call: dict, folder: Path, key: str, pin: dict) -
     ledgered answer, or the semantic draft the cascade kept, normalized again by the same ruff into
     exactly the pin's body, with no lint rule left broken."""
     semantic = semantic_module()
-    if pin.get("source") == "draft author":
+    if pin.get("source") in PIN_WRITERS:
         path = folder / "responses" / f"{pin.get('call_id')}.json"
         response = load(path) if path.is_file() else {}
         call = by_call.get(str(pin.get("call_id"))) or {}
+        # A rung with tools wrote it in a copy of the project: its stored answer names that copy's one file.
+        with_tools = pin.get("source") != "draft author"
         if not (
             bool(response) and not models.verify_response(response)
             and models.response_sha256(response) == pin.get("response_sha256") == call.get("response_sha256")
             and call.get("outcome") == "ok" and response.get("purpose") == "mutation-pin" and response.get("subject") == key
+            and str(call.get("role")) in PIN_WRITERS[str(pin.get("source"))]
+            and bool((response.get("workspace") or {}).get("write")) == with_tools
         ):
             return False
         draft = semantic.draft_from_answer(key, response.get("structured") or {})
@@ -1037,23 +1205,28 @@ def check_survivor_verdicts(models, by_call: dict, usable: set) -> None:
         f"the model canaries are qualified for their current records {sorted(key for key, passed in ((canary.get('control') or {}).get('records') or {}).items() if passed)}",
     )
     verdict_dir = BRIDGE / "survivor-verdicts"
+    judge = load_bridge_module("gate_verdict_equivalence", "survivor_equivalence.py")
     recorded: set[str] = set()
     for folder in sorted(path for path in verdict_dir.iterdir() if path.is_dir()) if verdict_dir.is_dir() else []:
         verdicts = load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}
         decided = load(folder / "decisions.json") if (folder / "decisions.json").is_file() else {}
         bound = pins_ok = True
         for key, entry in verdicts.items():
-            # The verdict and, for a suppression, its review: each a stored, ledgered call's answer to the entry's question.
+            # The verdict and, for a suppression, its review: each a stored, ledgered call's answer to the
+            # entry's question (asked once more, it says what broke), its sources and problems read from it
+            # by the current rule.
             for answer in [entry.get("answer") or {}, *([entry["review"]] if entry.get("review") else [])]:
                 response_path = folder / "responses" / f"{answer.get('call_id')}.json"
                 response = load(response_path) if response_path.is_file() else {}
                 call = by_call.get(str(answer.get("call_id"))) or {}
                 structured = response.get("structured") or {}
+                asked = judge.asked_question(str(response.get("prompt") or ""))
                 bound = bound and bool(response) and (
                     models.response_sha256(response) == answer.get("response_sha256") == call.get("response_sha256")
                     and call.get("outcome") == "ok" and response.get("backend") in usable
-                    and response.get("prompt_sha256") == entry.get("prompt_sha256")
-                    and all(structured.get(name) == answer.get(name) for name in ("verdict", "level", "reason", "test_focus"))
+                    and hashlib.sha256(asked.encode()).hexdigest() == entry.get("prompt_sha256")
+                    and all(structured.get(name) == answer.get(name) for name in ("verdict", "level", "reason", "test_focus", "sources"))
+                    and ("confirmed" not in answer or judge.verdict_problems(structured, bool(answer["confirmed"]), str(response.get("prompt") or "")) == answer.get("problems"))
                 )
             pin = entry.get("pin")
             if not pin:
@@ -1128,7 +1301,7 @@ def check_survivor_judgement(monitor_facts: dict, models, by_call: dict, usable:
                     and call.get("outcome") == "ok" and response.get("backend") in usable
                     and structured.get("verdict") == answer.get("verdict") and structured.get("confidence") == answer.get("confidence")
                     and {key: judge.argument_text(value) for key, value in (structured.get("arguments") or {}).items()} == answer.get("arguments")
-                    and judge.answer_problems(structured) == answer.get("problems")
+                    and judge.answer_problems(structured, str(response.get("prompt") or "")) == answer.get("problems")
                 ):
                     return False
         return True
@@ -6614,17 +6787,19 @@ def main() -> None:
         "the map, and neither Mutation Analysis nor a Depth Map; patching an already patched navigation adds nothing",
     )
     check_verification_explorer(map_pages_module)
+    check_model_roles_page()
     qualification_harness_source = (BRIDGE / "qualify-evidence-confidence.py").read_text()
     check(
         "'<section id=\"verification-health-map\">\\n<h1>Verification Health Map'" in map_pages_module
         and "f'<style id=\"tf-health-map-style\">\\n{css}\\n</style>\\n'" in map_pages_module
         and re.findall(r"^def (\w+)\(", map_pages_module, flags=re.MULTILINE)
-        == ["map_tools", "map_panel", "map_find", "map_frame", "map_strip", "health_map_article", "explorer_article"]
+        == ["map_tools", "map_panel", "map_find", "map_frame", "map_strip", "health_map_article", "explorer_article", "_palette", "model_roles_article"]
         and "verification-depth-map" not in map_pages_module
         and '<section id="verification-health-map">' not in health_builder_source
         and "MAP_PAGES.health_map_article(" in health_builder_source
         and "MAP_PAGES.explorer_article(" in health_builder_source
-        and health_builder_source.count("MAP_PAGES.") == 2
+        and "MAP_PAGES.model_roles_article(" in health_builder_source
+        and health_builder_source.count("MAP_PAGES.") == 3
         and "assurance_map_pages" not in qualification_harness_source
         and "assurance_monitor_ui" not in qualification_harness_source
         and '"assurance_monitor_ui_sha256"' not in health_builder_source
@@ -6890,6 +7065,7 @@ def main() -> None:
         "docs/test-plan.md",
         "docs/verification-health-map.md",
         "docs/verification-explorer.md",
+        "docs/model-roles.md",
         "docs/verification-depth-map.md",
         "docs/assurance-profiles/",
         "docs/experiments/index.md",
@@ -6992,6 +7168,9 @@ def main() -> None:
         "tests/llm_router/unit/test_internal_route_order.py",
         "tests/llm_router/unit/test_internal_tool_choice.py",
         "tests/llm_router/unit/test_internal_tool_registry.py",
+        # A person's test for the owner's decision on REQ_SYNC_ROUTE_FALLBACK 80df5312: a failed attempt is
+        # recorded for its provider and key (TREQ_RATE_LIMIT_STATE revision 2, history 049).
+        "tests/llm_router/unit/test_internal_sync_failure_recording.py",
     }
     unexpected = []
     for line in status:

@@ -27,7 +27,41 @@
    "verdict": "pin"
   },
   "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-28T08:39:19.847149Z",
+   "answer_sha256": "22856c5ff7ea15a7096f658679dcb374f0b8ae7a16474a501c00f23a3e391702",
+   "call_id": "20260928T083447Z-9eb821",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "747a01e1eaf67e325d717a308798b165210648e080c378c2e7ef7cdd88ded01f",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_0601f3c62c74bba8.py",
+   "response_sha256": "a862cdaa14ade7cc810b41e9ea9faa18edba6ba2b8366d227ff9f44bdc03a87d",
+   "source": "draft author"
+  },
   "prompt_sha256": "a57e7d61340b30f175b9b81d820e6321be2e7d6395d7b2c57f1da8e1ff9be0e9"
+ },
+ "16484951d7dcf335": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260927T233300Z-9a9e60",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant no longer records routes that are blocked by a pacing wait. So when every async route has to wait, the request raises TimeoutError('No route attempts were available.') instead of waiting and returning the normalized response. Async execution then breaks on an ordinary provider route, and the public contract changes from a response to an error.",
+   "response_sha256": "e14ff0d59f8bf4d3eafa8660d89e0820dd64f6813aa3e07712971ad05c7224e5",
+   "test_focus": "Set up an async request where the only route (or every route) reports a positive wait. Check that it still returns the normalized response once the wait ends and that the blocked-route trace is included, rather than raising TimeoutError.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "be41938f52771435eff9836f996da6898baabbeaaced7c6646ba14701f48e44a"
  },
  "1f46adce42be5e76": {
   "answer": {
@@ -121,6 +155,25 @@
    "verdict": "pin"
   },
   "operator": "boundary",
+  "pin": {
+   "adopted_at": "2026-09-27T23:57:15.353276Z",
+   "answer_sha256": "3194b7cfae0a4807c420688b97850fb1ecc2e2bce37bcf3effec94e63ee4ddf9",
+   "call_id": "20260927T233735Z-d11b60",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "3194b7cfae0a4807c420688b97850fb1ecc2e2bce37bcf3effec94e63ee4ddf9",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_4185d08c0ebf67fe.py",
+   "response_sha256": "85b13e37574559383bf467664f31dd4768f6d860f1d929a99a7455e9176bbc8f",
+   "source": "draft author"
+  },
   "prompt_sha256": "2b4b47a9c85549768fa09c28126fce51b624921b88c260923dbfd87baf8df3a0"
  },
  "43dd25caa8a885c2": {
@@ -309,6 +362,33 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T10:39:06.984507Z",
+   "answer_sha256": "8f67d45ba3bf3377f0e5db1c771fd514cdbefce0a8f98700df2d6691e808cbda",
+   "call_id": "20260928T103258Z-23a181",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "030d1bfc562c9b5eb5fa19421483f862eb708e4a559678b2273fadadd38aa3cc",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_e1a047184fcbb294.py",
+   "response_sha256": "9775363318995c20c5beccb82be0129a6e773c7f4e9b7d549d03dc5615e5876b",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.LLMRouterResponse",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.UsageStats"
+   ]
+  },
   "prompt_sha256": "f34b25ffcd27a38597e33c0a76ec49852b48577487ae62013471d86aca14fa0d"
  },
  "e1e147c2641e44f4": {
@@ -339,6 +419,25 @@
    "verdict": "pin"
   },
   "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-28T08:28:09.289162Z",
+   "answer_sha256": "7b62c70a99275d693785713bd8a6c10c4af15f4a523798eeabdd6cfb407e3d28",
+   "call_id": "20260928T081909Z-888ba7",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "7b62c70a99275d693785713bd8a6c10c4af15f4a523798eeabdd6cfb407e3d28",
+   "model": "gemini-3.1-pro-high",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fddc853000a48d63.py",
+   "response_sha256": "08f3788ce5cc633ee16df738a070872fe02e18e1621f5002ef3a2876756f1fc6",
+   "source": "draft author"
+  },
   "prompt_sha256": "ccdd64dd3792b696d25c6cfb3bad7cfd2922f9e06961ebea80ec9c2b0b6775f6"
  }
 }

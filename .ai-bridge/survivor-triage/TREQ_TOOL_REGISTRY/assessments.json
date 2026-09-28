@@ -1,4 +1,51 @@
 {
+ "77252785424d95f7": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "call": "ToolCall(name=\"fail\", args={}, id=\"c1\")  # assuming self.tools[\"fail\"].callable always raises, e.g. a tool defined as ToolDefinition(name=\"fail\", callable=lambda: (_ for _ in ()).throw(ValueError(\"boom\")))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T155203Z-ff9eab",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "When definition.callable raises, the original wraps it and raises ToolExecutionError, but the changed version swallows the exception with `pass` and then references the never-assigned local `result` in the return statement, raising UnboundLocalError instead \u2014 a different exception type for any call whose tool callable throws.",
+    "response_sha256": "90f6607a6d61a6c3b8a20931867f7b650454857df2e5cccba89446cf447ba96c",
+    "sources": [
+     "except Exception as exc:\n            pass",
+     "raise ToolExecutionError(\n                tool_name=call.name,\n                args=dict(call.args),\n                cause=exc,\n            ) from exc",
+     "return ToolStep(tool_name=call.name, args=dict(call.args), result=result, call_id=call.id)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "a9d98e7de85dd716b89cd1038287da90285cb5e4287458dfb086b27a7d3f7780"
+ },
+ "77986b22a0ac6322": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "call": "ToolCall(name='descriptor_tool', args={}, id='call-1')"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T155203Z-105835",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "When definition.callable is None the original raises ValueError immediately, but the changed version's `pass` lets execution fall through to `definition.callable(**call.args)`, which raises TypeError('NoneType' object is not callable) that gets caught and re-wrapped as ToolExecutionError instead of the original ValueError.",
+    "response_sha256": "62d66677ce3ee3934aa58f9f687b7cb5868cb1cb8d1ce5411eb916dd33761d90",
+    "sources": [
+     "if definition.callable is None:",
+     "msg = f\"Tool '{call.name}' is a descriptor-only tool.\"",
+     "raise ValueError(msg)",
+     "result = definition.callable(**call.args)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "8b114d67d53a2e971a9a3d7ea90075efca3de5a5da92476adfc98d97cacdabd3"
+ },
  "e9c1165894dd60d7": {
   "answers": {
    "antigravity-cli:claude-opus-4-6-thinking": {

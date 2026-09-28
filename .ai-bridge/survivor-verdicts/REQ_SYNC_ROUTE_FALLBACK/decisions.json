@@ -1,0 +1,11 @@
+{
+ "80df5312d68d38ac": {
+  "by": "person",
+  "decided_at": "2026-09-28",
+  "level": "feature",
+  "reason": "The owner decided on 2026-09-28 that the Route fallback feature requires a failed attempt to be recorded against its provider and key (TREQ_RATE_LIMIT_STATE revision 2), so the synchronous fallback's call that records it is required behaviour.",
+  "resolved_by": "tests/llm_router/unit/test_internal_sync_failure_recording.py: a person's test, after four drafts invented the router's public API",
+  "test_focus": "Run one synchronous request over two Provider.OPENROUTER routes (key_id 1 and 2, round_robin_start=False, shuffle_fallbacks=False) whose first route answers an error status and whose second succeeds, with limits_by_provider={Provider.OPENROUTER: ProviderLimits(rps=0.0, rpm=0.0, cooldown_seconds=60.0, cooldown_after_failures=1)}. Then the failed key is cooling down in the router's limiter: router._runtime._limiter.wait_seconds(provider=Provider.OPENROUTER, key_id=1) is above zero, while the same call for key_id=2 returns 0.0.",
+  "verdict": "pin"
+ }
+}
