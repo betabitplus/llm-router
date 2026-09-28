@@ -206,6 +206,23 @@
    "verdict": "irrelevant"
   },
   "operator": "statement",
-  "prompt_sha256": "82334e6464ebae4e5b9c0dcee28580c3d5bd86033543a7e922a364ac58221f7e"
+  "prompt_sha256": "82334e6464ebae4e5b9c0dcee28580c3d5bd86033543a7e922a364ac58221f7e",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260928T195411Z-20034e",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "82334e6464ebae4e5b9c0dcee28580c3d5bd86033543a7e922a364ac58221f7e",
+   "reason": "The requirement specifies the fallback behavior and error handling when attempted routes fail, but does not govern the behavior when no routes are available to attempt. Therefore, changing the specific error raised when zero routes are attempted is outside the scope of this requirement.",
+   "response_sha256": "ee777b3fd366a361e536bfae56078db74c48424bcd78d930e85f11ebf6c0e1d5",
+   "sources": [
+    "When every attempted route has failed and no rate-limited route remains to wait for, the request shall fail with the last route's error rather than return without a result.",
+    "if last_error is None:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  }
 }

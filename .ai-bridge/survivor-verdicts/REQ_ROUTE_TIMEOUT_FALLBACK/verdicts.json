@@ -18,7 +18,25 @@
    "verdict": "equivalent"
   },
   "operator": "boolean",
-  "prompt_sha256": "10863f918f74b8279fd1c80bf08ad2ebcbaeacf8ae373879039d0e1f2fba0295"
+  "prompt_sha256": "10863f918f74b8279fd1c80bf08ad2ebcbaeacf8ae373879039d0e1f2fba0295",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260928T195249Z-1be6c9",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "10863f918f74b8279fd1c80bf08ad2ebcbaeacf8ae373879039d0e1f2fba0295",
+   "reason": "Modifying the `cancel_futures` flag only changes whether an unstarted task in the background thread pool gets cancelled. The timeout is still raised and waiting stops as specified, while the requirement dictates no rules for background task cancellation.",
+   "response_sha256": "3439172c89dbc3ea86fa6ed37572c06619a8075d63dd13899e906ac8081e03f4",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "pool.shutdown(wait=not timed_out, cancel_futures=True)",
+    "pool.shutdown(wait=not timed_out, cancel_futures=False)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  },
  "3ccbc7c7990f5f22": {
   "answer": {
@@ -73,7 +91,25 @@
    "verdict": "irrelevant"
   },
   "operator": "statement",
-  "prompt_sha256": "5b5a700ccdd947c95e859b68d1b1fa00a0d158b0462b2dbb68be5e72a25d766f"
+  "prompt_sha256": "5b5a700ccdd947c95e859b68d1b1fa00a0d158b0462b2dbb68be5e72a25d766f",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260928T195249Z-9b59e2",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "5b5a700ccdd947c95e859b68d1b1fa00a0d158b0462b2dbb68be5e72a25d766f",
+   "reason": "The mutation removes the explicit shutdown of the thread pool. While this could cause resource leaks or delay program exit by leaving threads active, it does not alter the routing timeout or fallback logic specified by the requirement.",
+   "response_sha256": "717e6629a8366285c98ac5429dc6ae361b0995376065c9f0188e247f2de24dbb",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "pool.shutdown(wait=not timed_out, cancel_futures=True)",
+    "pass"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  },
  "b39c78844ce0f60e": {
   "answer": {
@@ -94,7 +130,25 @@
    "verdict": "equivalent"
   },
   "operator": "statement",
-  "prompt_sha256": "d69304c2141d1fbf22068fb8c92d075808925421aa05faf3cf7d09414e18c0a9"
+  "prompt_sha256": "d69304c2141d1fbf22068fb8c92d075808925421aa05faf3cf7d09414e18c0a9",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260928T195249Z-6fd8da",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "d69304c2141d1fbf22068fb8c92d075808925421aa05faf3cf7d09414e18c0a9",
+   "reason": "Removing future.cancel() does not change behavior because thread pool futures already executing cannot be cancelled, and the finally block already guarantees pending tasks are cancelled via pool.shutdown(..., cancel_futures=True).",
+   "response_sha256": "ae79ee285a46270770099b87e49b88abedf96c3b5fa82e6c46abfc665cf11bdb",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "future.cancel()",
+    "pool.shutdown(wait=not timed_out, cancel_futures=True)"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
  },
  "b9accd29af1a644f": {
   "answer": {
@@ -164,6 +218,24 @@
    "verdict": "equivalent"
   },
   "operator": "boolean",
-  "prompt_sha256": "ed70f936d75dd34828146ecbf7676ddf0c063c6d74dcf2eda012498a1decdbca"
+  "prompt_sha256": "ed70f936d75dd34828146ecbf7676ddf0c063c6d74dcf2eda012498a1decdbca",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260928T195249Z-f03b67",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "ed70f936d75dd34828146ecbf7676ddf0c063c6d74dcf2eda012498a1decdbca",
+   "reason": "Setting `timed_out = True` initially means `pool.shutdown` is always called with `wait=False`. On a timeout, both versions execute this exactly the same way; on success or failure, the non-blocking shutdown is unobservable because the worker thread has already completed its task, making the versions indistinguishable to the caller.",
+   "response_sha256": "f148a8354a20ad887b5631351a29b833cd6ffc06a3ff382a50d8548364b18d00",
+   "sources": [
+    "Requirement REQ_ROUTE_TIMEOUT_FALLBACK (Route timeout fallback): An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "timed_out = True",
+    "pool.shutdown(wait=not timed_out, cancel_futures=True)"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
  }
 }

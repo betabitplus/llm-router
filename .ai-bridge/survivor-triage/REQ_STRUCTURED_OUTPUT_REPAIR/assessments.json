@@ -1,6 +1,49 @@
 {
  "9a81553c4311e34e": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=1, structured_output_max_attempts=2, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema={\"type\": \"integer\"}, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini', credential=ProviderCredential(key_id=1, env_var='K', value='V'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini', output_text='{}')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T194739Z-04b309",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change replaces `or` with `and`, which causes a truthy `validated.error_message` to evaluate to `'Validation failed.'` instead of its original value, altering the `error_message` passed to `append_repair_message` and returning a different state.",
+    "response_sha256": "6cc9385371298efa0674fdfb078aae6acf214d0ba3219a61a99c883748d8a5c9",
+    "sources": [
+     "    error_message = validated.error_message or \"Validation failed.\"",
+     "    error_message = validated.error_message and 'Validation failed.'",
+     "                error_message=error_message,"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=2, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=0)",
+     "provider_request": "ProviderRequest(request_id='req-1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-1.5-flash', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='test'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-1.5-flash', output_text='invalid')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T194739Z-7d0dac",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When validation fails with an error message, the changed version replaces validated.error_message with 'Validation failed.' via the logical and operator instead of preserving it with or.",
+    "response_sha256": "b75e81e8f5607a6153e9b936da3a8a4df826f58f69bba40e4f8d7367c34844ad",
+    "sources": [
+     "error_message = validated.error_message or \"Validation failed.\"",
+     "error_message = validated.error_message and 'Validation failed.'"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
      "config": "LLMRouterConfig(default_provider=Provider.OPENROUTER, default_model=Model.DEEPSEEK_V3, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",

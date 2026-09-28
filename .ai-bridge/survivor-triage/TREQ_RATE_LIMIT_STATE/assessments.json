@@ -1,6 +1,37 @@
 {
  "1ea89b29a7c49441": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T195058Z-911cc5",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change only alters the condition for the local variable `should_log_cleared`, which solely determines whether a log message is emitted; because logging is an external side-effect that does not affect the method's return value, post-invocation object state, or raised exceptions, the defined behavior remains identical.",
+    "response_sha256": "2a6a89647b1f769b8ebd4ee782f9c9db7db547bd49de4bf44b89d5276ec322fb",
+    "sources": [
+     "            should_log_cleared = bool(\n                bucket.failure_count or bucket.cooldown_until > current\n            )",
+     "        if should_log_cleared:\n            logger.info(\n                \"Route cooldown cleared\",\n                event_type=\"llm_router.routing.cooldown.cleared\",\n                provider=provider.value if isinstance(provider, Provider) else provider,\n                key_id=key_id,\n            )"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T195058Z-30ecde",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed condition only affects the local variable should_log_cleared used for logging, leaving the method's return value, exceptions, and object state unchanged.",
+    "response_sha256": "4438682edc463e77a23b795aa40aad252d8e999c9295605091a3775905c12908",
+    "sources": [
+     "        should_log_cleared = bool(bucket.failure_count and bucket.cooldown_until > current)",
+     "                bucket.failure_count or bucket.cooldown_until > current",
+     "    if should_log_cleared:"
+    ],
+    "verdict": "equivalent"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {},
     "backend": "claude-cli",
@@ -23,6 +54,41 @@
  },
  "2e8807d144d81f1d": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)",
+     "now": "0.0",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T195058Z-cb150e",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change from > to >= only dictates whether a log statement is executed; because logging does not affect the method's return value, object state, or exceptions raised, the two versions are strictly equivalent in behaviour.",
+    "response_sha256": "2cbce6f5efd56e2545e75449f1e491d0f26108995240b30ff77641c9924b5e9e",
+    "sources": [
+     "                bucket.failure_count or bucket.cooldown_until > current",
+     "        should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until >= current)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T195058Z-b21b51",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The difference between '>' and '>=' only affects the local variable should_log_cleared used for logging, leaving the method's return value, object state, and exception behavior identical.",
+    "response_sha256": "a8d7c718a3dddb07f47f1686963eb0a34a2178bda030245c1e50c2f0edda2259",
+    "sources": [
+     "        should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until >= current)",
+     "    if should_log_cleared:"
+    ],
+    "verdict": "equivalent"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {},
     "backend": "claude-cli",
@@ -44,6 +110,37 @@
  },
  "7cd0a40c605b3f65": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T195058Z-1514f6",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change only affects the condition for emitting a log message, which does not alter the object's resulting state, the method's return value, or the exceptions it raises.",
+    "response_sha256": "bb165b3b0a82ed513651bff98e6c397ea195109536c9bef383a753da1be32712",
+    "sources": [
+     "            should_log_cleared = bool(\n                bucket.failure_count or bucket.cooldown_until > current\n            )",
+     "        should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until < current)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T195058Z-66c152",
+    "confidence": 0.99,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The change alters only the local variable should_log_cleared which controls a logging call, leaving the method's return value, raised exceptions, and the state of LimiterState identical in both versions.",
+    "response_sha256": "94576c5670b7e5c18038a62530c17163818352b27e35da44e28c149a06134f49",
+    "sources": [
+     "        should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until < current)",
+     "    if should_log_cleared:",
+     "        logger.info('Route cooldown cleared', event_type='llm_router.routing.cooldown.cleared', provider=provider.value if isinstance(provider, Provider) else provider, key_id=key_id)"
+    ],
+    "verdict": "equivalent"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {},
     "backend": "claude-cli",

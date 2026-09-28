@@ -2,23 +2,41 @@
  "9a81553c4311e34e": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T160557Z-b79593",
+   "call_id": "20260928T195357Z-593ec4",
    "confirmed": false,
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes the error message text put into the repair prompt: it uses the generic fallback instead of the validator's own message. The attempt counting and the finite stop at structured_output_max_attempts are unchanged, so the bounded-repair requirement and its budget-2 check are unaffected.",
-   "response_sha256": "435f647cb34130fded7eb5969ebd2e891bc042b9c703d492d626ab25fb8ea7d7",
+   "reason": "The mutant only changes the error text in the repair prompt: a real message becomes 'Validation failed.', and an empty one is passed through instead of the fallback text. Attempt counting and the stop at the configured limit are unchanged, and the requirement says nothing about what the repair prompt contains.",
+   "response_sha256": "9cc25499f64d5decd64cb1024c9fe4e6cc5901ce34837450e262603a3cc84ac4",
    "sources": [
     "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
     "error_message = validated.error_message and 'Validation failed.'",
-    "error_message = validated.error_message or \"Validation failed.\"",
-    "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response."
+    "if next_attempts >= config.structured_output_max_attempts:"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "boolean",
-  "prompt_sha256": "76c1370c90d114a4e336345c23b4eb4634cba577a87c3584e68eaff5e3ddf02f"
+  "prompt_sha256": "2b5f2e33571b5db29d0747407f3fa8e0546e5af05ce289379ca690ad70700ec1",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260928T195411Z-264f55",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "2b5f2e33571b5db29d0747407f3fa8e0546e5af05ce289379ca690ad70700ec1",
+   "reason": "The change alters the specific text of the error message passed to the repair prompt, replacing it with a generic string or a falsy value. This is a difference in a message, which is an implementation detail not covered by the requirement that repair attempts must stop at a finite limit.",
+   "response_sha256": "ca0c936d8ec17db889af9cf6abdc4c47c1292c197974588f0d6722bfceba7fde",
+   "sources": [
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "error_message = validated.error_message or \"Validation failed.\"",
+    "error_message = validated.error_message and 'Validation failed.'"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  }
 }

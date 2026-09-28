@@ -70,24 +70,42 @@
  "d8f7199ce8dc26c9": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T160609Z-cbb01e",
+   "call_id": "20260928T195357Z-9be237",
    "confirmed": false,
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The two versions can only differ when status_code equals _SERVER_ERROR_STATUS_MIN. The proposed input (the threshold value 500) was refuted, which means that value is already caught by one of the explicit status sets first. The symbolic search also found no path that tells the versions apart, so no status code gets a different classification.",
-   "response_sha256": "45f416d2c603251312e5cbb0228b6493adde13fc7972d94234a88522ff222b31",
+   "reason": "The two versions can only differ at status_code == _SERVER_ERROR_STATUS_MIN. That value is caught by the earlier explicit-set checks, so it never reaches the changed comparison. The symbolic search found no distinguishing path, and the proposed boundary input was refuted because both versions behave the same on it.",
+   "response_sha256": "4b272dca04a25e0a21aa8b0fbd6faaf7712fbbf7812dc820f396ac2c0b2114d9",
    "sources": [
     "if status_code > _SERVER_ERROR_STATUS_MIN:",
-    "if status_code >= _SERVER_ERROR_STATUS_MIN:",
-    "an input by claude-cli:claude-sonnet-5 was refuted: both versions behave the same on it",
-    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text."
+    "if status_code in _RETRYABLE_STATUS_CODES:",
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
+    "an input by claude-cli:claude-sonnet-5 was refuted: both versions behave the same on it"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "comparison",
-  "prompt_sha256": "e9e1788221c1cfc52a996b58502dd7576538af56847eb6184e9d33d77673b5a6"
+  "prompt_sha256": "398a5e6b879b2e5e4739fcbfcecfcc3c097ef6cd9900764998ebb60d9457f6ae",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260928T195439Z-03b19e",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "398a5e6b879b2e5e4739fcbfcecfcc3c097ef6cd9900764998ebb60d9457f6ae",
+   "reason": "The change from `>=` to `>` does not alter the execution logic because the exact boundary value `_SERVER_ERROR_STATUS_MIN` is already intercepted by the preceding checks for `_RETRYABLE_STATUS_CODES` and `_NON_RETRYABLE_STATUS_CODES`, making the versions indistinguishable on any input.",
+   "response_sha256": "e61169b2163f6cc952c84693383c1f8788472cef677c89c0f80515a33331db7b",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "if status_code >= _SERVER_ERROR_STATUS_MIN:",
+    "if status_code > _SERVER_ERROR_STATUS_MIN:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
  },
  "f49ab970d70faf89": {
   "answer": {

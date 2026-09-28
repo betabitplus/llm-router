@@ -90,7 +90,25 @@
    "verdict": "irrelevant"
   },
   "operator": "statement",
-  "prompt_sha256": "8ff5e5472808ffeb3282af8f58c4ba3d249b94a20b8530ac0fe2752524cee401"
+  "prompt_sha256": "8ff5e5472808ffeb3282af8f58c4ba3d249b94a20b8530ac0fe2752524cee401",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260928T195411Z-0de985",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "8ff5e5472808ffeb3282af8f58c4ba3d249b94a20b8530ac0fe2752524cee401",
+   "reason": "The requirement dictates behavior when a tool is explicitly named or when a call is required, but it does not specify error handling for invalid input types. Removing the TypeError for invalid inputs does not violate this requirement.",
+   "response_sha256": "c142dcaf42f1b64751751a16b2201c9d3b595f30372d6f9d82e8c98e8c0a2496",
+   "sources": [
+    "When the caller explicitly selects a named tool, a supported provider route shall request and execute that tool rather than silently choosing another registered tool. When the caller requires a tool call without naming one, a supported provider route shall ask the provider to call one of the registered tools.",
+    "raise TypeError(msg)",
+    "pass"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  },
  "f08c4067a011bd9a": {
   "answer": {

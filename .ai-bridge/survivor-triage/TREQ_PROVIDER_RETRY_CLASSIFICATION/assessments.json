@@ -63,6 +63,38 @@
  },
  "d8f7199ce8dc26c9": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T194939Z-fceb82",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change from `>=` to `>` does not alter behavior, as the boundary value `_SERVER_ERROR_STATUS_MIN` is already handled by the preceding `_RETRYABLE_STATUS_CODES` or `_NON_RETRYABLE_STATUS_CODES` checks, which is confirmed by the symbolic search.",
+    "response_sha256": "5f459406e817f62d62b2531b4620e79e961e4aaf88019d64b7b397205f323646",
+    "sources": [
+     "    if status_code in _NON_RETRYABLE_STATUS_CODES:",
+     "    if status_code >= _SERVER_ERROR_STATUS_MIN:",
+     "    if status_code > _SERVER_ERROR_STATUS_MIN:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T194939Z-7d5716",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Because _SERVER_ERROR_STATUS_MIN is already handled by _RETRYABLE_STATUS_CODES, status_code cannot equal _SERVER_ERROR_STATUS_MIN when evaluating the condition, making >= and > equivalent.",
+    "response_sha256": "17d04b70e95b0a173b9f9cf6e9f8d34d3725c61df5729e2a18eb7335282c4433",
+    "sources": [
+     "    if status_code in _RETRYABLE_STATUS_CODES:",
+     "    if status_code >= _SERVER_ERROR_STATUS_MIN:",
+     "    if status_code > _SERVER_ERROR_STATUS_MIN:"
+    ],
+    "verdict": "equivalent"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
      "status_code": "500"
