@@ -1,0 +1,22 @@
+{
+ "20260928T234837Z-79b159": {
+  "reason": "its question carried the machine's environment: a found input made the function read PATH, and its value named the home directory",
+  "withdrawn_at": "2026-09-30"
+ },
+ "20260929T001300Z-60e9ee": {
+  "reason": "its question carried the machine's environment: a found input made the function read PATH, and its value named the home directory",
+  "withdrawn_at": "2026-09-30"
+ },
+ "20260929T110604Z-531f34": {
+  "reason": "its question carried the machine's environment: a found input made the function read PATH, and its value named the home directory",
+  "withdrawn_at": "2026-09-30"
+ },
+ "20260929T144121Z-06bd61": {
+  "reason": "its question carried the machine's environment: a found input made the function read PATH, and its value named the home directory",
+  "withdrawn_at": "2026-09-30"
+ },
+ "20260929T144447Z-11c214": {
+  "reason": "its question carried the machine's environment: a found input made the function read PATH, and its value named the home directory",
+  "withdrawn_at": "2026-09-30"
+ }
+}

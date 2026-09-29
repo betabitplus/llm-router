@@ -1,13 +1,14 @@
 """Implementation fault classes for every contract with an attributable @impl scope.
 
 The engine is pytest-gremlins with the project's extension (``pytest_plugins``): its
-native operator families and the extension's statement and body operators are mapped
+native operator families and the extension's statement, body and Python operators are mapped
 to the Test Plan's Implementation fault classes and run against the contract's own
 passing tests. This module owns what the engine cannot know: which source lines belong
 to which contract (from the graph's IMPL needs), which tests may challenge them, which
 arid-code rules apply to the contract, and how a retained engine report projects onto
-fault classes. It never infers ownership from names; a line shared with a contract that
-does not derive from the challenged one is not attributable and is reported as such.
+fault classes. It never infers ownership from names. A line several contracts claim is
+challenged for each of them with that contract's own tests (2026-09-28): a claim is tested
+where it is made, and a survivor is judged for the contract whose tests let it through.
 """
 
 from __future__ import annotations
@@ -28,7 +29,10 @@ from pathlib import Path
 
 SCHEMA = "ternforge-implementation-fault-campaign-2"
 GREMLINS_VERSION = "1.9.0"
-OPERATORS = ("comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body")
+OPERATORS = (
+    "comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body",
+    "argument", "condition", "conditional", "negation", "container", "conversion", "method", "attribute",
+)
 CLASS_BY_OPERATOR = {
     "comparison": "impl.comparison",
     "boundary": "impl.boundary",
@@ -37,6 +41,16 @@ CLASS_BY_OPERATOR = {
     "return": "impl.control-flow",
     "statement": "impl.effect",
     "body": "impl.effect",
+    # Python's own faults (the extension's PyTation operators) lose a value's effect or read the
+    # wrong one; the operators that change a condition change a branch.
+    "argument": "impl.effect",
+    "conversion": "impl.effect",
+    "method": "impl.effect",
+    "container": "impl.effect",
+    "attribute": "impl.effect",
+    "condition": "impl.control-flow",
+    "conditional": "impl.control-flow",
+    "negation": "impl.control-flow",
 }
 CLASSES = ("impl.comparison", "impl.boundary", "impl.arithmetic", "impl.control-flow", "impl.effect")
 CLASS_NOUNS = {
@@ -263,11 +277,10 @@ def contract_plan(
     shared_with: set[str] = set()
     for scope in own_scopes:
         for line in range(int(scope["start"]), int(scope["end"]) + 1):
-            foreign = owners_by_line[(scope["source"], line)] - family
-            if foreign:
-                shared_with.update(foreign)
-            else:
-                attributable[scope["source"]].append(line)
+            # Every claimant challenges the line with its own tests; the others that claim it
+            # are recorded, not excluded.
+            shared_with.update(owners_by_line[(scope["source"], line)] - family)
+            attributable[scope["source"]].append(line)
     tests = sorted(
         {
             row["nodeid"]

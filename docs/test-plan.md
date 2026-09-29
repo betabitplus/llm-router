@@ -344,24 +344,24 @@
 
 #### Fault-class semantics
 
-| Fault class                        | Meaning                                                                            | Challenged by                                                                                                                                                                                 |
-| ---------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison`                  | A comparison/operator change alters the implementation decision.                   | rule mutant: a comparison operator is swapped (`<` ↔ `<=`, `==` ↔ `!=`, …)                                                                                                                    |
-| `impl.boundary`                    | A boundary value or threshold change alters accepted vs rejected behavior.         | rule mutant: a compared constant is shifted by ±1                                                                                                                                             |
-| `impl.arithmetic`                  | An arithmetic operator change alters a computed value.                             | rule mutant: an arithmetic operator is swapped (`+` ↔ `-`, `*` ↔ `/`, `//` → `/`, `%` → `//`, `**` → `*`)                                                                                     |
-| `impl.control-flow`                | A branch, return, or exception-flow change alters execution.                       | rule mutant: `and` ↔ `or`, a dropped `not`, `True` ↔ `False`; a returned value replaced by `None` or its negation                                                                             |
-| `impl.effect`                      | A statement's effect or a function's whole work is lost while execution continues. | rule mutant: a statement with an effect is removed (a call, an attribute or item write, an augmented assignment, `raise`, `del`); a function body is replaced by a default of its return type |
-| `runtime.latency-timeout`          | Dependency latency or timeout behavior challenges the runtime path.                | retained test with a runtime fault-injection observation                                                                                                                                      |
-| `runtime.unavailable-disconnect`   | Dependency unavailability or disconnect challenges the runtime path.               | retained test with a runtime fault-injection observation                                                                                                                                      |
-| `runtime.malformed-response`       | Dependency returns malformed or unparsable data.                                   | retained test with a runtime fault-injection observation                                                                                                                                      |
-| `interface.unexpected-interaction` | The system performs an external interaction that the contract says must not occur. | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one                                                                                      |
-| `interface.error-status`           | The external interface returns an error status.                                    | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one                                                                                      |
-| `interface.payload-schema`         | The external payload violates the expected schema or shape.                        | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one                                                                                      |
-| `architecture.forbidden-edge`      | A forbidden dependency edge crosses an architectural boundary.                     | retained test with a runtime fault-injection observation                                                                                                                                      |
-| `architecture.layer-bypass`        | Execution bypasses a required architectural layer or boundary.                     | retained test with a runtime fault-injection observation                                                                                                                                      |
-| `spec.wrong-outcome`               | The observable outcome differs from the Requirement.                               | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one                                                                                      |
-| `spec.missing-partition`           | A Requirement-relevant semantic partition is absent from verification.             | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one                                                                                      |
-| `spec.wrong-ordering-boundary`     | Observable ordering or before/after boundary semantics are wrong.                  | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one                                                                                      |
+| Fault class                        | Meaning                                                                                                                  | Challenged by                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison`                  | A comparison/operator change alters the implementation decision.                                                         | rule mutant: a comparison operator is swapped (`<` ↔ `<=`, `==` ↔ `!=`, …)                                                                                                                                                                                                                                                                                                                                                      |
+| `impl.boundary`                    | A boundary value or threshold change alters accepted vs rejected behavior.                                               | rule mutant: a compared constant is shifted by ±1                                                                                                                                                                                                                                                                                                                                                                               |
+| `impl.arithmetic`                  | An arithmetic operator change alters a computed value.                                                                   | rule mutant: an arithmetic operator is swapped (`+` ↔ `-`, `*` ↔ `/`, `//` → `/`, `%` → `//`, `**` → `*`)                                                                                                                                                                                                                                                                                                                       |
+| `impl.control-flow`                | A branch, return, or exception-flow change alters execution.                                                             | rule mutant: `and` ↔ `or`, a dropped `not`, `True` ↔ `False`; a returned value replaced by `None` or its negation; one operand of an `and`/`or` removed; a condition replaced by `True` or `False`, or a plain-value condition negated                                                                                                                                                                                          |
+| `impl.effect`                      | A statement's, call's or value's effect is lost, or a value is read from the wrong attribute, while execution continues. | rule mutant: a statement with an effect is removed (a call, an attribute or item write, an augmented assignment, `raise`, `del`); a function body is replaced by a default of its return type; an optional keyword argument, a built-in conversion, a method call used as a value or a container element is removed; another attribute the same code reads on the same object, with a name at least half alike, is read instead |
+| `runtime.latency-timeout`          | Dependency latency or timeout behavior challenges the runtime path.                                                      | retained test with a runtime fault-injection observation                                                                                                                                                                                                                                                                                                                                                                        |
+| `runtime.unavailable-disconnect`   | Dependency unavailability or disconnect challenges the runtime path.                                                     | retained test with a runtime fault-injection observation                                                                                                                                                                                                                                                                                                                                                                        |
+| `runtime.malformed-response`       | Dependency returns malformed or unparsable data.                                                                         | retained test with a runtime fault-injection observation                                                                                                                                                                                                                                                                                                                                                                        |
+| `interface.unexpected-interaction` | The system performs an external interaction that the contract says must not occur.                                       | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one                                                                                                                                                                                                                                                                                                                        |
+| `interface.error-status`           | The external interface returns an error status.                                                                          | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one                                                                                                                                                                                                                                                                                                                        |
+| `interface.payload-schema`         | The external payload violates the expected schema or shape.                                                              | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one                                                                                                                                                                                                                                                                                                                        |
+| `architecture.forbidden-edge`      | A forbidden dependency edge crosses an architectural boundary.                                                           | retained test with a runtime fault-injection observation · architecture mutant on an import-linter rule                                                                                                                                                                                                                                                                                                                         |
+| `architecture.layer-bypass`        | Execution bypasses a required architectural layer or boundary.                                                           | retained test with a runtime fault-injection observation                                                                                                                                                                                                                                                                                                                                                                        |
+| `spec.wrong-outcome`               | The observable outcome differs from the Requirement.                                                                     | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one · scenario oracle mutant                                                                                                                                                                                                                                                                                               |
+| `spec.missing-partition`           | A Requirement-relevant semantic partition is absent from verification.                                                   | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one                                                                                                                                                                                                                                                                                                                        |
+| `spec.wrong-ordering-boundary`     | Observable ordering or before/after boundary semantics are wrong.                                                        | retained test with a runtime fault-injection observation · semantic mutant where the profile selects one                                                                                                                                                                                                                                                                                                                        |
 
 For retained pytest evidence, a fault class is challenged only when the test declares
 the exact `contract_id + fault class` and the same execution retains a matching
@@ -374,9 +374,14 @@ run of the frozen patch for a semantic mutant.
 
 #### Mutation policy
 
-Mutants are planted only on a contract's attributable `@impl` lines, the lines no
-contract outside its derivation family also claims. Each mutant runs the contract's
-passing tests with the full pytest runner, one isolated run per mutant.
+Mutants are planted only on a contract's attributable `@impl` lines, every line one of
+its `@impl` scopes claims. A line several contracts claim is challenged for each of them
+with that contract's own passing tests (a parent's with its derived children's as well),
+so a claim is tested where it is made and a survivor belongs to the contract whose tests
+let it through; the other claimants are recorded beside it. An `@impl` names the code
+that implements its contract and no more: a technical requirement that refines one check
+of a broader function annotates that check, not the function. Each mutant runs the
+contract's passing tests with the full pytest runner, one isolated run per mutant.
 
 ##### Mutant outcomes
 
@@ -448,11 +453,42 @@ time limit is 1.25 times its tests' time in the retained run plus 10 s, as in PI
 mutant that outruns it counts as caught only when a second run with twice the limit runs out
 of time too: a slow suite is no hang. No mutation percentage gates a contract or the project.
 
+##### Scenario oracle mutants
+
+A scenario checks the outcome it names only when its Then steps compare what happened with
+what it expects. Each scenario oracle mutant changes that expectation in one step
+definition, or in an assertion helper a Then step reaches, in a copy of the project and
+nothing else: a constant the step compares with becomes another value of its type, the
+expected error or type an assertion helper is given becomes another one the module names,
+and an assertion with neither is negated. The scenarios that use the step run as the
+retained run runs them, and one must fail. A mutant they all pass survives: the step would
+pass as well when the product gave another outcome. A Then step whose code checks nothing
+at all counts as a survivor. A run that cannot collect or build the scenario is invalid.
+The mutant counts for `spec.wrong-outcome` of every contract its scenario names by tag, and
+otherwise of every contract the scenario's test verifies, where the profile does not rule
+the class out; the class is caught only when every one that ran is caught, and the
+survivors are listed with the step and the expectation that did not matter. No model is
+asked. The results are retained with the digest of the features, the test code, the
+cassettes and the product code, and count only while those are unchanged and the producer
+is qualified on a calibration project whose steps check strongly, through a helper, weakly
+and not at all.
+
+##### Architecture mutants
+
+Every import-linter rule gets one architecture mutant: an import of a module the rule
+forbids, added at the end of a module the rule governs, in a copy of the project. The rule
+must then be reported broken; one that stays kept would let that edge in, as a rule made
+hollow by an exception does. The result challenges `architecture.forbidden-edge` at the
+level of the rules themselves and is retained with the digest of the code and the rules.
+
 ##### Semantic mutants
 
 A profile may select semantic mutants for `spec.*` and
 `interface.*` classes that rule operators cannot express, in a **Semantic mutants**
-table (`| Fault class | Target | Budget | Risk |`). A generator given the Requirement,
+table (`| Fault class | Target | Budget | Risk |`). Every profile whose contract requires such
+a class and has functions in its `@impl` scope selects them (050): by default each required
+`spec.*` and `interface.*` class at each of those functions, with a budget of 2 and the class's
+risk in words, and a profile may narrow the table or say its risk more exactly. A generator given the Requirement,
 the profile's criteria, the target's code and similar fixes from the repository history
 proposes at most the budget per target (see Model generation). Each proposal is frozen
 as a patch and is not regenerated while its inputs are unchanged. It counts only after a
@@ -465,14 +501,21 @@ deterministic cascade:
    syntax tree is normalized;
 3. it repeats no other mutant, rule or semantic;
 4. it runs against the contract's passing tests in an isolated copy, and a failing test
-   makes it caught;
+   makes it caught, as does a run that does not finish within the campaign's time limits
+   (1.25 times those tests' time in the retained run and 10 s, confirmed at twice that);
 5. a survivor goes to a differential property run that searches for an input on which
    the original and the mutant differ, and then to the survivor judgement below.
 
 With such an input the class is challenged and not caught, and the input is the test
 goal; without one the mutant is UNKNOWN (equivalence not proven) and never PASS. The
 cascade is an evidence producer qualified on a calibration set of known identical,
-duplicate, invalid, confined, equivalent and distinguishable mutants. A selected target
+duplicate, invalid, confined, equivalent and distinguishable mutants. It judges a contract's
+proposals in chunks of three, as many chunks of any contracts at once as the campaign runs
+contracts, the largest contracts first, so no single contract sets the length of a run.
+Proposals whose mutated function reads the same stay in one chunk, so a repeated mutant is
+still named a duplicate of the first; judged in chunks, the calibration set must get the same
+outcome for every proposal. A contract whose retained result was made from exactly its
+current inputs is not run again. Draft tests are judged in as many isolated copies at once. A selected target
 without a current proposal keeps its class UNKNOWN: it was never generated, its
 generation was deferred or failed, or its proposals went stale. A draft test for a
 survivor is judged in the project's style: it is formatted and given ruff's safe fixes by
@@ -531,9 +574,13 @@ API reader behind mkdocstrings, was measured as the grounding check's resolver a
 the 125 test modules out of the box, so it is not used.
 
 A mutant every draft without tools missed climbs a ladder. First the Draft test author with
-tools writes one draft, then the Draft test author, last resort, the verdict's own model, writes
-one more; a pipeline first and an agent only for what it cannot settle, as Agentless and CoverUp's
-lookup tool suggest. Each works in a copy of the project (its code, tests and settings, no
+tools writes one draft at each level of its Effort, then the Draft test author, last resort, the
+verdict's own model, one at each of its levels, the next level only after the cascade rejected
+the draft below. Each mutant climbs on its own, beside the others: it takes its next step as soon
+as the cascade rejected its own draft and never waits for another mutant's, and at most as many
+drafts are judged at once as the cascade runs processes. This is a pipeline first and an agent
+only for what it cannot settle, as Agentless and
+CoverUp's lookup tool suggest. Each works in a copy of the project (its code, tests and settings, no
 history and nothing under the person's home) where it may read and search the copy, write the one
 file its pin will be and run one command, the cascade's own check of that file: the project's
 rules, five runs on the original, one on the mutant, what the test reached, and pyright's findings
@@ -544,32 +591,39 @@ on the Model roles page, so a later verdict model can look at it again.
 
 ##### Model generation
 
-| Role                           | Order | Backend           | Model                     |
-| ------------------------------ | ----: | ----------------- | ------------------------- |
-| Semantic mutant generator      |     1 | `antigravity-cli` | `gemini-3.1-pro-high`     |
-| Semantic mutant generator      |     2 | `antigravity-cli` | `gemini-3.8-flash-high`   |
-| Semantic mutant generator      |     3 | `claude-cli`      | `claude-sonnet-5`         |
-| Draft test author              |     1 | `antigravity-cli` | `gemini-3.8-flash-medium` |
-| Draft test author              |     2 | `antigravity-cli` | `gemini-3.1-pro-high`     |
-| Draft test author              |     3 | `claude-cli`      | `claude-sonnet-5`         |
-| Draft test author with tools   |     1 | `claude-cli`      | `claude-sonnet-5`         |
-| Draft test author, last resort |     1 | `claude-cli`      | `claude-opus-5-5`         |
-| Survivor verdict               |     1 | `claude-cli`      | `claude-opus-5-5`         |
-| Survivor verdict review        |     1 | `antigravity-cli` | `gemini-3.1-pro-high`     |
-| Survivor verdict review        |     2 | `antigravity-cli` | `gemini-3.8-flash-high`   |
+| Role                           | Order | Backend           | Model                     | Effort         |
+| ------------------------------ | ----: | ----------------- | ------------------------- | -------------- |
+| Semantic mutant generator      |     1 | `claude-cli`      | `claude-sonnet-5-5`       | `high`         |
+| Semantic mutant generator      |     2 | `antigravity-cli` | `gemini-3.1-pro-high`     | —              |
+| Semantic mutant generator      |     3 | `antigravity-cli` | `gemini-3.8-flash-high`   | —              |
+| Draft test author              |     1 | `claude-cli`      | `claude-sonnet-5-5`       | `low` → `high` |
+| Draft test author              |     2 | `antigravity-cli` | `gemini-3.8-flash-medium` | —              |
+| Draft test author              |     3 | `antigravity-cli` | `gemini-3.1-pro-high`     | —              |
+| Draft test author with tools   |     1 | `claude-cli`      | `claude-sonnet-5-5`       | `medium`       |
+| Draft test author, last resort |     1 | `claude-cli`      | `claude-opus-5-5`         | `xhigh`        |
+| Survivor verdict               |     1 | `claude-cli`      | `claude-opus-5-5`         | `xhigh`        |
+| Survivor verdict review        |     1 | `antigravity-cli` | `gemini-3.1-pro-high`     | —              |
+| Survivor verdict review        |     2 | `antigravity-cli` | `gemini-3.8-flash-high`   | —              |
 
 Semantic mutants, their draft tests and the verdicts on survivors come from a model called
 through one adapter (ADR_0004). Antigravity serves Gemini and Claude models from two quotas,
 a large one for the Gemini family and a smaller one for every other model. On Google AI Pro
 a week of the smaller one took about 64 of the pilot's calls and a week of the Gemini one
-about 920 (2026-09-28), so Gemini carries the volume and a draft's retry goes to a stronger
-Gemini model. The smaller pool serves only the first survivor assessor, of another family on
-purpose: on the one real survivor both Gemini assessors judged equivalent, it found the
-mutant distinct. The Claude subscription serves the verdict model, and its Sonnet 5 is the
-last model of the generator, the draft author and the first assessor, so a full Antigravity
-pool leaves no role waiting for its reset. Each role tries its backends in order. A backend that is unavailable (not
+about 920 (2026-09-28). Since 2026-09-29 the Claude subscription comes first wherever a role
+may use either, the person's balancing of the quotas, to be turned back later: Gemini answers
+where another family is required (the verdict review, the second and third assessors) and
+wherever a Claude window defers a call. A draft's retry is asked one level up the same model's
+ladder where it has one, else of the next model. The smaller pool serves the first survivor
+assessor after Sonnet 5.5, of another family than Gemini on purpose: on the one real survivor
+both Gemini assessors judged equivalent, it found the mutant distinct. Which model a role asks
+first changes no stored answer: a proposal counts while its inputs are unchanged, a draft is
+judged by running it, and a verdict is bound to its question. Each role tries its backends in order. A backend that is unavailable (not
 signed in, account not eligible) or whose budget defers the call is skipped for the next.
-A `claude-cli` call runs without tools, plugins, MCP servers or memory, with a replaced
+Two channels work at once: while the model a call would ask first runs as many calls as its
+pool takes, a later model of the role on another pool that has room answers it, so the Claude
+subscription and Antigravity answer side by side; the order decides who answers first while
+both have room, and each channel's budget below keeps its reserve (to spare a channel, raise
+what it keeps free). A `claude-cli` call runs without tools, plugins, MCP servers or memory, with a replaced
 system prompt and a JSON schema; only a call of the draft author's rungs with tools works in its
 copy of the project with the tools that copy allows. `agy` cannot be started without its tools, its own system
 prompt or its conversation history: the adapter tells it to answer from the text alone,
@@ -577,7 +631,34 @@ puts the system text before the prompt, and refuses a call that reaches for a to
 answer is validated again on receipt. Which Claude subscription a call uses is the machine's
 choice, a named profile of the CLI with its own sign-in (`model_generation.py profile`), and
 every ledger row names it by a label that carries no profile name; the windows the budget
-reads are that subscription's.
+reads are that subscription's. When the sign-in in use has no room left in its windows, the run
+probes the machine's other signed-in profiles, once each, and moves to one that has room; the
+chosen profile comes first.
+
+The Effort column sets a Claude model's reasoning effort by flag, and every ledger row records
+the level its call asked for. An Antigravity model names its level in its id; an empty cell
+leaves the backend's default: Antigravity's for Opus 4.6, whose id names none, and Claude
+Code's for Sonnet 5, `high` (Claude Code's model configuration), the level of the answers it
+stays listed for. No call reads the person's settings, since `--safe-mode` keeps a level saved
+there for a model: from 2026-09-26 to 09-28 one saved in the CLI's own sign-in ran the first
+135 verdicts at `xhigh`, the level the verdict now asks for by flag, and the 331 after them,
+through the pilot's profile, ran at Claude Code's default for Opus 5.5, `medium`. Both levels
+passed the verdict canaries, and every verdict stands; the Model roles page shows the level of
+each call. A judge (the verdict, its review, an assessor) and the generator answer at one
+level: a judge's level is part of what its canaries and calibration measured, and execution
+checks a generated defect's form, not whether it matters. The draft author's rungs, whose every
+answer execution checks in full, may climb a ladder of levels: a draft's retry is asked one
+level up a model's ladder, and each rung with tools asks one draft at each of its levels before
+the mutant climbs a rung. So Anthropic advises for work with a checker: run low and rerun the
+failures higher, in its coding runs the same pass rate for half the cost. A ladder keeps only
+levels far enough apart to differ, since every level is one more round for a mutant it fails
+(the person's rule, 2026-09-29): the retry goes from `low` straight to `high`; the rung with tools
+answers at `medium`, where it kept 24 of its 32 drafts; the last resort answers at `xhigh`, since
+at `high` it kept none of 3 (the drafts of 2026-09-27 to 09-29). A ladder answers its
+role's canaries from its lowest level up until a level passes, so a question starts at the
+lowest level that passed, the levels above it answer without canaries (a level passing shows the
+model can do the task, and execution still checks every answer above it), and a new model finds
+its own lowest level.
 
 ###### Generation budget
 
@@ -585,23 +666,44 @@ reads are that subscription's.
 | ------------------------------ | ----: |
 | 5-hour window                  |  100% |
 | Weekly window                  |  100% |
-| Calls per run                  |    40 |
+| Calls per run                  |   200 |
 | List price per call            | $0.50 |
 | List price per call with tools | $5.00 |
 | Draft attempts per mutant      |     2 |
-| Parallel calls to start with   |     2 |
-| Parallel calls at most         |     8 |
+| Parallel calls to start with   |     8 |
+| Parallel calls at most         |    16 |
 | Smaller-pool calls per week    |    30 |
+| Antigravity quota kept free    |    0% |
 
 Every call appends one row to the consumption ledger. The row records the role,
 backend, model, outcome, tokens, the list-price equivalent where the backend reports
 one, the duration and the plan windows. A window at or above its limit, or a run that
 reached its call limit, defers the call; a backend that reports no windows is bounded by
-the call limit alone. Since 2026-09-28 both window limits stand at 100%, the person's
+the call limit alone. A call whose backend reports its list price stops at its price cap, a
+fuse against a call that runs away rather than a price list: the Test Plan's cap for a call with
+or without tools, or three times the most expensive answered call of its role, whichever is
+larger, so the cap follows the models' prices when they change. A call that reaches its cap is
+asked once more at twice the cap; one that reaches that too is asked of the role's next model,
+and a rung of the draft author's ladder climbs as after a rejected draft. The Model roles page
+gives each role's cap in force beside its most expensive answered call, and every call a cap
+stopped. Since 2026-09-28 both window limits stand at 100%, the person's
 decision to be reviewed later: a call is deferred only when its window is full, so the
-pipeline no longer leaves room for the person's own work on the same subscription. Antigravity reports neither of its quotas, so its smaller pool is also
-bounded by its calls in the last seven days, counted from the ledger's calls actually made:
-30 is about half of that pool's week and leaves the rest to the person's own work on it. Independent questions (the assessors of
+pipeline no longer leaves room for the person's own work on the same subscription. Where
+agm keeps several Antigravity accounts (its multi-account switcher), each run reads what every
+account has left of each quota, Gemini Pro, Gemini Flash and the one Claude and GPT share, and
+moves agy alone, never the person's IDE, to the account with the most left once the one in use
+is down to the share the Test Plan keeps free; a call its quota rejects is asked again on
+another account, and when the run ends agy is back on the account it used before. Which account
+agy uses is what its own credential store holds, as `agm sync` reads it, not agm's list, which
+on 2026-09-29 named the second account while the store still held the first: a switch counts once
+the store holds the new account, and a refusal counts against the account the store confirms.
+agm reads an account's short window, not its week: a confirmed refusal that says when its quota
+resets keeps that quota spent on its account until then, in the next runs too. Every account has
+a weekly quota of its own. A ledger row
+names the account by a digest, and the probe's row records what each account had left. Without
+agm the CLI reports neither quota, so the smaller pool is bounded by its calls in the last seven
+days, counted from the ledger's calls actually made: 30 is about half of that pool's week and
+leaves the rest to the person's own work on it. Independent questions (the assessors of
 survivors, the calibration's pairs, the verdicts of a chunk of survivors, the drafts of one
 round) are asked at once. Asking at once spends no more quota, only sooner, and no
 subscription publishes how many calls it takes at a time, so each quota pool (the Claude
@@ -618,19 +720,24 @@ produced it, and the gate recomputes it from the stored response.
 
 ##### Survivor judgement
 
-| Assessor | Order | Backend           | Model                      |
-| -------: | ----: | ----------------- | -------------------------- |
-|        1 |     1 | `antigravity-cli` | `claude-opus-4-6-thinking` |
-|        1 |     2 | `claude-cli`      | `claude-sonnet-5`          |
-|        2 |     1 | `antigravity-cli` | `gemini-3.1-pro-high`      |
-|        3 |     1 | `antigravity-cli` | `gemini-3.8-flash-high`    |
+| Assessor | Order | Backend           | Model                      | Effort                    |
+| -------: | ----: | ----------------- | -------------------------- | ------------------------- |
+|        1 |     1 | `claude-cli`      | `claude-sonnet-5-5`        | `low` → `medium` → `high` |
+|        1 |     2 | `antigravity-cli` | `claude-opus-4-6-thinking` | —                         |
+|        1 |     3 | `claude-cli`      | `claude-sonnet-5`          | —                         |
+|        2 |     1 | `antigravity-cli` | `gemini-3.1-pro-high`      | —                         |
+|        3 |     1 | `antigravity-cli` | `gemini-3.8-flash-high`    | —                         |
 
 A survivor is a mutant that every passing test of its contract lets through, rule or
 semantic (ADR_0005). A symbolic search (CrossHair) over a typed harness of the original and
 the mutant looks for an input that tells them apart, then every assessor of the table
 answers distinct (with an input), equivalent or unsure, with its confidence. An assessor
 answers through its first model that can, as a role does: a later one only when the ones
-before it are deferred, unavailable or not calibrated yet. The assessors
+before it are deferred, unavailable or not calibrated yet. A model whose Effort is a ladder of
+levels is the search for its lowest level that meets the calibration floors: each level answers
+as a model of its own, a level that misses the floors does not answer, and the calibration asks
+the next level only then, in the same run. Sonnet 5 stays after Sonnet 5.5 so that the answers
+it gave keep counting. The assessors
 see the parameters as the code declares them and how the project's types the target takes
 or names are built; an input may use any of the project's dataclasses, exceptions and enum
 members. The question shows both versions as code, not the requirement: whether two versions
@@ -648,8 +755,12 @@ UNKNOWN, or survived for a rule mutant, until its verdict is recorded (below).
 Otherwise it is labelled unsure. A survivor that cannot be called from typed arguments, such
 as an asynchronous method or a method of an object that needs a running router, is not
 judged, and its row says why. The assessors come from two model families, Claude and
-Gemini, and a label needs all of them, so one family's shared blind spot does not label a
-survivor alone.
+Gemini, and a label needs all of them that take part, so one family's shared blind spot does not
+label a survivor alone. An assessor none of whose models meets the calibration floors takes no
+part until one does, though what it answered before stays in the judgements it is in; a label
+then needs at least two assessors from at least two families, and a verdict does not wait for
+it. Since 2026-09-29 Gemini 3.8 Flash misses them: of the real survivors a pin proves distinct it
+called 16 of 104 equivalent, and the Claude assessor and Gemini 3.1 Pro judge.
 
 ###### Judgement settings
 
@@ -671,19 +782,22 @@ the pins proved distinct, single assessors called some equivalent that none of t
 pairs had them call), so the observed pairs carry the rate. A survivor is labelled likely
 equivalent only when its lowest assessor confidence is above the threshold, which at most the
 false-equivalent rate of the distinct pairs exceed. A model counts for its assessor once it
-answered every labelled pair and every observed pair the first such models answered, so a
-new or replaced model costs one pass over the pairs, and the calibration asks only what is
+answered every labelled pair and every observed pair the first such models answered, and a
+level of a ladder once it also meets the calibration floors, so a new or replaced model costs
+one pass over the pairs for each level it climbs, and the calibration asks only what is
 missing. Each combination of usable models, one per assessor, gets its own threshold
 (Mondrian conformal), and the highest labels, so a label keeps the rate whichever models
 answered. The assessors' answers on the pairs are frozen and replayed by the qualification.
-A change of assessor, model, prompt or labelled pairs leaves the ensemble uncalibrated until
-the calibration runs again.
+A change of assessor, model, level, prompt or labelled pairs leaves the ensemble uncalibrated
+until the calibration runs again.
 Rule survivors are judged on request, apart from the campaign.
 
 ##### Survivor verdicts
 
 Every judged survivor, and every mutant no test of its contract reaches, gets a verdict from
-the Survivor verdict role (ADR_0006). The verdict model sees the requirement and its criteria,
+the Survivor verdict role (ADR_0006), once its judgement is complete: a survivor still waiting
+for an assessor's answer gets none yet, since its question would grow by that answer and the
+verdict and its review would be asked twice. The verdict model sees the requirement and its criteria,
 the Feature and Goal it serves, both versions of the code, the survivor judgement and any
 input execution confirmed; for an unreached mutant, that no test runs its line. A verdict
 that would take a mutant out of its class, equivalent or irrelevant, counts only when the
@@ -721,12 +835,16 @@ A model's answers count for a role only after it passed that role's canaries, a 
 with a known outcome. The generator must propose a well-formed, confined defect for a canary
 target; the draft author, and each of its rungs with tools in a copy of the canary's project,
 must write a test the cascade keeps for a known distinguishable mutant; the verdict model and the verdict review must pin a known gap, judge a known
-equivalent equivalent and escalate a known product decision. An assessor must meet the
+equivalent equivalent and escalate a known product decision, and judge three real survivors
+as their records settled them: one a kept pin proves distinct, one both families judged
+irrelevant and one both judged equivalent. An assessor must meet the
 calibration floors: an input confirmed for at least 80% of the labelled distinct pairs, and
 at most the false-equivalent rate of all distinct pairs, labelled or observed, judged
-equivalent. A
-change of model, question or canary set asks for the canaries again; until they pass, the
-role skips that model. A canary the backend did not answer (its quota, its capacity, the time
+equivalent; an assessor model that misses them does not answer, and at a level of a ladder
+the calibration asks the next level. A ladder of levels answers its role's canaries from its
+lowest level up until one passes; the next level is asked only after the one below answered
+every case and failed. A change of model, level, question or canary set asks for the canaries
+again; until they pass, the role skips that model at that level and the levels above it. A canary the backend did not answer (its quota, its capacity, the time
 limit) leaves the model's record for the same questions as it was.
 
 **Completion:** required fault-class coverage = **100%** · required deterministic fault detection = **100%**

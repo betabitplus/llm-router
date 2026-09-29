@@ -1,0 +1,94 @@
+{
+ "1e7fe255a9f2e635": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000259Z-b902f2",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement makes one the smallest allowed value (\"at least one\"), so a value of exactly 1 is valid. The mutant rejects it with a ConfigurationError, and execution confirmed this. That tightens the constraint beyond the requirement and turns away valid configurations.",
+   "response_sha256": "080720b1187c98bf721e246438651eef134b3886acecf79c69e551447ee9bff8",
+   "sources": [
+    "The configured minimum route count for fallback shuffling shall be at least one.",
+    "A fallback-shuffle minimum route count below one is rejected.",
+    "_require(condition=policy.min_routes_for_fallback_shuffle >= 2, message='minimum routes for fallback shuffle must be at least 1.')",
+    "condition=policy.min_routes_for_fallback_shuffle >= 1,"
+   ],
+   "test_focus": "Check that a config with min_routes_for_fallback_shuffle=1, and everything else valid, passes validate_config without raising, and that 0 still raises ConfigurationError.",
+   "verdict": "pin"
+  },
+  "operator": "boundary",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.610983Z",
+   "answer_sha256": "6f0e5320f88c7a5659456fc5a7975d2b3e2b09e38b51e02220391e1a2c110362",
+   "call_id": "20260929T100439Z-e6b762",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "6f0e5320f88c7a5659456fc5a7975d2b3e2b09e38b51e02220391e1a2c110362",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_fallback_shuffle_min_routes_1e7fe255a9f2e635.py",
+   "response_sha256": "f8ad89fd60da08e4e4025ef09c0048792eb91ed21b5e6df04673bb6ca4b4bd63",
+   "source": "draft author",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  },
+  "prompt_sha256": "b86871f26ab846f3cdbfe4b537d846437b0ef2e8142ed9d337e8fe95baac9fce"
+ },
+ "551e89dc7d0431df": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092235Z-7311e4",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement allows a fallback-shuffle minimum of exactly 1, because it only has to be \"at least one\". The mutant uses a strict \">\" instead of \">=\", so it rejects the valid value 1 with a ConfigurationError. Running the code with min_routes_for_fallback_shuffle=1 confirmed it: the original returns None and the mutant raises ConfigurationError.",
+   "response_sha256": "7583b3bd2f0be91ec890fc626b6cbbd1a1f92b20bc2001b8781b5af9ea27b6fc",
+   "sources": [
+    "The configured minimum route count for fallback shuffling shall be at least one.",
+    "A fallback-shuffle minimum route count below one is rejected.",
+    "_require(condition=policy.min_routes_for_fallback_shuffle > 1, message='minimum routes for fallback shuffle must be at least 1.')",
+    "condition=policy.min_routes_for_fallback_shuffle >= 1,"
+   ],
+   "test_focus": "Check that a config with min_routes_for_fallback_shuffle=1 passes validate_config without an error, and that a value of 0 is rejected with ConfigurationError.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.613375Z",
+   "answer_sha256": "a62a5621310ad049b71ff6f7994c997535e28636c397891d05661ded3723c7c8",
+   "call_id": "20260929T100443Z-17eff7",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "a62a5621310ad049b71ff6f7994c997535e28636c397891d05661ded3723c7c8",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_fallback_shuffle_min_routes_551e89dc7d0431df.py",
+   "response_sha256": "a8692d46d5f6468432330675beb4db570e5dac54ee1e62fae0929848d8d41bf6",
+   "source": "draft author",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  },
+  "prompt_sha256": "b1b93f95e043dc28c29e06acbeb11561c0137af887f275b5a9889e00b43bc053"
+ }
+}

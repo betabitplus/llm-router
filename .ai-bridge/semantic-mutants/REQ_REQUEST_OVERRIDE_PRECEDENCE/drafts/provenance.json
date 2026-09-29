@@ -1,0 +1,11 @@
+{
+ "SM-4D75202A": {
+  "kind": "model",
+  "call_id": "20260929T185126Z-f0d0e1",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "5381e23411329ef0e27e3a59ef41b2dbd0f3ad7e4e530e946cc97288af53f2fa",
+  "attempt": 1
+ }
+}

@@ -83,7 +83,6 @@ def advance_repair_attempt(state: SchemaRepairState) -> SchemaRepairState:
 
 
 # @impl Structured schema contract, IMPL_STRUCTURED_SCHEMA_CONTRACT, [REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]]
-# @impl Structured text output, IMPL_STRUCTURED_TEXT_OUTPUT, [REQ_STRUCTURED_TEXT_OUTPUT[revision==2]]
 def normalize_schema(schema: object) -> SchemaSpec:
     """Convert a public schema input into a provider-neutral schema spec."""
     if isinstance(schema, type) and issubclass(schema, BaseModel):
@@ -102,6 +101,8 @@ def normalize_schema(schema: object) -> SchemaSpec:
     raise TypeError(msg)
 
 
+# @impl Structured text output, IMPL_STRUCTURED_TEXT_OUTPUT, [REQ_STRUCTURED_TEXT_OUTPUT[revision==2]]
+# @impl Router-side schema validation, IMPL_STRUCTURED_SCHEMA_VALIDATION, [REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]]
 def validate_schema_output(
     spec: SchemaSpec,
     value: object,
@@ -142,6 +143,7 @@ def build_repair_prompt(
     )
 
 
+# @impl Provider schema transforms keep validation, IMPL_STRUCTURED_SCHEMA_TRANSFORM, [REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]]
 def with_schema_transform(
     spec: SchemaSpec,
     transform: Callable[[Mapping[str, Any]], Mapping[str, Any]],
@@ -157,6 +159,7 @@ def with_schema_transform(
     )
 
 
+# @impl Pydantic schema preservation, IMPL_STRUCTURED_SCHEMA_PYDANTIC, [REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]]
 def _pydantic_schema_spec(model: type[BaseModel]) -> SchemaSpec:
     """Return a schema spec backed by Pydantic validation."""
     return SchemaSpec(
@@ -167,6 +170,7 @@ def _pydantic_schema_spec(model: type[BaseModel]) -> SchemaSpec:
     )
 
 
+# @impl Pydantic model reconstruction, IMPL_STRUCTURED_SCHEMA_PYDANTIC_PARSE, [REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]]
 def _parse_pydantic_model(model: type[BaseModel], value: object) -> BaseModel:
     """Parse a Pydantic model from text, mappings, or existing model objects."""
     if isinstance(value, model):
@@ -177,6 +181,7 @@ def _parse_pydantic_model(model: type[BaseModel], value: object) -> BaseModel:
     return model.model_validate(value)
 
 
+# @impl Mapping schema definition check, IMPL_STRUCTURED_SCHEMA_DEFINITION, [REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]]
 def _validate_mapping_schema_definition(schema: Mapping[str, Any]) -> None:
     """Fail closed unless a caller mapping is a valid object Draft 2020-12 schema."""
     try:
@@ -190,6 +195,7 @@ def _validate_mapping_schema_definition(schema: Mapping[str, Any]) -> None:
         raise ValueError(msg)
 
 
+# @impl Mapping schema enforcement, IMPL_STRUCTURED_SCHEMA_ENFORCEMENT, [REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]]
 def _parse_mapping_schema(schema: Mapping[str, Any], value: object) -> dict[str, Any]:
     """Parse and validate output against the complete caller JSON Schema mapping."""
     parsed = _parse_json_object(value)
@@ -197,6 +203,7 @@ def _parse_mapping_schema(schema: Mapping[str, Any], value: object) -> dict[str,
     return parsed
 
 
+# @impl Structured text parsing, IMPL_STRUCTURED_TEXT_PARSE, [REQ_STRUCTURED_TEXT_OUTPUT[revision==2]]
 def _parse_json_object(value: object) -> dict[str, Any]:
     """Parse a structured-output candidate into a JSON object mapping."""
     if isinstance(value, str):
@@ -215,6 +222,7 @@ def _parse_json_object(value: object) -> dict[str, Any]:
     return {str(key): item for key, item in decoded.items()}
 
 
+# @impl Structured text payload extraction, IMPL_STRUCTURED_TEXT_PAYLOAD, [REQ_STRUCTURED_TEXT_OUTPUT[revision==2]]
 def _extract_json_payload(value: str) -> str:
     """Extract JSON object or array text, trimming fences and chatter."""
     stripped = _strip_json_fence(value).strip()
@@ -231,6 +239,7 @@ def _extract_json_payload(value: str) -> str:
     return stripped
 
 
+# @impl Provider formatting removal, IMPL_STRUCTURED_TEXT_FENCE, [REQ_STRUCTURED_TEXT_OUTPUT[revision==2]]
 def _strip_json_fence(value: str) -> str:
     """Return JSON text without a simple Markdown code fence wrapper."""
     stripped = value.strip()

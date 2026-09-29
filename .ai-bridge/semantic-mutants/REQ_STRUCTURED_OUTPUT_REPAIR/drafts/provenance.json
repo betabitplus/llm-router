@@ -1,0 +1,11 @@
+{
+ "SM-12FA1E31": {
+  "kind": "model",
+  "call_id": "20260929T185610Z-4fa455",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "d81c675a788326a3eadb5f52a4f368a4e49a2fa5b219350ab347d73ddd46838e",
+  "attempt": 2
+ }
+}

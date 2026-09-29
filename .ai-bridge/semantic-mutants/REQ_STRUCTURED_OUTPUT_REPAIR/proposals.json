@@ -1,0 +1,126 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_STRUCTURED_OUTPUT_REPAIR",
+ "proposals": [
+  {
+   "id": "SM-58500330",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/executor.py::_advance_structured_result",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Attempt counter is advanced by two per invalid response, so with a total budget of 2 the first invalid response already reaches the limit and raises instead of allowing the repair response.",
+   "original_sha256": "b6e70dc65649340e0ed72ebe6513bfaa288f2ff0a9a3faab431cc4bbab962bb2",
+   "context_sha256": "b6828dba76d70527ca574500825a85071fbb0d731afc913ebe1630a00878c7a0",
+   "prompt_sha256": "5eac0fe5fe39b635af7fdabac1a7279092f6d3e965fa9380831d3adeeb09de3e",
+   "replacement": "def _advance_structured_result(\n    *,\n    config: LLMRouterConfig,\n    provider_request: ProviderRequest,\n    plan: _ExecutionPlan,\n    state: _ExecutionLoopState,\n    result: ProviderResult,\n) -> _ResultStep:\n    \"\"\"Handle structured-output validation and repair loop state.\"\"\"\n    validated = _validate_structured_result(\n        request=provider_request,\n        plan=plan,\n        result=result,\n        completed_attempts=state.structured_attempts,\n    )\n    if validated.valid:\n        return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),\n        )\n\n    next_attempts = state.structured_attempts + 2\n    error_message = validated.error_message or \"Validation failed.\"\n    if next_attempts >= config.structured_output_max_attempts:\n        _log_schema_repair_exhausted(request=provider_request)\n        raise structured_output_error(result=result)\n\n    _log_schema_repair_started(request=provider_request)\n    return _ResultStep(\n        state=replace(\n            state,\n            messages=append_repair_message(\n                state.messages,\n                request=provider_request,\n                schema=plan.schema,\n                result=result,\n                error_message=error_message,\n            ),\n            schema=plan.schema,\n            tool_registry=None,\n            tool_choice=None,\n            structured_attempts=next_attempts,\n        )\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-669af6",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "46e097fb444935b3221d053506e08792bfc7c5218d62ba1303bd54e920f23ed2",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-CFE3592C",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/executor.py::_advance_structured_result",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "The updated state keeps the old attempt count instead of the incremented one, so the counter never grows across repair rounds and the finite attempt limit is never reached (repeated invalid output loops indefinitely).",
+   "original_sha256": "b6e70dc65649340e0ed72ebe6513bfaa288f2ff0a9a3faab431cc4bbab962bb2",
+   "context_sha256": "b6828dba76d70527ca574500825a85071fbb0d731afc913ebe1630a00878c7a0",
+   "prompt_sha256": "5eac0fe5fe39b635af7fdabac1a7279092f6d3e965fa9380831d3adeeb09de3e",
+   "replacement": "def _advance_structured_result(\n    *,\n    config: LLMRouterConfig,\n    provider_request: ProviderRequest,\n    plan: _ExecutionPlan,\n    state: _ExecutionLoopState,\n    result: ProviderResult,\n) -> _ResultStep:\n    \"\"\"Handle structured-output validation and repair loop state.\"\"\"\n    validated = _validate_structured_result(\n        request=provider_request,\n        plan=plan,\n        result=result,\n        completed_attempts=state.structured_attempts,\n    )\n    if validated.valid:\n        return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),\n        )\n\n    next_attempts = state.structured_attempts + 1\n    error_message = validated.error_message or \"Validation failed.\"\n    if next_attempts >= config.structured_output_max_attempts:\n        _log_schema_repair_exhausted(request=provider_request)\n        raise structured_output_error(result=result)\n\n    _log_schema_repair_started(request=provider_request)\n    return _ResultStep(\n        state=replace(\n            state,\n            messages=append_repair_message(\n                state.messages,\n                request=provider_request,\n                schema=plan.schema,\n                result=result,\n                error_message=error_message,\n            ),\n            schema=plan.schema,\n            tool_registry=None,\n            tool_choice=None,\n            structured_attempts=state.structured_attempts,\n        )\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-669af6",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "46e097fb444935b3221d053506e08792bfc7c5218d62ba1303bd54e920f23ed2",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-D7F47A4B",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/executor.py::_advance_structured_result",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Repair limit is compared against one fewer than the configured budget, so with a total budget of 2 the first invalid response is immediately treated as exhausted and the valid second response is never obtained.",
+   "original_sha256": "b6e70dc65649340e0ed72ebe6513bfaa288f2ff0a9a3faab431cc4bbab962bb2",
+   "context_sha256": "2de170e0111217b2836c59e3ec089de2403bd63cecc663db04e6b831e6aef983",
+   "prompt_sha256": "ae7ba1ee9b7b851c346bcf5c3d1e123f0ad8e307d87c302e2cd29f3ad523396c",
+   "replacement": "def _advance_structured_result(\n    *,\n    config: LLMRouterConfig,\n    provider_request: ProviderRequest,\n    plan: _ExecutionPlan,\n    state: _ExecutionLoopState,\n    result: ProviderResult,\n) -> _ResultStep:\n    \"\"\"Handle structured-output validation and repair loop state.\"\"\"\n    validated = _validate_structured_result(\n        request=provider_request,\n        plan=plan,\n        result=result,\n        completed_attempts=state.structured_attempts,\n    )\n    if validated.valid:\n        return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),\n        )\n\n    # @impl Structured output attempt count, IMPL_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]\n    next_attempts = state.structured_attempts + 1\n    error_message = validated.error_message or \"Validation failed.\"\n    # @impl Structured output attempt bound, IMPL_STRUCTURED_OUTPUT_ATTEMPT_LIMIT, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]\n    repair_budget = max(config.structured_output_max_attempts - 1, 1)\n    if next_attempts >= repair_budget:\n        _log_schema_repair_exhausted(request=provider_request)\n        raise structured_output_error(result=result)\n\n    _log_schema_repair_started(request=provider_request)\n    return _ResultStep(\n        state=replace(\n            state,\n            messages=append_repair_message(\n                state.messages,\n                request=provider_request,\n                schema=plan.schema,\n                result=result,\n                error_message=error_message,\n            ),\n            schema=plan.schema,\n            tool_registry=None,\n            tool_choice=None,\n            structured_attempts=next_attempts,\n        )\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-ee5407",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "c4c260c8333f256b24ef8c8c868a065f54d7b33b323b1251822bde5d6a1d021f",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-847F9370",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/executor.py::_advance_structured_result",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "The exhaustion check uses the stale attempt counter (before increment) instead of the incremented count, so repairs are allowed one time too many and the finite limit is exceeded (budget 2 permits a third response).",
+   "original_sha256": "b6e70dc65649340e0ed72ebe6513bfaa288f2ff0a9a3faab431cc4bbab962bb2",
+   "context_sha256": "2de170e0111217b2836c59e3ec089de2403bd63cecc663db04e6b831e6aef983",
+   "prompt_sha256": "ae7ba1ee9b7b851c346bcf5c3d1e123f0ad8e307d87c302e2cd29f3ad523396c",
+   "replacement": "def _advance_structured_result(\n    *,\n    config: LLMRouterConfig,\n    provider_request: ProviderRequest,\n    plan: _ExecutionPlan,\n    state: _ExecutionLoopState,\n    result: ProviderResult,\n) -> _ResultStep:\n    \"\"\"Handle structured-output validation and repair loop state.\"\"\"\n    validated = _validate_structured_result(\n        request=provider_request,\n        plan=plan,\n        result=result,\n        completed_attempts=state.structured_attempts,\n    )\n    if validated.valid:\n        return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),\n        )\n\n    # @impl Structured output attempt count, IMPL_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]\n    next_attempts = state.structured_attempts + 1\n    error_message = validated.error_message or \"Validation failed.\"\n    # @impl Structured output attempt bound, IMPL_STRUCTURED_OUTPUT_ATTEMPT_LIMIT, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]\n    if state.structured_attempts >= config.structured_output_max_attempts:\n        _log_schema_repair_exhausted(request=provider_request)\n        raise structured_output_error(result=result)\n\n    _log_schema_repair_started(request=provider_request)\n    return _ResultStep(\n        state=replace(\n            state,\n            messages=append_repair_message(\n                state.messages,\n                request=provider_request,\n                schema=plan.schema,\n                result=result,\n                error_message=error_message,\n            ),\n            schema=plan.schema,\n            tool_registry=None,\n            tool_choice=None,\n            structured_attempts=next_attempts,\n        )\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-ee5407",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "c4c260c8333f256b24ef8c8c868a065f54d7b33b323b1251822bde5d6a1d021f",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-12FA1E31",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/runtime/executor.py::_advance_structured_result",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "On the repair path the replacement state drops the output schema (schema=None), so the follow-up provider request no longer carries the schema the structured-output contract requires.",
+   "original_sha256": "b6e70dc65649340e0ed72ebe6513bfaa288f2ff0a9a3faab431cc4bbab962bb2",
+   "context_sha256": "7f8b7717c4c39376b4be05fc8665d8b7412cbb813a0e9b2b86008de04c3adb52",
+   "prompt_sha256": "43caa114d22610f9a71ad8a67f4f7874fc05c5cb716524389f2d43ba27c0bc35",
+   "replacement": "def _advance_structured_result(\n    *,\n    config: LLMRouterConfig,\n    provider_request: ProviderRequest,\n    plan: _ExecutionPlan,\n    state: _ExecutionLoopState,\n    result: ProviderResult,\n) -> _ResultStep:\n    \"\"\"Handle structured-output validation and repair loop state.\"\"\"\n    validated = _validate_structured_result(\n        request=provider_request,\n        plan=plan,\n        result=result,\n        completed_attempts=state.structured_attempts,\n    )\n    if validated.valid:\n        return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),\n        )\n\n    # @impl Structured output attempt count, IMPL_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]\n    next_attempts = state.structured_attempts + 1\n    error_message = validated.error_message or \"Validation failed.\"\n    # @impl Structured output attempt bound, IMPL_STRUCTURED_OUTPUT_ATTEMPT_LIMIT, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]\n    if next_attempts >= config.structured_output_max_attempts:\n        _log_schema_repair_exhausted(request=provider_request)\n        raise structured_output_error(result=result)\n\n    _log_schema_repair_started(request=provider_request)\n    return _ResultStep(\n        state=replace(\n            state,\n            messages=append_repair_message(\n                state.messages,\n                request=provider_request,\n                schema=plan.schema,\n                result=result,\n                error_message=error_message,\n            ),\n            schema=None,\n            tool_registry=None,\n            tool_choice=None,\n            structured_attempts=next_attempts,\n        )\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-a593d0",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "f20c2295b650874243de984d6a06d0ba0d59f06e89faad434807cfa7efc6e4ba",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-D87C4EDA",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/runtime/executor.py::_advance_structured_result",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "The successful validated response is built without the parsed structured data, so the public response loses the structured payload field after a valid (including repaired) output.",
+   "original_sha256": "b6e70dc65649340e0ed72ebe6513bfaa288f2ff0a9a3faab431cc4bbab962bb2",
+   "context_sha256": "7f8b7717c4c39376b4be05fc8665d8b7412cbb813a0e9b2b86008de04c3adb52",
+   "prompt_sha256": "43caa114d22610f9a71ad8a67f4f7874fc05c5cb716524389f2d43ba27c0bc35",
+   "replacement": "def _advance_structured_result(\n    *,\n    config: LLMRouterConfig,\n    provider_request: ProviderRequest,\n    plan: _ExecutionPlan,\n    state: _ExecutionLoopState,\n    result: ProviderResult,\n) -> _ResultStep:\n    \"\"\"Handle structured-output validation and repair loop state.\"\"\"\n    validated = _validate_structured_result(\n        request=provider_request,\n        plan=plan,\n        result=result,\n        completed_attempts=state.structured_attempts,\n    )\n    if validated.valid:\n        return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=None if state.structured_attempts > 0 else validated.value,\n            ),\n        )\n\n    # @impl Structured output attempt count, IMPL_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]\n    next_attempts = state.structured_attempts + 1\n    error_message = validated.error_message or \"Validation failed.\"\n    # @impl Structured output attempt bound, IMPL_STRUCTURED_OUTPUT_ATTEMPT_LIMIT, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]\n    if next_attempts >= config.structured_output_max_attempts:\n        _log_schema_repair_exhausted(request=provider_request)\n        raise structured_output_error(result=result)\n\n    _log_schema_repair_started(request=provider_request)\n    return _ResultStep(\n        state=replace(\n            state,\n            messages=append_repair_message(\n                state.messages,\n                request=provider_request,\n                schema=plan.schema,\n                result=result,\n                error_message=error_message,\n            ),\n            schema=plan.schema,\n            tool_registry=None,\n            tool_choice=None,\n            structured_attempts=next_attempts,\n        )\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-a593d0",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "f20c2295b650874243de984d6a06d0ba0d59f06e89faad434807cfa7efc6e4ba",
+    "index": 1
+   }
+  }
+ ]
+}

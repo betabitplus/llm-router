@@ -65,6 +65,27 @@ inferred from a cassette.
 | Architecture          | No particular internal module topology is normative for the public result.                                                                                                                   |
 | Specification / model | A wrong structured result or an omitted supported provider family invalidates the claim.                                                                                                     |
 
+### Semantic mutants
+
+| Fault class                | Target                                                                    | Budget | Risk                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/schema.py::_extract_json_payload`  |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/schema.py::_parse_json_object`     |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/schema.py::_strip_json_fence`      |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/schema.py::validate_schema_output` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/schema.py::_extract_json_payload`  |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/schema.py::_parse_json_object`     |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/schema.py::_strip_json_fence`      |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/schema.py::validate_schema_output` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/schema.py::_extract_json_payload`  |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/schema.py::_parse_json_object`     |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/schema.py::_strip_json_fence`      |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/schema.py::validate_schema_output` |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-req-document-input)=
 
 ## Profile · REQ_DOCUMENT_INPUT
@@ -295,6 +316,36 @@ not require an external dependency.
 | Architecture          | Bypassing router-side validation in favor of provider-only validation can weaken caller semantics.                                                 |
 | Specification / model | Wrong acceptance/rejection or omission of mapping/Pydantic partitions invalidates the schema contract.                                             |
 
+### Semantic mutants
+
+| Fault class                | Target                                                                                 | Budget | Risk                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/schema.py::_parse_mapping_schema`               |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/schema.py::_parse_pydantic_model`               |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/schema.py::_pydantic_schema_spec`               |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/schema.py::_validate_mapping_schema_definition` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/schema.py::normalize_schema`                    |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/schema.py::validate_schema_output`              |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/schema.py::with_schema_transform`               |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/schema.py::_parse_mapping_schema`               |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/schema.py::_parse_pydantic_model`               |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/schema.py::_pydantic_schema_spec`               |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/schema.py::_validate_mapping_schema_definition` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/schema.py::normalize_schema`                    |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/schema.py::validate_schema_output`              |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/schema.py::with_schema_transform`               |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/schema.py::_parse_mapping_schema`               |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/schema.py::_parse_pydantic_model`               |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/schema.py::_pydantic_schema_spec`               |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/schema.py::_validate_mapping_schema_definition` |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/schema.py::normalize_schema`                    |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/schema.py::validate_schema_output`              |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/schema.py::with_schema_transform`               |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-req-multimodal-content-normalization)=
 
 ## Profile · REQ_MULTIMODAL_CONTENT_NORMALIZATION
@@ -358,3 +409,36 @@ material provider interaction.
 | Interface / protocol  | Any provider interaction after locally invalid input is explicitly forbidden.                                                                                |
 | Architecture          | Bypassing provider-neutral normalization before adapter execution breaks the required boundary.                                                              |
 | Specification / model | Wrong order/metadata, missing invalid-input partitions, or reject-after-provider ordering violates the Requirement.                                          |
+
+### Semantic mutants
+
+| Fault class                        | Target                                                                     | Budget | Risk                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/capabilities/content.py::_content_parts`         |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/capabilities/content.py::normalize_chat_message` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/capabilities/content.py::normalize_content`      |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/capabilities/content.py::normalize_parts`        |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/capabilities/media.py::_validate_image`          |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/capabilities/media.py::describe_media`           |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`           | `src/llm_router/_internal/capabilities/content.py::_content_parts`         |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`           | `src/llm_router/_internal/capabilities/content.py::normalize_chat_message` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`           | `src/llm_router/_internal/capabilities/content.py::normalize_content`      |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`           | `src/llm_router/_internal/capabilities/content.py::normalize_parts`        |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`           | `src/llm_router/_internal/capabilities/media.py::_validate_image`          |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition`           | `src/llm_router/_internal/capabilities/media.py::describe_media`           |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/capabilities/content.py::_content_parts`         |      2 | an order or a before/after boundary its requirement names is broken                   |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/capabilities/content.py::normalize_chat_message` |      2 | an order or a before/after boundary its requirement names is broken                   |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/capabilities/content.py::normalize_content`      |      2 | an order or a before/after boundary its requirement names is broken                   |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/capabilities/content.py::normalize_parts`        |      2 | an order or a before/after boundary its requirement names is broken                   |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/capabilities/media.py::_validate_image`          |      2 | an order or a before/after boundary its requirement names is broken                   |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/capabilities/media.py::describe_media`           |      2 | an order or a before/after boundary its requirement names is broken                   |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/capabilities/content.py::_content_parts`         |      2 | an external interaction its requirement rules out happens anyway                      |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/capabilities/content.py::normalize_chat_message` |      2 | an external interaction its requirement rules out happens anyway                      |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/capabilities/content.py::normalize_content`      |      2 | an external interaction its requirement rules out happens anyway                      |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/capabilities/content.py::normalize_parts`        |      2 | an external interaction its requirement rules out happens anyway                      |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/capabilities/media.py::_validate_image`          |      2 | an external interaction its requirement rules out happens anyway                      |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/capabilities/media.py::describe_media`           |      2 | an external interaction its requirement rules out happens anyway                      |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.

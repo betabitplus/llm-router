@@ -1,0 +1,48 @@
+{
+ "b6340db1c7f8750a": [
+  {
+   "at": "2026-09-29T00:24:30.361854Z",
+   "call_id": "20260929T001300Z-958afc",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router._internal.config has no ProviderLimits (it lives in llm_router._api.types)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "712101c992dd96756e271d0d9425c933033f3366df77e26949c93302d4eeb38f",
+   "reason": "it does not fit the project's code as written: llm_router._internal.config has no ProviderLimits (it lives in llm_router._api.types)",
+   "sources": [
+    "llm_router._internal.config.validation.validate_config",
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.config.models.ProviderCatalog",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.config.models.RouterPolicyDefaults",
+    "llm_router._internal.config.models.ProviderLimits",
+    "llm_router._internal.config.models.ProviderSpec",
+    "llm_router._internal.config.assembly.build_default_config"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:52:35.190956Z",
+   "call_id": "20260929T125208Z-225b25",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "aaf8ee0c00861d693b78fa248286775f5e13b654312ad152872fe4dda61cfc79",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  }
+ ]
+}

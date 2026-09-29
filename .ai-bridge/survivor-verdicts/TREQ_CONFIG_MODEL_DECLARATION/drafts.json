@@ -1,0 +1,122 @@
+{
+ "SM-87B84725": [
+  {
+   "at": "2026-09-29T20:13:34.963098Z",
+   "call_id": "20260929T201257Z-12876f",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ffd02464e29581a0a56bc9f9574bad4c0b48cd1a832898a594ecc5794723bbfd",
+   "reason": "it does not fail on the mutant: it runs the changed line 254, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model"
+   ]
+  },
+  {
+   "at": "2026-09-29T20:21:06.885211Z",
+   "call_id": "20260929T202030Z-aa73da",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "584c6d15c2bfbc9b8f744492009736dcd7fc16c33dfe76ca43581ed83a6d761c",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert ('gemini-3.6-flash' not in mappingproxy({<Model.GEMINI_FLASH_LITE: 'gemini-3.5-flash-lite'>: mappingproxy({<Provider.GOOGLE: 'google'>: 'gemini-3...97b-a17b'}), <Model.QWEN3_VL_PLUS: 'qwen3-vl-plus'>: mappingproxy({<Provider.QWENCHAT: 'qwenchat'>: 'qwen3-vl-plus'})}) or False) | +  where 'gemini-3.6-flash' = <Model.G",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.ProviderCatalog"
+   ]
+  },
+  {
+   "at": "2026-09-29T20:22:27.991560Z",
+   "call_id": "20260929T202107Z-dc6a63",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f389aa6e6b524e93ced7dd9cbe8220f2e6d12a761742665b4870f393712e35d6",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model"
+   ]
+  }
+ ],
+ "SM-8D7935BF": [
+  {
+   "at": "2026-09-29T19:15:34.151867Z",
+   "call_id": "20260929T191342Z-3b7d9f",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1c87ad9abde67acfefdad63c7287cfb7db48a220160198a67d3fe0746fc213c8",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model",
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  }
+ ],
+ "e1379ec0c0ed9e96": [
+  {
+   "at": "2026-09-29T10:38:22.581249Z",
+   "call_id": "20260929T100513Z-45d9e1",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "b0b52e6e2e8321779539d5ec7caaa89d29935575cce6ca40698456840d1db39b",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model"
+   ]
+  }
+ ],
+ "feb268a2d271b818": [
+  {
+   "at": "2026-09-29T10:38:22.581260Z",
+   "call_id": "20260929T100519Z-71e485",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router._internal.config has no ProviderLimits (it lives in llm_router._api.types)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "0864a6d424bb96f11bf1b1f9c7b8a26f9b479d6c5232daf1055388da890fd3eb",
+   "reason": "it does not fit the project's code as written: llm_router._internal.config has no ProviderLimits (it lives in llm_router._api.types)",
+   "sources": [
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.config.ProviderLimits"
+   ]
+  }
+ ]
+}

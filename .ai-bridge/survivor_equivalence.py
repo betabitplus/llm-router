@@ -510,6 +510,102 @@ def input_guide(file_path: str, harness: dict, limit: int = 12) -> str:
     return ("Its inputs are built from these types of the project: " + "; ".join(lines) + ".") if lines else ""
 
 
+def _raised(function: ast.AST) -> list[str]:
+    """The exception types a function's own body raises by name."""
+    names = []
+    for node in ast.walk(function):
+        if isinstance(node, ast.Raise) and node.exc is not None:
+            raised = node.exc.func if isinstance(node.exc, ast.Call) else node.exc
+            name = ast.unparse(raised).split(".")[-1]
+            if name[:1].isupper() and name not in names:
+                names.append(name)
+    return names
+
+
+def _module_file(root: Path, module: str) -> Path | None:
+    base = root / "src" / Path(*module.split("."))
+    for candidate in (base.with_suffix(".py"), base / "__init__.py"):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def callee_card(file_path: str, qualname: str, limit: int = 6) -> str:
+    """What the target calls elsewhere in the project, for the assessors: each function's signature,
+    the first line of its docstring and the exceptions its own body raises, in the order the target
+    calls them. A question shows the target and its class, not what they call, so without it an
+    assessor guesses whether a removed call mattered. Empty when the target calls nothing of the
+    project, and then the question is the same as without it."""
+    package = project_package(file_path)
+    if not package:
+        return ""
+    parts = Path(file_path).parts
+    root = Path(*parts[: len(parts) - 1 - parts[::-1].index("src")]) if len(parts) - 1 - parts[::-1].index("src") else Path(".")
+    source = Path(file_path).read_text()
+    tree = ast.parse(source)
+    target, _parents = _find(tree, qualname)
+    if not isinstance(target, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        return ""
+    local = {node.name: node for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    imported: dict[str, tuple[str, str | None]] = {}
+    for node in tree.body:
+        if isinstance(node, ast.ImportFrom) and node.module and not node.level and node.module.split(".")[0] == package:
+            for alias in node.names:
+                imported[alias.asname or alias.name] = (node.module, alias.name)
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name.split(".")[0] == package and alias.asname:
+                    imported[alias.asname] = (alias.name, None)
+    trees: dict[Path, ast.Module] = {}
+
+    def definition(call: ast.Call) -> tuple[ast.AST, ast.Module] | None:
+        name, attribute = None, None
+        if isinstance(call.func, ast.Name):
+            name = call.func.id
+        elif isinstance(call.func, ast.Attribute) and isinstance(call.func.value, ast.Name):
+            name, attribute = call.func.value.id, call.func.attr
+        if name is None:
+            return None
+        if attribute is None and name in local and name != target.name:
+            return local[name], tree
+        found = imported.get(name)
+        if not found:
+            return None
+        module, item = found
+        path = _module_file(root, module if item is None or attribute is None else f"{module}.{item}")
+        path = path or (_module_file(root, module) if attribute is None else None)
+        if path is None:
+            return None
+        if path not in trees:
+            try:
+                trees[path] = ast.parse(path.read_text())
+            except SyntaxError:
+                return None
+        wanted = attribute or item
+        found = next((node for node in trees[path].body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == wanted), None)
+        return (found, trees[path]) if found is not None else None
+
+    lines: list[str] = []
+    seen: set[str] = set()
+    for node in sorted((item for item in ast.walk(target) if isinstance(item, ast.Call)), key=lambda item: (item.lineno, item.col_offset)):
+        resolved = definition(node)
+        if resolved is None or resolved[0].name in seen:
+            continue
+        callee, home = resolved
+        seen.add(callee.name)
+        signature = f"{callee.name}({ast.unparse(callee.args)})" + (f" -> {ast.unparse(callee.returns)}" if callee.returns is not None else "")
+        doc = (ast.get_docstring(callee) or "").strip().splitlines()
+        # What it raises itself, and what the functions of its own module it calls raise.
+        helpers = {item.name: item for item in home.body if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))}
+        raised = _raised(callee)
+        for call in (item for item in ast.walk(callee) if isinstance(item, ast.Call) and isinstance(item.func, ast.Name) and item.func.id in helpers):
+            raised += [name for name in _raised(helpers[call.func.id]) if name not in raised]
+        lines.append(signature + (f": {doc[0]}" if doc else "") + (f" Raises {', '.join(raised)}." if raised else ""))
+        if len(lines) >= limit:
+            break
+    return ("It calls these functions of the project: " + "; ".join(lines)) if lines else ""
+
+
 def witness_namespace(module, package: str | None = None) -> dict:
     """What a witness may name: the module's own names and, when its package is known, every
     dataclass, exception and enum the package's loaded modules define. A name two such classes
@@ -569,6 +665,18 @@ def load_module(path: Path, name: str):
     return module
 
 
+def redact_environment(text: str) -> str:
+    """What a shown outcome says without the machine it ran on: the value of any environment variable
+    of 8 characters or more reads ``<$NAME>``, and the home directory ``~``. A found input may make the
+    code read ``PATH`` or a key, and a witness goes into a model's question and a public record; the
+    judgement compares the whole outcomes by digest, never this text."""
+    for name, value in sorted(os.environ.items(), key=lambda pair: -len(pair[1])):
+        if len(value) >= 8:
+            text = text.replace(value, f"<${name}>")
+    home = str(Path.home())
+    return text.replace(home, "~") if len(home) > 1 else text
+
+
 def contrast(first: str, second: str, width: int = 300) -> tuple[str, str]:
     """Two outcomes as a reader can tell them apart: whole when short, else a window of each around
     their first difference, which a plain cut at the start would hide."""
@@ -607,7 +715,7 @@ def verify_witness(original, mutant, arguments: dict[str, str], parameters: list
         observed.append(runs[0])
     differs = observed[0] != observed[1] and ("timeout",) not in observed
     whole = [repr(item) for item in observed]
-    shown = contrast(whole[0], whole[1])
+    shown = contrast(redact_environment(whole[0]), redact_environment(whole[1]))
     return {
         "verified": differs,
         "original": shown[0],

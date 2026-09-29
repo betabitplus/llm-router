@@ -1,0 +1,121 @@
+{
+ "SM-2027036F": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-e912ab",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Because the inputs are immutable, the second call to `run_tool_round` will deterministically raise another `ToolExecutionError` that propagates, matching the original version's behavior of raising the exception, differing only in side effects not captured by the strict definition of behaviour.",
+    "response_sha256": "3076620d01b22d139ead48f0f24caa6f13f502ef3fded76ef046e68aa3794ae4",
+    "sources": [
+     "    except ToolExecutionError as exc:\n        _log_tool_failed(request=request, state=state, error=exc)\n        next_state = run_tool_round("
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "registry": "ToolRegistry(tools={'flaky': ToolDefinition(...callable raising on the first call and succeeding on later calls)})",
+     "request": "any valid ProviderRequest",
+     "result": "ProviderResult whose tool_calls contains one call to a tool named 'flaky'",
+     "state": "ToolLoopState(max_rounds=3)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-66931f",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "On a ToolExecutionError the changed version logs it and calls run_tool_round again instead of re-raising, so it re-executes the tools and can return a state where the original raised.",
+    "response_sha256": "d0da2e4edeb2eaecd639e33edb6498a978c68aee4ef303691b33f25239bbf6ce",
+    "sources": [
+     "_log_tool_failed(request=request, state=state, error=exc)\n        raise",
+     "_log_tool_failed(request=request, state=state, error=exc)\n        next_state = run_tool_round("
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "29237f5ddfad8ae29f7bd56d4a264f7702595f9ae5d336d55770ba0a0b4d36f2"
+ },
+ "SM-80E21F07": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "registry": "ToolRegistry(tools={})",
+     "request": "ProviderRequest(request_id='1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini', credential=ProviderCredential(key_id=1, env_var='K', value='V'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini', output_text='', tool_calls=({'name': 'missing'},))",
+     "state": "ToolLoopState(max_rounds=10)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-12e544",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version accesses `call.name` before execution, raising an AttributeError since the dictionary has no such attribute, whereas the changed version calls `run_tool_round` first, which raises an execution exception (like ToolExecutionError) for the unknown tool before the AttributeError can occur.",
+    "response_sha256": "f1089dc1ce1bfa9aa37828c652a8ce47ae5124ac0e7c8f7f0b0a3e6a6692b2f0",
+    "sources": [
+     "    if state.can_execute_tools():\n        for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)",
+     "    try:\n        next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-80aec5",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "Return value and raised exception types are identical; only the order or presence of \"called\" log calls differs when run_tool_round raises.",
+    "response_sha256": "09171cab601bce99ef5bbffd98ba745dd6d2431d683d0d9334240c3132565aff",
+    "sources": [
+     "_log_tool_called(request=request, state=state, tool_name=call.name)",
+     "except ToolExecutionError as exc:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "166445e4826cfd6eb1cc77d47928d88a03768ea9583abae79f861a54eeed2478"
+ },
+ "SM-ECF40350": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "registry": "ToolRegistry()",
+     "request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"m\", credential=ProviderCredential(key_id=1, env_var=\"A\", value=\"B\"), messages=[])",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"m\", output_text=\"\")",
+     "state": "ToolLoopState(max_rounds=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-add39e",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When `state.can_execute_tools()` is false (e.g., due to max rounds being 0), the original version unconditionally calls `run_tool_round` which can raise an error, whereas the changed version immediately and safely returns `state`.",
+    "response_sha256": "842c803c60f408de259fde1da0aec1e85672be70998e00cc6e8508b9422fecdc",
+    "sources": [
+     "    if state.can_execute_tools():\n        for call in result.tool_calls:",
+     "    if not state.can_execute_tools():\n        return state"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-63d654",
+    "confidence": 0.4,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "When can_execute_tools() is false, the original still calls run_tool_round, which may raise or otherwise differ from the new early return of state, but I can't see run_tool_round's behavior.",
+    "response_sha256": "0cdc6e13de71e9cb838b35940682f6ca3de21ad6f7802830ad5d30fb07f4ab92",
+    "sources": [
+     "    if not state.can_execute_tools():\n        return state",
+     "    if state.can_execute_tools():"
+    ],
+    "verdict": "unsure"
+   }
+  },
+  "prompt_sha256": "59c35f815bfa8a441c57173771fef5a744193ccf8e2506a424e9dff5d515e59b"
+ }
+}

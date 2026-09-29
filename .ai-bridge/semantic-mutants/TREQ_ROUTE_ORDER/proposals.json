@@ -1,0 +1,86 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "TREQ_ROUTE_ORDER",
+ "proposals": [
+  {
+   "id": "SM-437FE039",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/routes.py::ordered_routes",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Fallback shuffle shuffles the entire route list, including the selected starting route, so the start route can move away from the first attempt.",
+   "original_sha256": "9a59e15fe30ec79307b690a5b9eed0edbd45f5b760f0351d748aaed62537f847",
+   "context_sha256": "d45784e7ce67274e34767a504b4d961b35061b870737015b82c84ebdc357998d",
+   "prompt_sha256": "4088713d131bb5712d2896395351ef1627e2e3a4e7e99474679246ed5c0668ec",
+   "replacement": "def ordered_routes(\n    plan: RoutePlan,\n    *,\n    options: RouteOrderOptions,\n) -> tuple[ExpandedRoute, ...]:\n    \"\"\"Return route candidates in attempt order for one request.\"\"\"\n    routes = list(plan.routes)\n    if not routes:\n        return ()\n    routes = _ordered_start(routes, options=options)\n    if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):\n        shuffler = SystemRandom() if options.shuffler is None else options.shuffler\n        shuffled = list(routes)\n        shuffler.shuffle(shuffled)\n        routes = shuffled\n    # @impl Route attempt cap, IMPL_ROUTE_ATTEMPT_LIMIT, [REQ_ROUTE_ATTEMPT_LIMIT[revision==1]]\n    if options.max_attempts is not None:\n        routes = routes[: options.max_attempts]\n    return tuple(routes)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153702Z-e8cad0",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "e94ce1a60125ac41a14470410a112adfa56b8fdedfa83e134d8e001b5bee9e70",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-E0325731",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/routes.py::ordered_routes",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Shuffle is applied to the original plan order after the start rotation, so the selected starting route identity is taken from the unrotated list and the rotated start is lost after shuffling.",
+   "original_sha256": "9a59e15fe30ec79307b690a5b9eed0edbd45f5b760f0351d748aaed62537f847",
+   "context_sha256": "d45784e7ce67274e34767a504b4d961b35061b870737015b82c84ebdc357998d",
+   "prompt_sha256": "4088713d131bb5712d2896395351ef1627e2e3a4e7e99474679246ed5c0668ec",
+   "replacement": "def ordered_routes(\n    plan: RoutePlan,\n    *,\n    options: RouteOrderOptions,\n) -> tuple[ExpandedRoute, ...]:\n    \"\"\"Return route candidates in attempt order for one request.\"\"\"\n    routes = list(plan.routes)\n    if not routes:\n        return ()\n    original = list(routes)\n    routes = _ordered_start(routes, options=options)\n    if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):\n        shuffler = SystemRandom() if options.shuffler is None else options.shuffler\n        fallbacks = original[1:]\n        shuffler.shuffle(fallbacks)\n        routes = [original[0], *fallbacks]\n    # @impl Route attempt cap, IMPL_ROUTE_ATTEMPT_LIMIT, [REQ_ROUTE_ATTEMPT_LIMIT[revision==1]]\n    if options.max_attempts is not None:\n        routes = routes[: options.max_attempts]\n    return tuple(routes)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153702Z-e8cad0",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "e94ce1a60125ac41a14470410a112adfa56b8fdedfa83e134d8e001b5bee9e70",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-7450985D",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/routes.py::ordered_routes",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Fallback shuffle is applied to the whole route list including the selected starting route, so the starting route can be moved away from the first attempt.",
+   "original_sha256": "9a59e15fe30ec79307b690a5b9eed0edbd45f5b760f0351d748aaed62537f847",
+   "context_sha256": "b590e2414a006c3afc01d1cc919175a7558f6583ea2fa4e69f8ce76c799e92e8",
+   "prompt_sha256": "76209d30d8dc0aa02f7f89b0aae9360052ed79bdea5f2aa73a0a1a5a8a7f6274",
+   "replacement": "def ordered_routes(\n    plan: RoutePlan,\n    *,\n    options: RouteOrderOptions,\n) -> tuple[ExpandedRoute, ...]:\n    \"\"\"Return route candidates in attempt order for one request.\"\"\"\n    routes = list(plan.routes)\n    if not routes:\n        return ()\n    routes = _ordered_start(routes, options=options)\n    if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):\n        shuffler = SystemRandom() if options.shuffler is None else options.shuffler\n        shuffler.shuffle(routes)\n    # @impl Route attempt cap, IMPL_ROUTE_ATTEMPT_LIMIT, [REQ_ROUTE_ATTEMPT_LIMIT[revision==1]]\n    if options.max_attempts is not None:\n        routes = routes[: options.max_attempts]\n    return tuple(routes)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153702Z-41a0a3",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "ef0637310985da68df5c17a9984c1e2d823659c74fb7f469161f95f83a9a71c1",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-9C505AC4",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/routes.py::ordered_routes",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Shuffling happens before the start-route ordering/rotation, so the rotation step moves routes after the shuffle and the selected starting route is no longer guaranteed first relative to the shuffled fallbacks (the shuffle is effectively applied to the original order and rotation then reorders).",
+   "original_sha256": "9a59e15fe30ec79307b690a5b9eed0edbd45f5b760f0351d748aaed62537f847",
+   "context_sha256": "b590e2414a006c3afc01d1cc919175a7558f6583ea2fa4e69f8ce76c799e92e8",
+   "prompt_sha256": "76209d30d8dc0aa02f7f89b0aae9360052ed79bdea5f2aa73a0a1a5a8a7f6274",
+   "replacement": "def ordered_routes(\n    plan: RoutePlan,\n    *,\n    options: RouteOrderOptions,\n) -> tuple[ExpandedRoute, ...]:\n    \"\"\"Return route candidates in attempt order for one request.\"\"\"\n    routes = list(plan.routes)\n    if not routes:\n        return ()\n    if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):\n        shuffler = SystemRandom() if options.shuffler is None else options.shuffler\n        fallbacks = routes[1:]\n        shuffler.shuffle(fallbacks)\n        routes = [routes[0], *fallbacks]\n    routes = _ordered_start(routes, options=options)\n    # @impl Route attempt cap, IMPL_ROUTE_ATTEMPT_LIMIT, [REQ_ROUTE_ATTEMPT_LIMIT[revision==1]]\n    if options.max_attempts is not None:\n        routes = routes[: options.max_attempts]\n    return tuple(routes)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153702Z-41a0a3",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "ef0637310985da68df5c17a9984c1e2d823659c74fb7f469161f95f83a9a71c1",
+    "index": 1
+   }
+  }
+ ]
+}

@@ -413,6 +413,18 @@ adapter against retained provider interactions. Replay remains Surrogate/L0.
 | Architecture          | No particular async implementation layering is normative.                                                     |
 | Specification / model | Wrong public result or omission of a provider/capability partition violates the Requirement.                  |
 
+### Semantic mutants
+
+| Fault class                | Target                                                                 | Budget | Risk                                                                                  |
+| -------------------------- | ---------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/runtime/router.py::RouterRuntime._run_async` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`   | `src/llm_router/_internal/runtime/router.py::RouterRuntime._run_async` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `interface.payload-schema` | `src/llm_router/_internal/runtime/router.py::RouterRuntime._run_async` |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-req-response-normalization)=
 
 ## Profile · REQ_RESPONSE_NORMALIZATION
@@ -476,6 +488,18 @@ Surrogate at L0.
 | Interface / protocol  | Provider payload shape must produce the same public response semantics.                            |
 | Architecture          | No internal normalization topology is prescribed.                                                  |
 | Specification / model | A wrong normalized result or a missing supported provider comparison violates portability.         |
+
+### Semantic mutants
+
+| Fault class                | Target                                                              | Budget | Risk                                                                                  |
+| -------------------------- | ------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/runtime/output.py::build_public_response` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`   | `src/llm_router/_internal/runtime/output.py::build_public_response` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `interface.payload-schema` | `src/llm_router/_internal/runtime/output.py::build_public_response` |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
 
 (verification-profile-treq-usage-normalization)=
 
@@ -600,3 +624,15 @@ SDK redirected to the scripted provider. External behavior remains Surrogate/L0.
 | Interface / protocol  | Error status is the direct interface stimulus.                                                                                     |
 | Architecture          | The public error type is normative, not a particular internal module edge.                                                         |
 | Specification / model | Both HTTP and SDK transport families must be represented and produce the same public failure category.                             |
+
+### Semantic mutants
+
+| Fault class              | Target                                                                   | Budget | Risk                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------ | -----: | ----------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`     | `src/llm_router/_internal/runtime/executor.py::_provider_boundary_error` |      2 | a result its requirement or criteria name is computed or chosen wrongly                   |
+| `spec.missing-partition` | `src/llm_router/_internal/runtime/executor.py::_provider_boundary_error` |      2 | one input partition its requirement or criteria name is no longer handled as they say     |
+| `interface.error-status` | `src/llm_router/_internal/runtime/executor.py::_provider_boundary_error` |      2 | an error the interface must report comes out with the wrong type or status, or not at all |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.

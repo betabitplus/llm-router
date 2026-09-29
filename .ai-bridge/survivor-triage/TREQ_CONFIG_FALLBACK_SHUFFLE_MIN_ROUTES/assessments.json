@@ -1,0 +1,114 @@
+{
+ "1e7fe255a9f2e635": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://google.example', Provider.AISTUDIO: 'https://aistudio.example', Provider.GEMINI_WEBAPI: 'https://geminiwebapi.example', Provider.QWENCHAT: 'https://qwenchat.example', Provider.OPENROUTER: 'https://openrouter.example', Provider.MISTRAL: 'https://mistral.example', Provider.NVIDIA: 'https://nvidia.example', Provider.GROQ: 'https://groq.example', Provider.ALIBABA: 'https://alibaba.example'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash-model-id'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233641Z-db4338",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version tightens the min_routes_for_fallback_shuffle bound from >=1 to >=2, so a fully-valid config with min_routes_for_fallback_shuffle=1 (all other checks satisfied) returns None in the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "743f9767872ba0a279eedd7399a26bec82090886421a20ac0609d62bb89a29a0",
+    "sources": [
+     "_require(\n        condition=policy.min_routes_for_fallback_shuffle >= 1,\n        message=\"minimum routes for fallback shuffle must be at least 1.\",\n    )",
+     "_require(condition=policy.min_routes_for_fallback_shuffle >= 2, message='minimum routes for fallback shuffle must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={p: 'http://x' for p in Provider}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111611Z-724066",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original accepts min_routes_for_fallback_shuffle == 1, but the changed version requires >= 2 and raises ConfigurationError for that value.",
+    "response_sha256": "9574cec9e855172009b27aa7ba2c4fee3a3e268a64a562b9b8dfbaf22f4c09e0",
+    "sources": [
+     "_require(condition=policy.min_routes_for_fallback_shuffle >= 2, message='minimum routes for fallback shuffle must be at least 1.')",
+     "condition=policy.min_routes_for_fallback_shuffle >= 1,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "ff119eee2119665fd3543ca6b4c323b5b43f744b8ba33abb32d774193c94229c"
+ },
+ "551e89dc7d0431df": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(\n    default_provider=Provider.GOOGLE,\n    default_model=Model.GEMINI_FLASH,\n    default_key_id=1,\n    defaults=BehaviorDefaults(\n        retry_policy=RetryPolicy(\n            min_wait_seconds=1.0,\n            max_wait_seconds=1.0,\n            max_attempts=1\n        ),\n        policy=RouterPolicyDefaults(\n            max_attempts=1,\n            attempt_timeout_seconds=1.0,\n            wait_for_cooldown_if_all_blocked=False,\n            round_robin_start=False,\n            shuffle_fallbacks=False,\n            min_routes_for_fallback_shuffle=1,\n            default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)\n        ),\n        default_max_tool_rounds=1,\n        structured_output_max_attempts=1,\n        provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)\n    ),\n    catalog=ProviderCatalog(\n        providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)},\n        provider_base_urls={Provider.GOOGLE: \"http\", Provider.AISTUDIO: \"http\", Provider.GEMINI_WEBAPI: \"http\", Provider.QWENCHAT: \"http\", Provider.OPENROUTER: \"http\", Provider.MISTRAL: \"http\", Provider.NVIDIA: \"http\", Provider.GROQ: \"http\", Provider.ALIBABA: \"http\"},\n        models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini\"}}\n    )\n)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081445Z-150188",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version incorrectly uses `>` instead of `>=` to validate `min_routes_for_fallback_shuffle`, which causes it to reject a valid configuration where the value is exactly 1.",
+    "response_sha256": "5b0b41bbfa18dd7a87da5579fff93be93ac53c41dfcd86160043dbaf63053903",
+    "sources": [
+     "    _require(\n        condition=policy.min_routes_for_fallback_shuffle >= 1,\n        message=\"minimum routes for fallback shuffle must be at least 1.\",\n    )",
+     "    _require(condition=policy.min_routes_for_fallback_shuffle > 1, message='minimum routes for fallback shuffle must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'http://localhost', Provider.AISTUDIO: 'http://localhost', Provider.GEMINI_WEBAPI: 'http://localhost', Provider.QWENCHAT: 'http://localhost', Provider.OPENROUTER: 'http://localhost', Provider.MISTRAL: 'http://localhost', Provider.NVIDIA: 'http://localhost', Provider.GROQ: 'http://localhost', Provider.ALIBABA: 'http://localhost'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081445Z-1235df",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version allows policy.min_routes_for_fallback_shuffle to be 1 via the `>= 1` condition, whereas the changed version strictly requires `> 1`, causing validate_config to fail with a configuration error when min_routes_for_fallback_shuffle is 1.",
+    "response_sha256": "b6930f105db5418651b8786b4ee5be9dd38057db6ee91dcb13c48cb5d4f918bf",
+    "sources": [
+     "        condition=policy.min_routes_for_fallback_shuffle >= 1,",
+     "    _require(condition=policy.min_routes_for_fallback_shuffle > 1, message='minimum routes for fallback shuffle must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY')}, provider_base_urls={Provider.GOOGLE: 'https://example.com'}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T231725Z-ae13ed",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "With min_routes_for_fallback_shuffle=1 and an otherwise fully valid config, the original's >= 1 check passes so the function returns None, while the changed version's > 1 check fails and raises ConfigurationError, a difference in return-vs-raise behavior.",
+    "response_sha256": "efbb0c1c38f9c0acc27af7649d5ee7c07a4e8fd6d6a3a2735f6665f0cc6039f9",
+    "sources": [
+     "_require(\n        condition=policy.min_routes_for_fallback_shuffle >= 1,\n        message=\"minimum routes for fallback shuffle must be at least 1.\",\n    )",
+     "_require(condition=policy.min_routes_for_fallback_shuffle > 1, message='minimum routes for fallback shuffle must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "A valid LLMRouterConfig (valid retry policy, default provider/model mapped, base URLs present for required providers) whose policy is RouterPolicyDefaults(..., min_routes_for_fallback_shuffle=1, ...)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111613Z-33c084",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original accepts min_routes_for_fallback_shuffle == 1 (>= 1) but the changed version requires > 1 and raises ConfigurationError for that value.",
+    "response_sha256": "f2b4aef91f718bdd4dbd57cf4fe9ff66ac2695a06bf1955a4c48ce731e5b9c06",
+    "sources": [
+     "condition=policy.min_routes_for_fallback_shuffle >= 1,",
+     "_require(condition=policy.min_routes_for_fallback_shuffle > 1, message='minimum routes for fallback shuffle must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "c52836942816cd1bd62a1bae2993d109e9e882479a49c7fac1c230cfc6686ff8"
+ }
+}

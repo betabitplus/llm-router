@@ -14,6 +14,8 @@ import threading
 import time
 import urllib.request
 import xml.etree.ElementTree as ET
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from importlib.metadata import version as package_version
 from pathlib import Path
@@ -1072,8 +1074,8 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         and faults["scope_kind_and_name"](tree, wiring, 14) == ("statement", "L14")
     )
 
-    # Attribution: a parent owns lines it shares with its derived child; siblings and a
-    # contract nested inside a sibling's broader scope own nothing they share.
+    # Attribution: every contract that claims a line challenges it with its own tests, a
+    # parent with its derived child's as well; the other claimants are recorded beside it.
     needs = {
         "REQ_P": {"type": "req"},
         "TREQ_C": {"type": "treq", "derives": ["REQ_P"]},
@@ -1105,12 +1107,20 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         and parent["attributable_lines"] == {"m.py": [1, 2, 3, 4, 5]}
         and parent["tests"] == ["t.py::test_c", "t.py::test_p"]
         and parent["tests_not_passing"] == ["t.py::test_c_failed"]
-        and child.get("blocked") == "shared_scope"
+        and child.get("blocked") is None
+        and child["attributable_lines"] == {"m.py": [1, 2, 3, 4, 5]}
         and child["shared_with"] == ["REQ_P"]
-        and sibling.get("blocked") == "shared_scope"
+        and child["tests"] == ["t.py::test_c"]
+        and sibling.get("blocked") is None
+        and sibling["attributable_lines"] == {"m.py": [10, 11, 12]}
+        and sibling["shared_with"] == ["REQ_S2"]
+        and sibling["tests"] == ["t.py::test_s1"]
         and broad.get("blocked") is None
-        and broad["attributable_lines"] == {"m.py": [20, 21, 22, 23, 24, 28, 29, 30]}
-        and nested.get("blocked") == "shared_scope"
+        and broad["attributable_lines"] == {"m.py": list(range(20, 31))}
+        and broad["shared_with"] == ["REQ_B"]
+        and nested.get("blocked") is None
+        and nested["attributable_lines"] == {"m.py": [25, 26, 27]}
+        and nested["tests"] == ["t.py::test_b"]
         and plan("REQ_UNKNOWN").get("blocked") == "no_impl_scope"
     )
 
@@ -1125,7 +1135,8 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             {"gremlin_id": "g3", "file_path": target, "line_number": 22, "operator": "boolean", "description": "and to or", "status": "survived", "covered": True},
             {"gremlin_id": "g4", "file_path": target, "line_number": 23, "operator": "return", "description": "return value to None", "status": "zapped", "covered": True},
             {"gremlin_id": "g5", "file_path": target, "line_number": 24, "operator": "return", "description": "return value to None", "status": "pardoned", "suppression": {"category": "equivalent", "reason": "r", "line": 24}},
-            {"gremlin_id": "g6", "file_path": target, "line_number": 26, "operator": "comparison", "description": "== to !=", "status": "survived", "covered": True},
+            # A mutant on a line no scope of the contract claims counts for no class of it.
+            {"gremlin_id": "g6", "file_path": target, "line_number": 35, "operator": "comparison", "description": "== to !=", "status": "survived", "covered": True},
             {"gremlin_id": "g7", "file_path": target, "line_number": 21, "operator": "arithmetic", "description": "+ to -", "status": "survived", "covered": True},
             {"gremlin_id": "g8", "file_path": target, "line_number": 29, "operator": "comparison", "description": "== to !=", "status": "error", "covered": True},
             {"gremlin_id": "g9", "file_path": target, "line_number": 28, "operator": "statement", "description": "removed x.append(1)", "status": "zapped", "covered": True},
@@ -1136,7 +1147,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         "ternforge": {
             "not_planted": [
                 {"file_path": target, "line_number": 22, "operator": "statement", "rule": "arid.logging"},
-                {"file_path": target, "line_number": 26, "operator": "statement", "rule": "arid.logging"},
+                {"file_path": target, "line_number": 35, "operator": "statement", "rule": "arid.logging"},
             ]
         },
     }
@@ -1327,7 +1338,52 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             "    return value\n"
         )
         (tmp / "control_effects.py").write_text(effects_source)
-        (tmp / "control_nosite.py").write_text("VALUES = ('a', 'b')\n")
+        (tmp / "control_nosite.py").write_text("VALUE = 'a'\n")
+        # The Python operators (PyTation's, a condition replaced, a plain condition negated): a
+        # target with a site for each, a strong suite that pins every one and a weak one that
+        # asserts nothing.
+        (tmp / "control_python.py").write_text(
+            "from dataclasses import dataclass\n\n\n"
+            "@dataclass\n"
+            "class Window:\n"
+            "    min_size: int\n"
+            "    max_size: int\n"
+            "    label: str = 'w'\n\n\n"
+            "def make(min_size: int, max_size: int, *, label: str = 'w') -> Window:\n"
+            "    return Window(min_size=min_size, max_size=max_size, label=label)\n\n\n"
+            "def named(min_size: int, max_size: int) -> Window:\n"
+            "    return make(min_size, max_size, label='named')\n\n\n"
+            "def span(window: Window) -> int:\n"
+            "    return window.max_size - window.min_size\n\n\n"
+            "def shout(text: str) -> str:\n"
+            "    return text.strip().upper()\n\n\n"
+            "def as_number(text: str) -> int:\n"
+            "    return int(text)\n\n\n"
+            "def allowed(code: str, strict: bool) -> bool:\n"
+            "    return code in {'a', 'b'} or not strict\n\n\n"
+            "def gate(ready: bool, level: int) -> str:\n"
+            "    if ready:\n"
+            "        return 'open'\n"
+            "    return 'closed' if level > 1 else 'shut'\n"
+        )
+        python_calls = (
+            "make(1, 2, label='x'), make(1, 2), named(1, 2), span(Window(1, 5)), shout(' ab '), as_number('7'), "
+            "allowed('a', True), allowed('b', True), allowed('z', True), allowed('z', False), "
+            "gate(True, 0), gate(False, 2), gate(False, 1), gate(False, 0)"
+        )
+        (tmp / "test_python_strong.py").write_text(
+            "from control_python import Window, allowed, as_number, gate, make, named, shout, span\n\n"
+            "def test_python_strong():\n"
+            f"    assert [{python_calls}] == [\n"
+            "        Window(1, 2, 'x'), Window(1, 2, 'w'), Window(1, 2, 'named'), 4, 'AB', 7,\n"
+            "        True, True, False, True, 'open', 'closed', 'shut', 'shut',\n"
+            "    ]\n"
+        )
+        (tmp / "test_python_weak.py").write_text(
+            "from control_python import Window, allowed, as_number, gate, make, named, shout, span\n\n"
+            "def test_python_weak():\n"
+            f"    [{python_calls}]\n"
+        )
         effect_lines = effects_source.splitlines()
 
         def line_of(marker: str) -> int:
@@ -1452,6 +1508,8 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             "diff", effect_tests, "control_effects.py",
             scope={"control_effects.py": [*unused_lines, total_line]}, skip_uncovered=True,
         )
+        python_code, python_report = engine_run("python", ["test_python_strong.py"], "control_python.py")
+        python_weak_code, python_weak_report = engine_run("python_weak", ["test_python_weak.py"], "control_python.py")
 
         strong = list(strong_report.get("results") or [])
         weak = list(weak_report.get("results") or [])
@@ -1530,6 +1588,62 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and bool(diff_total)
             and all(row.get("status") == "zapped" and not row.get("run_skipped") for row in diff_total)
         )
+        python_rows = list(python_report.get("results") or [])
+        python_weak_rows = list(python_weak_report.get("results") or [])
+        python_operators = {"argument", "condition", "conditional", "negation", "container", "conversion", "method", "attribute"}
+        python_ok = (
+            python_code == 0 and python_weak_code == 0
+            and python_operators <= {str(row.get("operator")) for row in python_rows}
+            and all(row.get("status") == "zapped" and row.get("covered") is True for row in python_rows)
+            and len(python_weak_rows) == len(python_rows)
+            and not any(row.get("status") in faults["KILLED"] for row in python_weak_rows)
+            # The dataclass requires min_size and max_size: those keywords are never removed.
+            and ((python_report.get("ternforge") or {}).get("filtered") or {}).get("argument: required parameter") == 2
+            and all(row.get("replacement") and row.get("fingerprint") for row in python_rows)
+        )
+        # What the Python operators leave alone, straight from the operators: a loop's condition
+        # is never made True or negated (it would never end), a call standing as a statement, on
+        # a module, on a class or awaited is never cut to its receiver, a tuple a statement unpacks
+        # or returns and a subscript keep their elements, a literal already of its conversion's
+        # type keeps it, and a swapped attribute is the most similar one the code reads.
+        extension = runpy.run_path(str(ROOT / ".ai-bridge/pytest_plugins/ternforge_mutation.py"), run_name="evidence_confidence_mutation_extension")
+        sample = ast.parse(
+            "import logging\n"
+            "__all__ = ['a', 'b']\n"
+            "async def f(items, p, client, d):\n"
+            "    while items:\n"
+            "        items.pop()\n"
+            "    x, y = (1, 2)\n"
+            "    logging.getLogger('n').info('m')\n"
+            "    name = logging.getLogger('n').name\n"
+            "    value = Config.load()\n"
+            "    data = await client.fetch()\n"
+            "    s = str('x') + str(p)\n"
+            "    k = d[1, 2]\n"
+            "    return p.max_wait - p.min_wait, p.label\n"
+        )
+        extension["annotate"](sample)
+        found = {type(node).__name__ + ":" + ast.unparse(node): node for node in ast.walk(sample) if isinstance(node, ast.Call | ast.Attribute)}
+        loop_test = next(node for node in ast.walk(sample) if isinstance(node, ast.While)).test
+        unpacked = next(node for node in ast.walk(sample) if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Tuple)).value
+        exported = next(node for node in ast.walk(sample) if isinstance(node, ast.Assign) and ast.unparse(node.targets[0]) == "__all__").value
+        returned = next(node for node in ast.walk(sample) if isinstance(node, ast.Return)).value
+        subscripted = next(node for node in ast.walk(sample) if isinstance(node, ast.Subscript)).slice
+        conditional, negation = extension["ConditionalReplacement"](), extension["NegationInsertion"]()
+        method, container = extension["MethodCallRemoval"](), extension["ContainerElementRemoval"]()
+        conversion, attribute = extension["ConversionRemoval"](), extension["AttributeSwap"]()
+        swapped = attribute.mutate(found["Attribute:p.max_wait"])
+        operators_ok = (
+            [node.value for node in conditional.mutate(loop_test)] == [False] and not negation.can_mutate(loop_test)
+            and not method.can_mutate(found["Call:items.pop()"])
+            and not method.can_mutate(found["Call:logging.getLogger('n').info('m')"])
+            and not method.can_mutate(found["Call:Config.load()"])
+            and not method.can_mutate(found["Call:client.fetch()"])
+            and method.can_mutate(found["Call:logging.getLogger('n')"]) is False
+            and not any(container.can_mutate(node) for node in (unpacked, exported, returned, subscripted))
+            and not conversion.can_mutate(found["Call:str('x')"]) and conversion.can_mutate(found["Call:str(p)"])
+            and len(swapped) == 1 and swapped[0].attr == "min_wait" and not attribute.can_mutate(found["Attribute:p.label"])
+        )
         nosite_ok = (
             nosite_code == 0
             and not nosite_report
@@ -1556,9 +1670,11 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         slow_path = tmp / "coverage/gremlins/gremlins.json"
         slow = list((json.loads(slow_path.read_text()).get("results") or []) if slow_path.exists() else [])
         timeout_ok = bool(slow) and all(row.get("status") == "survived" for row in slow)
-        families = {str(row.get("operator")) for row in [*strong, *effects]}
+        families = {str(row.get("operator")) for row in [*strong, *effects, *python_rows]}
         engine_ok = (
             honest_ok
+            and python_ok
+            and operators_ok
             and families == set(faults["OPERATORS"])
             and scope_ok
             and effects_ok
@@ -1582,6 +1698,15 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
                 "filtered": extension.get("filtered") or {},
                 "ok": effects_ok,
             },
+            "python": {
+                "faults": len(python_rows),
+                "caught": sum(row.get("status") in faults["KILLED"] for row in python_rows),
+                "weak_caught": sum(row.get("status") in faults["KILLED"] for row in python_weak_rows),
+                "by_operator": dict(sorted(Counter(str(row.get("operator")) for row in python_rows).items())),
+                "filtered": (python_report.get("ternforge") or {}).get("filtered") or {},
+                "ok": python_ok,
+                "operators_leave_alone": operators_ok,
+            },
             "rule_turned_off": rule_off_ok,
             "diff_skips_uncovered": diff_ok,
             "no_site_keeps_extension_facts": nosite_ok,
@@ -1595,14 +1720,14 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
     return {
         "PRODUCER_PYTEST_GREMLINS": {
             "status": "QUALIFIED" if engine_ok else "NOT QUALIFIED",
-            "intended_use": "generate comparison, boundary, boolean, return, statement and body mutants on the declared target, keep arid code and suppressed mutants out of the run, and report a mutant as caught only when a selected test fails and as not reached when no test covers its line",
-            "false_green_control": "parametrized, fixture-using and pytest-bdd tests that assert nothing must catch no mutant; tests that pin the behavior must catch every planted mutant in all six families; a scoped run must reproduce the full run's mutants on those lines exactly; mutants in logging code must not be planted unless the policy turns the rule off; a suppressed mutant must not run and must carry its category; a generator or dunder body must not be replaced; mutants of uncovered code must be reported not reached, and the diff run must not run them",
+            "intended_use": "generate comparison, boundary, arithmetic, boolean, return, statement and body mutants and Python's own (a removed argument, operand, conversion, method call or container element, a swapped attribute, a condition replaced or negated) on the declared target, keep arid code and suppressed mutants out of the run, and report a mutant as caught only when a selected test fails and as not reached when no test covers its line",
+            "false_green_control": "parametrized, fixture-using and pytest-bdd tests that assert nothing must catch no mutant; tests that pin the behavior must catch every planted mutant in every family, Python's own among them, and tests that assert nothing none of them; a keyword the callee requires is never removed, a loop's condition is never made True or negated, a statement, module, class or awaited call is never cut to its receiver; a scoped run must reproduce the full run's mutants on those lines exactly; mutants in logging code must not be planted unless the policy turns the rule off; a suppressed mutant must not run and must carry its category; a generator or dunder body must not be replaced; mutants of uncovered code must be reported not reached, and the diff run must not run them",
             "control": engine_detail,
         },
         "PRODUCER_IMPLEMENTATION_FAULT_ADAPTER": {
             "status": "QUALIFIED" if resolution_ok and attribution_ok and projection_ok and reuse_ok else "NOT QUALIFIED",
             "intended_use": "resolve @impl scopes from the graph, attribute each mutated line to one contract family, project engine results onto Implementation fault classes by outcome (caught, survived, not reached, invalid, suppressed), and reuse a retained result only while it is still current",
-            "false_green_control": "a line shared with a non-derived contract, a failing test, an unreached, surviving, invalid or suppressed mutant, an unmapped operator, or a retained result whose engine, scope, arid rules, tests or inputs changed must never make a class detected; a fingerprint ignores only what cannot change a run (comments, docstrings and layout of a tool; comments edited in place in code under test), never changed code, a mutation pragma or a moved line; the product file that holds a contract's mutants stales that contract, and a mutant's time limit follows its tests' measured time",
+            "false_green_control": "a line several contracts claim challenged for one of them with another's tests, a failing test, an unreached, surviving, invalid or suppressed mutant, an unmapped operator, or a retained result whose engine, scope, arid rules, tests or inputs changed must never make a class detected; a fingerprint ignores only what cannot change a run (comments, docstrings and layout of a tool; comments edited in place in code under test), never changed code, a mutation pragma or a moved line; the product file that holds a contract's mutants stales that contract, and a mutant's time limit follows its tests' measured time",
         },
     }
 
@@ -1618,15 +1743,17 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
     # Bounded by paths, as the Test Plan bounds it, so the control repeats on any machine.
     judgement = {"seconds": 60, "paths": 100, "members": ["m1", "m2"], "threshold": 0.5, "calibrated": True, "answers": payload["judgement_answers"]}
 
-    def run(drafts: dict[str, str]) -> list[dict]:
+    def run(drafts: dict[str, str], proposals: list[dict] | None = None) -> list[dict]:
         request = {
             "root": str(calibration),
             "contract_id": "CALIBRATION",
-            "proposals": payload["proposals"],
+            "proposals": payload["proposals"] if proposals is None else proposals,
             "tests": ["checks/calibration_checks.py"],
-            "context_sha256": {row["target"]: payload["context_sha256"] for row in payload["proposals"]},
+            "context_sha256": {cascade["selection_key"](row): payload["context_sha256"] for row in payload["proposals"]},
             "drafts": drafts,
             "judgement": judgement,
+            # The campaign's limits for tests that take a few seconds: a mutant that hangs is caught.
+            "time_limits": [15.0, 30.0],
         }
         with tempfile.TemporaryDirectory(prefix="ternforge-semantic-qualification-") as temp_dir:
             request_path = Path(temp_dir) / "request.json"
@@ -1640,6 +1767,35 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
             return list(json.loads(result_path.read_text())["results"]) if result_path.exists() else []
 
     results = run(cascade["load_drafts"]("calibration"))
+    # The builder judges a contract's proposals in chunks at once: judged so, the calibration set gets
+    # the same outcome for every proposal, and a repeated mutant stays in its original's chunk.
+    builder = runpy.run_path(str(ROOT / ".ai-bridge/build-mutation-report-prototype.py"), run_name="evidence_confidence_chunks")
+    chunks = builder["cascade_chunks"](calibration, payload["proposals"], 2)
+    with ThreadPoolExecutor(max_workers=len(chunks)) as pool:
+        parts = list(pool.map(lambda chunk: {"results": run(cascade["load_drafts"]("calibration"), [payload["proposals"][index] for index in chunk])}, chunks))
+    chunked = builder["merge_chunks"](payload["proposals"], chunks, parts)["results"]
+    chunked_same = [(row["id"], row["outcome"]) for row in chunked] == [(row["id"], row["outcome"]) for row in results]
+    repeated_together = any({"C-CAUGHT", "C-REPEATED"} <= {payload["proposals"][index]["id"] for index in chunk} for chunk in chunks)
+    # The same mutant selected for two classes carries one id twice: its results keep their places.
+    twins = [{"id": "SM-TWIN", "class": "c1"}, {"id": "SM-TWIN", "class": "c2"}]
+    twin_rows = [{"id": "SM-TWIN", "class": "c1", "outcome": "caught"}, {"id": "SM-TWIN", "class": "c2", "outcome": "duplicate"}]
+    merged_twins = builder["merge_chunks"](twins, [[0, 1]], [{"results": twin_rows}])["results"]
+    twins_ok = (
+        [(row["class"], row["outcome"]) for row in merged_twins] == [("c1", "caught"), ("c2", "duplicate")]
+        and not builder["results_pair"](list(reversed(twin_rows)), twins)
+    )
+    # Draft tests against whole mutated modules, judged in two processes at once, are kept and rejected
+    # as the cascade keeps and rejects them, and come back in their order.
+    distinguished = next(row for row in payload["proposals"] if row["id"] == "C-DISTINGUISHED")
+    pin_path, pin_qualname = distinguished["target"].split("::", 1)
+    pin_module = cascade["apply_replacement"]((calibration / pin_path).read_text(), pin_qualname, distinguished["replacement"])
+    kept_draft = cascade["load_drafts"]("calibration")["C-DISTINGUISHED"]
+    pin_items = [
+        {"key": key, "path": pin_path, "mutated_source": pin_module, "draft": draft, "tests": ["checks/calibration_checks.py"], "qualname": pin_qualname}
+        for key, draft in (("kept", kept_draft), ("rejected", (calibration / "rejected.draft.py").read_text()), ("kept again", kept_draft))
+    ]
+    pinned = builder["judge_pins_at_once"](calibration, pin_items, 2)
+    pins_ok = [(row["key"], row["accepted"]) for row in pinned] == [("kept", True), ("rejected", False), ("kept again", True)]
     outcomes = {row["id"]: row["outcome"] for row in results}
     reasons = {row["id"]: str(row.get("reason") or "") for row in results}
     judged = {row["id"]: row.get("judgement") or {} for row in results}
@@ -1650,10 +1806,28 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
     primitive_results = run({"C-DISTINGUISHED": (calibration / "rejected-primitive.draft.py").read_text()})
     primitive = next((row.get("draft") or {} for row in primitive_results if row["id"] == "C-DISTINGUISHED"), {})
     projection = cascade["class_projection"](results).get("spec.wrong-outcome") or {}
-    # A selected target without any proposal keeps its class undecided, beside the judged ones.
+    # A mutant that hangs leaves no test process behind once its time limit stopped the run.
+    leftover = subprocess.run(["pgrep", "-f", "checks/calibration_checks.py"], capture_output=True, text=True, check=False).stdout.split()
+    # A type its module imports only for type checking leaves a function without an input strategy
+    # instead of stopping the cascade.
+    with tempfile.TemporaryDirectory(prefix="ternforge-hints-qualification-") as temp_dir:
+        hinted_path = Path(temp_dir) / "hinted_control.py"
+        hinted_path.write_text(
+            "from __future__ import annotations\nfrom typing import TYPE_CHECKING\n\nif TYPE_CHECKING:\n    from elsewhere import Hidden\n\n\n"
+            "def take(value: Hidden) -> int:\n    return 1\n"
+        )
+        hinted = runpy.run_path(str(hinted_path), run_name="hinted_control")
+        try:
+            cascade["_hints"](hinted["take"], hinted)
+            hints_refused = False
+        except TypeError:
+            hints_refused = True
+    # A selection is a class at a target: a function whose proposals are of one class still owes
+    # the other classes selected for it, and a selection without any proposal keeps its class undecided.
     missing = cascade["targets_without_proposals"](
-        [{"class": "spec.missing-partition", "target": "src/calibration_target.py::double", "budget": 1, "risk": "r"},
-         {"class": "spec.wrong-outcome", "target": "src/calibration_target.py::Record.summary", "budget": 1, "risk": "r"}],
+        [{"class": "spec.wrong-outcome", "target": "src/calibration_target.py::double", "budget": 1, "risk": "r"},
+         {"class": "spec.wrong-outcome", "target": "src/calibration_target.py::Record.summary", "budget": 1, "risk": "r"},
+         {"class": "spec.missing-partition", "target": "src/calibration_target.py::double", "budget": 1, "risk": "r"}],
         payload["proposals"],
     )
     unchallenged = cascade["add_targets_without_proposals"](
@@ -1849,6 +2023,14 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
         and "adds an import" in reasons.get("C-CONFINED", "")
         and "does not define" in reasons.get("C-INVALID", "")
         and "does not import" in reasons.get("C-UNIMPORTABLE", "")
+        and "do not finish on it" in reasons.get("C-HANGS", "")
+        and "earlier proposal is the same mutant" in reasons.get("C-REPEATED", "")
+        and chunked_same
+        and repeated_together
+        and twins_ok
+        and pins_ok
+        and not leftover
+        and hints_refused
         and found_by.get("C-SYMBOLIC") == "symbolic search"
         and (judged.get("C-EQUIVALENT") or {}).get("status") == "likely-equivalent"
         and (judged.get("C-REFUTED") or {}).get("status") == "unsure"
@@ -1861,7 +2043,7 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
         and primitive.get("accepted") is False
         and primitive.get("ran") is False
         and "exec" in (primitive.get("primitives") or [])
-        and missing == []
+        and [(row["class"], row["target"]) for row in missing] == [("spec.missing-partition", "src/calibration_target.py::double")]
         and unchallenged.get("undecided") == 1
         and unchallenged.get("not_generated") == 1
         and unchallenged.get("exercised") is False
@@ -1884,9 +2066,11 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
         "PRODUCER_SEMANTIC_MUTANT_CASCADE": {
             "status": "QUALIFIED" if ok else "NOT QUALIFIED",
             "intended_use": "judge frozen semantic mutant proposals for a named risk without a model: reject identical, duplicate, invalid and unconfined ones, run the rest against the contract's passing tests in an isolated copy, and look for an input that tells a survivor apart from the original",
-            "false_green_control": "a calibration set with a known outcome for every proposal: an identical, a rule-duplicate, an invalid, a confined one that adds an import, one whose module no longer imports, a caught, an equivalent (must stay undecided, never caught, and only be labelled likely equivalent by unanimous assessors), a distinguishable (must be found), one only the symbolic search finds, one whose assessor input is refuted, a stale and a reviewer-judged equivalent; a kept draft, a draft that imports beyond the allowed and one that uses exec, both rejected without being run; a selected target without proposals that must keep its class undecided; a scenario pytest-bdd generates, whose example for a draft must be its module's step definitions; a draft failing on the original, rejected with pytest's errors free of the copy's path and memory addresses; a draft in the project's style only, formatted and safely fixed, rejected for a lint rule it still breaks; the imports a draft may use, where `from package import module` imports the module and a Technical requirement's module brings the project modules it imports itself; and a small project on which the grounding check must find exactly the invented member, the two unknown arguments, the misplaced import and the missing module of one draft, the arguments a call leaves out (also through the draft's own subclass and its super().__init__, not for a positional argument or a subclass with fields of its own) in another, and nothing in a third that uses a name from an outside package, a constant, a submodule, a test helper and an inherited constructor, with the API card naming every enum member and field, and a name the draft uses that its question never shows counted as a gap; pytest's reason for a failure without error lines; the async test rule only for pytest-asyncio's strict mode; the callers of a module-level function and the functions of its module it calls or hands on; the path to a changed line read from its function's branches, loops, handlers and early exits; what a weak draft reached of its defect, a statement counted on its first line and a function's def not as a call; and the check a model with tools runs in its copy of the calibration project, refusing a forbidden primitive unrun and telling a weak draft which changed lines it never reached",
+            "false_green_control": "a calibration set with a known outcome for every proposal: an identical, a rule-duplicate, an invalid, a confined one that adds an import, one whose module no longer imports, a caught, an equivalent (must stay undecided, never caught, and only be labelled likely equivalent by unanimous assessors), a distinguishable (must be found), one only the symbolic search finds, one whose assessor input is refuted, a stale, a reviewer-judged equivalent and a mutant an earlier proposal repeats; the set judged in chunks at once, as the builder judges a contract, with the same outcome for every proposal and the repeated mutant in its original's chunk, and the results of one mutant selected for two classes, which carry one id, kept in their places; draft tests against a whole mutated module judged in two processes at once, kept and rejected in their order; a kept draft, a draft that imports beyond the allowed and one that uses exec, both rejected without being run; a selected target without proposals that must keep its class undecided; a scenario pytest-bdd generates, whose example for a draft must be its module's step definitions; a draft failing on the original, rejected with pytest's errors free of the copy's path and memory addresses; a draft in the project's style only, formatted and safely fixed, rejected for a lint rule it still breaks; the imports a draft may use, where `from package import module` imports the module and a Technical requirement's module brings the project modules it imports itself; and a small project on which the grounding check must find exactly the invented member, the two unknown arguments, the misplaced import and the missing module of one draft, the arguments a call leaves out (also through the draft's own subclass and its super().__init__, not for a positional argument or a subclass with fields of its own) in another, and nothing in a third that uses a name from an outside package, a constant, a submodule, a test helper and an inherited constructor, with the API card naming every enum member and field, and a name the draft uses that its question never shows counted as a gap; pytest's reason for a failure without error lines; the async test rule only for pytest-asyncio's strict mode; the callers of a module-level function and the functions of its module it calls or hands on; the path to a changed line read from its function's branches, loops, handlers and early exits; what a weak draft reached of its defect, a statement counted on its first line and a function's def not as a call; and the check a model with tools runs in its copy of the calibration project, refusing a forbidden primitive unrun and telling a weak draft which changed lines it never reached",
             "control": {
                 "outcomes": outcomes, "expected": expected, "reasons": reasons, "kept_draft": kept, "rejected_draft": rejected,
+                "chunks": [[payload["proposals"][index]["id"] for index in chunk] for chunk in chunks], "chunked_same": chunked_same,
+                "pins_at_once": [(row["key"], row["accepted"]) for row in pinned],
                 "primitive_draft": primitive, "projection": projection, "target_without_proposals": unchallenged,
                 "judgement": {key: {"status": value.get("status"), "found_by": found_by.get(key)} for key, value in judged.items() if value},
                 "scenario_example_lines": len(scenario_example.splitlines()),
@@ -2015,12 +2199,14 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         def __init__(self, answers):
             self.answers = list(answers)
             self.calls = 0
+            self.caps = []
 
         def version(self) -> str:
             return "0.0.0"
 
-        def invoke(self, **_request):
+        def invoke(self, **request):
             self.calls += 1
+            self.caps.append(request.get("usd_cap"))
             return self.answers.pop(0)
 
     def probe(windows=None):
@@ -2131,6 +2317,233 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
             and all(row["outcome"] == "ok" for row, _response, _attempts in results)
         )
 
+        # A price cap is a fuse that follows the role's most expensive answered call, never a price
+        # list that a change of the models' prices leaves in the way.
+        (temp / "priced.jsonl").write_text(json.dumps({"schema": models["LEDGER_SCHEMA"], "role": "generator", "outcome": "ok", "list_usd": 0.4, "call_id": "earlier"}) + "\n")
+        priced = Scripted([probe(), answered()])
+        run = models["Run"]({"generator": both[:1]}, budget, ledger_path=temp / "priced.jsonl", backends={"claude-cli": priced})
+        run.call("generator", response_dir=temp / "priced", **request)
+        checks["a call's price cap follows its role's most expensive answered call, never below the Test Plan's"] = (
+            priced.caps == [0.05, 1.2] and models["price_cap"](budget, {}, "generator", False) == 0.5
+        )
+        dear = invocation("ok", "", answer, {"input": 10, "output": 5}, 0.9, 1.0, None, "0.0.0", "m")
+        capped = Scripted([probe(), invocation("capped", "the call reached its list-price cap"), dear])
+        run = run_with(both[:1], {"claude-cli": capped}, "capped")
+        row, response = run.call("generator", response_dir=temp / "capped", **request)
+        stopped = Scripted([probe(), invocation("capped", "the call reached its list-price cap"), invocation("capped", "the call reached its list-price cap")])
+        after = Scripted([probe(), answered()])
+        run_next = run_with(both, {"claude-cli": stopped, "antigravity-cli": after}, "stopped")
+        next_row, next_response = run_next.call("generator", response_dir=temp / "stopped", **request)
+        checks["a call that reaches its price cap is asked once more at twice the cap, then of the next model"] = (
+            response is not None and capped.caps == [0.05, 0.5, 1.0] and [entry["outcome"] for entry in run.rows] == ["ok", "capped", "ok"]
+            and run.price_cap("generator", False) == 2.7
+            and next_response is not None and next_response["backend"] == "antigravity-cli" and stopped.caps == [0.05, 0.5, 1.0]
+            and [entry["outcome"] for entry in run_next.rows] == ["ok", "capped", "capped", "ok", "ok"] and next_row["outcome"] == "ok"
+        )
+
+        # A call asks for its level by flag and the ledger records it; a retry answers one level up the
+        # model's ladder; a level that has not passed its canaries is skipped for the next one up.
+        class Leveled(Scripted):
+            def __init__(self, answers):
+                super().__init__(answers)
+                self.efforts = []
+
+            def invoke(self, **request):
+                self.efforts.append(request.get("effort"))
+                return super().invoke(**request)
+
+        climbing = Leveled([probe(), answered(), answered(), answered()])
+        leveled_run = models["Run"](
+            {"draft_author": [{"order": 1, "backend": "claude-cli", "model": "first", "effort": ["low", "medium"]}]}, budget,
+            ledger_path=temp / "levels.jsonl", backends={"claude-cli": climbing},
+        )
+        first_rows = leveled_run.call_with_attempts("draft_author", response_dir=temp / "levels", **request)[2]
+        retry_rows = leveled_run.call_with_attempts("draft_author", response_dir=temp / "levels", step=1, **request)[2]
+        leveled_run.blocked[("draft_author", "claude-cli", "first", "low")] = "failed its canaries"
+        skipped_rows = leveled_run.call_with_attempts("draft_author", response_dir=temp / "levels", **request)[2]
+        stored_levels = sorted(json.loads(path.read_text()).get("effort") for path in (temp / "levels").glob("*.json"))
+        checks["a call asks for its level by flag and records it, a retry climbs the model's ladder, and a level its canaries have not passed is skipped"] = (
+            climbing.efforts == [None, "low", "medium", "medium"]
+            and [row.get("effort") for row in first_rows + retry_rows + skipped_rows] == ["low", "medium", "medium"]
+            and stored_levels == ["low", "medium", "medium"]
+        )
+
+        # Several Antigravity accounts through agm: a run reads their quotas, moves agy alone to the one
+        # with the most left once the one in use is spent, asks a rejected call again on another account,
+        # defers when none has any left, names every account by a digest and puts agy back at the end.
+        class FakeAgm:
+            executable = "agm"
+
+            def __init__(self, quotas, active):
+                self.quotas, self.active, self.switches = quotas, active, []
+                self.addresses = {alias: f"{alias}@example.test" for alias in quotas}
+
+            def snapshot(self):
+                return {alias: {**row, "agy": alias == self.active} for alias, row in self.quotas.items()}
+
+            def cli_address(self):
+                return self.addresses[self.active]
+
+            def alias_of(self, address):
+                return next(alias for alias, known in self.addresses.items() if known == address)
+
+            def switch(self, alias):
+                self.switches.append(alias)
+                self.active = alias
+                return True
+
+        class AgyScripted(Scripted):
+            smaller_pool = "other"
+
+            def __init__(self, answers, accounts):
+                super().__init__(answers)
+                self.accounts, self.profile = accounts, ""
+
+            @staticmethod
+            def quota_pool(model):
+                return "gemini" if model.startswith("gemini") else "other"
+
+        switcher = FakeAgm({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "second": {"gemini-pro": 99, "gemini-flash": 99, "other": 100}}, "main")
+        spent = invocation("rejected", "the Antigravity quota rejected the call: RESOURCE_EXHAUSTED")
+        agy_accounts = AgyScripted([probe(), answered(), spent], switcher)
+        claude_after = Scripted([probe(), answered()])
+        pro_first = [{"order": 1, "backend": "antigravity-cli", "model": "gemini-3.1-pro-high"}, {"order": 2, "backend": "claude-cli", "model": "claude-sonnet-5-5"}]
+        accounts_run = models["Run"]({"generator": pro_first}, budget, ledger_path=temp / "accounts.jsonl", backends={"antigravity-cli": agy_accounts, "claude-cli": claude_after})
+        first_row, first_answer = accounts_run.call("generator", response_dir=temp / "accounts", **request)
+        _second_row, second_answer = accounts_run.call("generator", response_dir=temp / "accounts", **{**request, "subject": "src/x.py::g"})
+        accounts_run.restore_accounts()
+        ledger_text = json.dumps(accounts_run.rows)
+        listed = "EMAIL  STATUS  GEM-PRO  GEM-FLASH  CLAUDE\n-----\na@example.test  cli,ide  0%  0%  10%\nb@example.test  99%  99%  100%\n"
+        checks["with several Antigravity accounts a run moves agy alone to one with quota left, asks a rejected call again on another, defers when none has any, names accounts by a digest and puts agy back"] = (
+            first_answer is not None and first_answer["backend"] == "antigravity-cli" and first_row["account"] == models["account_label"]("second")
+            and second_answer is not None and second_answer["backend"] == "claude-cli"
+            and [row["outcome"] for row in accounts_run.rows if row["backend"] == "antigravity-cli"] == ["ok", "ok", "rejected", "deferred"]
+            and switcher.switches == ["second", "main"] and switcher.active == "main"
+            and '"main"' not in ledger_text and '"second"' not in ledger_text
+            and models["parse_agm_list"](listed) == {
+                "a@example.test": {"agy": True, "gemini-pro": 0, "gemini-flash": 0, "other": 10},
+                "b@example.test": {"agy": False, "gemini-pro": 99, "gemini-flash": 99, "other": 100},
+            }
+            and models["parse_agm_aliases"]("ALIAS  EMAIL\nsecond  b@example.test\n") == {"b@example.test": "second"}
+            and [models["quota_family"](model) for model in ("gemini-3.1-pro-high", "gemini-3.8-flash-high", "claude-opus-4-6-thinking")] == ["gemini-pro", "gemini-flash", "other"]
+        )
+
+        # A refusal that names when its quota resets keeps that quota spent on the account agy's
+        # credential store confirmed until then, in the next run too, and the call goes to another
+        # account; a refusal the store did not confirm, or whose reset has passed, blocks nothing. Once
+        # every account is spent, the call waits without being made.
+        stamp = datetime.now(UTC)
+
+        def refused(alias, model, hours_ago, resets, verified):
+            return {"schema": models["LEDGER_SCHEMA"], "backend": "antigravity-cli", "model": model, "account": models["account_label"](alias),
+                    "outcome": "rejected", "at": (stamp - timedelta(hours=hours_ago)).isoformat(timespec="seconds").replace("+00:00", "Z"),
+                    "reason": f"the Antigravity quota rejected the call: Individual quota reached. Resets in {resets}.", "account_verified": verified}
+
+        pro = "gemini-3.1-pro-high"
+        spent_rows = [refused("main", pro, 1, "10h0m0s", True), refused("second", pro, 1, "10h0m0s", False), refused("main", "gemini-3.8-flash-high", 30, "5h0m0s", True)]
+        (temp / "spent.jsonl").write_text("".join(json.dumps(row) + "\n" for row in spent_rows))
+        roomy = FakeAgm({"main": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}, "second": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}}, "main")
+        moved_agy = AgyScripted([probe(), answered()], roomy)
+        spent_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
+                                  ledger_path=temp / "spent.jsonl", backends={"antigravity-cli": moved_agy})
+        spent_row, spent_answer = spent_run.call("generator", response_dir=temp / "spent", **request)
+        (temp / "all-spent.jsonl").write_text("".join(json.dumps(row) + "\n" for row in [refused("main", pro, 1, "10h0m0s", True), refused("second", pro, 2, "20h0m0s", True)]))
+        empty = FakeAgm({"main": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}, "second": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}}, "second")
+        waiting_agy = AgyScripted([probe()], empty)
+        waiting_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
+                                    ledger_path=temp / "all-spent.jsonl", backends={"antigravity-cli": waiting_agy})
+        waiting_row, waiting_answer = waiting_run.call("generator", response_dir=temp / "all-spent", **request)
+        checks["a refusal that names when its quota resets keeps it spent on the account the credential store confirmed until then, and the call goes to another account"] = (
+            spent_answer is not None and spent_row["account"] == models["account_label"]("second") and roomy.switches == ["second"]
+            and spent_run.quota_left("antigravity-cli", "main", pro) == -1 and spent_run.quota_left("antigravity-cli", "second", pro) == 99
+            and spent_run.quota_left("antigravity-cli", "main", "gemini-3.8-flash-high") == 99
+            and waiting_answer is None and waiting_row["outcome"] == "deferred" and "resets at" in waiting_row["reason"]
+            and waiting_agy.calls == 1 and empty.switches == []
+        )
+
+        # agm's list may name another account than the one agy's credential store holds: the store says
+        # which account agy uses, a switch counts once the store holds the new account, and a refusal
+        # that arrives when the store holds another account blames none and follows the store.
+        class AgmCommands:
+            def __init__(self, listed_cli, store, follows=True):
+                self.listed_cli, self.store, self.follows = listed_cli, store, follows
+
+            def __call__(self, command, **_kwargs):
+                verb = command[1]
+                out = {
+                    "alias": "ALIAS  EMAIL\nmain  a@example.test\nsecond  b@example.test\n",
+                    "list": "".join(f"{address}  {'cli' if address == self.listed_cli else ''}  50%  50%  50%\n" for address in ("a@example.test", "b@example.test")),
+                    "sync": f"Account Sync Status\n\nCLI (agy) credential store: {self.store}\n  Present in local DB.\n",
+                }.get(verb, "")
+                if verb == "switch" and self.follows:
+                    self.store = command[2]
+                return subprocess.CompletedProcess(command, 0, out, "")
+
+        diverged = models["AgmAccounts"]("agm", AgmCommands("b@example.test", "a@example.test"))
+        diverged_snapshot = diverged.snapshot()
+        stuck = models["AgmAccounts"]("agm", AgmCommands("a@example.test", "a@example.test", follows=False))
+        stuck.snapshot()
+
+        class Flipping(AgyScripted):
+            def invoke(self, **request):
+                self.accounts.active = "main"
+                return super().invoke(**request)
+
+        flipped = FakeAgm({"main": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}, "second": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}}, "second")
+        flipping_agy = Flipping([probe(), invocation("rejected", "the Antigravity quota rejected the call: Individual quota reached. Resets in 90h0m0s."), answered()], flipped)
+        flip_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
+                                 ledger_path=temp / "flip.jsonl", backends={"antigravity-cli": flipping_agy})
+        _flip_row, flip_answer = flip_run.call("generator", response_dir=temp / "flip", **request)
+        flip_refusal = next(row for row in flip_run.rows if row["outcome"] == "rejected")
+        checks["agy's credential store, not agm's list, says which account agy uses: a switch counts once the store holds it, and a refusal the store no longer confirms blames no account"] = (
+            {alias: row["agy"] for alias, row in diverged_snapshot.items()} == {"main": True, "second": False}
+            and diverged.switch("second") and diverged.cli_address() == "b@example.test"
+            and not stuck.switch("second")
+            and flip_answer is not None and flip_refusal["account_verified"] is False and flip_refusal["account"] == models["account_label"]("second")
+            and flip_run.quota_left("antigravity-cli", "second", pro) == 99 and flip_run.quota_left("antigravity-cli", "main", pro) == 99
+            and flipping_agy.profile == "main"
+        )
+
+        # Two channels at once: while the first model's pool runs as many calls as it takes, the role's
+        # next model on another pool answers; once the first has room again, it answers.
+        spill_run = models["Run"](
+            {"generator": both}, {**budget, "parallel_calls": 1, "parallel_calls_max": 1}, ledger_path=temp / "spill.jsonl",
+            backends={"claude-cli": Scripted([probe(), answered()]), "antigravity-cli": Scripted([probe(), answered()])},
+        )
+        busy_pool = spill_run.concurrency_pool("claude-cli", both[0]["model"])
+        _count, _limit, busy_epoch = spill_run.enter(busy_pool)
+        _row, spilled_answer = spill_run.call("generator", response_dir=temp / "spill", **request)
+        spill_run.leave(busy_pool, busy_epoch, False, False)
+        _row, first_answer = spill_run.call("generator", response_dir=temp / "spill", **{**request, "subject": "src/x.py::g"})
+        checks["two channels at once: while the first model's pool is full the role's next model on another pool answers, and the first answers once it has room"] = (
+            spilled_answer is not None and spilled_answer["backend"] == "antigravity-cli"
+            and first_answer is not None and first_answer["backend"] == "claude-cli"
+        )
+
+        # A Claude sign-in with no room left in its windows hands over to another signed-in profile of the
+        # machine that has room, probed once; the ledger names the one each call used.
+        class Profiled(Scripted):
+            def __init__(self, answers):
+                super().__init__(answers)
+                self.profile, self.used = "first", []
+
+            def profiles(self):
+                return ["first", "second"]
+
+            def invoke(self, **request):
+                self.used.append(self.profile)
+                return super().invoke(**request)
+
+        full_window, roomy_window = {"five_hour": 1.0, "seven_day": 0.2}, {"five_hour": 0.1, "seven_day": 0.2}
+        profiled = Profiled([probe(full_window), probe(roomy_window), answered(roomy_window)])
+        profile_run = models["Run"]({"generator": both[:1]}, budget, ledger_path=temp / "profiles.jsonl", backends={"claude-cli": profiled})
+        handed_row, handed_answer = profile_run.call("generator", response_dir=temp / "profiles", **request)
+        checks["a Claude sign-in with no room left hands over to another signed-in profile that has room, probed once"] = (
+            handed_answer is not None and profiled.used == ["first", "second", "second"]
+            and handed_row["account"] == models["account_label"]("second")
+            and [entry["outcome"] for entry in profile_run.rows] == ["ok", "ok", "ok"]
+        )
+
         sloppy = Scripted([probe(), invocation("invalid", "the answer breaks its schema")])
         untouched = Scripted([probe(), answered()])
         run = run_with(both, {"claude-cli": sloppy, "antigravity-cli": untouched}, "invalid")
@@ -2228,7 +2641,7 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         {"Role": role, "Order": "1", "Backend": "`claude-cli`", "Model": "`m`"} for role in models["ROLES"]
     ]
     budget_ok = [
-        {"Budget": label, "Limit": {"five_hour": "80%", "seven_day": "70%", "usd_per_call": "$0.50", "usd_per_tool_call": "$5.00"}.get(key, "2")}
+        {"Budget": label, "Limit": {"five_hour": "80%", "seven_day": "70%", "usd_per_call": "$0.50", "usd_per_tool_call": "$5.00", "agy_quota_floor": "0%"}.get(key, "2")}
         for label, key in models["BUDGET_LABELS"].items()
     ]
 
@@ -2247,6 +2660,44 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         and refuses(parse_roles, roles_ok[:1])
         and refuses(parse_budget, budget_ok[:-1])
         and refuses(parse_budget, [{**budget_ok[0], "Limit": "eighty"}, *budget_ok[1:]])
+    )
+    # A level is named fail-closed: a rising ladder only for a role whose every answer execution
+    # checks, one level for a judge and the generator, a level the backend takes, and none for an
+    # Antigravity model whose id names its level.
+    def with_effort(role, effort, **change):
+        return [{**row, "Effort": effort, **change} if row["Role"] == role else row for row in roles_ok]
+
+    checks["a model's level is read fail-closed: a rising ladder only where execution checks every answer, one level for a judge and the generator, none for a model whose id names it"] = (
+        parse_roles(with_effort("Draft test author", "`low` → `high`"))["draft_author"][0]["effort"] == ["low", "high"]
+        and parse_roles(with_effort("Survivor verdict", "`xhigh`"))["verdict"][0]["effort"] == ["xhigh"]
+        and parse_roles(roles_ok)["verdict"][0]["effort"] == []
+        and refuses(parse_roles, with_effort("Survivor verdict", "`low` → `high`"))
+        and refuses(parse_roles, with_effort("Semantic mutant generator", "`low` → `high`"))
+        and refuses(parse_roles, with_effort("Draft test author", "`high` → `low`"))
+        and refuses(parse_roles, with_effort("Draft test author", "`low` → `low`"))
+        and refuses(parse_roles, with_effort("Survivor verdict", "`turbo`"))
+        and refuses(parse_roles, with_effort("Survivor verdict review", "`low`", Backend="`antigravity-cli`", Model="`gemini-3.8-flash-high`"))
+    )
+    # An assessor's ladder of levels is one model per level, and the calibration climbs it one level at
+    # a time, stopping at the first level that meets the calibration floors.
+    seats = models["parse_assessors"]([
+        {"Assessor": "1", "Order": "1", "Backend": "`claude-cli`", "Model": "`a`", "Effort": "`low` → `medium`"},
+        {"Assessor": "1", "Order": "2", "Backend": "`claude-cli`", "Model": "`b`", "Effort": ""},
+        {"Assessor": "2", "Order": "1", "Backend": "`antigravity-cli`", "Model": "`c-high`", "Effort": "—"},
+    ])
+    distinct_ids = ["d1", "d2", "d3", "d4", "d5"]
+    ladder_answers = {pid: {"claude-cli:a@low": {"verdict": "equivalent" if pid == "d1" else "distinct"}, "claude-cli:a@medium": {"verdict": "distinct"}} for pid in distinct_ids}
+    ladder_confirmed = {pid: {"claude-cli:a@low": pid in {"d2", "d3"}, "claude-cli:a@medium": True} for pid in distinct_ids}
+    ladder_below = models["ladder_below_floors"](seats, {"claude-cli:a@low", "claude-cli:a@medium"}, distinct_ids, ladder_answers, ladder_confirmed, {}, 0.1)
+    observed_equivalent = models["calibration_floors"]("claude-cli:a@medium", distinct_ids, ladder_answers, ladder_confirmed, {f"o{index}": {"claude-cli:a@medium": {"verdict": "equivalent"}} for index in range(2)}, 0.1)
+    checks["an assessor's ladder of levels is one model per level, climbed one level at a time until a level meets the calibration floors"] = (
+        [row["key"] for row in seats] == ["claude-cli:a@low", "claude-cli:a@medium", "claude-cli:b", "antigravity-cli:c-high"]
+        and [row["order"] for row in seats] == [1, 2, 3, 1]
+        and models["calibration_search"](seats, set()) == {"claude-cli:a@low", "claude-cli:b", "antigravity-cli:c-high"}
+        and ladder_below == {"claude-cli:a@low"}
+        and models["calibration_search"](seats, ladder_below) == {"claude-cli:a@medium", "claude-cli:b", "antigravity-cli:c-high"}
+        and models["calibration_search"](seats, {"claude-cli:a@low", "claude-cli:a@medium"}) == {"claude-cli:b", "antigravity-cli:c-high"}
+        and not observed_equivalent["met"] and observed_equivalent["distinct_answered"] == 7
     )
     # An assessor may list several models in order; every combination of its usable models, one per
     # assessor, is one the calibration must cover.
@@ -2304,6 +2755,13 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
     ))
     used = models["parse_claude_stream"](tool_stream, "", 0, {"type": "object"})
     roles_with_tools = [{"Role": role, "Order": "1", "Backend": "`claude-cli`", "Model": "`m`"} for role in models["ROLES"]]
+    leveled = cli.command("m", "s", {"type": "object"}, 0.5, effort="high")
+    agy_leveled = agy.command("m", "s", "p", None, effort="high")
+    checks["no call reads the person's settings, and a level is asked for by flag on either backend only when one is set"] = (
+        without[without.index("--setting-sources") + 1] == "" and with_tools[with_tools.index("--setting-sources") + 1] == ""
+        and leveled[leveled.index("--effort") + 1] == "high" and "--effort" not in without and "--effort" not in with_tools
+        and agy_leveled[agy_leveled.index("--effort") + 1] == "high" and "--effort" not in agy.command("m", "s", "p", None)
+    )
     checks["a call with tools is held to its copy of the project, through the claude CLI only, and what its tools did is read back"] = (
         with_tools[with_tools.index("--tools") + 1] == models["TOOLS"] == "Read,Grep,Glob,Write,Edit,Bash"
         and with_tools[with_tools.index("--permission-mode") + 1] == "dontAsk"
@@ -2558,6 +3016,17 @@ def survivor_judgement_controls() -> dict[str, dict[str, object]]:
             and judge["asked_question"](again) == verdict_question and judge["verdict_problems"]({**pin, "sources": ["x"]}, False, again)[0] == "its source «x» is not in the question"
             and "Requirement R" not in asked_clip
         )
+    # A shown outcome never carries the machine it ran on: a found input may make the code read an
+    # environment variable, and a witness goes into a model's question and a public record.
+    planted = "tf-qualification-value-7c1e"
+    os.environ["TF_QUALIFICATION_SECRET"] = planted
+    try:
+        shown = judge["redact_environment"](f"{{'env_var': 'TF_QUALIFICATION_SECRET', 'value': '{planted}'}} in {Path.home()}/project")
+    finally:
+        os.environ.pop("TF_QUALIFICATION_SECRET", None)
+    checks["a shown outcome names an environment variable without its value and the home directory without its path"] = (
+        planted not in shown and "<$TF_QUALIFICATION_SECRET>" in shown and str(Path.home()) not in shown
+    )
     threshold = judge["conformal_threshold"]
     checks["the split-conformal threshold follows its rank"] = (
         threshold([0.0] * 14, 0.1) == 0.0 and threshold([0.1, 0.9], 0.1) is None
@@ -2568,7 +3037,7 @@ def survivor_judgement_controls() -> dict[str, dict[str, object]]:
         "PRODUCER_SYMBOLIC_DIFFERENTIAL": {
             "status": "QUALIFIED" if ok else "NOT QUALIFIED",
             "intended_use": "decide surviving mutants without a model: a symbolic search (CrossHair) over a typed harness, and every proposed input confirmed by execution before it counts",
-            "false_green_control": "labelled pairs: every distinct pair's input confirmed, the symbolic search finding and confirming inputs for its distinct pairs and none for its equivalent pairs; witnesses that reach beyond plain values never evaluated; non-finite inputs never counting; a rule mutant rebuilt exactly from its location; an assessor's equivalent only labelling, calibrated and unanimous; an answer's sources found word for word in its own question, one of them on a line the change touches and, for a verdict, one on the requirement it turns on",
+            "false_green_control": "labelled pairs: every distinct pair's input confirmed, the symbolic search finding and confirming inputs for its distinct pairs and none for its equivalent pairs; witnesses that reach beyond plain values never evaluated; non-finite inputs never counting; a rule mutant rebuilt exactly from its location; an assessor's equivalent only labelling, calibrated and unanimous; an answer's sources found word for word in its own question, one of them on a line the change touches and, for a verdict, one on the requirement it turns on; a shown outcome naming an environment variable without its value and the home directory without its path",
             "control": {"checks": checks, "symbolic": symbolic},
         }
     }
@@ -2618,6 +3087,11 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
                 and judge["answer_problems"](structured, str(response.get("prompt") or "")) == answer.get("problems")
             )
     checks["every calibration answer is a stored, ledgered call's answer"] = bound and bool(record.get("answers"))
+    # Each answer is stored under the model and level its call asked for.
+    checks["every calibration answer is stored under the model and level its call asked for"] = all(
+        models["entry_key"](str(answer.get("backend") or ""), str(answer.get("model") or ""), str((ledger.get(str(answer.get("call_id"))) or {}).get("effort") or "")) == member
+        for answers in (record.get("answers") or {}).values() for member, answer in answers.items()
+    )
     # Which models may answer for their assessor, recomputed from the answers: every labelled pair
     # answered, and every observed pair the first such models all answered (the record keeps only those).
     payload = judge["calibration_payload"](folder)
@@ -2627,11 +3101,45 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
         return {key: value for key, value in (given or {}).items() if key in keys and not value.get("problems")}
 
     labelled_complete = {key for key in keys if all(key in clean((record.get("answers") or {}).get(pair["id"])) for pair in payload["pairs"])}
-    primary = next(iter(models["assessor_configurations"](assessors, labelled_complete)), [])
-    usable = {key for key in labelled_complete if all(key in clean(pair.get("answers")) for pair in observed.values())}
+    # Each model's input on a labelled distinct pair is confirmed by execution again; a level of a
+    # ladder that misses the calibration floors does not answer, and the first models follow from the rest.
+    distinct_pairs = [pair for pair in payload["pairs"] if pair["label"] == "distinct"]
+    labelled_answers = {pid: clean(given) for pid, given in (record.get("answers") or {}).items()}
+    confirmed_by: dict[str, dict[str, bool]] = {}
+    with tempfile.TemporaryDirectory(prefix="ternforge-ensemble-inputs-") as temp_dir:
+        for index, pair in enumerate(distinct_pairs):
+            original_source, mutant_source = judge["pair_sources"](folder, pair)
+            confirmed_by[pair["id"]] = {
+                member: judge["judge_survivor"](
+                    original_source, mutant_source, pair["target"], scratch=Path(temp_dir), token=f"f{index}m{keys.index(member)}", seconds=0,
+                    answers={member: answer}, members=[member], threshold=None, calibrated=False,
+                ).get("status") == "found"
+                for member, answer in (labelled_answers.get(pair["id"]) or {}).items() if answer.get("verdict") == "distinct"
+            }
+    observed_answers = record.get("observed_answers") or {pair_id: clean(pair.get("answers")) for pair_id, pair in observed.items()}
+    below = models["ladder_below_floors"](assessors, labelled_complete, [pair["id"] for pair in distinct_pairs], labelled_answers, confirmed_by, observed_answers, settings["alpha"])
+    eligible = labelled_complete - below
+    primary = next(iter(models["assessor_configurations"](assessors, eligible)), [])
+    usable = {key for key in eligible if all(key in clean(pair.get("answers")) for pair in observed.values())}
     configurations = models["assessor_configurations"](assessors, usable)
+    # The observed answers a ladder's level is judged by are stored, ledgered calls' answers at that level.
+    ladder_keys = {row["key"] for row in assessors if row.get("levels")}
+    ladder_bound = True
+    for pair_id, given in observed_answers.items():
+        for member, answer in (given or {}).items():
+            if member not in ladder_keys:
+                continue
+            response_path = ROOT / ".ai-bridge/survivor-triage" / pair_id.split(":", 1)[0] / "responses" / f"{answer.get('call_id')}.json"
+            response = json.loads(response_path.read_text()) if response_path.exists() else {}
+            row = ledger.get(str(answer.get("call_id"))) or {}
+            ladder_bound = ladder_bound and bool(response) and not models["verify_response"](response) and (
+                models["response_sha256"](response) == answer.get("response_sha256") == row.get("response_sha256")
+                and row.get("outcome") == "ok" and (response.get("structured") or {}).get("verdict") == answer.get("verdict")
+                and models["entry_key"](str(response.get("backend") or ""), str(response.get("model") or ""), str(response.get("effort") or "")) == member
+            )
+    checks["every observed answer a ladder's level is judged by is a stored, ledgered call's answer at that level"] = ladder_bound
     checks["the usable assessor models and every combination of them recompute to the record, one model per assessor"] = (
-        bool(configurations) and sorted(usable) == record.get("usable")
+        bool(configurations) and sorted(usable) == record.get("usable") and sorted(below) == (record.get("below_floors") or [])
         and [row.get("members") for row in record.get("configurations") or []] == configurations
         and all(all(key in clean(pair.get("answers")) for key in primary) for pair in observed.values())
     )
@@ -2704,28 +3212,10 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
     )
     # The assessors' canary (ADR_0006): each usable model finds a confirmed input for at least 80% of the labelled distinct
     # pairs, and calls at most the Test Plan's rate of all distinct pairs, labelled or observed, equivalent.
-    floors = {}
-    distinct_pairs = [pair for pair in payload["pairs"] if pair["label"] == "distinct"]
-    with tempfile.TemporaryDirectory(prefix="ternforge-ensemble-floors-") as temp_dir:
-        for index, member in enumerate(sorted(usable)):
-            confirmed = equivalent = 0
-            for pair in distinct_pairs:
-                answer = ((record.get("answers") or {}).get(pair["id"]) or {}).get(member) or {}
-                if answer.get("problems"):
-                    continue
-                equivalent += answer.get("verdict") == "equivalent"
-                if answer.get("verdict") == "distinct":
-                    original_source, mutant_source = judge["pair_sources"](folder, pair)
-                    alone = judge["judge_survivor"](original_source, mutant_source, pair["target"], scratch=Path(temp_dir), token=f"f{index}{pair['id'].lower()}", seconds=0, answers={member: answer}, members=[member], threshold=None, calibrated=False)
-                    confirmed += alone.get("status") == "found"
-            answered = sum(1 for pair in distinct_pairs if not (((record.get("answers") or {}).get(pair["id"]) or {}).get(member) or {}).get("problems"))
-            for pair in observed.values():
-                answered += 1
-                equivalent += ((pair.get("answers") or {}).get(member) or {}).get("verdict") == "equivalent"
-            floors[member] = {
-                "confirmed": confirmed, "equivalent_on_distinct": equivalent, "distinct_answered": answered,
-                "met": confirmed >= 0.8 * len(distinct_pairs) and equivalent <= settings["alpha"] * answered,
-            }
+    floors = {
+        member: models["calibration_floors"](member, [pair["id"] for pair in distinct_pairs], labelled_answers, confirmed_by, observed_answers, settings["alpha"])
+        for member in sorted(usable)
+    }
     checks["every usable assessor model meets the calibration floors: inputs for 80% of the labelled distinct pairs, at most the rate of all distinct pairs called equivalent"] = bool(floors) and all(row["met"] for row in floors.values())
     ok = all(checks.values())
     # The record is bound here, not in the shared environment: a calibration run then leaves every other producer current.
@@ -2768,6 +3258,7 @@ def model_canary_controls() -> dict[str, dict[str, object]]:
             bound = bound and bool(response) and not models["verify_response"](response) and (
                 models["response_sha256"](response) == case.get("response_sha256") == row.get("response_sha256")
                 and row.get("outcome") == "ok" and response.get("model") == record.get("model")
+                and str(row.get("effort") or "") == str(record.get("effort") or "")
             )
             structured = response.get("structured") or {}
             if role == "generator":
@@ -2830,7 +3321,96 @@ CONTROL_INPUTS = {
         ".ai-bridge/semantic-mutants/calibration/**/*",
     ),
     "survivor_judgement_controls": (".ai-bridge/survivor_equivalence.py", ".ai-bridge/semantic-mutants/calibration/equivalence/**/*"),
+    "scenario_mutant_controls": (".ai-bridge/scenario_mutants.py",),
+    "architecture_mutant_controls": (".ai-bridge/architecture_mutants.py",),
 }
+
+
+def scenario_mutant_controls() -> dict[str, dict[str, object]]:
+    """Qualify the scenario oracle mutants (050) on a small pytest-bdd project whose Then steps check
+    strongly, through a helper, weakly and not at all."""
+    tool = runpy.run_path(str(ROOT / ".ai-bridge/scenario_mutants.py"), run_name="evidence_confidence_scenario_mutants")
+    with tempfile.TemporaryDirectory(prefix="ternforge-scenario-qualification-") as temp_dir:
+        tmp = Path(temp_dir)
+        for name in ("src", "features", "tests"):
+            (tmp / name).mkdir()
+        (tmp / "pyproject.toml").write_text('[tool.pytest.ini_options]\nbdd_features_base_dir = "features"\n')
+        (tmp / "src" / "classify_control.py").write_text("def classify(value):\n    return 'big' if value > 10 else 'small'\n")
+        scenario = "  @{tag}[revision==1]\n  Scenario: {name}\n    Given the value {value}\n    When it is classified\n    Then the class is {outcome}\n\n"
+        (tmp / "features" / "control.feature").write_text(
+            "Feature: Control\n\n"
+            + scenario.format(tag="REQ_STRONG", name="A big value", value=11, outcome="big")
+            + scenario.format(tag="REQ_STRONG", name="A small value", value=3, outcome="small")
+            + scenario.format(tag="REQ_WEAK", name="A recorded value", value=5, outcome="recorded")
+            + scenario.format(tag="REQ_NONE", name="A logged value", value=7, outcome="logged")
+        )
+        (tmp / "tests" / "test_control.py").write_text(
+            "from classify_control import classify\n"
+            "from pytest_bdd import given, parsers, scenarios, then, when\n\n"
+            "scenarios('control.feature')\n\n\n"
+            "def _assert_class(result, expected):\n    assert result == expected\n\n\n"
+            "@given(parsers.parse('the value {value:d}'), target_fixture='value')\n"
+            "def given_value(value):\n    return value\n\n\n"
+            "@when('it is classified', target_fixture='result')\n"
+            "def classified(value):\n    return classify(value)\n\n\n"
+            "@then('the class is big')\n"
+            "def is_big(result):\n    assert result == 'big'\n\n\n"
+            "@then('the class is small')\n"
+            "def is_small(result):\n    _assert_class(result, 'small')\n\n\n"
+            "@then('the class is recorded')\n"
+            "def is_recorded(result):\n    assert len(result) >= 0\n\n\n"
+            "@then('the class is logged')\n"
+            "def is_logged(result):\n    print(result)\n"
+        )
+        results = tool["run"](tmp, tool["generate"](tmp, ROOT / ".venv/bin/pytest"), ROOT / ".venv/bin/pytest")
+    by_function: dict[str, list[str]] = {}
+    for row in results:
+        by_function.setdefault(row["function"], []).append(row["outcome"])
+    contracts = {row["function"]: sorted({item for scenario in row["scenarios"] for item in scenario["contracts"]}) for row in results}
+    ok = (
+        by_function.get("is_big") == ["caught"]
+        and by_function.get("is_small") == ["caught"] and by_function.get("_assert_class") == ["caught"]
+        and by_function.get("is_recorded") == ["survived"]
+        and by_function.get("is_logged") == ["unchecked"]
+        and contracts.get("is_big") == ["REQ_STRONG[revision==1]"] and contracts.get("is_recorded") == ["REQ_WEAK[revision==1]"]
+        and "given_value" not in by_function and "classified" not in by_function
+    )
+    return {
+        "PRODUCER_SCENARIO_MUTANTS": {
+            "status": "QUALIFIED" if ok else "NOT QUALIFIED",
+            "intended_use": "change what one Then step, or an assertion helper it reaches, compares with, run the scenarios that use it and report the mutant caught only when one of them fails, and report a Then step that checks nothing",
+            "false_green_control": "a strongly checked step, one checked through a helper and the helper itself must be caught; a weak comparison that holds for another expectation must survive; a step that only prints must be reported as checking nothing; Given and When steps are never mutated; a scenario's contracts come from its tags",
+            "control": {"outcomes": by_function, "contracts": contracts},
+        }
+    }
+
+
+def architecture_mutant_controls() -> dict[str, dict[str, object]]:
+    """Qualify the architecture mutants (050) on a small package with a forbidden-dependency rule and
+    the same rule made hollow by an exception for the very edge it forbids."""
+    tool = runpy.run_path(str(ROOT / ".ai-bridge/architecture_mutants.py"), run_name="evidence_confidence_architecture_mutants")
+    with tempfile.TemporaryDirectory(prefix="ternforge-architecture-qualification-") as temp_dir:
+        tmp = Path(temp_dir)
+        for name in ("src/app", "src/app/low", "src/app/high"):
+            (tmp / name).mkdir(parents=True)
+            (tmp / name / "__init__.py").write_text("")
+        rule = '[[tool.importlinter.contracts]]\nname = "{name}"\nid = "{id}"\ntype = "forbidden"\nsource_modules = ["app.low"]\nforbidden_modules = ["app.high"]\n{extra}\n'
+        (tmp / "pyproject.toml").write_text(
+            '[tool.importlinter]\nroot_packages = ["app"]\n\n'
+            + rule.format(name="Low must not import high", id="low-not-high", extra="")
+            + rule.format(name="Low may import high by exception", id="hollow", extra='ignore_imports = ["app.low -> app.high"]')
+        )
+        results = tool["run"](tmp, tool["generate"](tmp), ROOT / ".venv/bin/lint-imports")
+    outcomes = {row["contract"]: row["outcome"] for row in results}
+    ok = outcomes == {"low-not-high": "caught", "hollow": "survived"}
+    return {
+        "PRODUCER_ARCHITECTURE_MUTANTS": {
+            "status": "QUALIFIED" if ok else "NOT QUALIFIED",
+            "intended_use": "add one import each import-linter rule forbids to a copy of the code and report the rule caught only when the linter reports that rule broken",
+            "false_green_control": "a forbidden-dependency rule must be caught on the edge it forbids, and the same rule whose exception lets that edge in must survive",
+            "control": {"outcomes": outcomes},
+        }
+    }
 
 
 def control_code_digest(name: str) -> str:
@@ -2887,7 +3467,12 @@ def main() -> None:
     judgement = cached_controls(survivor_judgement_controls)
     ensemble = assessor_ensemble_controls()
     canaries = model_canary_controls()
-    producers = {**external, **internal, **project_sdk, **implementation, **semantic, **generation, **judgement, **ensemble, **canaries}
+    scenario = cached_controls(scenario_mutant_controls)
+    architecture = cached_controls(architecture_mutant_controls)
+    producers = {
+        **external, **internal, **project_sdk, **implementation, **semantic, **generation, **judgement, **ensemble, **canaries,
+        **scenario, **architecture,
+    }
     payload = {
         "schema": "ternforge-evidence-producer-qualification-1",
         "qualified_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),

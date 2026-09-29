@@ -1,0 +1,21 @@
+{
+ "84eb2eb645a09af6": [
+  {
+   "at": "2026-09-29T11:47:11.545861Z",
+   "call_id": "20260929T112258Z-acfe43",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9bd31f652f8f01f699f69b08fd1029e26a3fca5221abab59e6ea874fd093a507",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.providers.base.ProviderFailure"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,254 @@
+{
+ "103e134c5bae2419": [
+  {
+   "at": "2026-09-29T11:47:11.541333Z",
+   "call_id": "20260929T112151Z-4d44ae",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c6851f7f4d92dafe37433f9cc651e319509600d2fc5fe5a13de3507c21f87d8c",
+   "reason": "it breaks the project's lint rules (ruff: line 33: ARG002 Unused method argument: `request`)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.892901Z",
+   "call_id": "20260929T114737Z-1614c2",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9a9f8f110238612e0222b9523b5df6c7e0a4f27f99285032828da3b486d602ae",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor.build_provider_retrying"
+   ]
+  }
+ ],
+ "1cb6c482c58e73ea": [
+  {
+   "at": "2026-09-29T11:47:11.541339Z",
+   "call_id": "20260929T112151Z-4ccaea",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ec84828afe67ef9cba2f8d1681897ac040874b5c5204f18f97be1492661f5d6f",
+   "reason": "it breaks the project's lint rules (ruff: line 37: ARG002 Unused method argument: `request`); it imports contextlib",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor._provider_boundary_error",
+    "llm_router._internal.runtime.executor",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.892920Z",
+   "call_id": "20260929T114740Z-42c60e",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "93c71174ab7347f4090236a8c9305d01e4a850f2cc8854b2e3b42786ec8d3e1e",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor._provider_boundary_error"
+   ]
+  }
+ ],
+ "3c58e8e9e5eaec8a": [
+  {
+   "at": "2026-09-29T11:47:11.541373Z",
+   "call_id": "20260929T112151Z-ed26dd",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "bc968ab6c3859b0463f124350896ec2fe5341c69a1cff2ed6067e8e7e70a7950",
+   "reason": "it breaks the project's lint rules (ruff: line 34: ARG002 Unused method argument: `request`)",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.892924Z",
+   "call_id": "20260929T114741Z-e506d6",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2c5240cc66bc8eea614e3b5003e3d21625edf91418c7c1810167fa05133e0c22",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor"
+   ]
+  }
+ ],
+ "77d6a6e9eef042e8": [
+  {
+   "at": "2026-09-29T11:47:11.541325Z",
+   "call_id": "20260929T105808Z-f0646d",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "3886b8d9a1d2a21a000d0fa9324e955e9ff02c627b597bda16cac292e58fdf08",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.retry.classify_status_code",
+    "llm_router._internal.providers.retry.RetryDecision",
+    "llm_router._internal.providers.retry.RetryClassification"
+   ]
+  }
+ ],
+ "SM-11502F33": [
+  {
+   "at": "2026-09-29T19:15:34.152485Z",
+   "call_id": "20260929T191342Z-600f10",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3ffa47f5f919df1773c844d1b3cf46c1987eaaf653d69903a016da596a5bf7f7",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.retry.classify_exception",
+    "llm_router._internal.providers.retry.RetryClassification"
+   ]
+  }
+ ],
+ "SM-F4AC62D8": [
+  {
+   "at": "2026-09-29T19:15:34.152499Z",
+   "call_id": "20260929T191342Z-b0aa84",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d553bda4e96df8282a91f32aeb5097cfc6fac1627182a8cfffc12016f0212cdc",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor"
+   ]
+  }
+ ],
+ "bc22a7f5ad518a96": [
+  {
+   "at": "2026-09-29T11:47:11.541377Z",
+   "call_id": "20260929T112151Z-40ef83",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e58a9ed0edb2067b1965d2e0118f36fd6201887596d845b2e125a07b84220064",
+   "reason": "it breaks the project's lint rules (ruff: line 53: ARG002 Unused method argument: `request`)",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.892927Z",
+   "call_id": "20260929T114742Z-95c5d9",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f32659f7be977cccaf8216f4f3ed42bed745e3ac6dde5679ae5d11d8d6b09d67",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ]
+  }
+ ],
+ "dad9cc03506dec74": [
+  {
+   "at": "2026-09-29T11:47:11.541381Z",
+   "call_id": "20260929T112151Z-845759",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "cc8119ab8d00eae4ecad34a63d0809dab735e87ae95e57aac3b687474f07d0b4",
+   "reason": "it breaks the project's lint rules (ruff: line 45: ARG002 Unused method argument: `request` | line 60: ARG002 Unused method argument: `request`)",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.892945Z",
+   "call_id": "20260929T114745Z-a610e1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6038b627cc0413ab4308374115b474253b5e399c057ae3ff5db2cb699cda9a85",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model"
+   ]
+  }
+ ]
+}

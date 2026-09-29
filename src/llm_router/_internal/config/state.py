@@ -27,7 +27,6 @@ def get_config() -> LLMRouterConfig:
 
 
 # @impl Config installation coherence, IMPL_CONFIG_INSTALLATION_COHERENCE, [REQ_CONFIG_INSTALLATION_COHERENCE[revision==2]]
-# @impl Config cache invalidation, IMPL_CONFIG_CACHE_INVALIDATION, [TREQ_CONFIG_CACHE_INVALIDATION[revision==1]]
 def install_config(config: object) -> LLMRouterConfig:
     """Install a validated config snapshot."""
     if not isinstance(config, LLMRouterConfig):
@@ -41,6 +40,7 @@ def install_config(config: object) -> LLMRouterConfig:
 
     from llm_router._internal.providers.registry import clear_adapter_caches
 
+    # @impl Config cache invalidation, IMPL_CONFIG_CACHE_INVALIDATION, [TREQ_CONFIG_CACHE_INVALIDATION[revision==1]]
     clear_adapter_caches()
     logger.info(
         "Configuration installed",

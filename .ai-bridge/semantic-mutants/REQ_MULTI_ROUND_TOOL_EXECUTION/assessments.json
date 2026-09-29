@@ -1,0 +1,87 @@
+{
+ "SM-99B5EBCC": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-147990",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The `_tool_limit_reached` function evaluates whether the local tool round limit has been exhausted; since `_run_logged_tool_round` executes the tools but does not increment the round counter (which is managed by the outer loop), both `state.tool_state` and `next_tool_state` yield the exact same limit check result.",
+    "response_sha256": "917ae42b95eff3cbaf9e795741d1351c3d63af53f804f93c1b217f47a9c4f172",
+    "sources": [
+     "    next_tool_state = _run_logged_tool_round(",
+     "        request=provider_request,",
+     "        state=state.tool_state,",
+     "        result=result,",
+     "        registry=plan.tool_registry,",
+     "    )",
+     "    if _tool_limit_reached(state=state.tool_state, result=result):"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(), tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "any ProviderRequest with a valid credential and the same registry",
+     "result": "ProviderResult with one ToolCall in tool_calls",
+     "state": "_ExecutionLoopState with tool_state=ToolLoopState() at 0 rounds used, messages=(), tool_choice=None, tool_registry=ToolRegistry(), schema=None, structured_attempts=0"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-7ae20b",
+    "confidence": 0.62,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The limit check moves from the post-round tool state to the pre-round state, so a round-counting limit is detected one round late and the tool loop continues (another provider call) when the original stopped.",
+    "response_sha256": "50ac81b21ac533ff1e83db6e5a8c28e225a73ab990553dfa45ea315079e5a307",
+    "sources": [
+     "if _tool_limit_reached(state=state.tool_state, result=result):",
+     "if _tool_limit_reached(state=next_tool_state, result=result):"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "4e6f61bd8f2e0fc907591d7ee083ce585f2ece4cedb55fe6aedb39ab439969bd"
+ },
+ "SM-F43CA330": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-b0a3a9",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Since `_run_logged_tool_round` always appends exactly one `ToolStep` (representing the entire executed round) to the immutable state, `len(next_tool_state.steps) - 1` is always equal to `len(state.tool_state.steps)`, resulting in identical slice evaluations for all valid inputs.",
+    "response_sha256": "a71da7420ffd45c37263e75cdbb8aa68b904d34ef396bcf9d245ed90af7d7990",
+    "sources": [
+     "                next_tool_state.steps[len(state.tool_state.steps) :],",
+     "                next_tool_state.steps[len(next_tool_state.steps) - 1 :],"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(tools={'t': <ToolDefinition for t>}), tool_choice=None, max_tool_rounds=5)",
+     "provider_request": "ProviderRequest(request_id='r', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='m', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='m', output_text='', tool_calls=(ToolCall(name='t', ...), ToolCall(name='t', ...)))  # two calls in one round",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState() /*empty steps*/, tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164215Z-f82c36",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original passes all steps added this round to append_tool_result_message, while the change passes only the last step, so a result with several tool calls (or a round adding no step) yields different messages.",
+    "response_sha256": "4e8755550cf25e4ed9ab5f4f8323f2b364aa146e82517d9f0428fcd7329257c3",
+    "sources": [
+     "next_tool_state.steps[len(next_tool_state.steps) - 1 :],",
+     "next_tool_state.steps[len(state.tool_state.steps) :],"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "9489785cae1502cb60ad2513526b80f1b3fc963c36ddcb8edd579f96437fcc2a"
+ }
+}

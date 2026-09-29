@@ -1,4 +1,27 @@
 {
+ "14086e0bf74da773": [
+  {
+   "at": "2026-09-29T11:47:11.542417Z",
+   "call_id": "20260929T105827Z-851c5b",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "dbb5a937484eceb68042f8deacb596682b4e10b4781235a16aafe38db430df9d",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolDefinition",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
  "1e1bd3200d2722cb": [
   {
    "at": "2026-09-28T10:39:06.983271Z",
@@ -41,6 +64,272 @@
    ]
   }
  ],
+ "20359188ebc2e80d": [
+  {
+   "at": "2026-09-29T11:47:11.542427Z",
+   "call_id": "20260929T105832Z-308d56",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "0e4814baf0f6e92a52c69cb2566b93eb059065c2bb473f396b620d88e5348add",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: 'ProviderError' object has no attribute 'message')",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter",
+    "llm_router._internal.providers.qwenchat.transport_failure",
+    "llm_router._internal.providers.qwenchat.upload_media_async"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.893992Z",
+   "call_id": "20260929T114747Z-be3311",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f91466bbeca495b33dc8ce7be59c637047228071e5953f4b28e0cc5f8b3688ef",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter",
+    "llm_router._internal.providers.qwenchat.transport_failure"
+   ]
+  }
+ ],
+ "36fb82fcc47860a2": [
+  {
+   "at": "2026-09-29T11:47:11.542444Z",
+   "call_id": "20260929T112151Z-ac7843",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2b2daaa1b6032ebc7c3cfd4115ab3855c3d098306443b7b62cf9321072d10549",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "3efa4e88882211c0": [
+  {
+   "at": "2026-09-29T11:47:11.542438Z",
+   "call_id": "20260929T105903Z-9fc6ed",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "cfad01d9f4ee1d3f795184e6fb1588727a23a06357e11d8c602c9def60c813e9",
+   "reason": "it breaks the project's lint rules (ruff: line 30: RUF012 Mutable default value for class attribute)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.894018Z",
+   "call_id": "20260929T114747Z-cd8c4f",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "52f261aa17c6d57a9f827a8d5c55964d492433638fff56309149449ade51ebcf",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "474c40f4f8c20c86": [
+  {
+   "at": "2026-09-29T11:47:11.542451Z",
+   "call_id": "20260929T112151Z-3e55d1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4dfc32b9a4e4aba9e6ed6afa93a1724f3d3c9fccd6b50180a3bf01aef7d91cc8",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "7a62ad64f09cc0a0": [
+  {
+   "at": "2026-09-29T11:47:11.542454Z",
+   "call_id": "20260929T112151Z-0a9bde",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "93d704288895f25c37f897b26f5b8b85725f06b81c10f2c8dc2affa5b100e222",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "7b8bea28d9ae00fa": [
+  {
+   "at": "2026-09-29T11:47:11.542457Z",
+   "call_id": "20260929T112151Z-6317e8",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "032f1c70453f79ad8ae9bc069c78a7ce4f1444739da6889d18fe7da5162d3404",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter",
+    "llm_router._internal.providers.qwenchat.json_headers"
+   ]
+  }
+ ],
+ "7ff18671bd521f50": [
+  {
+   "at": "2026-09-29T11:47:11.542460Z",
+   "call_id": "20260929T112151Z-9342b5",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a0ef910a4cca59c97ad0026959efb2c41686a154efd37ee9fc3c84d4671cb809",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "863d7828367112c3": [
+  {
+   "at": "2026-09-29T11:47:11.542463Z",
+   "call_id": "20260929T112151Z-bad037",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "405f685d94c76f109747f81cdc88a0aa5fc6cea1e6620f85c5b6aa212e204f97",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "8654a7b1099c3580": [
+  {
+   "at": "2026-09-29T11:47:11.542466Z",
+   "call_id": "20260929T112151Z-d7057c",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f298fd53fe98bc4a3ae5d722b07ab2a43686c5e71c940175c8d74947f149fed1",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert \"Provider 'qw...quest failed.\" == 'Provider request failed.' | - Provider request failed. | + Provider 'qwenchat' failed for model 'qwen-max-latest'. Reason: Provider request failed.)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.qwenchat",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.894023Z",
+   "call_id": "20260929T114749Z-ed4f2b",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b62bbc242e8bced69d789e9860a685fdec4570e6cf73b3bd89f3cc2c81f35a28",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.qwenchat",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
  "8920c14adbe7aa36": [
   {
    "at": "2026-09-28T10:39:06.983303Z",
@@ -62,6 +351,188 @@
    ]
   }
  ],
+ "8f495188e4365ff8": [
+  {
+   "at": "2026-09-29T11:47:11.542475Z",
+   "call_id": "20260929T112151Z-60a318",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "11b9402f2c030eda0d83a32c9c3e5464c57afc460140bd89943c459e756e67fb",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "8fddc8d6682ad36b": [
+  {
+   "at": "2026-09-29T11:47:11.542488Z",
+   "call_id": "20260929T112151Z-2e61bb",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9c9127559338b90222502ff1c6fd288906c2ec2c8d01ac158c43301a5f875af1",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "9d019d63a7b5816c": [
+  {
+   "at": "2026-09-29T11:47:11.542491Z",
+   "call_id": "20260929T112151Z-8a097d",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1d09eee6d564b2ad2e0de612f2e8f19b5a71a0829a127cc77e617e0d6d81b02b",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "b1c0fd5ecaa6d923": [
+  {
+   "at": "2026-09-29T11:47:11.542494Z",
+   "call_id": "20260929T112202Z-c7167d",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f4399ab49db12b0bee08fcc8197473db63578f15d5cf7b2310457623e70f95d1",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolChoice",
+    "llm_router._internal.capabilities.tools.ToolDefinition",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "b2c437a6ff46e0ea": [
+  {
+   "at": "2026-09-29T11:47:11.542497Z",
+   "call_id": "20260929T112202Z-e413f5",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "43b37d55fc53d572a033d5d1ce19f81849b5c81aea88d5847415e56287e20eaf",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "b4ed2e3d119cad14": [
+  {
+   "at": "2026-09-29T11:47:11.542504Z",
+   "call_id": "20260929T112203Z-45f964",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0874061cd8637000de0e56531cae4d08d3733241abf5a32628a681360b6d67ea",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "b9c4c2db2ed665d6": [
+  {
+   "at": "2026-09-29T11:47:11.542507Z",
+   "call_id": "20260929T112205Z-8f3949",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "39d873a2676611544e9933115b86925e873a9324d8d67daad014c7496b2d24d0",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "cb633e63a453812c": [
+  {
+   "at": "2026-09-29T11:47:11.542515Z",
+   "call_id": "20260929T112212Z-82b36a",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c53ae52d467878fc83d9191bc8bef619965a8f4f8091f185f69b6ab77c02f862",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.qwenchat",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ]
+  }
+ ],
  "cbd3f30a9cbff5df": [
   {
    "at": "2026-09-28T10:39:06.983318Z",
@@ -76,6 +547,28 @@
     "llm_router._api.errors.ProviderError",
     "llm_router._api.types.Model",
     "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "f78852f8c6d406f7": [
+  {
+   "at": "2026-09-29T11:47:11.542519Z",
+   "call_id": "20260929T112216Z-da657a",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "659507f7b7724dcd80387b81cc884a07fc7de7110209562607b587fffb8c5394",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
     "llm_router._internal.capabilities.content.normalize_content",
     "llm_router._internal.providers.base.ProviderCredential",
     "llm_router._internal.providers.base.ProviderRequest",

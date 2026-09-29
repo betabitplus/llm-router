@@ -1,0 +1,86 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "TREQ_CONFIG_MODEL_DECLARATION",
+ "proposals": [
+  {
+   "id": "SM-B1B17178",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/routes.py::_resolve_model",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Fails to check if the resolved model is present in the configuration's declared models.",
+   "original_sha256": "cc6b52b04c8b81742aca58f165718269ab77ee95b65d6564e0e715f96ae9a78e",
+   "context_sha256": "a5087d3492035caa2be481c743d024c1b858bb061a48a04de1a1efb75c45b667",
+   "prompt_sha256": "10ac02af4ca65fcb7065dc9c42d689a76f592906bdb3e7833869e57d1472aa68",
+   "replacement": "def _resolve_model(model: Model | str, *, config: LLMRouterConfig) -> Model:\n    \"\"\"Resolve public model input to the stable model enum.\"\"\"\n    if isinstance(model, Model):\n        resolved = model\n    else:\n        try:\n            resolved = Model(model)\n        except ValueError as exc:\n            msg = f\"Unknown model: {model}\"\n            raise ConfigurationError(msg) from exc\n    return resolved\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-fe5b1e",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "d7ef281e0391f109530a2e85ef1fabc483c63cfd9136fb357fe44b1ce75d8935",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-87B84725",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/routes.py::_resolve_model",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Checks the raw input against configuration models instead of the resolved model enum.",
+   "original_sha256": "cc6b52b04c8b81742aca58f165718269ab77ee95b65d6564e0e715f96ae9a78e",
+   "context_sha256": "a5087d3492035caa2be481c743d024c1b858bb061a48a04de1a1efb75c45b667",
+   "prompt_sha256": "10ac02af4ca65fcb7065dc9c42d689a76f592906bdb3e7833869e57d1472aa68",
+   "replacement": "def _resolve_model(model: Model | str, *, config: LLMRouterConfig) -> Model:\n    \"\"\"Resolve public model input to the stable model enum.\"\"\"\n    if isinstance(model, Model):\n        resolved = model\n    else:\n        try:\n            resolved = Model(model)\n        except ValueError as exc:\n            msg = f\"Unknown model: {model}\"\n            raise ConfigurationError(msg) from exc\n    if model not in config.models:\n        msg = f\"Unknown model: {model}\"\n        raise ConfigurationError(msg)\n    return resolved\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-fe5b1e",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "d7ef281e0391f109530a2e85ef1fabc483c63cfd9136fb357fe44b1ce75d8935",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-F7806335",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/routes.py::_resolve_model",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Declaration check is skipped when the model is passed as a Model enum instance; only string inputs are validated against config.models, so an undeclared enum model is accepted.",
+   "original_sha256": "cc6b52b04c8b81742aca58f165718269ab77ee95b65d6564e0e715f96ae9a78e",
+   "context_sha256": "469530bb241368d3b613600773f26518632b1ac5824ec28264d0eeea374b7e8b",
+   "prompt_sha256": "6442d2bc8405a4e6d7283f3e8ee5bc32833666d0257c1056adc69b91757846a6",
+   "replacement": "def _resolve_model(model: Model | str, *, config: LLMRouterConfig) -> Model:\n    \"\"\"Resolve public model input to the stable model enum.\"\"\"\n    if isinstance(model, Model):\n        return model\n    try:\n        resolved = Model(model)\n    except ValueError as exc:\n        msg = f\"Unknown model: {model}\"\n        raise ConfigurationError(msg) from exc\n    if resolved not in config.models:\n        msg = f\"Unknown model: {model}\"\n        raise ConfigurationError(msg)\n    return resolved",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-aef952",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "671368aad418f8d23ecde8e8514770bdf58e1ae0afec6c5acbc067d63da83245",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-8D7935BF",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/routes.py::_resolve_model",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "For string inputs that are valid Model values but not declared in the effective configuration, the config check is dropped (only enum parsing is validated), so undeclared string models pass through to provider execution.",
+   "original_sha256": "cc6b52b04c8b81742aca58f165718269ab77ee95b65d6564e0e715f96ae9a78e",
+   "context_sha256": "469530bb241368d3b613600773f26518632b1ac5824ec28264d0eeea374b7e8b",
+   "prompt_sha256": "6442d2bc8405a4e6d7283f3e8ee5bc32833666d0257c1056adc69b91757846a6",
+   "replacement": "def _resolve_model(model: Model | str, *, config: LLMRouterConfig) -> Model:\n    \"\"\"Resolve public model input to the stable model enum.\"\"\"\n    if isinstance(model, Model):\n        resolved = model\n        if resolved not in config.models:\n            msg = f\"Unknown model: {model}\"\n            raise ConfigurationError(msg)\n    else:\n        try:\n            resolved = Model(model)\n        except ValueError as exc:\n            msg = f\"Unknown model: {model}\"\n            raise ConfigurationError(msg) from exc\n    return resolved",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-aef952",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "671368aad418f8d23ecde8e8514770bdf58e1ae0afec6c5acbc067d63da83245",
+    "index": 1
+   }
+  }
+ ]
+}

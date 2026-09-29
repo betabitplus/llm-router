@@ -1,4 +1,58 @@
 {
+ "3d767806f2945e38": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084409Z-b46586",
+    "confidence": 0.99,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The removal of the `max_chars=300` argument indicates it relies on the default value, and the multiline implicit string concatenation evaluates to the exact same f-string as the changed version.",
+    "response_sha256": "9599b534f5b4d9f8ad44c309cc06378a83208b335aa82cec615c8d93894e8105",
+    "sources": [
+     "    error_preview = preview_text(error_message, max_chars=300)",
+     "    error_preview = preview_text(error_message)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084409Z-277553",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions behave identically because preview_text defaults to max_chars=300 and the single f-string produces the exact same formatted string as the parenthesized string concatenation.",
+    "response_sha256": "3c0082c36688a06f2f7e3d39b905b78ee77d5dd5a3a7f38c55b97e83ed86c930",
+    "sources": [
+     "    error_preview = preview_text(error_message, max_chars=300)",
+     "    error_preview = preview_text(error_message)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "error_message": "\"e\" * 1000",
+     "invalid_output": "\"x\"",
+     "spec": "SchemaSpec(name=\"s\", json_schema={}, parser=str)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233855Z-c98277",
+    "confidence": 0.65,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version drops the explicit max_chars=300 argument to preview_text for error_message, so if preview_text's default differs from 300, a sufficiently long error_message yields different truncated output between versions.",
+    "response_sha256": "7c7a2073d29174f018d48c79c401698ee0bc8321e845affed89a9b745232b485",
+    "sources": [
+     "error_preview = preview_text(error_message, max_chars=300)",
+     "error_preview = preview_text(error_message)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "dc09295f3b316de79cfed4d0a3fc00bce587d7fd5e09442f36f744d24b48bf8f"
+ },
  "53c4293e1a144b74": {
   "answers": {
    "antigravity-cli:gemini-3.8-flash-high": {
@@ -19,8 +73,162 @@
   },
   "prompt_sha256": "6bb2ba0f95c6a37cb85db94cef080064e92ddb820622d09cedc8ba2a1e9579bc"
  },
+ "65a49b2023696bc9": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "error_message": "\"error\"",
+     "invalid_output": "\"invalid\"",
+     "spec": "SchemaSpec(name=\"A\" * 150, json_schema={}, parser=str)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084409Z-fba5d7",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version explicitly truncates the schema name to 120 characters, whereas the changed version drops this argument and relies on the default maximum length of `preview_text`, resulting in different output for long schema names (unless the default happens to be exactly 120).",
+    "response_sha256": "5f63f2fcb457d29324e7c13d2b18d6b9a3f224771a4319480a9a1a0b2a7188c6",
+    "sources": [
+     "    schema_name = preview_text(spec.name, max_chars=120)",
+     "    schema_name = preview_text(spec.name)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084409Z-287b54",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version only removes the redundant default argument max_chars=120 from preview_text and reformats the return statement as an equivalent single f-string, maintaining identical behavior on all inputs.",
+    "response_sha256": "589982ca6c52acf2ecb2769e7d34f263ba9d0c210e13a64661137949674cee71",
+    "sources": [
+     "    schema_name = preview_text(spec.name, max_chars=120)",
+     "    schema_name = preview_text(spec.name)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "error_message": "''",
+     "invalid_output": "None",
+     "spec": "SchemaSpec(name='A' * 200, json_schema={}, parser=lambda x: x)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233855Z-d97f1f",
+    "confidence": 0.7,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The original truncates spec.name with preview_text(spec.name, max_chars=120), while the changed version calls preview_text(spec.name) relying on its default max_chars, so for a long enough schema name the two versions will embed different-length (and thus different) schema_name strings in the returned prompt.",
+    "response_sha256": "cc7859dc263b2c5b7603950fc00c87c72f55b3b338ecdef055eab2c3baa46bb4",
+    "sources": [
+     "schema_name = preview_text(spec.name, max_chars=120)",
+     "schema_name = preview_text(spec.name)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "3b4dd4c7588417824a4a4f8bb718132af26d8dee041677a69d6784b36dcf062e"
+ },
+ "7ddc0005bc330ecf": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "error_message": "'test'",
+     "invalid_output": "'a' * 1000",
+     "spec": "SchemaSpec(name='test', json_schema={}, parser=str)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084409Z-fc6dfc",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified version omits the `max_chars=500` argument from the `preview_value` call, altering the output for large inputs unless the default limit happens to be exactly 500.",
+    "response_sha256": "f9726bcd6d65a54c71102196414d50e5a17e1a007cb8bed416591ebbdd0480f2",
+    "sources": [
+     "output_preview = preview_value(invalid_output, max_chars=500)",
+     "output_preview = preview_value(invalid_output)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084409Z-83eb07",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The default value of max_chars in preview_value is 500, so omitting the argument does not alter the output, and both return statements produce identical formatted strings.",
+    "response_sha256": "7aa963d44c1bb0fda3397c35ca6a3ebff65d5435c4d3d8dba339edbcf33581ae",
+    "sources": [
+     "    output_preview = preview_value(invalid_output, max_chars=500)",
+     "    output_preview = preview_value(invalid_output)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "error_message": "'err'",
+     "invalid_output": "'a' * 1000",
+     "spec": "SchemaSpec(name='S', json_schema={}, parser=lambda x: x)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233228Z-6b2e95",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The original calls preview_value(invalid_output, max_chars=500) while the changed version calls preview_value(invalid_output) relying on its default, so for a sufficiently long invalid_output whose default truncation length differs from 500 the two produce different 'Previous response preview' text in the returned string.",
+    "response_sha256": "156125e77eadfa6a137f2398243e72e339eb1e2d95b4664b765f3f81fd542e8b",
+    "sources": [
+     "output_preview = preview_value(invalid_output, max_chars=500)",
+     "output_preview = preview_value(invalid_output)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "08505aa6fc327ad77fc748e75a18d693842b9a435e0afabac458cb0105fe0858"
+ },
  "9341379044dfc2f2": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "error_message": "''",
+     "invalid_output": "None",
+     "spec": "SchemaSpec(name='test', json_schema={}, parser=None)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213158Z-d97bc2",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version constructs and returns a detailed, multi-line error string, whereas the changed version unconditionally returns an empty string.",
+    "response_sha256": "662cb0dba48d2ff82fcab38582fc31e9df95db38056539f1fa7cc85f3a13b87e",
+    "sources": [
+     "        \"The previous response did not match the required schema.\\n\"",
+     "    return ''"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "error_message": "''",
+     "invalid_output": "''",
+     "spec": "SchemaSpec(name='', json_schema={}, parser=None)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213158Z-f9c0dd",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version returns a formatted repair prompt string containing schema and error details, whereas the changed version returns an empty string.",
+    "response_sha256": "4bf18dbdaf5b8e9168f9f5fd1afb40734ee4d319ac7f10030e26975d3f925dec",
+    "sources": [
+     "        \"The previous response did not match the required schema.\\n\"",
+     "    return ''"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
      "error_message": "'e'",
@@ -34,6 +242,25 @@
     "problems": [],
     "reason": "The original always returns a non-empty formatted string starting with 'The previous response did not match the required schema.', while the changed version unconditionally returns '', so any input differentiates them.",
     "response_sha256": "43c44c1411009d534e5b8a784d9e5171fb038a67747fe14340e9066f283dcd0d",
+    "sources": [
+     "return (\n        \"The previous response did not match the required schema.\\n\"",
+     "return ''"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "error_message": "'err'",
+     "invalid_output": "'bad'",
+     "spec": "SchemaSpec(name='S', json_schema={'type':'object'}, parser=lambda x: x)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111631Z-63d811",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original returns a non-empty prompt containing the schema name, error and preview text, while the changed version always returns an empty string.",
+    "response_sha256": "41c2c76c79456a34a0a2a79f473872f3b986ee322acc6b5480dac3a1f9f8579c",
     "sources": [
      "return (\n        \"The previous response did not match the required schema.\\n\"",
      "return ''"

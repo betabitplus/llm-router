@@ -71,6 +71,19 @@ the verification claim is the request constructed by llm-router, not fidelity of
 | Architecture          | This Requirement does not depend on a particular internal layering topology.                                                                                                      |
 | Specification / model | Ordering, omission-vs-explicit partitions, and the resulting value are the contract itself.                                                                                       |
 
+### Semantic mutants
+
+| Fault class                    | Target                                                                               | Budget | Risk                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------ | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`           | `src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`       | `src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.wrong-ordering-boundary` | `src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings` |      2 | an order or a before/after boundary its requirement names is broken                   |
+| `interface.payload-schema`     | `src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings` |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-req-credential-resolution)=
 
 ## Profile · REQ_CREDENTIAL_RESOLUTION
@@ -204,6 +217,18 @@ the replacement-derived request, so Surrogate/L0 is sufficient.
 | Interface / protocol  | The provider boundary is only an observation point; provider protocol failures are outside this contract.                                                                                              |
 | Architecture          | Bypassing the required configuration-state transition can leave subsequent runtime construction on stale state.                                                                                        |
 | Specification / model | Distinct replacement, post-install ordering, and observable runtime effect are normative state semantics.                                                                                              |
+
+### Semantic mutants
+
+| Fault class                    | Target                                                     | Budget | Risk                                                                                  |
+| ------------------------------ | ---------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`           | `src/llm_router/_internal/config/state.py::install_config` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`       | `src/llm_router/_internal/config/state.py::install_config` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.wrong-ordering-boundary` | `src/llm_router/_internal/config/state.py::install_config` |      2 | an order or a before/after boundary its requirement names is broken                   |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
 
 (verification-profile-treq-config-cache-invalidation)=
 

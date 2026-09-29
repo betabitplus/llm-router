@@ -1,0 +1,246 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_ROUTE_STICKY_START",
+ "proposals": [
+  {
+   "id": "SM-04A354CF",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._next_attempt_order",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "The sticky start route index is ignored when computing the attempt order, so the next request after a successful fallback does not begin from the route that most recently succeeded.",
+   "original_sha256": "7ef4427203ddb78ef01e7f1928d576a8c05fcc0f2f6aa7e460774dabdd2153a3",
+   "context_sha256": "4c8c0757ea025396e9b3390f9b65bd2cbc94ef9075d3a09ad4a1d921230aca8a",
+   "prompt_sha256": "45218f6a60ac9622ba7f5b47e2a14cf3112f27a7842cffbdd9cd33352b7e01cf",
+   "replacement": "    def _next_attempt_order(\n        self, *, settings: EffectiveSettings\n    ) -> tuple[ExpandedRoute, ...]:\n        \"\"\"Return route attempt order and advance the round-robin cursor.\"\"\"\n        request_index = self._request_index\n        self._request_index += 1\n        return ordered_routes(\n            self.route_plan,\n            options=RouteOrderOptions(\n                round_robin_start=settings.round_robin_start,\n                shuffle_fallbacks=settings.shuffle_fallbacks,\n                min_routes_for_fallback_shuffle=(\n                    self.config.policy.min_routes_for_fallback_shuffle\n                ),\n                request_index=request_index,\n                max_attempts=settings.max_attempts,\n                selected_start_route_index=None,\n            ),\n        )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-e2927c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "c4d0ef56d83778ad8387551b356c694d1bd8f1837c8ad61bc70efe3e8495406c",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-E99C3993",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._next_attempt_order",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "The sticky start index is passed only for the first request and is replaced by the request index afterwards. Because of this, the start route is chosen by the request counter instead of the route that most recently succeeded.",
+   "original_sha256": "7ef4427203ddb78ef01e7f1928d576a8c05fcc0f2f6aa7e460774dabdd2153a3",
+   "context_sha256": "4c8c0757ea025396e9b3390f9b65bd2cbc94ef9075d3a09ad4a1d921230aca8a",
+   "prompt_sha256": "45218f6a60ac9622ba7f5b47e2a14cf3112f27a7842cffbdd9cd33352b7e01cf",
+   "replacement": "    def _next_attempt_order(\n        self, *, settings: EffectiveSettings\n    ) -> tuple[ExpandedRoute, ...]:\n        \"\"\"Return route attempt order and advance the round-robin cursor.\"\"\"\n        request_index = self._request_index\n        self._request_index += 1\n        sticky_index = self._sticky_start_route_index\n        if sticky_index is not None and request_index > 0:\n            sticky_index = request_index % max(len(self.route_plan), 1)\n        return ordered_routes(\n            self.route_plan,\n            options=RouteOrderOptions(\n                round_robin_start=settings.round_robin_start,\n                shuffle_fallbacks=settings.shuffle_fallbacks,\n                min_routes_for_fallback_shuffle=(\n                    self.config.policy.min_routes_for_fallback_shuffle\n                ),\n                request_index=request_index,\n                max_attempts=settings.max_attempts,\n                selected_start_route_index=sticky_index,\n            ),\n        )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-e2927c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "c4d0ef56d83778ad8387551b356c694d1bd8f1837c8ad61bc70efe3e8495406c",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-61EFDEFE",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._remember_fallback_success",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Sticky start index is advanced to the route after the one that succeeded, so the next request skips the successful route instead of starting from it.",
+   "original_sha256": "64fd6c7affc90c4b08d2aff78cc91fb42730c421aaac119670e5e0a4453c8a94",
+   "context_sha256": "6ee33d308689c1a2c36760c707a16321d2ef9c5457a78cfec86cbd2a2ea5c370",
+   "prompt_sha256": "90e4a4af8fed50f827c5f7f6a57a8a9d98e2e126260060dfd194f47cfd9af1d8",
+   "replacement": "    def _remember_fallback_success(\n        self,\n        *,\n        route: ExpandedRoute,\n        fallback_occurred: bool,\n    ) -> None:\n        \"\"\"Keep the most recently successful fallback route as the next start.\"\"\"\n        if fallback_occurred:\n            self._sticky_start_route_index = route.route_index + 1",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-427937",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "6eab7f8171892180046fc839f871c24dab19eaae50dffbdd24d67c3a7ebecbb4",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-46ED33D8",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._remember_fallback_success",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Sticky start is only recorded the first time (when none is set), so later fallback successes do not update it to the most recently succeeded route.",
+   "original_sha256": "64fd6c7affc90c4b08d2aff78cc91fb42730c421aaac119670e5e0a4453c8a94",
+   "context_sha256": "6ee33d308689c1a2c36760c707a16321d2ef9c5457a78cfec86cbd2a2ea5c370",
+   "prompt_sha256": "90e4a4af8fed50f827c5f7f6a57a8a9d98e2e126260060dfd194f47cfd9af1d8",
+   "replacement": "    def _remember_fallback_success(\n        self,\n        *,\n        route: ExpandedRoute,\n        fallback_occurred: bool,\n    ) -> None:\n        \"\"\"Keep the most recently successful fallback route as the next start.\"\"\"\n        if fallback_occurred and getattr(self, \"_sticky_start_route_index\", None) in (None, 0):\n            self._sticky_start_route_index = route.route_index",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-427937",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "6eab7f8171892180046fc839f871c24dab19eaae50dffbdd24d67c3a7ebecbb4",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-04A354CF",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._next_attempt_order",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "The sticky start route index is not passed to ordered_routes, so the next request ignores the route that most recently succeeded and starts from the default/round-robin order.",
+   "original_sha256": "7ef4427203ddb78ef01e7f1928d576a8c05fcc0f2f6aa7e460774dabdd2153a3",
+   "context_sha256": "78f4a9e5d4ccfb1f0032ab4063938cc90087df72ab79f9063c0661f5c8bd7dd0",
+   "prompt_sha256": "e029567e10cee53d6406899512b70c6c1bdae68e341f49a577741191bae697b1",
+   "replacement": "    def _next_attempt_order(\n        self, *, settings: EffectiveSettings\n    ) -> tuple[ExpandedRoute, ...]:\n        \"\"\"Return route attempt order and advance the round-robin cursor.\"\"\"\n        request_index = self._request_index\n        self._request_index += 1\n        return ordered_routes(\n            self.route_plan,\n            options=RouteOrderOptions(\n                round_robin_start=settings.round_robin_start,\n                shuffle_fallbacks=settings.shuffle_fallbacks,\n                min_routes_for_fallback_shuffle=(\n                    self.config.policy.min_routes_for_fallback_shuffle\n                ),\n                request_index=request_index,\n                max_attempts=settings.max_attempts,\n                selected_start_route_index=None,\n            ),\n        )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-efe90e",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "e36b039b8ea44d7bf16f5bf3d22098b473fdd83101dee9efe6536dce3883310c",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-47FA04D7",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._next_attempt_order",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "The request index cursor is advanced before it is read, so ordering uses the post-increment index (off by one), shifting the start position relative to the sticky/round-robin boundary.",
+   "original_sha256": "7ef4427203ddb78ef01e7f1928d576a8c05fcc0f2f6aa7e460774dabdd2153a3",
+   "context_sha256": "78f4a9e5d4ccfb1f0032ab4063938cc90087df72ab79f9063c0661f5c8bd7dd0",
+   "prompt_sha256": "e029567e10cee53d6406899512b70c6c1bdae68e341f49a577741191bae697b1",
+   "replacement": "    def _next_attempt_order(\n        self, *, settings: EffectiveSettings\n    ) -> tuple[ExpandedRoute, ...]:\n        \"\"\"Return route attempt order and advance the round-robin cursor.\"\"\"\n        self._request_index += 1\n        request_index = self._request_index\n        return ordered_routes(\n            self.route_plan,\n            options=RouteOrderOptions(\n                round_robin_start=settings.round_robin_start,\n                shuffle_fallbacks=settings.shuffle_fallbacks,\n                min_routes_for_fallback_shuffle=(\n                    self.config.policy.min_routes_for_fallback_shuffle\n                ),\n                request_index=request_index,\n                max_attempts=settings.max_attempts,\n                selected_start_route_index=self._sticky_start_route_index,\n            ),\n        )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-efe90e",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "e36b039b8ea44d7bf16f5bf3d22098b473fdd83101dee9efe6536dce3883310c",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-61EFDEFE",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._remember_fallback_success",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Sticky start is off by one: it remembers the route after the one that succeeded, so the next request starts past the last successful route instead of at it.",
+   "original_sha256": "64fd6c7affc90c4b08d2aff78cc91fb42730c421aaac119670e5e0a4453c8a94",
+   "context_sha256": "563635f5b9973fc241375f476951f7015d86f998b48b51b16bb1ff8edefca4b4",
+   "prompt_sha256": "0071c1528110a7cadaa5c7e963dcaf9e92bbfb07c1af2a48594532f2f4422ed4",
+   "replacement": "    def _remember_fallback_success(\n        self,\n        *,\n        route: ExpandedRoute,\n        fallback_occurred: bool,\n    ) -> None:\n        \"\"\"Keep the most recently successful fallback route as the next start.\"\"\"\n        if fallback_occurred:\n            self._sticky_start_route_index = route.route_index + 1",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-d43f4d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "988d300d6ed9044291f869727e84a4360bda63e18c956a1c1bfea76e0a13bd01",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-8933A1D2",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._remember_fallback_success",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Sticky start is only recorded when no fallback occurred, so after a fallback succeeds the next request still starts from the original first route rather than the route that succeeded.",
+   "original_sha256": "64fd6c7affc90c4b08d2aff78cc91fb42730c421aaac119670e5e0a4453c8a94",
+   "context_sha256": "563635f5b9973fc241375f476951f7015d86f998b48b51b16bb1ff8edefca4b4",
+   "prompt_sha256": "0071c1528110a7cadaa5c7e963dcaf9e92bbfb07c1af2a48594532f2f4422ed4",
+   "replacement": "    def _remember_fallback_success(\n        self,\n        *,\n        route: ExpandedRoute,\n        fallback_occurred: bool,\n    ) -> None:\n        \"\"\"Keep the most recently successful fallback route as the next start.\"\"\"\n        if not fallback_occurred:\n            self._sticky_start_route_index = route.route_index\n        elif self._sticky_start_route_index is None:\n            self._sticky_start_route_index = 0",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-d43f4d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "988d300d6ed9044291f869727e84a4360bda63e18c956a1c1bfea76e0a13bd01",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-04A354CF",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._next_attempt_order",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "The sticky start route index is no longer passed to the ordering logic, so the next request begins from the original first route (the one that failed) and makes an external call to it again.",
+   "original_sha256": "7ef4427203ddb78ef01e7f1928d576a8c05fcc0f2f6aa7e460774dabdd2153a3",
+   "context_sha256": "1c15872dc2d6cd96687883e508bce53ee78fe36c4297245cc54a6be839c193ad",
+   "prompt_sha256": "a3bbfbb5f6b2fd47831a70a9685a73f1827983da06aec9f6c8e4d27fb3885eae",
+   "replacement": "    def _next_attempt_order(\n        self, *, settings: EffectiveSettings\n    ) -> tuple[ExpandedRoute, ...]:\n        \"\"\"Return route attempt order and advance the round-robin cursor.\"\"\"\n        request_index = self._request_index\n        self._request_index += 1\n        return ordered_routes(\n            self.route_plan,\n            options=RouteOrderOptions(\n                round_robin_start=settings.round_robin_start,\n                shuffle_fallbacks=settings.shuffle_fallbacks,\n                min_routes_for_fallback_shuffle=(\n                    self.config.policy.min_routes_for_fallback_shuffle\n                ),\n                request_index=request_index,\n                max_attempts=settings.max_attempts,\n                selected_start_route_index=None,\n            ),\n        )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-a9e592",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "8858dd07542ae9d1ff53525deb12cd2ba1c77583e4bfd371e4a4d9500bb93158",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-29A20065",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._next_attempt_order",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "The sticky start route is dropped whenever fallback shuffling is enabled, so with shuffle_fallbacks the next request may start from a previously failed route and call it externally.",
+   "original_sha256": "7ef4427203ddb78ef01e7f1928d576a8c05fcc0f2f6aa7e460774dabdd2153a3",
+   "context_sha256": "1c15872dc2d6cd96687883e508bce53ee78fe36c4297245cc54a6be839c193ad",
+   "prompt_sha256": "a3bbfbb5f6b2fd47831a70a9685a73f1827983da06aec9f6c8e4d27fb3885eae",
+   "replacement": "    def _next_attempt_order(\n        self, *, settings: EffectiveSettings\n    ) -> tuple[ExpandedRoute, ...]:\n        \"\"\"Return route attempt order and advance the round-robin cursor.\"\"\"\n        request_index = self._request_index\n        self._request_index += 1\n        sticky_start = (\n            None\n            if settings.shuffle_fallbacks\n            else self._sticky_start_route_index\n        )\n        return ordered_routes(\n            self.route_plan,\n            options=RouteOrderOptions(\n                round_robin_start=settings.round_robin_start,\n                shuffle_fallbacks=settings.shuffle_fallbacks,\n                min_routes_for_fallback_shuffle=(\n                    self.config.policy.min_routes_for_fallback_shuffle\n                ),\n                request_index=request_index,\n                max_attempts=settings.max_attempts,\n                selected_start_route_index=sticky_start,\n            ),\n        )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-a9e592",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "8858dd07542ae9d1ff53525deb12cd2ba1c77583e4bfd371e4a4d9500bb93158",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-4C278138",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._remember_fallback_success",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "When a request succeeds without fallback, the sticky start is reset to the primary route, so the next request calls the previously failing primary route again instead of starting from the last successful route.",
+   "original_sha256": "64fd6c7affc90c4b08d2aff78cc91fb42730c421aaac119670e5e0a4453c8a94",
+   "context_sha256": "8fce4575fddfc12c4d36280f539d0ea7602bc8e02e751d16bfd3b68ea1c67738",
+   "prompt_sha256": "a265b36bf9ece27ae509b7c934675062f04000063ebc69b185952128705c90a0",
+   "replacement": "    def _remember_fallback_success(\n        self,\n        *,\n        route: ExpandedRoute,\n        fallback_occurred: bool,\n    ) -> None:\n        \"\"\"Keep the most recently successful fallback route as the next start.\"\"\"\n        if fallback_occurred:\n            self._sticky_start_route_index = route.route_index\n        else:\n            self._sticky_start_route_index = 0",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-8d7108",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "e72e8d9c1b3fd42a030aa697096e532a26870518d7d454b2b0b76a28d5ee8b4d",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-81470C00",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._remember_fallback_success",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "The sticky start only ever moves forward (max of old and new index), so if a later fallback succeeds on a lower-index route, the next request still starts from the higher index instead of the most recent success.",
+   "original_sha256": "64fd6c7affc90c4b08d2aff78cc91fb42730c421aaac119670e5e0a4453c8a94",
+   "context_sha256": "8fce4575fddfc12c4d36280f539d0ea7602bc8e02e751d16bfd3b68ea1c67738",
+   "prompt_sha256": "a265b36bf9ece27ae509b7c934675062f04000063ebc69b185952128705c90a0",
+   "replacement": "    def _remember_fallback_success(\n        self,\n        *,\n        route: ExpandedRoute,\n        fallback_occurred: bool,\n    ) -> None:\n        \"\"\"Keep the most recently successful fallback route as the next start.\"\"\"\n        if fallback_occurred:\n            current = self._sticky_start_route_index\n            if current is None or route.route_index > current:\n                self._sticky_start_route_index = route.route_index",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-8d7108",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "e72e8d9c1b3fd42a030aa697096e532a26870518d7d454b2b0b76a28d5ee8b4d",
+    "index": 1
+   }
+  }
+ ]
+}

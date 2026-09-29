@@ -1,0 +1,72 @@
+{
+ "040c94eda75a331d": [
+  {
+   "at": "2026-09-29T00:24:30.363457Z",
+   "call_id": "20260929T001300Z-8af4a6",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "7bba2312a48ea173d6c822600a71d2077a24a8060618dafb7d85dc4521add16d",
+   "reason": "",
+   "sources": [
+    "llm_router.Session",
+    "Session.remember",
+    "Session.history",
+    "Session.build_messages"
+   ]
+  }
+ ],
+ "214200bb10e1f588": [
+  {
+   "at": "2026-09-29T00:24:30.363473Z",
+   "call_id": "20260929T001300Z-d21140",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "b6fb744da8dcf991ad6919dc4cbe55b05f05fde9aab8f18cf2599b2c3e288be3",
+   "reason": "",
+   "sources": [
+    "llm_router.Session"
+   ]
+  }
+ ],
+ "77955ca3373db890": [
+  {
+   "at": "2026-09-29T00:24:30.363476Z",
+   "call_id": "20260929T001300Z-27c264",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "ed09ec144e7703ae086ab8ba9e8eb507200641abdf6160496e4e8e496268c4de",
+   "reason": "",
+   "sources": [
+    "llm_router.Session",
+    "llm_router._api.session.Session"
+   ]
+  }
+ ],
+ "b38d6c310d61d789": [
+  {
+   "at": "2026-09-29T00:24:30.363480Z",
+   "call_id": "20260929T001300Z-a7af34",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "ff9f220fedd270e08c07a989c4ea8bc56c554e9951b7d283bdafc4c67ecfac7f",
+   "reason": "",
+   "sources": [
+    "llm_router.Session",
+    "llm_router._api.session.Session.remember",
+    "llm_router._api.session.Session.history"
+   ]
+  }
+ ]
+}

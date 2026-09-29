@@ -1,0 +1,60 @@
+{
+ "SM-908D5413": [
+  {
+   "at": "2026-09-29T17:27:59.741236Z",
+   "call_id": "20260929T172149Z-d5dedb",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "de661defe19501d8cd4830c914e505fcea33bd60a02f9a8ef913f07157c346eb",
+   "reason": "it breaks the project's lint rules (ruff: line 21: ARG002 Unused method argument: `request`)",
+   "sources": [
+    "llm_router",
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "llm_router._internal.runtime.router.LLMRouterResponse",
+    "llm_router._internal.runtime.router.ResolvedRequest"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:30:20.391312Z",
+   "call_id": "20260929T172801Z-f2265f",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3e0408ea9c1ce6e1c44c645562b1666c0066737f978a5a126055459b0ba258b2",
+   "reason": "",
+   "sources": [
+    "llm_router",
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "llm_router._internal.runtime.router.LLMRouterResponse",
+    "llm_router._internal.runtime.router.ResolvedRequest"
+   ]
+  }
+ ],
+ "SM-BD2A25D9": [
+  {
+   "at": "2026-09-29T17:27:59.741252Z",
+   "call_id": "20260929T172149Z-4b1d80",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4a8c5da1908519d66eb4ff168dfa47155d9bbe83b0303c9f58f948a7f13e53c1",
+   "reason": "",
+   "sources": [
+    "llm_router",
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "llm_router._internal.runtime.router.LLMRouterResponse",
+    "llm_router._internal.runtime.router.ResolvedRequest"
+   ]
+  }
+ ]
+}

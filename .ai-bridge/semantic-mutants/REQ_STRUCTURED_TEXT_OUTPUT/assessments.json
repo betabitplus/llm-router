@@ -1,0 +1,105 @@
+{
+ "SM-1134D975": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "'\"x {\\\\\"a\\\\\":1} y\"'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164215Z-7dcfe1",
+    "confidence": 0.55,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version parses valid raw JSON directly (a JSON string, giving TypeError), while the original extracts the braces first and likely fails with ValueError on the escaped quotes.",
+    "response_sha256": "6e903f1e416909ed09f5fcec51d4287d692c3079b576a92febc884a1ea89b1c8",
+    "sources": [
+     "value = _extract_json_payload(value)",
+     "decoded = json.loads(value)",
+     "except json.JSONDecodeError:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "e0d360898cb03f517279970493857c005a633dfc117d2d4cd4385ffa53b81604"
+ },
+ "SM-69699DF1": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-452df0",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Moving the assignment of first_arr and last_arr before the first return statement does not alter behavior because string search methods have no side effects and cannot raise exceptions.",
+    "response_sha256": "f0df4f34f3ee7492709141fa2afcbe737910cbea888e030f7fa4ae6c2bc199ec",
+    "sources": [
+     "    first_arr = stripped.find(\"[\")",
+     "    last_arr = stripped.rfind(\"]\")"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-954feb",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change only moves the find/rfind calls for \"[\" and \"]\" earlier; they are pure and cannot raise, and the object-first, array-second return order is unchanged.",
+    "response_sha256": "30d4487bc68860ad105ee11e3b45848ad044dc6116ccf8c99285cd78ffc2fb0e",
+    "sources": [
+     "first_arr = stripped.find(\"[\")",
+     "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+     "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "dc9eab2095744ad54aa4fca1ec7a27b8874710eb0a750d4aff5a8eb25e433064"
+ },
+ "SM-A1CB8BE4": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "spec": "SchemaSpec(name='', json_schema={}, parser=SchemaSpec)",
+     "value": "{}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-4f7a30",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When the value is a dictionary or list, the changed version immediately returns it as valid, whereas the original version calls spec.parse() which may raise an exception or return a different object entirely.",
+    "response_sha256": "9385c2edea60b305fecacd5d8f97db9ae597026861c7c02b571c74953ba158b7",
+    "sources": [
+     "    if isinstance(value, (dict, list)):",
+     "        return SchemaValidationResult(valid=True, value=value)",
+     "    try:",
+     "        parsed = spec.parse(value)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "spec": "SchemaSpec(name='s', json_schema={}, parser=lambda v: 1/0)",
+     "value": "{}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-898f3f",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version returns valid=True with the raw value for any dict or list without calling the parser, whereas the original returns valid=False when the parser raises on a dict.",
+    "response_sha256": "502313b7527cdfb9dc15480d6fb715ea9364a27f1287640e7efb59387c19df89",
+    "sources": [
+     "if isinstance(value, (dict, list)):",
+     "return SchemaValidationResult(valid=True, value=value)",
+     "parsed = spec.parse(value)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "a5d948ab157a2ac597e4fbb448870b5bc6a2b3b880475c6240f7be470459a7ea"
+ }
+}

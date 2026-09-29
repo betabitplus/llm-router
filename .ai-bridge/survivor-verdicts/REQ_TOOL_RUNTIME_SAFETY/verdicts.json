@@ -1,4 +1,96 @@
 {
+ "4180d032448ab8db": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000246Z-958bfe",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The original checks `state.can_execute_tools()`, but the mutant only checks whether `state` is truthy, so it logs tool calls even after the round limit is reached. With provider tool calls given as raw dicts, the mutant raises AttributeError at the limit. The original instead returns a state that keeps the outstanding tool call, which is exactly what the round-limit criterion asks for.",
+   "response_sha256": "c2679997241a5da8385ddff4932d1695cb517b7d6d5e1a3924f939fef50ac1f9",
+   "sources": [
+    "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
+    "tool execution shall stop at the configured maximum round count.",
+    "if state.can_execute_tools():"
+   ],
+   "test_focus": "With a ToolLoopState whose round limit is used up (max_rounds=0) and a provider result holding a raw-dict tool call, check that the round returns without raising, keeps the call as outstanding, and emits no tool-called log event.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.613758Z",
+   "answer_sha256": "000f2ea92c4491954371a5d6287c467b992f302202d4a6203d7ad29eaa6243f9",
+   "call_id": "20260929T120217Z-cdcc83",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "000f2ea92c4491954371a5d6287c467b992f302202d4a6203d7ad29eaa6243f9",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_4180d032448ab8db.py",
+   "response_sha256": "70f6bf336257767cf8d000f87237bfcd4f74e4151ce9f36eaa229a603c7fcc8a",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "8e091d0809ec2831f1de9b9b12781541c12c7e56b3fde0da84ea832acc92db49"
+ },
+ "4d9aa4fd0372304b": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000246Z-f0cc02",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only suppresses the pre-execution 'tool called' log events; failure logging, the re-raised public ToolExecutionError, the round limit and the returned state are unchanged. The confirmed difference (AttributeError vs KeyError on a malformed dict tool call) is not the public tool-execution error and is not covered by this requirement.",
+   "response_sha256": "7a9c7062b26226404e09cfce2b46282516ebce4fc21c9b7e21f39d155af95446",
+   "sources": [
+    "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
+    "if state.can_execute_tools():",
+    "_log_tool_called(request=request, state=state, tool_name=call.name)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "acef5ce867b2d906d3061ca6d3e95b0c31b458f217642a901905cb37e764fd80",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092117Z-411aec",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "acef5ce867b2d906d3061ca6d3e95b0c31b458f217642a901905cb37e764fd80",
+   "reason": "The requirement mandates how tool failures surface and how execution stops at the round limit, but does not ask for observability events or logging of tools before they run. Therefore, disabling the initial tool logging loop does not violate this requirement.",
+   "response_sha256": "f9adafc19f224904aabc2f317d09e2561f5f8aaaa3e4d67ba3ac86e26257557e",
+   "sources": [
+    "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
+    "if state.can_execute_tools():",
+    "if False:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
  "6b53f8e76e60971b": {
   "answer": {
    "backend": "claude-cli",
@@ -13,6 +105,139 @@
   },
   "operator": "statement",
   "prompt_sha256": "9d8d1af105993ddcd41aa4bc1df62aec784b1112aa330ab69400d4d9f94451e5"
+ },
+ "SM-2027036F": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191216Z-f5409d",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant doesn't re-raise the ToolExecutionError. It runs the tool round a second time, so every failing tool gets called twice. If a tool fails once and then succeeds, the mutant returns a state instead of raising the error, which breaks the requirement that local tool failures surface as the public tool-execution error.",
+   "response_sha256": "63e6413a7b9ea581ca5f96c89240d3a0e6bbb90e6b31f06b9934f4dcde5ddaa9",
+   "sources": [
+    "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments",
+    "A local tool failure surfaces through the public tool-execution error without a further provider turn or sensitive values.",
+    "        next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )",
+    "        _log_tool_failed(request=request, state=state, error=exc)\n        raise"
+   ],
+   "test_focus": "Register a local tool that counts its calls, raises on the first call and succeeds after that. Check that the public tool-execution error is raised, that the tool ran exactly once, and that no further provider turn happens.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:15:34.165698Z",
+   "answer_sha256": "caf2009cd0ad9f9a6f48c0c5f471508feb728108e24785e4bb0d52952632beec",
+   "call_id": "20260929T191342Z-17f88b",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "caf2009cd0ad9f9a6f48c0c5f471508feb728108e24785e4bb0d52952632beec",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_sm_2027036f.py",
+   "response_sha256": "163cf6b93df6516d439952dd695f089978612693906bc6a235aa7bdb70bdf512",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "20903dd097c6d83a7ea90f5531978b201ce4e0e098c1cc4dcf1df4c718e70a27"
+ },
+ "SM-80E21F07": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191216Z-668a2b",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant moves the tool-called log events so they are emitted after `run_tool_round` rather than before it. With a well-formed call, a failing tool still raises the same public ToolExecutionError, nothing new is leaked, and the round limit is unaffected. The confirmed difference (AttributeError vs KeyError) only appears for a malformed dict tool call, and neither of those is the public error; what changes is only the timing and presence of internal observability events, which this requirement does not cover.",
+   "response_sha256": "17b73ab1c1971cc53a23b8c63581daf91c9b75a4d641b9a04dc12c18ff444644",
+   "sources": [
+    "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
+    "A local tool failure surfaces through the public tool-execution error without a further provider turn or sensitive values.",
+    "    if state.can_execute_tools():\n        for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "07d4628a88337837143bd3489e0c569280053d2d1c73db3a79ab4729e3746338",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T201120Z-47dc43",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "07d4628a88337837143bd3489e0c569280053d2d1c73db3a79ab4729e3746338",
+   "reason": "The mutant reorders the `_log_tool_called` logging to occur after the tool execution step, skipping it on tool errors. This logging behavior is not governed by the requirement, which only specifies how errors are surfaced and round limits.",
+   "response_sha256": "4a89a2e0913ecb90bcec9c0f1eeb66fef15a2f9b824c57dea8a0cf02a540fcb0",
+   "sources": [
+    "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
+    "    if state.can_execute_tools():",
+    "        for call in result.tool_calls:",
+    "            _log_tool_called(request=request, state=state, tool_name=call.name)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "SM-ECF40350": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191216Z-1735a3",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only differs when can_execute_tools() is false. The original then skips logging and calls run_tool_round, and the refuted input and the passing round-limit test show that call gives back the state unchanged. The mutant returns that same state directly, so the limit stop and the outstanding tool call look the same from outside.",
+   "response_sha256": "ae7267c2b789e0780dcff74063b63f23b16fc22c9dbd18e88f23be5fd1fd3b5d",
+   "sources": [
+    "tool execution shall stop at the configured maximum round count",
+    "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
+    "    if not state.can_execute_tools():\n        return state",
+    "an input by antigravity-cli:gemini-3.1-pro-high was refuted: both versions behave the same on it"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "f53c88262d0e4839a052a3a5bcfd7bf83ea90b243247cb9400e691ef3cf60834",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T201120Z-a6dd20",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "f53c88262d0e4839a052a3a5bcfd7bf83ea90b243247cb9400e691ef3cf60834",
+   "reason": "Returning the state early when tools cannot be executed is equivalent to skipping the tool-called loop and delegating to run_tool_round, which evidently also leaves the state unchanged in this condition.",
+   "response_sha256": "894075989b13eb52dabaa432012a8ce04ad3341b9b561948b4b532803f46d978",
+   "sources": [
+    "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
+    "if not state.can_execute_tools():",
+    "an input by antigravity-cli:gemini-3.1-pro-high was refuted: both versions behave the same on it"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
  },
  "cc2237e2e7228b57": {
   "answer": {
@@ -43,5 +268,84 @@
   },
   "operator": "statement",
   "prompt_sha256": "1698d922f8010ca6c73bd375cd74082bc4c92ed522b6c5dda6681c3862fb4a7e"
+ },
+ "e2fbf16e0262be6f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092140Z-77bc78",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant writes extra tool-called log events (with only the tool name) when the round limit is already reached. The return value, the raised error and the round limit stay the same, and no sensitive argument is logged. The versions differ only in how accurate the logs are, which this requirement does not ask for.",
+   "response_sha256": "08411ccb9761412430c8a94ea461df1bb8f49a78eb4ab07caa0f8952719ec1f3",
+   "sources": [
+    "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
+    "if state.can_execute_tools():",
+    "if True:",
+    "_log_tool_called(request=request, state=state, tool_name=call.name)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "6c6a37a3729ce10040560743ff708592f1a8a7edefe67b46c6ada6b3afbda194",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092151Z-a8426b",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "6c6a37a3729ce10040560743ff708592f1a8a7edefe67b46c6ada6b3afbda194",
+   "reason": "The mutant alters whether tool calls are logged after the execution limit has been reached, which only affects observability side effects and is completely unrelated to the requirement's mandate of stopping tool execution and surfacing failures.",
+   "response_sha256": "3589f258685ffa44795462ad886e1bacdd7174aad24d911dd15637659fb3d84f",
+   "sources": [
+    "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
+    "if state.can_execute_tools():",
+    "if True:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "e8b452d04aed4a0b": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000246Z-8bb983",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes when \"tool called\" log events are written. Tool execution, the public tool-execution error, the round-limit stop and the absence of sensitive arguments (only tool names are logged) stay the same. The confirmed input differs only because the original fails while logging a malformed call, which is not something this requirement covers.",
+   "response_sha256": "ceecc88b478244fdbd3985929f4b3125f850f74429db3743271ee4dd9d674c25",
+   "sources": [
+    "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
+    "if not state.can_execute_tools():",
+    "_log_tool_called(request=request, state=state, tool_name=call.name)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "negation",
+  "prompt_sha256": "7c510c3d4116397f901d0b3996a12732d7a3011ede832b1134517a2a2d609bda",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092151Z-941015",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "7c510c3d4116397f901d0b3996a12732d7a3011ede832b1134517a2a2d609bda",
+   "reason": "The mutant flips the condition for logging that a tool was called. While this breaks observability by skipping logs for executing tools, logging is not part of REQ_TOOL_RUNTIME_SAFETY, which only dictates how failures surface and that execution stops at the round limit.",
+   "response_sha256": "3d1e4fdf00b8431c9f7df62115aede9354ca7770e54a03353016dd2f066dedbe",
+   "sources": [
+    "Requirement REQ_TOOL_RUNTIME_SAFETY (Tool runtime failures are bounded and public): Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
+    "if state.can_execute_tools():",
+    "if not state.can_execute_tools():"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  }
 }

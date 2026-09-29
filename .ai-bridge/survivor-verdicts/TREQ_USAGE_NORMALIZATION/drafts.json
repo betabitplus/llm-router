@@ -1,0 +1,38 @@
+{
+ "3b9da8b0c2e02991": [
+  {
+   "at": "2026-09-29T11:47:11.546733Z",
+   "call_id": "20260929T112259Z-b58558",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e873ae94430a6c02ab00ea6c7c9049024b4d4db6005d5d7ab1f818b77d49f35f",
+   "reason": "",
+   "sources": [
+    "llm_router.UsageStats",
+    "llm_router._internal.capabilities.usage.normalize_usage"
+   ]
+  }
+ ],
+ "516ee0826f5a2224": [
+  {
+   "at": "2026-09-29T11:47:11.546737Z",
+   "call_id": "20260929T112300Z-6f4371",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b8cb4a74c632ab6dc3f36de567bb065212575d722e92c8e12bd490c39cbf83e3",
+   "reason": "",
+   "sources": [
+    "llm_router.UsageStats",
+    "llm_router._internal.capabilities.usage.normalize_usage"
+   ]
+  }
+ ]
+}

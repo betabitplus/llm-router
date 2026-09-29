@@ -1,0 +1,55 @@
+{
+ "e6293e4c0f29961b": [
+  {
+   "at": "2026-09-29T10:38:22.579502Z",
+   "call_id": "20260929T100311Z-937f42",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "30203588e86dd6604d12d4b2faf51f9929a46833b445b46f645c1087e0ddde5c",
+   "reason": "it imports collections.abc",
+   "sources": [
+    "llm_router._internal.capabilities.tools.ToolDefinition",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.capabilities.tools.normalize_tool_choice",
+    "typing.Mapping",
+    "pytest.mark.verifies",
+    "pytest.mark.verification_kind"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.890824Z",
+   "call_id": "20260929T114732Z-26bf13",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "715599da0c369c2e02e485babae060c4eab568feb1d619d1673c3f417ca7dde9",
+   "reason": "it imports collections.abc",
+   "sources": [
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.capabilities.tools.normalize_tool_choice"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.585088Z",
+   "call_id": "20260929T120217Z-69718f",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8a818dcb51502ee26f561968a424f40f35936bcec0c00fae762928b1da5d9d9f",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.capabilities.tools.normalize_tool_choice"
+   ]
+  }
+ ]
+}

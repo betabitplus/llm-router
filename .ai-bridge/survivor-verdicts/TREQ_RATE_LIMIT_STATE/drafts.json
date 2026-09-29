@@ -1,0 +1,230 @@
+{
+ "6a97bd579b2777e7": [
+  {
+   "at": "2026-09-29T11:47:11.544324Z",
+   "call_id": "20260929T112233Z-fe5982",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "794c5f5a3451a455518213278d24babe90d0ddfeac773a6282f21c92cb07abd5",
+   "reason": "it does not fail on the mutant: it runs the changed line 251, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.896167Z",
+   "call_id": "20260929T114758Z-73a0b5",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "dbff52c96dd3783a217554c195677758fc3176e72a8b0d3a2061b6eae01fbbee",
+   "reason": "",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
+ "7ac50aa440bca50f": [
+  {
+   "at": "2026-09-29T11:47:11.544338Z",
+   "call_id": "20260929T112233Z-b48030",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "69ced238e4caa1a557941f69e75cd4b35d9157715402a46cccb67fd4f41850b9",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits"
+   ]
+  }
+ ],
+ "7cfc3f8477b3a2b8": [
+  {
+   "at": "2026-09-29T11:47:11.544342Z",
+   "call_id": "20260929T112234Z-9c5d34",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fe1cec6346a1d816c2b785fec530d3a9e70b45da880acf4af0bb451ddc45286a",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
+ "8f336828c0f9c375": [
+  {
+   "at": "2026-09-29T11:47:11.544344Z",
+   "call_id": "20260929T112238Z-9a0e11",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2f6ca2ec3983cd44bbd296cf9a0bc3c299fa4b345692f69282b750971e6e439a",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
+ "96a28c868f99fb34": [
+  {
+   "at": "2026-09-29T11:47:11.544349Z",
+   "call_id": "20260929T112239Z-7a7ec1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "34a5efbde0f6f109bee4e2d11982789bfe41079b206f247cee2f00cb42faa6ea",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
+ "99d124741e83ae13": [
+  {
+   "at": "2026-09-29T11:47:11.544352Z",
+   "call_id": "20260929T112240Z-58f6c5",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6f0dbc6405491a5767a77702ce5848271c361c4ab0751d85e6daaf5ef04426d8",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
+ "9abb29c158374ba9": [
+  {
+   "at": "2026-09-29T11:47:11.544355Z",
+   "call_id": "20260929T112242Z-c824ff",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f1d2898f59908943cc4a802470d8d31888a654d34d5a0d54145602cd768d19b5",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
+ "9e482cdffda9da5c": [
+  {
+   "at": "2026-09-29T11:47:11.544357Z",
+   "call_id": "20260929T112243Z-4d2d79",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a37c0b41ed55a85f832cfdf11626ca3ba5006adfba240b7f49f0022f3b736ca9",
+   "reason": "",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
+ "9f72abc51a357f38": [
+  {
+   "at": "2026-09-29T11:47:11.544360Z",
+   "call_id": "20260929T112243Z-0b5a22",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b4196d7b56ce9b6e752da493511a753718462fe11d7556e11879469571c3d7f0",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
+ "cd5c3873436c0d0c": [
+  {
+   "at": "2026-09-29T11:47:11.544366Z",
+   "call_id": "20260929T112246Z-9983f5",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f959ac8a1f695dc6fff5cf32ae02de1b5f81bdc86367d0b86a5c976b166580eb",
+   "reason": "",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
+ "cfccb967b6b28523": [
+  {
+   "at": "2026-09-29T11:47:11.544369Z",
+   "call_id": "20260929T112247Z-8250d6",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3ca4c383e289fb3ebc096f2b92f731af64e30d28ecc41bc7e30516e5b79ae3c4",
+   "reason": "",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ]
+}

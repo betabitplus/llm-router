@@ -1,0 +1,38 @@
+{
+ "SM-3DF25229": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-0f6536",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Since both versions evaluate the same conditions and raise the exact same exception type (ValueError) for invalid inputs, the changed order of checks does not affect the defined behavior.",
+    "response_sha256": "4475e702a3099c23ce5252041cfb3af15eefe2bd9a7d6416848df01c93f1a4a8",
+    "sources": [
+     "    if image.mode not in _ALLOWED_IMAGE_MODES:",
+     "    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
+     "        raise ValueError(msg)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T164215Z-05a8b0",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "Only the check order changed; every failing input still raises ValueError and valid inputs return None, and only the message differs when several checks fail.",
+    "response_sha256": "6b4b12e494cf11a5a496e23c5f432e44c307c74f116f8479ec932d97cad3679c",
+    "sources": [
+     "if image.mode not in _ALLOWED_IMAGE_MODES:",
+     "if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "b189631d4149e7a856e5933490a467cb3fb96353cd07f0a7b4b14749d6d04e3f"
+ }
+}

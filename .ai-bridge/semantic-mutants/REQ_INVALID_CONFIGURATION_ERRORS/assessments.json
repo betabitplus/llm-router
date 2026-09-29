@@ -1,0 +1,65 @@
+{
+ "SM-70BDADCC": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=5.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"url\", Provider.AISTUDIO: \"url\", Provider.GEMINI_WEBAPI: \"url\", Provider.QWENCHAT: \"url\", Provider.OPENROUTER: \"url\", Provider.MISTRAL: \"url\", Provider.NVIDIA: \"url\", Provider.GROQ: \"url\", Provider.ALIBABA: \"url\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\", Provider.AISTUDIO: \"gemini-flash\"}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183828Z-e35f7f",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version only validates that the first provider mapped to each model exists in the catalog, failing to raise a ConfigurationError if a subsequent provider in the mapping is unknown.",
+    "response_sha256": "d4f8cc1cce39ce7510aad7078bf160356c8836e034915ac0e354a51c99741267",
+    "sources": [
+     "        for provider in provider_models:",
+     "        for provider in list(provider_models)[:1]:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={p: 'http://x' for p in Provider}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'a', Provider.GROQ: 'b'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164215Z-050b5f",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed loop checks only the first provider of each model's mapping, so a model whose second provider is missing from the catalog raises ConfigurationError in the original but passes in the changed version.",
+    "response_sha256": "ce923f95e905142e54893514ec6255e7b6a82f73a2275839565c016000df0ab8",
+    "sources": [
+     "for provider in list(provider_models)[:1]:",
+     "for provider in provider_models:",
+     "condition=provider in config.catalog.providers,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "93adfba682126f0512f347e30f2af0253865eebc5c474638fc869aac5c72361a"
+ },
+ "SM-7C291E15": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 2.0, 3), policy=RouterPolicyDefaults(None, None, False, False, False, 1, ProviderLimits(1.0, 60.0, 1.0, 1)), default_max_tool_rounds=3, structured_output_max_attempts=3, provider_limits=ProviderLimits(1.0, 60.0, 1.0, 1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-2a4d06",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original requires a base URL for every provider in _PROVIDERS_REQUIRING_BASE_URL, while the change skips all but the default provider, so a config with a non-default required provider missing its URL raises only in the original.",
+    "response_sha256": "d3ab4a5ef3eec425fb4f3d276eadd7e18d249fea79279d488cd3db43aeb7a785",
+    "sources": [
+     "for provider in _PROVIDERS_REQUIRING_BASE_URL:",
+     "if provider != config.default_provider:",
+     "condition=provider in config.provider_base_urls,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "3a5a3a9c31c8a9e3871751aeccd33a2a4fbacd0f6a4caa85f0a7417757d9cf9b"
+ }
+}

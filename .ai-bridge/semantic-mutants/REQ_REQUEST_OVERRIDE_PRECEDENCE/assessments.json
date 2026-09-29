@@ -1,0 +1,52 @@
+{
+ "SM-4D75202A": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "call_overrides": "{'custom_kwarg': 0}",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_PRO, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 2.0, 3), policy=RouterPolicyDefaults(1, 1.0, False, False, False, 1, ProviderLimits(1.0, 1.0, 1.0, 1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(1.0, 1.0, 1.0, 1)), catalog=ProviderCatalog())",
+     "route_defaults": "RouteGenerationDefaults(key_id=1)",
+     "route_policy_defaults": "{}",
+     "router_defaults": "RouterDefaults()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-74e8d4",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The added `and value` condition causes falsy kwargs (like 0 or False) in `call_overrides` to be erroneously omitted from `call_provider_kwargs`, whereas the original version correctly retained them.",
+    "response_sha256": "fc73b151e532bf74afa3b328fdb4c990cf479eba4d2de39302a620e185447c35",
+    "sources": [
+     "    call_provider_kwargs = {",
+     "        key: value",
+     "        for key, value in call_overrides.items()",
+     "        if key not in CALL_OVERRIDE_FIELDS and value",
+     "    }"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "call_overrides": "{'custom_flag': 0}",
+     "config": "any valid LLMRouterConfig (e.g. the project's default config)",
+     "route_defaults": "RouteGenerationDefaults(key_id=1)",
+     "route_policy_defaults": "{}",
+     "router_defaults": "RouterDefaults(values={}, kwargs={})"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164215Z-b40afe",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "A falsy provider kwarg such as {'custom_flag': 0} is kept in the result kwargs by the original but dropped by the changed version's added `and value` filter.",
+    "response_sha256": "675b2094859a77e99f66230fce73263842087ee696ec979ce82c3052ed1ffde2",
+    "sources": [
+     "if key not in CALL_OVERRIDE_FIELDS and value",
+     "kwargs.update(call_provider_kwargs)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "0f8c94b8bce318dd4d11095395615a3a13a86b5b4f5f9d3756accff04de82734"
+ }
+}

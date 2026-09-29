@@ -1,0 +1,134 @@
+{
+ "SM-29A20065": [
+  {
+   "at": "2026-09-29T17:27:59.740841Z",
+   "call_id": "20260929T172149Z-faaffb",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3425f91de2673ce9917dd24f4cc826600bfcf6daa6f046f6ca890792ba6a5532",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-46ED33D8": [
+  {
+   "at": "2026-09-29T17:27:59.740846Z",
+   "call_id": "20260929T172149Z-d5e6a8",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "08fa6fcfd14b91a1a2c827d4f23784ed18b22037d6092d8dea51b938b36d19b4",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-4C278138": [
+  {
+   "at": "2026-09-29T17:27:59.740854Z",
+   "call_id": "20260929T172149Z-f00d7a",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c821b12e3b25f82dfeffb575bc5e57cc0223bfd4250a437a9b8d64657eace5af",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert [1, 0] == [1] | Left contains one more item: 0 | Use -v to get more diff)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:30:20.390921Z",
+   "call_id": "20260929T172801Z-00d48f",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ab40480a0265424eeded195b472fd46933abe70129c040c61e7c5eeb55c58d3a",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-81470C00": [
+  {
+   "at": "2026-09-29T17:27:59.740868Z",
+   "call_id": "20260929T172149Z-c493e2",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "23691e8dffd65d7a717fb70e01659ab7e3fb9f05239be4b9fd57cff5a6342cf3",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ]
+}

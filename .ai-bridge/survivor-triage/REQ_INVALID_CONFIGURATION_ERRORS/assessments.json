@@ -3,15 +3,15 @@
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"url\", Provider.AISTUDIO: \"url\", Provider.GEMINI_WEBAPI: \"url\", Provider.QWENCHAT: \"url\", Provider.OPENROUTER: \"url\", Provider.MISTRAL: \"url\", Provider.NVIDIA: \"url\", Provider.GROQ: \"url\", Provider.ALIBABA: \"url\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"model\"}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog())"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153223Z-15d500",
+    "call_id": "20260928T211050Z-a14e40",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version uses a strict inequality (`>`) instead of a non-strict inequality (`>=`) when verifying that `max_wait_seconds` is at least `min_wait_seconds`, meaning it will incorrectly reject a configuration where they are equal.",
-    "response_sha256": "a831915a9fb0baa76f170824da45111ece944f77a7729b3c6c52dbbce2fe62bd",
+    "reason": "The original version allows max_wait_seconds to be equal to min_wait_seconds by using the >= operator, whereas the changed version strictly requires it to be greater by using the > operator.",
+    "response_sha256": "78ab2597f7c7263d853d07a3364c5785a3da0189508ede2a89fefc0558e12e24",
     "sources": [
      "    _require(\n        condition=retry.max_wait_seconds >= retry.min_wait_seconds,\n        message=\"retry max wait is invalid.\",\n    )",
      "    _require(condition=retry.max_wait_seconds > retry.min_wait_seconds, message='retry max wait is invalid.')"
@@ -20,15 +20,15 @@
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'http://localhost', Provider.AISTUDIO: 'http://localhost', Provider.GEMINI_WEBAPI: 'http://localhost', Provider.QWENCHAT: 'http://localhost', Provider.OPENROUTER: 'http://localhost', Provider.MISTRAL: 'http://localhost', Provider.NVIDIA: 'http://localhost', Provider.GROQ: 'http://localhost', Provider.ALIBABA: 'http://localhost'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: \"https://example.com\", Provider.AISTUDIO: \"https://example.com\", Provider.GEMINI_WEBAPI: \"https://example.com\", Provider.QWENCHAT: \"https://example.com\", Provider.OPENROUTER: \"https://example.com\", Provider.MISTRAL: \"https://example.com\", Provider.NVIDIA: \"https://example.com\", Provider.GROQ: \"https://example.com\", Provider.ALIBABA: \"https://example.com\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153225Z-1c30b7",
+    "call_id": "20260928T211050Z-ff82a1",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The original version allows retry.max_wait_seconds to be equal to retry.min_wait_seconds, whereas the changed version strictly requires retry.max_wait_seconds to be greater than retry.min_wait_seconds.",
-    "response_sha256": "2337193cb0b5df04636ee51a529ffb68570f3c14284b689b33909b227d61e137",
+    "reason": "When retry.max_wait_seconds equals retry.min_wait_seconds, the original version succeeds because it checks retry.max_wait_seconds >= retry.min_wait_seconds, whereas the changed version fails because it requires retry.max_wait_seconds > retry.min_wait_seconds.",
+    "response_sha256": "09d1ff0bfe878b21f6c9e23e0c3b2d2b94bf59a1058541a65afb0a25c758ffb5",
     "sources": [
      "        condition=retry.max_wait_seconds >= retry.min_wait_seconds,",
      "    _require(condition=retry.max_wait_seconds > retry.min_wait_seconds, message='retry max wait is invalid.')"
@@ -37,109 +37,142 @@
    },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY', api_key_env_vars={}, base_url='https://example.com')}, provider_base_urls={p: 'https://example.com' for p in Provider}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'http://example.com'}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite-model-id'}}))"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T153217Z-07fdb7",
-    "confidence": 0.9,
+    "call_id": "20260928T211050Z-396095",
+    "confidence": 0.95,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "Setting retry_policy.min_wait_seconds == max_wait_seconds == 1.0 (with all other fields minimally valid) satisfies the original's '>=' check but fails the changed version's strict '>' check, so the changed version raises where the original returns normally.",
-    "response_sha256": "abf658d9d3feb80038784855df1b3dab167f0f677ee1d6cca752221ee75895a2",
+    "reason": "The retry max-wait bound was tightened from `>=` to `>`, so a config with min_wait_seconds == max_wait_seconds passes validation in the original but raises ConfigurationError via _require in the changed version.",
+    "response_sha256": "be9569b0fcd2c352061f96626b0950e0b9172fec8e68aaf8e5f5485aa38afcd2",
     "sources": [
      "_require(\n        condition=retry.max_wait_seconds >= retry.min_wait_seconds,\n        message=\"retry max wait is invalid.\",\n    )",
      "_require(condition=retry.max_wait_seconds > retry.min_wait_seconds, message='retry max wait is invalid.')"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=3, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={p: 'http://x' for p in Provider}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-402c58",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With min_wait equal to max_wait, the original's `>=` check passes, while the changed version's strict `>` raises ConfigurationError.",
+    "response_sha256": "84857b24f8775de560fa3e6dc8c17cfbb85d17dfb974bd6eb775952506788650",
+    "sources": [
+     "condition=retry.max_wait_seconds >= retry.min_wait_seconds,",
+     "_require(condition=retry.max_wait_seconds > retry.min_wait_seconds, message='retry max wait is invalid.')"
+    ],
+    "verdict": "distinct"
    }
   },
-  "prompt_sha256": "035929ce75b9753bac1121a7c7af3fe63ef29f369db2a30603e1c25b765d1c9b"
+  "prompt_sha256": "50cc960d0d49c03e1accb7b0a256f3421a0aaf58264af25320ab332685a76949"
  },
  "1e7fe255a9f2e635": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"url\", Provider.AISTUDIO: \"url\", Provider.GEMINI_WEBAPI: \"url\", Provider.QWENCHAT: \"url\", Provider.OPENROUTER: \"url\", Provider.MISTRAL: \"url\", Provider.NVIDIA: \"url\", Provider.GROQ: \"url\", Provider.ALIBABA: \"url\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"model\"}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=5.0, cooldown_after_failures=2)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=5.0, cooldown_after_failures=2)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'http://example.com', Provider.AISTUDIO: 'http://example.com', Provider.GEMINI_WEBAPI: 'http://example.com', Provider.QWENCHAT: 'http://example.com', Provider.OPENROUTER: 'http://example.com', Provider.MISTRAL: 'http://example.com', Provider.NVIDIA: 'http://example.com', Provider.GROQ: 'http://example.com', Provider.ALIBABA: 'http://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'models/gemini-flash'}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153233Z-f78de7",
+    "call_id": "20260928T211107Z-adcfa5",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The original version requires `policy.min_routes_for_fallback_shuffle >= 1`, while the changed version requires it to be `>= 2`, so they behave differently when it equals 1.",
-    "response_sha256": "2d63e8a272576f7709d52d26bd8ad65cee2e9a9f08dac169010e33d9f0be106e",
+    "reason": "The original version validates that policy.min_routes_for_fallback_shuffle is at least 1, but the changed version requires it to be at least 2, causing a failure for a config with a value of 1.",
+    "response_sha256": "b5a68153c6b5768c1226f333a6e5cea8de84f8489f4d587147ec7b2dd0a3fc3c",
     "sources": [
-     "    _require(\n        condition=policy.min_routes_for_fallback_shuffle >= 1,\n        message=\"minimum routes for fallback shuffle must be at least 1.\",\n    )"
+     "    _require(\n        condition=policy.min_routes_for_fallback_shuffle >= 1,\n        message=\"minimum routes for fallback shuffle must be at least 1.\",\n    )",
+     "    _require(condition=policy.min_routes_for_fallback_shuffle >= 2, message='minimum routes for fallback shuffle must be at least 1.')"
     ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: \"http://localhost\", Provider.AISTUDIO: \"http://localhost\", Provider.GEMINI_WEBAPI: \"http://localhost\", Provider.QWENCHAT: \"http://localhost\", Provider.OPENROUTER: \"http://localhost\", Provider.MISTRAL: \"http://localhost\", Provider.NVIDIA: \"http://localhost\", Provider.GROQ: \"http://localhost\", Provider.ALIBABA: \"http://localhost\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'https://api.google.com', Provider.AISTUDIO: 'https://aistudio.google.com', Provider.GEMINI_WEBAPI: 'https://gemini.google.com', Provider.QWENCHAT: 'https://qwen.aliyun.com', Provider.OPENROUTER: 'https://openrouter.ai', Provider.MISTRAL: 'https://api.mistral.ai', Provider.NVIDIA: 'https://api.nvidia.com', Provider.GROQ: 'https://api.groq.com', Provider.ALIBABA: 'https://api.alibaba.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153244Z-c85f9c",
+    "call_id": "20260928T211119Z-f3eeb7",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The original version permits min_routes_for_fallback_shuffle to be 1, whereas the changed version requires it to be at least 2, causing validation to fail on a configuration where min_routes_for_fallback_shuffle is 1.",
-    "response_sha256": "e146e26893d3fcc0933bedef8843d08cf6ae7abe30af0acefd62f84750889d31",
+    "reason": "The original version permits policy.min_routes_for_fallback_shuffle to be 1, whereas the changed version requires it to be at least 2.",
+    "response_sha256": "00f2b2ecc09eabea470f4aebd96a7fbccc6e16e92794bb7715e20d1891405657",
     "sources": [
-     "        condition=policy.min_routes_for_fallback_shuffle >= 1,",
      "    _require(condition=policy.min_routes_for_fallback_shuffle >= 2, message='minimum routes for fallback shuffle must be at least 1.')"
     ],
     "verdict": "distinct"
    },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog())"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T153233Z-b3fc18",
-    "confidence": 0.93,
+    "call_id": "20260928T211105Z-b90399",
+    "confidence": 0.97,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "With policy.min_routes_for_fallback_shuffle=1 the original's `>= 1` check passes (function returns None) while the changed `>= 2` check fails and _require raises, so the two versions diverge on this exact input.",
-    "response_sha256": "a51e9774ee62a4360c2104f60c84a11551e0f5b9cc1d5e6f637600c93014864f",
+    "reason": "The changed version tightens the fallback-shuffle check from >=1 to >=2, so a config with min_routes_for_fallback_shuffle=1 (and all other invariants satisfied) passes validate_config in the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "a5d1637f59f6d5ad4aa9421864acfa6735be66ba48f746acba8119a9884e05f2",
     "sources": [
      "_require(\n        condition=policy.min_routes_for_fallback_shuffle >= 1,\n        message=\"minimum routes for fallback shuffle must be at least 1.\",\n    )",
      "_require(condition=policy.min_routes_for_fallback_shuffle >= 2, message='minimum routes for fallback shuffle must be at least 1.')"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-b77000",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version raises ConfigurationError when min_routes_for_fallback_shuffle is 1, but the original accepts it because it only requires >= 1.",
+    "response_sha256": "0376e130c5f4bb107061f6fcab218bc4a1352987ca1070a7f13a22c66c4365c2",
+    "sources": [
+     "_require(condition=policy.min_routes_for_fallback_shuffle >= 2, message='minimum routes for fallback shuffle must be at least 1.')",
+     "condition=policy.min_routes_for_fallback_shuffle >= 1,"
+    ],
+    "verdict": "distinct"
    }
   },
-  "prompt_sha256": "b082869e6d76640d81b0f2499048aa3a393cc2ce225e6986edfdd14a6bb6d5a6"
+  "prompt_sha256": "ff119eee2119665fd3543ca6b4c323b5b43f744b8ba33abb32d774193c94229c"
  },
  "3b57c08f839ab791": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"url\", Provider.AISTUDIO: \"url\", Provider.GEMINI_WEBAPI: \"url\", Provider.QWENCHAT: \"url\", Provider.OPENROUTER: \"url\", Provider.MISTRAL: \"url\", Provider.NVIDIA: \"url\", Provider.GROQ: \"url\", Provider.ALIBABA: \"url\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"model\"}}))"
+     "config": "LLMRouterConfig(\n    default_provider=Provider.GOOGLE,\n    default_model=Model.GEMINI_FLASH,\n    default_key_id=1,\n    defaults=BehaviorDefaults(\n        retry_policy=RetryPolicy(\n            min_wait_seconds=1.0,\n            max_wait_seconds=2.0,\n            max_attempts=1\n        ),\n        policy=RouterPolicyDefaults(\n            max_attempts=1,\n            attempt_timeout_seconds=0.5,\n            wait_for_cooldown_if_all_blocked=True,\n            round_robin_start=False,\n            shuffle_fallbacks=False,\n            min_routes_for_fallback_shuffle=1,\n            default_limits=ProviderLimits(\n                rps=1.0,\n                rpm=1.0,\n                cooldown_seconds=1.0,\n                cooldown_after_failures=1\n            )\n        ),\n        default_max_tool_rounds=1,\n        structured_output_max_attempts=1,\n        provider_limits=ProviderLimits(\n            rps=1.0,\n            rpm=1.0,\n            cooldown_seconds=1.0,\n            cooldown_after_failures=1\n        )\n    ),\n    catalog=ProviderCatalog(\n        providers={\n            Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE),\n            Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO),\n            Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI),\n            Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT),\n            Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER),\n            Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL),\n            Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA),\n            Provider.GROQ: ProviderSpec(provider=Provider.GROQ),\n            Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)\n        },\n        provider_base_urls={\n            Provider.GOOGLE: \"http\",\n            Provider.AISTUDIO: \"http\",\n            Provider.GEMINI_WEBAPI: \"http\",\n            Provider.QWENCHAT: \"http\",\n            Provider.OPENROUTER: \"http\",\n            Provider.MISTRAL: \"http\",\n            Provider.NVIDIA: \"http\",\n            Provider.GROQ: \"http\",\n            Provider.ALIBABA: \"http\"\n        },\n        models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"id\"}}\n    )\n)"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153305Z-28b5bf",
+    "call_id": "20260928T211144Z-fdc839",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version incorrectly requires attempt_timeout_seconds to be strictly greater than 1, so it fails on a valid timeout of 1.0 seconds that the original version accepts.",
-    "response_sha256": "ac5d409406cb4da5bf17b3b873f1738337b76da4a7a394522fe817a38eb5619d",
+    "reason": "The changed version raises a ConfigurationError when `policy.attempt_timeout_seconds` is between 0 and 1 (e.g., 0.5) because it changes the validation threshold from `> 0` to `> 1`, whereas the original version accepts it and returns normally.",
+    "response_sha256": "e39341b2da06cc0098033794af09f640d432cd520ece80d8bd730e07d6f716a8",
     "sources": [
-     "    if policy.attempt_timeout_seconds is not None:\n        _require(\n            condition=policy.attempt_timeout_seconds > 0,\n            message=\"policy attempt timeout must be greater than 0.\",\n        )",
-     "    if policy.attempt_timeout_seconds is not None:\n        _require(condition=policy.attempt_timeout_seconds > 1, message='policy attempt timeout must be greater than 0.')"
+     "    if policy.attempt_timeout_seconds is not None:\n        _require(\n            condition=policy.attempt_timeout_seconds > 0,\n            message=\"policy attempt timeout must be greater than 0.\",\n        )"
     ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'https://google.com', Provider.AISTUDIO: 'https://aistudio.google.com', Provider.GEMINI_WEBAPI: 'https://webapi.gemini', Provider.QWENCHAT: 'https://qwenchat.com', Provider.OPENROUTER: 'https://openrouter.ai', Provider.MISTRAL: 'https://mistral.ai', Provider.NVIDIA: 'https://nvidia.com', Provider.GROQ: 'https://groq.com', Provider.ALIBABA: 'https://alibaba.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"https://example.com\", Provider.AISTUDIO: \"https://example.com\", Provider.GEMINI_WEBAPI: \"https://example.com\", Provider.QWENCHAT: \"https://example.com\", Provider.OPENROUTER: \"https://example.com\", Provider.MISTRAL: \"https://example.com\", Provider.NVIDIA: \"https://example.com\", Provider.GROQ: \"https://example.com\", Provider.ALIBABA: \"https://example.com\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153311Z-96d52d",
+    "call_id": "20260928T211148Z-a4fdc4",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The original version allows policy.attempt_timeout_seconds to be 1.0 because 1.0 > 0, whereas the changed version checks policy.attempt_timeout_seconds > 1 which fails for 1.0.",
-    "response_sha256": "ca87d0723adcb3bb3470cff3ec907100c186aee2c9414d2e37ecf13866d7ccbe",
+    "reason": "The changed version checks that policy.attempt_timeout_seconds is strictly greater than 1 instead of 0, raising ConfigurationError when attempt_timeout_seconds is 1.0.",
+    "response_sha256": "a2221592d63eb620376fbf1c21b7df350ad159b1a8bb1d62c0b5d43595fdde52",
     "sources": [
      "            condition=policy.attempt_timeout_seconds > 0,",
      "        _require(condition=policy.attempt_timeout_seconds > 1, message='policy attempt timeout must be greater than 0.')"
@@ -148,37 +181,54 @@
    },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=0.5, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'https://x', Provider.AISTUDIO: 'https://x', Provider.GEMINI_WEBAPI: 'https://x', Provider.QWENCHAT: 'https://x', Provider.OPENROUTER: 'https://x', Provider.MISTRAL: 'https://x', Provider.NVIDIA: 'https://x', Provider.GROQ: 'https://x', Provider.ALIBABA: 'https://x'}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.1, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=0.5, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY', api_key_env_vars={}, base_url=None)}, provider_base_urls={p: 'https://example.com' for p in Provider}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash-model-id'}}))"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T153700Z-c78153",
-    "confidence": 0.9,
+    "call_id": "20260928T211124Z-6b90be",
+    "confidence": 0.95,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "With policy.attempt_timeout_seconds=0.5 the original check '> 0' passes while the changed check '> 1' fails, so validate_config raises in the changed version but not in the original, for an otherwise fully valid config.",
-    "response_sha256": "69b60e32eaa8bb8a3befdf9661f1c510cb612b1f6c176dcaf13ba321345df5a9",
+    "reason": "The changed code checks `policy.attempt_timeout_seconds > 1` instead of `> 0`, so an attempt_timeout_seconds of 0.5 (with all other fields valid) passes the original validator but raises ConfigurationError in the changed one.",
+    "response_sha256": "c333397c70275c5920a3f6001e015d1b8e58f4f235809d2f21a405d597200c8c",
     "sources": [
      "_require(\n            condition=policy.attempt_timeout_seconds > 0,\n            message=\"policy attempt timeout must be greater than 0.\",\n        )",
      "_require(condition=policy.attempt_timeout_seconds > 1, message='policy attempt timeout must be greater than 0.')"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=0.5, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={p: 'http://x' for p in Provider}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'm'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-629b91",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version requires attempt_timeout_seconds > 1 where the original required > 0, so a timeout of 0.5 passes the original and raises ConfigurationError in the changed version.",
+    "response_sha256": "867485a93a4edec8e7a0a90dc49b1910ad36c043ce85ef5dcb1e966ea7d124ce",
+    "sources": [
+     "_require(condition=policy.attempt_timeout_seconds > 1, message='policy attempt timeout must be greater than 0.')",
+     "condition=policy.attempt_timeout_seconds > 0,"
+    ],
+    "verdict": "distinct"
    }
   },
-  "prompt_sha256": "2d4aee79e6abc4143c95afcb9af63b8b09f1f36671dd12c250dab039076fda1a"
+  "prompt_sha256": "8bef3a0ed833b2f1db4274ee27a921a5d8288442658dddf52a14a20da2bc71ac"
  },
  "43c47ed5eb7d2a63": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=100.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=2, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=10.0, rpm=100.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'url', Provider.AISTUDIO: 'url', Provider.GEMINI_WEBAPI: 'url', Provider.QWENCHAT: 'url', Provider.OPENROUTER: 'url', Provider.MISTRAL: 'url', Provider.NVIDIA: 'url', Provider.GROQ: 'url', Provider.ALIBABA: 'url'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: \"http://b\", Provider.AISTUDIO: \"http://b\", Provider.GEMINI_WEBAPI: \"http://b\", Provider.QWENCHAT: \"http://b\", Provider.OPENROUTER: \"http://b\", Provider.MISTRAL: \"http://b\", Provider.NVIDIA: \"http://b\", Provider.GROQ: \"http://b\", Provider.ALIBABA: \"http://b\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"m\"}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-38ec9d",
+    "call_id": "20260928T211151Z-9a02c2",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The original version allows config.structured_output_max_attempts to be 1, while the changed version requires it to be at least 2, causing it to fail validation when given a value of 1.",
-    "response_sha256": "141d1d39c844ebf62f05f79be11ccc05db107a3717a606043c8b94b5b036779b",
+    "reason": "The modified code changes the validation condition for `structured_output_max_attempts` from `>= 1` to `>= 2`, so it will raise an error when the value is exactly 1, whereas the original version accepts it.",
+    "response_sha256": "55afab2ced7c778c0d88df08a4988c9aebbd7990bc458bb05ef439bfd19d1fec",
     "sources": [
      "    _require(\n        condition=config.structured_output_max_attempts >= 1,\n        message=\"structured output max attempts must be at least 1.\",\n    )",
      "    _require(condition=config.structured_output_max_attempts >= 2, message='structured output max attempts must be at least 1.')"
@@ -187,53 +237,71 @@
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=5.0, cooldown_after_failures=3)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=5.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-05a559",
+    "call_id": "20260928T211158Z-e31930",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The original version accepts structured_output_max_attempts=1 whereas the changed version requires it to be at least 2, raising an exception.",
-    "response_sha256": "262bbcfbf7f72c14cca93171eac9ecace9a36daf7fcd310d0b7d0b391c565f99",
+    "reason": "The original version allows config.structured_output_max_attempts to be 1, whereas the changed version requires it to be at least 2 and raises ConfigurationError when it is 1.",
+    "response_sha256": "dbc33af546599bdff872f23bf8889ce85fe1ed770246ef4a6a7e6d3023a8bbc8",
     "sources": [
+     "        condition=config.structured_output_max_attempts >= 1,",
      "    _require(condition=config.structured_output_max_attempts >= 2, message='structured output max attempts must be at least 1.')"
     ],
     "verdict": "distinct"
    },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={p: 'https://example.com' for p in Provider}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash-model'}}))"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T153700Z-601c85",
+    "call_id": "20260928T211151Z-22fea5",
     "confidence": 0.95,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "With structured_output_max_attempts=1 and every other field made valid, the original's `retry.max_attempts >= 1`-style check `structured_output_max_attempts >= 1` passes so validate_config returns None, while the changed version's `structured_output_max_attempts >= 2` fails and raises.",
-    "response_sha256": "62fbd2fe5a640e601095bee3561ec43b85d78fb2130162075a76f82c5df08a18",
+    "reason": "The changed version tightens the structured-output check from >=1 to >=2, so a config with structured_output_max_attempts=1 (otherwise fully valid) passes validation in the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "95ae0e266beb4e2366c41359cfddf1b23fff7c0933d470241d231c63a1404eb4",
     "sources": [
      "_require(\n        condition=config.structured_output_max_attempts >= 1,\n        message=\"structured output max attempts must be at least 1.\",\n    )",
      "_require(condition=config.structured_output_max_attempts >= 2, message='structured output max attempts must be at least 1.')"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={p: 'http://x' for p in Provider}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'm'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-16e248",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version requires structured_output_max_attempts >= 2, so a valid config with the value 1 passes the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "3403d68bebfc51a06c61758ff409cafb1aa18a6ebf72c6bc0c815b45b4c8b762",
+    "sources": [
+     "_require(condition=config.structured_output_max_attempts >= 2, message='structured output max attempts must be at least 1.')",
+     "condition=config.structured_output_max_attempts >= 1,"
+    ],
+    "verdict": "distinct"
    }
   },
-  "prompt_sha256": "58cecd1801614148820f36448dd7f4ebc3fa2aafb019403c62a3c08eaed30316"
+  "prompt_sha256": "22c5616dfcab940f47b9fe6eeef478e4913286a1fafa0ca01dc31b8f97fc4043"
  },
  "4a11c78df0078b1f": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'url', Provider.AISTUDIO: 'url', Provider.GEMINI_WEBAPI: 'url', Provider.QWENCHAT: 'url', Provider.OPENROUTER: 'url', Provider.MISTRAL: 'url', Provider.NVIDIA: 'url', Provider.GROQ: 'url', Provider.ALIBABA: 'url'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'model-id'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'url', Provider.AISTUDIO: 'url', Provider.GEMINI_WEBAPI: 'url', Provider.QWENCHAT: 'url', Provider.OPENROUTER: 'url', Provider.MISTRAL: 'url', Provider.NVIDIA: 'url', Provider.GROQ: 'url', Provider.ALIBABA: 'url'}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'model'}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-9d273f",
+    "call_id": "20260928T212518Z-3565c3",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version modifies the validation logic for `policy.max_attempts` to require it to be >= 2 instead of >= 1, which will cause it to incorrectly raise an exception for valid configurations with exactly 1 attempt.",
-    "response_sha256": "e5f0f615410d76a4a19f47085ed906644d3e02f7b17f094797cd087a0f78cbb4",
+    "reason": "The changed version requires `policy.max_attempts >= 2` whereas the original requires `policy.max_attempts >= 1`, so an input with exactly 1 max attempt will raise a ConfigurationError in the changed version but not in the original.",
+    "response_sha256": "da080161ad24b485c2e9c950aaa740ae5f90ea2fb13162877a0a5e98ad35b417",
     "sources": [
      "        _require(\n            condition=policy.max_attempts >= 1,\n            message=\"policy max attempts must be at least 1.\",\n        )",
      "        _require(condition=policy.max_attempts >= 2, message='policy max attempts must be at least 1.')"
@@ -242,15 +310,15 @@
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-f45c8e",
+    "call_id": "20260928T211214Z-102762",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When policy.max_attempts is 1, the original version accepts it while the changed version requires policy.max_attempts >= 2 and raises an exception.",
-    "response_sha256": "99f8cc2a91183fbb4b524f7601362d356f5c80c4a82845c2a95b7acae3fd0b9f",
+    "reason": "When policy.max_attempts is 1, the original function accepts the configuration while the changed version requires policy.max_attempts to be at least 2 and raises a ConfigurationError.",
+    "response_sha256": "96692176e12887d2f0fdee31281855fc68a1820a6f51b9e585bc9d48fd591812",
     "sources": [
      "            condition=policy.max_attempts >= 1,",
      "        _require(condition=policy.max_attempts >= 2, message='policy max attempts must be at least 1.')"
@@ -259,37 +327,54 @@
    },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY')}, provider_base_urls={p: 'https://example.com' for p in Provider}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.1, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY')}, provider_base_urls={Provider.GOOGLE: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T154433Z-b3edf9",
-    "confidence": 0.9,
+    "call_id": "20260928T211210Z-c52086",
+    "confidence": 0.95,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "With policy.max_attempts=1, the original's `policy.max_attempts >= 1` check passes so validate_config returns None, while the changed `policy.max_attempts >= 2` check fails and raises, so the two versions diverge on this exact config.",
-    "response_sha256": "d76ad5122cb8f561a9b6a34496fa994cc41cd4aa240905ec93d36a2df9cb44b7",
+    "reason": "The changed version tightens the policy.max_attempts check from >= 1 to >= 2, so a config with policy.max_attempts == 1 passes validation in the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "92717b2b3f4c239856f331276259b5caf3a216a49f6b7cb66dcc1934a92015cf",
     "sources": [
      "_require(\n            condition=policy.max_attempts >= 1,\n            message=\"policy max attempts must be at least 1.\",\n        )",
      "_require(condition=policy.max_attempts >= 2, message='policy max attempts must be at least 1.')"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "A valid LLMRouterConfig whose policy is RouterPolicyDefaults(max_attempts=1, ...) and whose other fields are all valid, e.g. the project's default config with defaults.policy replaced by dataclasses.replace(policy, max_attempts=1)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-767b81",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original accepts policy.max_attempts == 1 (>= 1), but the changed version requires >= 2 and raises ConfigurationError for it.",
+    "response_sha256": "099bdc90cd2f258e93a01ce3156d02183b6b567d9b2b8964f7bb45108aa41661",
+    "sources": [
+     "_require(condition=policy.max_attempts >= 2, message='policy max attempts must be at least 1.')",
+     "condition=policy.max_attempts >= 1,"
+    ],
+    "verdict": "distinct"
    }
   },
-  "prompt_sha256": "ec7e2ffd1112c98e2214a22183ac3be7d84b64599c8deaf4b1cf068bcc42fac4"
+  "prompt_sha256": "bbedcdafcf269f78e97dcd528c6e8eea76f4b6d7d8223d9ab285d635ab6b184b"
  },
  "551e89dc7d0431df": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"url\", Provider.AISTUDIO: \"url\", Provider.GEMINI_WEBAPI: \"url\", Provider.QWENCHAT: \"url\", Provider.OPENROUTER: \"url\", Provider.MISTRAL: \"url\", Provider.NVIDIA: \"url\", Provider.GROQ: \"url\", Provider.ALIBABA: \"url\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=5.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=2, structured_output_max_attempts=2, provider_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-3f9f67",
+    "call_id": "20260928T211219Z-60cd43",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When `config.policy.min_routes_for_fallback_shuffle` is exactly 1, the original version passes validation because it checks for `>= 1`, while the changed version raises an exception because it checks for `> 1`.",
-    "response_sha256": "98d3aa36c33ef45145b76ffd789cb17bada16574c4bcbbaec1ddf2309e0707eb",
+    "reason": "The changed version uses a strictly greater than operator for `min_routes_for_fallback_shuffle` instead of greater than or equal to, raising a validation error when the value is exactly 1.",
+    "response_sha256": "3783dcb780567f290bce545f66ddd16f133966995ea53cd2e3daa3716042ae2a",
     "sources": [
      "    _require(\n        condition=policy.min_routes_for_fallback_shuffle >= 1,\n        message=\"minimum routes for fallback shuffle must be at least 1.\",\n    )",
      "    _require(condition=policy.min_routes_for_fallback_shuffle > 1, message='minimum routes for fallback shuffle must be at least 1.')"
@@ -298,15 +383,15 @@
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: \"http://localhost\", Provider.AISTUDIO: \"http://localhost\", Provider.GEMINI_WEBAPI: \"http://localhost\", Provider.QWENCHAT: \"http://localhost\", Provider.OPENROUTER: \"http://localhost\", Provider.MISTRAL: \"http://localhost\", Provider.NVIDIA: \"http://localhost\", Provider.GROQ: \"http://localhost\", Provider.ALIBABA: \"http://localhost\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'http://localhost', Provider.AISTUDIO: 'http://localhost', Provider.GEMINI_WEBAPI: 'http://localhost', Provider.QWENCHAT: 'http://localhost', Provider.OPENROUTER: 'http://localhost', Provider.MISTRAL: 'http://localhost', Provider.NVIDIA: 'http://localhost', Provider.GROQ: 'http://localhost', Provider.ALIBABA: 'http://localhost'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-11ab69",
+    "call_id": "20260928T211229Z-d1fe59",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When policy.min_routes_for_fallback_shuffle is 1, the original version passes since 1 >= 1, whereas the changed version requires it to be strictly greater than 1 and raises an error.",
-    "response_sha256": "c10225a2d50d4148574d7a462c2044db85471c4876e31f1a369b32a24d1b8dd5",
+    "reason": "The changed version requires policy.min_routes_for_fallback_shuffle to be strictly greater than 1 rather than at least 1, raising a ConfigurationError when min_routes_for_fallback_shuffle is 1.",
+    "response_sha256": "9177a7abdd89011ba209c94a89e282e9a7817cd819e46a868b3591bdde08dd4a",
     "sources": [
      "        condition=policy.min_routes_for_fallback_shuffle >= 1,",
      "    _require(condition=policy.min_routes_for_fallback_shuffle > 1, message='minimum routes for fallback shuffle must be at least 1.')"
@@ -315,37 +400,54 @@
    },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash-model'}}))"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T153700Z-f0e0c2",
+    "call_id": "20260928T211216Z-36e70a",
     "confidence": 0.95,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "The check changed from `policy.min_routes_for_fallback_shuffle >= 1` to `> 1`, so a config with min_routes_for_fallback_shuffle=1 (otherwise fully valid) passes validation in the original but raises in the changed version.",
-    "response_sha256": "c93d1ab6b33b863b50f6ac10bc5167cab6d60217cf0fd52d49acc48fd9061f03",
+    "reason": "The condition on min_routes_for_fallback_shuffle changed from >= 1 to > 1, so a config with min_routes_for_fallback_shuffle=1 passes validation in the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "11de33b9c3909c304df9ee55d2ff7c19f624a010f009fc73ee061415669df98d",
     "sources": [
      "_require(\n        condition=policy.min_routes_for_fallback_shuffle >= 1,\n        message=\"minimum routes for fallback shuffle must be at least 1.\",\n    )",
      "_require(condition=policy.min_routes_for_fallback_shuffle > 1, message='minimum routes for fallback shuffle must be at least 1.')"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "A valid LLMRouterConfig (positive retry waits, max_attempts>=1, default provider/model present and mapped, required base URLs present) whose policy has min_routes_for_fallback_shuffle=1"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-f2e304",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With min_routes_for_fallback_shuffle == 1 the original passes (>= 1) but the changed version raises ConfigurationError (> 1).",
+    "response_sha256": "66927bb8dfc26bf089cd58cc00fbdccc1a1595b5492c54c08f3ddc330bba9265",
+    "sources": [
+     "condition=policy.min_routes_for_fallback_shuffle >= 1,",
+     "_require(condition=policy.min_routes_for_fallback_shuffle > 1, message='minimum routes for fallback shuffle must be at least 1.')"
+    ],
+    "verdict": "distinct"
    }
   },
-  "prompt_sha256": "a31a64ba8cb21067a2f6d3301f5486986fcd4f2a79da9263183f4feb88a6593c"
+  "prompt_sha256": "c52836942816cd1bd62a1bae2993d109e9e882479a49c7fac1c230cfc6686ff8"
  },
  "a02b9c41521c0e84": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"url\", Provider.AISTUDIO: \"url\", Provider.GEMINI_WEBAPI: \"url\", Provider.QWENCHAT: \"url\", Provider.OPENROUTER: \"url\", Provider.MISTRAL: \"url\", Provider.NVIDIA: \"url\", Provider.GROQ: \"url\", Provider.ALIBABA: \"url\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"id\"}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'http', Provider.AISTUDIO: 'http', Provider.GEMINI_WEBAPI: 'http', Provider.QWENCHAT: 'http', Provider.OPENROUTER: 'http', Provider.MISTRAL: 'http', Provider.NVIDIA: 'http', Provider.GROQ: 'http', Provider.ALIBABA: 'http'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'model'}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-34a35a",
+    "call_id": "20260928T212518Z-da80a6",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When the retry policy's max_attempts is exactly 1, the original version passes the validation check, whereas the changed version fails the validation and raises an exception.",
-    "response_sha256": "b853dbe9beb9f189084a621e7d31a3cbcaa9eb9b7bb7afd3c77343a292e4c557",
+    "reason": "The changed version uses a strictly greater than operator for retry.max_attempts, causing it to incorrectly raise a ConfigurationError when max_attempts is exactly 1, whereas the original version correctly allows it.",
+    "response_sha256": "fb3608473a4ece3d99cbf5cecba53a375dc3e8fbcfc26ea99d65f07b855c5937",
     "sources": [
      "    _require(\n        condition=retry.max_attempts >= 1,\n        message=\"retry max attempts must be at least 1.\",\n    )",
      "    _require(condition=retry.max_attempts > 1, message='retry max attempts must be at least 1.')"
@@ -354,15 +456,15 @@
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'http://localhost', Provider.AISTUDIO: 'http://localhost', Provider.GEMINI_WEBAPI: 'http://localhost', Provider.QWENCHAT: 'http://localhost', Provider.OPENROUTER: 'http://localhost', Provider.MISTRAL: 'http://localhost', Provider.NVIDIA: 'http://localhost', Provider.GROQ: 'http://localhost', Provider.ALIBABA: 'http://localhost'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-f72065",
+    "call_id": "20260928T212518Z-b0787f",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When retry.max_attempts is 1, the original version passes validation whereas the changed version fails because it checks retry.max_attempts > 1 instead of >= 1.",
-    "response_sha256": "8f3802943b2374d4b29477cfedba2984767dda3fd1c52e05c3782f52d40e3365",
+    "reason": "The changed version checks retry.max_attempts > 1 instead of retry.max_attempts >= 1, raising an exception when retry.max_attempts equals 1 whereas the original version accepts it.",
+    "response_sha256": "7a70ef99472d443e539655183a1fd24a4f649e7a750e9cc8205e6601115d6524",
     "sources": [
      "        condition=retry.max_attempts >= 1,",
      "    _require(condition=retry.max_attempts > 1, message='retry max attempts must be at least 1.')"
@@ -371,319 +473,57 @@
    },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY')}, provider_base_urls={p: 'https://example.com' for p in Provider}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://x', Provider.AISTUDIO: 'https://x', Provider.GEMINI_WEBAPI: 'https://x', Provider.QWENCHAT: 'https://x', Provider.OPENROUTER: 'https://x', Provider.MISTRAL: 'https://x', Provider.NVIDIA: 'https://x', Provider.GROQ: 'https://x', Provider.ALIBABA: 'https://x'}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite-model-id'}}))"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T153700Z-54d1af",
-    "confidence": 0.75,
+    "call_id": "20260928T211235Z-51f28d",
+    "confidence": 0.93,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "The retry-attempts guard changed from `retry.max_attempts >= 1` to `retry.max_attempts > 1`; with a config whose RetryPolicy has max_attempts=1 and everything else valid, the original function returns None while the changed version raises via _require on that very first-failing check, so the two versions diverge.\"",
-    "response_sha256": "9b9ddd4a4e2f9b3af4e2d7b72c0b91adc7d2a5d31b22c0b09ca6ebdfdddbe640",
+    "reason": "With retry.max_attempts=1 and every other invariant satisfied, the original's `retry.max_attempts >= 1` passes and validate_config returns None successfully, while the changed version's `retry.max_attempts > 1` is False and raises ConfigurationError.",
+    "response_sha256": "5739c9e9cabfbca4a24437c7f33e74ae0edd23ed091343f08b3a91a4cb370887",
     "sources": [
      "_require(\n        condition=retry.max_attempts >= 1,\n        message=\"retry max attempts must be at least 1.\",\n    )",
      "_require(condition=retry.max_attempts > 1, message='retry max attempts must be at least 1.')"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "a valid LLMRouterConfig whose defaults.retry_policy is RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), with every other field valid"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-f75c81",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With retry max_attempts == 1, the original check (>= 1) passes and the changed check (> 1) raises ConfigurationError.",
+    "response_sha256": "49319c993c7bfaa0799a51443b2a9c9516dc05208d73fce97c38fd575a2bc385",
+    "sources": [
+     "_require(condition=retry.max_attempts > 1, message='retry max attempts must be at least 1.')",
+     "condition=retry.max_attempts >= 1,"
+    ],
+    "verdict": "distinct"
    }
   },
-  "prompt_sha256": "64debb82c7a4e754499df730d0d0c1f1cdc5bc15dff4730e9a2e5e91bad042ca"
+  "prompt_sha256": "dad40800b6aec6af9e0e6a9f812fb71cd6c0887fa95111dc35ade34c8c592efa"
  },
  "a6c77976ba2d4065": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'url', Provider.AISTUDIO: 'url', Provider.GEMINI_WEBAPI: 'url', Provider.QWENCHAT: 'url', Provider.OPENROUTER: 'url', Provider.MISTRAL: 'url', Provider.NVIDIA: 'url', Provider.GROQ: 'url', Provider.ALIBABA: 'url'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'model_id'}}))"
+     "config": "LLMRouterConfig(\n    default_provider=Provider.GOOGLE,\n    default_model=Model.GEMINI_FLASH,\n    default_key_id=1,\n    defaults=BehaviorDefaults(\n        retry_policy=RetryPolicy(\n            min_wait_seconds=1.0,\n            max_wait_seconds=2.0,\n            max_attempts=1\n        ),\n        policy=RouterPolicyDefaults(\n            max_attempts=1,\n            attempt_timeout_seconds=1.0,\n            wait_for_cooldown_if_all_blocked=False,\n            round_robin_start=False,\n            shuffle_fallbacks=False,\n            min_routes_for_fallback_shuffle=1,\n            default_limits=ProviderLimits(\n                rps=1.0,\n                rpm=1.0,\n                cooldown_seconds=1.0,\n                cooldown_after_failures=1\n            )\n        ),\n        default_max_tool_rounds=1,\n        structured_output_max_attempts=1,\n        provider_limits=ProviderLimits(\n            rps=1.0,\n            rpm=1.0,\n            cooldown_seconds=1.0,\n            cooldown_after_failures=1\n        )\n    ),\n    catalog=ProviderCatalog(\n        providers={\n            Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)\n        },\n        provider_base_urls={\n            Provider.GOOGLE: \"http://url\",\n            Provider.AISTUDIO: \"http://url\",\n            Provider.GEMINI_WEBAPI: \"http://url\",\n            Provider.QWENCHAT: \"http://url\",\n            Provider.OPENROUTER: \"http://url\",\n            Provider.MISTRAL: \"http://url\",\n            Provider.NVIDIA: \"http://url\",\n            Provider.GROQ: \"http://url\",\n            Provider.ALIBABA: \"http://url\"\n        },\n        models={\n            Model.GEMINI_FLASH: {\n                Provider.GOOGLE: \"gemini-flash\"\n            }\n        }\n    )\n)"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-767b0b",
+    "call_id": "20260928T212518Z-0a126a",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The original version accepts a retry max attempts of 1, whereas the changed version incorrectly requires it to be at least 2 and raises an exception if it is 1.",
-    "response_sha256": "73ee20ed78f14ccff5a15ae48f512a8cc4621f7c59637020be0053e33aa48e48",
+    "reason": "The original function allows `retry_policy.max_attempts` to be 1, whereas the modified version raises an exception unless it is at least 2.",
+    "response_sha256": "c77947c91376b835313e371d16b6a410a5d0c95bab8f745826ede4508fa35a3e",
     "sources": [
      "    _require(\n        condition=retry.max_attempts >= 1,\n        message=\"retry max attempts must be at least 1.\",\n    )",
      "    _require(condition=retry.max_attempts >= 2, message='retry max attempts must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-6da289",
-    "confidence": 1,
-    "model": "gemini-3.8-flash-high",
-    "problems": [],
-    "reason": "When retry.max_attempts is 1, the original function passes validation whereas the changed version requires retry.max_attempts to be at least 2 and raises an error.",
-    "response_sha256": "b517fbe30570c11710046533d341088094adff75b1f2b62cdc0c3d9a97c24bc8",
-    "sources": [
-     "        condition=retry.max_attempts >= 1,",
-     "    _require(condition=retry.max_attempts >= 2, message='retry max attempts must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY')}, provider_base_urls={Provider.GOOGLE: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T153700Z-909f7e",
-    "confidence": 0.92,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "With retry.max_attempts=1 (all other fields valid), the original's `retry.max_attempts >= 1` check passes so validate_config returns None, while the changed version's `retry.max_attempts >= 2` check fails and _require raises an exception.",
-    "response_sha256": "7fe004e1cd589f9168e6ec4e743bca6f25de6ab1e6c77ce6e9100b368540d06b",
-    "sources": [
-     "_require(\n        condition=retry.max_attempts >= 1,\n        message=\"retry max attempts must be at least 1.\",\n    )",
-     "_require(condition=retry.max_attempts >= 2, message='retry max attempts must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   }
-  },
-  "prompt_sha256": "a5ec31fc24d35637e2bb1b13927a10f8bd81616c19c5e9571555b1491993d4d5"
- },
- "c18833e1526efa72": {
-  "answers": {
-   "antigravity-cli:gemini-3.1-pro-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog())"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-9cdfb8",
-    "confidence": 1,
-    "model": "gemini-3.1-pro-high",
-    "problems": [],
-    "reason": "The modified version changes the condition for default_max_tool_rounds from `>= 1` to `> 1`, which means it will raise an exception when default_max_tool_rounds is exactly 1, unlike the original version which accepts it.",
-    "response_sha256": "a0ce8458bfc8ee3a7abbd9d86aa14879f6030da5e1f032299a58ebb5cd7f9183",
-    "sources": [
-     "    _require(\n        condition=config.default_max_tool_rounds >= 1,\n        message=\"default max tool rounds must be at least 1.\",\n    )",
-     "    _require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=5.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=30.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T153700Z-ce0ee2",
-    "confidence": 1,
-    "model": "gemini-3.8-flash-high",
-    "problems": [],
-    "reason": "When config.default_max_tool_rounds is 1, the original version succeeds because 1 >= 1 is true, whereas the changed version fails validation because 1 > 1 is false.",
-    "response_sha256": "4701e9e3d533c5dea3273830afc7148ea93d04d4a162d7d82b066cc1ad8c71a0",
-    "sources": [
-     "        condition=config.default_max_tool_rounds >= 1,",
-     "    _require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY')}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite'}}))"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T153700Z-a524cf",
-    "confidence": 0.93,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "With default_max_tool_rounds=1 and every other invariant satisfied, the original's `config.default_max_tool_rounds >= 1` check passes so validate_config returns None, while the changed `config.default_max_tool_rounds > 1` check fails and raises via _require.",
-    "response_sha256": "ca8c320e9aeef2ab562b252bb0f9c71d385de30c7426a5b1776c8c180bcf8e08",
-    "sources": [
-     "_require(\n        condition=config.default_max_tool_rounds >= 1,\n        message=\"default max tool rounds must be at least 1.\",\n    )",
-     "_require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   }
-  },
-  "prompt_sha256": "968d2ac1aa50b167bff8807080c6736749abbd4968694a575afac15c697d7bce"
- },
- "c37a776247b2f0eb": {
-  "answers": {
-   "antigravity-cli:gemini-3.1-pro-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={p: \"url\" for p in Provider}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T153703Z-dc3f16",
-    "confidence": 1,
-    "model": "gemini-3.1-pro-high",
-    "problems": [],
-    "reason": "When config.default_max_tool_rounds is 1, the original version passes the condition config.default_max_tool_rounds >= 1, while the changed version fails the condition config.default_max_tool_rounds >= 2 and raises an exception.",
-    "response_sha256": "0e6832c4728fa99a332806be05f8f8d0fc58f6299e145ee9af8f6e2f86770fb8",
-    "sources": [
-     "    _require(\n        condition=config.default_max_tool_rounds >= 1,\n        message=\"default max tool rounds must be at least 1.\",\n    )",
-     "    _require(condition=config.default_max_tool_rounds >= 2, message='default max tool rounds must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T153703Z-e5dbb6",
-    "confidence": 1,
-    "model": "gemini-3.8-flash-high",
-    "problems": [],
-    "reason": "The original function requires default_max_tool_rounds to be at least 1, whereas the changed version requires it to be at least 2.",
-    "response_sha256": "627c2ba17e0fcfc821f46cd326415046e9f7e16535007a7b9a65728f8f52416f",
-    "sources": [
-     "        condition=config.default_max_tool_rounds >= 1,",
-     "    _require(condition=config.default_max_tool_rounds >= 2, message='default max tool rounds must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY')}, provider_base_urls={Provider.GOOGLE: 'https://example.com/google', Provider.AISTUDIO: 'https://example.com/aistudio', Provider.GEMINI_WEBAPI: 'https://example.com/gemini_webapi', Provider.QWENCHAT: 'https://example.com/qwenchat', Provider.OPENROUTER: 'https://example.com/openrouter', Provider.MISTRAL: 'https://example.com/mistral', Provider.NVIDIA: 'https://example.com/nvidia', Provider.GROQ: 'https://example.com/groq', Provider.ALIBABA: 'https://example.com/alibaba'}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite-id'}}))"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T154433Z-c99f34",
-    "confidence": 0.94,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "The change tightens the check on default_max_tool_rounds from >= 1 to >= 2, so a config with default_max_tool_rounds=1 passes validation in the original (no exception) but raises in the changed version via the modified _require call.",
-    "response_sha256": "f2b5d7264a0710a6440d7646e2ae3c3f216581580357b57fe969841a292ba12e",
-    "sources": [
-     "_require(\n        condition=config.default_max_tool_rounds >= 1,\n        message=\"default max tool rounds must be at least 1.\",\n    )",
-     "_require(condition=config.default_max_tool_rounds >= 2, message='default max tool rounds must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   }
-  },
-  "prompt_sha256": "f101304e5bcab7f079cddb0bf0fde31aff7c200a2d310e9035cd5df7f472456e"
- },
- "df61b883b2255611": {
-  "answers": {
-   "antigravity-cli:gemini-3.1-pro-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"url\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"test\"}}))"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T153720Z-644ffa",
-    "confidence": 1,
-    "model": "gemini-3.1-pro-high",
-    "problems": [],
-    "reason": "The original version permits `structured_output_max_attempts` to be 1, while the changed version requires it to be strictly greater than 1, causing an exception for 1.",
-    "response_sha256": "5cf0630203f3dc3c49defd7631a7fb4dae1f74ca549794ac4df0d27ed5350737",
-    "sources": [
-     "    _require(\n        condition=config.structured_output_max_attempts >= 1,\n        message=\"structured output max attempts must be at least 1.\",\n    )",
-     "    _require(condition=config.structured_output_max_attempts > 1, message='structured output max attempts must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://api.google.com', Provider.AISTUDIO: 'https://api.aistudio.com', Provider.GEMINI_WEBAPI: 'https://api.gemini.com', Provider.QWENCHAT: 'https://api.qwen.com', Provider.OPENROUTER: 'https://api.openrouter.com', Provider.MISTRAL: 'https://api.mistral.com', Provider.NVIDIA: 'https://api.nvidia.com', Provider.GROQ: 'https://api.groq.com', Provider.ALIBABA: 'https://api.alibaba.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T153734Z-d975f0",
-    "confidence": 1,
-    "model": "gemini-3.8-flash-high",
-    "problems": [],
-    "reason": "When structured_output_max_attempts is 1, the original version passes validation because it checks for at least 1, whereas the changed version fails validation due to using a strict inequality.",
-    "response_sha256": "27d93f6b1c0c107356ca2f1582f72b8efe73edf5e227f4b231e48e2084ceeff0",
-    "sources": [
-     "        condition=config.structured_output_max_attempts >= 1,",
-     "    _require(condition=config.structured_output_max_attempts > 1, message='structured output max attempts must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash-id'}}))"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T153703Z-cc5f78",
-    "confidence": 0.95,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "With structured_output_max_attempts=1 (and every other field valid), the original's `>= 1` check passes so the function returns None, while the changed `> 1` check fails and _require raises, so the two versions diverge on this input.",
-    "response_sha256": "aa0473b676aaba18e4de642830d65e6016adbf9727cf5b9081051a40781b90bd",
-    "sources": [
-     "_require(\n        condition=config.structured_output_max_attempts >= 1,\n        message=\"structured output max attempts must be at least 1.\",\n    )",
-     "_require(condition=config.structured_output_max_attempts > 1, message='structured output max attempts must be at least 1.')"
-    ],
-    "verdict": "distinct"
-   }
-  },
-  "prompt_sha256": "bffb8f533e1f9949e1db55b16056bd3fa6671f855c58d6f1e4e9462a6a353f7b"
- },
- "e303da2411404c79": {
-  "answers": {
-   "antigravity-cli:gemini-3.1-pro-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(\n    default_provider=Provider.GOOGLE,\n    default_model=Model.GEMINI_FLASH,\n    default_key_id=0,\n    defaults=BehaviorDefaults(\n        retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1),\n        policy=RouterPolicyDefaults(\n            max_attempts=1,\n            attempt_timeout_seconds=1.0,\n            wait_for_cooldown_if_all_blocked=True,\n            round_robin_start=True,\n            shuffle_fallbacks=True,\n            min_routes_for_fallback_shuffle=1,\n            default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)\n        ),\n        default_max_tool_rounds=1,\n        structured_output_max_attempts=1,\n        provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)\n    ),\n    catalog=ProviderCatalog(\n        providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)},\n        provider_base_urls={\n            Provider.GOOGLE: \"u\", Provider.AISTUDIO: \"u\", Provider.GEMINI_WEBAPI: \"u\", \n            Provider.QWENCHAT: \"u\", Provider.OPENROUTER: \"u\", Provider.MISTRAL: \"u\", \n            Provider.NVIDIA: \"u\", Provider.GROQ: \"u\", Provider.ALIBABA: \"u\"\n        },\n        models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"m\"}}\n    )\n)"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T153749Z-d334f7",
-    "confidence": 1,
-    "model": "gemini-3.1-pro-high",
-    "problems": [],
-    "reason": "The changed version requires the minimum wait seconds to be strictly greater than 1, causing it to fail validation on inputs where it is equal to or less than 1, whereas the original accepts anything greater than 0.",
-    "response_sha256": "8a2bdd73662c8860766a1c7701c422955f3c30072ed331828195fad86c2f000b",
-    "sources": [
-     "    _require(\n        condition=retry.min_wait_seconds > 0,\n        message=\"retry min wait must be greater than 0.\",\n    )",
-     "    _require(condition=retry.min_wait_seconds > 1, message='retry min wait must be greater than 0.')"
-    ],
-    "verdict": "distinct"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.5, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T153801Z-c298bc",
-    "confidence": 1,
-    "model": "gemini-3.8-flash-high",
-    "problems": [],
-    "reason": "The original function requires retry.min_wait_seconds to be strictly greater than 0, whereas the changed function requires it to be strictly greater than 1.",
-    "response_sha256": "8ea57464f8601e5f899039041a6dda76010eb4c925eb72a1a1c6254f60ce3bcb",
-    "sources": [
-     "        condition=retry.min_wait_seconds > 0,",
-     "    _require(condition=retry.min_wait_seconds > 1, message='retry min wait must be greater than 0.')"
-    ],
-    "verdict": "distinct"
-   },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1, max_wait_seconds=1, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY', api_key_env_vars={}, base_url=None)}, provider_base_urls={Provider.GOOGLE: 'https://g', Provider.AISTUDIO: 'https://a', Provider.GEMINI_WEBAPI: 'https://gw', Provider.QWENCHAT: 'https://q', Provider.OPENROUTER: 'https://o', Provider.MISTRAL: 'https://m', Provider.NVIDIA: 'https://n', Provider.GROQ: 'https://gr', Provider.ALIBABA: 'https://al'}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite'}}))"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T153738Z-c3bae9",
-    "confidence": 0.95,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "The changed line tightens the retry-min-wait check from `> 0` to `> 1`, so a config with `min_wait_seconds=1` (and all other fields otherwise valid) passes the original validator but raises in the changed one.",
-    "response_sha256": "f2bc5ff9c4e5c77e567d471bfae7e386b0926c636dd651435d5791899e00d0ac",
-    "sources": [
-     "_require(\n        condition=retry.min_wait_seconds > 0,\n        message=\"retry min wait must be greater than 0.\",\n    )",
-     "_require(condition=retry.min_wait_seconds > 1, message='retry min wait must be greater than 0.')"
-    ],
-    "verdict": "distinct"
-   }
-  },
-  "prompt_sha256": "fd9cfbe77a59097ac501c0f625ca88ca0cd60651474a3011da48562aaab2802d"
- },
- "ea9109b0b3884c40": {
-  "answers": {
-   "antigravity-cli:gemini-3.1-pro-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(\n    default_provider=Provider.GOOGLE,\n    default_model=Model.GEMINI_FLASH,\n    default_key_id=1,\n    defaults=BehaviorDefaults(\n        retry_policy=RetryPolicy(\n            min_wait_seconds=1.0,\n            max_wait_seconds=1.0,\n            max_attempts=1\n        ),\n        policy=RouterPolicyDefaults(\n            max_attempts=1,\n            attempt_timeout_seconds=1.0,\n            wait_for_cooldown_if_all_blocked=True,\n            round_robin_start=True,\n            shuffle_fallbacks=True,\n            min_routes_for_fallback_shuffle=1,\n            default_limits=ProviderLimits(\n                rps=1.0,\n                rpm=1.0,\n                cooldown_seconds=1.0,\n                cooldown_after_failures=1\n            )\n        ),\n        default_max_tool_rounds=1,\n        structured_output_max_attempts=1,\n        provider_limits=ProviderLimits(\n            rps=1.0,\n            rpm=1.0,\n            cooldown_seconds=1.0,\n            cooldown_after_failures=1\n        )\n    ),\n    catalog=ProviderCatalog(\n        providers={\n            Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE),\n            Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO),\n            Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI),\n            Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT),\n            Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER),\n            Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL),\n            Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA),\n            Provider.GROQ: ProviderSpec(provider=Provider.GROQ),\n            Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)\n        },\n        provider_base_urls={\n            Provider.GOOGLE: \"url\",\n            Provider.AISTUDIO: \"url\",\n            Provider.GEMINI_WEBAPI: \"url\",\n            Provider.QWENCHAT: \"url\",\n            Provider.OPENROUTER: \"url\",\n            Provider.MISTRAL: \"url\",\n            Provider.NVIDIA: \"url\",\n            Provider.GROQ: \"url\",\n            Provider.ALIBABA: \"url\"\n        },\n        models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"url\"}}\n    )\n)"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T153813Z-0fbcbf",
-    "confidence": 1,
-    "model": "gemini-3.1-pro-high",
-    "problems": [],
-    "reason": "The changed version replaces `>= 1` with `> 1` when validating `policy.max_attempts`, which incorrectly rejects a valid configuration where the maximum attempts is exactly 1.",
-    "response_sha256": "bfae2dd9ba84fb88eb9f458ee29392d1bd39b10341e075e258a255eb2ed2676b",
-    "sources": [
-     "    if policy.max_attempts is not None:\n        _require(\n            condition=policy.max_attempts >= 1,\n            message=\"policy max attempts must be at least 1.\",\n        )"
     ],
     "verdict": "distinct"
    },
@@ -692,12 +532,502 @@
      "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: \"https://example.com\", Provider.AISTUDIO: \"https://example.com\", Provider.GEMINI_WEBAPI: \"https://example.com\", Provider.QWENCHAT: \"https://example.com\", Provider.OPENROUTER: \"https://example.com\", Provider.MISTRAL: \"https://example.com\", Provider.NVIDIA: \"https://example.com\", Provider.GROQ: \"https://example.com\", Provider.ALIBABA: \"https://example.com\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153817Z-bcd0e7",
+    "call_id": "20260928T212518Z-7fbe24",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When policy.max_attempts is 1, the original function accepts the configuration because 1 >= 1 holds, whereas the changed version fails validation because 1 > 1 evaluates to False.",
-    "response_sha256": "44ed1f2651adf2fa2f1427b64589630c8f3bc560f0acbc22e98b6e74c83cf73b",
+    "reason": "When config.retry_policy.max_attempts is 1, the original version succeeds whereas the changed version raises ConfigurationError because it requires max_attempts to be at least 2.",
+    "response_sha256": "2cff176a8deab118f85c6eb4616d94df098d4efa6ecd421141d38d8ef0f239a6",
+    "sources": [
+     "    _require(condition=retry.max_attempts >= 2, message='retry max attempts must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash-model-id'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T212518Z-1ad724",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version tightens the retry max_attempts check from `>= 1` to `>= 2`, so a config with retry_policy.max_attempts=1 (otherwise fully valid) passes validate_config in the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "7a0c9449101391cb9104c97fdd6220e0ce08c928294bf91f1dac10406acf9dd0",
+    "sources": [
+     "_require(\n        condition=retry.max_attempts >= 1,\n        message=\"retry max attempts must be at least 1.\",\n    )",
+     "_require(condition=retry.max_attempts >= 2, message='retry max attempts must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig with an otherwise valid setup (valid default provider, model, catalog, base URLs and policy) but retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-6f6a4c",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With retry max_attempts=1 and everything else valid, the original passes, but the changed version requires >= 2 and raises ConfigurationError.",
+    "response_sha256": "fc5ee0ccb8a8dda215331c1ea46e005e38e6e798839b87a4bccdb4817fab617a",
+    "sources": [
+     "_require(condition=retry.max_attempts >= 2, message='retry max attempts must be at least 1.')",
+     "condition=retry.max_attempts >= 1,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "110d12b40e2af906e8387c935d3760ed0bbfad442a7fc211f2e28dcac54b8e2a"
+ },
+ "b6340db1c7f8750a": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=30.0, cooldown_after_failures=3)), default_max_tool_rounds=3, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=30.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"https://google.com\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214516Z-8cf9d5",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version raises a TypeError when `policy.attempt_timeout_seconds` is None because it unconditionally evaluates `policy.attempt_timeout_seconds > 0`.",
+    "response_sha256": "fcc81863951eabb527dcedf7aa7bf8539bf2cf9547e9572867cdb351e86c3f2f",
+    "sources": [
+     "    if policy.attempt_timeout_seconds is not None:",
+     "        _require(",
+     "            condition=policy.attempt_timeout_seconds > 0,",
+     "    if True:",
+     "        _require(condition=policy.attempt_timeout_seconds > 0, message='policy attempt timeout must be greater than 0.')"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=5.0, cooldown_after_failures=3)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=5.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'http://localhost', Provider.AISTUDIO: 'http://localhost', Provider.GEMINI_WEBAPI: 'http://localhost', Provider.QWENCHAT: 'http://localhost', Provider.OPENROUTER: 'http://localhost', Provider.MISTRAL: 'http://localhost', Provider.NVIDIA: 'http://localhost', Provider.GROQ: 'http://localhost', Provider.ALIBABA: 'http://localhost'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214516Z-462a3e",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When policy.attempt_timeout_seconds is None, the original version skips validating it while the changed version unconditionally evaluates policy.attempt_timeout_seconds > 0, raising a TypeError.",
+    "response_sha256": "0a49415390df68cc47d01b53be2ffb34251b3c91698bb283e464477cadc2445f",
+    "sources": [
+     "    if policy.attempt_timeout_seconds is not None:",
+     "    if True:",
+     "        _require(condition=policy.attempt_timeout_seconds > 0, message='policy attempt timeout must be greater than 0.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'http://x', Provider.AISTUDIO: 'http://x', Provider.GEMINI_WEBAPI: 'http://x', Provider.QWENCHAT: 'http://x', Provider.OPENROUTER: 'http://x', Provider.MISTRAL: 'http://x', Provider.NVIDIA: 'http://x', Provider.GROQ: 'http://x', Provider.ALIBABA: 'http://x'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'google-model-name'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T214516Z-c5d813",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Original guards the attempt-timeout check with 'if policy.attempt_timeout_seconds is not None:' so when it is None the check is skipped and validation succeeds; the changed version replaced that guard with 'if True:', so it evaluates 'None > 0' and raises a TypeError instead of returning normally.",
+    "response_sha256": "8f7d4c392b072ae769e5a195e9efcc4509d615e95c3ca90aa74857b5149c281e",
+    "sources": [
+     "if policy.attempt_timeout_seconds is not None:",
+     "if True:",
+     "_require(condition=policy.attempt_timeout_seconds > 0, message='policy attempt timeout must be greater than 0.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig with an otherwise valid setup (valid retry policy, default provider/model mapped, required base URLs present) and policy.attempt_timeout_seconds=None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-57f609",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With attempt_timeout_seconds=None the original skips the check and returns, but the changed version's unconditional `None > 0` raises TypeError.",
+    "response_sha256": "11a83b71c4fccadc332d2498c3698400a823b313466b83343f484a10affdeaf5",
+    "sources": [
+     "if policy.attempt_timeout_seconds is not None:",
+     "if True:",
+     "_require(condition=policy.attempt_timeout_seconds > 0, message='policy attempt timeout must be greater than 0.')"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "059fefa1510ed702537f2e63774dec0e9583265b2a74ffc57791adea74957602"
+ },
+ "c18833e1526efa72": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"x\", Provider.AISTUDIO: \"x\", Provider.GEMINI_WEBAPI: \"x\", Provider.QWENCHAT: \"x\", Provider.OPENROUTER: \"x\", Provider.MISTRAL: \"x\", Provider.NVIDIA: \"x\", Provider.GROQ: \"x\", Provider.ALIBABA: \"x\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"x\"}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T212518Z-71f0d8",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified version changes the inequality for `default_max_tool_rounds` from `>= 1` to `> 1`, which causes it to raise a ConfigurationError when `default_max_tool_rounds` is exactly 1, whereas the original version accepts it.",
+    "response_sha256": "3bd72137c12f760f9c1d94f2cc198838d0ddc32b5a8ad373a2df1db6b0c6c8b0",
+    "sources": [
+     "    _require(\n        condition=config.default_max_tool_rounds >= 1,\n        message=\"default max tool rounds must be at least 1.\",\n    )",
+     "    _require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T212518Z-8d188c",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When config.default_max_tool_rounds is 1, the original version succeeds whereas the changed version raises a ConfigurationError.",
+    "response_sha256": "1581ff74f91966157f8cdddf6cd0fd3a2e610737713cd6fec92ede48433b9336",
+    "sources": [
+     "        condition=config.default_max_tool_rounds >= 1,",
+     "    _require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY')}, provider_base_urls={Provider.GOOGLE: 'https://example.com'}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T212518Z-b706c8",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version checks `config.default_max_tool_rounds > 1` instead of `>= 1`, so with default_max_tool_rounds=1 (and all other invariants satisfied) the original returns normally while the changed version raises ConfigurationError.",
+    "response_sha256": "4bf1fe03b545c20a70f49dd0ac89bd2a2a7b8e09162659fa063be08d1cf9c62d",
+    "sources": [
+     "_require(\n        condition=config.default_max_tool_rounds >= 1,\n        message=\"default max tool rounds must be at least 1.\",\n    )",
+     "_require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-757f4a",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [
+     "it answers distinct without an input"
+    ],
+    "reason": "The tool-round check changed from >= 1 to > 1, so a otherwise-valid config with default_max_tool_rounds == 1 passes the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "9c7c09c96271f08a7e81a3e2b1abacc5a10f14ea9f942723b807efe98c16716b",
+    "sources": [
+     "condition=config.default_max_tool_rounds >= 1,",
+     "_require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "ebeccbe7f3f66e6fa273b0453420769b2a91928ea7100c261bb556c83eb9c453"
+ },
+ "c37a776247b2f0eb": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)), default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: \"url\", Provider.AISTUDIO: \"url\", Provider.GEMINI_WEBAPI: \"url\", Provider.QWENCHAT: \"url\", Provider.OPENROUTER: \"url\", Provider.MISTRAL: \"url\", Provider.NVIDIA: \"url\", Provider.GROQ: \"url\", Provider.ALIBABA: \"url\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"model\"}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T212518Z-c1b160",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version allows config.default_max_tool_rounds to be 1, whereas the modified version restricts it to be at least 2 and will fail with a ConfigurationError if it is 1.",
+    "response_sha256": "9b651cf8476ba7064f1b0a174b43befa5de78ef9f2528e7ad5db63801832847a",
+    "sources": [
+     "    _require(\n        condition=config.default_max_tool_rounds >= 1,",
+     "    _require(condition=config.default_max_tool_rounds >= 2, message='default max tool rounds must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE), Provider.AISTUDIO: ProviderSpec(provider=Provider.AISTUDIO), Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI), Provider.QWENCHAT: ProviderSpec(provider=Provider.QWENCHAT), Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER), Provider.MISTRAL: ProviderSpec(provider=Provider.MISTRAL), Provider.NVIDIA: ProviderSpec(provider=Provider.NVIDIA), Provider.GROQ: ProviderSpec(provider=Provider.GROQ), Provider.ALIBABA: ProviderSpec(provider=Provider.ALIBABA)}, provider_base_urls={Provider.GOOGLE: \"http://localhost\", Provider.AISTUDIO: \"http://localhost\", Provider.GEMINI_WEBAPI: \"http://localhost\", Provider.QWENCHAT: \"http://localhost\", Provider.OPENROUTER: \"http://localhost\", Provider.MISTRAL: \"http://localhost\", Provider.NVIDIA: \"http://localhost\", Provider.GROQ: \"http://localhost\", Provider.ALIBABA: \"http://localhost\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T212522Z-719835",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When config.default_max_tool_rounds is 1, the original function passes validation while the changed function raises a ConfigurationError due to checking default_max_tool_rounds >= 2.",
+    "response_sha256": "fe90e40b178e7ad19f2731e6547ade4b5d90ef650f14a12244256698f6ea73fb",
+    "sources": [
+     "        condition=config.default_max_tool_rounds >= 1,",
+     "    _require(condition=config.default_max_tool_rounds >= 2, message='default max tool rounds must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var=None, api_key_env_vars={})}, provider_base_urls={p: 'https://example.com' for p in Provider}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash-model'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T212518Z-ed550f",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed code checks `config.default_max_tool_rounds >= 2` while the original checks `>= 1`, so a config with default_max_tool_rounds=1 (otherwise fully valid) passes the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "d86012714c07b86a3fbfc87620eb66f7d53c55bbf98e7df22d661dc350fff336",
+    "sources": [
+     "_require(\n        condition=config.default_max_tool_rounds >= 1,\n        message=\"default max tool rounds must be at least 1.\",\n    )",
+     "_require(condition=config.default_max_tool_rounds >= 2, message='default max tool rounds must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GROQ, default_model=Model.LLAMA_8B, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={p: ProviderSpec(provider=p) for p in Provider}, provider_base_urls={p: 'http://x' for p in Provider}, models={Model.LLAMA_8B: {Provider.GROQ: 'm'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-3b7f06",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With default_max_tool_rounds=1, the original passes the check (>= 1), but the changed version requires >= 2 and raises ConfigurationError.",
+    "response_sha256": "5d02919d78a74dbac1f4f443d2b0983929e501a7e66b3a24a6056f3d6eed4c8d",
+    "sources": [
+     "_require(condition=config.default_max_tool_rounds >= 2, message='default max tool rounds must be at least 1.')",
+     "condition=config.default_max_tool_rounds >= 1,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "60b161fa0fd174c99d3eab030243b7120bd7846c9f27c996cb0a526dd7ba3b1f"
+ },
+ "de2cbbbd9acd877b": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214516Z-118efa",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The versions are completely equivalent because removing the `bool()` cast does not change the runtime behavior, as Python evaluates the mapping object using its intrinsic truthiness (which behaves identically to `bool()`) when checked as a condition inside `_require`, and string quote changes are purely syntactic.",
+    "response_sha256": "b37d42d079c464acf1963a93cd1d11e7f67256ff47db58dd604b7a5b4fa955bf",
+    "sources": [
+     "    for model, provider_models in config.models.items():\n        _require(\n            condition=bool(provider_models),\n            message=f\"model '{model.value}' must map to a provider.\",\n        )"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214516Z-742498",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Evaluating `provider_models` directly in `_require` has the same truth value as `bool(provider_models)` for checking that the mapping is non-empty.",
+    "response_sha256": "f34c0d84f7c33b8d8b92abc047e1a2c277ee907a505a5ef5b44f5590965790bb",
+    "sources": [
+     "            condition=bool(provider_models),",
+     "        _require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T214516Z-42d56f",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only functional change is passing provider_models directly instead of bool(provider_models) into _require's condition; since _require evaluates truthiness (e.g. via `not condition`), an empty mapping and a non-empty mapping produce the same boolean outcome either way, so no input distinguishes the two versions.",
+    "response_sha256": "3c922b4fd2fab8ec6014b75092c9ea2cbaad5b1113048bf270ab84ce9e334632",
+    "sources": [
+     "_require(\n            condition=bool(provider_models),\n            message=f\"model '{model.value}' must map to a provider.\",\n        )",
+     "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "53c5a568c4ca349f6b7ed2465b1bd08e9a66cea486eb6864eed02c2f1e3465a7"
+ },
+ "df61b883b2255611": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"u\", Provider.AISTUDIO: \"u\", Provider.GEMINI_WEBAPI: \"u\", Provider.QWENCHAT: \"u\", Provider.OPENROUTER: \"u\", Provider.MISTRAL: \"u\", Provider.NVIDIA: \"u\", Provider.GROQ: \"u\", Provider.ALIBABA: \"u\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"m\"}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T212522Z-2785da",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When `config.structured_output_max_attempts` is 1, the original version accepts it because 1 >= 1 is true, but the changed version raises a ConfigurationError because it checks if 1 > 1.",
+    "response_sha256": "8619240ca671decee51d5bdec7cb88be3cadecc25a82519d7baffd39f8ebebc2",
+    "sources": [
+     "    _require(\n        condition=config.structured_output_max_attempts >= 1,\n        message=\"structured output max attempts must be at least 1.\",\n    )"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://google.com', Provider.AISTUDIO: 'https://aistudio.com', Provider.GEMINI_WEBAPI: 'https://webapi.com', Provider.QWENCHAT: 'https://qwen.com', Provider.OPENROUTER: 'https://openrouter.ai', Provider.MISTRAL: 'https://mistral.ai', Provider.NVIDIA: 'https://nvidia.com', Provider.GROQ: 'https://groq.com', Provider.ALIBABA: 'https://alibaba.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T212522Z-1d10b7",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When structured_output_max_attempts is 1, the original version succeeds because 1 >= 1 is true, whereas the changed version fails because 1 > 1 is false.",
+    "response_sha256": "e6a5130be5b10344a13562f8dc74466584aba7671606dd4ff878696b30f9fa56",
+    "sources": [
+     "        condition=config.structured_output_max_attempts >= 1,",
+     "    _require(condition=config.structured_output_max_attempts > 1, message='structured output max attempts must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY', api_key_env_vars={}, base_url=None)}, provider_base_urls={Provider.GOOGLE: 'https://google.example', Provider.AISTUDIO: 'https://aistudio.example', Provider.GEMINI_WEBAPI: 'https://gemini.example', Provider.QWENCHAT: 'https://qwenchat.example', Provider.OPENROUTER: 'https://openrouter.example', Provider.MISTRAL: 'https://mistral.example', Provider.NVIDIA: 'https://nvidia.example', Provider.GROQ: 'https://groq.example', Provider.ALIBABA: 'https://alibaba.example'}, models={Model.GEMINI_FLASH_LITE: {Provider.GOOGLE: 'gemini-flash-lite'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T212522Z-fe87de",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed code checks `config.structured_output_max_attempts > 1` instead of `>= 1`, so a fully-valid config with structured_output_max_attempts=1 passes (returns None) in the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "081d67b4633ea6832e78e5be98ccb2d314a294df47619cec824b10fe686cadcb",
+    "sources": [
+     "_require(\n        condition=config.structured_output_max_attempts >= 1,\n        message=\"structured output max attempts must be at least 1.\",\n    )",
+     "_require(condition=config.structured_output_max_attempts > 1, message='structured output max attempts must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GROQ, default_model=Model.LLAMA_8B, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 2.0, 3), policy=RouterPolicyDefaults(None, None, False, False, False, 1, ProviderLimits(1.0, 60.0, 1.0, 1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(1.0, 60.0, 1.0, 1)), catalog=ProviderCatalog(providers={Provider.GROQ: ProviderSpec(Provider.GROQ)}, provider_base_urls={Provider.GROQ: 'http://x'}, models={Model.LLAMA_8B: {Provider.GROQ: 'm'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-5ee1f0",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With structured_output_max_attempts=1 the original passes (>= 1) but the changed version raises ConfigurationError (> 1), assuming the rest of the config is valid, including any providers in _PROVIDERS_REQUIRING_BASE_URL.",
+    "response_sha256": "6c176dea48144d71a9c57ffce929e9e1998aa8d4cd30cbe7eb7a9b9f31883a69",
+    "sources": [
+     "_require(condition=config.structured_output_max_attempts > 1, message='structured output max attempts must be at least 1.')",
+     "condition=config.structured_output_max_attempts >= 1,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "ffb1692a930ce6d5d76b85b02ca2bc0e751e82509d9b600d4dfb00a416d05eee"
+ },
+ "e303da2411404c79": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(\n    default_provider=Provider.GOOGLE,\n    default_model=Model.GEMINI_FLASH,\n    default_key_id=1,\n    defaults=BehaviorDefaults(\n        retry_policy=RetryPolicy(\n            min_wait_seconds=0.5,\n            max_wait_seconds=1.0,\n            max_attempts=3\n        ),\n        policy=RouterPolicyDefaults(\n            max_attempts=3,\n            attempt_timeout_seconds=5.0,\n            wait_for_cooldown_if_all_blocked=True,\n            round_robin_start=True,\n            shuffle_fallbacks=True,\n            min_routes_for_fallback_shuffle=2,\n            default_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)\n        ),\n        default_max_tool_rounds=5,\n        structured_output_max_attempts=3,\n        provider_limits=ProviderLimits(rps=10.0, rpm=60.0, cooldown_seconds=60.0, cooldown_after_failures=3)\n    ),\n    catalog=ProviderCatalog(\n        providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)},\n        provider_base_urls={\n            Provider.GOOGLE: \"url\",\n            Provider.AISTUDIO: \"url\",\n            Provider.GEMINI_WEBAPI: \"url\",\n            Provider.QWENCHAT: \"url\",\n            Provider.OPENROUTER: \"url\",\n            Provider.MISTRAL: \"url\",\n            Provider.NVIDIA: \"url\",\n            Provider.GROQ: \"url\",\n            Provider.ALIBABA: \"url\"\n        },\n        models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"flash\"}}\n    )\n)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T212522Z-73f1b5",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version incorrectly checks `retry.min_wait_seconds > 1` instead of `> 0`, causing valid configurations with a minimum wait between 0 and 1 seconds to raise a ConfigurationError.",
+    "response_sha256": "4a36ca15f5004f4ed7bbf4608142127595c01fcc84eea3bd7cf2735c95f09864",
+    "sources": [
+     "    _require(\n        condition=retry.min_wait_seconds > 0,\n        message=\"retry min wait must be greater than 0.\",\n    )",
+     "    _require(condition=retry.min_wait_seconds > 1, message='retry min wait must be greater than 0.')"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.5, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=5.0, cooldown_after_failures=3)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=10.0, rpm=600.0, cooldown_seconds=5.0, cooldown_after_failures=3)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"https://example.com\", Provider.AISTUDIO: \"https://example.com\", Provider.GEMINI_WEBAPI: \"https://example.com\", Provider.QWENCHAT: \"https://example.com\", Provider.OPENROUTER: \"https://example.com\", Provider.MISTRAL: \"https://example.com\", Provider.NVIDIA: \"https://example.com\", Provider.GROQ: \"https://example.com\", Provider.ALIBABA: \"https://example.com\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T212522Z-86cb44",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version requires retry.min_wait_seconds to be strictly greater than 1 rather than greater than 0, rejecting valid configurations with min_wait_seconds between 0 and 1.",
+    "response_sha256": "49b8c8f2ffed5137e51e8f811b646496533135afab89f8046f1126743808ec68",
+    "sources": [
+     "        condition=retry.min_wait_seconds > 0,",
+     "    _require(condition=retry.min_wait_seconds > 1, message='retry min wait must be greater than 0.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={p: 'https://example.com' for p in Provider}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash-model-id'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T212522Z-7e82ab",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "With retry.min_wait_seconds set to exactly 1.0 (and all other invariants satisfied), the original check `retry.min_wait_seconds > 0` passes so validate_config returns None, while the changed check `retry.min_wait_seconds > 1` fails so it raises ConfigurationError via _require.",
+    "response_sha256": "767e2fcd74c82a65ac9d2ad0c67f05decf5440adf2282811cc9f3288182fab08",
+    "sources": [
+     "_require(\n        condition=retry.min_wait_seconds > 0,\n        message=\"retry min wait must be greater than 0.\",\n    )",
+     "_require(condition=retry.min_wait_seconds > 1, message='retry min wait must be greater than 0.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.5, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111544Z-32cb47",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed first check requires min_wait_seconds > 1 where the original requires > 0, so a min wait of 0.5 passes the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "75ebf26b8273f92b1f249fecdf2b365641802b764d94f40de604260a652937d2",
+    "sources": [
+     "_require(condition=retry.min_wait_seconds > 1, message='retry min wait must be greater than 0.')",
+     "condition=retry.min_wait_seconds > 0,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "cc2916ae7dd467338bdd8c1ee32ab43df0ae44fced0e169f9df13af2b75052f0"
+ },
+ "ea9109b0b3884c40": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=2), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=True, round_robin_start=True, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"url\", Provider.AISTUDIO: \"url\", Provider.GEMINI_WEBAPI: \"url\", Provider.QWENCHAT: \"url\", Provider.OPENROUTER: \"url\", Provider.MISTRAL: \"url\", Provider.NVIDIA: \"url\", Provider.GROQ: \"url\", Provider.ALIBABA: \"url\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"model\"}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T212522Z-6e73b8",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified version requires `policy.max_attempts` to be strictly greater than 1, while the original version only requires it to be at least 1, causing the modified version to throw an exception when `max_attempts` is 1.",
+    "response_sha256": "da2eeb65b20a66bb29f74a4327741ef84c6a36d9181d32e5da3141ac604f74ff",
+    "sources": [
+     "    if policy.max_attempts is not None:\n        _require(\n            condition=policy.max_attempts >= 1,\n            message=\"policy max attempts must be at least 1.\",\n        )"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T212522Z-5329a7",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When policy.max_attempts equals 1, the original version passes validation because 1 >= 1 is true, whereas the changed version raises ConfigurationError because 1 > 1 is false.",
+    "response_sha256": "97c8b8e8fae80498ff680a226b192e5be006a32cd031b5b0bc0fa162243bb713",
     "sources": [
      "            condition=policy.max_attempts >= 1,",
      "        _require(condition=policy.max_attempts > 1, message='policy max attempts must be at least 1.')"
@@ -706,22 +1036,39 @@
    },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY')}, provider_base_urls={Provider.GOOGLE: 'https://example.com', Provider.AISTUDIO: 'https://example.com', Provider.GEMINI_WEBAPI: 'https://example.com', Provider.QWENCHAT: 'https://example.com', Provider.OPENROUTER: 'https://example.com', Provider.MISTRAL: 'https://example.com', Provider.NVIDIA: 'https://example.com', Provider.GROQ: 'https://example.com', Provider.ALIBABA: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GROQ, default_model=Model.LLAMA_8B, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GROQ: ProviderSpec(provider=Provider.GROQ)}, provider_base_urls={p: 'x' for p in Provider}, models={Model.LLAMA_8B: {Provider.GROQ: 'y'}}))"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T153808Z-140d13",
+    "call_id": "20260928T212522Z-a8d0e7",
     "confidence": 0.95,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "With policy.max_attempts == 1 the original's condition policy.max_attempts >= 1 passes so the function returns None, while the changed condition policy.max_attempts > 1 is False, causing _require to raise an exception; all other checks in this config are satisfied identically in both versions.",
-    "response_sha256": "9188f07e7ee5d193301e13d383c55746c3536cb5d781a00d1e588db4b26c3786",
+    "reason": "When policy.max_attempts equals 1, the original condition policy.max_attempts >= 1 is satisfied so validate_config returns None, but the changed condition policy.max_attempts > 1 fails and raises ConfigurationError, a clear behavioral divergence.",
+    "response_sha256": "6ec4eb0f079509ad421508e8c55dd701f1d77d8e4c6dfe9e2f9f16c253c5824b",
     "sources": [
-     "_require(\n            condition=policy.max_attempts >= 1,\n            message=\"policy max attempts must be at least 1.\",\n        )",
-     "_require(condition=policy.max_attempts > 1, message='policy max attempts must be at least 1.')"
+     "condition=policy.max_attempts >= 1,",
+     "condition=policy.max_attempts > 1, message='policy max attempts must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 2.0, 3), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(1.0,1.0,1.0,1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(1.0,1.0,1.0,1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={p: 'http://x' for p in Provider}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'm'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111549Z-5c9980",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With policy.max_attempts == 1, the original passes its >= 1 check, while the changed version's > 1 check raises ConfigurationError.",
+    "response_sha256": "45278915f5406a2855da4143c97a3c393da8634a84cd8fc657632137f5d88cdc",
+    "sources": [
+     "_require(condition=policy.max_attempts > 1, message='policy max attempts must be at least 1.')",
+     "condition=policy.max_attempts >= 1,"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "d849476e3be49ba691f49bff5abc53078f1149c90090e72d9e4f9cf118bcd027"
+  "prompt_sha256": "0e7c6ace9824611ea4d897961d9c52e2a0340fb5b777bb3db022886a338ec601"
  }
 }

@@ -1,6 +1,43 @@
 {
  "77252785424d95f7": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "call": "ToolCall(name='test', args={1: 1}, id='1')"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213208Z-ec1d47",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When an exception occurs during the tool execution (e.g., TypeError from unpacking a dictionary with non-string keys), the original version catches it and raises a ToolExecutionError, whereas the changed version suppresses the exception and subsequently raises an UnboundLocalError when it attempts to use the unassigned 'result' variable.",
+    "response_sha256": "fa32066589f0ed226e7b22a11de35baab96a456366a9581969cee1ab7e987fcc",
+    "sources": [
+     "    try:",
+     "        result = definition.callable(**call.args)",
+     "    except Exception as exc:",
+     "        pass",
+     "    return ToolStep(tool_name=call.name, args=dict(call.args), result=result, call_id=call.id)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213212Z-ff3340",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Because a ToolRegistry defaults to an empty mapping of tools, self.get(call.name) unconditionally raises KeyError, preventing execution from ever reaching the modified exception handling block.",
+    "response_sha256": "e8062e410fa35116784e28d4b285c45c7ea772165a4e08b905e272c34ce4e35b",
+    "sources": [
+     "    tools: Mapping[str, ToolDefinition] = field(default_factory=dict)",
+     "    definition = self.get(call.name)",
+     "    except Exception as exc:",
+     "        pass"
+    ],
+    "verdict": "equivalent"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
      "call": "ToolCall(name=\"fail\", args={}, id=\"c1\")  # assuming self.tools[\"fail\"].callable always raises, e.g. a tool defined as ToolDefinition(name=\"fail\", callable=lambda: (_ for _ in ()).throw(ValueError(\"boom\")))"
@@ -18,12 +55,67 @@
      "return ToolStep(tool_name=call.name, args=dict(call.args), result=result, call_id=call.id)"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "call": "ToolCall(name='boom', args={}, id='1')"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111632Z-8b4e97",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "When the tool's callable raises, the original raises ToolExecutionError, while the changed version swallows it and then fails with UnboundLocalError on `result`.",
+    "response_sha256": "05a3a93cb5de4a989f1825229ce64438e03fb6adc364df4021f1450b01514b3d",
+    "sources": [
+     "raise ToolExecutionError(",
+     "except Exception as exc:\n        pass"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "a9d98e7de85dd716b89cd1038287da90285cb5e4287458dfb086b27a7d3f7780"
  },
  "77986b22a0ac6322": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "call": "ToolCall(name='descriptor_only_tool', args={}, id='1')"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213216Z-5bbb1c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "If the tool definition has no callable, the original version raises a ValueError directly, whereas the changed version suppresses the ValueError, tries to call None, and raises a ToolExecutionError wrapping a TypeError.",
+    "response_sha256": "2b71c33269d7e0a1dd743e19e1bd371d5fd94ad421c295cda68e19e639dc0c3e",
+    "sources": [
+     "        if definition.callable is None:",
+     "            raise ValueError(msg)",
+     "        pass",
+     "        result = definition.callable(**call.args)",
+     "    except Exception as exc:",
+     "        raise ToolExecutionError(tool_name=call.name, args=dict(call.args), cause=exc) from exc"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213221Z-75fb1c",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Any tool call with an unregistered name raises KeyError in both versions, and for any valid registered tool definition.callable is not None, making the modified branch unreachable.",
+    "response_sha256": "f56a991531024aff142f19a5bce7e109d26dc9420a003d5646a5e8911771faec",
+    "sources": [
+     "        if definition.callable is None:",
+     "            raise ValueError(msg)",
+     "        pass",
+     "            return self.tools[name]"
+    ],
+    "verdict": "equivalent"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
      "call": "ToolCall(name='descriptor_tool', args={}, id='call-1')"
@@ -42,9 +134,80 @@
      "result = definition.callable(**call.args)"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "call": "ToolCall(name='descriptor_tool', args={}, id='1')"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111632Z-36161c",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a descriptor-only tool (callable None), the original raises ValueError while the changed version's `pass` falls through to calling None, whose TypeError is wrapped as ToolExecutionError.",
+    "response_sha256": "f75e0bec6b9c8b5ee558897db1e3171d3710fccb8ec24f36739e465382059ae1",
+    "sources": [
+     "        msg = f\"Tool '{call.name}' is a descriptor-only tool.\"\n        pass",
+     "raise ValueError(msg)",
+     "result = definition.callable(**call.args)"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "8b114d67d53a2e971a9a3d7ea90075efca3de5a5da92476adfc98d97cacdabd3"
+ },
+ "7a912b65bb0be9c6": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T085358Z-8b4431",
+    "confidence": 0.99,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change simply omits a shallow copy of the args mapping when instantiating the returned ToolStep on the success path, which doesn't alter the equality of the return value, the registry's state, or any raised exceptions.",
+    "response_sha256": "e198335dc22addab7a677e8d267ebc02ce0662d78df1c335ab0314f65d764230",
+    "sources": [
+     "        return ToolStep(\n            tool_name=call.name,\n            args=dict(call.args),\n            result=result,\n            call_id=call.id,\n        )",
+     "    return ToolStep(tool_name=call.name, args=call.args, result=result, call_id=call.id)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T085358Z-ee2b09",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Because call.args is already a mapping for any valid tool execution, passing call.args directly produces an equal ToolStep return value to passing dict(call.args) while leaving object state and exception handling unchanged.",
+    "response_sha256": "57b105ee6c0169cf45c27ae0eb747d3a46c72d381a2d1ff99a8f9ac71c95df72",
+    "sources": [
+     "            args=dict(call.args),",
+     "    return ToolStep(tool_name=call.name, args=call.args, result=result, call_id=call.id)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "call": "ToolCall(name=\"echo\", args={\"value\": 1}, id=\"call-1\")"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T234315Z-22339e",
+    "confidence": 0.65,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "`dict(call.args)` always builds a brand-new dict object, so in the original `result.args is call.args` is always False and later external mutation of the dict the caller passed in never leaks into the already-returned ToolStep; the changed code stores `call.args` itself, so `result.args is call.args` is always True and any later mutation of that shared mapping (or its immutability, if ToolCall freezes it) is now visible through the previously returned ToolStep, which is an observable difference in the state of the returned object.",
+    "response_sha256": "230db4adfb9ac57f2a9a2aaae4d78e900809639a73c36a1674bc9da5fd31d514",
+    "sources": [
+     "result = definition.callable(**call.args)",
+     "return ToolStep(tool_name=call.name, args=call.args, result=result, call_id=call.id)",
+     "args=dict(call.args),"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "b6d8404f021d50cba03b6a12b4a967172a75d94b041d1212123cb9628d3232b1"
  },
  "e9c1165894dd60d7": {
   "answers": {
@@ -59,6 +222,7 @@
     ],
     "reason": "__post_init__ has no parameters, so the difference manifests on every construction. The original replaces self.tools with a MappingProxyType (immutable proxy), while the changed version leaves it as the raw dict. The built object differs: type(registry.tools) is MappingProxyType vs dict, and the tools attribute is mutable in the changed version but immutable in the original, changing the observable state of the constructed object.",
     "response_sha256": "6217278df675dd9e72b396766b52676c62d47ce2bf1a96d67e299d26068d9740",
+    "sources": [],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -72,6 +236,7 @@
     ],
     "reason": "The original version converts the 'tools' attribute to a MappingProxyType to freeze it, whereas the changed version leaves it as its original mutable type (e.g. dict).",
     "response_sha256": "e6661dd8752c4e5ceb129673ec63378e7f48a443744bfdcb47d42fbf36e1380a",
+    "sources": [],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
@@ -85,9 +250,67 @@
     ],
     "reason": "The original initializer freezes tools into a MappingProxyType whose text representation differs from the plain dictionary in the changed version.",
     "response_sha256": "3753a0620a70d58be7eb0bdfdc964f0c978ff9571fcf4d7d1d663ed625436ab2",
+    "sources": [],
     "verdict": "distinct"
    }
   },
   "prompt_sha256": "682a31d6abcf7aa5cc414fe0ebbde69aaec1b5a81237884b259be75c8607f823"
+ },
+ "ebec939d12750322": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "call": "ToolCall(name=\"test\", args=None, id=\"1\")"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T085358Z-9a4b83",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When call.args is not a mapping (like None), **call.args raises an exception, but dict(call.args) in the exception handler also raises a TypeError, causing the original version to raise a different exception type than the changed version which successfully raises ToolExecutionError.",
+    "response_sha256": "9201094cee2926f9a0adca95ee1e5cbb1256bebe61ce4d340b00b58a294e5726",
+    "sources": [
+     "        except Exception as exc:",
+     "            raise ToolExecutionError(",
+     "                tool_name=call.name,",
+     "                args=dict(call.args),",
+     "                cause=exc,",
+     "            ) from exc"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T085358Z-317ba6",
+    "confidence": 0.98,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions return identical ToolStep instances when execution succeeds and raise an exception of type ToolExecutionError when execution fails, leaving the immutable ToolRegistry state unchanged.",
+    "response_sha256": "02b89142d064c6709c6a9b3178daf702656e0ef24e849b1250bc606548403478",
+    "sources": [
+     "        raise ToolExecutionError(tool_name=call.name, args=call.args, cause=exc) from exc",
+     "                args=dict(call.args),",
+     "    return ToolStep(tool_name=call.name, args=dict(call.args), result=result, call_id=call.id)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T234315Z-18b7e8",
+    "confidence": 0.86,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change is passing `args=call.args` instead of `args=dict(call.args)` into ToolExecutionError; for any ToolCall built from literals (a plain dict of args), `dict(call.args)` yields a dict with identical content and type to `call.args` itself, so the returned ToolStep, the raised exception's type (ToolExecutionError), and all observable state are unchanged between versions.",
+    "response_sha256": "3339c9c59ebc706f1611fff342874739a1093888a58e9a3c8c72effe3486ca6c",
+    "sources": [
+     "raise ToolExecutionError(tool_name=call.name, args=call.args, cause=exc) from exc",
+     "raise ToolExecutionError(\n                tool_name=call.name,\n                args=dict(call.args),\n                cause=exc,\n            ) from exc"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "ce5e0e74e18bde0523ec8f5db943ea559eb4bbc6793c207d84694109c58cf50a"
  }
 }

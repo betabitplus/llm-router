@@ -1,0 +1,97 @@
+{
+ "4180d032448ab8db": [
+  {
+   "at": "2026-09-29T10:38:22.580111Z",
+   "call_id": "20260929T100326Z-eacc1e",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "fc6d9ce2a799d6f06e5b4f7d583c891616b2c8343de172b9f3fed1c3b8bb9f82",
+   "reason": "it does not fail on the mutant: it runs the changed lines 527\u2013537, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.891903Z",
+   "call_id": "20260929T114733Z-c91546",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "722c19ee9c41d696ee91cc8030a7088023be70d5c25beaead4b32005d3dd76bc",
+   "reason": "it does not fail on the mutant: it runs the changed lines 527\u2013537, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.585605Z",
+   "call_id": "20260929T120217Z-cdcc83",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fb7c7ac5ebe1787e9bf241b8f5a2ee5926afd21e562bd0bd6a1f6c2c9058504a",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-2027036F": [
+  {
+   "at": "2026-09-29T19:15:34.151155Z",
+   "call_id": "20260929T191342Z-17f88b",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2cb7b3561498a378822c60bab598c07b14faa95c4715c88b0b8e7a4589509a8a",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ]
+}

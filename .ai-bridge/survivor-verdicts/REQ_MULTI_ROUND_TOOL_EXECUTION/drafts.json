@@ -1,0 +1,124 @@
+{
+ "9a1e3f3eefc3663d": [
+  {
+   "at": "2026-09-29T00:24:30.362906Z",
+   "call_id": "20260929T001300Z-3af3c3",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "eeea2dc9e25b347e221fad73e9da49f07b5d67233bc85337c2827bd0da5213b9",
+   "reason": "it does not fail on the mutant: of the changed lines 387\u2013397 it runs lines 387, 393 and 396\u2013397 but never line 392",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.883475Z",
+   "call_id": "20260929T114718Z-f55f24",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9c39c67ca9849a83373c8d5e69dc5ad2ef377a600d28bf536c51cffbe497e9e9",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-99B5EBCC": [
+  {
+   "at": "2026-09-29T19:15:34.145671Z",
+   "call_id": "20260929T191342Z-332d2a",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5f8ceb54baa7c551ade8620d92ec15d406d045b0b3ae62e3bf598c87bd4ae694",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-F43CA330": [
+  {
+   "at": "2026-09-29T19:15:34.145682Z",
+   "call_id": "20260929T191342Z-57963e",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a7adbd9746d78bf310cd33cd2b14a8124705b16ccfb55b5656d1462fdd2cd5bd",
+   "reason": "",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "bdd04396b959d4fd": [
+  {
+   "at": "2026-09-29T00:24:30.362986Z",
+   "call_id": "20260929T001300Z-d7eb3e",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "5af98e5ff7a931438f065357d039e04ce5c1a99a4d62734a00b0d427b54e71ff",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._api.types.ToolStep"
+   ]
+  }
+ ]
+}

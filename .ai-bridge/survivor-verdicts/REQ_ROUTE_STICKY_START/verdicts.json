@@ -1,0 +1,221 @@
+{
+ "SM-29A20065": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-00736d",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement says the next request must start from the last successful route, with no exception for shuffled fallbacks. The mutant drops the sticky start whenever shuffle_fallbacks is on, even when too few routes exist for any shuffle to happen, so the next request can start somewhere other than the route that just succeeded.",
+   "response_sha256": "942d6265487f4e39309c05d9131b35baa678e831da15121899d48ffa1d22d1f0",
+   "sources": [
+    "After fallback succeeds, the next request through the same router shall begin from the route that most recently succeeded.",
+    "After fallback succeeds, the next request starts directly from the route that previously succeeded.",
+    "            if settings.shuffle_fallbacks",
+    "                selected_start_route_index=sticky_start,"
+   ],
+   "test_focus": "With shuffle_fallbacks enabled, make the first route fail so a fallback succeeds, then check that the next request on the same router tries that successful route first. Cover route counts both below and above min_routes_for_fallback_shuffle.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:27:59.751307Z",
+   "answer_sha256": "f278b5204eec3e0bf73b2faee4893af8a4ed419753c9b3aa83a8c1d29f13f998",
+   "call_id": "20260929T172149Z-faaffb",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "46df2e0cf51ea79dd0e03b1c8eacf3ed3dfb35620d740c963692ae359de32139",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_route_sticky_start_sm_29a20065.py",
+   "response_sha256": "11a1cbf6f91fe75657dbe6e7b5cdbd2b4e5a04094e981639858013e5d0c762cc",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "a1d2d31f55d7382287644075800f0b74d24f0211ec6f7fa08e40524eacd33c69"
+ },
+ "SM-46ED33D8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-c9d37e",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant records the successful route only while the stored start is unset or 0. After a first fallback sets it to route 1, a later fallback that succeeds on route 2 is ignored, so the next request starts from route 1 instead of the route that most recently succeeded.",
+   "response_sha256": "1d829643ee20ceac9961b8c69471919ccce54d5ff9c3b76d6de71fa23333ed6f",
+   "sources": [
+    "After fallback succeeds, the next request through the same router shall begin from the route that most recently succeeded.",
+    "After fallback succeeds, the next request starts directly from the route that previously succeeded.",
+    "if fallback_occurred and getattr(self, \"_sticky_start_route_index\", None) in (None, 0):",
+    "self._sticky_start_route_index = route.route_index"
+   ],
+   "test_focus": "Run two fallbacks in a row through one router: the first succeeds on route 1, the second starts there, fails, and succeeds on route 2. Check that the third request starts directly from route 2.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:27:59.752347Z",
+   "answer_sha256": "6d8f7ec369e10582451e122fb76da5be1f8e2635d2911061466783f915b14a07",
+   "call_id": "20260929T172149Z-d5e6a8",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "7c7a62790923b05f2603f71bbbcc19fa16e75de854ef6555bd96afdf6e899c29",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_route_sticky_start_sm_46ed33d8.py",
+   "response_sha256": "0885ac4d3102e6803f251116b2559598184cf3c95c8775c74cd6c03540d39bca",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "1856439c9fd85a4579b200ad8bb9dc30433ab03599ce459ccdc6597adb39e341"
+ },
+ "SM-4C278138": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-80c112",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Suppose a fallback makes route 1 the start, and the next request then succeeds straight away on route 1 with no fallback. The mutant resets the start to route 0, so the request after that begins from route 0 even though route 1 was the last route to succeed. That breaks the rule that the next request begins from the route that most recently succeeded.",
+   "response_sha256": "59597daa3600389bd64194628fe7e39296017f8b99ca93c4de11fdcbc047eede",
+   "sources": [
+    "After fallback succeeds, the next request through the same router shall begin from the route that most recently succeeded.",
+    "After fallback succeeds, the next request starts directly from the route that previously succeeded.",
+    "        else:\n            self._sticky_start_route_index = 0"
+   ],
+   "test_focus": "Run three requests through the same router: first a fallback that succeeds on route 1, then a request that succeeds right away on route 1 with no fallback. Check that the third request still starts directly from route 1, not route 0.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:30:20.397492Z",
+   "answer_sha256": "f4ccd761afd10ad306d1cfe58e69c1aa716a7d269decb17814af9aca2ab60180",
+   "call_id": "20260929T172801Z-00d48f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "f4ccd761afd10ad306d1cfe58e69c1aa716a7d269decb17814af9aca2ab60180",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_route_sticky_start_sm_4c278138.py",
+   "response_sha256": "2990ed8dd5ca1ed9e075e4686e0f890b8dd3996990f478d39553e0a34f747b57",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "df559222d8b804b87b50aa99ee7034e0b12b074b69212f1e0d6e0449ff8b4528"
+ },
+ "SM-81470C00": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-fba2d2",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement says the next start is the route that most recently succeeded. The mutant keeps the highest route index seen so far instead. So if a later fallback succeeds on a lower-indexed route (for example after wrapping around, or once a higher sticky route fails), the next request still starts from the old, higher route. This breaks the stickiness the requirement asks for.",
+   "response_sha256": "8b6ea5e94a689048a870226a7fcec67ff1b046f968299cae9b2624231f8b6b71",
+   "sources": [
+    "After fallback succeeds, the next request through the same router shall begin from the route that most recently succeeded.",
+    "After fallback succeeds, the next request starts directly from the route that previously succeeded.",
+    "if current is None or route.route_index > current:",
+    "self._sticky_start_route_index = route.route_index"
+   ],
+   "test_focus": "Make fallback land on a high-index route, then make a later request fall back to a lower-index route and succeed. Check that the request after that starts from the lower-index route.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:27:59.753122Z",
+   "answer_sha256": "4a6980a960c86e542a807a60aa705c45a33d5449fd8a4bc8198d24604c2063cd",
+   "call_id": "20260929T172149Z-c493e2",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "a45aa256a0b00a977104e6c099b583f7b795c77c7391c725706ee6cea0a72e99",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_route_sticky_start_sm_81470c00.py",
+   "response_sha256": "b915c7f419380b67425b1ad9983da781cccae2506806c1d3f7a1b9d44b535a0c",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "19b9fd09293d03a1ffd573b9db6cc144a68ecfdaa2c256955c397a843285e3a4"
+ }
+}

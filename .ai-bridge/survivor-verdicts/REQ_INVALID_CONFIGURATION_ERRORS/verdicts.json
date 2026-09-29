@@ -203,6 +203,82 @@
   },
   "prompt_sha256": "290d034c6d64526c057129d4d230341b61d038b375ce7ee03b1390a6441cef7b"
  },
+ "SM-70BDADCC": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191129Z-431ed1",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant checks only the first provider mapped to each model. A model that maps to a catalogued provider and then to an uncatalogued one therefore passes validation, and the confirmed input shows this: the original raises ConfigurationError and the mutant returns None. That lets a configuration that breaks a constraint through to provider execution, which the requirement forbids.",
+   "response_sha256": "7881a349111430acc09b0193411935f891bccece932e8681f0eb38ca53d39fbb",
+   "sources": [
+    "llm-router shall reject an effective request configuration that violates an applicable configuration constraint with a public configuration error before initiating provider execution.",
+    "A public request with invalid configuration surfaces ConfigurationError and performs no provider request.",
+    "for provider in list(provider_models)[:1]:",
+    "message=f\"model '{model.value}' references an unknown provider.\","
+   ],
+   "test_focus": "Send a public request whose config maps a model to a catalogued provider followed by a provider missing from the catalog. Check that it raises ConfigurationError and makes no provider request.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:13:36.453854Z",
+   "answer_sha256": "70657320d1e525633c3aa5ff6db24f5d4bc1380d17ffe56977c587134a5f4821",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "399f83bd839db324506cb43cd525e7216ba4035eaaf0de995340ca4113366497",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_sm_70bdadcc.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "3ca66c9122847745350d541870c7f04a46efe568e6a5b29997ef0de1826eec63"
+ },
+ "SM-7C291E15": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-da9630",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only checks for a required base URL when that provider is the default provider. The confirmed input (default GOOGLE, no base URLs) makes the original raise ConfigurationError while the mutant accepts it. A request could then be routed to a non-default provider that has no base URL, so a constraint violation gets past the public boundary instead of failing before any provider is called.",
+   "response_sha256": "ecc594a22f3c3c40606b1d0a6a4b556a154c0b03ebe58aa43ff470e4c4c3cd07",
+   "sources": [
+    "llm-router shall reject an effective request configuration that violates an applicable configuration constraint with a public configuration error before initiating provider execution.",
+    "A public request with invalid configuration surfaces ConfigurationError and performs no provider request.",
+    "if provider != config.default_provider:\n            continue",
+    "message=f\"provider '{provider.value}' requires a base URL.\","
+   ],
+   "test_focus": "Send a public request whose config leaves out the base URL for a provider in _PROVIDERS_REQUIRING_BASE_URL that is not the default provider. Assert that ConfigurationError is raised and that no provider request is made.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:21:43.466168Z",
+   "answer_sha256": "b55f24d5b62be14a2be25acecfc2dddbe4a31acbfa9ed3a6a90edb24f4212c33",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "b55f24d5b62be14a2be25acecfc2dddbe4a31acbfa9ed3a6a90edb24f4212c33",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_sm_7c291e15.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "b643d8097834e6095696defa554e716e2645b1564ae982af8a2e2c439290e8be"
+ },
  "a02b9c41521c0e84": {
   "answer": {
    "backend": "claude-cli",
@@ -271,6 +347,53 @@
   },
   "prompt_sha256": "5ec62f618013fc10ac4d30debb49b800e86505bdb2ea8421a423fa9735aef980"
  },
+ "b6340db1c7f8750a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234853Z-97e047",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When attempt_timeout_seconds is None, the mutant compares None > 0, which raises TypeError. So an invalid configuration, confirmed here by execution, surfaces TypeError instead of the public ConfigurationError the requirement demands. Valid configurations that leave the timeout unset would also crash.",
+   "response_sha256": "21b5e96160f18325f2204468e961dc8a404cedf22f3881f20adff9135dde048d",
+   "sources": [
+    "llm-router shall reject an effective request configuration that violates an applicable configuration constraint with a public configuration error before initiating provider execution.",
+    "A public request with invalid configuration surfaces ConfigurationError and performs no provider request.",
+    "if True:",
+    "_require(condition=policy.attempt_timeout_seconds > 0, message='policy attempt timeout must be greater than 0.')"
+   ],
+   "test_focus": "Send a public request whose configuration leaves policy attempt_timeout_seconds as None and is invalid in some other way, for example a missing required base URL. Check that it raises ConfigurationError, not TypeError, and makes no provider request.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T12:52:35.192417Z",
+   "answer_sha256": "ec9b4218b90be9f235b249d4b2a5a372985dd9ac32a19365099b13624442721e",
+   "call_id": "20260929T125208Z-225b25",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "ec9b4218b90be9f235b249d4b2a5a372985dd9ac32a19365099b13624442721e",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_b6340db1c7f8750a.py",
+   "response_sha256": "17086cdc2d7312164a1691e6d585a4d1789644d374a6c63593792463ad50a858",
+   "source": "draft author",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  },
+  "prompt_sha256": "0f587511b2dd2526d46267d7ed1277a05d321af9f8d78a6bcfe2380069843c53"
+ },
  "c18833e1526efa72": {
   "answer": {
    "backend": "claude-cli",
@@ -338,6 +461,45 @@
    "source": "draft author"
   },
   "prompt_sha256": "e9414fcd0bbe600801f7051191b7af815cedac53eb1e67f88e25d865f05f39d9"
+ },
+ "de2cbbbd9acd877b": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T085809Z-060776",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The only behavioural change hands the mapping itself to _require's condition instead of bool(mapping). Assuming _require checks truthiness, as its other callers suggest, an empty mapping still raises ConfigurationError and a non-empty one still passes. So no public request can tell the two versions apart.",
+   "response_sha256": "94af9982b58b164590af49129e1a48361feacc21898e7cfdc75b52d2e35e196c",
+   "sources": [
+    "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")",
+    "condition=bool(provider_models),",
+    "A public request with invalid configuration surfaces ConfigurationError and performs no provider request."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "conversion",
+  "prompt_sha256": "cc40469e2b1f3f06d416fb72ddd91a5cab325b69fecd87a51b44684046a084c5",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T085822Z-a2cde6",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "cc40469e2b1f3f06d416fb72ddd91a5cab325b69fecd87a51b44684046a084c5",
+   "reason": "Removing the bool() cast does not change the program's logic because Python naturally evaluates objects by their intrinsic truthiness in boolean contexts. Both versions behave identically for any input.",
+   "response_sha256": "398c75917f5a8498e810d4e62cc3e46a9cd4875b41ea14c76662b684b834eb86",
+   "sources": [
+    "condition=bool(provider_models),",
+    "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")",
+    "A public request with invalid configuration surfaces ConfigurationError and performs no provider request."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
  },
  "df61b883b2255611": {
   "answer": {

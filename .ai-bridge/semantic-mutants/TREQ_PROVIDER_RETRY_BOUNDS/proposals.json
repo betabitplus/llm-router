@@ -1,0 +1,246 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "TREQ_PROVIDER_RETRY_BOUNDS",
+ "proposals": [
+  {
+   "id": "SM-95CE7B9E",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_async_retrying",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Async retry stop condition counts retries rather than total attempts: the initial call is treated as not counting, so one extra attempt beyond the configured maximum is performed.",
+   "original_sha256": "4d45b6b26ac4779fd9397b76b55f2aaf7b8412fba55ec410a5f184295a7e7c23",
+   "context_sha256": "ce2bccaea93e770fda935fdfa3bc364b4aa09b664148b812dd2de9a6b8da7cb6",
+   "prompt_sha256": "6c12c85c0ed88a08f4565958ebc18863379d54618a2968ef850cc55ba57ef7e1",
+   "replacement": "def build_provider_async_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> AsyncRetrying:\n    \"\"\"Build an async Tenacity policy for same-provider attempts.\"\"\"\n    return AsyncRetrying(\n        stop=stop_after_attempt(policy.max_attempts + 1),\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-c9c474",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b789bcb44fe53ae944e1607854eb0ecbb0c754184f5c2bcf2277ccd30d85780e",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-369A264B",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_async_retrying",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Async retry stop is combined with a delay-based stop using max_wait_seconds and the attempt bound is taken as max(1, max_attempts - 1), so exhausted retries perform one fewer attempt than configured.",
+   "original_sha256": "4d45b6b26ac4779fd9397b76b55f2aaf7b8412fba55ec410a5f184295a7e7c23",
+   "context_sha256": "ce2bccaea93e770fda935fdfa3bc364b4aa09b664148b812dd2de9a6b8da7cb6",
+   "prompt_sha256": "6c12c85c0ed88a08f4565958ebc18863379d54618a2968ef850cc55ba57ef7e1",
+   "replacement": "def build_provider_async_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> AsyncRetrying:\n    \"\"\"Build an async Tenacity policy for same-provider attempts.\"\"\"\n    return AsyncRetrying(\n        stop=stop_after_attempt(max(1, policy.max_attempts - 1)),\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-c9c474",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b789bcb44fe53ae944e1607854eb0ecbb0c754184f5c2bcf2277ccd30d85780e",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-C50F6FFC",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_retrying",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Stop condition computes attempt bound wrongly: allows one extra attempt beyond the configured maximum (retries counted as max_attempts on top of the initial call).",
+   "original_sha256": "d088306a2583abf056171432359c2e57848e36a0aec28f1353e046fb2be958d0",
+   "context_sha256": "edbc9cd9c0ff2818c712bca33b4443f96858544474663db4aa239350e62f09f0",
+   "prompt_sha256": "75a2663900c7985e075681b37a72fdce0f9d504f51eebdeb1577237936a97104",
+   "replacement": "def build_provider_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> Retrying:\n    \"\"\"Build a sync Tenacity policy for same-provider attempts.\"\"\"\n    return Retrying(\n        stop=stop_after_attempt(policy.max_attempts + 1),\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-406564",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "edf17289790dfa811285ebfa89acb140f7441404af82a1f8675eb476f0aea654",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-F3908946",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_retrying",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Stop condition treats the initial call as not counting: attempts limited to max_attempts - 1 (minimum 1), so exhausted retry performs fewer than the configured attempts.",
+   "original_sha256": "d088306a2583abf056171432359c2e57848e36a0aec28f1353e046fb2be958d0",
+   "context_sha256": "edbc9cd9c0ff2818c712bca33b4443f96858544474663db4aa239350e62f09f0",
+   "prompt_sha256": "75a2663900c7985e075681b37a72fdce0f9d504f51eebdeb1577237936a97104",
+   "replacement": "def build_provider_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> Retrying:\n    \"\"\"Build a sync Tenacity policy for same-provider attempts.\"\"\"\n    return Retrying(\n        stop=stop_after_attempt(max(1, policy.max_attempts - 1)),\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-406564",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "edf17289790dfa811285ebfa89acb140f7441404af82a1f8675eb476f0aea654",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-95CE7B9E",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_async_retrying",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Async retrying stops only after max_attempts + 1 attempts: the stop condition is built with an off-by-one bound (the initial call is not counted as attempt one), so one extra provider interaction occurs beyond the configured maximum.",
+   "original_sha256": "4d45b6b26ac4779fd9397b76b55f2aaf7b8412fba55ec410a5f184295a7e7c23",
+   "context_sha256": "77af15321171ddf63f8ea2d2de35e3e5d347cad19ae70dc2be6040db41fad04a",
+   "prompt_sha256": "6f2a8208b87c3cf9b578bc99e0e56f648e44103a981f74a61ee94bf29c6eb517",
+   "replacement": "def build_provider_async_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> AsyncRetrying:\n    \"\"\"Build an async Tenacity policy for same-provider attempts.\"\"\"\n    return AsyncRetrying(\n        stop=stop_after_attempt(policy.max_attempts + 1),\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-ef7e1c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "3ff58d1a0f79f24c4e1b4a068c11b1c1e1b964f51282da26df7fc6e0a29789e8",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-C03F64FD",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_async_retrying",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "The stop condition is replaced with a delay-based/attempt-any combination: retries stop after max_attempts OR are never bounded strictly, because stop_after_attempt is combined with stop_after_delay using a bitwise-and, so the attempt cap only applies once the delay also elapses, allowing attempts beyond the configured maximum.",
+   "original_sha256": "4d45b6b26ac4779fd9397b76b55f2aaf7b8412fba55ec410a5f184295a7e7c23",
+   "context_sha256": "77af15321171ddf63f8ea2d2de35e3e5d347cad19ae70dc2be6040db41fad04a",
+   "prompt_sha256": "6f2a8208b87c3cf9b578bc99e0e56f648e44103a981f74a61ee94bf29c6eb517",
+   "replacement": "def build_provider_async_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> AsyncRetrying:\n    \"\"\"Build an async Tenacity policy for same-provider attempts.\"\"\"\n    return AsyncRetrying(\n        stop=(\n            stop_after_attempt(policy.max_attempts)\n            & stop_after_delay(policy.max_wait_seconds)\n        ),\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-ef7e1c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "3ff58d1a0f79f24c4e1b4a068c11b1c1e1b964f51282da26df7fc6e0a29789e8",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-C50F6FFC",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_retrying",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Retry stop condition is off by one: stop_after_attempt receives max_attempts + 1, so an exhausted retry performs one extra provider call beyond the configured maximum.",
+   "original_sha256": "d088306a2583abf056171432359c2e57848e36a0aec28f1353e046fb2be958d0",
+   "context_sha256": "30a07a36cf54942cfd0db845fb20796999a5eda230de8936b4ca994dca4ef8bd",
+   "prompt_sha256": "8777ac9b291d840ebe504c807c266ddc966128a22222d2d5c84014062c479384",
+   "replacement": "def build_provider_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> Retrying:\n    \"\"\"Build a sync Tenacity policy for same-provider attempts.\"\"\"\n    return Retrying(\n        stop=stop_after_attempt(policy.max_attempts + 1),\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-45e270",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "61c0380a00a616b103ae9453fb095e48c48c3852c66ae44999b1b1d68953befd",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-34257EB1",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_retrying",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Stop policy counts only retries rather than total attempts (initial call not counted as attempt one): max(policy.max_attempts - 1, 1) is replaced by a stop_after_delay-free variant that adds the initial call on top, i.e. stops after max_attempts retries via a custom stop that checks attempt_number > max_attempts, allowing one extra call.",
+   "original_sha256": "d088306a2583abf056171432359c2e57848e36a0aec28f1353e046fb2be958d0",
+   "context_sha256": "30a07a36cf54942cfd0db845fb20796999a5eda230de8936b4ca994dca4ef8bd",
+   "prompt_sha256": "8777ac9b291d840ebe504c807c266ddc966128a22222d2d5c84014062c479384",
+   "replacement": "def build_provider_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> Retrying:\n    \"\"\"Build a sync Tenacity policy for same-provider attempts.\"\"\"\n    max_attempts = policy.max_attempts\n\n    def _stop(retry_state: Any) -> bool:\n        return retry_state.attempt_number > max_attempts\n\n    return Retrying(\n        stop=_stop,\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-45e270",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "61c0380a00a616b103ae9453fb095e48c48c3852c66ae44999b1b1d68953befd",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-95CE7B9E",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_async_retrying",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Async retry stop condition counts retries instead of attempts: the initial call is treated as not counting, so one extra provider call happens beyond the configured maximum.",
+   "original_sha256": "4d45b6b26ac4779fd9397b76b55f2aaf7b8412fba55ec410a5f184295a7e7c23",
+   "context_sha256": "76125bee5126fa8294c2981ded4e0f691ab3907fb14648d7f663f23344072ff2",
+   "prompt_sha256": "6dcebd3bbdccdf3df86b049df358e3a24d24cb13db0a905de5fcd45cfbdb991c",
+   "replacement": "def build_provider_async_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> AsyncRetrying:\n    \"\"\"Build an async Tenacity policy for same-provider attempts.\"\"\"\n    return AsyncRetrying(\n        stop=stop_after_attempt(policy.max_attempts + 1),\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-301ea6",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "52280df8c3c4d64096ab5d5ab34262e1227874a7319e88aa799fb4d32fa1452e",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-BD8FA9FC",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_async_retrying",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Async retry policy drops the stop condition on attempts and only stops via a delay-based limit, so the number of provider calls is no longer bounded by the configured max attempts.",
+   "original_sha256": "4d45b6b26ac4779fd9397b76b55f2aaf7b8412fba55ec410a5f184295a7e7c23",
+   "context_sha256": "76125bee5126fa8294c2981ded4e0f691ab3907fb14648d7f663f23344072ff2",
+   "prompt_sha256": "6dcebd3bbdccdf3df86b049df358e3a24d24cb13db0a905de5fcd45cfbdb991c",
+   "replacement": "def build_provider_async_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> AsyncRetrying:\n    \"\"\"Build an async Tenacity policy for same-provider attempts.\"\"\"\n    return AsyncRetrying(\n        stop=stop_after_delay(policy.max_wait_seconds),\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-301ea6",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "52280df8c3c4d64096ab5d5ab34262e1227874a7319e88aa799fb4d32fa1452e",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-C50F6FFC",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_retrying",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Stop condition treats max_attempts as the number of retries and adds one, so the initial call plus max_attempts retries occur, one provider interaction beyond the configured maximum.",
+   "original_sha256": "d088306a2583abf056171432359c2e57848e36a0aec28f1353e046fb2be958d0",
+   "context_sha256": "4e7687f3a0f5a128ba1255aeb08f3a609f177956640132e713c07476c593981e",
+   "prompt_sha256": "a8bed58fc14fa16f3d8aa5ac3656b2b3084cced34bad5a56a8d63d059e07dd72",
+   "replacement": "def build_provider_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> Retrying:\n    \"\"\"Build a sync Tenacity policy for same-provider attempts.\"\"\"\n    return Retrying(\n        stop=stop_after_attempt(policy.max_attempts + 1),\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-e587a8",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "492842ab038d7fb159a0e6251ab7b058411b50dd96579a1dfffcf4df4964b98e",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-A1C8701C",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/providers/retry.py::build_provider_retrying",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "The stop condition is dropped, so retryable errors are retried without an attempt bound and provider calls continue past the configured maximum. A retry-time cap is used instead of an attempt cap, which lets extra attempts occur.",
+   "original_sha256": "d088306a2583abf056171432359c2e57848e36a0aec28f1353e046fb2be958d0",
+   "context_sha256": "4e7687f3a0f5a128ba1255aeb08f3a609f177956640132e713c07476c593981e",
+   "prompt_sha256": "a8bed58fc14fa16f3d8aa5ac3656b2b3084cced34bad5a56a8d63d059e07dd72",
+   "replacement": "def build_provider_retrying(\n    *,\n    policy: RetryPolicy,\n    logger: RetryLogger,\n    context_getter: Callable[[], dict[str, Any]] | None = None,\n    state_sink: Callable[[dict[str, Any]], None] | None = None,\n) -> Retrying:\n    \"\"\"Build a sync Tenacity policy for same-provider attempts.\"\"\"\n    return Retrying(\n        stop=stop_after_delay(policy.max_wait_seconds * policy.max_attempts),\n        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),\n        retry=retry_if_exception(is_retryable_provider_error),\n        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),\n        reraise=True,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153638Z-e587a8",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "492842ab038d7fb159a0e6251ab7b058411b50dd96579a1dfffcf4df4964b98e",
+    "index": 1
+   }
+  }
+ ]
+}

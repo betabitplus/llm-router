@@ -1,0 +1,548 @@
+{
+ "03b3464429e96b31": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234902Z-47674d",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the minimum-height check. A raw image with a valid width but a height below the minimum now gets through instead of being rejected locally, which breaks the requirement's rule that images outside the dimension bounds must be rejected.",
+   "response_sha256": "87f0ace28a530d6a27c7da83b81465f3c3a6dda17f955010a0ec85fdc2734d3c",
+   "sources": [
+    "raw images outside supported mode or dimension bounds shall fail before provider execution.",
+    "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
+    "if image.width < _MIN_IMAGE_DIMENSION:",
+    "if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:"
+   ],
+   "test_focus": "Normalizing a raw Pillow image with a valid width but a height below _MIN_IMAGE_DIMENSION must raise ValueError, with zero provider-boundary interactions.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.369991Z",
+   "answer_sha256": "a9b5257419e6215b28b1a98d19aace82b7310efbfb35f821e73336ad71b5d8e5",
+   "call_id": "20260929T001300Z-6a4f39",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "a9b5257419e6215b28b1a98d19aace82b7310efbfb35f821e73336ad71b5d8e5",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_03b3464429e96b31.py",
+   "response_sha256": "5e2870076ce56ec3c1fac83649891455cdbab56e76c967ea3f5f8f5549562092",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "PIL.Image.Image",
+    "PIL.Image.new",
+    "pytest.raises",
+    "pytest.mark.verifies",
+    "pytest.mark.verification_kind"
+   ]
+  },
+  "prompt_sha256": "1f2900d17421ba34f664637e6d9e100e3f2a1ece11e7bc0eaf8b43dbbb2b467e"
+ },
+ "0bdce5fb12999eee": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234902Z-1d55b6",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant rejects any image whose width is exactly _MIN_IMAGE_DIMENSION. That width is inside the allowed bounds, so the original accepts it. The requirement only asks to reject raw images outside the dimension bounds, so rejecting a valid image at the minimum edge breaks the min-bound contract.",
+   "response_sha256": "2b65152f201fa7c0eb8b0b2e3df50b5abdd256e8c5f52b70a462f370df676dee",
+   "sources": [
+    "raw images outside supported mode or dimension bounds shall fail before provider execution",
+    "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
+    "if image.width <= _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:"
+   ],
+   "test_focus": "Check that a raw image in an allowed mode, with width and height exactly _MIN_IMAGE_DIMENSION, passes normalization. Check that an image one pixel narrower is rejected.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.370737Z",
+   "answer_sha256": "792fae8234de7943ef42c85a54d287ad1e07c7f7bd2383c0fb0ff1badb3fa115",
+   "call_id": "20260929T001300Z-6ad8cc",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "35f4d84d4a3c15ca06f88f524efa7492202154e0442c9343ac50d744a74cfdb3",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_0bdce5fb12999eee.py",
+   "response_sha256": "c7a4ad5bb8f4556675864e381fef4cf7e8ec31327e79dfa75c6b86adb628dd4a",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.content.MediaPart",
+    "llm_router._internal.capabilities.media.ImageMedia",
+    "llm_router._internal.capabilities.media._MIN_IMAGE_DIMENSION",
+    "PIL.Image.Image",
+    "PIL.Image.new"
+   ]
+  },
+  "prompt_sha256": "c1694d9d59e112a14980379cd0e590624e0d89d2994fc4441484fc389fd64268"
+ },
+ "0c1b36286cf6938e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234902Z-04a335",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the bytes/bytearray exclusion, so raw bytes content becomes a tuple of ints (empty for b'') instead of being rejected. That breaks the rule that unsupported top-level content fails locally before provider execution.",
+   "response_sha256": "c80d74d3620804d292b862d69fc49717d90f7ef9bc800b56a46fc58c738266d5",
+   "sources": [
+    "Unsupported top-level content or media parts and raw images outside supported mode or dimension bounds shall fail before provider execution.",
+    "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
+    "if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
+    "if isinstance(content, Sequence):"
+   ],
+   "test_focus": "Check that message content given as bytes or bytearray (including b'') raises TypeError locally, with zero provider-boundary interactions.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.371298Z",
+   "answer_sha256": "bbb7a46e6b40a033a1272e111058f51aa75e8e93f2dc4a70490562642af27f8a",
+   "call_id": "20260929T001300Z-24b1a3",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "bbb7a46e6b40a033a1272e111058f51aa75e8e93f2dc4a70490562642af27f8a",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_0c1b36286cf6938e.py",
+   "response_sha256": "dee8ca37427556edf334ac49a6a7222355f621ddbd8fdfd07fd65d4f44dfc694",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  },
+  "prompt_sha256": "e29776a0267eabc5f5375b94f8ec67b80310edbf962c779686e3250fde811c6b"
+ },
+ "4e35b24fc276e4ad": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234902Z-2e1de5",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant rejects a valid image whose width equals the maximum. The requirement only asks for images outside the dimension bounds to be rejected, and a width exactly at the max is inside those bounds.",
+   "response_sha256": "167102725c8bae989d6f19aff3c9f7a4eb75edcfb4fed7ce8bf7b2145d9dfe3b",
+   "sources": [
+    "raw images outside supported mode or dimension bounds shall fail before provider execution",
+    "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
+    "if image.width >= _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:"
+   ],
+   "test_focus": "An image with an allowed mode and width exactly _MAX_IMAGE_DIMENSION must pass validation and normalize, while width _MAX_IMAGE_DIMENSION+1 must be rejected.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.371816Z",
+   "answer_sha256": "f3f16fd97c377eaf34ad83e866ce7b63b68c98a967f5fb52849b5f97d1abd480",
+   "call_id": "20260929T001300Z-43e481",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "f3f16fd97c377eaf34ad83e866ce7b63b68c98a967f5fb52849b5f97d1abd480",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_4e35b24fc276e4ad.py",
+   "response_sha256": "8ba44c9fe38df64b5df5baeddd480900f7ad3f67dedff7cf41b2591a32615005",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.content.MediaPart",
+    "llm_router._internal.capabilities.media.ImageMedia"
+   ]
+  },
+  "prompt_sha256": "2a0ee902aeb68f10056a3e1febed4a9798a0b443bc0bbe83d65f76807aba9dd9"
+ },
+ "85f4bcb339f625ed": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234908Z-161b4c",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant returns the caller's sequence as-is rather than copying it into a tuple. Order and elements stay the same, so caller order, roles and part metadata are still preserved. Only the container type differs, and the requirement never asks for a tuple. The passing tests suggest the result is only iterated downstream, which fits.",
+   "response_sha256": "6d081cc6c285b32944cb7843e87055f8f3371981863e563691c287f615c161bf",
+   "sources": [
+    "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
+    "Normalizing a ChatMessage preserves role, ordered parts, and metadata values while owning a separate top-level metadata mapping.",
+    "        return tuple(content)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conversion",
+  "prompt_sha256": "e38aa51c19bd444061990de332570926b9c134f04008c94824e3e16bb778b550",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T085834Z-c45be7",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "e38aa51c19bd444061990de332570926b9c134f04008c94824e3e16bb778b550",
+   "reason": "The requirement mandates preserving caller order and metadata, but does not restrict the exact Python collection type for the returned parts. Returning the sequence directly (e.g., as a list) instead of converting it to a tuple is a type difference that fulfills the requirement equally well.",
+   "response_sha256": "4311f21af427a1a223bd99a4d43d7c3794470329a9432f8809927a53070f85f1",
+   "sources": [
+    "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
+    "return tuple(content)",
+    "return content"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "SM-227845E0": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-c35219",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant accepts any object with a `path` attribute as file media instead of rejecting it. The requirement says unsupported media parts must fail locally before the provider runs, and the confirmed input `namespace(path=False)` raises `TypeError` in the original but is accepted as a `FileMedia` descriptor by the mutant.",
+   "response_sha256": "07e2077822f77fb7c70193a7dc8a6a3688e14f07e550b2a9dfa89da0ef640bc0",
+   "sources": [
+    "Unsupported top-level content or media parts and raw images outside supported mode or dimension bounds shall fail before provider execution.",
+    "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
+    "Representative unsupported-content and invalid-image public requests fail with zero provider-boundary interactions.",
+    "path = getattr(value, \"path\", None)",
+    "msg = f\"Unsupported media value: {type(value).__name__}.\""
+   ],
+   "test_focus": "Pass a non-FileSchema object that has a `path` (and `mime_type`) attribute as a media part to `describe_media` and to a public request, and check that it raises `TypeError` with zero provider-boundary interactions.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:21:43.469118Z",
+   "answer_sha256": "dedcab0a5ebe2379654da16f2f6eeb1c109ea671cacbf80421cc25b35e461f06",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "dedcab0a5ebe2379654da16f2f6eeb1c109ea671cacbf80421cc25b35e461f06",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_227845e0.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "60b278c096d473c059ed5fdc58d566d5d54e125acb7f5019709515a1307582b7"
+ },
+ "SM-3DF25229": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191129Z-480cbf",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Moving the mode check first still rejects every image that breaks the mode, minimum or maximum bounds with ValueError, and valid images still pass. The only difference is which message appears when an image breaks both the mode rule and a size rule, and no requirement specifies that message or its priority.",
+   "response_sha256": "ca7521331fb277ddd554f1657cb3a372995c960e2d5d521cbb905978e284c756",
+   "sources": [
+    "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
+    "raw images outside supported mode or dimension bounds shall fail before provider execution.",
+    "if image.mode not in _ALLOWED_IMAGE_MODES:",
+    "msg = f\"Image mode {image.mode!r} is not supported.\""
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "cb8484017d836ba19bb7a306851c039c2c815b9ccf36377f058050f4f4dd17b8",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T194428Z-87a5a9",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "cb8484017d836ba19bb7a306851c039c2c815b9ccf36377f058050f4f4dd17b8",
+   "reason": "Both versions enforce the exact same constraints and reject the same invalid inputs by raising a ValueError. The change only alters the evaluation order and the resulting exception message when an image violates multiple constraints simultaneously, which the requirement does not dictate.",
+   "response_sha256": "86b1e4b5442b598053ca68147687f8f450e405cc171260b243a0852ffa784891",
+   "sources": [
+    "raw images violating mode/min/max bounds are rejected locally.",
+    "if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
+    "if image.mode not in _ALLOWED_IMAGE_MODES:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "SM-E1B20E59": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-1f27bd",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant silently drops empty text parts, as the confirmed input ('', '\\x00') shows. That breaks the rule that normalization preserves the caller's ordered parts. It also skips None parts instead of rejecting them, although unsupported parts must fail before the provider is called.",
+   "response_sha256": "134292ef1ebe2ede65a364a044bf8991693a43a34cb48d90a9496423afbdb6fc",
+   "sources": [
+    "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
+    "Normalizing a ChatMessage preserves role, ordered parts, and metadata values while owning a separate top-level metadata mapping.",
+    "Unsupported top-level content or media parts and raw images outside supported mode or dimension bounds shall fail before provider execution.",
+    "            if part:\n                normalized.append(TextPart(kind=\"text\", text=part))",
+    "        elif part is None:\n            continue"
+   ],
+   "test_focus": "Normalizing ('', '\\x00') must give two TextParts in caller order, the first with empty text, and a None part must be rejected locally without calling the provider.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:21:43.470351Z",
+   "answer_sha256": "039dc17a84b575f5e3babfb2220610e9f901b8f46bb8491b4b5154485ee38834",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "b1884cbeaaeb20871a6ca423ee87e66c4cdc18ba21ef09be3ce5da5cecae0738",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_e1b20e59.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "2e64b63c12c3b8d097c389c3591cce541d71e01cf770ee2814bccf3cb725980b"
+ },
+ "a9925109311de4d5": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234908Z-d15316",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant returns a list where the original returns a tuple. Both hold the same parts in the same order with the same kinds and descriptors. The requirement asks only that caller order, role, metadata and media kind are preserved, and it does not name a container type. The refuted inputs also show that the contract observes no difference.",
+   "response_sha256": "d8509295c542b1491dd09dc277d126d9ce9f55329d250dcd50528ec7aefaee88",
+   "sources": [
+    "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
+    "Mixed text/file/image/local-video/remote-video parts retain caller order and relevant descriptor metadata.",
+    "    return normalized",
+    "    return tuple(normalized)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conversion",
+  "prompt_sha256": "d6195bf72b30d5827948b128d3e9a9748bbdff03b6ef75781ffed2f1d956e217"
+ },
+ "ab94f138074323bc": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234908Z-8dd5be",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the height upper-bound check. A raw image with an allowed width but a height above _MAX_IMAGE_DIMENSION now gets through instead of being rejected locally. That breaks the requirement's max-bound rejection.",
+   "response_sha256": "003203f0baeea977706511408451e249287dcb08b46d1823e576b9afdee114f5",
+   "sources": [
+    "raw images outside supported mode or dimension bounds shall fail before provider execution.",
+    "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
+    "if image.width > _MAX_IMAGE_DIMENSION:"
+   ],
+   "test_focus": "Build a raw Pillow image in an allowed mode whose width is within bounds and whose height is _MAX_IMAGE_DIMENSION + 1. Check that normalization raises ValueError before provider execution.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.372302Z",
+   "answer_sha256": "6788f69c3f31fb6743be8a1455f63927c1e6d7fa97ecce839580a09566bf9425",
+   "call_id": "20260929T001300Z-8cc1f5",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "54af841eb347b70b16bfcc6ad5a48d363c67ac5b6e16360b2a0a2c4d8ca3d76a",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_ab94f138074323bc.py",
+   "response_sha256": "5c51bab69cd696b58780eceb55fe4e4af11cf37b33260423e641e9e9776933c8",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "PIL.Image.Image"
+   ]
+  },
+  "prompt_sha256": "daf38e8cc262b17cdb72b9ed745013988e78a970702a5e68c9c08e0b937840f3"
+ },
+ "e9186235c6377e40": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234908Z-edd313",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement asks that raw images be rejected only when they fall outside the dimension bounds. The mutant also rejects a valid image whose height is exactly _MAX_IMAGE_DIMENSION, which moves the max bound. The original treats that height as in bounds.",
+   "response_sha256": "0d4ab58ffc87b11eaa13d417d5476914ae8ecfa08533910aec3918ff519d7150",
+   "sources": [
+    "raw images outside supported mode or dimension bounds shall fail before provider execution",
+    "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
+    "if image.width > _MAX_IMAGE_DIMENSION or image.height >= _MAX_IMAGE_DIMENSION:"
+   ],
+   "test_focus": "Check that an RGB image with height exactly _MAX_IMAGE_DIMENSION and an in-bounds width normalizes without error, while height _MAX_IMAGE_DIMENSION + 1 is rejected.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.373459Z",
+   "answer_sha256": "1e69fc02edc10218cfe3c10513be5686a25654bcfaa90cff9c6cd4f89a5ffb23",
+   "call_id": "20260929T001300Z-19794c",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "d7a9c4a3462ce7607c2d516c0cb9979d91f38bef33717c1bc6c44dfa241aa7d2",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_e9186235c6377e40.py",
+   "response_sha256": "381dfa19906dd620285264f381b3e93b7bf9ba74d157c8fc6f5e02763816b2e0",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.content.MediaPart",
+    "llm_router._internal.capabilities.media.ImageMedia",
+    "llm_router._internal.capabilities.media._MAX_IMAGE_DIMENSION"
+   ]
+  },
+  "prompt_sha256": "f56a5372e624a4521b9698eed289a01478a51cc94eccbb0b41ab7fe34483d9af"
+ },
+ "f02a96133d01bfce": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234918Z-d63b9b",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For plain string content, the mutant returns None where the original returns a one-element tuple holding the text. That drops or breaks text content, so normalization no longer keeps the ordered parts and text intent the requirement asks for.",
+   "response_sha256": "9352062b460cd6d56320ce9c51c6ea6eb9cc17fe8c3bedc192ad9f1af920fc88",
+   "sources": [
+    "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
+    "Normalizing a ChatMessage preserves role, ordered parts, and metadata values while owning a separate top-level metadata mapping.",
+    "        return None"
+   ],
+   "test_focus": "Normalizing a ChatMessage whose content is a plain string must give exactly one ordered text part equal to that string, with the role and metadata kept.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.374185Z",
+   "answer_sha256": "bdadadbc845842819fb74a00b227395e225fdbdcbef8ae459a054a6685389868",
+   "call_id": "20260929T001300Z-5e69af",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "bdadadbc845842819fb74a00b227395e225fdbdcbef8ae459a054a6685389868",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_f02a96133d01bfce.py",
+   "response_sha256": "fe36afda28b7bf1e77a7d6a710ff9321c6af30a0434eb6479e16bfff0116462c",
+   "source": "draft author",
+   "sources": [
+    "llm_router.ChatMessage",
+    "llm_router._internal.capabilities.content.TextPart",
+    "llm_router._internal.capabilities.content.normalize_chat_message",
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  },
+  "prompt_sha256": "55cd07ebb103cd882b704bcbe6e0ccadc446a22ba636959aeacab27c4df06207"
+ },
+ "fbcda5c66084477c": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234918Z-6d960c",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With the string check disabled, plain string content is treated as a sequence and split into one text part per character. A single text message becomes many parts, which breaks the requirement that normalization preserves the caller's ordered parts and text intent.",
+   "response_sha256": "1ea4e455524bd2c441a90b57231019580ab454bb074a0e032b5ace59b250e441",
+   "sources": [
+    "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
+    "Normalizing a ChatMessage preserves role, ordered parts, and metadata values while owning a separate top-level metadata mapping.",
+    "if isinstance(content, str):\n        return (content,)",
+    "if False:\n        return (content,)"
+   ],
+   "test_focus": "Normalize a message whose content is a plain multi-character string and check that the result is exactly one text part equal to the original string.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.374916Z",
+   "answer_sha256": "85212b1dedb40e01601cd5d0a37eaa5eefad5bf04e020f08362557b96d5454db",
+   "call_id": "20260929T001300Z-d948f8",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "85212b1dedb40e01601cd5d0a37eaa5eefad5bf04e020f08362557b96d5454db",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_fbcda5c66084477c.py",
+   "response_sha256": "f436b5f47736beef5ad2937d67edc59b6ccf40d4ff419bfe752eec4547991608",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.content.TextPart"
+   ]
+  },
+  "prompt_sha256": "453bbf6b2424036f144838e6b2b7eef8b106f7796696c4251bf86c9bd2d2a376"
+ }
+}

@@ -1,6 +1,737 @@
 {
+ "01c1cee242944f46": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "lambda: {\"test\": 1}",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-66f0c5",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits passing the context_getter argument to build_retry_before_sleep_logger, meaning the provided context_getter is ignored.",
+    "response_sha256": "401d5d8aeff7d4e5ddce53f62fa41e5c4ba164b008f59b5bbe3db845699168db",
+    "sources": [
+     "        before_sleep=build_retry_before_sleep_logger(",
+     "            logger,",
+     "            event_type=\"llm_router.provider.retry.scheduled\",",
+     "            context_getter=context_getter,",
+     "            state_sink=state_sink,",
+     "        ),"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082826Z-137a55",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Omitting context_getter in the call to build_retry_before_sleep_logger defaults to None, resulting in identical arguments and return values across all permitted inputs.",
+    "response_sha256": "c01877a11e80ca6cc488d5ed522e50f56b1d733d506fd7371a4936f934db567f",
+    "sources": [
+     "            context_getter=context_getter,",
+     "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "lambda: {'trace_id': 'abc'}",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=2)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-7e5bb9",
+    "confidence": 0.75,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version drops `context_getter=context_getter` when building the before_sleep logger, so the returned AsyncRetrying's before_sleep callback no longer consults context_getter at all, changing what gets logged/forwarded (and would swallow any exception context_getter might raise) whenever a retry actually sleeps.",
+    "response_sha256": "0e2b977f65fbf39faf76cc4d11277d239535fcbbabb6fecb431f6516632b9b34",
+    "sources": [
+     "before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),",
+     "before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', state_sink=state_sink)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "d608b2dfa36390c5c340cb03358a906940a436546717a2f96857e3e05c7b172e"
+ },
+ "06999e6775471416": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=5.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-d5dcf2",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified code incorrectly passes `policy.max_wait_seconds` to the `min` argument of `wait_random_exponential`, ignoring `policy.min_wait_seconds`.",
+    "response_sha256": "f0368097d76653d62954b74e244470115b02fdec0ec4c8aba2328972f165a2d6",
+    "sources": [
+     "            min=policy.min_wait_seconds,",
+     "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-b9a62c",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When min_wait_seconds and max_wait_seconds differ in the retry policy, the changed version sets the minimum wait time to max_wait_seconds instead of min_wait_seconds, returning an AsyncRetrying instance with a different wait strategy.",
+    "response_sha256": "6947d94dd7491a0665a7c2cb4f1d6f3ea0105be2663077f235e25eec0eb72b75",
+    "sources": [
+     "            min=policy.min_wait_seconds,",
+     "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=0.1, max_wait_seconds=2.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232925Z-2ff2ca",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed code builds wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds) instead of min=policy.min_wait_seconds, so whenever min_wait_seconds != max_wait_seconds the returned AsyncRetrying.wait object has a different `min` attribute (and thus produces different sleep durations), which is observable on the returned object.",
+    "response_sha256": "8a5f56bd23c7c1418df69519fe9ba50508e0facd5721cf1c97443d79fa6fb2ca",
+    "sources": [
+     "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
+     "wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "157253370640fe24fc6903371fdcc0aa658db83d3bb1bdf13132345adaf46d70"
+ },
+ "23d009aeaedecaa2": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "lambda state: None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082856Z-6560d6",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits passing the `state_sink` parameter to `build_retry_before_sleep_logger`, which changes the configured before_sleep callback when `state_sink` is provided.",
+    "response_sha256": "f2977c98cf5e69b958f7fc3fe13646870ad57debdf8f592a1bdc164a73ea68e9",
+    "sources": [
+     "        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082920Z-cdb132",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Under all constructible inputs using literals and the project's dataclasses, state_sink can only be None, which matches the default behavior of build_retry_before_sleep_logger when state_sink is omitted.",
+    "response_sha256": "8ae1138b91ab049c007d233ff4ec5c303b53766148b622746310525d91e63e1d",
+    "sources": [
+     "            state_sink=state_sink,",
+     "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter), reraise=True)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-caa4f5",
+    "confidence": 0.7,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change is that build_retry_before_sleep_logger is called without state_sink=state_sink, but since the allowed inputs are restricted to literals/dataclasses/exceptions/enum members, the only expressible value for the state_sink parameter (typed Callable[[dict[str, Any]], None] | None) is None, in which case dropping the keyword has no observable effect because it matches the default; no literal-only input can supply a distinguishing callable.",
+    "response_sha256": "84999da9169efc366ca988a789bc7c5d0b5467c0b2ea3c57b3f794b05babade9",
+    "sources": [
+     "state_sink: Callable[[dict[str, Any]], None] | None = None,",
+     "context_getter=context_getter,\n            state_sink=state_sink,",
+     "context_getter=context_getter), reraise=True)"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "ddd87418f11b7a29f5f6e78897b1aa3adfec0124b088873fca2ae7e74e6ae355"
+ },
+ "2a4f224cd89c9053": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082755Z-c81299",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version incorrectly uses `policy.min_wait_seconds` for the `max` argument of `wait_random_exponential` instead of `policy.max_wait_seconds`.",
+    "response_sha256": "2258673e8d374bad1b787b567f8fca92794bf0a3cee2024b229770de0e8d692c",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-f6f3a4",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When policy.min_wait_seconds and policy.max_wait_seconds differ, the changed version sets the maximum wait time of wait_random_exponential to min_wait_seconds instead of max_wait_seconds.",
+    "response_sha256": "171c131b446a408ca298c542a035b90b2affa7aebbf616c3d9992e1aca1cf4f0",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=30.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-5f1fca",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed line uses `max=policy.min_wait_seconds` instead of `max=policy.max_wait_seconds` in the wait_random_exponential call, so whenever min_wait_seconds != max_wait_seconds the returned Retrying object's wait strategy is capped at a different (smaller) value, changing both the returned object's attributes and the actual sleep durations it would produce on retries.",
+    "response_sha256": "47af05a388058c637412e8cbc01755f1e7b8406ad4cdd7ddfb466a71722df87c",
+    "sources": [
+     "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
+     "wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "ce60d7045b61aea888e657e3d0a0d3e93a2848754d030cdb2ef4b9870018c12f"
+ },
+ "2ae84179fe3cd89c": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
+     "state_sink": "print"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-ce577d",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits the `state_sink` parameter when calling `build_retry_before_sleep_logger`, so providing a non-null `state_sink` will result in different behavior as it is ignored.",
+    "response_sha256": "2a1d21d5e7b6f07b35a8e740b851f310b98c80da002b79e0e9abe55fe11fbe0b",
+    "sources": [
+     "        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),",
+     "before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter),"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "None",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
+     "state_sink": "Exception"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-80e5f9",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version forwards state_sink to build_retry_before_sleep_logger, whereas the changed version omits state_sink from the call.",
+    "response_sha256": "7c428de6c31d2ddc00e74c7a38cc4da627df96d67a4413c1a076122e1576a560",
+    "sources": [
+     "            state_sink=state_sink,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=2)",
+     "state_sink": "lambda state: state.update(called=True)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-ad08db",
+    "confidence": 0.75,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The rewritten call drops `state_sink=state_sink` when building the before_sleep logger, so whenever a caller supplies a non-None state_sink, the returned Retrying object's before_sleep hook silently stops forwarding state updates in the modified version while the original still invokes it, making the two returned objects behave differently on any retry that triggers before_sleep.",
+    "response_sha256": "ab6137603a208dea6fd410d836e50b50ecb8419efbb4438bf7d5bd5759b7382f",
+    "sources": [
+     "before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),",
+     "before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "4c88210a0830e93f8ee5fc087d6ec8f5368ce7b988745071f1cd1b649a4fd969"
+ },
+ "44b17fdbcf809c77": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=5.0, max_wait_seconds=20.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-f34ea0",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits the 'min=policy.min_wait_seconds' argument in wait_random_exponential, which defaults to 0 instead of the policy's specified minimum wait time, resulting in different retry delay behavior.",
+    "response_sha256": "6e10e2e7986bba16a0dbc360089624a64b1ef6a7b798e0efc99abe0a48beb996",
+    "sources": [
+     "        wait=wait_random_exponential(",
+     "            min=policy.min_wait_seconds,"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-158905",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version passes min=policy.min_wait_seconds to wait_random_exponential while the changed version omits it, causing the minimum wait to default to 0 and altering retry wait intervals when min_wait_seconds is non-zero.",
+    "response_sha256": "7452b0ad658053626730e6536cc96b4919a4af44de5f5a39733708907e040e02",
+    "sources": [
+     "            min=policy.min_wait_seconds,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=100.0, max_wait_seconds=200.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-4cf014",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The rewrite drops the `min=policy.min_wait_seconds` argument to wait_random_exponential, so tenacity's default min=0 is used instead of the policy's floor, making the returned Retrying object's wait() produce shorter sleep times (and thus different before_sleep logging arguments) whenever policy.min_wait_seconds > 0.",
+    "response_sha256": "78ac2804f319ef7d96b1cc6a943cbccf1a137263e20ed69b83db9c26b3dca0e9",
+    "sources": [
+     "wait=wait_random_exponential(",
+     "min=policy.min_wait_seconds,",
+     "wait=wait_random_exponential(max=policy.max_wait_seconds)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "379a4883d600e0badd1c3de75f7a216b59e74e8d4708713ba5b70a2005162b53"
+ },
+ "4d9672c61c837d10": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-6f5ed4",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The removed `event_type` argument is a hardcoded constant independent of the function's inputs, so any behavioral difference would manifest across all inputs; since the symbolic search found no distinguishing inputs, the versions must be equivalent (likely due to identical default values).",
+    "response_sha256": "d14eb5abbd354871201166c4b8dd38ea443f55673a87c3b9895f1aa5fba6bb13",
+    "sources": [
+     "        before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-57e9c7",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Omitting the default argument event_type=\"llm_router.provider.retry.scheduled\" in the call to build_retry_before_sleep_logger leaves the resulting AsyncRetrying policy identical across all inputs.",
+    "response_sha256": "64cdb45c1c71aa67973a83ace7796d1f9ab64c4c86954ad4bd80312d3144e3ca",
+    "sources": [
+     "            event_type=\"llm_router.provider.retry.scheduled\",",
+     "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-449eae",
+    "confidence": 0.62,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only textual change is dropping the explicit event_type=\"llm_router.provider.retry.scheduled\" keyword argument when calling build_retry_before_sleep_logger; since the project's own tests and an exhaustive symbolic search over RetryPolicy/RetryLogger/context_getter/state_sink inputs found no distinguishing case, build_retry_before_sleep_logger's event_type parameter must already default to that same string, so the returned AsyncRetrying's before_sleep callback (and hence all observable behavior/logging) is identical in both versions for every constructible input.",
+    "response_sha256": "f55e9e6728fa7d2e712b5c3842a01d93cdebfd0a0a7a49f770028f6820a96003",
+    "sources": [
+     "before_sleep=build_retry_before_sleep_logger(\n            logger,\n            event_type=\"llm_router.provider.retry.scheduled\",\n            context_getter=context_getter,\n            state_sink=state_sink,\n        ),",
+     "before_sleep=build_retry_before_sleep_logger(logger, context_getter=context_getter, state_sink=state_sink)"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "5dfce30717573ba8ad60821715bb8cadf6d7b3bd3bc54e3e28fcfe6b89f93339"
+ },
+ "5111016988207c9f": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "lambda: {}",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-995b13",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits passing the `context_getter` argument to `build_retry_before_sleep_logger`, changing the behavior when a non-default `context_getter` is provided.",
+    "response_sha256": "a914765627798dcd47111a9d1ef57d7cdd8cfd3d8d575880690b6e19cc3cfd51",
+    "sources": [
+     "            context_getter=context_getter,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "lambda: {}",
+     "logger": "None",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-8709aa",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version forwards context_getter to build_retry_before_sleep_logger, whereas the changed version omits context_getter, altering the before_sleep callback on the returned Retrying instance when context_getter is provided.",
+    "response_sha256": "3d9e77a112c2a805274fa4a2e85ea447003896fdfc7f827318d5e53d4cfb4f96",
+    "sources": [
+     "            context_getter=context_getter,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "lambda: {'request_id': 'abc123'}",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=0.01, max_wait_seconds=0.01, max_attempts=2)",
+     "state_sink": "lambda state: None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-949420",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Changed code drops context_getter=context_getter in the build_retry_before_sleep_logger call, so for any non-None context_getter the before_sleep logger built differs (original wires it in, changed uses default), an observable difference once a retry fires.",
+    "response_sha256": "33aa187c2d4cef664092453caec6e741b2f2a5215a68a3044b13535ba3d2ba78",
+    "sources": [
+     "context_getter=context_getter,",
+     "before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', state_sink=state_sink)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "e70d31065ab8ad9070ce264c124a3d8feb474415d3a4162e75dfbbc31832ae36"
+ },
+ "621cfe26a9c437b8": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "None",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-6abf6f",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified version passes policy.min_wait_seconds as the max argument to wait_random_exponential instead of policy.max_wait_seconds, changing the wait behavior.",
+    "response_sha256": "fa3db3557103389184658f4ad1e9562331043b197ea6b00627c06fab1ce7eb36",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "None",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-ebbaec",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When policy.min_wait_seconds and policy.max_wait_seconds differ, the changed version sets the maximum wait time to min_wait_seconds instead of max_wait_seconds, returning an AsyncRetrying instance with a different wait strategy configuration.",
+    "response_sha256": "e3b5692ed78aeb028562cd13681039e345ce0d4241849acb0efb2fb8485a9746",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=0.1, max_wait_seconds=5.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-7f67b6",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The change replaces max=policy.max_wait_seconds with max=policy.min_wait_seconds in wait_random_exponential, so whenever min_wait_seconds != max_wait_seconds the returned AsyncRetrying uses a different (narrower/constant) backoff distribution, producing different sleep durations for the same policy input.",
+    "response_sha256": "d4cecb73c4dab499b48e319b63b5515098c75f10b4f28295d7451e8f6687ef06",
+    "sources": [
+     "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
+     "wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "d289d4f8cec4320c22fef4418fb7faef409af783cf7ff76f751a0ce79b19c378"
+ },
+ "7c23c1115ef38d7b": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-3dc047",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits the max argument in wait_random_exponential, causing the returned AsyncRetrying object to use the default maximum wait time instead of policy.max_wait_seconds.",
+    "response_sha256": "a4f11ab87470b28d5902d8c2e49fc0d724a378a5aa4d384218969fb7b25aee30",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-43416e",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version omits max=policy.max_wait_seconds in wait_random_exponential, causing the returned AsyncRetrying object to use the default maximum wait time instead of the policy's configured maximum wait time.",
+    "response_sha256": "906ef6ef1d37a0890340c595a47b2eca27fe2490fe6ce656e53ec7c17d858551",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=5.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-2ced11",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version drops the `max=policy.max_wait_seconds` argument to wait_random_exponential, so the returned AsyncRetrying's `.wait.max` attribute equals tenacity's large default instead of policy.max_wait_seconds, an observable difference in the returned object for e.g. max_wait_seconds=5.0.",
+    "response_sha256": "49fed19eb24e892c191b953fa556faf1ca24c4e82731e350bef79b4ea6b8daee",
+    "sources": [
+     "wait=wait_random_exponential(",
+     "min=policy.min_wait_seconds,",
+     "max=policy.max_wait_seconds,",
+     "wait=wait_random_exponential(min=policy.min_wait_seconds), retry=retry_if_exception(is_retryable_provider_error)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "e57fcffa8544620180debf0fe63f48d86f0382497ef13f333436975053c9001d"
+ },
+ "983ba1af56c61839": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-c3a5aa",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified version removes the `max` argument from `wait_random_exponential`, ignoring `policy.max_wait_seconds` and instead using the default maximum wait time.",
+    "response_sha256": "0e5695ae8b20e6160bd673f96018a580167d42b29bddc855d7cde22820dd029b",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "None",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-a154f0",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version omits max=policy.max_wait_seconds when constructing wait_random_exponential, altering the maximum retry delay configured on the returned Retrying instance.",
+    "response_sha256": "e46c8e078c2d8af9d0cbdf69f28e791d91b203472c2b015404e3e0aeeab553b9",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=0.5, max_wait_seconds=2.0, max_attempts=5)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-0e30cd",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version drops max=policy.max_wait_seconds from wait_random_exponential, so the returned Retrying.wait strategy uses tenacity's default (much larger) max instead of policy.max_wait_seconds, making the returned object's wait cap and resulting sleep durations differ for any policy.max_wait_seconds smaller than that default.",
+    "response_sha256": "935b8361ced96296322df685c5951165f739c7cdf7842c424c96f7c61bd83d8e",
+    "sources": [
+     "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
+     "wait=wait_random_exponential(min=policy.min_wait_seconds)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "710b00c5f465136db51752367e68351bd13486a8fce5113d61a9e2f31b8173c3"
+ },
  "a3f68e4f70d254ab": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T212716Z-3e7192",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The functions return AsyncRetrying instances initialized with different values for the reraise parameter (True in the original, False in the changed version) for all valid inputs.",
+    "response_sha256": "08b0bd09c8f7c2153747063fdf3c05162a57aa687a5ea0eb608f1ad25dda254e",
+    "sources": [
+     "        reraise=True,",
+     "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=False)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "None",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213154Z-60d0c8",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version configures AsyncRetrying with reraise=True while the changed version sets reraise=False, altering the reraise behavior and attribute of the returned retry policy object.",
+    "response_sha256": "e2d5af3da5c14d010b09c0dc66f294857832e65a9c10ead5714865668b87bd6f",
+    "sources": [
+     "        reraise=True,",
+     "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=False)"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
      "context_getter": "None",
@@ -20,9 +751,159 @@
      "reraise=False)"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "logging.getLogger('x')",
+     "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=2)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111624Z-b64a45",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With reraise=True the original raises the original exception when retries are exhausted, whereas reraise=False raises tenacity.RetryError, so a call that always fails with a retryable error raises a different exception type.",
+    "response_sha256": "1d6be65393ed3034dc30ed1e9ac0f17bac12bdddf54083fc1e5f12ce7d2ffdf9",
+    "sources": [
+     "reraise=True,",
+     "reraise=False)"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "05d9180e593cd1cb0a3a253d37abe0fab70d26bea1a8157e0a6b7321194a162a"
+ },
+ "bbfbe910308021a5": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "None",
+     "policy": "RetryPolicy(min_wait_seconds=5.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-4137c6",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits the min parameter when calling wait_random_exponential, so it will use the default minimum wait time instead of the one specified by policy.min_wait_seconds.",
+    "response_sha256": "67690d84f7a180600073b1487d75bdf1c1967d18f2b21756e2b5a85ed8039c4b",
+    "sources": [
+     "        wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
+     "return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-51fbdd",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version configures wait_random_exponential with min set to policy.min_wait_seconds, whereas the changed version omits min, causing it to default to 0.",
+    "response_sha256": "cc063a4de9a87c2bd90becf96ad38bf4770ed6ad41cdd6a3ec928011aaf52874",
+    "sources": [
+     "            min=policy.min_wait_seconds,",
+     "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=5.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-3b2e78",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version drops the `min=policy.min_wait_seconds` argument to wait_random_exponential, so for any policy with a non-zero min_wait_seconds the returned AsyncRetrying's wait strategy has wait.min equal to policy.min_wait_seconds in the original but 0 (tenacity's default) in the changed version, a directly observable difference in the returned object's attributes.",
+    "response_sha256": "96361830e2b11879d09ac6a4f9ac949527b12674e2eec5d30cdad0ba6a429778",
+    "sources": [
+     "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
+     "wait=wait_random_exponential(max=policy.max_wait_seconds)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "42f2f135654ecc1ca417eea463909ccc16d11114535e9053f9707e9ebc9cb3dd"
+ },
+ "c7a67bc7b5efb364": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082527Z-21d1f2",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version uses `policy.max_wait_seconds` for the `min` argument of `wait_random_exponential` instead of `policy.min_wait_seconds`, resulting in different retry wait times when the policy's minimum and maximum wait times differ.",
+    "response_sha256": "376179f2cd4b2707c8568a5edbfdbd2673d9555f17d9036481965cfa53e1fcba",
+    "sources": [
+     "            min=policy.min_wait_seconds,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "None",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=5.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082755Z-ba40ba",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version sets the min parameter of wait_random_exponential to policy.max_wait_seconds instead of policy.min_wait_seconds, producing a different retry wait configuration whenever min_wait_seconds and max_wait_seconds differ.",
+    "response_sha256": "cc5294d91361c2335100818d163dd2b23bae2a5e6aff3760a07c34a273521376",
+    "sources": [
+     "            min=policy.min_wait_seconds,",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=5.0, max_attempts=1)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-a0d7e4",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "When min_wait_seconds != max_wait_seconds, the returned Retrying object's wait strategy differs: original uses wait_random_exponential(min=policy.min_wait_seconds,...) giving min=0.0, while the changed version uses wait_random_exponential(min=policy.max_wait_seconds,...) giving min=5.0, so the returned objects have different wait.min attributes.",
+    "response_sha256": "605e387b4416869bf7963ce8771ba61996c97e053f0c3566e899dad0eced632f",
+    "sources": [
+     "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
+     "wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "942537bf51d7ac99fc92698608077bc92c8cab7291457f39692a046c91085589"
  },
  "cdebfb831ae4dc16": {
   "answers": {
@@ -85,8 +966,88 @@
      "reraise=False)"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "None",
+     "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=1)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111624Z-399ef2",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The returned Retrying differs in reraise (True vs False), so when attempts are exhausted on a retryable error the original raises the underlying exception while the changed one raises tenacity.RetryError.",
+    "response_sha256": "4aff18b8a79e6eddf72e7220df787df5bd4550cfb1072ee118d785308d36b23c",
+    "sources": [
+     "reraise=True,",
+     "reraise=False)"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "bf768167a9df7a9c1f852ad5b03bc5f029851b41e619503fd65e64d8153fc752"
+ },
+ "fbd59874e7604ef8": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-4e1314",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits the event_type argument when calling build_retry_before_sleep_logger, changing the configuration of the returned Retrying object.",
+    "response_sha256": "51b40fee32aea0ce34280267a5e7f31051375a20c98d9c069a47acc46deb1872",
+    "sources": [
+     "            event_type=\"llm_router.provider.retry.scheduled\",",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T082802Z-07bb90",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Omitting event_type in build_retry_before_sleep_logger relies on its default value of 'llm_router.provider.retry.scheduled', so both versions produce identical Retrying objects across all inputs.",
+    "response_sha256": "9cc7b05240499713f2af64473e5b525e828cb8eb9f8202f65320492bd635b39b",
+    "sources": [
+     "            event_type=\"llm_router.provider.retry.scheduled\",",
+     "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=2)",
+     "state_sink": "lambda state: None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232142Z-c3f9ec",
+    "confidence": 0.65,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version drops the explicit event_type=\\\"llm_router.provider.retry.scheduled\\\" keyword when calling build_retry_before_sleep_logger, so the returned Retrying's before_sleep callback will tag its retry-scheduled log/state events with whatever default event_type build_retry_before_sleep_logger uses instead of the original literal string, changing the observable event_type recorded on the first retry (e.g. via state_sink) whenever a retryable error triggers a sleep.",
+    "response_sha256": "f9c78f794b58d6e799aa655090ce7b8492c5058ab0ff6116dae3e480355bb7bc",
+    "sources": [
+     "event_type=\"llm_router.provider.retry.scheduled\",",
+     "before_sleep=build_retry_before_sleep_logger(logger, context_getter=context_getter, state_sink=state_sink),"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "97da443d6eb4c83f9b647fddc4cfd0d5f9d267f1100cfffd7af616f66e2cc7ef"
  }
 }

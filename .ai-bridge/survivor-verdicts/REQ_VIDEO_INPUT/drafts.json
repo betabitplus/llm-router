@@ -1,0 +1,126 @@
+{
+ "369e66334b7d7d71": [
+  {
+   "at": "2026-09-29T10:38:22.580442Z",
+   "call_id": "20260929T100328Z-f4fe14",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no describe_media (it lives in llm_router._internal.capabilities.media)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "3a411e63af8027b3358bab37fee7bd7f2578a45fcaa2505a05f2b05e4656e014",
+   "reason": "it does not fit the project's code as written: llm_router has no describe_media (it lives in llm_router._internal.capabilities.media)",
+   "sources": [
+    "llm_router._api.types.VideoSchema",
+    "llm_router._internal.capabilities.media.describe_media",
+    "pytest.mark.verifies",
+    "pytest.mark.verification_kind"
+   ]
+  }
+ ],
+ "68771b7b6b05d78f": [
+  {
+   "at": "2026-09-29T10:38:22.580448Z",
+   "call_id": "20260929T100341Z-6d1b0f",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "dbfc073126b95aea3a6c57398c72c381c1f3286ac6c488b3a8dd46535b350181",
+   "reason": "",
+   "sources": [
+    "llm_router.VideoSchema",
+    "llm_router._internal.capabilities.media.describe_media",
+    "tests.llm_router.support.builders.get_llm_router_test_data_path"
+   ]
+  }
+ ],
+ "8ba45c4ec318c00e": [
+  {
+   "at": "2026-09-29T10:38:22.580450Z",
+   "call_id": "20260929T100405Z-1d92ef",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "246fbf313564e6796d07303938389955d5cc8d6376a73fe1de4aae762df56a2d",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'google' failed for model 'gemini-3.6-flash'. Reason: Provider request failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.LLMRouterResponse",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.VideoUrlSchema",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "tests.llm_router.support.media.video.VideoObservation",
+    "tests.llm_router.support.media.video.assert_indoor_video_response",
+    "tests.llm_router.support.media.video.build_indoor_video_prompt"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.892363Z",
+   "call_id": "20260929T114734Z-561dc3",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9d3da697db316deccdb5fafe5196b057efc35482f25f0bddf983bbe51da634b4",
+   "reason": "",
+   "sources": [
+    "llm_router.VideoUrlSchema",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "llm_router._internal.capabilities.media.VideoUrlMedia"
+   ]
+  }
+ ],
+ "a6b4e513b6f3bf73": [
+  {
+   "at": "2026-09-29T10:38:22.580457Z",
+   "call_id": "20260929T100415Z-a4d538",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "2921b113f51f7e6bc1b21516cbacece214a08012356a3d2ae90dfda799fb7790",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'gemini_webapi' failed for model 'gemini-3.6-flash'. Reason: Provider request failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.VideoUrlSchema",
+    "tests.llm_router.bdd._support.prepare_gemini_webapi_runtime",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "tests.llm_router.support.media.video.VideoObservation",
+    "tests.llm_router.support.media.video.assert_indoor_video_response",
+    "tests.llm_router.support.media.video.build_indoor_video_prompt",
+    "py_lib_testkit.evidence"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.892372Z",
+   "call_id": "20260929T114737Z-587301",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "800525c12d1f75017044e9365bd42f274f788bfd103824fc394ef59dda945337",
+   "reason": "",
+   "sources": [
+    "llm_router.VideoUrlSchema",
+    "llm_router._internal.capabilities.media.VideoUrlMedia",
+    "tests.llm_router.support.builders.build_test_video_url"
+   ]
+  }
+ ]
+}

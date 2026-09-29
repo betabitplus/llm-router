@@ -1,0 +1,946 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_MULTIMODAL_CONTENT_NORMALIZATION",
+ "proposals": [
+  {
+   "id": "SM-9C21A4A6",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/content.py::_content_parts",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Returns characters of a string as separate parts instead of wrapping the string as a single part.",
+   "original_sha256": "d87e3f4192867963a621e95538acf63de11929bc417a9479c880ba14dc7a6e77",
+   "context_sha256": "a24595da8df0c2a0bee2bf286213970ac6349e7af81cbdcb29dee09c5148254c",
+   "prompt_sha256": "e355d12b98e327dfc7b6f6e27ce2ca049f579b061edb206f05508dffc3ba7aaa",
+   "replacement": "def _content_parts(content: object) -> tuple[ChatPart, ...]:\n    \"\"\"Return public content as ordered parts.\"\"\"\n    if isinstance(content, str):\n        return tuple(content)\n    if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):\n        return tuple(content)\n\n    msg = f\"Unsupported message content: {type(content).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-7ff628",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "4411ce924726c456d5e6b5f5038dcbd9b9b55920d04747f6c0ef5ef85d6e874d",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-73959DE4",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/content.py::_content_parts",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Fails to exclude bytes and bytearray from being treated as valid sequences of parts, incorrectly converting them to a tuple of integers instead of raising an error.",
+   "original_sha256": "d87e3f4192867963a621e95538acf63de11929bc417a9479c880ba14dc7a6e77",
+   "context_sha256": "a24595da8df0c2a0bee2bf286213970ac6349e7af81cbdcb29dee09c5148254c",
+   "prompt_sha256": "e355d12b98e327dfc7b6f6e27ce2ca049f579b061edb206f05508dffc3ba7aaa",
+   "replacement": "def _content_parts(content: object) -> tuple[ChatPart, ...]:\n    \"\"\"Return public content as ordered parts.\"\"\"\n    if isinstance(content, str):\n        return (content,)\n    if isinstance(content, Sequence):\n        return tuple(content)\n\n    msg = f\"Unsupported message content: {type(content).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-7ff628",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "4411ce924726c456d5e6b5f5038dcbd9b9b55920d04747f6c0ef5ef85d6e874d",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-FE8566C3",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_chat_message",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Message parts are normalized in reversed order, so caller part order is not preserved for mixed content.",
+   "original_sha256": "4abcde1c6dfa45f14a1b5b181a82d91b35bc21d64cfd66c92fa7707f5f06d2b9",
+   "context_sha256": "b85ee0a5070bfe83b0233add0e04280f07d433cd84e1b0da789206a1867d97e8",
+   "prompt_sha256": "be04bd3d02fce297425676def667358503b9a349d5d0eb512536e2342f1ab469",
+   "replacement": "def normalize_chat_message(message: ChatMessage) -> NormalizedMessage:\n    \"\"\"Normalize a public chat transcript message.\"\"\"\n    return NormalizedMessage(\n        role=message.role,\n        parts=normalize_parts(tuple(reversed(tuple(message.parts)))),\n        meta=dict(message.meta),\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-94c058",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "5c6816cf5d28bd566069ab19afd58a823a8661b5de42b3acb1fcd0b74ae82b23",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-481E12BF",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_chat_message",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "The normalized message shares the caller's top-level metadata mapping instead of owning a separate copy, so mutations leak between them.",
+   "original_sha256": "4abcde1c6dfa45f14a1b5b181a82d91b35bc21d64cfd66c92fa7707f5f06d2b9",
+   "context_sha256": "b85ee0a5070bfe83b0233add0e04280f07d433cd84e1b0da789206a1867d97e8",
+   "prompt_sha256": "be04bd3d02fce297425676def667358503b9a349d5d0eb512536e2342f1ab469",
+   "replacement": "def normalize_chat_message(message: ChatMessage) -> NormalizedMessage:\n    \"\"\"Normalize a public chat transcript message.\"\"\"\n    return NormalizedMessage(\n        role=message.role,\n        parts=normalize_parts(message.parts),\n        meta=message.meta,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-94c058",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "5c6816cf5d28bd566069ab19afd58a823a8661b5de42b3acb1fcd0b74ae82b23",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-9B37A894",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_content",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Role argument is ignored: normalized message is always created with the default \"user\" role, so caller-supplied roles (assistant/system) are lost.",
+   "original_sha256": "2c2fa74b5ac8f5b3a1e2c895574539c573b4fc54312cb391dbc78497ff6f5830",
+   "context_sha256": "720d67f91be48fabd5aed9b68783bc96feb1ed57b08bea390a255cbca3e0b261",
+   "prompt_sha256": "b815a1a584179e2930f4844464232156c0a68997eb6a36e09501081bf91e05ea",
+   "replacement": "def normalize_content(content: object, *, role: ChatRole = \"user\") -> NormalizedMessage:\n    \"\"\"Normalize role-less public content into one provider-neutral message.\"\"\"\n    return NormalizedMessage(\n        role=\"user\",\n        parts=normalize_parts(_content_parts(content)),\n        meta={},\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-9d5962",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "f5c22dc83eb036e52122955ea79702512e5a825b7e3dfb490a50776667cb3a0e",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-466DB825",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_content",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Normalized parts are reordered (reversed) instead of preserving caller order across mixed text/file/image/video parts.",
+   "original_sha256": "2c2fa74b5ac8f5b3a1e2c895574539c573b4fc54312cb391dbc78497ff6f5830",
+   "context_sha256": "720d67f91be48fabd5aed9b68783bc96feb1ed57b08bea390a255cbca3e0b261",
+   "prompt_sha256": "b815a1a584179e2930f4844464232156c0a68997eb6a36e09501081bf91e05ea",
+   "replacement": "def normalize_content(content: object, *, role: ChatRole = \"user\") -> NormalizedMessage:\n    \"\"\"Normalize role-less public content into one provider-neutral message.\"\"\"\n    parts = tuple(normalize_parts(_content_parts(content)))\n    return NormalizedMessage(\n        role=role,\n        parts=tuple(reversed(parts)),\n        meta={},\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-9d5962",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "f5c22dc83eb036e52122955ea79702512e5a825b7e3dfb490a50776667cb3a0e",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-24D0CDE2",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_parts",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Text parts are emitted before media parts (grouped by kind), so mixed content loses caller order.",
+   "original_sha256": "5dfdd9658cf1f77f4838fdb86ca5be1da98a06aaa23634ce5868bfd1dacf01dd",
+   "context_sha256": "c6a1d6a72a9a7cb40306b00eba91e9a75eeb6dcdb2f07955518556beb4786bbf",
+   "prompt_sha256": "4f0a64619e2ba5e61dc9198917f5e8b584a87ac905981dfc3504c3bd38b12aea",
+   "replacement": "def normalize_parts(parts: Sequence[ChatPart]) -> tuple[NormalizedPart, ...]:\n    \"\"\"Normalize public message parts while preserving caller order.\"\"\"\n    texts: list[NormalizedPart] = []\n    media: list[NormalizedPart] = []\n    for part in parts:\n        if isinstance(part, str):\n            texts.append(TextPart(kind=\"text\", text=part))\n        else:\n            media.append(MediaPart(kind=\"media\", media=describe_media(part)))\n    return tuple(texts + media)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-aaa08a",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "603ba85e9dd29a2dbdf5790036dd8c1e0b080f40119fe4513ad7a9ed1e9ffd76",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-7AAE5ABD",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_parts",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Non-string parts are silently dropped when they are falsy or when describing yields no descriptor; more notably, only the first media part is described and later media parts reuse its descriptor, losing per-part media kind and metadata.",
+   "original_sha256": "5dfdd9658cf1f77f4838fdb86ca5be1da98a06aaa23634ce5868bfd1dacf01dd",
+   "context_sha256": "c6a1d6a72a9a7cb40306b00eba91e9a75eeb6dcdb2f07955518556beb4786bbf",
+   "prompt_sha256": "4f0a64619e2ba5e61dc9198917f5e8b584a87ac905981dfc3504c3bd38b12aea",
+   "replacement": "def normalize_parts(parts: Sequence[ChatPart]) -> tuple[NormalizedPart, ...]:\n    \"\"\"Normalize public message parts while preserving caller order.\"\"\"\n    normalized: list[NormalizedPart] = []\n    first_media = None\n    for part in parts:\n        if isinstance(part, str):\n            normalized.append(TextPart(kind=\"text\", text=part))\n        else:\n            if first_media is None:\n                first_media = describe_media(part)\n            normalized.append(MediaPart(kind=\"media\", media=first_media))\n    return tuple(normalized)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-aaa08a",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "603ba85e9dd29a2dbdf5790036dd8c1e0b080f40119fe4513ad7a9ed1e9ffd76",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-C4F27865",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/media.py::_validate_image",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Minimum-dimension check requires both sides to be too small (uses 'and'), so images with only one undersized side are accepted instead of rejected locally.",
+   "original_sha256": "8d3b4827509013a7881d8aa211bdb23f34615d6339c8b9c70ea2fd89f80237c1",
+   "context_sha256": "580efdbe5561d989cdd0ff654088f058e67ad560de7f9ce806d675e8858f5509",
+   "prompt_sha256": "e3194995cd14fa09bdb88ed83fede241823979080a8a2d77e178e789769c4328",
+   "replacement": "def _validate_image(image: Image.Image) -> None:\n    \"\"\"Validate raw Pillow images before they enter normalized content.\"\"\"\n    if image.width < _MIN_IMAGE_DIMENSION and image.height < _MIN_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too small \"\n            f\"(min {_MIN_IMAGE_DIMENSION}x{_MIN_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too large \"\n            f\"(max {_MAX_IMAGE_DIMENSION}x{_MAX_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.mode not in _ALLOWED_IMAGE_MODES:\n        msg = f\"Image mode {image.mode!r} is not supported.\"\n        raise ValueError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-e85e48",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "a02b4de7cd1b6432fe35cb423450e16f1a222db03758a7c6aaacfd77ae33d2e1",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-D79F31DB",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/media.py::_validate_image",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Maximum-dimension check only looks at the width, so images whose height exceeds the maximum bound pass validation and reach provider execution.",
+   "original_sha256": "8d3b4827509013a7881d8aa211bdb23f34615d6339c8b9c70ea2fd89f80237c1",
+   "context_sha256": "580efdbe5561d989cdd0ff654088f058e67ad560de7f9ce806d675e8858f5509",
+   "prompt_sha256": "e3194995cd14fa09bdb88ed83fede241823979080a8a2d77e178e789769c4328",
+   "replacement": "def _validate_image(image: Image.Image) -> None:\n    \"\"\"Validate raw Pillow images before they enter normalized content.\"\"\"\n    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too small \"\n            f\"(min {_MIN_IMAGE_DIMENSION}x{_MIN_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.width > _MAX_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too large \"\n            f\"(max {_MAX_IMAGE_DIMENSION}x{_MAX_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.mode not in _ALLOWED_IMAGE_MODES:\n        msg = f\"Image mode {image.mode!r} is not supported.\"\n        raise ValueError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-e85e48",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "a02b4de7cd1b6432fe35cb423450e16f1a222db03758a7c6aaacfd77ae33d2e1",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-052DA7E2",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/media.py::describe_media",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Remote video descriptor takes its start/end offsets swapped, so public descriptor metadata is computed wrongly for video URL parts.",
+   "original_sha256": "9d59578bb427c624d834899f5fbdc0e0a7d9778bb193322bf072edf12fa63ee1",
+   "context_sha256": "b52df2b653dd4699b04769a16169e63f83d1e0fd1ec1d2167580f7e7756548c7",
+   "prompt_sha256": "534cdcf8b189a0a69505b8742947dfc6dddd82295ddce2197df56735ee626dc0",
+   "replacement": "def describe_media(value: object) -> MediaDescriptor:\n    \"\"\"Return a provider-neutral media descriptor for a public media object.\"\"\"\n    # @impl Document input normalization, IMPL_DOCUMENT_INPUT, [REQ_DOCUMENT_INPUT[revision==1]]\n    if isinstance(value, FileSchema):\n        return FileMedia(kind=\"file\", path=value.path, mime_type=value.mime_type)\n    # @impl Image input normalization, IMPL_IMAGE_INPUT, [REQ_IMAGE_INPUT[revision==1]]\n    if isinstance(value, Image.Image):\n        _validate_image(value)\n        return ImageMedia(\n            kind=\"image\",\n            image=value,\n            width=value.width,\n            height=value.height,\n            mode=value.mode,\n        )\n    # @impl Video input normalization, IMPL_VIDEO_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoSchema):\n        return VideoFileMedia(\n            kind=\"video_file\",\n            path=value.path,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n    # @impl Remote video input normalization, IMPL_VIDEO_URL_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoUrlSchema):\n        return VideoUrlMedia(\n            kind=\"video_url\",\n            url=value.url,\n            fps=value.fps,\n            start_offset=value.end_offset,\n            end_offset=value.start_offset,\n        )\n\n    msg = f\"Unsupported media value: {type(value).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-78ed33",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "315da84f627c2ceefb0e631120038e012a84db20844bd9803c6ad9e2a18db231",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-21C5437D",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/media.py::describe_media",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Image descriptor swaps width and height, so the reported dimensions are computed wrongly (image descriptor metadata is transposed).",
+   "original_sha256": "9d59578bb427c624d834899f5fbdc0e0a7d9778bb193322bf072edf12fa63ee1",
+   "context_sha256": "b52df2b653dd4699b04769a16169e63f83d1e0fd1ec1d2167580f7e7756548c7",
+   "prompt_sha256": "534cdcf8b189a0a69505b8742947dfc6dddd82295ddce2197df56735ee626dc0",
+   "replacement": "def describe_media(value: object) -> MediaDescriptor:\n    \"\"\"Return a provider-neutral media descriptor for a public media object.\"\"\"\n    # @impl Document input normalization, IMPL_DOCUMENT_INPUT, [REQ_DOCUMENT_INPUT[revision==1]]\n    if isinstance(value, FileSchema):\n        return FileMedia(kind=\"file\", path=value.path, mime_type=value.mime_type)\n    # @impl Image input normalization, IMPL_IMAGE_INPUT, [REQ_IMAGE_INPUT[revision==1]]\n    if isinstance(value, Image.Image):\n        _validate_image(value)\n        return ImageMedia(\n            kind=\"image\",\n            image=value,\n            width=value.height,\n            height=value.width,\n            mode=value.mode,\n        )\n    # @impl Video input normalization, IMPL_VIDEO_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoSchema):\n        return VideoFileMedia(\n            kind=\"video_file\",\n            path=value.path,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n    # @impl Remote video input normalization, IMPL_VIDEO_URL_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoUrlSchema):\n        return VideoUrlMedia(\n            kind=\"video_url\",\n            url=value.url,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n\n    msg = f\"Unsupported media value: {type(value).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-78ed33",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "315da84f627c2ceefb0e631120038e012a84db20844bd9803c6ad9e2a18db231",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-42107892",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/content.py::_content_parts",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Single ChatPart non-sequence content (e.g. a bare media part object) is wrapped into a one-element tuple instead of being rejected as unsupported top-level content, so invalid content reaches later stages.",
+   "original_sha256": "d87e3f4192867963a621e95538acf63de11929bc417a9479c880ba14dc7a6e77",
+   "context_sha256": "a8d32664852334f09d2ff91dc1116b29899f292212f126989ea01cb589c8ccc8",
+   "prompt_sha256": "8c67209306fbef214ca3f06788fc1eb8e5ce53af58fea34d5095c5796660fb60",
+   "replacement": "def _content_parts(content: object) -> tuple[ChatPart, ...]:\n    \"\"\"Return public content as ordered parts.\"\"\"\n    if isinstance(content, str):\n        return (content,)\n    if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):\n        return tuple(content)\n    if content is not None and not isinstance(content, bytes | bytearray | int | float | dict):\n        return (content,)  # type: ignore[return-value]\n\n    msg = f\"Unsupported message content: {type(content).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-a2f348",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "df000261efdc23b6b71e5a66ed0a28ea718c6cf33ed264f7d5f89abbed5b3e15",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-F4FCFF25",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/content.py::_content_parts",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Sequence content is reordered/deduplicated: parts are ordered with text parts first, so caller order across mixed text/file/image/video parts is not preserved.",
+   "original_sha256": "d87e3f4192867963a621e95538acf63de11929bc417a9479c880ba14dc7a6e77",
+   "context_sha256": "a8d32664852334f09d2ff91dc1116b29899f292212f126989ea01cb589c8ccc8",
+   "prompt_sha256": "8c67209306fbef214ca3f06788fc1eb8e5ce53af58fea34d5095c5796660fb60",
+   "replacement": "def _content_parts(content: object) -> tuple[ChatPart, ...]:\n    \"\"\"Return public content as ordered parts.\"\"\"\n    if isinstance(content, str):\n        return (content,)\n    if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):\n        parts = tuple(content)\n        texts = tuple(part for part in parts if isinstance(part, str))\n        others = tuple(part for part in parts if not isinstance(part, str))\n        return texts + others\n\n    msg = f\"Unsupported message content: {type(content).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-a2f348",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "df000261efdc23b6b71e5a66ed0a28ea718c6cf33ed264f7d5f89abbed5b3e15",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-481E12BF",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_chat_message",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Passes the metadata dictionary by reference instead of creating a separate copy, violating the verification criteria that states the normalized message must own a separate top-level metadata mapping.",
+   "original_sha256": "4abcde1c6dfa45f14a1b5b181a82d91b35bc21d64cfd66c92fa7707f5f06d2b9",
+   "context_sha256": "bf3ba8b64ecced896de1fd168be1e8ccd3303b8da13af899e134bc8ccc2c20e9",
+   "prompt_sha256": "8a74e1b306125945e8fa47f39a656e84d82e8ef98e365b2895d5a3e065870c4f",
+   "replacement": "def normalize_chat_message(message: ChatMessage) -> NormalizedMessage:\n    \"\"\"Normalize a public chat transcript message.\"\"\"\n    return NormalizedMessage(\n        role=message.role,\n        parts=normalize_parts(message.parts),\n        meta=message.meta,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-fe8b21",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "6f6bf5f32cb5c38afa22b76aed9d8290c426c7bdf03f2ebdfded515bd264bc44",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-4AFB9CDC",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_chat_message",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Bypasses part normalization completely by passing the original message parts, which will fail to apply the local rejection and transformation criteria for unsupported multimodal content or raw images.",
+   "original_sha256": "4abcde1c6dfa45f14a1b5b181a82d91b35bc21d64cfd66c92fa7707f5f06d2b9",
+   "context_sha256": "bf3ba8b64ecced896de1fd168be1e8ccd3303b8da13af899e134bc8ccc2c20e9",
+   "prompt_sha256": "8a74e1b306125945e8fa47f39a656e84d82e8ef98e365b2895d5a3e065870c4f",
+   "replacement": "def normalize_chat_message(message: ChatMessage) -> NormalizedMessage:\n    \"\"\"Normalize a public chat transcript message.\"\"\"\n    return NormalizedMessage(\n        role=message.role,\n        parts=message.parts,\n        meta=dict(message.meta),\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-fe8b21",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "6f6bf5f32cb5c38afa22b76aed9d8290c426c7bdf03f2ebdfded515bd264bc44",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-98A8E615",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_content",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Unsupported top-level content is no longer rejected locally: when the content cannot be split into parts, it is coerced to a text part via str() instead of failing before provider execution.",
+   "original_sha256": "2c2fa74b5ac8f5b3a1e2c895574539c573b4fc54312cb391dbc78497ff6f5830",
+   "context_sha256": "3b9aeb781b11044592b76e8e135a945f1aba2bc0ce5514b21a1c250e432e4b05",
+   "prompt_sha256": "4dd39490276a532bff3c1cb48f58c40efd491d1512cd6f6feab9f5f3b9e2404d",
+   "replacement": "def normalize_content(content: object, *, role: ChatRole = \"user\") -> NormalizedMessage:\n    \"\"\"Normalize role-less public content into one provider-neutral message.\"\"\"\n    try:\n        raw_parts = _content_parts(content)\n    except (TypeError, ValueError):\n        raw_parts = [str(content)]\n    return NormalizedMessage(\n        role=role,\n        parts=normalize_parts(raw_parts),\n        meta={},\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-42d35c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "af9b6ce0c52d24a280a0966b82d008a0607f35d31e8c29f8cadf3ccb8453ccac",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-5D7E3719",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_content",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Normalized parts are stably re-sorted so text parts come before all media parts, so mixed text/file/image/video content no longer keeps the caller's order.",
+   "original_sha256": "2c2fa74b5ac8f5b3a1e2c895574539c573b4fc54312cb391dbc78497ff6f5830",
+   "context_sha256": "3b9aeb781b11044592b76e8e135a945f1aba2bc0ce5514b21a1c250e432e4b05",
+   "prompt_sha256": "4dd39490276a532bff3c1cb48f58c40efd491d1512cd6f6feab9f5f3b9e2404d",
+   "replacement": "def normalize_content(content: object, *, role: ChatRole = \"user\") -> NormalizedMessage:\n    \"\"\"Normalize role-less public content into one provider-neutral message.\"\"\"\n    parts = normalize_parts(_content_parts(content))\n    ordered = tuple(\n        sorted(parts, key=lambda part: getattr(part, \"kind\", None) != \"text\")\n    )\n    return NormalizedMessage(\n        role=role,\n        parts=ordered,\n        meta={},\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-42d35c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "af9b6ce0c52d24a280a0966b82d008a0607f35d31e8c29f8cadf3ccb8453ccac",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-DD08EDC4",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_parts",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Media parts are grouped after text parts, so caller order is lost for mixed text/file/image/video content.",
+   "original_sha256": "5dfdd9658cf1f77f4838fdb86ca5be1da98a06aaa23634ce5868bfd1dacf01dd",
+   "context_sha256": "e72a21fa07bc6deb86cf8f079f52019d68d714842139fd1bcca0fae0a8c41cab",
+   "prompt_sha256": "da6e79ffc62e75db80b409fa2b11dc0111c334569d73ac313c6545b15b96781b",
+   "replacement": "def normalize_parts(parts: Sequence[ChatPart]) -> tuple[NormalizedPart, ...]:\n    \"\"\"Normalize public message parts while preserving caller order.\"\"\"\n    texts: list[NormalizedPart] = []\n    medias: list[NormalizedPart] = []\n    for part in parts:\n        if isinstance(part, str):\n            texts.append(TextPart(kind=\"text\", text=part))\n        else:\n            medias.append(MediaPart(kind=\"media\", media=describe_media(part)))\n    return tuple(texts + medias)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-a68f74",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "7b5d081d50975cbf50a0732b37806b69053b3a30f7e6aeb98a686409f9e33f79",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-E1B20E59",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_parts",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Empty-string text parts are silently dropped, and unsupported non-media parts (e.g. None) are skipped instead of being rejected locally by describe_media.",
+   "original_sha256": "5dfdd9658cf1f77f4838fdb86ca5be1da98a06aaa23634ce5868bfd1dacf01dd",
+   "context_sha256": "e72a21fa07bc6deb86cf8f079f52019d68d714842139fd1bcca0fae0a8c41cab",
+   "prompt_sha256": "da6e79ffc62e75db80b409fa2b11dc0111c334569d73ac313c6545b15b96781b",
+   "replacement": "def normalize_parts(parts: Sequence[ChatPart]) -> tuple[NormalizedPart, ...]:\n    \"\"\"Normalize public message parts while preserving caller order.\"\"\"\n    normalized: list[NormalizedPart] = []\n    for part in parts:\n        if isinstance(part, str):\n            if part:\n                normalized.append(TextPart(kind=\"text\", text=part))\n        elif part is None:\n            continue\n        else:\n            normalized.append(MediaPart(kind=\"media\", media=describe_media(part)))\n    return tuple(normalized)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-a68f74",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "7b5d081d50975cbf50a0732b37806b69053b3a30f7e6aeb98a686409f9e33f79",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-C4F27865",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/media.py::_validate_image",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Minimum-dimension check requires both width and height to be too small (and instead of or), so images with only one undersized dimension (e.g. 1x100) are accepted.",
+   "original_sha256": "8d3b4827509013a7881d8aa211bdb23f34615d6339c8b9c70ea2fd89f80237c1",
+   "context_sha256": "1b74def3db57ff17f02b3941d1847ecda3ff9e0281d029f17330e013acf887f3",
+   "prompt_sha256": "f6ca59018376e0a11e1bf1a805b92f0983d617c9d0f66f42a94d2e05d516a56d",
+   "replacement": "def _validate_image(image: Image.Image) -> None:\n    \"\"\"Validate raw Pillow images before they enter normalized content.\"\"\"\n    if image.width < _MIN_IMAGE_DIMENSION and image.height < _MIN_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too small \"\n            f\"(min {_MIN_IMAGE_DIMENSION}x{_MIN_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too large \"\n            f\"(max {_MAX_IMAGE_DIMENSION}x{_MAX_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.mode not in _ALLOWED_IMAGE_MODES:\n        msg = f\"Image mode {image.mode!r} is not supported.\"\n        raise ValueError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-5004be",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b715736cede7286eebf32639bf31aeb16ac998847a5f12c9545acd1f2df387a6",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-D79F31DB",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/media.py::_validate_image",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Maximum-dimension check only looks at the width, so images with an oversized height but acceptable width are no longer rejected locally before provider execution.",
+   "original_sha256": "8d3b4827509013a7881d8aa211bdb23f34615d6339c8b9c70ea2fd89f80237c1",
+   "context_sha256": "1b74def3db57ff17f02b3941d1847ecda3ff9e0281d029f17330e013acf887f3",
+   "prompt_sha256": "f6ca59018376e0a11e1bf1a805b92f0983d617c9d0f66f42a94d2e05d516a56d",
+   "replacement": "def _validate_image(image: Image.Image) -> None:\n    \"\"\"Validate raw Pillow images before they enter normalized content.\"\"\"\n    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too small \"\n            f\"(min {_MIN_IMAGE_DIMENSION}x{_MIN_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.width > _MAX_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too large \"\n            f\"(max {_MAX_IMAGE_DIMENSION}x{_MAX_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.mode not in _ALLOWED_IMAGE_MODES:\n        msg = f\"Image mode {image.mode!r} is not supported.\"\n        raise ValueError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-5004be",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b715736cede7286eebf32639bf31aeb16ac998847a5f12c9545acd1f2df387a6",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-12F33103",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/media.py::describe_media",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Omit image validation before converting the image to media representation, violating the criteria that raw images outside bounds are rejected locally.",
+   "original_sha256": "9d59578bb427c624d834899f5fbdc0e0a7d9778bb193322bf072edf12fa63ee1",
+   "context_sha256": "fc96783714017fea6978ceca4bacb184048190b32428e9c3ddee1cf4f9597d88",
+   "prompt_sha256": "7aaace067dc277dba1e438362d991871175b04f647d7bc768b3a1a79283f2194",
+   "replacement": "def describe_media(value: object) -> MediaDescriptor:\n    \"\"\"Return a provider-neutral media descriptor for a public media object.\"\"\"\n    # @impl Document input normalization, IMPL_DOCUMENT_INPUT, [REQ_DOCUMENT_INPUT[revision==1]]\n    if isinstance(value, FileSchema):\n        return FileMedia(kind=\"file\", path=value.path, mime_type=value.mime_type)\n    # @impl Image input normalization, IMPL_IMAGE_INPUT, [REQ_IMAGE_INPUT[revision==1]]\n    if isinstance(value, Image.Image):\n        return ImageMedia(\n            kind=\"image\",\n            image=value,\n            width=value.width,\n            height=value.height,\n            mode=value.mode,\n        )\n    # @impl Video input normalization, IMPL_VIDEO_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoSchema):\n        return VideoFileMedia(\n            kind=\"video_file\",\n            path=value.path,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n    # @impl Remote video input normalization, IMPL_VIDEO_URL_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoUrlSchema):\n        return VideoUrlMedia(\n            kind=\"video_url\",\n            url=value.url,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n\n    msg = f\"Unsupported media value: {type(value).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-65e912",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "7f10190bbec0362cfce93d8730b069eb683d0b8d41544d4a2b8732bc94d12f4d",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-FD092EB6",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/media.py::describe_media",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Remove support for the remote video partition, skipping handling of VideoUrlSchema objects and immediately raising a TypeError.",
+   "original_sha256": "9d59578bb427c624d834899f5fbdc0e0a7d9778bb193322bf072edf12fa63ee1",
+   "context_sha256": "fc96783714017fea6978ceca4bacb184048190b32428e9c3ddee1cf4f9597d88",
+   "prompt_sha256": "7aaace067dc277dba1e438362d991871175b04f647d7bc768b3a1a79283f2194",
+   "replacement": "def describe_media(value: object) -> MediaDescriptor:\n    \"\"\"Return a provider-neutral media descriptor for a public media object.\"\"\"\n    # @impl Document input normalization, IMPL_DOCUMENT_INPUT, [REQ_DOCUMENT_INPUT[revision==1]]\n    if isinstance(value, FileSchema):\n        return FileMedia(kind=\"file\", path=value.path, mime_type=value.mime_type)\n    # @impl Image input normalization, IMPL_IMAGE_INPUT, [REQ_IMAGE_INPUT[revision==1]]\n    if isinstance(value, Image.Image):\n        _validate_image(value)\n        return ImageMedia(\n            kind=\"image\",\n            image=value,\n            width=value.width,\n            height=value.height,\n            mode=value.mode,\n        )\n    # @impl Video input normalization, IMPL_VIDEO_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoSchema):\n        return VideoFileMedia(\n            kind=\"video_file\",\n            path=value.path,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n\n    msg = f\"Unsupported media value: {type(value).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-65e912",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "7f10190bbec0362cfce93d8730b069eb683d0b8d41544d4a2b8732bc94d12f4d",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-FEC0BD6D",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/content.py::_content_parts",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Sequence content is returned in reversed order (or sorted-like reordering), breaking caller part order preservation.",
+   "original_sha256": "d87e3f4192867963a621e95538acf63de11929bc417a9479c880ba14dc7a6e77",
+   "context_sha256": "045a27940f4db8d4cd5917db40c35844ea3448860a05d1340fbee8452b85e2bc",
+   "prompt_sha256": "aad3f86a000b1bc26130fc9846b9950002d15620a41fa6e835ae96d881e0024e",
+   "replacement": "def _content_parts(content: object) -> tuple[ChatPart, ...]:\n    \"\"\"Return public content as ordered parts.\"\"\"\n    if isinstance(content, str):\n        return (content,)\n    if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):\n        return tuple(reversed(content))\n\n    msg = f\"Unsupported message content: {type(content).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-ef648c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "348218fd3ab450536d173a18cafa50e348781fe8327137c1ceea64a7709ae040",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-ACD70FDD",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/content.py::_content_parts",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Unsupported top-level content is no longer rejected locally: non-sequence, non-string content is wrapped as a single part (deferring failure past the normalization boundary), and bytes-like content is accepted as a sequence of ints.",
+   "original_sha256": "d87e3f4192867963a621e95538acf63de11929bc417a9479c880ba14dc7a6e77",
+   "context_sha256": "045a27940f4db8d4cd5917db40c35844ea3448860a05d1340fbee8452b85e2bc",
+   "prompt_sha256": "aad3f86a000b1bc26130fc9846b9950002d15620a41fa6e835ae96d881e0024e",
+   "replacement": "def _content_parts(content: object) -> tuple[ChatPart, ...]:\n    \"\"\"Return public content as ordered parts.\"\"\"\n    if isinstance(content, str):\n        return (content,)\n    if isinstance(content, Sequence):\n        return tuple(content)\n\n    return (content,)  # type: ignore[return-value]",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-ef648c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "348218fd3ab450536d173a18cafa50e348781fe8327137c1ceea64a7709ae040",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-FE8566C3",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_chat_message",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Parts are normalized in reversed order, breaking the caller-order guarantee for mixed content parts.",
+   "original_sha256": "4abcde1c6dfa45f14a1b5b181a82d91b35bc21d64cfd66c92fa7707f5f06d2b9",
+   "context_sha256": "4c0728e8b132e671db4355fcb9c21921b6c393b0b61ce92b8ec44191a134d999",
+   "prompt_sha256": "26d3bd91a3caf5a5944c1799909ac3997f3e5935c11a17040979345a38e21614",
+   "replacement": "def normalize_chat_message(message: ChatMessage) -> NormalizedMessage:\n    \"\"\"Normalize a public chat transcript message.\"\"\"\n    return NormalizedMessage(\n        role=message.role,\n        parts=normalize_parts(tuple(reversed(tuple(message.parts)))),\n        meta=dict(message.meta),\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-f246d2",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "d323830745e7e4b48a587d3e15080e3bba22d54a88ac75d73b7d58d149aac7c3",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-481E12BF",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_chat_message",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Metadata mapping is shared with the caller's message instead of being copied, and parts are normalized after being built, so the normalized message does not own a separate top-level metadata mapping.",
+   "original_sha256": "4abcde1c6dfa45f14a1b5b181a82d91b35bc21d64cfd66c92fa7707f5f06d2b9",
+   "context_sha256": "4c0728e8b132e671db4355fcb9c21921b6c393b0b61ce92b8ec44191a134d999",
+   "prompt_sha256": "26d3bd91a3caf5a5944c1799909ac3997f3e5935c11a17040979345a38e21614",
+   "replacement": "def normalize_chat_message(message: ChatMessage) -> NormalizedMessage:\n    \"\"\"Normalize a public chat transcript message.\"\"\"\n    return NormalizedMessage(\n        role=message.role,\n        parts=normalize_parts(message.parts),\n        meta=message.meta,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-f246d2",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "d323830745e7e4b48a587d3e15080e3bba22d54a88ac75d73b7d58d149aac7c3",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-F0D3B81D",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_content",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Parts are normalized in reversed order, so caller order of mixed text/file/image/video parts is not preserved.",
+   "original_sha256": "2c2fa74b5ac8f5b3a1e2c895574539c573b4fc54312cb391dbc78497ff6f5830",
+   "context_sha256": "de7ec2d601525bede29d634cf35f23036a3b23cb71c369e66cd2418f50fc59c7",
+   "prompt_sha256": "9c1ce5e59fa9cf6d3f737def6f1b9e9b1c62c8b49513b67ec51032aed179c6a8",
+   "replacement": "def normalize_content(content: object, *, role: ChatRole = \"user\") -> NormalizedMessage:\n    \"\"\"Normalize role-less public content into one provider-neutral message.\"\"\"\n    raw_parts = list(_content_parts(content))\n    return NormalizedMessage(\n        role=role,\n        parts=normalize_parts(tuple(reversed(raw_parts))),\n        meta={},\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-8d59ad",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "786f65be19e414e252026a7c85f2758a0c56e258cc7413c575b8b790cebd53c5",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-5FE3A2BD",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_content",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Parts are sorted by media kind (text first) before normalization, which breaks caller order for mixed content; also validation of unsupported parts happens after the reordering/filtering step.",
+   "original_sha256": "2c2fa74b5ac8f5b3a1e2c895574539c573b4fc54312cb391dbc78497ff6f5830",
+   "context_sha256": "de7ec2d601525bede29d634cf35f23036a3b23cb71c369e66cd2418f50fc59c7",
+   "prompt_sha256": "9c1ce5e59fa9cf6d3f737def6f1b9e9b1c62c8b49513b67ec51032aed179c6a8",
+   "replacement": "def normalize_content(content: object, *, role: ChatRole = \"user\") -> NormalizedMessage:\n    \"\"\"Normalize role-less public content into one provider-neutral message.\"\"\"\n    raw_parts = list(_content_parts(content))\n    raw_parts.sort(key=lambda part: 0 if isinstance(part, str) else 1)\n    return NormalizedMessage(\n        role=role,\n        parts=normalize_parts(raw_parts),\n        meta={},\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-8d59ad",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "786f65be19e414e252026a7c85f2758a0c56e258cc7413c575b8b790cebd53c5",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-05BBE7B8",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_parts",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Reverses the caller order during iteration",
+   "original_sha256": "5dfdd9658cf1f77f4838fdb86ca5be1da98a06aaa23634ce5868bfd1dacf01dd",
+   "context_sha256": "c1fd5bb79279be8de89e3262f560426717abeff51a7a1180e3364cd3da5f2d85",
+   "prompt_sha256": "eeb7ded7aa8285dfdedc34214f3a8c8b7ac7f597503f9916a1531357df6643f2",
+   "replacement": "def normalize_parts(parts: Sequence[ChatPart]) -> tuple[NormalizedPart, ...]:\n    \"\"\"Normalize public message parts while preserving caller order.\"\"\"\n    normalized: list[NormalizedPart] = []\n    for part in reversed(parts):\n        if isinstance(part, str):\n            normalized.append(TextPart(kind=\"text\", text=part))\n        else:\n            normalized.append(MediaPart(kind=\"media\", media=describe_media(part)))\n    return tuple(normalized)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-1dd1cc",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "c888c3835530b0185df3f95b200ea2dd34bcd5381500a4bc218f9483094de143",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-E9CB1EA6",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_parts",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Groups text parts before media parts, breaking the mixed part order",
+   "original_sha256": "5dfdd9658cf1f77f4838fdb86ca5be1da98a06aaa23634ce5868bfd1dacf01dd",
+   "context_sha256": "c1fd5bb79279be8de89e3262f560426717abeff51a7a1180e3364cd3da5f2d85",
+   "prompt_sha256": "eeb7ded7aa8285dfdedc34214f3a8c8b7ac7f597503f9916a1531357df6643f2",
+   "replacement": "def normalize_parts(parts: Sequence[ChatPart]) -> tuple[NormalizedPart, ...]:\n    \"\"\"Normalize public message parts while preserving caller order.\"\"\"\n    text_parts: list[NormalizedPart] = []\n    media_parts: list[NormalizedPart] = []\n    for part in parts:\n        if isinstance(part, str):\n            text_parts.append(TextPart(kind=\"text\", text=part))\n        else:\n            media_parts.append(MediaPart(kind=\"media\", media=describe_media(part)))\n    return tuple(text_parts + media_parts)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-1dd1cc",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "c888c3835530b0185df3f95b200ea2dd34bcd5381500a4bc218f9483094de143",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-3DF25229",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/media.py::_validate_image",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Image mode validation is moved before the dimension bounds checks, and the size checks only run for supported modes, so an unsupported-mode image that is also out of bounds is reported with a different error, and oversized/undersized images in unsupported modes skip the size checks entirely.",
+   "original_sha256": "8d3b4827509013a7881d8aa211bdb23f34615d6339c8b9c70ea2fd89f80237c1",
+   "context_sha256": "a6f2d0e40953bc5cc3e68d9e88cd5a2a7edce6a1da0388a677b8c14eb80564de",
+   "prompt_sha256": "a5d3e84aadc2da4cc7fb5895002da2e5a04415e1af94b2d43fdfdf30b1ee9514",
+   "replacement": "def _validate_image(image: Image.Image) -> None:\n    \"\"\"Validate raw Pillow images before they enter normalized content.\"\"\"\n    if image.mode not in _ALLOWED_IMAGE_MODES:\n        msg = f\"Image mode {image.mode!r} is not supported.\"\n        raise ValueError(msg)\n    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too small \"\n            f\"(min {_MIN_IMAGE_DIMENSION}x{_MIN_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too large \"\n            f\"(max {_MAX_IMAGE_DIMENSION}x{_MAX_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-630d91",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "06b729ccc65550c3ec153be20eefc341a2f697cdc63140cc8f5a4be3ad993d7d",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-1088894B",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/media.py::_validate_image",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Minimum/maximum bounds only checked against width for the upper bound and require both dimensions below min (and instead of or) for the lower bound, so images with only one invalid dimension (e.g. very tall thin image) slip through validation before provider execution.",
+   "original_sha256": "8d3b4827509013a7881d8aa211bdb23f34615d6339c8b9c70ea2fd89f80237c1",
+   "context_sha256": "a6f2d0e40953bc5cc3e68d9e88cd5a2a7edce6a1da0388a677b8c14eb80564de",
+   "prompt_sha256": "a5d3e84aadc2da4cc7fb5895002da2e5a04415e1af94b2d43fdfdf30b1ee9514",
+   "replacement": "def _validate_image(image: Image.Image) -> None:\n    \"\"\"Validate raw Pillow images before they enter normalized content.\"\"\"\n    if image.width < _MIN_IMAGE_DIMENSION and image.height < _MIN_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too small \"\n            f\"(min {_MIN_IMAGE_DIMENSION}x{_MIN_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.width > _MAX_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too large \"\n            f\"(max {_MAX_IMAGE_DIMENSION}x{_MAX_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.mode not in _ALLOWED_IMAGE_MODES:\n        msg = f\"Image mode {image.mode!r} is not supported.\"\n        raise ValueError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-630d91",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "06b729ccc65550c3ec153be20eefc341a2f697cdc63140cc8f5a4be3ad993d7d",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-C96D78F7",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/media.py::describe_media",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Local video descriptor swaps start_offset and end_offset, so the clip's time window boundaries are reversed and public descriptor metadata is not preserved.",
+   "original_sha256": "9d59578bb427c624d834899f5fbdc0e0a7d9778bb193322bf072edf12fa63ee1",
+   "context_sha256": "07959f3a00a67730b8ccc095699971a47168f4a360ddab7c2f0021eb05c76a9c",
+   "prompt_sha256": "fe11ba9c6fdee820efd4d1b48d213d7b55b0b738a6766c018c31b658722ada45",
+   "replacement": "def describe_media(value: object) -> MediaDescriptor:\n    \"\"\"Return a provider-neutral media descriptor for a public media object.\"\"\"\n    # @impl Document input normalization, IMPL_DOCUMENT_INPUT, [REQ_DOCUMENT_INPUT[revision==1]]\n    if isinstance(value, FileSchema):\n        return FileMedia(kind=\"file\", path=value.path, mime_type=value.mime_type)\n    # @impl Image input normalization, IMPL_IMAGE_INPUT, [REQ_IMAGE_INPUT[revision==1]]\n    if isinstance(value, Image.Image):\n        _validate_image(value)\n        return ImageMedia(\n            kind=\"image\",\n            image=value,\n            width=value.width,\n            height=value.height,\n            mode=value.mode,\n        )\n    # @impl Video input normalization, IMPL_VIDEO_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoSchema):\n        return VideoFileMedia(\n            kind=\"video_file\",\n            path=value.path,\n            fps=value.fps,\n            start_offset=value.end_offset,\n            end_offset=value.start_offset,\n        )\n    # @impl Remote video input normalization, IMPL_VIDEO_URL_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoUrlSchema):\n        return VideoUrlMedia(\n            kind=\"video_url\",\n            url=value.url,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n\n    msg = f\"Unsupported media value: {type(value).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-43a32c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "75db45c92e577287dd227c7ec3548e04a317451628317cbe33c384031bb0cbba",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-8D54388C",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/capabilities/media.py::describe_media",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Image bounds validation is only applied to non-RGB images, so RGB raw images outside min/max dimension bounds are no longer rejected locally before provider execution.",
+   "original_sha256": "9d59578bb427c624d834899f5fbdc0e0a7d9778bb193322bf072edf12fa63ee1",
+   "context_sha256": "07959f3a00a67730b8ccc095699971a47168f4a360ddab7c2f0021eb05c76a9c",
+   "prompt_sha256": "fe11ba9c6fdee820efd4d1b48d213d7b55b0b738a6766c018c31b658722ada45",
+   "replacement": "def describe_media(value: object) -> MediaDescriptor:\n    \"\"\"Return a provider-neutral media descriptor for a public media object.\"\"\"\n    # @impl Document input normalization, IMPL_DOCUMENT_INPUT, [REQ_DOCUMENT_INPUT[revision==1]]\n    if isinstance(value, FileSchema):\n        return FileMedia(kind=\"file\", path=value.path, mime_type=value.mime_type)\n    # @impl Image input normalization, IMPL_IMAGE_INPUT, [REQ_IMAGE_INPUT[revision==1]]\n    if isinstance(value, Image.Image):\n        if value.mode != \"RGB\":\n            _validate_image(value)\n        return ImageMedia(\n            kind=\"image\",\n            image=value,\n            width=value.width,\n            height=value.height,\n            mode=value.mode,\n        )\n    # @impl Video input normalization, IMPL_VIDEO_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoSchema):\n        return VideoFileMedia(\n            kind=\"video_file\",\n            path=value.path,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n    # @impl Remote video input normalization, IMPL_VIDEO_URL_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoUrlSchema):\n        return VideoUrlMedia(\n            kind=\"video_url\",\n            url=value.url,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n\n    msg = f\"Unsupported media value: {type(value).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-43a32c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "75db45c92e577287dd227c7ec3548e04a317451628317cbe33c384031bb0cbba",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-956FE0C1",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/capabilities/content.py::_content_parts",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Unsupported top-level content (e.g. dict, int, None) is no longer rejected locally; it is wrapped as a single part and passed downstream, so invalid content can reach provider execution.",
+   "original_sha256": "d87e3f4192867963a621e95538acf63de11929bc417a9479c880ba14dc7a6e77",
+   "context_sha256": "be65ab6060da702dba7f8cfbf1d54a7cbfd05098f6223807969e166f701ffc8e",
+   "prompt_sha256": "f82f1b7881f9158194ea75ce03a92ba4065b697ef706d1b10fe7a9ee46a8c228",
+   "replacement": "def _content_parts(content: object) -> tuple[ChatPart, ...]:\n    \"\"\"Return public content as ordered parts.\"\"\"\n    if isinstance(content, str):\n        return (content,)\n    if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):\n        return tuple(content)\n\n    return (content,)  # type: ignore[return-value]",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-6c6190",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b7853d556d02b44462f59e56c41a82560670e7042643ad47c1912635dd40158c",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-73959DE4",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/capabilities/content.py::_content_parts",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Bytes and bytearray content is now accepted as a sequence and exploded into integer parts instead of being rejected as unsupported top-level content, so invalid content is not failed locally before provider execution.",
+   "original_sha256": "d87e3f4192867963a621e95538acf63de11929bc417a9479c880ba14dc7a6e77",
+   "context_sha256": "be65ab6060da702dba7f8cfbf1d54a7cbfd05098f6223807969e166f701ffc8e",
+   "prompt_sha256": "f82f1b7881f9158194ea75ce03a92ba4065b697ef706d1b10fe7a9ee46a8c228",
+   "replacement": "def _content_parts(content: object) -> tuple[ChatPart, ...]:\n    \"\"\"Return public content as ordered parts.\"\"\"\n    if isinstance(content, str):\n        return (content,)\n    if isinstance(content, Sequence):\n        return tuple(content)\n\n    msg = f\"Unsupported message content: {type(content).__name__}.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-6c6190",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b7853d556d02b44462f59e56c41a82560670e7042643ad47c1912635dd40158c",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-4ABCDE1C",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_chat_message",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "def normalize_chat_message(message: ChatMessage) -> NormalizedMessage:\n    \"\"\"Normalize a public chat transcript message.\"\"\"\n    return NormalizedMessage(\n        role=message.role,\n        parts=message.parts,\n        meta=dict(message.meta),\n    )",
+   "original_sha256": "4abcde1c6dfa45f14a1b5b181a82d91b35bc21d64cfd66c92fa7707f5f06d2b9",
+   "context_sha256": "b7ec557150a4a71d3326f097c5da6165b783b2830d371fe931c1ab9ed832c6e8",
+   "prompt_sha256": "e2a7298c12ea6966b66a3065c60089c0eb6d80de296631a389d21a389948f7c0",
+   "replacement": "def normalize_chat_message(message: ChatMessage) -> NormalizedMessage:\n    \"\"\"Normalize a public chat transcript message.\"\"\"\n    return NormalizedMessage(\n        role=message.role,\n        parts=normalize_parts(message.parts),\n        meta=dict(message.meta),\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-9fd91a",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "9246113517cf58a2f7c5bc49256b962cf32328f3292afa01f02168bbc6c1cf9f",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-0B6C3EB1",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_content",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Normalization failures for unsupported top-level content or invalid media are swallowed and the content is coerced to its string form, so invalid input is turned into a text message and reaches the provider instead of failing locally.",
+   "original_sha256": "2c2fa74b5ac8f5b3a1e2c895574539c573b4fc54312cb391dbc78497ff6f5830",
+   "context_sha256": "7f980650e7c3fae6f9ebe8c7deedb0fec3e7a9ee0fb079e38d8e051f7f323f05",
+   "prompt_sha256": "ed2798c077d3d7878842fcab393f63381b686042edb4641caad24911379ce982",
+   "replacement": "def normalize_content(content: object, *, role: ChatRole = \"user\") -> NormalizedMessage:\n    \"\"\"Normalize role-less public content into one provider-neutral message.\"\"\"\n    try:\n        parts = normalize_parts(_content_parts(content))\n    except Exception:\n        parts = normalize_parts(_content_parts(str(content)))\n    return NormalizedMessage(\n        role=role,\n        parts=parts,\n        meta={},\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-355b47",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "8b07a43a1aee0507b531b9051646c02892b7695ea66662a63d33cb4ced526724",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-7E73F3C1",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_content",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Single-part content skips part normalization and validation, so a lone raw image with an unsupported mode or out-of-bounds dimensions, or an unsupported media part, is not rejected locally and proceeds to the provider.",
+   "original_sha256": "2c2fa74b5ac8f5b3a1e2c895574539c573b4fc54312cb391dbc78497ff6f5830",
+   "context_sha256": "7f980650e7c3fae6f9ebe8c7deedb0fec3e7a9ee0fb079e38d8e051f7f323f05",
+   "prompt_sha256": "ed2798c077d3d7878842fcab393f63381b686042edb4641caad24911379ce982",
+   "replacement": "def normalize_content(content: object, *, role: ChatRole = \"user\") -> NormalizedMessage:\n    \"\"\"Normalize role-less public content into one provider-neutral message.\"\"\"\n    raw_parts = _content_parts(content)\n    if len(raw_parts) == 1:\n        parts = tuple(raw_parts)\n    else:\n        parts = normalize_parts(raw_parts)\n    return NormalizedMessage(\n        role=role,\n        parts=parts,\n        meta={},\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-355b47",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "8b07a43a1aee0507b531b9051646c02892b7695ea66662a63d33cb4ced526724",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-C0A64872",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_parts",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Converts unsupported parts to their string representations instead of calling `describe_media`, bypassing local failure for invalid inputs and passing them to the provider as text.",
+   "original_sha256": "5dfdd9658cf1f77f4838fdb86ca5be1da98a06aaa23634ce5868bfd1dacf01dd",
+   "context_sha256": "c4f4559dbde81ae41fc2bb4b7b00f6aaadc0ad82a02d9be6ad7993d6634b4ba4",
+   "prompt_sha256": "7dd3d9c435c94fecc03f94fc732f935fbb15a40993468caf5bf6a0acf3d83159",
+   "replacement": "def normalize_parts(parts: Sequence[ChatPart]) -> tuple[NormalizedPart, ...]:\n    \"\"\"Normalize public message parts while preserving caller order.\"\"\"\n    normalized: list[NormalizedPart] = []\n    for part in parts:\n        if isinstance(part, str):\n            normalized.append(TextPart(kind=\"text\", text=part))\n        else:\n            normalized.append(TextPart(kind=\"text\", text=str(part)))\n    return tuple(normalized)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-21698a",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "5ea3af4d8284cb504a170820dce2ae227f246d705d1a96d1e9fe1e7ba2abf0d0",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-D19AC12D",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/capabilities/content.py::normalize_parts",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Catches and silently suppresses exceptions during media description, dropping invalid parts instead of failing locally, which results in the external provider interacting with an incomplete message.",
+   "original_sha256": "5dfdd9658cf1f77f4838fdb86ca5be1da98a06aaa23634ce5868bfd1dacf01dd",
+   "context_sha256": "c4f4559dbde81ae41fc2bb4b7b00f6aaadc0ad82a02d9be6ad7993d6634b4ba4",
+   "prompt_sha256": "7dd3d9c435c94fecc03f94fc732f935fbb15a40993468caf5bf6a0acf3d83159",
+   "replacement": "def normalize_parts(parts: Sequence[ChatPart]) -> tuple[NormalizedPart, ...]:\n    \"\"\"Normalize public message parts while preserving caller order.\"\"\"\n    normalized: list[NormalizedPart] = []\n    for part in parts:\n        if isinstance(part, str):\n            normalized.append(TextPart(kind=\"text\", text=part))\n        else:\n            try:\n                normalized.append(MediaPart(kind=\"media\", media=describe_media(part)))\n            except Exception:\n                continue\n    return tuple(normalized)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-21698a",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "5ea3af4d8284cb504a170820dce2ae227f246d705d1a96d1e9fe1e7ba2abf0d0",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-57AE760A",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/capabilities/media.py::_validate_image",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Mode validation is skipped entirely for raw images, so images in unsupported modes pass local validation and reach the provider boundary instead of failing locally.",
+   "original_sha256": "8d3b4827509013a7881d8aa211bdb23f34615d6339c8b9c70ea2fd89f80237c1",
+   "context_sha256": "fd6f7fdbd37b6e09fd5d76d9c8cb42b92a061dd1ef0f8052db3629cee4787cb4",
+   "prompt_sha256": "478157fc38ccbdaea828be9267523f9f82a509b1f40931fdf7a6f52a61a1a8af",
+   "replacement": "def _validate_image(image: Image.Image) -> None:\n    \"\"\"Validate raw Pillow images before they enter normalized content.\"\"\"\n    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too small \"\n            f\"(min {_MIN_IMAGE_DIMENSION}x{_MIN_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too large \"\n            f\"(max {_MAX_IMAGE_DIMENSION}x{_MAX_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-4d263a",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b227649f6f43ddfb7fee0b341692f7aa470ad296f788de945aa4114c3af921c8",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-43E39A0E",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/capabilities/media.py::_validate_image",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Maximum dimension check requires both width and height to exceed the bound (and instead of or), so images oversized in only one dimension are accepted and sent to the provider.",
+   "original_sha256": "8d3b4827509013a7881d8aa211bdb23f34615d6339c8b9c70ea2fd89f80237c1",
+   "context_sha256": "fd6f7fdbd37b6e09fd5d76d9c8cb42b92a061dd1ef0f8052db3629cee4787cb4",
+   "prompt_sha256": "478157fc38ccbdaea828be9267523f9f82a509b1f40931fdf7a6f52a61a1a8af",
+   "replacement": "def _validate_image(image: Image.Image) -> None:\n    \"\"\"Validate raw Pillow images before they enter normalized content.\"\"\"\n    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too small \"\n            f\"(min {_MIN_IMAGE_DIMENSION}x{_MIN_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.width > _MAX_IMAGE_DIMENSION and image.height > _MAX_IMAGE_DIMENSION:\n        msg = (\n            f\"Image dimensions {image.width}x{image.height} are too large \"\n            f\"(max {_MAX_IMAGE_DIMENSION}x{_MAX_IMAGE_DIMENSION}).\"\n        )\n        raise ValueError(msg)\n    if image.mode not in _ALLOWED_IMAGE_MODES:\n        msg = f\"Image mode {image.mode!r} is not supported.\"\n        raise ValueError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-4d263a",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b227649f6f43ddfb7fee0b341692f7aa470ad296f788de945aa4114c3af921c8",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-12F33103",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/capabilities/media.py::describe_media",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Image branch no longer calls _validate_image, so raw images with unsupported mode or out-of-range dimensions are described and accepted locally, reaching the provider instead of failing early.",
+   "original_sha256": "9d59578bb427c624d834899f5fbdc0e0a7d9778bb193322bf072edf12fa63ee1",
+   "context_sha256": "9e480c5c443c2e731acef7bd5fb2379ade0722e1e632a9def3e30f5a6d28fe39",
+   "prompt_sha256": "3191e0fe143c777c4b659c60177b49ec1903606e7fb59cb92c9b5f977f98ffec",
+   "replacement": "def describe_media(value: object) -> MediaDescriptor:\n    \"\"\"Return a provider-neutral media descriptor for a public media object.\"\"\"\n    # @impl Document input normalization, IMPL_DOCUMENT_INPUT, [REQ_DOCUMENT_INPUT[revision==1]]\n    if isinstance(value, FileSchema):\n        return FileMedia(kind=\"file\", path=value.path, mime_type=value.mime_type)\n    # @impl Image input normalization, IMPL_IMAGE_INPUT, [REQ_IMAGE_INPUT[revision==1]]\n    if isinstance(value, Image.Image):\n        return ImageMedia(\n            kind=\"image\",\n            image=value,\n            width=value.width,\n            height=value.height,\n            mode=value.mode,\n        )\n    # @impl Video input normalization, IMPL_VIDEO_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoSchema):\n        return VideoFileMedia(\n            kind=\"video_file\",\n            path=value.path,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n    # @impl Remote video input normalization, IMPL_VIDEO_URL_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoUrlSchema):\n        return VideoUrlMedia(\n            kind=\"video_url\",\n            url=value.url,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n\n    msg = f\"Unsupported media value: {type(value).__name__}.\"\n    raise TypeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-95bc8d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "493d33e365818e3ac5b3ba69cea1d27fc910f5d017591fb084f1a9dbf72170b8",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-227845E0",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/capabilities/media.py::describe_media",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Unsupported media objects are no longer rejected: any object exposing a `path` attribute is duck-typed into a file descriptor instead of raising TypeError, so unsupported media parts get through to the provider.",
+   "original_sha256": "9d59578bb427c624d834899f5fbdc0e0a7d9778bb193322bf072edf12fa63ee1",
+   "context_sha256": "9e480c5c443c2e731acef7bd5fb2379ade0722e1e632a9def3e30f5a6d28fe39",
+   "prompt_sha256": "3191e0fe143c777c4b659c60177b49ec1903606e7fb59cb92c9b5f977f98ffec",
+   "replacement": "def describe_media(value: object) -> MediaDescriptor:\n    \"\"\"Return a provider-neutral media descriptor for a public media object.\"\"\"\n    # @impl Document input normalization, IMPL_DOCUMENT_INPUT, [REQ_DOCUMENT_INPUT[revision==1]]\n    if isinstance(value, FileSchema):\n        return FileMedia(kind=\"file\", path=value.path, mime_type=value.mime_type)\n    # @impl Image input normalization, IMPL_IMAGE_INPUT, [REQ_IMAGE_INPUT[revision==1]]\n    if isinstance(value, Image.Image):\n        _validate_image(value)\n        return ImageMedia(\n            kind=\"image\",\n            image=value,\n            width=value.width,\n            height=value.height,\n            mode=value.mode,\n        )\n    # @impl Video input normalization, IMPL_VIDEO_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoSchema):\n        return VideoFileMedia(\n            kind=\"video_file\",\n            path=value.path,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n    # @impl Remote video input normalization, IMPL_VIDEO_URL_INPUT, [REQ_VIDEO_INPUT[revision==2]]\n    if isinstance(value, VideoUrlSchema):\n        return VideoUrlMedia(\n            kind=\"video_url\",\n            url=value.url,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )\n\n    path = getattr(value, \"path\", None)\n    if path is not None:\n        return FileMedia(\n            kind=\"file\",\n            path=path,\n            mime_type=getattr(value, \"mime_type\", None),\n        )\n\n    msg = f\"Unsupported media value: {type(value).__name__}.\"\n    raise TypeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-95bc8d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "493d33e365818e3ac5b3ba69cea1d27fc910f5d017591fb084f1a9dbf72170b8",
+    "index": 1
+   }
+  }
+ ]
+}

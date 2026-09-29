@@ -15,7 +15,9 @@ are simply never executed.
 The plugin also adds what the engine lacks (see ``ternforge_mutation``):
 
 * the ``statement`` and ``body`` operators, planted by the engine's own switching
-  transformer;
+  transformer, and the Python operators (``argument``, ``condition``, ``conditional``,
+  ``negation``, ``container``, ``conversion``, ``method``, ``attribute``), planted the
+  same way on the calls, attributes, literals and conditions the engine does not visit;
 * the arid-code rules of TERNFORGE_MUTATION_POLICY: a mutant in arid code is not
   planted and the report lists it under its rule;
 * the ``# mutation:`` pragma: a covered mutant is pardoned, so it never runs, and the
@@ -103,12 +105,26 @@ def _policy() -> dict:
     return {"arid_rules": rules}
 
 
-# --- the two operators, planted by the engine's own transformer ---------------------
+# --- the extension's operators, planted by the engine's own transformer --------------
 
 _registry = _transformer.get_default_registry()
-for _operator in (tm.StatementRemoval, tm.BodyRemoval):
+for _operator in (tm.StatementRemoval, tm.BodyRemoval, *tm.PYTHON_OPERATORS):
     if _operator().name not in _registry.available():
         _registry.register(_operator)
+
+# Where the project's modules live: the Python operators read a callee's parameters there.
+PROJECT = tm.Project([Path.cwd() / "src", Path.cwd()])
+
+_engine_description = _transformer._get_mutation_description
+
+
+def _mutation_description(original, mutated, operator):  # noqa: ANN001, ANN202
+    """A Python operator describes its own mutants; the engine describes its own."""
+    describe = getattr(operator, "describe", None)
+    return describe(original, mutated) if callable(describe) else _engine_description(original, mutated, operator)
+
+
+_transformer._get_mutation_description = _mutation_description
 
 
 def _enabled(transformer, name: str):
@@ -175,11 +191,59 @@ def _visit_function(self, node):
     return node
 
 
+def _visit_module(self, node):
+    """Annotate the module once for the Python operators, then transform it."""
+    tm.annotate(node, self.file_path, PROJECT)
+    return self.generic_visit(node)
+
+
+def _visit_expression(self, node):
+    """Plant the Python operators on a call, an attribute read or a literal, as the engine plants
+    its own on the expressions it visits."""
+    self.generic_visit(node)
+    gremlins = self._create_gremlins_for_node(node)
+    if not gremlins:
+        return node
+    self.gremlins.extend(gremlins)
+    return _transformer.build_switching_expression(node, gremlins)
+
+
+def _visit_condition_owner(self, node):
+    """Plant the operators that change a condition as a whole on the test of an if, a while or a
+    conditional expression; the switch wraps the test as the other mutants left it."""
+    original = node.test
+    self.generic_visit(node)
+    gremlins = [
+        gremlin
+        for operator in self._operators if operator.name in tm.TEST_OPERATORS and operator.can_mutate(original)
+        for gremlin in _transformer.create_gremlins_for_node(original, operator, self.file_path, self._next_gremlin_id)
+    ]
+    if gremlins:
+        self.gremlins.extend(gremlins)
+        node.test = _transformer.build_switching_expression(node.test, gremlins)
+    return node
+
+
 _Transformer = _transformer.MutationSwitchingTransformer
+_engine_operators_for = _Transformer._get_operators_for_node
+
+
+def _operators_for(self, node):
+    """The operators the engine's own visit may plant on a node: never one that changes a
+    condition as a whole, which only its owner's visit plants."""
+    return [operator for operator in _engine_operators_for(self, node) if operator.name not in tm.TEST_OPERATORS]
+
+
+_Transformer._get_operators_for_node = _operators_for
 for _name in ("visit_Expr", "visit_Assign", "visit_AnnAssign", "visit_AugAssign", "visit_Raise", "visit_Delete"):
     setattr(_Transformer, _name, _visit_statement)
 _Transformer.visit_FunctionDef = _visit_function
 _Transformer.visit_AsyncFunctionDef = _visit_function
+_Transformer.visit_Module = _visit_module
+for _name in ("visit_Call", "visit_Attribute", "visit_List", "visit_Tuple", "visit_Set", "visit_Dict"):
+    setattr(_Transformer, _name, _visit_expression)
+for _name in ("visit_If", "visit_While", "visit_IfExp"):
+    setattr(_Transformer, _name, _visit_condition_owner)
 
 
 # --- scope, arid code, suppression and identity -------------------------------------
@@ -284,6 +348,16 @@ def _generate_gremlins_in_scope(gremlin_session, source_files, rootdir) -> None:
         kept.append(gremlin)
     gremlin_session.gremlins = kept
 
+    # What the validity filter kept out of the argument operator in the scoped code: a keyword
+    # the project's callee requires.
+    if "argument" in operators:
+        for path, tree in trees.items():
+            tm.annotate(tree, path, PROJECT)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Call) and in_scope(path, node.lineno):
+                    STATE["filtered"]["argument: required parameter"] += sum(
+                        keyword.arg in (getattr(node, "_tf_required", set()) or set()) for keyword in node.keywords
+                    )
     # What the validity filter kept out of the body operator in the scoped code.
     if "body" in operators:
         for path, tree in trees.items():

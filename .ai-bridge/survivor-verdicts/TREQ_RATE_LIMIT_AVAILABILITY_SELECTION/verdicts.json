@@ -1,0 +1,372 @@
+{
+ "0c99e43a9ccfd476": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000723Z-9bf4b5",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant flips the condition. When every key is blocked, it passes an empty preferred set, so the shortest-wait key is no longer preferred. When some keys are available, it still ends up with only the zero-wait keys, which is why the existing tests don't catch it. The shortest-wait behaviour for the all-blocked case is required by TREQ_RATE_LIMIT_AVAILABILITY_SELECTION.",
+   "response_sha256": "f4bcd59b613c924420b74e2aa22092d96ec204bb5e1c863dfbf0c34827bc249d",
+   "sources": [
+    "When every eligible route/key candidate is blocked and waiting is enabled, the router shall select the candidate with the shortest remaining wait.",
+    "When waiting is enabled and every candidate is blocked, the candidate with the shortest remaining wait is executed first.",
+    "if not available_key_ids:\n            preferred_key_ids = available_key_ids"
+   ],
+   "test_focus": "With key_id 'auto', every candidate key blocked and waiting enabled, the test must check that the resolved key is the one with the shortest remaining wait, not the next rotating key.",
+   "verdict": "pin"
+  },
+  "operator": "negation",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.936099Z",
+   "answer_sha256": "d411652ff6f1aab342535a93e74d267c25e47ca5e8d6dde9a2c5c4da04e19791",
+   "call_id": "20260929T114749Z-7995f1",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "c317921e6bf250777a3e8dcc9b7a46c8b9654bb829381320bd65f2c70e984d80",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0c99e43a9ccfd476.py",
+   "response_sha256": "aa7a6726617b719e5535e8bbb2057790496f63faf1617f34ea93f1af19449953",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  "prompt_sha256": "dbbcbbce567ba0fdc39e81c8a6e1d974f35afec628c2d53d79bc06da0df2d036"
+ },
+ "0cf4bd1dd8b7fe62": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000723Z-f94aee",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Limiter waits are non-negative (0.0 means unblocked), so the mutant's empty \"available\" set falls into the else branch. There, min(...) is 0.0 whenever any key is unblocked, so it picks exactly the same keys with wait 0.0 as the original. When every key is blocked, both versions pick the shortest wait, so key selection and the returned wait never differ.",
+   "response_sha256": "d17b99a6061644d068397dfeb04f7ebe041232eb55300ea4b1b6281eab3691d4",
+   "sources": [
+    "Automatic key selection shall choose an unblocked credential before a blocked credential.",
+    "if candidate_wait < 0.0",
+    "if candidate_wait <= 0.0",
+    "earliest_wait = min(candidate_waits.values())"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "comparison",
+  "prompt_sha256": "b4d777cffe1fcb7d10b6f7371913d33ad5b5cbf32ce81b577684a8c259a088dc",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093816Z-d9dcee",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "b4d777cffe1fcb7d10b6f7371913d33ad5b5cbf32ce81b577684a8c259a088dc",
+   "reason": "The change from `<= 0.0` to `< 0.0` causes credentials with exactly 0.0 wait time to bypass the `if` condition. However, execution falls through to the `else` branch where the minimum wait time is calculated as 0.0. The `else` branch then selects the exact same unblocked credentials with a 0.0 wait time, producing the identical `preferred_key_ids` set. No input can distinguish the two versions.",
+   "response_sha256": "87ca1253a7328ecc670b06db97ad301f74aea5a9e5039a9a79364ca5efa887db",
+   "sources": [
+    "if candidate_wait <= 0.0",
+    "Automatic key selection shall choose an unblocked credential before a blocked credential."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "0d1ec285e912ae10": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000732Z-4a8761",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant loops over `candidate_waits` directly instead of `.items()`. That yields integer keys, and unpacking them into two names raises a TypeError. So in auto key mode, when every credential is blocked, the router crashes instead of picking the key with the shortest remaining wait. No test currently reaches this branch.",
+   "response_sha256": "451eb5470d2aa0af1ed8c227acda62659bf4c483e45869b5d5d7c475bfe3e047",
+   "sources": [
+    "When every eligible route/key candidate is blocked and waiting is enabled, the router shall select the candidate with the shortest remaining wait.",
+    "When waiting is enabled and every candidate is blocked, the candidate with the shortest remaining wait is executed first.",
+    "preferred_key_ids = {key_id for key_id, candidate_wait in candidate_waits if candidate_wait == earliest_wait}"
+   ],
+   "test_focus": "With key_id=\"auto\" and all keys blocked with different remaining waits, check that the request resolves without error to the key with the shortest wait and returns that wait.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.579062Z",
+   "answer_sha256": "db62a2732b9bc487a79d74ad10066eb088d0680e5a9e83a8ec0a9b670919c620",
+   "call_id": "20260929T112219Z-a76bde",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "db62a2732b9bc487a79d74ad10066eb088d0680e5a9e83a8ec0a9b670919c620",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0d1ec285e912ae10.py",
+   "response_sha256": "a660a9cce8e75a5f5b87e2605f1e718b88359cb499095f0372eb0a04947e7afe",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "d77bd9f9020d9f3f3d4e6a0ed0cb6befc69462f5e020e45557108551a8a33bfe"
+ },
+ "2028da967c88aa09": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000732Z-08ffb2",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When every credential is blocked, the mutant passes an empty preferred set to resolve instead of the keys with the shortest wait. Key choice then falls back to whatever resolve does with an empty set, such as plain rotation, and may land on a key that has to wait longer. This breaks the shortest-remaining-wait rule.",
+   "response_sha256": "c3c106e35e9a073d91cefecd9dc56017f200beafee9693653790c47641af1dbe",
+   "sources": [
+    "When every eligible route/key candidate is blocked and waiting is enabled, the router shall select the candidate with the shortest remaining wait.",
+    "When waiting is enabled and every candidate is blocked, the candidate with the shortest remaining wait is executed first.",
+    "if True:",
+    "if available_key_ids:"
+   ],
+   "test_focus": "With key_id 'auto', block every key with different remaining waits, where the next rotating key's wait is not the shortest. Check that the resolved key is the one with the shortest wait and that the returned wait_seconds equals that minimum.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.937374Z",
+   "answer_sha256": "200af2c83bd5bb953d0809af15e0ad0a695c5f6f722380bd87964938d3c175af",
+   "call_id": "20260929T114752Z-b9806f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "200af2c83bd5bb953d0809af15e0ad0a695c5f6f722380bd87964938d3c175af",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_2028da967c88aa09.py",
+   "response_sha256": "9d7730054411a004b613fbc9efd1b832572af8b85b3c2594e4e79371a6ed3b27",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  "prompt_sha256": "0aaf136ab083302d7fad77c0a37f23f1b200a482171bfcfb41a8fbf5451b1bca"
+ },
+ "87ecdb53561b826d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000732Z-a496fb",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When every key is blocked, the mutant prefers keys whose wait is not the shortest, which is the opposite of what the requirement says. It also yields an empty preferred set when all the waits are equal. This breaks the rule that the candidate with the shortest remaining wait is chosen.",
+   "response_sha256": "cbc7b761f33224c693d89b26c209c47d9a1753f57a29bdab15beb17646a1bcb6",
+   "sources": [
+    "When every eligible route/key candidate is blocked and waiting is enabled, the router shall select the candidate with the shortest remaining wait.",
+    "When waiting is enabled and every candidate is blocked, the candidate with the shortest remaining wait is executed first.",
+    "if candidate_wait == earliest_wait",
+    "preferred_key_ids = {key_id for key_id, candidate_wait in candidate_waits.items() if candidate_wait != earliest_wait}"
+   ],
+   "test_focus": "With key_id 'auto' and every key blocked for a different length of time, check that the resolved key is the one with the shortest remaining wait and that its wait is the one returned.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.579657Z",
+   "answer_sha256": "1dbf5d9ab453a3ead4049a2b66672b39e661fa031bf4b974f3a16181016abefa",
+   "call_id": "20260929T112222Z-a41621",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "1dbf5d9ab453a3ead4049a2b66672b39e661fa031bf4b974f3a16181016abefa",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_87ecdb53561b826d.py",
+   "response_sha256": "070be9b29511ef719ef45d0c6243cce35533d36ae470e5e8db4e4e8fff983665",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile"
+   ]
+  },
+  "prompt_sha256": "358dbe3fa1fd304476fc8d0a937479aa9e0a865bd9bcc6547582be04baca427e"
+ },
+ "a08d94ffe918312f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000732Z-748f8f",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Unblocked keys have a wait of zero, so whenever any key is unblocked the minimum wait is 0.0. The mutant's \"earliest wait\" set is then exactly the set of unblocked keys that the original prefers. The original raises on an empty candidate list and so does the mutant. The two versions can only differ if the limiter returns different negative waits, which a clamped remaining-wait value cannot do. This could not be checked by running anything, because RouterRuntime cannot be built from typed arguments.",
+   "response_sha256": "28872a7b7324276f6814ef8df0268047c110ef161007de091e7fa45037811ce6",
+   "sources": [
+    "Automatic key selection shall choose an unblocked credential before a blocked credential.",
+    "if False:",
+    "if candidate_wait == earliest_wait",
+    "if candidate_wait <= 0.0"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "63351025f4897951dd87410062f6a9153e55d665637bd6cf9a6c9e29b8c40b39",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093844Z-03dce4",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "63351025f4897951dd87410062f6a9153e55d665637bd6cf9a6c9e29b8c40b39",
+   "reason": "Since unblocked credentials have a wait time of zero, falling through to the else block calculates the minimum wait time as zero and naturally selects the exact same set of unblocked credentials as the explicitly skipped branch.",
+   "response_sha256": "ca573ef0fc58a469795b0523a2b0f5035c7f34496aa70789982c718b24526f46",
+   "sources": [
+    "Automatic key selection shall choose an unblocked credential before a blocked credential.",
+    "if False:",
+    "earliest_wait = min(candidate_waits.values())"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "e92263fea0939fa2": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000742Z-3b2443",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant runs availability-aware key selection for every request, not only when key_id is \"auto\". The requirement limits this to automatic selection. With an explicit key, the preferred set could leave out the configured key, or min() could run on an empty set and raise an error. Either way, explicit-key requests are no longer resolved as before.",
+   "response_sha256": "a155a93434b5ffebc0bc7969077398b2694a55bb3cc7597207c8abdf706a162f",
+   "sources": [
+    "Automatic key selection shall choose an unblocked credential before a blocked credential.",
+    "if settings.key_id == \"auto\":",
+    "if True:"
+   ],
+   "test_focus": "Send a request with an explicit, blocked key_id while another key is unblocked. Check that the explicit key is still used, the request reports that key's wait, and no error is raised.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.615130Z",
+   "answer_sha256": "1a87f695648c4a748e84603bb03ff9d6c23bab8f5c60ff47f510bef5fec5a1fe",
+   "call_id": "20260929T120217Z-675bcb",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "1a87f695648c4a748e84603bb03ff9d6c23bab8f5c60ff47f510bef5fec5a1fe",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_e92263fea0939fa2.py",
+   "response_sha256": "edc6af50c676a5c53ae770affd865c737503a07953d666da34ec55deaf18ee53",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  "prompt_sha256": "09c800cf9e53a94f7c62b57ecfe6853a56e10f9b9aca1da7650d362161170bfa"
+ },
+ "f71e9f7973e36624": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000742Z-ccb346",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "`min(candidate_waits)` takes the smallest key_id instead of the smallest wait. It then compares each wait against that key_id, so the preferred set usually comes out empty or points at the wrong key. When every key is blocked, this breaks the rule that the candidate with the shortest remaining wait is selected.",
+   "response_sha256": "432252d746da85f186433c215eb9839c0e0891c1911ac91c37e890433a64b7ae",
+   "sources": [
+    "When every eligible route/key candidate is blocked and waiting is enabled, the router shall select the candidate with the shortest remaining wait.",
+    "When waiting is enabled and every candidate is blocked, the candidate with the shortest remaining wait is executed first.",
+    "earliest_wait = min(candidate_waits)",
+    "earliest_wait = min(candidate_waits.values())"
+   ],
+   "test_focus": "With key_id=\"auto\" and every key blocked, give the key with the lowest id a longer wait than another key. Then check that the request resolves to, and runs first with, the key that has the shortest remaining wait.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.580245Z",
+   "answer_sha256": "7c208042116685f6040dd4a7f6286c7b1e4772605923d79ee157a6e0743ef69f",
+   "call_id": "20260929T112225Z-8421e8",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "7c208042116685f6040dd4a7f6286c7b1e4772605923d79ee157a6e0743ef69f",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py",
+   "response_sha256": "e23bb04b4b637c04d993888e035dfcccc86f28f6604c9f1d72c400f7de2e891a",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.RouterProfile"
+   ]
+  },
+  "prompt_sha256": "4affebc7dd13d5aa7997dd954a4fea592aafccb5a193a55992f111e0404634f3"
+ }
+}

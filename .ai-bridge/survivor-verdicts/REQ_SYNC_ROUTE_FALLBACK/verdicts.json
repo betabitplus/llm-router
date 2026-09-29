@@ -29,6 +29,46 @@
   "operator": "statement",
   "prompt_sha256": "e717d34c9b2d0a67bff4a0f6bb75ceb6953d18775339133f83e7390845b45d5e"
  },
+ "3d3d1491ad30ff05": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000201Z-e1d47e",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes the fallback_occurred flag passed to _remember_fallback_success. That changes things only when a rate-limited route was skipped and no route had failed. The requirement covers failed-route fall-through, keeping failed and successful attempts in the trace, and raising the last route's error. All three behave the same in both versions.",
+   "response_sha256": "cc8994c29b7136fdca40aa3dc1c1f047723b17d485c79be1efda2e60423f8bfc",
+   "sources": [
+    "During a synchronous request, when an attempted route fails before producing a successful response and another eligible route remains, the router shall continue with the next route.",
+    "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded.",
+    "fallback_occurred=bool(failed_traces or blocked_requests),",
+    "self._remember_fallback_success(route=route, fallback_occurred=bool(failed_traces))"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "condition",
+  "prompt_sha256": "b11bc346114dd415c9f9efdcabf55ccfea95bb77a2d15f6a93ae8123ed3edf49",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T091941Z-0f1fb0",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "b11bc346114dd415c9f9efdcabf55ccfea95bb77a2d15f6a93ae8123ed3edf49",
+   "reason": "The mutant removes `blocked_requests` from the condition used to record a fallback occurrence in `_remember_fallback_success`. This is an internal state update that does not affect the route continuation, trace exposure, or error handling mandated by the requirement for the current request.",
+   "response_sha256": "6fbf2b98d2cb40a77640ef26e6410cf6ee447c426b4e7efdbebd86799b08f73f",
+   "sources": [
+    "Requirement REQ_SYNC_ROUTE_FALLBACK (Synchronous failed-route fallback): During a synchronous request, when an attempted route fails before producing a successful response and another eligible route remains, the router shall continue with the next route.",
+    "fallback_occurred=bool(failed_traces or blocked_requests)",
+    "self._remember_fallback_success(route=route, fallback_occurred=bool(failed_traces))"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
  "45f4eab791155bbe": {
   "answer": {
    "backend": "claude-cli",
@@ -138,6 +178,86 @@
   "operator": "statement",
   "prompt_sha256": "3cd98c9c2a52163ac6561fbaaf49a2ad0d26255c73cd7bc0c63525d002e937e6"
  },
+ "9c900d047ce4eab2": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000214Z-4a47d8",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant differs only when no route was attempted at all (last_error is None): it raises TypeError from `raise None` instead of TimeoutError. The requirement only covers the case where every attempted route has failed and its last error is raised, so a request with no routes is outside its scope. Both versions still raise rather than return.",
+   "response_sha256": "4fc17c1c1a75a45a14e78c5651ac2edcdc3889f1434bb91063ffe30a3fe0b549",
+   "sources": [
+    "When every attempted route has failed and no rate-limited route remains to wait for, the request shall fail with the last route's error rather than return without a result.",
+    "if last_error is None:",
+    "if False:",
+    "When every eligible synchronous route fails, each is attempted once and the request raises the last route's provider error."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "ee6e3e5b2bec64b35bbe0fe63153d32cfb4637328fedf80ec42ec88168d48f6b",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T091941Z-406882",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "ee6e3e5b2bec64b35bbe0fe63153d32cfb4637328fedf80ec42ec88168d48f6b",
+   "reason": "The mutation only changes the error handling behavior when no routes are available to attempt (the loop executes zero times). The requirement dictates the fallback sequence and error propagation for failed route attempts, but specifies nothing about the case where zero routes are available.",
+   "response_sha256": "43c28301525dd56e97c87be6f8c3e0d415b2ce1779a84c4839d062ee488f0785",
+   "sources": [
+    "When every attempted route has failed and no rate-limited route remains to wait for, the request shall fail with the last route's error rather than return without a result.",
+    "if last_error is None:",
+    "if False:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "a83d827c2d26e5f7": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000214Z-28e353",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant passes a list instead of a bool as fallback_occurred to _remember_fallback_success. The truthiness is the same, and it doesn't touch fallthrough, trace order or last-error raising. At most it changes how internal fallback-memory bookkeeping stores the value, which no requirement asks for.",
+   "response_sha256": "625e392673228c4957ef3550917765cd799cb91015951d3250de0694a3043dd5",
+   "sources": [
+    "self._remember_fallback_success(route=route, fallback_occurred=failed_traces or blocked_requests)",
+    "fallback_occurred=bool(failed_traces or blocked_requests),",
+    "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conversion",
+  "prompt_sha256": "6cfb226aa0914b11e2282fbcaab5792d62f6d995b7b3f04648febfc987fcc16a",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T091941Z-65ce3d",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "6cfb226aa0914b11e2282fbcaab5792d62f6d995b7b3f04648febfc987fcc16a",
+   "reason": "The change removes the `bool()` cast for the `fallback_occurred` argument passed to `_remember_fallback_success`. This causes a list to be passed instead of a boolean, but since its truthiness remains the same and the requirement only governs routing trace entries and error propagation, this difference is unrelated to the requirement.",
+   "response_sha256": "efd2a65a569c9ac9d4a4d7be60d5a1b4da4d6823ae2715d831f6e9a3826e2a30",
+   "sources": [
+    "Requirement REQ_SYNC_ROUTE_FALLBACK (Synchronous failed-route fallback)",
+    "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded.",
+    "fallback_occurred=bool(failed_traces or blocked_requests),",
+    "fallback_occurred=failed_traces or blocked_requests)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
  "b4662840626becac": {
   "answer": {
    "backend": "claude-cli",
@@ -220,6 +340,45 @@
    "sources": [
     "When every attempted route has failed and no rate-limited route remains to wait for, the request shall fail with the last route's error rather than return without a result.",
     "if last_error is None:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "f01210c4280a2513": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000214Z-a2d36b",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only stops passing wait_seconds to the final success trace. At that point wait_seconds is never positive, because positive waits are diverted to blocked_requests. At most the trace's wait field could fall back to the helper's default. The requirement only asks for fallback, failed\u2192successful trace order and raising the last error. It says nothing about the wait value in the success trace.",
+   "response_sha256": "715d23458587b16549aba98f66ba11ba08b01aa09285b09796886e2aacd9e19e",
+   "sources": [
+    "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded.",
+    "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)",
+    "wait_seconds=wait_seconds,",
+    "if wait_seconds > 0:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "a6c95137186bba8557a2ec146e5f72891ff4ca37a20a5fcafb8ef3cea902e5bd",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092035Z-2e0434",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "a6c95137186bba8557a2ec146e5f72891ff4ca37a20a5fcafb8ef3cea902e5bd",
+   "reason": "The requirement mandates exposing trace entries for the failed and successful attempts, but does not specify that wait times must be recorded in them. Furthermore, execution only reaches this trace construction when `wait_seconds > 0` is false, meaning the wait time is zero, so omitting the argument does not affect the presence, order, or meaningful content of the traces.",
+   "response_sha256": "3aca090973d8bfa3ad4098a8b2bcdd2d21b6f104ca512ff564acbd86b7f10f6d",
+   "sources": [
+    "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded.",
+    "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"

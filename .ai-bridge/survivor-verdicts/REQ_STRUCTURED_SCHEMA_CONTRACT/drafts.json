@@ -1,0 +1,632 @@
+{
+ "155610404a9b2a0a": [
+  {
+   "at": "2026-09-29T10:38:22.577722Z",
+   "call_id": "20260929T094858Z-f65208",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "c41d6a3028961de7e305e7a7fa38d6a52c5e815659651444e099e1d0af83495e",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert <class 'mappingproxy'> is dict | +  where <class 'mappingproxy'> = type(mappingproxy({'type': 'object', 'title': 'AnswerSchema', 'properties': {'answer': {'type': 'integer'}}, 'required': ['answer']})) | +    where mappingproxy({'type': 'object', 'title': 'AnswerSchema', 'properties': {'answer': {'type': 'integer'}},",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.537187Z",
+   "call_id": "20260929T105401Z-b3e9cf",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "ed452702a42cfb22a3ba08864882c981c32e39a40767124391a3b7f6a2a2000b",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert <class 'mappingproxy'> is dict | +  where <class 'mappingproxy'> = type(mappingproxy({'type': 'object', 'properties': {'answer': {'type': 'string'}}, 'required': ['answer']})) | +    where mappingproxy({'type': 'object', 'properties': {'answer': {'type': 'string'}}, 'required': ['answer']}) = SchemaSpec(name='structu",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.888139Z",
+   "call_id": "20260929T114718Z-83a5e5",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c6d902f12c06b5b7fc4e037b8a2bbd266660d33d469d8a01ff34f0b7777f6850",
+   "reason": "it uses vars",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.582400Z",
+   "call_id": "20260929T120217Z-5717bb",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "500b726f51fe6bf30e1ce9fc2faf52c5a0af987fc72b73c624fbd4d959ac390f",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  }
+ ],
+ "18f725f3ce572a15": [
+  {
+   "at": "2026-09-29T10:38:22.577750Z",
+   "call_id": "20260929T094858Z-cc9983",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "ebf99a2c67035732a1d7435e8e8c5e25ccf5027e967598e910755c4ef72d56fc",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  }
+ ],
+ "24bb2ffb3a209650": [
+  {
+   "at": "2026-09-29T10:38:22.577760Z",
+   "call_id": "20260929T094858Z-fb65ae",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "da78615ef66f4407d11a4cea46b15491dce0e0b822621950e9cd2e8945c1c43b",
+   "reason": "it imports collections.abc",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.537401Z",
+   "call_id": "20260929T105401Z-784e22",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "ce21471908fb263c2515b0bf218c42ea30666f4fff19edf9ead9b9ff2b73ac04",
+   "reason": "it imports collections.abc",
+   "sources": [
+    "llm_router._internal.capabilities.schema.with_schema_transform",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.888167Z",
+   "call_id": "20260929T114718Z-59fbd7",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2de886fa07a76b2cf6b1f3eeca168d12e7de7f69276423a7954a859662109c16",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  }
+ ],
+ "2ac6551daf76c11a": [
+  {
+   "at": "2026-09-29T10:38:22.577772Z",
+   "call_id": "20260929T094858Z-8b0c16",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "9d647ab63dd48fb7bfaefcc5312da406717b1f7ef3cd938eceadcf42cf05ef3a",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  }
+ ],
+ "2f6673fb9c05efb3": [
+  {
+   "at": "2026-09-29T10:38:22.577779Z",
+   "call_id": "20260929T094858Z-17aaf5",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "f80997d029cb616cbbff873f588a3388da141c80309aac8b26fffe6feec0a201",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  }
+ ],
+ "4b031c8b4a869092": [
+  {
+   "at": "2026-09-29T10:38:22.577790Z",
+   "call_id": "20260929T094858Z-dce341",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "d3fa25b52df2b64195f7112e2bf1ef5d09b7b0a5f85acf11d7aeb2146c0647f8",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  }
+ ],
+ "589c1fbde8e85997": [
+  {
+   "at": "2026-09-29T10:38:22.577793Z",
+   "call_id": "20260929T094858Z-21d973",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "785923cf0088fff68c298e81484f7420b13f896673541f753d103d4427b7c71f",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  }
+ ],
+ "6e9116a1b83a69f4": [
+  {
+   "at": "2026-09-29T10:38:22.577799Z",
+   "call_id": "20260929T094858Z-863535",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "682e87b9a61c2f77bbbcf543af72d4985f3c89af4c4a2f108c2980f7623d30d8",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  }
+ ],
+ "SM-008E10B9": [
+  {
+   "at": "2026-09-29T20:13:34.961018Z",
+   "call_id": "20260929T201257Z-31fada",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "df934cabd86d432fe170379fe2e57a6efca0e9be5f67d0622f377bd490bf730f",
+   "reason": "it imports decimal",
+   "sources": [
+    "llm_router._internal.capabilities.schema._pydantic_schema_spec",
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-29T20:20:50.476057Z",
+   "call_id": "20260929T201336Z-caca55",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8713fb565da7225c89b19b03883351115bf506d8e4242e8797cfb6e79885beae",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema._pydantic_schema_spec",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  }
+ ],
+ "SM-2093BBD0": [
+  {
+   "at": "2026-09-29T19:15:34.148722Z",
+   "call_id": "20260929T191342Z-d2d082",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5c882e782707b243410cae52d05b306e1dcae28fe0099f83c135214c62939ddc",
+   "reason": "it does not pass on the original 5 times in a row (pytest: Failed: DID NOT RAISE Exception)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:17:38.722317Z",
+   "call_id": "20260929T191536Z-d2c765",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5c0ff8b7a923c5cefb45d34f700c9bdc4ba11c16508925d73f20b17112ff2644",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  }
+ ],
+ "SM-6B29FD70": [
+  {
+   "at": "2026-09-29T19:15:34.148737Z",
+   "call_id": "20260929T191342Z-9ce2f2",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8eec20546049fda86648186b9bba6dc75280897f9ae2f2e21eaef0defa51b55c",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  }
+ ],
+ "SM-9C5C73BC": [
+  {
+   "at": "2026-09-29T19:15:34.148740Z",
+   "call_id": "20260929T191342Z-3b3fdc",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3d6b1bff6810c331956e82a0834bc7295f167a0add49c016ab4c8f204e3abf96",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  }
+ ],
+ "SM-C6EBF982": [
+  {
+   "at": "2026-09-29T19:15:34.148743Z",
+   "call_id": "20260929T191342Z-781fcb",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "78680d1e0d701069eab8a78be3062bbc61867246fe73cd8bed2ab9d86aa00a85",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  }
+ ],
+ "SM-D49276DB": [
+  {
+   "at": "2026-09-29T19:15:34.148746Z",
+   "call_id": "20260929T191342Z-f03ba3",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d667635612f379dd60f4c9326463fc17d7c84fbbf413f07660aa501518dda36f",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  }
+ ],
+ "SM-DD714EDA": [
+  {
+   "at": "2026-09-29T19:15:34.148759Z",
+   "call_id": "20260929T191342Z-54ea88",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e4f9892823a53a2562c6c0456890f15f2a9b86c6ccb04e19ad268e03bd44ff1b",
+   "reason": "it does not pass on the original 5 times in a row (pytest: Failed: DID NOT RAISE Exception)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:17:38.722339Z",
+   "call_id": "20260929T191536Z-c33216",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "bf781d3e56d9d3ebfbc99c9dcbc158b551af366578a8568276c243355070195f",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  }
+ ],
+ "SM-E58B2C96": [
+  {
+   "at": "2026-09-29T19:15:34.148772Z",
+   "call_id": "20260929T191342Z-0e6caa",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "599e705e2bfe0ef9cd5672dee874e10a2e094562f9a3999f3ea8d8cb7b2e75a1",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  }
+ ],
+ "SM-F375873A": [
+  {
+   "at": "2026-09-29T19:15:34.148778Z",
+   "call_id": "20260929T191342Z-cef4be",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "260f838f718c4c3c233c9f4929bc7954ec3863f78bf4d795b11fa1ad63a21e78",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  }
+ ],
+ "a5d83d760dbc5183": [
+  {
+   "at": "2026-09-29T10:38:22.577802Z",
+   "call_id": "20260929T094858Z-bd4de3",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "71ac62d1ce6e9e4048441cae93c7584b0bdf0cbd9ad2975d2dbba4da9df201d7",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  }
+ ],
+ "b6f8d3c681f933f8": [
+  {
+   "at": "2026-09-29T10:38:22.577804Z",
+   "call_id": "20260929T094858Z-4a50d1",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "2ea933445fb1b8722052fe8a711b1086f1def9aefb4ddd731051afbfdeb31e38",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  }
+ ],
+ "bc1aa66132129a79": [
+  {
+   "at": "2026-09-29T10:38:22.577807Z",
+   "call_id": "20260929T094858Z-83a54d",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "a94f1a7357b686bfd5457862decaca68329afe40dca74e867a587618a6bada17",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  }
+ ],
+ "c8e877b2ede451a3": [
+  {
+   "at": "2026-09-29T10:38:22.577816Z",
+   "call_id": "20260929T094858Z-2b1075",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "3696b7ec6a7e4eed8909a9ac6a61a736c5262b0b9360caa322fb794bcb9dafe6",
+   "reason": "it imports collections.abc",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.537421Z",
+   "call_id": "20260929T105401Z-0ae8e0",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "06c52fad8fe438f4788a0dbf3408991c31a4acfb1359bcde370dbbd0b272821d",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  }
+ ],
+ "e9e9444744bf3896": [
+  {
+   "at": "2026-09-29T10:38:22.577820Z",
+   "call_id": "20260929T094858Z-aca4a6",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "8a6928c693584b48a30b231bded2fbc3eaf02e9b67814bcfdca0acede7605ced",
+   "reason": "it imports collections.abc",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.537433Z",
+   "call_id": "20260929T105401Z-bb769c",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "3609e8d4b6051ec2839342f63f1ee9fb7b80c29205b8315b893136962607c6f2",
+   "reason": "it imports collections.abc",
+   "sources": [
+    "llm_router._internal.capabilities.schema.with_schema_transform",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.888172Z",
+   "call_id": "20260929T114718Z-e2491f",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7f8af0f088d0ac64eb92cb60dfb03882a21b76ff4423521dad2a0ec2e958c7c5",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  }
+ ],
+ "f8b19d9c5fd12b62": [
+  {
+   "at": "2026-09-29T10:38:22.577823Z",
+   "call_id": "20260929T094858Z-6b01ba",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "11981c00b8084761b7639e28fb9f8ebf80b495f0db03473e2f292334db030dbf",
+   "reason": "it does not fail on the mutant: of the changed lines 188\u2013193 it runs lines 188 and 192 but never lines 190 and 193",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.537448Z",
+   "call_id": "20260929T105401Z-7a32ee",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "9591bd52e413b3e858b07af71b53652078d70e43abcbf91e9bd4e06363a09c7a",
+   "reason": "it imports collections.abc",
+   "sources": [
+    "llm_router._internal.capabilities.schema._validate_mapping_schema_definition"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.888183Z",
+   "call_id": "20260929T114718Z-17f854",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d6fac1ac13de0aef8bde54551f3f17d4391888601850284fbb5fa5cc3b3f950a",
+   "reason": "it imports collections.abc",
+   "sources": [
+    "llm_router._internal.capabilities.schema._validate_mapping_schema_definition"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.582420Z",
+   "call_id": "20260929T120217Z-22d53d",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "32e6175fac3c6b8dd42045fb22ecbdb1f87afc46d2ddf250f3a69280fa1a402d",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema._validate_mapping_schema_definition"
+   ]
+  }
+ ],
+ "ffbbfd72fe94fb6f": [
+  {
+   "at": "2026-09-29T10:38:22.577854Z",
+   "call_id": "20260929T094858Z-f435a4",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "b8732439ed1c30a96dce457de18584636f80f489c93777d7b2d848f3c2ecf588",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.SchemaValidationResult",
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  }
+ ]
+}

@@ -26,6 +26,62 @@
   "ran_at": "2026-09-28T16:48:11.008371Z",
   "role": "draft_author_last"
  },
+ "draft_author_last|claude-cli|claude-opus-5-5|high": {
+  "backend": "claude-cli",
+  "cases": {
+   "D-SECRET": {
+    "call_id": "20260929T110527Z-54f0e0",
+    "cascade": {
+     "accepted": true,
+     "context_gaps": [],
+     "fails_on_mutant": true,
+     "grounding": [],
+     "imports_beyond_allowed": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "detail": "the cascade keeps the draft",
+    "draft_sha256": "3777b0ed419249cc42151077f7cc5166ee5116383351b01af178a9272e75603c",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "cd7716a8a389f0eec52d3792f0847a5050b9e06111150ded66022ef1636fbc4b"
+   }
+  },
+  "effort": "high",
+  "model": "claude-opus-5-5",
+  "passed": true,
+  "questions_sha256": "27000dcb24a8b7a7480a11071d50da8c7eeb2c58251d7d208e4ab356cd82ee3f",
+  "ran_at": "2026-09-29T11:05:46.893682Z",
+  "role": "draft_author_last"
+ },
+ "draft_author_last|claude-cli|claude-opus-5-5|xhigh": {
+  "backend": "claude-cli",
+  "cases": {
+   "D-SECRET": {
+    "call_id": "20260929T201431Z-b55096",
+    "cascade": {
+     "accepted": true,
+     "context_gaps": [],
+     "fails_on_mutant": true,
+     "grounding": [],
+     "imports_beyond_allowed": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "detail": "the cascade keeps the draft",
+    "draft_sha256": "83bc6f6c01170622bc64f84ed2ba207faeb06e49373b3869bcf6712997cc7e96",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "c51e0991cba87bfe8f9bb8593ecc5ffbd7a1605a211c8e7c030d6705071baf53"
+   }
+  },
+  "effort": "xhigh",
+  "model": "claude-opus-5-5",
+  "passed": true,
+  "questions_sha256": "27000dcb24a8b7a7480a11071d50da8c7eeb2c58251d7d208e4ab356cd82ee3f",
+  "ran_at": "2026-09-29T20:15:03.659102Z",
+  "role": "draft_author_last"
+ },
  "draft_author_tools|claude-cli|claude-sonnet-5": {
   "backend": "claude-cli",
   "cases": {
@@ -51,6 +107,34 @@
   "passed": true,
   "questions_sha256": "27000dcb24a8b7a7480a11071d50da8c7eeb2c58251d7d208e4ab356cd82ee3f",
   "ran_at": "2026-09-28T16:47:51.457235Z",
+  "role": "draft_author_tools"
+ },
+ "draft_author_tools|claude-cli|claude-sonnet-5-5|medium": {
+  "backend": "claude-cli",
+  "cases": {
+   "D-SECRET": {
+    "call_id": "20260929T110510Z-ddfc2a",
+    "cascade": {
+     "accepted": true,
+     "context_gaps": [],
+     "fails_on_mutant": true,
+     "grounding": [],
+     "imports_beyond_allowed": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "detail": "the cascade keeps the draft",
+    "draft_sha256": "47e402886870b4bed0ca87a4fb561953209a1ca56632730ab5da07fc3cfaedbc",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "bdcc8efb34b77e0df6a2847eddc91da0dcda59023300169779051ccbb248dc31"
+   }
+  },
+  "effort": "medium",
+  "model": "claude-sonnet-5-5",
+  "passed": true,
+  "questions_sha256": "27000dcb24a8b7a7480a11071d50da8c7eeb2c58251d7d208e4ab356cd82ee3f",
+  "ran_at": "2026-09-29T11:05:27.753675Z",
   "role": "draft_author_tools"
  },
  "draft_author|antigravity-cli|claude-sonnet-4-6": {
@@ -184,6 +268,34 @@
   "ran_at": "2026-09-28T10:56:04.279305Z",
   "role": "draft_author"
  },
+ "draft_author|claude-cli|claude-sonnet-5-5|low": {
+  "backend": "claude-cli",
+  "cases": {
+   "D-SECRET": {
+    "call_id": "20260929T110506Z-cfa627",
+    "cascade": {
+     "accepted": true,
+     "context_gaps": [],
+     "fails_on_mutant": true,
+     "grounding": [],
+     "imports_beyond_allowed": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "detail": "the cascade keeps the draft",
+    "draft_sha256": "01e3311ea364f94c561bda0d04a7813c916d6687c9eea8a9c2e0b5a1c745bb32",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "ded97bbdb85f03ce0772c362bce0cee268dd0458392f1d1d7fe49e80bdc551d3"
+   }
+  },
+  "effort": "low",
+  "model": "claude-sonnet-5-5",
+  "passed": true,
+  "questions_sha256": "f028da4aff02fc881cb978466dbc630038f744d6cb4d734f4b564ea09d6bde18",
+  "ran_at": "2026-09-29T11:05:10.834357Z",
+  "role": "draft_author"
+ },
  "generator|antigravity-cli|gemini-3.1-pro-high": {
   "backend": "antigravity-cli",
   "cases": {
@@ -235,66 +347,126 @@
   "ran_at": "2026-09-27T23:32:29.890551Z",
   "role": "generator"
  },
+ "generator|claude-cli|claude-sonnet-5-5|high": {
+  "backend": "claude-cli",
+  "cases": {
+   "G-SUMMARY": {
+    "call_id": "20260929T110458Z-3587b4",
+    "detail": "1 well-formed, confined proposals",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "e39ab296835b728a721f37ee932bce6de7d2757db7c470724a1e0893e4d85635"
+   }
+  },
+  "effort": "high",
+  "model": "claude-sonnet-5-5",
+  "passed": true,
+  "questions_sha256": "f3b1d358f6db9f3916ba936c747ac3e8fa6261f37d70acec6cb0de7721a9e3e5",
+  "ran_at": "2026-09-29T11:05:06.673247Z",
+  "role": "generator"
+ },
  "verdict_review|antigravity-cli|gemini-3.1-pro-high": {
   "backend": "antigravity-cli",
   "cases": {
    "V-EQUIVALENT": {
-    "call_id": "20260928T144224Z-435e18",
-    "detail": "expected equivalent, got equivalent",
-    "outcome": "ok",
-    "passed": true,
-    "response_sha256": "faf69bc0e7c8f47c64581f99b7ae07fbc8345794cb98e4760cd2a5a0c7f96b89"
+    "call_id": "20260929T222806Z-626f5c",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
    },
    "V-ESCALATE": {
-    "call_id": "20260928T144235Z-7e401c",
-    "detail": "expected escalate, got escalate",
-    "outcome": "ok",
-    "passed": true,
-    "response_sha256": "103c62837de3e18fa7a7a22401caf92b2042f070f23c908d17d4e16e453dc93b"
+    "call_id": "20260929T222806Z-c4fea5",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
    },
    "V-PIN": {
-    "call_id": "20260928T144204Z-e119c1",
-    "detail": "expected pin, got pin",
-    "outcome": "ok",
-    "passed": true,
-    "response_sha256": "ef7cfedda2b593ed7199de397f0bed6b78ffdfb4940bf2c37bc8ae0121724adf"
+    "call_id": "20260929T222754Z-4f53ca",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
+   },
+   "V-REAL-EQUIVALENT": {
+    "call_id": "20260929T222806Z-dba3a9",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
+   },
+   "V-REAL-IRRELEVANT": {
+    "call_id": "20260929T222806Z-9f61ee",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
+   },
+   "V-REAL-PIN": {
+    "call_id": "20260929T222806Z-dcc08b",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
    }
   },
   "model": "gemini-3.1-pro-high",
-  "passed": true,
-  "questions_sha256": "24fcbccbfa03747198ebf7725f8626c1237dbaa9026f412c7a5c78d5da9c6b0b",
-  "ran_at": "2026-09-28T14:42:51.276648Z",
+  "passed": false,
+  "questions_sha256": "93cc0380b76e7f8a0ff3c1dfde6b84c8309b58b6097d21b10457ac563557d421",
+  "ran_at": "2026-09-29T22:28:06.534915Z",
   "role": "verdict_review"
  },
  "verdict_review|antigravity-cli|gemini-3.8-flash-high": {
   "backend": "antigravity-cli",
   "cases": {
    "V-EQUIVALENT": {
-    "call_id": "20260928T144328Z-953332",
-    "detail": "expected equivalent, got equivalent",
-    "outcome": "ok",
-    "passed": true,
-    "response_sha256": "18fe3b392c7164a28528a2e290ba7a5dc4e35dec625be1532fe766073fd5994e"
+    "call_id": "20260929T222806Z-f2aafa",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
    },
    "V-ESCALATE": {
-    "call_id": "20260928T144450Z-a24c5a",
-    "detail": "expected escalate, got escalate",
-    "outcome": "ok",
-    "passed": true,
-    "response_sha256": "974f31d05c3f80b4016b7288486bd599179ce1f0a9b18c9b8036b9c8f0aef025"
+    "call_id": "20260929T222806Z-252af8",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
    },
    "V-PIN": {
-    "call_id": "20260928T144251Z-d1d59c",
-    "detail": "expected pin, got pin",
-    "outcome": "ok",
-    "passed": true,
-    "response_sha256": "884110b6a340b09d84073691df9aa3fc5c43add39caecd9f93b95073528377db"
+    "call_id": "20260929T222806Z-0f28ea",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
+   },
+   "V-REAL-EQUIVALENT": {
+    "call_id": "20260929T222806Z-725dd2",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
+   },
+   "V-REAL-IRRELEVANT": {
+    "call_id": "20260929T222806Z-333a2d",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
+   },
+   "V-REAL-PIN": {
+    "call_id": "20260929T222806Z-269077",
+    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
+    "outcome": "unavailable",
+    "passed": false,
+    "response_sha256": ""
    }
   },
   "model": "gemini-3.8-flash-high",
-  "passed": true,
-  "questions_sha256": "24fcbccbfa03747198ebf7725f8626c1237dbaa9026f412c7a5c78d5da9c6b0b",
-  "ran_at": "2026-09-28T14:45:55.593472Z",
+  "passed": false,
+  "questions_sha256": "93cc0380b76e7f8a0ff3c1dfde6b84c8309b58b6097d21b10457ac563557d421",
+  "ran_at": "2026-09-29T22:28:06.539828Z",
   "role": "verdict_review"
  },
  "verdict|claude-cli|claude-opus-5-5": {
@@ -326,6 +498,59 @@
   "passed": true,
   "questions_sha256": "24fcbccbfa03747198ebf7725f8626c1237dbaa9026f412c7a5c78d5da9c6b0b",
   "ran_at": "2026-09-28T15:24:15.053340Z",
+  "role": "verdict"
+ },
+ "verdict|claude-cli|claude-opus-5-5|xhigh": {
+  "backend": "claude-cli",
+  "cases": {
+   "V-EQUIVALENT": {
+    "call_id": "20260929T222707Z-e63ad8",
+    "detail": "expected equivalent, got equivalent",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "1db46bc16bac686095505aa587f5b30c560a6abb5f507770fdf33c8e752e9c4b"
+   },
+   "V-ESCALATE": {
+    "call_id": "20260929T222713Z-2f9bf1",
+    "detail": "expected escalate, got escalate",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "7e0c2a6406ad513ff32562083fbdef8d06565e709ce147344e3d116ceeafdb08"
+   },
+   "V-PIN": {
+    "call_id": "20260929T222658Z-4f764e",
+    "detail": "expected pin, got pin",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "90aecb3527314e86519b3bd8a15b5eee33498d580c992b31cef22884da21d9c0"
+   },
+   "V-REAL-EQUIVALENT": {
+    "call_id": "20260929T222734Z-effa23",
+    "detail": "expected equivalent, got equivalent",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "1fe429ae6a1b662ea9dbd97df3763f88f25ad26ce86fe2a18e9fbbef215d112d"
+   },
+   "V-REAL-IRRELEVANT": {
+    "call_id": "20260929T222729Z-b278a9",
+    "detail": "expected irrelevant, got irrelevant",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "c1292ec6dd8623fbd0393031efd0b37c55f874d8a858bc86861805f55d2a78e4"
+   },
+   "V-REAL-PIN": {
+    "call_id": "20260929T222718Z-33acb9",
+    "detail": "expected pin, got pin",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "60d819f6f874ace7c6cea5e290bd8c4d837da938e08d86a6e58c4096a840a719"
+   }
+  },
+  "effort": "xhigh",
+  "model": "claude-opus-5-5",
+  "passed": true,
+  "questions_sha256": "93cc0380b76e7f8a0ff3c1dfde6b84c8309b58b6097d21b10457ac563557d421",
+  "ran_at": "2026-09-29T22:27:54.089778Z",
   "role": "verdict"
  }
 }

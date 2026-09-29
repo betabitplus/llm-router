@@ -1,0 +1,42 @@
+{
+ "3b57c08f839ab791": [
+  {
+   "at": "2026-09-29T10:38:22.580735Z",
+   "call_id": "20260929T100428Z-6aa605",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "12e0b950fe544e1ebd816bf970ced8774e3d2e1585a98ea2fa3961c9be0cc6ce",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validation.validate_config"
+   ]
+  }
+ ],
+ "b6340db1c7f8750a": [
+  {
+   "at": "2026-09-29T10:38:22.580739Z",
+   "call_id": "20260929T100428Z-a65cde",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "712101c992dd96756e271d0d9425c933033f3366df77e26949c93302d4eeb38f",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config",
+    "dataclasses.replace",
+    "pytest.mark.verification_kind",
+    "pytest.mark.verifies",
+    "pytest.raises"
+   ]
+  }
+ ]
+}

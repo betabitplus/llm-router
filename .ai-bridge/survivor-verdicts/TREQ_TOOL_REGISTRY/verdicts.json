@@ -67,6 +67,45 @@
   },
   "prompt_sha256": "9bd4a4e5ac13a56bc9ad9b9ba962b0b8bf2ad1431303069e99c4dcc4b3745b41"
  },
+ "7a912b65bb0be9c6": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T094712Z-2725db",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the defensive copy of args, so the returned ToolStep shares the caller's mapping. Its tool name, argument values, result and call_id are unchanged. The requirement only asks that execution preserve arguments and results, and says nothing about copy isolation or aliasing in the trace step.",
+   "response_sha256": "903726b1046725b2e1c720d1e665c0aedc4ea8b47d54460d2abbb8d44febe848",
+   "sources": [
+    "Callable schema derivation matches the Python signature and execution preserves arguments/results.",
+    "return ToolStep(tool_name=call.name, args=call.args, result=result, call_id=call.id)",
+    "            args=dict(call.args),"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conversion",
+  "prompt_sha256": "0ec7d50026d98f637bf73b117c439305fd9415b1ba8a84f271b6d7c43a617141",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T094723Z-59c5ea",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "0ec7d50026d98f637bf73b117c439305fd9415b1ba8a84f271b6d7c43a617141",
+   "reason": "The change removes a shallow copy when passing the arguments to the returned step, but because the arguments mapping is preserved either way, the resulting value evaluates as equal. The registry's contract does not mandate defensive copying against external mutation, making this an unobservable implementation detail.",
+   "response_sha256": "3c34bbf2548acf096490e5011567bfc2d84c8b0364de963ed65e57a02001c93a",
+   "sources": [
+    "execution preserves arguments/results.",
+    "args=dict(call.args),",
+    "args=call.args,"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
  "7ebb796581f85dea": {
   "answer": {
    "backend": "claude-cli",
@@ -134,5 +173,44 @@
    "source": "draft author"
   },
   "prompt_sha256": "c90e4a3c309f9b8b3e406b58580a8b5f69b85370685285916dee2d52d60feda6"
+ },
+ "ebec939d12750322": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T094743Z-deffbe",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant puts `call.args` itself into ToolExecutionError instead of a `dict` copy. The contents are the same, but a test can still tell the versions apart: it can check object identity or aliasing, or see a different type if `ToolCall.args` is a non-dict mapping. So they are not equivalent. Still, the requirement only asks that execution keeps arguments and results intact. It says nothing about whether the error payload is a defensive copy, and the returned ToolStep is unchanged.",
+   "response_sha256": "ccf6d339eb27fdbfd59f6a778dfe06cc827e7df36e189af475464d047d252387",
+   "sources": [
+    "raise ToolExecutionError(tool_name=call.name, args=call.args, cause=exc) from exc",
+    "Callable schema derivation matches the Python signature and execution preserves arguments/results.",
+    "execute registered callables consistently"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conversion",
+  "prompt_sha256": "12387beb2e8bcc6c80653d1935fe77261aa2af5fea6c77bb9b00f9195e7ae3a7",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T094754Z-485788",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "12387beb2e8bcc6c80653d1935fe77261aa2af5fea6c77bb9b00f9195e7ae3a7",
+   "reason": "For any valid `ToolCall` where `call.args` is a mapping, passing the arguments directly to `ToolExecutionError` instead of copying them with `dict()` results in identical exception state and type, leaving all observable behavior unchanged.",
+   "response_sha256": "41d0de2e5da096b0c0fbf1e36a92013b0dd282ef41b27eba4db4276bc4e4c476",
+   "sources": [
+    "execution preserves arguments/results.",
+    "args=dict(call.args),",
+    "args=call.args,"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
  }
 }

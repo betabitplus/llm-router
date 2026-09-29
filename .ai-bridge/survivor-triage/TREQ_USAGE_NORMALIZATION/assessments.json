@@ -1,62 +1,327 @@
 {
  "1356bcae910da7c0": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "{\"input_tokens\": 1, \"output_tokens\": 2, \"total_tokens\": 10, \"prompt_tokens\": 1, \"completion_tokens\": 2, \"prompt_token_count\": 1, \"candidates_token_count\": 2, \"total_token_count\": 10}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213235Z-60b128",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change replaces `and` with `or`, causing a payload with a non-zero `total_tokens` that differs from the sum of its non-zero input and output tokens to have its total incorrectly overwritten with the sum, whereas the original version preserves the provided total.",
+    "response_sha256": "e18641fa3fbca6a75bc0150336f92b41e4d7187f4adfc753abbd2d38379b7f99",
+    "sources": [
+     "    if total_tokens == 0 and (input_tokens or output_tokens):\n        total_tokens = input_tokens + output_tokens"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{'total_tokens': 10, 'input_tokens': 1, 'output_tokens': 1, 'prompt_tokens': 1, 'completion_tokens': 1, 'totalTokens': 10, 'inputTokens': 1, 'outputTokens': 1, 'promptTokens': 1, 'completionTokens': 1, 'total_token_count': 10, 'prompt_token_count': 1, 'candidates_token_count': 1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213237Z-e7f558",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When total_tokens is non-zero and input or output tokens are present but do not sum to total_tokens, the original version preserves total_tokens while the changed version overwrites it with input_tokens + output_tokens.",
+    "response_sha256": "4bb9b1b175544a17da29a118f44d4473126a68a9f2eec12464f4a6af1e59e38f",
+    "sources": [
+     "    if total_tokens == 0 and (input_tokens or output_tokens):",
+     "    if total_tokens == 0 or (input_tokens or output_tokens):"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "value": "{\"input_tokens\": 3, \"output_tokens\": 0, \"total_tokens\": 5}"
+     "value": "{\"input_tokens\": 1, \"output_tokens\": 1, \"total_tokens\": 5}"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T155203Z-46d31b",
-    "confidence": 0.75,
+    "call_id": "20260928T213226Z-16313a",
+    "confidence": 0.85,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "When total_tokens is nonzero but only one of input/output is nonzero, the original's `and` condition stays False (keeping total_tokens=5), while the changed `or` condition becomes True via the truthy input_tokens, overwriting total to input+output=3.",
-    "response_sha256": "0072e414fbafd684d7256a30655c5b1b722535aaf8cc6ca12cbe00ca5892b46c",
+    "reason": "When total_tokens is nonzero but input/output are also nonzero and don't sum to it, the original keeps the provided total (AND condition false) while the changed version overwrites it via the OR condition, so they return different total_tokens values.",
+    "response_sha256": "7a95d8d0dcc605d50d16f0da156957a46ede86affaf8d8a09137e79e29031984",
     "sources": [
      "if total_tokens == 0 and (input_tokens or output_tokens):",
      "if total_tokens == 0 or (input_tokens or output_tokens):"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "{'input_tokens': 1, 'output_tokens': 2, 'total_tokens': 10}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111632Z-88387d",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With a nonzero total that differs from input+output, the original keeps total 10 but the changed 'or' overwrites it with 3.",
+    "response_sha256": "74a6e90bc77a432a02730a9ce69ee6e867ee9ab1296f778c5f7e24c9b6a3f101",
+    "sources": [
+     "if total_tokens == 0 or (input_tokens or output_tokens):",
+     "if total_tokens == 0 and (input_tokens or output_tokens):"
+    ],
+    "verdict": "distinct"
    }
   },
-  "prompt_sha256": "787dce78e5447df110ded31e21e4989b382d50061d15a0302edce109adccc4b2"
+  "prompt_sha256": "a5b963d39bb632118f278bac3f803bdcc2c2e72e07ccb83ffb144fb38171f8b3"
+ },
+ "516ee0826f5a2224": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "UsageStats(input_tokens=1, output_tokens=1, total_tokens=2)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T085540Z-adb09c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original code immediately returns the provided UsageStats instance, whereas the changed version bypasses this type check and attempts to re-parse the object using _first_int, which will either return a new instance or raise an exception.",
+    "response_sha256": "a47d71def0a1b3c649223d203026d51ba4738092e76291658e0749443bfea923",
+    "sources": [
+     "    if isinstance(value, UsageStats):",
+     "        return value",
+     "    if False:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "UsageStats(input_tokens=1, output_tokens=0, total_tokens=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T085540Z-4826c8",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is an instance of UsageStats with total_tokens equal to 0 and positive input_tokens, the original version returns value directly whereas the changed version skips the early return and recalculates total_tokens to the sum of input and output tokens.",
+    "response_sha256": "de29a5afe91d9acd1d4b5ad7b732ea5b5f59147884356ef90de8ca8e364d3756",
+    "sources": [
+     "    if isinstance(value, UsageStats):",
+     "    if False:",
+     "    if total_tokens == 0 and (input_tokens or output_tokens):",
+     "        total_tokens = input_tokens + output_tokens"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "UsageStats(input_tokens=5, output_tokens=3, total_tokens=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T234505Z-4839fc",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The original short-circuits on `isinstance(value, UsageStats)` and returns the object unchanged (total_tokens stays 0), but the changed version replaces that guard with dead code (`if False`), so it falls through to `_first_int` extraction and the zero-total recompute branch, forcing total_tokens to become input_tokens+output_tokens=8 (or, if extraction fails to read a dataclass, to 0,0,0) instead of the original's preserved (5,3,0) \u2014 either way the returned UsageStats differs from the original's unchanged input.",
+    "response_sha256": "001dc07f3245a3d837c091851340f1cfcbca2db7f22ee6e036fd21b020555af5",
+    "sources": [
+     "if isinstance(value, UsageStats):\n        return value",
+     "if False:\n        return value",
+     "if total_tokens == 0 and (input_tokens or output_tokens):\n        total_tokens = input_tokens + output_tokens"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "5dae909bda89d900ecc8db81a2e6ae4cddf21ad0e456aa88e285994abffe670a"
  },
  "58413afa88ad9810": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "UsageStats(input_tokens=0, output_tokens=0, total_tokens=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213250Z-4b9e37",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "If the input value is an instance of UsageStats, the original version returns the value itself, but the changed version returns None.",
+    "response_sha256": "e057febc3af119250375544cb178f7e85f78534a46b43144cf759b871877a6a6",
+    "sources": [
+     "    if isinstance(value, UsageStats):",
+     "        return value",
+     "        return None"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "UsageStats(input_tokens=0, output_tokens=0, total_tokens=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213308Z-d552a2",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is an instance of UsageStats, the original version returns the input object while the changed version returns None.",
+    "response_sha256": "6922890cdd31a9f645d0d9b4c5435184d608c3a9accf94d3cf96785084dd5b46",
+    "sources": [
+     "    if isinstance(value, UsageStats):",
+     "        return value",
+     "        return None"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
      "value": "UsageStats(input_tokens=1, output_tokens=2, total_tokens=3)"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T155203Z-ee2e22",
-    "confidence": 0.98,
+    "call_id": "20260928T213244Z-4e1bef",
+    "confidence": 0.95,
     "model": "claude-sonnet-5",
     "problems": [],
     "reason": "When value is already a UsageStats instance, the original returns it unchanged while the changed version returns None instead.",
-    "response_sha256": "7bb0b019d47ee4cb2831621a42c380f831b6cd8950bc18a485c3ff7161bea1d9",
+    "response_sha256": "78f5704785967cf1e96c9b60ece18987c3b9ae2463ae0e16fe7a8444d030f0ab",
     "sources": [
-     "if isinstance(value, UsageStats):",
-     "return value",
-     "return None"
+     "if isinstance(value, UsageStats):\n        return value",
+     "if isinstance(value, UsageStats):\n        return None"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "UsageStats(input_tokens=1, output_tokens=2, total_tokens=3)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111633Z-65d97e",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a UsageStats instance the original returns it unchanged, while the changed version returns None.",
+    "response_sha256": "f7863cb370bf1cb241105c0e9e247cdc38bc019cad16e9fe3be23c47eb380e1a",
+    "sources": [
+     "if isinstance(value, UsageStats):\n        return value",
+     "if isinstance(value, UsageStats):\n        return None"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "ffd8c843faec875de85f267f9f420a8478a39d90331bb3e14d0e6edf382e2be7"
+  "prompt_sha256": "fba362c2256505e5332875fb9854a2fad7a9e6cbe72cbe67d0534a158706de04"
+ },
+ "8bdbc9dc44639ca0": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T085540Z-526bc2",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When total_tokens is 0 but both input_tokens and output_tokens are 0, the changed version executes the assignment setting total_tokens to 0 + 0 = 0, which leaves its value identical to the original version.",
+    "response_sha256": "812c6c74d258663950b9fad4fa00d14a99de05a1fc4ab980a5dd924e125140bd",
+    "sources": [
+     "    if total_tokens == 0 and (input_tokens or output_tokens):",
+     "    if total_tokens == 0:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T085540Z-d567a6",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When total_tokens is 0 and both input_tokens and output_tokens are 0, total_tokens remains 0 in both versions because 0 + 0 equals 0, making the additional condition redundant since non-negative token counts produce the exact same sum in all cases.",
+    "response_sha256": "99814776e4283f13dd9d285fe763ff48955be7ef3ee1162c4434e8a9ed8e99c0",
+    "sources": [
+     "    if total_tokens == 0 and (input_tokens or output_tokens):",
+     "    if total_tokens == 0:",
+     "        total_tokens = input_tokens + output_tokens"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T234505Z-cc4aee",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Since _first_int always returns a non-negative int, input_tokens and output_tokens are both >=0, so \"(input_tokens or output_tokens)\" is False exactly when both are 0, in which case input_tokens+output_tokens==0 anyway, making the original's guard redundant and both versions always compute the same total_tokens.",
+    "response_sha256": "81bbf1b6d521e1c65c000c676d4635f5fd9e1363609a729954ccdce3952d4dbf",
+    "sources": [
+     "if total_tokens == 0 and (input_tokens or output_tokens):",
+     "if total_tokens == 0:",
+     "total_tokens = input_tokens + output_tokens"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "29f7e569c55b363e1d8d27dcd617f801674d72939a91a1cb77ec887432ad53b8"
  },
  "f3d4b39e06f3f013": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "{\"input_tokens\": 1, \"prompt_tokens\": 1, \"output_tokens\": 0, \"completion_tokens\": 0, \"total_tokens\": 0}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213355Z-3a1927",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "If the payload has a positive number of input tokens but zero output tokens and zero total tokens, the original version computes the total as their sum since 'input_tokens or output_tokens' is true, whereas the changed version skips this because 'input_tokens and output_tokens' is false, returning a UsageStats with 0 total tokens instead of 1.",
+    "response_sha256": "7d6b061c12044a0ac238ca0aa7ead85add2ed3c20735011e0fe9bd09d8834b71",
+    "sources": [
+     "    if total_tokens == 0 and (input_tokens or output_tokens):",
+     "        total_tokens = input_tokens + output_tokens"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{'input_tokens': 1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T213407Z-705896",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When total_tokens is 0 and only input_tokens is non-zero, the original version sets total_tokens to input_tokens while the changed version leaves total_tokens as 0 because the conjunction requires both input_tokens and output_tokens to be non-zero.",
+    "response_sha256": "37561ebd964323697bc7aaca153f73c7eed357e55a9aa3831fce02b8f8c5f3ce",
+    "sources": [
+     "    if total_tokens == 0 and (input_tokens or output_tokens):",
+     "    if total_tokens == 0 and (input_tokens and output_tokens):"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "value": "{\"input_tokens\": 5}"
+     "value": "{\"input_tokens\": 5, \"output_tokens\": 0}"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T155203Z-8b3a23",
+    "call_id": "20260928T213343Z-919eeb",
     "confidence": 0.75,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "The condition changed from `(input_tokens or output_tokens)` to `(input_tokens and output_tokens)`; with input_tokens=5, output_tokens=0, total_tokens=0, the original sets total_tokens=5 while the changed version leaves total_tokens=0.",
-    "response_sha256": "3cc5e55800f227da240fc2c0abc2568c10924956ef59237767d0982fab818c21",
+    "reason": "The change replaces `(input_tokens or output_tokens)` with `(input_tokens and output_tokens)`, so when exactly one of the two is nonzero and no total key is present, the original still backfills total_tokens as their sum while the changed version leaves it at 0.",
+    "response_sha256": "c0f6c667e41c2b64a8e45eaac09498ceb0d7fc33e7ccde72f7d41839fe4235e0",
+    "sources": [
+     "if total_tokens == 0 and (input_tokens or output_tokens):",
+     "if total_tokens == 0 and (input_tokens and output_tokens):"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "{'input_tokens': 5}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111633Z-2ff4a8",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With only one of input or output nonzero and no total, the original computes total as their sum, but the changed 'and' leaves total at 0.",
+    "response_sha256": "fe5c7cf19c56e79da06f1144d1502370be834c58266b09915e48f015f88cf98d",
     "sources": [
      "if total_tokens == 0 and (input_tokens or output_tokens):",
      "if total_tokens == 0 and (input_tokens and output_tokens):"
@@ -64,6 +329,6 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "ffe7865b6a6bf5702882d0db6d526536d76a6a2d4a3ab55f76522bd49d1d12d0"
+  "prompt_sha256": "2b79bb87570c21fcee99e6deab6c19fe752e848735065b03ff3682d0bd8174b4"
  }
 }

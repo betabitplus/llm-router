@@ -1,4 +1,475 @@
 {
+ "01c1cee242944f46": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092726Z-6c769a",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Dropping context_getter only changes the context included in the retry-scheduled log/state event, and only when a caller supplies a getter. It does not change the stop condition, which errors get retried, or the reraise behaviour. The attempt count and which failures are retryable stay the same, and those are all the requirement and its criterion ask about.",
+   "response_sha256": "4b264b1749574c40b6bce9edb25e20cf332fecfe7e26ab10298b78387bc1b184",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', state_sink=state_sink)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "cb50d8de69ef9ab209953a90ba8ca2baf25eb93791f4114b116e830b5f07c99b",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092736Z-9a1799",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "cb50d8de69ef9ab209953a90ba8ca2baf25eb93791f4114b116e830b5f07c99b",
+   "reason": "The mutant omits the context getter when configuring the before-sleep logger, which only changes the diagnostic context included in retry log messages. This logging behavior is an implementation detail that does not alter the maximum attempt counts, retry boundaries, or transient failure recovery mandated by the requirements.",
+   "response_sha256": "6d370280a273be2dc779b9dfdb6aefb796e867ebe2df530c1bac4b5d6ed8361a",
+   "sources": [
+    "Technical requirement TREQ_PROVIDER_RETRY_BOUNDS (Same-route provider retry is bounded): For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "            context_getter=context_getter,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "06999e6775471416": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092726Z-7e04b2",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes the minimum backoff wait. The stop condition (stop_after_attempt(policy.max_attempts)) and the retryable-error check are unchanged, so attempt bounds and transient/permanent classification behave the same. No requirement given here constrains wait durations, and longer waits capped at the maximum don't make the work unbounded.",
+   "response_sha256": "2b0303e64f9aee9c90a4856b633f769f9ca9a47f9bbfefe6281aa91fa9559da2",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "attribute",
+  "prompt_sha256": "7dea3765aaf4f4da969321ae934075a758855ee3a4d7c2dad1783d9252d58a45",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092736Z-9e64d1",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "7dea3765aaf4f4da969321ae934075a758855ee3a4d7c2dad1783d9252d58a45",
+   "reason": "The change alters the minimum wait time to equal the maximum wait time in the random exponential backoff, making the versions observably different. However, the provided requirements only govern the eligibility of failures and the maximum attempt bounds, not the duration of the backoff between retries.",
+   "response_sha256": "0374f4742c120ec4048b853dabbc360122a194c69e3ee921c0b300225c4763b4",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "min=policy.min_wait_seconds,",
+    "min=policy.max_wait_seconds, max=policy.max_wait_seconds)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "23d009aeaedecaa2": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092726Z-10ac42",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "This is a real difference: a caller that passes a state_sink callable no longer gets the before-sleep retry state. The stop and retry rules are unchanged, though. The attempt limit and which failures get retried stay the same, and those are the only things this requirement and its criterion check.",
+   "response_sha256": "9453100f04c030bde351d38a5ef212c44c2c306c13f2416eaf4c7d467725021b",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter), reraise=True)",
+    "state_sink=state_sink,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "ba3422d326733267243ec607b5989d550c6c615bed1d4ef1c30c99a09089b49b",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092736Z-6da3fe",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "ba3422d326733267243ec607b5989d550c6c615bed1d4ef1c30c99a09089b49b",
+   "reason": "The only expressible value for the state_sink parameter from restricted plain inputs is None. Omitting the argument falls back to its default value, resulting in identical behavior that satisfies the retry verification criteria without any observable difference.",
+   "response_sha256": "d7000f4275a068896800a82fa94bd482fb4d3773dc0a0bcb4241dc3f7722376c",
+   "sources": [
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "no literal-only input can supply a distinguishing callable.",
+    "state_sink=state_sink,"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "2a4f224cd89c9053": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092824Z-c22002",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only lowers the cap on the random exponential backoff wait. The number of attempts and which errors get retried stay exactly the same, and those are the only things the requirement and its criterion constrain. None of the listed requirements says anything about backoff durations.",
+   "response_sha256": "53b6c65d9a1d8fb146f199863965937df3f56439876839ef6fe6c2842d9ba36f",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "max=policy.max_wait_seconds,",
+    "stop=stop_after_attempt(policy.max_attempts),"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "attribute",
+  "prompt_sha256": "aa9bb8accb59f36ff00a103ea56ec722d3916056454c5da569a303b54de168a9",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092832Z-b89581",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "aa9bb8accb59f36ff00a103ea56ec722d3916056454c5da569a303b54de168a9",
+   "reason": "The mutant modifies the maximum wait time for the backoff strategy, but the requirements only specify the maximum attempt count and which failures are eligible for retry, not the wait duration between attempts.",
+   "response_sha256": "add3aba29e6a4a3a979c9ec9db6d2ded82cdfaa5a24192a290a089ed44e10682",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "2ae84179fe3cd89c": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092824Z-c18937",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant no longer passes state_sink to the before_sleep logger, so retry-state updates are not forwarded to the caller. The stop condition, the retry predicate and reraise all stay the same, so the attempt count and which failures get retried do not change. Those are the only things this requirement and its verification criteria cover.",
+   "response_sha256": "c715dc0e0c77e5b2f77f89b3c559d3678b1ebace438acafccbcb03f82c1d10bc",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter), reraise=True)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "d5b619787ad03d5d15bf9ad01afeaae4c3afd064343576ebbc756f005597c738",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092832Z-d6df5a",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "d5b619787ad03d5d15bf9ad01afeaae4c3afd064343576ebbc756f005597c738",
+   "reason": "The mutation omits passing the state sink to the before-sleep logger. The requirements specify retry eligibility and bounded maximum attempt counts, but do not mandate state updates or logging behavior during the retry process, making this change irrelevant to the stated requirements.",
+   "response_sha256": "56568e15684db8566566560375a9cc91769c00f387c4fe617aeefbf2a249542e",
+   "sources": [
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "state_sink=state_sink,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "31c6aa7a4e93477c": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000310Z-ec8d50",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes the type annotation of state_sink. Python does not enforce annotations at runtime, so the stop, wait, retry and before_sleep behavior is the same and the attempt bound is unchanged for every input.",
+   "response_sha256": "7a22aa271f8c97417e756423891213ba3dcfbd0c11a7d446530de5cbd7aec424",
+   "sources": [
+    "state_sink: Callable[[], None] | None=None",
+    "state_sink: Callable[[dict[str, Any]], None] | None = None,",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "container",
+  "prompt_sha256": "4ef9539ce0b44ef154e64a809e5640086d22491247b5205b85904fa5ef53de0a",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092832Z-80c088",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "4ef9539ce0b44ef154e64a809e5640086d22491247b5205b85904fa5ef53de0a",
+   "reason": "The mutation only changes the static type hint for the `state_sink` parameter (from taking a dict to taking no arguments) and removes whitespace formatting. Since type hints are not enforced at runtime in standard Python and do not alter execution, this change has no impact on the retry logic or bounds specified by the requirements.",
+   "response_sha256": "c1101ac6726b031c52957a9c21dbcc0ba3f1b33b26ec742e09e32d0de50ae4e4",
+   "sources": [
+    "state_sink: Callable[[dict[str, Any]], None] | None = None,",
+    "state_sink: Callable[[], None] | None=None",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "44b17fdbcf809c77": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092824Z-4c7f21",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the backoff floor (min wait defaults to 0). The stop condition and the retry predicate are unchanged, so the attempt count and which failures get retried stay the same. None of the requirements here say anything about wait durations. The configured minimum wait is ignored, which is a real difference, but no requirement shown here covers it.",
+   "response_sha256": "54495efa7779506f15ace8283c407f639bcae6e5e47246c80c2ce9eb34c12429",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "wait=wait_random_exponential(max=policy.max_wait_seconds)",
+    "min=policy.min_wait_seconds,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "e393ea8ec7d9229296242da4652e7037d1fa626bf7745f71c7014c784e2fde9a",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092832Z-0ea046",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "e393ea8ec7d9229296242da4652e7037d1fa626bf7745f71c7014c784e2fde9a",
+   "reason": "The change removes the minimum wait time configuration for the exponential backoff, altering the delay between retry attempts. This modifies retry timing behavior but does not violate any requirements, as they only dictate the maximum number of attempts and which errors are retried, not the wait intervals.",
+   "response_sha256": "747982efc00b30828fc7358ce2d41571cc2a345bd84269e4cc3777f35c6819a6",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "min=policy.min_wait_seconds,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "4d9672c61c837d10": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092905Z-ac7542",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the event_type label passed to the before-sleep retry logger. The stop, wait, retry and reraise settings are unchanged, so the attempt count and which failures get retried are the same. At most the name of the logged event could change, and none of the requirements here asks for a specific event name.",
+   "response_sha256": "ace738e0e6110e18356b0780a481b86648647ff596fa90c3d4c950a877df0e77",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "event_type=\"llm_router.provider.retry.scheduled\",",
+    "before_sleep=build_retry_before_sleep_logger(logger, context_getter=context_getter, state_sink=state_sink)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "678e829bf9533674af550851e803257290e1d7302b04b461634e76db3974591c",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092914Z-9baccc",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "678e829bf9533674af550851e803257290e1d7302b04b461634e76db3974591c",
+   "reason": "The removal of the explicit event_type parameter does not change behavior because it defaults to the identical string, making the returned AsyncRetrying policy identical across all inputs.",
+   "response_sha256": "1d7624ce0a3b735e8f8ee08c5aa45b0a59da8e1f2ca458d71f0cff46a220a76c",
+   "sources": [
+    "event_type=\"llm_router.provider.retry.scheduled\",",
+    "before_sleep=build_retry_before_sleep_logger(logger, context_getter=context_getter, state_sink=state_sink)",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "5111016988207c9f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092905Z-fc345f",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only stops forwarding context_getter to the before-sleep retry logger, so the scheduled-retry log event carries less context. The stop condition, the retry predicate and reraise are unchanged, so the attempt count and which failures get retried are the same. No requirement listed here asks about log context.",
+   "response_sha256": "d443ee353b9fa754322461618775a3c6c4ad1a30fc5befef9068f6e5323d425e",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', state_sink=state_sink), reraise=True)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "16fd2f992c35017f1bbeb6a514faeb149d4f9e6263fcb0eb54b17f30dab98b77",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092914Z-7910e1",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "16fd2f992c35017f1bbeb6a514faeb149d4f9e6263fcb0eb54b17f30dab98b77",
+   "reason": "The mutation omits the context_getter argument when building the logger for sleep events, modifying the log context but leaving the retry attempt logic and limits completely unchanged.",
+   "response_sha256": "9ee134ca9fb38a1b9c81ba8d4b244f283449abd986e3a1baf79ee39e881ac2ac",
+   "sources": [
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', state_sink=state_sink)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "621cfe26a9c437b8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092905Z-00f710",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only caps the backoff wait at min_wait_seconds instead of max_wait_seconds. Stop, retry eligibility and reraise stay the same, so the attempt count and which failures get retried are unchanged. None of the listed requirements or criteria say anything about backoff timing.",
+   "response_sha256": "95618ad4f4da3ff9720e79e7d90e40f00bd4d114ce7bb637aaf4141248c613e4",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "attribute",
+  "prompt_sha256": "142bad1c8c256fa3f87584084634fad7c388e702f89e5a71b1826e155083ea56",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092914Z-588401",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "142bad1c8c256fa3f87584084634fad7c388e702f89e5a71b1826e155083ea56",
+   "reason": "The mutant replaces the maximum wait time for the exponential backoff with the minimum wait time. The provided requirements constrain which errors are eligible for retry and the maximum number of attempts, but they do not specify or bound the wait durations between attempts.",
+   "response_sha256": "cf5e90b765bc5f324b3bf73a859409b71ebfb24229fc24dd1cc88aa979220486",
+   "sources": [
+    "max=policy.max_wait_seconds,",
+    "max=policy.min_wait_seconds",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "7c23c1115ef38d7b": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092905Z-07c830",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops only the maximum backoff wait. It still uses the same stop_after_attempt(policy.max_attempts) and the same retry predicate, so the attempt count and which failures get retried do not change. The requirement only bounds attempts and retry eligibility. It says nothing about how long to wait between attempts, and the wait still stays finite because the attempt count is capped.",
+   "response_sha256": "e521cac68b63af74c766ce8657e47c51bfcd37b8690ef8574f389a7d2a0f4448",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "wait=wait_random_exponential(min=policy.min_wait_seconds)",
+    "max=policy.max_wait_seconds,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "4c62f552f2b9d1a40ca4349ccf16b5d2afb2a21a9d716daa0ec30a7c51cf242c",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092914Z-855434",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "4c62f552f2b9d1a40ca4349ccf16b5d2afb2a21a9d716daa0ec30a7c51cf242c",
+   "reason": "The requirements strictly bound the maximum number of retry attempts to prevent unbounded work, but they do not specify any constraints on the maximum wait duration between attempts. Falling back to a default maximum wait time does not violate the required attempt limits.",
+   "response_sha256": "77409e3428efde148c018fe144c07af5edfa5b1df31a1ddc172a73bddd17ab2a",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "wait=wait_random_exponential(min=policy.min_wait_seconds),"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "983ba1af56c61839": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092942Z-b59614",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the backoff cap max_wait_seconds; the stop condition stop_after_attempt(policy.max_attempts) is unchanged, so the attempt count the requirement bounds is the same. No requirement given covers wait duration, and waits stay finite because attempts are capped.",
+   "response_sha256": "a4ee32c3826ce691a00391b12c5e04662535d9009abceb618e2163b61c3ae260",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "wait=wait_random_exponential(min=policy.min_wait_seconds)",
+    "stop=stop_after_attempt(policy.max_attempts)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "2563c863ac15b907c140678bd6e16e7f8fa74b48d29e62a8c0fd647840867228",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093428Z-416a47",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "2563c863ac15b907c140678bd6e16e7f8fa74b48d29e62a8c0fd647840867228",
+   "reason": "The mutation removes the maximum wait time limit for the exponential backoff. While this changes the duration between attempts, no provided requirement specifies constraints on wait times or backoff limits; the requirements only constrain the maximum number of attempts and the eligibility of errors for retry.",
+   "response_sha256": "fc985263fd4da2e1d191ccdc858ca98a4fe9aea444732890829e8b9a80271ed2",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "max=policy.max_wait_seconds,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
  "a3f68e4f70d254ab": {
   "answer": {
    "backend": "claude-cli",
@@ -46,6 +517,125 @@
   },
   "prompt_sha256": "5e3e55965497b04063fd8f0681565d8d3ca395a0f34430c3badc0315743fc685"
  },
+ "bbfbe910308021a5": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092942Z-b2375f",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant changes only the minimum backoff wait from policy.min_wait_seconds to 0. The stop condition, the retry-eligibility predicate and reraise are unchanged. The requirement and its criterion cover only which failures are retried and the maximum number of attempts, and both stay the same.",
+   "response_sha256": "e9c630cc1cf5cb647836e79986f8458c8b3e3a11e7c4ad154cdfe41da8bfe21a",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "wait=wait_random_exponential(max=policy.max_wait_seconds)",
+    "min=policy.min_wait_seconds,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "d88311d7b72ca8d584f20f88df28b81042db47df6484333151f12bbe5b00720d",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093428Z-261447",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "d88311d7b72ca8d584f20f88df28b81042db47df6484333151f12bbe5b00720d",
+   "reason": "The mutant removes the minimum wait time parameter from the retry policy, defaulting it to zero. The provided requirements strictly govern the maximum attempt count and the conditions for retrying, but do not specify any constraints on the wait duration between attempts.",
+   "response_sha256": "5b46ca6990a2c928aaab99b64be80b73a1889389675fb160dbf82b311efc5bc9",
+   "sources": [
+    "min=policy.min_wait_seconds,",
+    "wait=wait_random_exponential(max=policy.max_wait_seconds)",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "c1a22602eac9f904": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000310Z-f8cf2b",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The only change is in the type annotation of state_sink, from Callable[[dict[str, Any]], None] to Callable[[], None]. Annotations are not enforced at runtime, so the Retrying policy is built the same way and makes the same number of attempts.",
+   "response_sha256": "41cd6bd396e909c0365980fdf48e26b78705c5917f540da77309ed6770d52db6",
+   "sources": [
+    "state_sink: Callable[[dict[str, Any]], None] | None = None,",
+    "state_sink: Callable[[], None] | None=None",
+    "provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "container",
+  "prompt_sha256": "874d42f3256353182b1191899984bc3f5a5b1eba2c115781adca1cf044bb8a49",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093428Z-54d446",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "874d42f3256353182b1191899984bc3f5a5b1eba2c115781adca1cf044bb8a49",
+   "reason": "The mutation only modifies the type hint for the `state_sink` argument. Since type hints are not enforced at runtime in Python, this change does not alter the execution behavior of the retry mechanism or the maximum attempt count limits.",
+   "response_sha256": "4b0fcd023fef140513958fe46a6fa61dbc070f1a8242a02cd080842ece7ce7a0",
+   "sources": [
+    "state_sink: Callable[[dict[str, Any]], None] | None = None",
+    "state_sink: Callable[[], None] | None=None",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "c7a67bc7b5efb364": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092942Z-2d44dc",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only raises the backoff wait's lower bound to max_wait_seconds. The stop rule (max attempts) and the retry predicate are unchanged, and each wait is still capped by max_wait_seconds. No requirement or criterion covers wait timing, only the attempt count and which failures can be retried.",
+   "response_sha256": "33425fd125a542358d04208fcba6aa513aa603b7540d28843eec1ddbffb44f1f",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds)",
+    "min=policy.min_wait_seconds,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "attribute",
+  "prompt_sha256": "6066f4c90d0f7af8953dc9cf93e0bc914e653243c45277dcd5a94b3de3e0debc",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093428Z-c579fc",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "6066f4c90d0f7af8953dc9cf93e0bc914e653243c45277dcd5a94b3de3e0debc",
+   "reason": "The provided requirements solely dictate the eligibility of failures for retry and the maximum attempt count. They do not specify the duration or backoff strategy of the wait between retries, making the change to the minimum wait time irrelevant to the stated requirements.",
+   "response_sha256": "78beb95e641fbf78ada2707effb0a65abd9ab61b7683e36d53f4e5908c10a042",
+   "sources": [
+    "Technical requirement TREQ_PROVIDER_RETRY_BOUNDS (Same-route provider retry is bounded): For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "min=policy.min_wait_seconds,",
+    "min=policy.max_wait_seconds"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
  "cdebfb831ae4dc16": {
   "answer": {
    "backend": "claude-cli",
@@ -79,5 +669,45 @@
    "source": "draft author"
   },
   "prompt_sha256": "447f0a36466c91255af9abf267191eccb17d8672f9884523262a3af6891c7150"
+ },
+ "fbd59874e7604ef8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T093534Z-1b7d0e",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the event_type label passed to the before_sleep logger. That can at most change the name of the retry-scheduled log or state event, and only if the default differs from the removed string. Stop, wait, retry eligibility and reraise stay the same, so the attempt bound and which failures get retried do not change.",
+   "response_sha256": "fc8019d9de3852c5e1a569a5ae39a85111272e40dd129e0f1b1045e5b5e4d504",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "event_type=\"llm_router.provider.retry.scheduled\",",
+    "before_sleep=build_retry_before_sleep_logger(logger, context_getter=context_getter, state_sink=state_sink)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "64712d348db91b7e06e3d4b14c87c352ed701405aedf26e7622e100209e5ea33",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093545Z-dc5dc8",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "64712d348db91b7e06e3d4b14c87c352ed701405aedf26e7622e100209e5ea33",
+   "reason": "The mutation removes the event_type argument from the logger callback, potentially changing the telemetry event name. This difference in logging observability does not alter the retry attempt bounds or the handling of transient versus permanent errors specified by the requirements.",
+   "response_sha256": "4c1ce927bff7af2c6cf716176ea9ce5de306c5766caf49efa18c1474805f1e4e",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "event_type=\"llm_router.provider.retry.scheduled\","
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  }
 }

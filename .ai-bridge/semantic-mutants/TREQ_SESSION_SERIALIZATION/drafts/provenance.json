@@ -1,0 +1,20 @@
+{
+ "SM-A96F2E5C": {
+  "kind": "model",
+  "call_id": "20260929T165720Z-f7d1ae",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "37629c4f981015a0e9b3d4c65077c94775ae645c604b0678b75745d18b939e44",
+  "attempt": 1
+ },
+ "SM-AE82B8CB": {
+  "kind": "model",
+  "call_id": "20260929T185123Z-4a4b6d",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "abf1a2624f9aeb878846e03e11e8c8fbc123246ff9c22c460ae90c263137cfbd",
+  "attempt": 1
+ }
+}

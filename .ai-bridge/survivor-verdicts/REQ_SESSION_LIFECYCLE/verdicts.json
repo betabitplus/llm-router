@@ -1,4 +1,156 @@
 {
+ "040c94eda75a331d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234957Z-97bbeb",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With no metadata passed, the mutant stores the remembered assistant turn with meta=None instead of an empty dict. A confirmed input shows this. The turn no longer has the normal dict metadata shape, so a later request that reads its metadata could fail. That breaks the rule that remembered turns stay available to later requests.",
+   "response_sha256": "07ee02ff5d1b8f56004d2fc71cb7798651cbe2e44c791cdf37044a5a64400d4f",
+   "sources": [
+    "Remembered turns shall be available to later requests",
+    "Remembered user/assistant turns precede the new message in the expected order.",
+    "meta=deepcopy({} if False else assistant_meta)",
+    "meta=deepcopy({} if assistant_meta is None else assistant_meta),"
+   ],
+   "test_focus": "Remember a turn without assistant_meta, then check that the stored assistant message's meta equals {} (not None) and that a later request replays the user/assistant turns in order.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.377032Z",
+   "answer_sha256": "91190f9197ae426c26711ddc1662e6566023138003fc1d977578a15a7a032f7f",
+   "call_id": "20260929T001300Z-8af4a6",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "91190f9197ae426c26711ddc1662e6566023138003fc1d977578a15a7a032f7f",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_040c94eda75a331d.py",
+   "response_sha256": "238a76027e1e3b5bdcf33ca797fe63a98ab84b96b00c967536ef8bd890092d59",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Session",
+    "Session.remember",
+    "Session.history",
+    "Session.build_messages"
+   ]
+  },
+  "prompt_sha256": "6f5f78f622c2637eb6379879d3090455f1e781fe603f5a2cdd0af78bddc254ec"
+ },
+ "214200bb10e1f588": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234957Z-ba21eb",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When a session has no system instruction, the mutant puts a None entry at the front of the outgoing transcript. The request then contains only the current user turn plus a spurious item, which breaks the transcript the requirement says a request must carry. Execution confirmed that the original returns ['User: ...'] and the mutant returns [None, 'User: ...'].",
+   "response_sha256": "7c95ae8d683a1ba17d12ffeda15c78f4efbbada841c480d8d3fb397ab7cc9bcb",
+   "sources": [
+    "One request can exclude prior history while retaining the system instruction and current user turn.",
+    "Remembered user/assistant turns precede the new message in the expected order.",
+    "if self._system:",
+    "if True:\n        messages.append(self._system)"
+   ],
+   "test_focus": "Build messages from a SessionStore with system=None, with and without history, and assert that the result has no None entry: it should be only the formatted history turns followed by the user turn.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.377760Z",
+   "answer_sha256": "9b790f8d8aadf22a247f1bf09d2d29582a2da3134fd65700119e80a04d7133b7",
+   "call_id": "20260929T001300Z-d21140",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "9b790f8d8aadf22a247f1bf09d2d29582a2da3134fd65700119e80a04d7133b7",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_214200bb10e1f588.py",
+   "response_sha256": "ca1c97360eb3d1542ced4f308e66ffb75c4bc8941c6c5bc16566f96226718d9d",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Session"
+   ]
+  },
+  "prompt_sha256": "b91c11500d02a38caa9a7a6ca4e9bb8b1d2d3e922cdc0d8d843f0e702edcc6b5"
+ },
+ "5fd031363386257e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235009Z-913222",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant changes only what happens when a session file can't be read: instead of SessionSerializationError, the caller gets an UnboundLocalError. REQ_SESSION_LIFECYCLE covers remembered turns, ignoring history, forks, clearing and concurrency, and none of these touches loading from disk. That load path is tagged to REQ_SESSION_PERSISTENCE, so a pin for it belongs there, not here.",
+   "response_sha256": "6aad2861289081d1c8aa30b06357fac38134a25a3a35b66eee93c2785bc39797",
+   "sources": [
+    "Remembered turns shall be available to later requests; a caller shall be able to ignore history for one request; forks shall diverge independently; clearing shall leave the session reusable; and concurrent requests shall not mix session state.",
+    "Clearing removes history and the same session can immediately accept a new turn.",
+    "raise SessionSerializationError(msg) from exc",
+    "# @impl Session persistence, IMPL_SESSION_PERSISTENCE, [REQ_SESSION_PERSISTENCE[revision==1]]"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "statement",
+  "prompt_sha256": "0e34ffce9e869c882add153c1d04e83fcf96f654e33d30e3e933bbf825924e2a",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T085951Z-59bae7",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "0e34ffce9e869c882add153c1d04e83fcf96f654e33d30e3e933bbf825924e2a",
+   "reason": "The mutant replaces the explicit session serialization error with a pass statement, which will cause an unbound local error when decoding the unassigned text variable. This alters the error handling for file IO during session loading, which relates to session persistence rather than the in-memory isolation, forking, and history management rules defined by the session lifecycle requirement.",
+   "response_sha256": "54528115dbd11839f2fc5f691431f250d2415a966337c2ae9787593034ffb99d",
+   "sources": [
+    "Requirement REQ_SESSION_LIFECYCLE (Session history remains explicit and isolated): Remembered turns shall be available to later requests; a caller shall be able to ignore history for one request; forks shall diverge independently; clearing shall leave the session reusable; and concurrent requests shall not mix session state.",
+    "raise SessionSerializationError(msg) from exc",
+    "pass"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "74a8e8713ff6d32b": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235017Z-abe83d",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant always stores an empty meta on the remembered assistant message, so a caller's assistant_meta is silently lost. The requirement says remembered turns must be available to later requests, and dropping the metadata leaves the turn only partly remembered. Execution confirmed the difference.",
+   "response_sha256": "46022bd878ee2ce18f3713db44ca5c8462d84ef1db02e465ab783f5ee2ac5fa5",
+   "sources": [
+    "Remembered turns shall be available to later requests",
+    "Remembered user/assistant turns precede the new message in the expected order.",
+    "meta=deepcopy({} if assistant_meta is None else assistant_meta),"
+   ],
+   "test_focus": "After remember(..., assistant_meta={...}), the remembered assistant message must carry an equal (deep-copied) meta, and passing None must give an empty meta.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "0a5a4740d37c7d0818f9a6463fabedb34e17ebbb8c95f7cd85b2c02f20c65575"
+ },
  "76471d519ce0db39": {
   "answer": {
    "backend": "claude-cli",
@@ -32,5 +184,132 @@
    "source": "draft author"
   },
   "prompt_sha256": "19a15e834aa81e1d8d6c7ac8234b855e694dae3d55aac9d3241ce7cddb96b9b5"
+ },
+ "77955ca3373db890": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235017Z-24d302",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant gives the fork a one-shot generator instead of a tuple of copied turns. After the fork's history is read once it is empty, so later requests lose remembered turns. The copying is also deferred, so the fork is not an independent snapshot. Both break the requirement that forks keep their history and diverge independently.",
+   "response_sha256": "036972d96ec40b964271cf5cc225f00cb26202bd38c04c2ec66a89f32fc50d2a",
+   "sources": [
+    "Remembered turns shall be available to later requests; a caller shall be able to ignore history for one request; forks shall diverge independently",
+    "Extending a fork changes only the fork; the source session remains unchanged.",
+    "forked._history = (_copy_message(message) for message in self._history)"
+   ],
+   "test_focus": "Fork a session that has turns, then read or send on the fork twice. Check that the fork's history is still a complete, re-readable sequence equal to the source's turns each time, and that the source stays unchanged.",
+   "verdict": "pin"
+  },
+  "operator": "conversion",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.378355Z",
+   "answer_sha256": "c87a6520dc5edf7c14125b99ea9568653a161b3709f087bf068d43fd0fed57e8",
+   "call_id": "20260929T001300Z-27c264",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "c87a6520dc5edf7c14125b99ea9568653a161b3709f087bf068d43fd0fed57e8",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_77955ca3373db890.py",
+   "response_sha256": "b3e7a8511deb29a12acea25bfd81acbb907986dfbf039f8f187a4d10429caa2c",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Session",
+    "llm_router._api.session.Session"
+   ]
+  },
+  "prompt_sha256": "96b203c126331248436a04f02db4308dbae7bdfe42b218e3e043196a7895a0d5"
+ },
+ "b38d6c310d61d789": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235017Z-228a59",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant throws away the caller's assistant_meta, so the remembered assistant turn has empty meta instead of what was supplied, as the executed input confirms. The requirement says remembered turns shall be available to later requests, and a turn missing its metadata is not fully available.",
+   "response_sha256": "046eb6746d7b7feb435fcae16110bf0bdfe07a086adb818b37be30d0a89f0dca",
+   "sources": [
+    "Remembered turns shall be available to later requests",
+    "meta=deepcopy({} if assistant_meta is None else assistant_meta),",
+    "assistant_message = ChatMessage(role='assistant', parts=(assistant_text,))"
+   ],
+   "test_focus": "After remember(user, text, assistant_meta={...}), the assistant message in history must carry meta equal to the supplied dict, as a separate copy.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.378872Z",
+   "answer_sha256": "5cb5d6d7847d268ca23e9cadf265160153ceb94204e07030b5c6ef2091b716f0",
+   "call_id": "20260929T001300Z-a7af34",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "5cb5d6d7847d268ca23e9cadf265160153ceb94204e07030b5c6ef2091b716f0",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_b38d6c310d61d789.py",
+   "response_sha256": "05de8019ac195ad850c377f733e33f1f18a0cc472cf5d3a384d814f97999e54d",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Session",
+    "llm_router._api.session.Session.remember",
+    "llm_router._api.session.Session.history"
+   ]
+  },
+  "prompt_sha256": "43b70eae5092020e5babb19c9231078c5fc0afd03c7e7756dd2f81d6f7b68b46"
+ },
+ "cfdaa730a0d7b1f8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T090028Z-9be2c4",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Dropping encoding=\"utf-8\" can change decoding on platforms whose default encoding isn't UTF-8, so the mutant is not strictly equivalent. However, file decoding belongs to session persistence (the method is tagged REQ_SESSION_PERSISTENCE), not to anything REQ_SESSION_LIFECYCLE asks for: turn order, ignoring history, forks, clearing or concurrency. The added parentheses around the generator expression have no effect.",
+   "response_sha256": "125c1626177194b95c3b4470332c34b9451cdf76dfce0aa40cc1e02abfe45cd2",
+   "sources": [
+    "text = session_path.read_text(encoding=\"utf-8\")",
+    "# @impl Session persistence, IMPL_SESSION_PERSISTENCE, [REQ_SESSION_PERSISTENCE[revision==1]]",
+    "Remembered turns shall be available to later requests; a caller shall be able to ignore history for one request; forks shall diverge independently; clearing shall leave the session reusable; and concurrent requests shall not mix session state."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "ba3baed963e5c3b6b5aeb1248d0adda6304151b7168ab10948db43e147504a9d",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T090042Z-174b5e",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "ba3baed963e5c3b6b5aeb1248d0adda6304151b7168ab10948db43e147504a9d",
+   "reason": "The mutant removes the explicit UTF-8 encoding when reading the session file, altering behavior on systems where UTF-8 is not the default. This difference pertains to session persistence and file I/O, not the explicit isolation and concurrency of session history that the requirement demands.",
+   "response_sha256": "30a4da5e3d6e451c7aa8f9ff3a2a2f93f849310f6f173a41c364a4fdd3d37cb0",
+   "sources": [
+    "Requirement REQ_SESSION_LIFECYCLE (Session history remains explicit and isolated)",
+    "text = session_path.read_text(encoding=\"utf-8\")"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  }
 }

@@ -1,0 +1,166 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_PROVIDER_RETRY",
+ "proposals": [
+  {
+   "id": "SM-18DD0A73",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Permanent (non-retryable) provider failures get an extra 'last chance' provider call after the retry loop, so they produce two provider interactions instead of exactly one.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "37a5cffa1669b5ed26ad0beef087a26570dd9a3378238d0fd138b91a9bbf0e53",
+   "prompt_sha256": "6325d5daff1736b3f211ce4f5bc07c8040048c10cddc2cc8eaa12144e041c1ff",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )\n        try:\n            for attempt in retrying:\n                with attempt:\n                    return adapter.execute(request)\n        except Exception as exc:\n            if is_retryable_provider_error(exc):\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n            else:\n                try:\n                    return adapter.execute(request)\n                except Exception as final_exc:\n                    raise _provider_boundary_error(\n                        final_exc, request=request\n                    ) from final_exc\n            raise _provider_boundary_error(exc, request=request) from exc\n        msg = \"Provider retry loop ended without a result.\"\n        raise RuntimeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-adfd04",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "8417e55263d1ddf144aba08041a23a25d53b6551084fb7534677fc17a80ef2c5",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-253EDA16",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Provider errors are converted to boundary errors inside the retry attempt, so the retry machinery sees a wrapped, non-transient error and never retries retryable status/transport failures on the same route.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "37a5cffa1669b5ed26ad0beef087a26570dd9a3378238d0fd138b91a9bbf0e53",
+   "prompt_sha256": "6325d5daff1736b3f211ce4f5bc07c8040048c10cddc2cc8eaa12144e041c1ff",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )\n        try:\n            for attempt in retrying:\n                with attempt:\n                    try:\n                        return adapter.execute(request)\n                    except Exception as inner:\n                        raise _provider_boundary_error(\n                            inner, request=request\n                        ) from inner\n        except Exception as exc:\n            if is_retryable_provider_error(exc):\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n            raise _provider_boundary_error(exc, request=request) from exc\n        msg = \"Provider retry loop ended without a result.\"\n        raise RuntimeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-adfd04",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "8417e55263d1ddf144aba08041a23a25d53b6551084fb7534677fc17a80ef2c5",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-67DDA542",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Removing the retry loop completely, bypassing the retry mechanism for transient errors.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "1c60ab8dcfeea6969d8c2badc67a71d8fbb0efca94e691ca5d5f6d97b66e70eb",
+   "prompt_sha256": "651cfcfa3de66a06f469fc66a65a077f543f01153c03499269fdf6ad907624b2",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        try:\n            return adapter.execute(request)\n        except Exception as exc:\n            if is_retryable_provider_error(exc):\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n            raise _provider_boundary_error(exc, request=request) from exc",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-6ba5b4",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "aa6ef7fbcc9b766840c31aed01ccd691952088ff966773b282541fe55d35c40c",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-D8AD8F65",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Omitting the 'with attempt:' context manager inside the tenacity loop, which prevents the retry library from catching and handling exceptions for retries.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "1c60ab8dcfeea6969d8c2badc67a71d8fbb0efca94e691ca5d5f6d97b66e70eb",
+   "prompt_sha256": "651cfcfa3de66a06f469fc66a65a077f543f01153c03499269fdf6ad907624b2",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )\n        try:\n            for attempt in retrying:\n                return adapter.execute(request)\n        except Exception as exc:\n            if is_retryable_provider_error(exc):\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n            raise _provider_boundary_error(exc, request=request) from exc\n        msg = \"Provider retry loop ended without a result.\"\n        raise RuntimeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-6ba5b4",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "aa6ef7fbcc9b766840c31aed01ccd691952088ff966773b282541fe55d35c40c",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-42893776",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Permanent (non-retryable) provider failures trigger an extra 'last chance' adapter.execute call after the retry loop, causing a second provider interaction.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "7c919d8fc8962be2fcfde230358944d09eec601aab6f038a4a29c04d0c02a0e3",
+   "prompt_sha256": "82e50c1c3fb7c31992f910010c196fc96f03227890a0b7cba7a2bf987e0efda3",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )\n        try:\n            for attempt in retrying:\n                with attempt:\n                    return adapter.execute(request)\n        except Exception as exc:\n            if is_retryable_provider_error(exc):\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n            else:\n                try:\n                    return adapter.execute(request)\n                except Exception as second_exc:\n                    raise _provider_boundary_error(second_exc, request=request) from second_exc\n            raise _provider_boundary_error(exc, request=request) from exc\n        msg = \"Provider retry loop ended without a result.\"\n        raise RuntimeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-f2a94d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "66f5fdec1481b429c12fb373325287172a0d0c50ab17b346ded4631e693399d5",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-E190AD39",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "The whole retrying loop is re-run with a fresh retry controller when the error is not classified retryable, so permanent failures are re-sent to the provider and retried as if transient.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "7c919d8fc8962be2fcfde230358944d09eec601aab6f038a4a29c04d0c02a0e3",
+   "prompt_sha256": "82e50c1c3fb7c31992f910010c196fc96f03227890a0b7cba7a2bf987e0efda3",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        last_exc: Exception | None = None\n        for _round in range(2):\n            retrying = build_provider_retrying(\n                policy=self._config.retry_policy,\n                logger=logger,\n                context_getter=lambda: _retry_context(request),\n            )\n            try:\n                for attempt in retrying:\n                    with attempt:\n                        return adapter.execute(request)\n            except Exception as exc:\n                last_exc = exc\n                if is_retryable_provider_error(exc):\n                    break\n        exc = last_exc\n        if exc is not None:\n            if is_retryable_provider_error(exc):\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n            raise _provider_boundary_error(exc, request=request) from exc\n        msg = \"Provider retry loop ended without a result.\"\n        raise RuntimeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-f2a94d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "66f5fdec1481b429c12fb373325287172a0d0c50ab17b346ded4631e693399d5",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-9293EBCA",
+   "class": "interface.error-status",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "an error the interface must report comes out with the wrong type or status, or not at all",
+   "rationale": "Exceptions are no longer converted through _provider_boundary_error: the raw provider exception is re-raised, so callers get the wrong error type/status for provider failures.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "4bfe408f980593890795a3be6723d3b885fce7103e9ddd0b5950cff4092e19ae",
+   "prompt_sha256": "08dc4777060563c93c6b1ecd056f1453fb0f8b42fe0f41f916fa530f47ff8970",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )\n        try:\n            for attempt in retrying:\n                with attempt:\n                    return adapter.execute(request)\n        except Exception as exc:\n            if is_retryable_provider_error(exc):\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n                raise _provider_boundary_error(exc, request=request) from exc\n            raise\n        msg = \"Provider retry loop ended without a result.\"\n        raise RuntimeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-410707",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "448cf2d434813ef6ccb20ae0e8bab293846d853edee0a8ff2c6b5e99aea25e86",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-2B101E3C",
+   "class": "interface.error-status",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "an error the interface must report comes out with the wrong type or status, or not at all",
+   "rationale": "Errors are swallowed when the retry loop ends without a result: on exception in a non-retryable case the function falls through and returns None-like/raises generic RuntimeError instead of the mapped boundary error, hiding permanent failures with the wrong type.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "4bfe408f980593890795a3be6723d3b885fce7103e9ddd0b5950cff4092e19ae",
+   "prompt_sha256": "08dc4777060563c93c6b1ecd056f1453fb0f8b42fe0f41f916fa530f47ff8970",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )\n        try:\n            for attempt in retrying:\n                with attempt:\n                    return adapter.execute(request)\n        except Exception as exc:\n            if is_retryable_provider_error(exc):\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n                raise _provider_boundary_error(exc, request=request) from exc\n        msg = \"Provider retry loop ended without a result.\"\n        raise RuntimeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-410707",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "448cf2d434813ef6ccb20ae0e8bab293846d853edee0a8ff2c6b5e99aea25e86",
+    "index": 1
+   }
+  }
+ ]
+}

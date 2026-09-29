@@ -1,0 +1,80 @@
+{
+ "SM-87B84725": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))",
+     "model": "Model.GEMINI_FLASH.value"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-1679d9",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "If the input model is a valid string, the original version correctly checks if the resolved Enum is in config.models, whereas the changed version checks if the string is in config.models, which evaluates to False for standard Enums and incorrectly raises a ConfigurationError.",
+    "response_sha256": "32343408396cdcac16c7e58dd74c92ef5e31267e5896532919f193476d3d9e89",
+    "sources": [
+     "    if resolved not in config.models:",
+     "    if model not in config.models:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-d5ef5b",
+    "confidence": 0.7,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed check looks up the raw input instead of the resolved member, which only matters for string input, and it appears to behave the same if Model is a str-based enum, where the value string hashes and compares equal to its member. That is an assumption, since the enum's base class isn't shown. If Model were a plain Enum, valid string inputs would differ, but the passing tests make that unlikely.",
+    "response_sha256": "c8350b543dd6f186a3fc50f6ba2322267e51fc0be1f9ffcc8e1bb7e153a71f5c",
+    "sources": [
+     "if model not in config.models:",
+     "if resolved not in config.models:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "d2e0bd5f634a6a0a0523b5e9ccd54163ae9701bae35a01e03ceed8d4e1af2ce9"
+ },
+ "SM-8D7935BF": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH_LITE, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(models={}))",
+     "model": "Model.GEMINI_FLASH_LITE.value"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-7b181c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When the input `model` is passed as a string, the changed version skips the check against `config.models` and incorrectly returns the resolved model, whereas the original version performs the check and raises a `ConfigurationError`.",
+    "response_sha256": "8096d9f773521ff4c93a481d7d0268a54cf533e680347a6d0e9fbc2e459156cf",
+    "sources": [
+     "    else:\n        try:\n            resolved = Model(model)\n        except ValueError as exc:\n            msg = f\"Unknown model: {model}\"\n            raise ConfigurationError(msg) from exc\n    if resolved not in config.models:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(models={}))",
+     "model": "Model.GEMINI_FLASH.value"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-67a28b",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a string naming a valid Model that is absent from config.models, the original raises ConfigurationError, while the changed version skips the membership check for strings and returns the Model.",
+    "response_sha256": "356970b7243eb2344dce2055ef316f67c47759fad4d98a302751c6f3371cf863",
+    "sources": [
+     "if resolved not in config.models:",
+     "resolved = Model(model)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "c51b1a8a57723584cd1f6405cd43cae0c7906ef2bace72d3570d5c0fd27e33b8"
+ }
+}

@@ -71,6 +71,20 @@ and trace ordering, not fidelity of provider reasoning.
 | Architecture          | This Requirement constrains observable routing behavior rather than a particular internal layering topology.                                                                       |
 | Specification / model | Successful fallback, failure-mechanism partitions, failed→successful trace order, and the last route's error when every route fails are all normative semantics.                   |
 
+### Semantic mutants
+
+| Fault class                        | Target                                                                | Budget | Risk                                                                                      |
+| ---------------------------------- | --------------------------------------------------------------------- | -----: | ----------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/runtime/router.py::RouterRuntime._run_sync` |      2 | a result its requirement or criteria name is computed or chosen wrongly                   |
+| `spec.missing-partition`           | `src/llm_router/_internal/runtime/router.py::RouterRuntime._run_sync` |      2 | one input partition its requirement or criteria name is no longer handled as they say     |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/runtime/router.py::RouterRuntime._run_sync` |      2 | an order or a before/after boundary its requirement names is broken                       |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/router.py::RouterRuntime._run_sync` |      2 | an external interaction its requirement rules out happens anyway                          |
+| `interface.error-status`           | `src/llm_router/_internal/runtime/router.py::RouterRuntime._run_sync` |      2 | an error the interface must report comes out with the wrong type or status, or not at all |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-req-route-timeout-fallback)=
 
 ## Profile · REQ_ROUTE_TIMEOUT_FALLBACK
@@ -130,6 +144,19 @@ external provider fidelity.
 | Interface / protocol  | Timeout must not create an extra route interaction beyond the declared fallback/terminal topology.                                                                                                |
 | Architecture          | The contract does not prescribe a particular timeout implementation layer.                                                                                                                        |
 | Specification / model | Fallback-vs-terminal and sync-vs-async partitions plus timeout-before-next-attempt ordering are normative.                                                                                        |
+
+### Semantic mutants
+
+| Fault class                        | Target                                                                              | Budget | Risk                                                                                  |
+| ---------------------------------- | ----------------------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`           | `src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout` |      2 | an order or a before/after boundary its requirement names is broken                   |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout` |      2 | an external interaction its requirement rules out happens anyway                      |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
 
 (verification-profile-req-route-attempt-limit)=
 
@@ -256,6 +283,21 @@ Surrogate/L0 evidence for the public routing-order claim.
 | Architecture          | No internal layering topology is normative for the public sticky-start outcome.                                                                    |
 | Specification / model | The visible next-start outcome and before/after ordering define the Requirement; broader route-order partitions belong to the TREQ/Feature levels. |
 
+### Semantic mutants
+
+| Fault class                        | Target                                                                                 | Budget | Risk                                                                    |
+| ---------------------------------- | -------------------------------------------------------------------------------------- | -----: | ----------------------------------------------------------------------- |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/runtime/router.py::RouterRuntime._next_attempt_order`        |      2 | a result its requirement or criteria name is computed or chosen wrongly |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/runtime/router.py::RouterRuntime._remember_fallback_success` |      2 | a result its requirement or criteria name is computed or chosen wrongly |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/runtime/router.py::RouterRuntime._next_attempt_order`        |      2 | an order or a before/after boundary its requirement names is broken     |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/runtime/router.py::RouterRuntime._remember_fallback_success` |      2 | an order or a before/after boundary its requirement names is broken     |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/router.py::RouterRuntime._next_attempt_order`        |      2 | an external interaction its requirement rules out happens anyway        |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/router.py::RouterRuntime._remember_fallback_success` |      2 | an external interaction its requirement rules out happens anyway        |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-treq-route-order)=
 
 ## Profile · TREQ_ROUTE_ORDER
@@ -312,6 +354,17 @@ without an external dependency or surrogate model.
 | Interface / protocol  | Provider interaction order is verified at the parent/Feature level, not by this local technical contract.                                 |
 | Architecture          | Route ordering does not require a particular package-layer edge.                                                                          |
 | Specification / model | Missing ordering partitions or wrong before/after ordering directly invalidate the technical invariant set.                               |
+
+### Semantic mutants
+
+| Fault class                    | Target                                                       | Budget | Risk                                                                                  |
+| ------------------------------ | ------------------------------------------------------------ | -----: | ------------------------------------------------------------------------------------- |
+| `spec.missing-partition`       | `src/llm_router/_internal/runtime/routes.py::ordered_routes` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.wrong-ordering-boundary` | `src/llm_router/_internal/runtime/routes.py::ordered_routes` |      2 | an order or a before/after boundary its requirement names is broken                   |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
 
 (verification-profile-req-rate-limit-routing)=
 
@@ -380,6 +433,18 @@ Requirement claims local availability policy and externally visible interaction 
 | Interface / protocol  | A blocked route must not be contacted and provider error status is a concrete public failure source.                                 |
 | Architecture          | No internal layering edge is itself part of the direct public Requirement.                                                           |
 | Specification / model | A wrong visible routing outcome invalidates the Requirement; detailed state/ordering partitions belong to TREQ profiles.             |
+
+### Semantic mutants
+
+| Fault class                        | Target                                                                       | Budget | Risk                                                                                      |
+| ---------------------------------- | ---------------------------------------------------------------------------- | -----: | ----------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/runtime/router.py::RouterRuntime._prepare_request` |      2 | a result its requirement or criteria name is computed or chosen wrongly                   |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/router.py::RouterRuntime._prepare_request` |      2 | an external interaction its requirement rules out happens anyway                          |
+| `interface.error-status`           | `src/llm_router/_internal/runtime/router.py::RouterRuntime._prepare_request` |      2 | an error the interface must report comes out with the wrong type or status, or not at all |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
 
 (verification-profile-treq-rate-limit-state)=
 
@@ -492,6 +557,16 @@ controlled clock/state setup and no external dependency.
 | Architecture          | No package-layer topology is normative for the cooldown rule.                                                            |
 | Specification / model | A wrong blocked/unblocked outcome at the threshold directly violates the policy.                                         |
 
+### Semantic mutants
+
+| Fault class          | Target                                                                     | Budget | Risk                                                                    |
+| -------------------- | -------------------------------------------------------------------------- | -----: | ----------------------------------------------------------------------- |
+| `spec.wrong-outcome` | `src/llm_router/_internal/runtime/limiter.py::LimiterState.record_failure` |      2 | a result its requirement or criteria name is computed or chosen wrongly |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-treq-rate-limit-availability-selection)=
 
 ## Profile · TREQ_RATE_LIMIT_AVAILABILITY_SELECTION
@@ -548,3 +623,14 @@ availability ordering, not provider semantic fidelity.
 | Interface / protocol  | Contacting a blocked candidate while an immediately available alternative exists is a forbidden interaction.                          |
 | Architecture          | Availability-aware selection must consult limiter state; bypassing that layer recreates avoidable waiting.                            |
 | Specification / model | Earliest-availability and available-before-wait ordering are the normative technical semantics.                                       |
+
+### Semantic mutants
+
+| Fault class                        | Target                                                                              | Budget | Risk                                                                |
+| ---------------------------------- | ----------------------------------------------------------------------------------- | -----: | ------------------------------------------------------------------- |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/runtime/router.py::RouterRuntime._select_blocked_request` |      2 | an order or a before/after boundary its requirement names is broken |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/router.py::RouterRuntime._select_blocked_request` |      2 | an external interaction its requirement rules out happens anyway    |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.

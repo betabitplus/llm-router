@@ -1,0 +1,198 @@
+{
+ "369e66334b7d7d71": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092140Z-2346b6",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For local video clips, the mutant replaces the caller's start_offset with end_offset. That collapses the requested segment to zero length or the wrong range, so the provider no longer analyses the clip it was given. The URL path keeps the correct offsets, so local-file and remote-URL behaviour now differ.",
+   "response_sha256": "4cce41c596fefcc77eef9ae1dd7102a48c94e92d503399fcbe25dce24f63ed67",
+   "sources": [
+    "Provider routes that declare support for a specific video input form shall accept that supported form and return structured output grounded in video content.",
+    "Every video-capable adapter family accepts the retained local clip and returns schema-valid action/location facts grounded in it.",
+    "return VideoFileMedia(kind='video_file', path=value.path, fps=value.fps, start_offset=value.end_offset, end_offset=value.end_offset)"
+   ],
+   "test_focus": "Pass a VideoSchema whose start_offset differs from end_offset through describe_media or a local-video adapter. Check that the resulting descriptor or request keeps the original start_offset and does not reuse end_offset.",
+   "verdict": "pin"
+  },
+  "operator": "attribute",
+  "prompt_sha256": "3bbedd3e03c6bafef66a88719515930936b700b4b40677bc942f47c929e254ac"
+ },
+ "62173758417ffc7d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000259Z-d08da3",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant changes only how an unsupported value fails: it raises AttributeError where the original raises TypeError. Supported local-file and remote-URL video inputs are still turned into the same descriptors. The requirement only asks that supported forms be accepted and grounded, and says nothing about how unsupported values are rejected.",
+   "response_sha256": "a39ff590393afb260eda16c71a2b4b3bb0f245b6ae26139342695914c598b059",
+   "sources": [
+    "Provider routes that declare support for a specific video input form shall accept that supported form and return structured output grounded in video content.",
+    "if True:",
+    "    if isinstance(value, VideoUrlSchema):"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "a6501bb743249ecea2a515fbffcc045e83a9c3535fa561e4f5523652c28cc6d1",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092151Z-1bc59c",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "a6501bb743249ecea2a515fbffcc045e83a9c3535fa561e4f5523652c28cc6d1",
+   "reason": "The requirement specifies that supported video input forms must be accepted, but it does not mandate specific error handling or rejection behavior for unsupported input types.",
+   "response_sha256": "ac18c5e7f944581c5d6b3823f0361abe423a95650ebb1eb938d5da16fad1ae0b",
+   "sources": [
+    "Provider routes that declare support for a specific video input form shall accept that supported form",
+    "if isinstance(value, VideoUrlSchema):"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "68771b7b6b05d78f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092217Z-d0ccec",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For local video, the mutant replaces the requested end offset with the start offset. A clip that asks for a segment collapses to zero length or the wrong range, so the provider no longer accepts the clip the caller specified. Its output also stops being grounded in that clip's content.",
+   "response_sha256": "837d2c1473bab23aa68746b260efe0f59df796648bcdcf3306b67ac3682e8b73",
+   "sources": [
+    "Provider routes that declare support for a specific video input form shall accept that supported form and return structured output grounded in video content.",
+    "Every video-capable adapter family accepts the retained local clip and returns schema-valid action/location facts grounded in it.",
+    "return VideoFileMedia(kind='video_file', path=value.path, fps=value.fps, start_offset=value.start_offset, end_offset=value.start_offset)"
+   ],
+   "test_focus": "Call describe_media on a VideoSchema whose start_offset and end_offset differ. Check that the returned VideoFileMedia keeps end_offset equal to the input's end_offset.",
+   "verdict": "pin"
+  },
+  "operator": "attribute",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.608850Z",
+   "answer_sha256": "73e1f2a8df98dfb4aae79e3386122625554e49d4bbf533d6cddcf740b4b26200",
+   "call_id": "20260929T100341Z-6d1b0f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "974551607b97605a9a10f0cd802a9b1b09c1ac9c8bbb746f819ceda4c1895460",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_video_input_68771b7b6b05d78f.py",
+   "response_sha256": "e9117d71fe74f8ad4f184ac0f511278efad7bdf20f64751fd8e88c41818bd48d",
+   "source": "draft author",
+   "sources": [
+    "llm_router.VideoSchema",
+    "llm_router._internal.capabilities.media.describe_media",
+    "tests.llm_router.support.builders.get_llm_router_test_data_path"
+   ]
+  },
+  "prompt_sha256": "7fc4ae8bf614d33ff6baae208455946f93d7b9bec95ad2b653f1a5d668e81856"
+ },
+ "8ba45c4ec318c00e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092217Z-bcb30b",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For remote video, the mutant sets start_offset to the caller's end_offset. Whenever the two offsets differ, the provider gets an empty or wrong segment, so the output is no longer grounded in the video the caller asked about. The requirement asks that remote-URL video be accepted and give output grounded in that video, so this change breaks it.",
+   "response_sha256": "a37afd9c9893997d8c7e697c98df72903f0a5ef87abd240cd9478cc6c4105163",
+   "sources": [
+    "Every remote-video-capable adapter family accepts the retained remote URL and returns the same public structured-result contract grounded in the remote video.",
+    "return structured output grounded in video content",
+    "return VideoUrlMedia(kind='video_url', url=value.url, fps=value.fps, start_offset=value.end_offset, end_offset=value.end_offset)"
+   ],
+   "test_focus": "Describe a VideoUrlSchema with distinct start_offset and end_offset, then assert that the VideoUrlMedia descriptor keeps start_offset equal to the input start_offset, not the end_offset.",
+   "verdict": "pin"
+  },
+  "operator": "attribute",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.922015Z",
+   "answer_sha256": "ac0b940ea81cba98cf0b439e67c790b922230c38cb3d7dced85283a1bbdb9e4e",
+   "call_id": "20260929T114734Z-561dc3",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "d276e4ca19e41d00b4c6e23c186fe6c9e40fc7d166da3b812565f739b65d3eb5",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_video_input_8ba45c4ec318c00e.py",
+   "response_sha256": "abc431526cbbcfc817fed48e6e6c4d48b39d7cf9eabebe0b6a0a8048ad7919ca",
+   "source": "draft author",
+   "sources": [
+    "llm_router.VideoUrlSchema",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "llm_router._internal.capabilities.media.VideoUrlMedia"
+   ]
+  },
+  "prompt_sha256": "5acc234463a6803d41c8c81df8675e2af2e52c28738cbe6937a601933cb90923"
+ },
+ "a6b4e513b6f3bf73": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092217Z-c8a802",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For remote videos the mutant replaces the caller's end_offset with start_offset. That collapses or distorts the requested clip, so the provider no longer receives the video segment the caller asked for, and the output is not grounded in that remote video. The local-file branch is unchanged, so only the remote-URL form is affected.",
+   "response_sha256": "ff2d75ef75674fe53fdc3bcb8cc16fc32a5502dc1048c4c1b7107c8149e695eb",
+   "sources": [
+    "Every remote-video-capable adapter family accepts the retained remote URL and returns the same public structured-result contract grounded in the remote video.",
+    "Provider routes that declare support for a specific video input form shall accept that supported form and return structured output grounded in video content.",
+    "return VideoUrlMedia(kind='video_url', url=value.url, fps=value.fps, start_offset=value.start_offset, end_offset=value.start_offset)"
+   ],
+   "test_focus": "Normalize a VideoUrlSchema with different start_offset and end_offset, then check that the VideoUrlMedia's end_offset equals the input end_offset and that the offsets reach the provider request.",
+   "verdict": "pin"
+  },
+  "operator": "attribute",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.922852Z",
+   "answer_sha256": "4adef11b2b013ac1b70b7f139b06f4f68e3ec33e9a1e5b43071e29bcd165df7d",
+   "call_id": "20260929T114737Z-587301",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "ca5a457b2715bedcb7db236156adbe0dc5f6b0a0507f2be1d061a5aa369ee0b7",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_video_input_a6b4e513b6f3bf73.py",
+   "response_sha256": "53adc953c5147b00ba5f8f290047b02edc8e1379a42ea5ce66dafb4624e59790",
+   "source": "draft author",
+   "sources": [
+    "llm_router.VideoUrlSchema",
+    "llm_router._internal.capabilities.media.VideoUrlMedia",
+    "tests.llm_router.support.builders.build_test_video_url"
+   ]
+  },
+  "prompt_sha256": "6352e73c0e6514e1e739aaa80db328a2e1174af7ee59735a163502fd1bbc3333"
+ }
+}

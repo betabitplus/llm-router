@@ -130,6 +130,26 @@
    "context_sha256": "calibration-context",
    "replacement": "def double(value: int) -> int:\n    return value << 1",
    "expected": "undecided"
+  },
+  {
+   "id": "C-HANGS",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::Record.summary",
+   "risk": "the call never returns",
+   "original_sha256": "fea2812375ac226e1a7ce45a8c6b81a5d621137bedc08a0ce53c70e274119704",
+   "context_sha256": "calibration-context",
+   "replacement": "    def summary(self) -> dict[str, object]:\n        \"\"\"Safe fields only: the secret never appears.\"\"\"\n        while True:\n            pass",
+   "expected": "caught"
+  },
+  {
+   "id": "C-REPEATED",
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::Record.summary",
+   "risk": "the secret or a wrong value becomes observable",
+   "original_sha256": "fea2812375ac226e1a7ce45a8c6b81a5d621137bedc08a0ce53c70e274119704",
+   "context_sha256": "calibration-context",
+   "replacement": "    def summary(self) -> dict[str, object]:\n        # The same mutant as C-CAUGHT, only written another way.\n        fields: dict[str, object] = {\n            \"name\": self.name,\n            \"secret\": self.secret,\n        }\n        if self.level > 2:\n            fields[\"level\"] = self.level\n        return fields",
+   "expected": "duplicate"
   }
  ],
  "judgement_answers": {

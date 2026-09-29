@@ -1,0 +1,2961 @@
+{
+ "01fd76634a96fdbd": [
+  {
+   "at": "2026-09-29T10:38:22.578231Z",
+   "call_id": "20260929T094858Z-5c558c",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "f00c46f86afd134ec2e8809341cdd87e17b009d503bd53db471acf107d1db8dd",
+   "reason": "it does not pass on the original 5 times in a row (pytest: ValueError: response_schema mapping must describe a JSON object.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538428Z",
+   "call_id": "20260929T105401Z-1e9c01",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "2213840a4ebc9646b8bf461a44b1abb8ebc82874aafb2c212216f758b61c9eca",
+   "reason": "",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._api.types.LLMRouterResponse",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.RootModel"
+   ]
+  }
+ ],
+ "0ddb26b38c02ad8c": [
+  {
+   "at": "2026-09-29T10:38:22.578243Z",
+   "call_id": "20260929T094858Z-7c1b74",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "2ae486b368d3502cb311d6b19ba70df850570786b3ed986e4a18d6458822be70",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "1045c8ab17c9edbd": [
+  {
+   "at": "2026-09-29T10:38:22.578246Z",
+   "call_id": "20260929T094858Z-f9b647",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "bdd6538f168a5ef01419c6bf35a4b3b483445aa03f64fccb2626e96a4d662d3a",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538452Z",
+   "call_id": "20260929T105401Z-85423e",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "b598c991c873f9d18ff48622aa835df5bc4098dbd9d3dffb1aed45b67d2dcad3",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889430Z",
+   "call_id": "20260929T114718Z-0d10d0",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "56884e5d864c0d24f244edb3efcafba9bfb43fce2fc3a4d25ebc18978a7e9874",
+   "reason": "it breaks the project's lint rules (ruff: line 51: PERF401 Use `list.extend` to create a transformed list); it imports llm_router._api.errors",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router._api.errors.ProviderError",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.583489Z",
+   "call_id": "20260929T120217Z-445307",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c8309f42c0a85d5ee11f668da456561b08456ae87f75658bdd8e3a4abf14e9dc",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.ProviderError",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ]
+  }
+ ],
+ "11a288f4bd5f641d": [
+  {
+   "at": "2026-09-29T10:38:22.578253Z",
+   "call_id": "20260929T094937Z-3d90e4",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "53a02865ad75df994a8abc52246acd6d720073044ac94498a18112e12ba65f63",
+   "reason": "it does not pass on the original 5 times in a row (pytest: ValueError: response_schema mapping must describe a JSON object.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "1d475cc4b98b3b39": [
+  {
+   "at": "2026-09-29T11:47:11.538670Z",
+   "call_id": "20260929T112151Z-69d22b",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e2a2e4474dfbaed9d3759c10c2d4b608f4955dd4658323d3ebfa63b9c0318e56",
+   "reason": "it does not fail on the mutant: of the changed lines 214\u2013221 it runs lines 218 and 221 but never lines 214 and 219",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889459Z",
+   "call_id": "20260929T114718Z-bdcb46",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "50cebc477fdd8a0fe00cae32112486d806a3a88db1404cd689244a492b481fde",
+   "reason": "it does not fail on the mutant: of the changed lines 214\u2013221 it runs lines 218 and 221 but never lines 214 and 219",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.583508Z",
+   "call_id": "20260929T120217Z-24c265",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5e5b858b77fdba1e9bff3e2db447b862cbbd9f9dc1d622589d64c54a07bd8c43",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "21276b664ad25fd0": [
+  {
+   "at": "2026-09-29T10:38:22.578257Z",
+   "call_id": "20260929T095330Z-c68968",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "8cd6f404d5517bc8d8c4884a2677ded1983f83462630e5da665fdbd649d4a3b4",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.RootModel"
+   ]
+  }
+ ],
+ "245b3268fc24b414": [
+  {
+   "at": "2026-09-29T10:38:22.578267Z",
+   "call_id": "20260929T095325Z-5a19d5",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "c50aa6ff61eb35ea73801a6803667a1ac63956f2821c8a8e0345c9670c2f8285",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538480Z",
+   "call_id": "20260929T105401Z-ceca35",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "dae36963aee91daaf4171bfe1a05b5bf8515827fdec565b3fc279ceeb942c210",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 209\u2013219",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889503Z",
+   "call_id": "20260929T114718Z-df2f0c",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "be722d321e723e144a5e506639b6addff645b3ffd4a1a327c6e38afd05acc452",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "25bba4d0464eefdd": [
+  {
+   "at": "2026-09-29T10:38:22.578271Z",
+   "call_id": "20260929T095053Z-40de09",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "7ff5a6ae1b8fa6795ffbd79741a07e0888be3517c5399abd769b634fa5afc92e",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "2c420db103b29600": [
+  {
+   "at": "2026-09-29T10:38:22.578277Z",
+   "call_id": "20260929T095113Z-96d489",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "80dcf100ddf539dbb946cb5eebbab08ab6f9623c3c16b206dfd57f44a1da5628",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert '```json\\n[\"p..., \"dev\"]\\n```' == '[\"prod\", \"staging\", \"dev\"]' | + ```json | - [\"prod\", \"staging\", \"dev\"] | + [\"prod\", \"staging\", \"dev\"])",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "2c9f7f6d82356258": [
+  {
+   "at": "2026-09-29T10:38:22.578283Z",
+   "call_id": "20260929T095339Z-dc21d8",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "b84f2a6ea9ca029c0b30dd7a3c2486e635ed861bd18e492b9b9d3812e11c6081",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 209\u2013219",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538530Z",
+   "call_id": "20260929T105401Z-8f649c",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "7c49ff8ef0e3a1b64d1cb538f0edc8654cb85d0c4732229ecd8bbd6d108e9bb1",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 209\u2013219",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._api.types.LLMRouterResponse",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889507Z",
+   "call_id": "20260929T114718Z-aa77a1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "87a1843d48f8aeed52e572c8557bace83f87d6624f0c57192cb7f4ebce0be8ff",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "3346a8edbcf6b98d": [
+  {
+   "at": "2026-09-29T10:38:22.578294Z",
+   "call_id": "20260929T095333Z-f3d79b",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "d2b085be027f2caff4589adf7e88522b97fa87f5ffb46bad44cda218bf3833a5",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538538Z",
+   "call_id": "20260929T105401Z-3aa980",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "2ce88e0883a01e5840c15c93e1dc34de9db4a2ee2f103019bb257d16de189f02",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "45ece0cc88cab110": [
+  {
+   "at": "2026-09-29T10:38:22.578305Z",
+   "call_id": "20260929T095347Z-5a8383",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "e35a6e00b8bdf52e8d24a48e3234c6e8a63ca7a6ecdeb6ff37bfed1eb3d19f89",
+   "reason": "it does not pass on the original 5 times in a row (pytest: ValueError: response_schema mapping must describe a JSON object.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "496bb61b6b6a77ee": [
+  {
+   "at": "2026-09-29T10:38:22.578313Z",
+   "call_id": "20260929T095130Z-a047dc",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "98814e6c73f84ca5075f36890cdf7a83ce9d000e152321cd08ee9a0075d7a942",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "4f59dd985e000c94": [
+  {
+   "at": "2026-09-29T10:38:22.578316Z",
+   "call_id": "20260929T095138Z-cf4087",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "b1d5add25f375949c23511d616cc4f88e632c32cdc3def6040cb2f68d1cd7ce8",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert {'id': 'chatc...l-model', ...} == {'id': 'chatc...l-model', ...} | Omitting 6 identical items, use -vv to show | Differing items: | {'choices': [{'index': 0, 'message': {'role': 'assistant', 'content': '```json\\n{\\n  \"service_name\": \"payments-api\",\\n  \"healthy_replicas\": 4\\n}\\n```'}, 'finish_reason': 'stop'}]} != {'choices': [{'inde",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "55a384aafca36bde": [
+  {
+   "at": "2026-09-29T10:38:22.578327Z",
+   "call_id": "20260929T095345Z-5bafb3",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "52cf0a2bdbe4a15e94dc4bce90df3723d44f6569a4b47667013024cc88e0fd3a",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: Regex pattern did not match. | Expected regex: 'vehicle_count' | Actual message: \"Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.\")",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel",
+    "pydantic.Field"
+   ]
+  }
+ ],
+ "594d55ab4bfdf987": [
+  {
+   "at": "2026-09-29T10:38:22.578334Z",
+   "call_id": "20260929T095339Z-e50a61",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "d295b9cd95c550a3105a5f94dab219a996c814cbcfe9ab19c84db79220e66da5",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538548Z",
+   "call_id": "20260929T105401Z-6b0b6f",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "be2247fbaed4586cd798a74e5d5490987fa63d374216d79884789e04d16e95dd",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "5b5f64ae9f619fd8": [
+  {
+   "at": "2026-09-29T10:38:22.578339Z",
+   "call_id": "20260929T095148Z-f00d6d",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "64967d54f246fdfd5de8eace77d1cb7a9e115ebdf34ef32789e7d0e0e1691642",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "5b724a1640748451": [
+  {
+   "at": "2026-09-29T10:38:22.578345Z",
+   "call_id": "20260929T095330Z-dc49e8",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "98201a09a88c2ef651c9eb917f3ed536f680741a9c9758eac1d48117c4fab4b8",
+   "reason": "it does not pass on the original 5 times in a row (pytest: ValueError: response_schema mapping must describe a JSON object.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pytest.mark.verifies",
+    "pytest.mark.verification_kind"
+   ]
+  }
+ ],
+ "5d42724e6abd7c36": [
+  {
+   "at": "2026-09-29T10:38:22.578350Z",
+   "call_id": "20260929T095333Z-6bf776",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "ee40f7d6e8c451355a92a6f4a21c4929cb572102ae1a38aa6827cbf13a6e9375",
+   "reason": "it does not fail on the mutant: of the changed lines 246\u2013253 it runs lines 246, 249, 251 and 253 but never lines 250 and 252",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel",
+    "pytest.MonkeyPatch",
+    "pytest.mark.verifies",
+    "pytest.mark.verification_kind"
+   ]
+  },
+  {
+   "at": "2026-09-29T14:59:11.248561Z",
+   "call_id": "20260929T145745Z-8dab88",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "e66c47c952413ffaf092022c2cf7b749ffe513e5ead878d855782ea175faea32",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T15:02:18.659360Z",
+   "call_id": "20260929T145911Z-cce83a",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "50bd627334ba729784f675b303153417af4747a39985176cbc44d2a7f2bc542a",
+   "reason": "it imports llm_router._api.errors",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router._api.errors.ProviderError",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T15:03:10.527431Z",
+   "call_id": "20260929T150218Z-0739c1",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a964878adaf103dac577511d70371c654d2d9387170cb438fd3308ec4a2d5b90",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: 'ValueError' object has no attribute 'errors')",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T15:05:19.549327Z",
+   "call_id": "20260929T150310Z-947f1d",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.ProviderError",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ],
+   "effort": "high",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "43bf7586b619a9c826831e402d260fb22ed3410856f4df9c96b0c3560fb48b93",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ]
+  }
+ ],
+ "61ee605eb792ca32": [
+  {
+   "at": "2026-09-29T10:38:22.578361Z",
+   "call_id": "20260929T095327Z-0a73bc",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "ec3010c1abe49afa12a2a8ce880e1a9a8e0e36b99e6177068db10afec305504f",
+   "reason": "it does not fail on the mutant: of the changed lines 209\u2013219 it runs lines 209 and 218 but never lines 214 and 219",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538693Z",
+   "call_id": "20260929T112151Z-9ad7a9",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9b286a52f3c3bc5a0afa390a89cd77b6e9ef61e93b418a7e0dcd335dce863fdb",
+   "reason": "it does not pass on the original 5 times in a row (pytest: beartype.roar.BeartypeCallHintParamViolation: Function tests.llm_router.support.workers.retry.openai_success_response() parameter text={'scene': 'loading dock', 'vehicle_count': 5} violates type hint <class 'str'>, as dict {'scene': 'loading dock', 'vehicle_count': 5} not instance of str.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889511Z",
+   "call_id": "20260929T114718Z-e870c0",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "cb1c0b3a27c66cd38e5209354a7d82b221a21767548958582b73dc17333fa935",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.583527Z",
+   "call_id": "20260929T120217Z-f2707a",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "83a26b64f7f7a7f71d1ebd9763cdae7264731a1741b7f58eb38c7a78e902c8bd",
+   "reason": "it does not fail on the mutant: of the changed lines 209\u2013219 it runs lines 209 and 218 but never lines 214 and 219",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:19:27.426506Z",
+   "call_id": "20260929T121608Z-b122ac",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "075f8c3a2820d837e2e60e86b913ae0514aba5c3a23d0f525b6e059469afb6cc",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.LLMRouter.query",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "6232a4f662a368fe": [
+  {
+   "at": "2026-09-29T10:38:22.578368Z",
+   "call_id": "20260929T095342Z-21c9ce",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "f36d88b5f355691a2115f7f48a436186b285f4e9fee530150055a7586d457a34",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "6dcac2e49b50d6c2": [
+  {
+   "at": "2026-09-29T10:38:22.578378Z",
+   "call_id": "20260929T095336Z-26e6ed",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "5111cc80ed8549924ecee363134306a297a47f16cd45f9bbbd099ac9e200c787",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.RootModel"
+   ]
+  }
+ ],
+ "6de617b610b093eb": [
+  {
+   "at": "2026-09-29T10:38:22.578387Z",
+   "call_id": "20260929T095336Z-9ce90b",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "672a2f6836b6f6aab9dd6ce92e80e2de857bd72004b60d86e9dcc454e60a7c04",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.SchemaValidationResult",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "7130406b420847c9": [
+  {
+   "at": "2026-09-29T10:38:22.578389Z",
+   "call_id": "20260929T095350Z-f59ec1",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "ba6815d4d52f76af42aeb35dbd59436ffc22396e045e21e7fe837b884ab6a18e",
+   "reason": "it does not pass on the original 5 times in a row (pytest: pydantic_core._pydantic_core.ValidationError: 1 validation error for ScalarFlag | Invalid JSON: expected value at line 1 column 1 [type=json_invalid, input_value='```json\\ntrue\\n```', input_type=str] | For further information visit https://errors.pydantic.dev/2.12/v/json_invalid)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.RootModel"
+   ]
+  }
+ ],
+ "745bcea4332c9c50": [
+  {
+   "at": "2026-09-29T10:38:22.578395Z",
+   "call_id": "20260929T095345Z-3279f1",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "e79c4a4bd75fd42d919128a019868a6db49a3be42d1175e28615bab2d0ab9914",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 214\u2013221",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel",
+    "pytest.MonkeyPatch",
+    "pytest.mark.verifies",
+    "pytest.mark.verification_kind"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538552Z",
+   "call_id": "20260929T105401Z-0f43ce",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "0919ce552d7d58a5e691c466ec2567c066b95c1404e66c19591851b16b678b28",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 214\u2013221",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889527Z",
+   "call_id": "20260929T114718Z-391b3e",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d4b2fd5de759979ce7ab124fb488d33e9a05f5395a24b4ddb6a8d3e00a657486",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "79163f48d8a86b51": [
+  {
+   "at": "2026-09-29T10:38:22.578400Z",
+   "call_id": "20260929T095349Z-2acd27",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "822ff6b7a8bbfe5b7f1109c7066d60413a73065faf3015d9ea1c20aa74c95e53",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "7bb039bcfc778dc9": [
+  {
+   "at": "2026-09-29T10:38:22.578404Z",
+   "call_id": "20260929T095353Z-1f7cdd",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "ddcdf22ccccd29f68467b35f6217c9a504da9af5cbe093f868eda96c6cf4e788",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "pydantic.BaseModel",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538557Z",
+   "call_id": "20260929T105401Z-f8f3d3",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "87b8eb18f625a37c9cca58331a264e6ec2d546baead42ca0863591dc0cdb905a",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "8400a761e6861e17": [
+  {
+   "at": "2026-09-29T11:47:11.538703Z",
+   "call_id": "20260929T112151Z-02c781",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "314800178e6e6535e089359a40d261f7b97f7f0bca9aa2f6ec04d5d30332f026",
+   "reason": "it does not pass on the original 5 times in a row (pytest: ValueError: response_schema mapping must describe a JSON object.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889530Z",
+   "call_id": "20260929T114718Z-86bb38",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7d4c77cb22feb197e45b1458ebc173e0892fb668f9d8990db1865b99212c2240",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert '```' not in '\\n\\n  ```js...}\\n```  \\n\\n' | '```' is contained here: | ```json | ?   +++)",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.583650Z",
+   "call_id": "20260929T120217Z-4dba11",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d6584ddb18d0d2a77dc4899d73182d8729fd2c3c526ba8603514b1ec790cae3c",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "8f18e1a435591236": [
+  {
+   "at": "2026-09-29T10:38:22.578409Z",
+   "call_id": "20260929T095409Z-1bd10c",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "5de8bfa9f532c81601bcd5b7d45360ae4e284d657373d427d61d662c09f36e7d",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel",
+    "pydantic.Field",
+    "pytest.MonkeyPatch"
+   ]
+  }
+ ],
+ "8faa56db726fb19e": [
+  {
+   "at": "2026-09-29T10:38:22.578411Z",
+   "call_id": "20260929T095416Z-0808f5",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "d4746dbb818fd56e6810f65e60f7b3c5514ec0ef86fc05b4d4c66285e538e40c",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538716Z",
+   "call_id": "20260929T112151Z-3f1797",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0fbf5b27e2204e142c235a15663613c0ce940541e7ecfae91e8098b3f6eec34d",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "9441d73a639d5991": [
+  {
+   "at": "2026-09-29T10:38:22.578416Z",
+   "call_id": "20260929T095424Z-f0c3c5",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "acf4167441b56486a6e636808fbc10af8116e28da08a1af267db9b79dae49360",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.RootModel"
+   ]
+  }
+ ],
+ "947990a908ee3485": [
+  {
+   "at": "2026-09-29T10:38:22.578427Z",
+   "call_id": "20260929T095538Z-6b919a",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "411be6b16adbf08becc672afba67fbc1f55411acab5a32cf4794ec7862b16845",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.LLMRouterResponse",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "pydantic.BaseModel",
+    "pytest.MonkeyPatch",
+    "pytest.mark.verification_kind",
+    "pytest.mark.verifies",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-2D3D81E7": [
+  {
+   "at": "2026-09-29T17:27:59.743376Z",
+   "call_id": "20260929T172149Z-d1e35c",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b35ec49fc0f078f505311564353b9a7f64f70e7016220d05172ef46febd6e22a",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: Regex pattern did not match. | Expected regex: 'JSON object' | Actual message: \"Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.\")",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:30:20.392113Z",
+   "call_id": "20260929T172801Z-e701ec",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1fc684eafee3fbce54265f2e5c5587f92dab6825494e230093f6aa08553842fa",
+   "reason": "it does not fail on the mutant: of the changed lines 219\u2013221 it runs line 207 but never lines 219\u2013220",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:32:55.491452Z",
+   "call_id": "20260929T173021Z-fab5cc",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "611e2e9c5c7a7a127bbfa61e71b5f22607ce1c8d845d230c86f807f87fee8571",
+   "reason": "it does not fail on the mutant: of the changed lines 219\u2013221 it runs lines 207 and 219 but never line 220",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:36:32.973106Z",
+   "call_id": "20260929T173255Z-18cb53",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fcf0f0fde363ffdb21227b4030d9b26cdb1412497812f991db684e73343419bd",
+   "reason": "it does not fail on the mutant: it runs the changed lines 219\u2013221, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:38:09.338644Z",
+   "call_id": "20260929T173633Z-2a7a30",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "c17f2e19c3207621faf2998ec3c13406357d8eab585fa2c473e6d664384cc8c9",
+   "reason": "it does not fail on the mutant: of the changed lines 219\u2013221 it runs lines 207 and 219 but never line 220",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:40:47.861867Z",
+   "call_id": "20260929T173809Z-88bc99",
+   "cause": "rules",
+   "context_gaps": [
+    "llm_router._internal.capabilities.normalize_schema"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "6eb906f4b2742f740529ecaaad3f83046df1941292e5fd15aac5128a97f6ad7d",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.normalize_schema",
+    "llm_router._internal.capabilities.SchemaSpec.parse"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:15:34.149862Z",
+   "call_id": "20260929T191342Z-625f7a",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7df8b27ca84521a0dac87fa3e956e4b79d88822df7976ffce23163dd77bb6457",
+   "reason": "it does not pass on the original 5 times in a row (pytest: Failed: DID NOT RAISE Exception)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:17:38.723236Z",
+   "call_id": "20260929T191536Z-fd89d7",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "aa835e5e4a548e486f18da8ccb7fd52d2b1974ad880b6cbf6b290175aa6ba8ad",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:24:51.651515Z",
+   "call_id": "20260929T191741Z-b84475",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3017bd7a023fc6e807f8b6919fa57616f85fc3fe6ef8c0d82f42e8904521c1b7",
+   "reason": "it imports llm_router._api.errors",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router._api.errors.ProviderError",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:27:06.691683Z",
+   "call_id": "20260929T192453Z-24923a",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f09e15da64661a4278782b911271fe9a64f8f8acd3d659dfb3733e9a295794eb",
+   "reason": "it does not fail on the mutant: of the changed lines 219\u2013221 it runs lines 207 and 219 but never line 220",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:30:16.669899Z",
+   "call_id": "20260929T192707Z-4bc1f0",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "1f6e46241ee04319679f4cb262683c029e6c1a8752727c7be7263753a0990316",
+   "reason": "it does not fail on the mutant: it runs the changed lines 219\u2013221, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "llm_router.LLMRouterResponse"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:34:01.868459Z",
+   "call_id": "20260929T193017Z-f73095",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "bc36b88c182d7397aae9a6d7c3d6771db4dee7e807cdb5b33cf9c5835ee1bf6b",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-A1CB8BE4": [
+  {
+   "at": "2026-09-29T19:15:34.149877Z",
+   "call_id": "20260929T191342Z-fdd007",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "98c623f56ef3f753039df02a5c24301a9c9ab37a2456c3ebe4af1d4fe95546fe",
+   "reason": "it does not fail on the mutant: of the changed lines 111\u2013112 it runs line 111 but never line 112",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:17:38.723266Z",
+   "call_id": "20260929T191536Z-6ce2da",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "64f478fe9d4ab1da9c2f89ab87879fdbdb39ac56daf8b12330d4ea55e782fdef",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:24:51.651544Z",
+   "call_id": "20260929T191741Z-c8f0b9",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "aa7a60f3e8a0864cbf037bcbe3abd6dbe11e43b553f1931961d348d429137dd6",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.SchemaSpec",
+    "llm_router._internal.capabilities.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:27:06.691831Z",
+   "call_id": "20260929T192453Z-0e5b86",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0948606eb831502a42854de72180f51034ce3a9c3d45392daa1302e390766a83",
+   "reason": "it does not fail on the mutant: of the changed lines 111\u2013112 it runs line 111 but never line 112",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:30:16.670095Z",
+   "call_id": "20260929T192707Z-36cd29",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "c3edbb31accbddd1045c7c43cff66c5ce0543e7cc56f7e417e63599173b085dd",
+   "reason": "it does not fail on the mutant: of the changed lines 111\u2013112 it runs line 111 but never line 112",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._api.types.LLMRouterResponse",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:34:01.868569Z",
+   "call_id": "20260929T193017Z-833f2f",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "5d11f21e2fb4a2f5d72d73c72a48ea573719540a0b1a9427355b12e080b39384",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.SchemaValidationResult"
+   ]
+  }
+ ],
+ "SM-C1639EC8": [
+  {
+   "at": "2026-09-29T17:27:59.743423Z",
+   "call_id": "20260929T172149Z-e10518",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5f1b234b260482808c07942246bae44dfc18b047083259c07c555c903f103926",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-FDD8D792": [
+  {
+   "at": "2026-09-29T17:27:59.743437Z",
+   "call_id": "20260929T172149Z-c323b2",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f5e9778e31e06591653def626b1b4491b1422afcd970f7161150492222e7b430",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "a1048e7de4231e38": [
+  {
+   "at": "2026-09-29T10:38:22.578431Z",
+   "call_id": "20260929T095701Z-fe5cb2",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "6ca74cd81633cb387a1740ee4e2f9cacd0c26c91521fe735cd9581c56a55bd30",
+   "reason": "it does not pass on the original 5 times in a row (pytest: ValueError: response_schema mapping must describe a JSON object.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.LLMRouterResponse",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538561Z",
+   "call_id": "20260929T105401Z-95725d",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "104d59565339678fe017f3e066876939d96140b3324636bd7b5ab67869d75513",
+   "reason": "it does not fail on the mutant: it runs the changed lines 246\u2013253, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889538Z",
+   "call_id": "20260929T114718Z-b7c3f0",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9c37f5bb7e30221968859cc3054f470c1ab48ee22a0791ea572ba53d29d5d585",
+   "reason": "it does not pass on the original 5 times in a row (pytest: ValueError: response_schema mapping must describe a JSON object.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.583661Z",
+   "call_id": "20260929T120217Z-3c7bde",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d19ddf0878cd968c68a75e699357f4dbcf556fd4b214fa13207b9bd8c2653bd8",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "a1ecc6333d1910f4": [
+  {
+   "at": "2026-09-29T10:38:22.578436Z",
+   "call_id": "20260929T095711Z-471a85",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "781b72e963b5a97bbc88323de36a3128d9b08a7e4df040900d895b2dfc83e890",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 214\u2013221",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538583Z",
+   "call_id": "20260929T105401Z-22ea3b",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "ee3752134c70791f66039b7d07beee9bf80d03f3ff74817db157ff6d8412c583",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 214\u2013221",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "pydantic.BaseModel",
+    "pydantic.Field",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889550Z",
+   "call_id": "20260929T114718Z-e535e2",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f2cb0b790be327cf48d1fb2e16781549dfc7036ad6afe165fc60bc8085b45d29",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "a57b176468930694": [
+  {
+   "at": "2026-09-29T10:38:22.578441Z",
+   "call_id": "20260929T095714Z-0bab8b",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "dfbcb131b95b406e297bc674f895c9515ff4556e04aad241cca7a3a6658dbf3f",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538590Z",
+   "call_id": "20260929T105401Z-da3a10",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "d27fb2f8e7cc4cf381bc47355caba197a682490af2e888ee023149b1b8d96b29",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "a6d49b98e29bf6d3": [
+  {
+   "at": "2026-09-29T10:38:22.578445Z",
+   "call_id": "20260929T095741Z-2a4c02",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "e58a4b664f9e5387f05188855b2818f2bc476f737276cf5deb369252adf7bafb",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert '```' not in '```json  \\n...nt\": 3}\\n```' | '```' is contained here: | ```json | ? +++)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "tests.llm_router.support.assertions.parse_json_object"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538593Z",
+   "call_id": "20260929T105401Z-d8d18f",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "73ff6714b85b021cef8fc764a33b076a0f345da3f432924e4c33bb1933e1826a",
+   "reason": "it does not fail on the mutant: of the changed lines 246\u2013253 it runs lines 246 and 251\u2013252 but never line 253",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889553Z",
+   "call_id": "20260929T114718Z-1253a6",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "280f334e13e9f9fcb7bff3693780294010d93d7e2fb0ab9a36f616cbc71e527a",
+   "reason": "it does not pass on the original 5 times in a row (pytest: ValueError: response_schema mapping must describe a JSON object.)",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.583665Z",
+   "call_id": "20260929T120217Z-fa9f87",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5180cc66a000e0c03dc53b0d1dbc6f42238400805441862fb24e977f6efc0a16",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "a7ba458316157d60": [
+  {
+   "at": "2026-09-29T10:38:22.578451Z",
+   "call_id": "20260929T095741Z-d53298",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "081efca61edf213d0b6b184eaa9a8ebaaa71147145b3d2da82abb3f9a3c23b6a",
+   "reason": "it does not fail on the mutant: of the changed lines 246\u2013253 it runs lines 246 and 251\u2013252 but never line 253",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538723Z",
+   "call_id": "20260929T112151Z-eda303",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c9080cdabcb590d3ff0ced724a9db7dae5c034e4e70d509c38f8ff8f565ee2a3",
+   "reason": "it does not fail on the mutant: of the changed lines 246\u2013253 it runs lines 246 and 251\u2013252 but never line 253",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889559Z",
+   "call_id": "20260929T114718Z-4355a7",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "15b5a44a1bb16e2be20f2d40a2118a0e706fa95d4991d5070c5cdc1e7cfc4ee4",
+   "reason": "it does not pass on the original 5 times in a row (pytest: ValueError: response_schema mapping must describe a JSON object.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.583680Z",
+   "call_id": "20260929T120217Z-344811",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9bc8c52c7b7e33c1310fc07fbc34b2732b3d95cde08abe92886acc479cac58f8",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "ace0572a7b9ddcf1": [
+  {
+   "at": "2026-09-29T10:38:22.578766Z",
+   "call_id": "20260929T095801Z-b854d6",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "077051525130b4552de1a2908a22878e6812408881e99c992b83849f695d61cb",
+   "reason": "it does not fail on the mutant: of the changed lines 246\u2013253 it runs lines 246 and 251\u2013252 but never line 253",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel",
+    "pytest.mark.verification_kind",
+    "pytest.mark.verifies",
+    "pytest.MonkeyPatch"
+   ]
+  }
+ ],
+ "b5318e3ef6f5d37e": [
+  {
+   "at": "2026-09-29T10:38:22.578774Z",
+   "call_id": "20260929T095826Z-bb76c0",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "693cdfaf297689c8114f4b34fe1d9fb6e3cdb3cc6f4cc300e3eadad6d9e5dc84",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "tests.llm_router.support.assertions.parse_json_object"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538731Z",
+   "call_id": "20260929T112151Z-1d6bc1",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0b9a60c9fcf25f9ed0e7a9e665f00c08d0107acc62311e7bf3161676ee7c9cbe",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 214\u2013219",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889573Z",
+   "call_id": "20260929T114718Z-74d52a",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "70ecd2db0bc93744951b5605430462908c64405df7a6f2e7da3f6ba60d17b327",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "bda23ea9bf7ea9e3": [
+  {
+   "at": "2026-09-29T10:38:22.578780Z",
+   "call_id": "20260929T095956Z-1ab92e",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "fec635837a8351eee9b55c1de26700f40231df39402c33c474807fdafb386bfd",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel",
+    "json.loads",
+    "pytest.MonkeyPatch"
+   ]
+  }
+ ],
+ "bfa1905a769a5c06": [
+  {
+   "at": "2026-09-29T10:38:22.578785Z",
+   "call_id": "20260929T100014Z-f5b88c",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "9116d7c2f960027c76c7ad8196f1bf957f355e8caf49dc3dab7775ed6b5acaa3",
+   "reason": "it breaks the project's lint rules (ruff: line 49: SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.LLMRouterResponse",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538645Z",
+   "call_id": "20260929T105401Z-adb4f1",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "da2dace429d6561ec078a497b0e43a5baac08752c1f1ba64461e496055cd7bbe",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889585Z",
+   "call_id": "20260929T114726Z-3783d7",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c0b7f7eb7850ce77631c4ad8e8a0f881309b057ee93942853c251feb43147f05",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed line 208",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.583698Z",
+   "call_id": "20260929T120217Z-4b3599",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ff2015b8d0df481a66457f53ffb09216799ff254546853c36d96f11159477fae",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "c1932ce7c6d4798d": [
+  {
+   "at": "2026-09-29T10:38:22.578789Z",
+   "call_id": "20260929T100038Z-5b5c97",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "b43f5670b79f7f09790f86ffd42fe74ee7ade7ed15717684c80bd4ac8d3eff2d",
+   "reason": "it does not pass on the original 5 times in a row (pytest: ValueError: response_schema mapping must describe a JSON object.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.LLMRouterResponse",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "c53380d99ec39dcd": [
+  {
+   "at": "2026-09-29T10:38:22.578794Z",
+   "call_id": "20260929T100038Z-2a7eac",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "0b870be400426dce4d58bdc284503cff1c3589e1d22a0fb6106851993dc63aac",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.RootModel"
+   ]
+  }
+ ],
+ "cafa38eadba9fb9f": [
+  {
+   "at": "2026-09-29T10:38:22.578796Z",
+   "call_id": "20260929T100104Z-9e41df",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "688ef2c88441c0b2ea05868dee74d3ddb4d94301c8542aeb38af88ecad5c3776",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.LLMRouterResponse",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel"
+   ]
+  }
+ ],
+ "d3d06f3ed1c4b9af": [
+  {
+   "at": "2026-09-29T10:38:22.578801Z",
+   "call_id": "20260929T100156Z-caa661",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "894736fee94cd51889d86e3a20cadcb59654d2cdb01da20d022632f0162cd369",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "llm_router._internal.capabilities.schema._parse_json_object"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538736Z",
+   "call_id": "20260929T112151Z-e8d27e",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4bab4e85391245dccfaac3c7dd67478e29d1370d59ae80959a4849cd2ab00d2d",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: Regex pattern did not match. | Expected regex: 'Structured output is not valid JSON' | Actual message: \"Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.\")",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889607Z",
+   "call_id": "20260929T114728Z-72a1be",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "45755c8d23fc1d00a3e9524777e68cf2db3b885a5070d9936fdefa1fdbd63581",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: [\"ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.\"] | assert False | +  where False = any(<generator object test_non_json_reply_reports_invalid_json.<locals>.<genexpr>>))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.583702Z",
+   "call_id": "20260929T120217Z-345dc0",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "38d2e52fc101f4beb105b2ba938a5286c7ab76535cf0b58003f47837a6cbf470",
+   "reason": "",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ]
+  }
+ ],
+ "d46cfe0eae74f0be": [
+  {
+   "at": "2026-09-29T10:38:22.578807Z",
+   "call_id": "20260929T100201Z-fadf56",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "257e6b5cbf54e2bff9bdbff4a444c99c2f0da98716518840e5dabe25a3c91c16",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "pydantic.RootModel",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "dd3c89d4bb7ee905": [
+  {
+   "at": "2026-09-29T10:38:22.578811Z",
+   "call_id": "20260929T100206Z-6162d5",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "56639d6ccfdd6049e0a0aec1567ad866d9df8ee4723d0e4bca3f3c14684e9413",
+   "reason": "it does not pass on the original 5 times in a row (pytest: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "pydantic.RootModel",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "dd75771132cecdc4": [
+  {
+   "at": "2026-09-29T10:38:22.578823Z",
+   "call_id": "20260929T100235Z-71f494",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "2cdc3a25a27ccb6265666f3a15ad6a95342f637badde6c5dbb755de3f59bd362",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pytest.mark.verification_kind",
+    "pytest.mark.verifies",
+    "pytest.raises",
+    "pytest.MonkeyPatch"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538755Z",
+   "call_id": "20260929T112151Z-cd27d8",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d2665f080e26472fac67cabc8807be5c8e31610f459db35f6b1511fd566b9165",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 214\u2013219",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889617Z",
+   "call_id": "20260929T114731Z-5c9548",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a63a8dfeeee4a51170cad7d8a3c401197063f68f9d96a53982a0d1604e48bb67",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "e2950b39a3916838": [
+  {
+   "at": "2026-09-29T10:38:22.578834Z",
+   "call_id": "20260929T100236Z-0c6f9a",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "f4c6c7544cc2bb57add22e520566dab08c1bc1efcdfe6a328466b894c20d1b38",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "pydantic.BaseModel",
+    "pydantic.RootModel",
+    "pytest.mark.verifies",
+    "pytest.mark.verification_kind",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "e380cf04b476a823": [
+  {
+   "at": "2026-09-29T10:38:22.578839Z",
+   "call_id": "20260929T100243Z-ef6c32",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "957f4e1c6fc31612c7676b20a8af1f105bd3600d021747b47c6221e08c28f214",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T11:47:11.538658Z",
+   "call_id": "20260929T105435Z-553130",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "7c386b17dbde1dee9a628ac68f30f52871c87b0aff2f94b11f4fdfb04aa4e151",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel",
+    "pydantic.Field",
+    "pytest.mark.verifies",
+    "pytest.mark.verification_kind",
+    "pytest.raises"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.889627Z",
+   "call_id": "20260929T114731Z-e34a7e",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "32275da84e4ed6cd7f25d513bdb29c21cf8cefe0eb98a1aed0b6044dbe19243c",
+   "reason": "it imports llm_router._api.errors",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router._api.errors.ProviderError",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.583713Z",
+   "call_id": "20260929T120217Z-95cb6f",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a34983980a8d140a420b7e982feb74fc1b902bcd0b6c04a6ea76070cf95a6bf6",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert 'Structured output must be a JSON object.' in '[{\"role\": \"user\", \"content\": \"Describe the loading dock scene using the requested schema.\"}, {\"role\": \"assistant\", \"content\": \"[1, 2, 3]\"}, {\"role\": \"user\", \"content\": \"Return ONLY JSON matching the response schema.\"}]' | +  where '[{\"role\": \"user\", \"content\": \"Describe the loading dock",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:19:27.426647Z",
+   "call_id": "20260929T121608Z-eeab4b",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ],
+   "effort": "high",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6795fd0c12d3f21b657d76c696933d57bb7501d03cd8d9b8cb172c743c1a4638",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ]
+  }
+ ]
+}

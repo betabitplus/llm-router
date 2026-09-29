@@ -1,0 +1,38 @@
+{
+ "43c47ed5eb7d2a63": [
+  {
+   "at": "2026-09-29T10:38:22.582896Z",
+   "call_id": "20260929T100649Z-6f8e05",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "3d9aec0ef9e560c999e8816033e93db6e64c7c5ccaebfca5b05d033facaa2f83",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  }
+ ],
+ "df61b883b2255611": [
+  {
+   "at": "2026-09-29T10:38:22.582901Z",
+   "call_id": "20260929T100703Z-54c9f7",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "9a7ea12732baeaa9f98047054d42e34349502bf66d2a724f8fd98d9a0f683969",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  }
+ ]
+}

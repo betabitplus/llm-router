@@ -1,0 +1,546 @@
+{
+ "03b3464429e96b31": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "image": "type('Mock', (), {'width': 1e309, 'height': -1e309, 'mode': 'RGB'})()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-b85934",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version removes the check for image.height being too small, so an image with a valid width but a height below the minimum will raise a \"too small\" ValueError in the original version, but will bypass this check in the changed version.",
+    "response_sha256": "17ec5a31548da94aee242d79386a85cce3d278451a95b844558057050619bace",
+    "sources": [
+     "    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
+     "    if image.width < _MIN_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "image": "Image.new('RGB', (100, 1))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-771b30",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version raises ValueError when image.height is less than _MIN_IMAGE_DIMENSION, whereas the changed version omits that check and returns None for an image with valid width but insufficient height.",
+    "response_sha256": "21de00c540d8c196ca305dc20c78376f1f5fa4e92b1bb4ec4c94478ee016bcf7",
+    "sources": [
+     "    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
+     "    if image.width < _MIN_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "image": "Image.new(\"RGB\", (256, 1))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T214831Z-964676",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version drops the `or image.height < _MIN_IMAGE_DIMENSION` check, so an image whose width is normal but whose height is below the minimum (e.g. height=1) raises ValueError in the original but passes through silently in the changed version.",
+    "response_sha256": "782cd692b3aadae762b444862f593f2ff182269d6cdc409244eb2700790e1277",
+    "sources": [
+     "if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
+     "if image.width < _MIN_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "image": "Image.new('RGB', (100, 1))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111549Z-104bc8",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version no longer checks height against the minimum, so a wide, short image raises ValueError in the original but passes and returns None in the changed version.",
+    "response_sha256": "19356a33803be396e0adef7842ceb059a9ae8d568a27604cd7a9247397141ae4",
+    "sources": [
+     "if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
+     "if image.width < _MIN_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "fd7b09802d6152091fbeca021edd9da2585c08d5614e2f9dd913fb19277a991c"
+ },
+ "0bdce5fb12999eee": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "image": "type('Obj', (), {'width': _MIN_IMAGE_DIMENSION, 'height': _MIN_IMAGE_DIMENSION, 'mode': list(_ALLOWED_IMAGE_MODES)[0]})()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-988f6c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version raises a ValueError when the image width is exactly equal to _MIN_IMAGE_DIMENSION, whereas the original version accepts it and returns None.",
+    "response_sha256": "f11997b729ccad03527532a80199992fc726cb5b5cc9c0c16e2de766757d1596",
+    "sources": [
+     "    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
+     "    if image.width <= _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-1f4bf1",
+    "confidence": 0.9,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Whether the two versions behave differently depends on the value of the undefined constant _MIN_IMAGE_DIMENSION, and Pillow Image instances cannot be constructed using literals or project dataclasses alone.",
+    "response_sha256": "fd54a389dc2ce8ee0c30951cdb7b12427bc6a0a39c8997c47b2b8f8dcfd10c8d",
+    "sources": [
+     "    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
+     "    if image.width <= _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:"
+    ],
+    "verdict": "unsure"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "image": "Image.new(\"RGB\", (_MIN_IMAGE_DIMENSION, _MIN_IMAGE_DIMENSION))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T214831Z-4d1521",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed line uses `image.width <= _MIN_IMAGE_DIMENSION` instead of `<`, so a square image exactly at the minimum dimension passes validation in the original but raises ValueError in the changed version.",
+    "response_sha256": "2bcfe890175011c761c0ba4ec8944890e34a0392f6a1149e174108b509414d7f",
+    "sources": [
+     "if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
+     "if image.width <= _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "image": "Image.new('RGB', (_MIN_IMAGE_DIMENSION, _MAX_IMAGE_DIMENSION))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111550Z-56633b",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version uses `<=` on width, so an image whose width equals the minimum raises ValueError there but passes in the original.",
+    "response_sha256": "4c513a1cdd2216d19f8ad86a8780e72c05ff9794f4cccb951894c7b0f075802b",
+    "sources": [
+     "if image.width <= _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
+     "if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "827cb07d356f7b9cf953bcdaee6fbcc9f6fc41ba59b4b3933b624c205df89dc1"
+ },
+ "0c1b36286cf6938e": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "content": "b''"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-9e6629",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version explicitly prevents `bytes` and `bytearray` objects from being treated as valid sequences, causing them to raise a TypeError, whereas the changed version processes them and returns a tuple of their integer values.",
+    "response_sha256": "f7c913812bbeba6709085262c7c16962493033cde8a90db62e4375376eb9f4b9",
+    "sources": [
+     "    if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
+     "    if isinstance(content, Sequence):"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "content": "b\"\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-70be4d",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When content is a bytes instance, the original version excludes it and raises a TypeError, whereas the changed version treats it as a Sequence and returns a tuple.",
+    "response_sha256": "27f9b903332486fd2225468099c6c3e4349f9be13037976d99e77567f2bcc3eb",
+    "sources": [
+     "    if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
+     "    if isinstance(content, Sequence):"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "content": "b'abc'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T214831Z-46a1cf",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "bytes objects are Sequences in Python, so the original's extra bytes/bytearray exclusion makes it raise TypeError while the changed version, lacking that exclusion, returns tuple(content) turning b'abc' into (97, 98, 99).",
+    "response_sha256": "acd9983a3b59b61d258dafafe6a6058942612447fc311b3683dd1ce7b7aa6fa8",
+    "sources": [
+     "if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
+     "if isinstance(content, Sequence):"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "content": "b'ab'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111551Z-712281",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For content=b'ab', the original raises TypeError because bytes are excluded from the Sequence branch, while the changed version returns (97, 98).",
+    "response_sha256": "9aacb70f07d42ce6fc9e1dc8e4a4dbe3ea34278552aae4ef8b7e261738d88487",
+    "sources": [
+     "if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
+     "if isinstance(content, Sequence):"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "a292e654f319e6695cf42425530a3d7d4ee71b9f1c0359acf1a1a8162d7dbb49"
+ },
+ "4e35b24fc276e4ad": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "image": "type('MockImage', (object,), {'width': _MAX_IMAGE_DIMENSION, 'height': _MIN_IMAGE_DIMENSION, 'mode': list(_ALLOWED_IMAGE_MODES)[0]})()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-1d6a58",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version raises a ValueError when the image width is exactly equal to _MAX_IMAGE_DIMENSION, whereas the original version does not.",
+    "response_sha256": "69ab13bd22eda7f9f48599c5dac763db0ba2b3b6476339964a550f719c4113bc",
+    "sources": [
+     "    if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:",
+     "    if image.width >= _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-32b305",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "From the text alone, the value of _MAX_IMAGE_DIMENSION is undefined and an Image.Image instance cannot be constructed using only literals and the project's own dataclasses, exceptions, or enum members, so it cannot be determined whether an allowed input distinguishes the two versions.",
+    "response_sha256": "1df712186ad0aeb301ec834aa1cb3b5194ba37b13af087aa334384ccf1fdcdf8",
+    "sources": [
+     "if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:",
+     "if image.width >= _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "unsure"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "image": "Image.new(\"RGB\", (_MAX_IMAGE_DIMENSION, _MIN_IMAGE_DIMENSION))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T223335Z-9bb145",
+    "confidence": 0.92,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Changing `image.width > _MAX_IMAGE_DIMENSION` to `image.width >= _MAX_IMAGE_DIMENSION` makes an image whose width equals _MAX_IMAGE_DIMENSION (and otherwise valid) pass silently in the original but raise ValueError in the changed version.",
+    "response_sha256": "cead18fc6ffa1a4db1afc2cc3d4933ead122f3baf1f611c32eb7e2cdef169883",
+    "sources": [
+     "if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:",
+     "if image.width >= _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "image": "Image.new('RGB', (_MAX_IMAGE_DIMENSION, _MIN_IMAGE_DIMENSION))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111551Z-2c3c8e",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version rejects width == _MAX_IMAGE_DIMENSION with ValueError because it uses >= instead of >, while the original accepts it and returns None.",
+    "response_sha256": "b80e3276294c33e3993eaa4dd46e953cc2690e3bc32ee8b74af9d2020c0eac79",
+    "sources": [
+     "if image.width >= _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:",
+     "if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "e2b040c273774026cd2c0528426dd07b512e44f50b78b298471e5ae7d0da54cb"
+ },
+ "85f4bcb339f625ed": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "content": "[]"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-0735b5",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When a list is provided as content, the original version converts it to a tuple before returning, whereas the changed version returns the list directly.",
+    "response_sha256": "8689f69ace5ea1d5e4e81947241c0ece7a962a32923ba0a32e5a4c560cc35eb9",
+    "sources": [
+     "        return tuple(content)",
+     "        return content"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "content": "[]"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-1ff32b",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For a list input, the original version returns an empty tuple while the changed version returns the list itself.",
+    "response_sha256": "7e03ebb834e90cbc0c43a2f979e66ea39f1eff0287ea4f0cbbbce7eb0efce8e2",
+    "sources": [
+     "        return tuple(content)",
+     "        return content"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "content": "['a', 'b']"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T214831Z-7fae0d",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "For a list input, the original converts it via tuple(content) into a tuple, while the changed version returns the list unchanged, so the return types (and equality to a tuple) differ.",
+    "response_sha256": "7fa14348891e1469737e367720fa4b47a6b0eb256adebe8e8d962316116a5e44",
+    "sources": [
+     "return tuple(content)",
+     "return content"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "f86959108bf14542a72dfc9faadbe9e771ab35a377242decc00865c764c87aec"
+ },
+ "a9925109311de4d5": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "parts": "[]"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-1c437c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version returns a tuple while the changed version returns a list, resulting in different return values for any valid input such as an empty list.",
+    "response_sha256": "c783ee49fc27d12ba5960ffca052a3e48c609655d9f12805b8b6483854f138b0",
+    "sources": [
+     "    return tuple(normalized)",
+     "    return normalized"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "parts": "[]"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-a5b2f8",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version returns a tuple, whereas the changed version returns a list.",
+    "response_sha256": "31239aeed5cfca905c3c43c479199257cee9887b7a8f9e7ccfca5d0418de6c58",
+    "sources": [
+     "    return tuple(normalized)",
+     "    return normalized"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "parts": "()"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T214831Z-6d7181",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The original returns `tuple(normalized)` while the changed version returns `normalized` (a list), so even for an empty input the two versions return `()` vs `[]`, which are unequal and of different types.",
+    "response_sha256": "5cd625289d11166595263e85e574558c01ed9226a23b06d9bd77ab83a01e497e",
+    "sources": [
+     "return tuple(normalized)",
+     "return normalized"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "369f6f7b844c7f6538ccab51ae5222369c86d1f78efe27c7cd6ed1ee9b34fd02"
+ },
+ "ab94f138074323bc": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "image": "type('Mock', (), {'width': _MIN_IMAGE_DIMENSION, 'height': _MAX_IMAGE_DIMENSION + 1, 'mode': list(_ALLOWED_IMAGE_MODES)[0]})()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-bf4acd",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits the upper bound check on the image's height, causing it to incorrectly return None instead of raising a ValueError for images with a valid width and mode but an oversized height.",
+    "response_sha256": "2c6f15ee46339c87970a46fec34d4524bbdc686ded7764bcce1504120f89411b",
+    "sources": [
+     "    if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:",
+     "    if image.width > _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-e39929",
+    "confidence": 0.9,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Although the changed version omits the check on image.height exceeding _MAX_IMAGE_DIMENSION, a distinguishing input cannot be constructed using literals or project dataclasses alone, nor determined without the values of _MIN_IMAGE_DIMENSION, _MAX_IMAGE_DIMENSION, and _ALLOWED_IMAGE_MODES.",
+    "response_sha256": "9031f795738e8f66e27a7ec6df62b4ae09064be0457b48a8a66836f5a9c41f40",
+    "sources": [
+     "    if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:",
+     "    if image.width > _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "unsure"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "image": "Image.new(\"RGB\", (_MIN_IMAGE_DIMENSION, _MAX_IMAGE_DIMENSION + 1))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T223335Z-be96eb",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version dropped the `image.height > _MAX_IMAGE_DIMENSION` disjunct, so an image whose width is within bounds but whose height exceeds _MAX_IMAGE_DIMENSION raises ValueError in the original but passes silently (assuming mode 'RGB' is allowed) in the changed version.",
+    "response_sha256": "457525c5ac0c394acaaefc059910cb9e32a96f3e591d737be6450440a1786b55",
+    "sources": [
+     "if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:",
+     "if image.width > _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "image": "Image.new('RGB', (100, _MAX_IMAGE_DIMENSION + 1))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111551Z-9ca7be",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version no longer checks height against the maximum, so an image that is too tall but not too wide raises ValueError in the original and returns None in the changed version.",
+    "response_sha256": "6be1811f867b1e35b051048392d332f1403a2cd94b4e67517f98bb7d1bdabaed",
+    "sources": [
+     "if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:",
+     "if image.width > _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "f785d52ee884429bf916c918a3d0f4ce2c9e1b2956d08fec0d17704aa39df78e"
+ },
+ "e9186235c6377e40": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "image": "type('Mock', (), {'width': _MAX_IMAGE_DIMENSION, 'height': _MAX_IMAGE_DIMENSION, 'mode': list(_ALLOWED_IMAGE_MODES)[0]})()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-e9f4fc",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version incorrectly uses >= instead of > when comparing image height to the maximum dimension, which will raise a ValueError for images whose height is exactly _MAX_IMAGE_DIMENSION.",
+    "response_sha256": "a56ed95a1252eba9c71318231c4d46fd50d91a710f9497c53da79ef0d863612b",
+    "sources": [
+     "    if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:",
+     "    if image.width > _MAX_IMAGE_DIMENSION or image.height >= _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "image": "Image.new('RGB', (_MAX_IMAGE_DIMENSION, _MAX_IMAGE_DIMENSION))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T214831Z-b8846b",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When image.height equals _MAX_IMAGE_DIMENSION (with image.width within valid bounds and a supported mode), the changed version raises a ValueError while the original version does not.",
+    "response_sha256": "03fc5d435877a724ea2905a700e4c9dc0b082a2aab1b3bb78938ab5873dbf177",
+    "sources": [
+     "    if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:",
+     "    if image.width > _MAX_IMAGE_DIMENSION or image.height >= _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "image": "Image.new(\"RGB\", (_MIN_IMAGE_DIMENSION, _MAX_IMAGE_DIMENSION))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T214831Z-921d3d",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version uses `>=` instead of `>` for the height upper-bound check, so an image whose height exactly equals _MAX_IMAGE_DIMENSION (and width within bounds) passes validation in the original but raises ValueError in the changed version.",
+    "response_sha256": "ebcdc8103f0effdb7c3390e1f2208361e9a8db9fdd8e615ae9d64fc90a0c8b46",
+    "sources": [
+     "if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:",
+     "if image.width > _MAX_IMAGE_DIMENSION or image.height >= _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "image": "Image.new('RGB', (_MIN_IMAGE_DIMENSION, _MAX_IMAGE_DIMENSION))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111551Z-061491",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "An image whose height equals _MAX_IMAGE_DIMENSION passes the original's `>` check but raises ValueError under the changed `>=` check, assuming the mode is allowed.",
+    "response_sha256": "7598b61a17a9cf1a5f9d68e61762904ef27370db0e4abfc8c9945654eb41fc3d",
+    "sources": [
+     "if image.width > _MAX_IMAGE_DIMENSION or image.height >= _MAX_IMAGE_DIMENSION:",
+     "if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "f452c8227eab9a1c96cf0324257ca8e7bfc0f433b06022d19d68e51177ab4e6b"
+ }
+}

@@ -1,0 +1,486 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_STRUCTURED_TEXT_OUTPUT",
+ "proposals": [
+  {
+   "id": "SM-7198B952",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_extract_json_payload",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Array-vs-object choice is computed wrongly: the function prefers the object span whenever any braces exist, but for a top-level array of objects it now picks whichever bracket comes first only incorrectly, e.g. it always tries arrays first, so an object containing an array gets truncated to the inner array.",
+   "original_sha256": "d0e0db515f59e355bb65546c52c672392a7e9b99cfb99d5ac4570cca200cd982",
+   "context_sha256": "d9b6b98d27915734fcf344b6de071a86edb56979f5e55681504c969c97a80a59",
+   "prompt_sha256": "f118b0b184424a4a6ed9691a227ce3bb8dca7a01d7a4adcfd23e73db0c520946",
+   "replacement": "def _extract_json_payload(value: str) -> str:\n    \"\"\"Extract JSON object or array text, trimming fences and chatter.\"\"\"\n    stripped = _strip_json_fence(value).strip()\n    first_arr = stripped.find(\"[\")\n    last_arr = stripped.rfind(\"]\")\n    if first_arr != -1 and last_arr != -1 and last_arr > first_arr:\n        return stripped[first_arr : last_arr + 1]\n\n    first_obj = stripped.find(\"{\")\n    last_obj = stripped.rfind(\"}\")\n    if first_obj != -1 and last_obj != -1 and last_obj > first_obj:\n        return stripped[first_obj : last_obj + 1]\n\n    return stripped",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-c5493f",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "451189726ea1ed3e6f8345cfea2197944a35b5a4941c346ec3983f13400e96f8",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-C04E5858",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_extract_json_payload",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "The end of the extracted JSON span is computed with find instead of rfind for the closing brace/bracket, so nested objects/arrays are cut at the first closing delimiter and the payload is truncated and fails schema validation.",
+   "original_sha256": "d0e0db515f59e355bb65546c52c672392a7e9b99cfb99d5ac4570cca200cd982",
+   "context_sha256": "d9b6b98d27915734fcf344b6de071a86edb56979f5e55681504c969c97a80a59",
+   "prompt_sha256": "f118b0b184424a4a6ed9691a227ce3bb8dca7a01d7a4adcfd23e73db0c520946",
+   "replacement": "def _extract_json_payload(value: str) -> str:\n    \"\"\"Extract JSON object or array text, trimming fences and chatter.\"\"\"\n    stripped = _strip_json_fence(value).strip()\n    first_obj = stripped.find(\"{\")\n    last_obj = stripped.find(\"}\")\n    if first_obj != -1 and last_obj != -1 and last_obj > first_obj:\n        return stripped[first_obj : last_obj + 1]\n\n    first_arr = stripped.find(\"[\")\n    last_arr = stripped.find(\"]\")\n    if first_arr != -1 and last_arr != -1 and last_arr > first_arr:\n        return stripped[first_arr : last_arr + 1]\n\n    return stripped",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-c5493f",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "451189726ea1ed3e6f8345cfea2197944a35b5a4941c346ec3983f13400e96f8",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-8A3B928B",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_json_object",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "String candidates are no longer stripped of provider-specific wrappers (e.g. markdown code fences) before JSON decoding, so fenced provider output fails to parse instead of yielding the same structured result.",
+   "original_sha256": "b9911fc46e860d88370a273bc26b0f4160c47458fa6c1647b3dbd071495a1295",
+   "context_sha256": "39d13ae7549f54adbe2b3c290872bbfa64fd30f1b776a5152be9e7a382aa86d3",
+   "prompt_sha256": "f398d7f8e8b2dcebb93924918609fe9f7b1af50152362abfc2c1739e40d36c50",
+   "replacement": "def _parse_json_object(value: object) -> dict[str, Any]:\n    \"\"\"Parse a structured-output candidate into a JSON object mapping.\"\"\"\n    if isinstance(value, str):\n        try:\n            decoded = json.loads(value)\n        except json.JSONDecodeError as exc:\n            msg = f\"Structured output is not valid JSON: {exc.msg}.\"\n            raise ValueError(msg) from exc\n    else:\n        decoded = value\n\n    if not isinstance(decoded, dict):\n        msg = \"Structured output must be a JSON object.\"\n        raise TypeError(msg)\n    return {str(key): item for key, item in decoded.items()}",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-4f04de",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "659c7c9bb29ee378d3978033adb2924bf40370611c8789465cc49fbf11d67979",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-2D3D81E7",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_json_object",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "When a provider returns a JSON string that is double-encoded or a list of objects, the parser unwraps a single-element list and returns its first item, so a non-object result is accepted instead of rejected; the public result differs from the requested object schema.",
+   "original_sha256": "b9911fc46e860d88370a273bc26b0f4160c47458fa6c1647b3dbd071495a1295",
+   "context_sha256": "39d13ae7549f54adbe2b3c290872bbfa64fd30f1b776a5152be9e7a382aa86d3",
+   "prompt_sha256": "f398d7f8e8b2dcebb93924918609fe9f7b1af50152362abfc2c1739e40d36c50",
+   "replacement": "def _parse_json_object(value: object) -> dict[str, Any]:\n    \"\"\"Parse a structured-output candidate into a JSON object mapping.\"\"\"\n    if isinstance(value, str):\n        value = _extract_json_payload(value)\n        try:\n            decoded = json.loads(value)\n        except json.JSONDecodeError as exc:\n            msg = f\"Structured output is not valid JSON: {exc.msg}.\"\n            raise ValueError(msg) from exc\n    else:\n        decoded = value\n\n    if isinstance(decoded, list) and len(decoded) == 1:\n        decoded = decoded[0]\n\n    if not isinstance(decoded, dict):\n        msg = \"Structured output must be a JSON object.\"\n        raise TypeError(msg)\n    return {str(key): item for key, item in decoded.items()}",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-4f04de",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "659c7c9bb29ee378d3978033adb2924bf40370611c8789465cc49fbf11d67979",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-306D36AD",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_strip_json_fence",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Fence stripping drops only the opening fence line; the closing fence line is kept in the result, so provider-specific Markdown fence text leaks into the JSON payload and parsing fails.",
+   "original_sha256": "437495ddd040a02234019625a126c02aa54591894023482a01ed9b6fd57b0e9d",
+   "context_sha256": "9755b64fa3d386fbc50bb017d7f53e28b4d0096fa81784566b0f273e99ed368a",
+   "prompt_sha256": "d577ac750c051d0683ec8f348196238aa32671441722dbf6d81b2bf50e80af0e",
+   "replacement": "def _strip_json_fence(value: str) -> str:\n    \"\"\"Return JSON text without a simple Markdown code fence wrapper.\"\"\"\n    stripped = value.strip()\n    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):\n        return value\n    lines = stripped.splitlines()\n    if len(lines) < _MIN_FENCED_JSON_LINES:\n        return value\n    if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:\n        return value\n    return \"\\n\".join(lines[1:]).strip()",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-9f0736",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "14f38b33ce3c0ae4193f4c7cc358139c2a19db9ff82bc5f0f17a952e1bf69d16",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-943AE866",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_strip_json_fence",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Any fence language tag (e.g. ```python) is accepted and unwrapped as JSON instead of only json or bare fences, and unfenced input is returned stripped rather than unchanged.",
+   "original_sha256": "437495ddd040a02234019625a126c02aa54591894023482a01ed9b6fd57b0e9d",
+   "context_sha256": "9755b64fa3d386fbc50bb017d7f53e28b4d0096fa81784566b0f273e99ed368a",
+   "prompt_sha256": "d577ac750c051d0683ec8f348196238aa32671441722dbf6d81b2bf50e80af0e",
+   "replacement": "def _strip_json_fence(value: str) -> str:\n    \"\"\"Return JSON text without a simple Markdown code fence wrapper.\"\"\"\n    stripped = value.strip()\n    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):\n        return stripped\n    lines = stripped.splitlines()\n    if len(lines) < _MIN_FENCED_JSON_LINES:\n        return stripped\n    if not lines[0].strip().startswith(\"```\"):\n        return stripped\n    return \"\\n\".join(lines[1:-1]).strip()",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-9f0736",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "14f38b33ce3c0ae4193f4c7cc358139c2a19db9ff82bc5f0f17a952e1bf69d16",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-04B797BF",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::validate_schema_output",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Returns the raw input value instead of the parsed/validated result, so provider-specific formatting (e.g. JSON string, unvalidated dict) leaks through as the public structured result.",
+   "original_sha256": "d3962c5d7c3dcb7f83e9fe785f3e17a31ab01033733aeddc299cb660e609140a",
+   "context_sha256": "e6d54dae4cc692445f491fa74c7d96c08378fe5cc5e651bb7e722bdc51d682c5",
+   "prompt_sha256": "e571c89b2c75eb2d8fba050a8e2106c480984d838a8c0b4a6eb5cf252dd690fd",
+   "replacement": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    try:\n        spec.parse(value)\n    except Exception as exc:\n        return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )\n    return SchemaValidationResult(valid=True, value=value)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-ddf578",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "7bd81003d92823b89b868b9eed08ffa54b981e134f3e345d950c24b5781705f3",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-7E80B9F5",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::validate_schema_output",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Validation is skipped for string values: strings are passed through as valid without parsing against the schema, so provider outputs formatted as raw JSON text are accepted unvalidated and leak as the result.",
+   "original_sha256": "d3962c5d7c3dcb7f83e9fe785f3e17a31ab01033733aeddc299cb660e609140a",
+   "context_sha256": "e6d54dae4cc692445f491fa74c7d96c08378fe5cc5e651bb7e722bdc51d682c5",
+   "prompt_sha256": "e571c89b2c75eb2d8fba050a8e2106c480984d838a8c0b4a6eb5cf252dd690fd",
+   "replacement": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    if isinstance(value, str):\n        return SchemaValidationResult(valid=True, value=value)\n    try:\n        parsed = spec.parse(value)\n    except Exception as exc:\n        return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )\n    return SchemaValidationResult(valid=True, value=parsed)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-ddf578",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "7bd81003d92823b89b868b9eed08ffa54b981e134f3e345d950c24b5781705f3",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-5D720BAA",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_extract_json_payload",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Top-level JSON arrays are no longer handled: the array extraction branch is dropped, so array-typed schema responses wrapped in chatter or fences with text keep the surrounding text and fail to parse.",
+   "original_sha256": "d0e0db515f59e355bb65546c52c672392a7e9b99cfb99d5ac4570cca200cd982",
+   "context_sha256": "5508979e90c85b6364894103c3eebc726784de396d7750f74a5e5aa14f6aba74",
+   "prompt_sha256": "fba188e0c6a0f187e138386f1c3c547c19beaa7897e803bd3e5e231d8de5041e",
+   "replacement": "def _extract_json_payload(value: str) -> str:\n    \"\"\"Extract JSON object or array text, trimming fences and chatter.\"\"\"\n    stripped = _strip_json_fence(value).strip()\n    first_obj = stripped.find(\"{\")\n    last_obj = stripped.rfind(\"}\")\n    if first_obj != -1 and last_obj != -1 and last_obj > first_obj:\n        return stripped[first_obj : last_obj + 1]\n\n    return stripped",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-99fa98",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "1add750f377bd68b2f48b7b3b81bdac8bf1e977f6ef8ffd089c413c54a5239eb",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-69699DF1",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_extract_json_payload",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Object extraction takes priority over array even when the payload is a top-level array of objects; the array is detected only if it starts before any object is missing, so an array of objects gets truncated to the inner object span, returning a wrong structure.",
+   "original_sha256": "d0e0db515f59e355bb65546c52c672392a7e9b99cfb99d5ac4570cca200cd982",
+   "context_sha256": "5508979e90c85b6364894103c3eebc726784de396d7750f74a5e5aa14f6aba74",
+   "prompt_sha256": "fba188e0c6a0f187e138386f1c3c547c19beaa7897e803bd3e5e231d8de5041e",
+   "replacement": "def _extract_json_payload(value: str) -> str:\n    \"\"\"Extract JSON object or array text, trimming fences and chatter.\"\"\"\n    stripped = _strip_json_fence(value).strip()\n    first_obj = stripped.find(\"{\")\n    last_obj = stripped.rfind(\"}\")\n    first_arr = stripped.find(\"[\")\n    last_arr = stripped.rfind(\"]\")\n    if first_obj != -1 and last_obj != -1 and last_obj > first_obj:\n        return stripped[first_obj : last_obj + 1]\n\n    if first_arr != -1 and last_arr != -1 and last_arr > first_arr:\n        return stripped[first_arr : last_arr + 1]\n\n    return stripped",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-99fa98",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "1add750f377bd68b2f48b7b3b81bdac8bf1e977f6ef8ffd089c413c54a5239eb",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-1134D975",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_json_object",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Non-string candidates (e.g. adapters returning already-parsed dicts, or bytes payloads) are no longer handled; bytes are passed through and rejected, while string extraction of fenced provider formatting is skipped for str inputs that are not stripped.",
+   "original_sha256": "b9911fc46e860d88370a273bc26b0f4160c47458fa6c1647b3dbd071495a1295",
+   "context_sha256": "e1de9c29fbff60dcc03d4894827c512aeec20f4d4fa7dbc857660143b5768c45",
+   "prompt_sha256": "3516494f96707f8d11315f016edcdf87314905e287b4dd5742fb878f757571e8",
+   "replacement": "def _parse_json_object(value: object) -> dict[str, Any]:\n    \"\"\"Parse a structured-output candidate into a JSON object mapping.\"\"\"\n    if isinstance(value, str):\n        try:\n            decoded = json.loads(value)\n        except json.JSONDecodeError:\n            value = _extract_json_payload(value)\n            try:\n                decoded = json.loads(value)\n            except json.JSONDecodeError as exc:\n                msg = f\"Structured output is not valid JSON: {exc.msg}.\"\n                raise ValueError(msg) from exc\n    else:\n        decoded = value\n\n    if not isinstance(decoded, dict):\n        msg = \"Structured output must be a JSON object.\"\n        raise TypeError(msg)\n    return {str(key): item for key, item in decoded.items()}",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-12fce9",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "d65683cce76654b47ecc284b4df054cac2af37db104f01463c9e9e4559d65ecb",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-2BA34DA3",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_json_object",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Provider-specific formatting leaks through: nested mapping keys/values are not normalized and the payload extraction (code fences / surrounding prose) is only applied when the text does not already start with a brace-less prefix, so fenced JSON from some providers fails to parse.",
+   "original_sha256": "b9911fc46e860d88370a273bc26b0f4160c47458fa6c1647b3dbd071495a1295",
+   "context_sha256": "e1de9c29fbff60dcc03d4894827c512aeec20f4d4fa7dbc857660143b5768c45",
+   "prompt_sha256": "3516494f96707f8d11315f016edcdf87314905e287b4dd5742fb878f757571e8",
+   "replacement": "def _parse_json_object(value: object) -> dict[str, Any]:\n    \"\"\"Parse a structured-output candidate into a JSON object mapping.\"\"\"\n    if isinstance(value, str):\n        if not value.lstrip().startswith(\"{\"):\n            value = value\n        else:\n            value = _extract_json_payload(value)\n        try:\n            decoded = json.loads(value)\n        except json.JSONDecodeError as exc:\n            msg = f\"Structured output is not valid JSON: {exc.msg}.\"\n            raise ValueError(msg) from exc\n    else:\n        decoded = value\n\n    if not isinstance(decoded, dict):\n        msg = \"Structured output must be a JSON object.\"\n        raise TypeError(msg)\n    return {str(key): item for key, item in decoded.items()}",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-12fce9",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "d65683cce76654b47ecc284b4df054cac2af37db104f01463c9e9e4559d65ecb",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-540EC078",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_strip_json_fence",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Fence opener check drops the uppercase ```JSON variant, so providers that emit an uppercase JSON fence leak the raw fenced text and fail schema parsing.",
+   "original_sha256": "437495ddd040a02234019625a126c02aa54591894023482a01ed9b6fd57b0e9d",
+   "context_sha256": "2174be3b7544f9279ea159503c106b3e11f162b72c8bca46a29be52af624ee62",
+   "prompt_sha256": "a95aa847760a77ca342eadc8848c1f23b1b245b04f67922acb803d6bb6849da5",
+   "replacement": "def _strip_json_fence(value: str) -> str:\n    \"\"\"Return JSON text without a simple Markdown code fence wrapper.\"\"\"\n    stripped = value.strip()\n    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):\n        return value\n    lines = stripped.splitlines()\n    if len(lines) < _MIN_FENCED_JSON_LINES:\n        return value\n    if lines[0].strip() not in {\"```\", \"```json\"}:\n        return value\n    return \"\\n\".join(lines[1:-1]).strip()\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-5262dd",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "db0777c7bafe8997326d55b19b1c90dded5db457d802db28538ec94d9c48f4dd",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-C0648F32",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_strip_json_fence",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Fence stripping only handles fences that start at the very beginning without surrounding whitespace, and the opener must be exactly unindented; responses with leading/trailing whitespace or newlines around the fence (common from some providers) are no longer unwrapped.",
+   "original_sha256": "437495ddd040a02234019625a126c02aa54591894023482a01ed9b6fd57b0e9d",
+   "context_sha256": "2174be3b7544f9279ea159503c106b3e11f162b72c8bca46a29be52af624ee62",
+   "prompt_sha256": "a95aa847760a77ca342eadc8848c1f23b1b245b04f67922acb803d6bb6849da5",
+   "replacement": "def _strip_json_fence(value: str) -> str:\n    \"\"\"Return JSON text without a simple Markdown code fence wrapper.\"\"\"\n    if not value.startswith(\"```\") or not value.endswith(\"```\"):\n        return value\n    lines = value.splitlines()\n    if len(lines) < _MIN_FENCED_JSON_LINES:\n        return value\n    if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:\n        return value\n    return \"\\n\".join(lines[1:-1]).strip()\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-5262dd",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "db0777c7bafe8997326d55b19b1c90dded5db457d802db28538ec94d9c48f4dd",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-A1CB8BE4",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::validate_schema_output",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Already-decoded structured values (dict/list) skip schema validation and are returned as valid unchanged, so provider outputs that arrive pre-parsed are never checked against the caller-requested schema.",
+   "original_sha256": "d3962c5d7c3dcb7f83e9fe785f3e17a31ab01033733aeddc299cb660e609140a",
+   "context_sha256": "aff671dafa882257eda5929d6faaae71fb461f4d37e7629bbd39d767bc1d3dde",
+   "prompt_sha256": "2179f882aa8eac63518af7d468300ba65c35374cd4a6365b6f38b826bc221595",
+   "replacement": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    if isinstance(value, (dict, list)):\n        return SchemaValidationResult(valid=True, value=value)\n    try:\n        parsed = spec.parse(value)\n    except Exception as exc:\n        return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )\n    return SchemaValidationResult(valid=True, value=parsed)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-680684",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "8cd7448ffb552d9ed9d8b0bd09a7e4925addc012313d6d257798487a35dc727e",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-BA5A7959",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::validate_schema_output",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "When a raw text response fails to parse against the schema, it is accepted as valid and the provider's raw string leaks through as the public result instead of being reported as a validation failure.",
+   "original_sha256": "d3962c5d7c3dcb7f83e9fe785f3e17a31ab01033733aeddc299cb660e609140a",
+   "context_sha256": "aff671dafa882257eda5929d6faaae71fb461f4d37e7629bbd39d767bc1d3dde",
+   "prompt_sha256": "2179f882aa8eac63518af7d468300ba65c35374cd4a6365b6f38b826bc221595",
+   "replacement": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    try:\n        parsed = spec.parse(value)\n    except Exception as exc:\n        if isinstance(value, str):\n            return SchemaValidationResult(valid=True, value=value)\n        return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )\n    return SchemaValidationResult(valid=True, value=parsed)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-680684",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "8cd7448ffb552d9ed9d8b0bd09a7e4925addc012313d6d257798487a35dc727e",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-CE213501",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_extract_json_payload",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Array payloads are only extracted if no braces exist anywhere; top-level arrays containing objects are truncated to the first inner object, dropping array elements required by the schema. Choice of object vs array is made by position-agnostic object-first preference.",
+   "original_sha256": "d0e0db515f59e355bb65546c52c672392a7e9b99cfb99d5ac4570cca200cd982",
+   "context_sha256": "b9eef6e5347c2d66a8e6eba5fbd8156f02dab94798821de487d18adc2d717cda",
+   "prompt_sha256": "823faedf70fd9286dd439cd0bca7935869e21e2e6579c503c82050b57cccbe46",
+   "replacement": "def _extract_json_payload(value: str) -> str:\n    \"\"\"Extract JSON object or array text, trimming fences and chatter.\"\"\"\n    stripped = _strip_json_fence(value).strip()\n    first_obj = stripped.find(\"{\")\n    last_obj = stripped.find(\"}\")\n    if first_obj != -1 and last_obj != -1 and last_obj > first_obj:\n        return stripped[first_obj : last_obj + 1]\n\n    first_arr = stripped.find(\"[\")\n    last_arr = stripped.rfind(\"]\")\n    if first_arr != -1 and last_arr != -1 and last_arr > first_arr:\n        return stripped[first_arr : last_arr + 1]\n\n    return stripped\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-788ee7",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "590e37fba12472b3ca1539771208631afb29327573f2b84eadc7038e4e6eeac1",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-BC1C7BA3",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_extract_json_payload",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "The closing-brace slice excludes the final character, so the last brace/bracket of the payload is dropped and trailing required fields or closers are lost when the payload is extracted from chatter.",
+   "original_sha256": "d0e0db515f59e355bb65546c52c672392a7e9b99cfb99d5ac4570cca200cd982",
+   "context_sha256": "b9eef6e5347c2d66a8e6eba5fbd8156f02dab94798821de487d18adc2d717cda",
+   "prompt_sha256": "823faedf70fd9286dd439cd0bca7935869e21e2e6579c503c82050b57cccbe46",
+   "replacement": "def _extract_json_payload(value: str) -> str:\n    \"\"\"Extract JSON object or array text, trimming fences and chatter.\"\"\"\n    stripped = _strip_json_fence(value).strip()\n    first_arr = stripped.find(\"[\")\n    last_arr = stripped.rfind(\"]\")\n    first_obj = stripped.find(\"{\")\n    last_obj = stripped.rfind(\"}\")\n    if first_arr != -1 and last_arr != -1 and last_arr > first_arr and (\n        first_obj == -1 or first_arr < first_obj\n    ):\n        return stripped[first_arr : last_arr + 1]\n    if first_obj != -1 and last_obj != -1 and last_obj > first_obj:\n        return stripped[first_obj:last_obj]\n\n    return stripped\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-788ee7",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "590e37fba12472b3ca1539771208631afb29327573f2b84eadc7038e4e6eeac1",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-FDD8D792",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_json_object",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Dict normalization drops entries whose value is None, so a schema-required nullable field disappears from the public structured result.",
+   "original_sha256": "b9911fc46e860d88370a273bc26b0f4160c47458fa6c1647b3dbd071495a1295",
+   "context_sha256": "ec2d9c4bc6fb616c67bc8ff268871f16bcc8d0862429d1f6a49d0b90d135e5a3",
+   "prompt_sha256": "77d867599bdf967482b7bd04efec1589ac7f776d571f9033984179f99f29fb61",
+   "replacement": "def _parse_json_object(value: object) -> dict[str, Any]:\n    \"\"\"Parse a structured-output candidate into a JSON object mapping.\"\"\"\n    if isinstance(value, str):\n        value = _extract_json_payload(value)\n        try:\n            decoded = json.loads(value)\n        except json.JSONDecodeError as exc:\n            msg = f\"Structured output is not valid JSON: {exc.msg}.\"\n            raise ValueError(msg) from exc\n    else:\n        decoded = value\n\n    if not isinstance(decoded, dict):\n        msg = \"Structured output must be a JSON object.\"\n        raise TypeError(msg)\n    return {str(key): item for key, item in decoded.items() if item is not None}",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-c60794",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "53bf816cc1b8351ca041daaf9c6dfc764bcae7e7ae3c771f9c68de21b81d8152",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-C1639EC8",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_json_object",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Keys are normalized to lowercase when building the result, so camelCase or capitalized fields required by the caller's schema get renamed and fail validation (provider formatting leaks/changes the payload).",
+   "original_sha256": "b9911fc46e860d88370a273bc26b0f4160c47458fa6c1647b3dbd071495a1295",
+   "context_sha256": "ec2d9c4bc6fb616c67bc8ff268871f16bcc8d0862429d1f6a49d0b90d135e5a3",
+   "prompt_sha256": "77d867599bdf967482b7bd04efec1589ac7f776d571f9033984179f99f29fb61",
+   "replacement": "def _parse_json_object(value: object) -> dict[str, Any]:\n    \"\"\"Parse a structured-output candidate into a JSON object mapping.\"\"\"\n    if isinstance(value, str):\n        value = _extract_json_payload(value)\n        try:\n            decoded = json.loads(value)\n        except json.JSONDecodeError as exc:\n            msg = f\"Structured output is not valid JSON: {exc.msg}.\"\n            raise ValueError(msg) from exc\n    else:\n        decoded = value\n\n    if not isinstance(decoded, dict):\n        msg = \"Structured output must be a JSON object.\"\n        raise TypeError(msg)\n    return {str(key).strip().lower(): item for key, item in decoded.items()}",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-c60794",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "53bf816cc1b8351ca041daaf9c6dfc764bcae7e7ae3c771f9c68de21b81d8152",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-C0648F32",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_strip_json_fence",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Operate on the raw value without stripping whitespace first, causing the fence removal to fail if there is any leading or trailing whitespace around the markdown block.",
+   "original_sha256": "437495ddd040a02234019625a126c02aa54591894023482a01ed9b6fd57b0e9d",
+   "context_sha256": "fafad12e92970812eee928d9fa9bc4a6108b6ed48e2f8d7411622b1487add32d",
+   "prompt_sha256": "f96e8be26965e9c05220686f1ed1e1353081cedcad27ff5660ef767a97927018",
+   "replacement": "def _strip_json_fence(value: str) -> str:\n    \"\"\"Return JSON text without a simple Markdown code fence wrapper.\"\"\"\n    if not value.startswith(\"```\") or not value.endswith(\"```\"):\n        return value\n    lines = value.splitlines()\n    if len(lines) < _MIN_FENCED_JSON_LINES:\n        return value\n    if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:\n        return value\n    return \"\\n\".join(lines[1:-1]).strip()",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-4264b9",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "1a420f3e28f947831fbacf560e0cb80a7caa5fb0ce90a8f95fad7948a1476ad7",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-1D602B20",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_strip_json_fence",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Only accept untagged markdown code fences, causing the function to fail to strip fences that contain the \"json\" language identifier.",
+   "original_sha256": "437495ddd040a02234019625a126c02aa54591894023482a01ed9b6fd57b0e9d",
+   "context_sha256": "fafad12e92970812eee928d9fa9bc4a6108b6ed48e2f8d7411622b1487add32d",
+   "prompt_sha256": "f96e8be26965e9c05220686f1ed1e1353081cedcad27ff5660ef767a97927018",
+   "replacement": "def _strip_json_fence(value: str) -> str:\n    \"\"\"Return JSON text without a simple Markdown code fence wrapper.\"\"\"\n    stripped = value.strip()\n    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):\n        return value\n    lines = stripped.splitlines()\n    if len(lines) < _MIN_FENCED_JSON_LINES:\n        return value\n    if lines[0].strip() != \"```\":\n        return value\n    return \"\\n\".join(lines[1:-1]).strip()",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-4264b9",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "1a420f3e28f947831fbacf560e0cb80a7caa5fb0ce90a8f95fad7948a1476ad7",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-04B797BF",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::validate_schema_output",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "On success the function returns the raw candidate value instead of the schema-parsed value, so provider-specific formatting (raw JSON strings, extra keys, uncoerced fields) leaks through as the public result.",
+   "original_sha256": "d3962c5d7c3dcb7f83e9fe785f3e17a31ab01033733aeddc299cb660e609140a",
+   "context_sha256": "f27e6fd7e1686ad8de36f01b1b0884d67bffd979efc02d76768492d1a7c5c696",
+   "prompt_sha256": "c127caed0bc44de8091643cc1c11abbc6add857739ae4a2ab1a47c1732d89fdc",
+   "replacement": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    try:\n        spec.parse(value)\n    except Exception as exc:\n        return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )\n    return SchemaValidationResult(valid=True, value=value)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-b2f803",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "683a145a7c5954e81250a5f3cb1a02d60f9572a8f5638928229269e84f44f537",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-10F6DAAB",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::validate_schema_output",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "After parsing, the result is normalized by dropping None-valued fields (via exclude_none / dict filtering), so required nullable fields disappear from the public structured result even though the schema requires them.",
+   "original_sha256": "d3962c5d7c3dcb7f83e9fe785f3e17a31ab01033733aeddc299cb660e609140a",
+   "context_sha256": "f27e6fd7e1686ad8de36f01b1b0884d67bffd979efc02d76768492d1a7c5c696",
+   "prompt_sha256": "c127caed0bc44de8091643cc1c11abbc6add857739ae4a2ab1a47c1732d89fdc",
+   "replacement": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    try:\n        parsed = spec.parse(value)\n    except Exception as exc:\n        return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )\n    if hasattr(parsed, \"model_dump\"):\n        parsed = parsed.model_dump(exclude_none=True)\n    elif isinstance(parsed, dict):\n        parsed = {k: v for k, v in parsed.items() if v is not None}\n    return SchemaValidationResult(valid=True, value=parsed)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-b2f803",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "683a145a7c5954e81250a5f3cb1a02d60f9572a8f5638928229269e84f44f537",
+    "index": 1
+   }
+  }
+ ]
+}

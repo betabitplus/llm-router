@@ -26,12 +26,23 @@ operators cannot, but only a cascade of executable filters keeps their noise out
 
 **Decision.** Mutation testing exists to judge fault classes, not to produce a score.
 One rule-based engine, pytest-gremlins behind the project's campaign adapter, plants
-mutants only on each contract's attributable `@impl` lines and runs the full pytest
+mutants only on each contract's attributable `@impl` lines (amended 2026-09-28: every line
+its scopes claim, a line several contracts claim challenged for each with its own tests,
+where before such a line was left out and ten contracts had no mutant at all) and runs the full pytest
 suite of the contract's passing tests per mutant. Rule operators map to Implementation
 classes: comparison → `impl.comparison`; boundary → `impl.boundary`; arithmetic → the
 class `impl.arithmetic` (Google's AOR, added 2026-09-27 after an audit found the engine's
 operator unused); boolean and return → `impl.control-flow`; statement removal and
-function-body removal → the new class `impl.effect`. A class is caught only when every valid, unsuppressed mutant of that
+function-body removal → the new class `impl.effect`. Python's own faults were added on
+2026-09-28, after PyTation (arXiv 2601.19088), whose operators made mostly mutants the
+general operators do not: a removed optional argument, conversion, method call or container
+element and a swapped attribute read → `impl.effect`; a removed operand of `and`/`or`, a
+condition replaced by `True`/`False` (Stryker, PIT) and a negated plain-value condition
+(Google's unary operator insertion) → `impl.control-flow`. Two deterministic mutant kinds
+challenge the levels above the code (2026-09-28): a scenario oracle mutant changes what one Then
+step compares with, and the scenarios that use it must fail (`spec.wrong-outcome`); an architecture
+mutant adds an import an import-linter rule forbids, and the rule must break
+(`architecture.forbidden-edge`). A class is caught only when every valid, unsuppressed mutant of that
 class in the contract's code fails at least one of its tests; a mutant no test reaches
 is reported as not reached, a mutant that breaks collection as invalid. Noise is
 removed before anything runs: arid-code rules declared in the Test Plan (profiles may

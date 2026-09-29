@@ -1,0 +1,641 @@
+{
+ "SM-008E10B9": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "model": "type('M', (BaseModel,), {'__annotations__': {'x': int}, 'x': __import__('pydantic').Field(exclude=True)})"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-1d9d12",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "A Pydantic model with a field marked exclude=True includes that field in its validation schema but omits it from its serialization schema, causing the two versions to return SchemaSpec objects with different json_schema dictionaries.",
+    "response_sha256": "36ed69fe7056d3405796e89f411d64e7345260959fe364c8f5b485336f25075c",
+    "sources": [
+     "        json_schema=model.model_json_schema(),",
+     "        json_schema=model.model_json_schema(mode=\"serialization\"),"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "model": "type('M', (BaseModel,), {'__annotations__': {'x': int}, 'x': 1})"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-011084",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a model with a defaulted field, serialization mode lists the field as required and validation mode does not, so the returned json_schema differs.",
+    "response_sha256": "c4c6a23a6fa19ca8e21e0361d34623c108cbafc8648e8d5a3b9dd77f571937e6",
+    "sources": [
+     "json_schema=model.model_json_schema(mode=\"serialization\"),"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "a35b186eaf8f0dbe9765d2989b50ad655569de534812214ebe35ea15ebef9afe"
+ },
+ "SM-07EEEA4D": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "schema": "{'required': 'x'}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-550db9",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version skips check_schema when \"properties\" is absent, so the invalid schema {'required': 'x'} raises ValueError in the original but returns None in the changed version.",
+    "response_sha256": "a52a6656a4664b9b891e38f0e2d64de143d17d7d9a170aed3050581612c87db7",
+    "sources": [
+     "if \"properties\" in schema:",
+     "Draft202012Validator.check_schema(dict(schema))",
+     "if schema.get(\"type\") not in {None, \"object\"}:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "e5d8ccf6a86c927d84c2faae8ef79f9eccd6b6bc3c48944558fc47b157d3c909"
+ },
+ "SM-1C2A60D5": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "name": "\"\"",
+     "spec": "SchemaSpec(name=\"old\", json_schema={}, parser=lambda x: x)",
+     "transform": "lambda x: x"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-1e71d4",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When `name` is an empty string, the original version uses it because it is not `None`, whereas the changed version treats it as falsy and incorrectly falls back to `spec.name`.",
+    "response_sha256": "8e140f0d3ae07a711d39e776c3759663d2157ae7c261d802665e67f5d0143360",
+    "sources": [
+     "name=spec.name if name is None else name,",
+     "name=name or spec.name,"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "name": "''",
+     "spec": "SchemaSpec(name='orig', json_schema={}, parser=lambda x: x)",
+     "transform": "lambda s: s"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-4a4c9e",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With name='' the original sets the name to '' (since it is not None), while the changed version's `name or spec.name` falls back to 'orig'.",
+    "response_sha256": "5ced7e4ae473184348b3646dac8f9d1cfdada7e98f8e2f349bafdb0ca75177c7",
+    "sources": [
+     "name=spec.name if name is None else name,",
+     "name=name or spec.name,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "c4069f460c77dcc143c515809fcf8e16f827e013b7718314d97999d757a82d5e"
+ },
+ "SM-2093BBD0": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "name": "None",
+     "spec": "SchemaSpec(name='a', json_schema={'$defs': {}}, parser=bool)",
+     "transform": "lambda x: x"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-ae7f11",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified version explicitly drops the keys '$defs' and 'definitions' from the output of the transform callable, causing the returned SchemaSpec's json_schema to differ from the original version when these keys are present.",
+    "response_sha256": "33a8fc79a820660c38d3726526e6ca7eb286d2a589d908568935d362d676f6ff",
+    "sources": [
+     "    transformed = {",
+     "        key: value",
+     "        for key, value in transformed.items()",
+     "        if key not in (\"$defs\", \"definitions\")",
+     "    }"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "name": "None",
+     "spec": "SchemaSpec(name='s', json_schema={'type':'object'}, parser=lambda x: x)",
+     "transform": "lambda s: {'type':'object','$defs':{'A':{'type':'string'}},'properties':{'a':{'$ref':'#/$defs/A'}}}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-2450ad",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version strips \"$defs\" and \"definitions\" from the transformed schema, so a transform that returns them yields a different json_schema, and the $ref entries are left dangling.",
+    "response_sha256": "b91e142d993b679e8f94cdf7d9b972bc17b332cca84b957d4019811a0dfb7ac5",
+    "sources": [
+     "if key not in (\"$defs\", \"definitions\")",
+     "json_schema=transformed,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "52f02f7b9da09ad2daeafd6179bd61693ac18b6f471f96a34651928fa53ec01c"
+ },
+ "SM-2AE24515": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "spec": "SchemaSpec(name='test', json_schema={}, parser=dict)",
+     "value": "{'a': None}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-8a5e1a",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version strips out dictionary keys that have None values before parsing, meaning an explicit None is passed to the parser differently than in the original version (as a missing key).",
+    "response_sha256": "618c30412dab391ef569b1d5c0bd89cbaae7268dec4f9180019fcc9231f5cfa1",
+    "sources": [
+     "        candidate = {",
+     "            key: item",
+     "            for key, item in value.items()",
+     "            if item is not None",
+     "        }"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "spec": "SchemaSpec(name='s', json_schema={}, parser=lambda v: v)",
+     "value": "{'a': None}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-2ad4ff",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version strips None-valued keys before parsing, so an identity parser returns {} instead of {'a': None}.",
+    "response_sha256": "83e38e9b9eda1930e11dd28a569e4c9efc935ac796e6f38486439f1349dd6937",
+    "sources": [
+     "if item is not None",
+     "parsed = spec.parse(candidate)",
+     "parsed = spec.parse(value)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "c17e5fac023c42feba3279f734dc91494af9380ad4c41957280906cda376978b"
+ },
+ "SM-4A74651D": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "schema": "{'type': 'object', 'properties': {'a': {'type': 'integer'}}}",
+     "value": "{'a': 1, 'b': 2}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-46b4bb",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With extra keys allowed by the schema, the changed version filters out keys not listed in properties, while the original returns the full parsed object.",
+    "response_sha256": "64a47e149220b226930db509a01daaccc16eea0b1d8243d7a636f5bcb544f7a5",
+    "sources": [
+     "return {key: item for key, item in parsed.items() if key in properties}",
+     "if isinstance(properties, Mapping):",
+     "return parsed"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "dfbdd50622be12744fadf7768d1cfd456f8322b0d498f4068673085adb10ba80"
+ },
+ "SM-6B29FD70": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "schema": "{\"$defs\": {}}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-ba78e8",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version creates a new 'validation_schema' dictionary that excludes the \"$defs\" and \"definitions\" keys, meaning the parser lambda returned in the SchemaSpec captures a different dictionary and will behave differently during validation.",
+    "response_sha256": "9f1fae2d5dab5a0d4a9971cd6978432000fc3bd742ec2dbd959147fafc1e6d91",
+    "sources": [
+     "        validation_schema = {",
+     "            key: value",
+     "            for key, value in copied.items()",
+     "            if key not in {\"$defs\", \"definitions\"}",
+     "        }"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "schema": "{'type':'object','properties':{'a':{'$ref':'#/$defs/X'}},'required':['a'],'$defs':{'X':{'type':'integer'}}}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-c37187",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed parser validates against a schema with \"$defs\"/\"definitions\" removed, so \"$ref\" targets into them no longer resolve, and the parser's behaviour on values such as {\"a\":\"str\"} differs from the original.",
+    "response_sha256": "a843ac3892a738cae9351a013049cabad58ca4e4a90ea927616767f984bbcec0",
+    "sources": [
+     "validation_schema = {\n            key: value\n            for key, value in copied.items()\n            if key not in {\"$defs\", \"definitions\"}\n        }",
+     "parser=lambda value: _parse_mapping_schema(validation_schema, value),",
+     "parser=lambda value: _parse_mapping_schema(copied, value),"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "d7de395dfa23c1d18034c1adfcc2e073a5825eeca8a933ac9678ab40abea5a3c"
+ },
+ "SM-6E643223": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "schema": "{\"type\": [\"object\"]}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-99dfdf",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "A list-valued type passes check_schema; the original raises TypeError (unhashable list in a set membership test), while the new version skips non-str types and returns None.",
+    "response_sha256": "80ec146245ad336f0ce7da99856ed53af3a4a5fb31286baecb33c015b906bc00",
+    "sources": [
+     "if schema.get(\"type\") not in {None, \"object\"}:",
+     "if isinstance(declared_type, str) and declared_type != \"object\":"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "28dc68a13600c8e6ad8161794b311d10ebfdf57ccaffbe713abb390312baff6c"
+ },
+ "SM-9C5C73BC": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-a76bd4",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Both versions evaluate dict(schema) and return equivalent SchemaSpec instances, as omitting deepcopy only affects the object identity of nested mutable elements which cannot be observed through the function's immediate return value or exception type for any literal input.",
+    "response_sha256": "1eca05315cccb3036fc8c4333ae4de7f5b2c73de7f7a6e4b51fd05afdd90736e",
+    "sources": [
+     "        copied = deepcopy(dict(schema))",
+     "        copied = dict(schema)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "schema": "{'title': 'T', 'type': 'object', 'properties': {'a': {'type': 'string'}}, 'required': ['a']}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-6e3dc2",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The shallow dict(schema) shares nested dicts with the caller, so mutating the caller's schema after the call changes json_schema and the parser, which the deepcopy version prevents.",
+    "response_sha256": "6569f28656039724f0b8df69b905d80c8d95f096bac08984d71f5cc5737d80b4",
+    "sources": [
+     "copied = dict(schema)",
+     "copied = deepcopy(dict(schema))",
+     "parser=lambda value: _parse_mapping_schema(copied, value),"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "232922de11705d3d931c03505ed4514432441d83647477312d34a8f2a6f23c7f"
+ },
+ "SM-AAB2D195": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "name": "None",
+     "spec": "SchemaSpec(name='a', json_schema={'required': ['b']}, parser=int)",
+     "transform": "dict"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-2de92e",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version silently removes elements from the 'required' list if they are not defined in the 'properties' dictionary, whereas the original version preserves the transformed schema verbatim.",
+    "response_sha256": "be7803c95f2a3753d29e6895ed737fe20df5f77f0e929f75d8208bb4a51ce7f3",
+    "sources": [
+     "        transformed[\"required\"] = [",
+     "            item for item in required if item in properties",
+     "        ]"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "name": "None",
+     "spec": "SchemaSpec(name='s', json_schema={'type': 'object'}, parser=lambda x: x)",
+     "transform": "lambda s: {'type': 'object', 'properties': {'a': {}}, 'required': ['a', 'b']}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-fc5581",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops required entries that are absent from properties (here 'b'), so json_schema['required'] is ['a'] instead of the original ['a', 'b'].",
+    "response_sha256": "55771114d0af307b4662a77c2a5d7b47ecd998e60f7553be7c4466149374c858",
+    "sources": [
+     "transformed[\"required\"] = [",
+     "item for item in required if item in properties",
+     "transformed = dict(transform(spec.json_schema))"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "3b4ae026747b8bba097a1b036937c45e625e8e6f3f94ecd25662ae9473700d7b"
+ },
+ "SM-BF818699": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "schema": "{\"type\": [\"object\"]}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-017d60",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "A list-valued type passes check_schema; the original's set membership raises TypeError (unhashable list), while the changed != comparison raises ValueError.",
+    "response_sha256": "0122943582b7aa1e6b5ddfbd1db46641a47cda4189d34e7e01bcfa02f827efa4",
+    "sources": [
+     "if schema.get(\"type\") not in {None, \"object\"}:",
+     "if schema.get(\"type\", \"object\") != \"object\":"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "add6f69ddde938a1059ef8ce94cc69d986e6c10eaf041384ea27cd1201760f03"
+ },
+ "SM-C6EBF982": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "model": "type('M', (BaseModel,), {'__annotations__': {'a': type(None)}})",
+     "value": "{'a': None}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-9956cb",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version strips keys with None values from the dictionary, causing a ValidationError for models that explicitly require those nullable fields, whereas the original version preserves them and validates successfully.",
+    "response_sha256": "34b96ee143590d8a10d631acc453f99b2611ead7cfdb090ee3a1d87f5f421104",
+    "sources": [
+     "    if isinstance(value, dict):",
+     "        value = {k: v for k, v in value.items() if v is not None}",
+     "    return model.model_validate(value)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "model": "a BaseModel subclass with field `x: int | None = 5` (any project model with an Optional field whose default is not None)",
+     "value": "{\"x\": None}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-fa002c",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a dict input containing None, the changed version drops the key so the field default is used, while the original keeps None, so results differ for a model with an Optional field whose default is not None.",
+    "response_sha256": "aad1e4feef1b50ceb5b43944b2b50a01b993493e63ef5c76a38e311fffe1b21e",
+    "sources": [
+     "value = {k: v for k, v in value.items() if v is not None}",
+     "return model.model_validate(value)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "a3eeb587fa8f744b6b65415160187fb41e9d512f72854853cd5ffd9d904dea0d"
+ },
+ "SM-D49276DB": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "model": "BaseModel",
+     "value": "'```json\\n{}\\n```'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-f942d3",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version successfully parses JSON embedded in markdown fences by first extracting it, whereas the changed version passes the raw string to model_validate_json and raises a validation error.",
+    "response_sha256": "6fc942c7eccc655a88b00fa34b9f31a5701b3916c12eb67a0c739318d9954627",
+    "sources": [
+     "payload = _extract_json_payload(value)",
+     "return model.model_validate_json(payload)",
+     "return model.model_validate_json(value)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "model": "__import__('pydantic').create_model('M', a=(int, ...))",
+     "value": "'```json\\n{\"a\": 1}\\n```'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-4fafc9",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original strips fences and chatter via _extract_json_payload before validating, so fenced JSON parses; the changed version passes the raw string to model_validate_json, which raises ValidationError.",
+    "response_sha256": "3426ecde907693908f1801a0101719cf188363b58633acd5487ac4403f568eb9",
+    "sources": [
+     "payload = _extract_json_payload(value)",
+     "return model.model_validate_json(payload)",
+     "return model.model_validate_json(value)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "e13098a95b61550eddd082e97d351034649e185141ff4b8dbc7d5aa1633762fa"
+ },
+ "SM-DD714EDA": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "name": "None",
+     "spec": "SchemaSpec(name='test', json_schema={}, parser=lambda x: x)",
+     "transform": "lambda schema: {'type': 'string', 'enum': ['a', 'b']}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-ad8320",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version filters the transformed schema to a specific set of allowed keys, stripping out valid JSON schema keys like 'enum' or 'items' that the original version retains.",
+    "response_sha256": "956138d5ecae75c90619ed9fea1cc247588c590d6ea7d2070ec7cb25def87b2a",
+    "sources": [
+     "transformed = transform(spec.json_schema)",
+     "allowed = {\"type\", \"properties\", \"required\", \"additionalProperties\", \"title\", \"description\"}",
+     "transformed = {k: v for k, v in transformed.items() if k in allowed}"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "name": "None",
+     "spec": "SchemaSpec(name='s', json_schema={'type': 'object'}, parser=lambda x: x)",
+     "transform": "lambda s: {'type': 'object', '$defs': {'a': {'type': 'string'}}}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-d0c0e8",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops keys outside the allowed set (e.g. '$defs') from the transformed schema, while the original keeps them, so the returned json_schema differs.",
+    "response_sha256": "c39382863d2d2aaa457004eef122a4870be5c46fd3cf65545d586dab32d4dcf8",
+    "sources": [
+     "transformed = {k: v for k, v in transformed.items() if k in allowed}",
+     "transformed = transform(spec.json_schema)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "12ed01d5faef967b0cc1dd4516b881ecf8569b920eb2729e1998a98c74798abd"
+ },
+ "SM-E58B2C96": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "model": "type(\"M\", (BaseModel,), {})",
+     "value": "BaseModel()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-9d4c04",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When 'value' is an instance of a different BaseModel subclass than the requested 'model', the original version correctly validates and converts it via 'model_validate', whereas the changed version incorrectly returns the unvalidated value of the wrong type.",
+    "response_sha256": "a3cf65cc19b4def95b8d414b98fafd9b23c185c767150341abc2c3bce080ffe8",
+    "sources": [
+     "    if isinstance(value, model):",
+     "    if isinstance(value, BaseModel):",
+     "    return model.model_validate(value)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "model": "ModelA (any BaseModel subclass with a required field, e.g. class ModelA(BaseModel): x: int)",
+     "value": "ModelB(y=1) (an instance of a different BaseModel subclass, not a ModelA)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-aadef2",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version returns any BaseModel instance unchanged, while the original validates an instance of a different model class and raises ValidationError.",
+    "response_sha256": "65f7ddef87ddaa9d158dc77ad3ced6fc316ab93265987c2ad93d558737d212bf",
+    "sources": [
+     "if isinstance(value, BaseModel):",
+     "if isinstance(value, model):",
+     "return model.model_validate(value)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "e9addeecb5c99e47bf7f98f8cc5992d7009dfe4179b687885e89ee4c46f0e327"
+ },
+ "SM-EF50CA95": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "schema": "{\"type\": \"object\"}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-392ee6",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "For any literal matching Mapping[str, Any], dict() succeeds and Draft202012Validator.check_schema() either passes or gracefully raises SchemaError, making the broader Exception catch functionally identical.",
+    "response_sha256": "ac89cd4d10d66543f17b2499fef6baec6c1da3939b0d8df1a5ca3f4f5a0ebe3e",
+    "sources": [
+     "except SchemaError as exc:",
+     "except Exception as exc:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "schema": "__import__('functools').reduce(lambda s, _: {'not': s}, range(100000), {})"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-7b9790",
+    "confidence": 0.7,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "A deeply nested schema makes check_schema raise RecursionError, which the original lets propagate, but the changed except Exception converts it to ValueError.",
+    "response_sha256": "fffd7b9838cb7d60a7b8a26be79a9111007bd3b8dacf05586077a78b73869a29",
+    "sources": [
+     "except Exception as exc:",
+     "except SchemaError as exc:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "9f1375c2f34003d56b598a8aa2f82d89b6d00e7637dc0f0553f8bcfc5fc588f0"
+ },
+ "SM-F375873A": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "model": "pydantic.create_model('M', x=(int, pydantic.Field(alias='y')))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-86dbf4",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version relies on the default by_alias=True for model_json_schema, while the new version explicitly passes by_alias=False, producing different schema property keys for models containing field aliases.",
+    "response_sha256": "f42970b44c24b73ba5f11a1db226158619f3df905e1ab8cf7b04d583cd410c75",
+    "sources": [
+     "        json_schema=model.model_json_schema(),",
+     "        json_schema=model.model_json_schema(by_alias=False),"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "model": "type('M', (BaseModel,), {'__annotations__': {'x': int}, 'x': Field(alias='y')})"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-9f74f3",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "Pydantic's model_json_schema defaults to by_alias=True, so for a model with an aliased field the original schema uses the alias while the changed one uses the field name, which changes the json_schema field of the SchemaSpec.",
+    "response_sha256": "08a674e3edc88b28c8c6ecece9a7384dbe328915e55fdd818abfbc8e51ae9744",
+    "sources": [
+     "json_schema=model.model_json_schema(by_alias=False),",
+     "json_schema=model.model_json_schema(),"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "6039b788694644fe4a983a0029831416a4ce4f3426699e21351a16b9bd69426a"
+ }
+}

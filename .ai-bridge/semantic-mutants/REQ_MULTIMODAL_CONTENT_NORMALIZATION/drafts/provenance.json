@@ -1,0 +1,20 @@
+{
+ "SM-227845E0": {
+  "kind": "model",
+  "call_id": "20260929T165727Z-7a44d7",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "0f23d76b5c7087a1e5160bc174815e62fa2f0b4343f1e00bf8bee010c53f05fa",
+  "attempt": 1
+ },
+ "SM-E1B20E59": {
+  "kind": "model",
+  "call_id": "20260929T165720Z-d715af",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "5d7c055e1d4c483f758a4d22bce93bb2b1acc592059b3d42181356d422e14b44",
+  "attempt": 1
+ }
+}

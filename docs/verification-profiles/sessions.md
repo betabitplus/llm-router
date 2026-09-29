@@ -137,6 +137,17 @@ of the public persistence claim.
 | Architecture          | The Requirement constrains observable restored state rather than internal package-layer topology.                                                                                              |
 | Specification / model | Wrong restored values or an omitted public state/media partition directly violate persistence semantics; serializer/version mechanics remain TREQ-owned.                                       |
 
+### Semantic mutants
+
+| Fault class              | Target                                                         | Budget | Risk                                                                                  |
+| ------------------------ | -------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`     | `src/llm_router/_internal/session/store.py::SessionStore.load` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition` | `src/llm_router/_internal/session/store.py::SessionStore.load` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-treq-session-serialization)=
 
 ## Profile · TREQ_SESSION_SERIALIZATION
@@ -194,3 +205,15 @@ is involved.
 | Interface / protocol  | The persisted JSON/media representation is the technical payload schema; incompatible shapes must not be silently accepted.                                                          |
 | Architecture          | No package-layer edge is normative for the serializer contract.                                                                                                                      |
 | Specification / model | Missing media partitions, corrupted round-trip values, or accepting an unsupported version directly violate the technical claim.                                                     |
+
+### Semantic mutants
+
+| Fault class                | Target                                                              | Budget | Risk                                                                                  |
+| -------------------------- | ------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/session/serialization.py::encode_session` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`   | `src/llm_router/_internal/session/serialization.py::encode_session` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `interface.payload-schema` | `src/llm_router/_internal/session/serialization.py::encode_session` |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.

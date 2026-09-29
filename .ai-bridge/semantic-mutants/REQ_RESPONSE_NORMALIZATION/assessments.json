@@ -1,0 +1,28 @@
+{
+ "SM-2DBB5B58": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "output_text": "None",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='m', output_text='x', tool_calls=(ToolCall(id='1', name='f', arguments={}),))",
+     "structured_data": "None",
+     "tool_calls": "[]",
+     "tool_trace": "()"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164215Z-c20a7d",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version ignores the tool_calls override, so with result.tool_calls non-empty and tool_calls=[] the original returns an empty list and the changed version returns the result's calls.",
+    "response_sha256": "9187a48d8be712db86e62ed61885ec82b4ea8392797d17aa51b9da0140b64015",
+    "sources": [
+     "tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),",
+     "tool_calls=list(result.tool_calls),"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "54da68cf84062235af417ab86a88d8ae4011a4cdabadac244d385e21add31101"
+ }
+}

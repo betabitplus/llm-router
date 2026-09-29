@@ -64,10 +64,13 @@ _MIN_IMAGE_DIMENSION = 1
 _MAX_IMAGE_DIMENSION = 16384
 
 
+# @impl Media descriptor normalization, IMPL_MULTIMODAL_MEDIA_DESCRIPTORS, [REQ_MULTIMODAL_CONTENT_NORMALIZATION[revision==2]]
 def describe_media(value: object) -> MediaDescriptor:
     """Return a provider-neutral media descriptor for a public media object."""
+    # @impl Document input normalization, IMPL_DOCUMENT_INPUT, [REQ_DOCUMENT_INPUT[revision==1]]
     if isinstance(value, FileSchema):
         return FileMedia(kind="file", path=value.path, mime_type=value.mime_type)
+    # @impl Image input normalization, IMPL_IMAGE_INPUT, [REQ_IMAGE_INPUT[revision==1]]
     if isinstance(value, Image.Image):
         _validate_image(value)
         return ImageMedia(
@@ -77,6 +80,7 @@ def describe_media(value: object) -> MediaDescriptor:
             height=value.height,
             mode=value.mode,
         )
+    # @impl Video input normalization, IMPL_VIDEO_INPUT, [REQ_VIDEO_INPUT[revision==2]]
     if isinstance(value, VideoSchema):
         return VideoFileMedia(
             kind="video_file",
@@ -85,6 +89,7 @@ def describe_media(value: object) -> MediaDescriptor:
             start_offset=value.start_offset,
             end_offset=value.end_offset,
         )
+    # @impl Remote video input normalization, IMPL_VIDEO_URL_INPUT, [REQ_VIDEO_INPUT[revision==2]]
     if isinstance(value, VideoUrlSchema):
         return VideoUrlMedia(
             kind="video_url",
@@ -98,6 +103,7 @@ def describe_media(value: object) -> MediaDescriptor:
     raise TypeError(msg)
 
 
+# @impl Raw image bounds, IMPL_MULTIMODAL_IMAGE_BOUNDS, [REQ_MULTIMODAL_CONTENT_NORMALIZATION[revision==2]]
 def _validate_image(image: Image.Image) -> None:
     """Validate raw Pillow images before they enter normalized content."""
     if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:

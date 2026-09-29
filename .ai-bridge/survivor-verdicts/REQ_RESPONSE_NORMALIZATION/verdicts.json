@@ -1,0 +1,232 @@
+{
+ "SM-2265B496": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-6b1142",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant stops normalizing structured data, so raw objects like `namespace()` end up in the public `data[\"parsed\"]` instead of the JSON-safe form. It also overwrites a `parsed` key the provider already sent. Both break the promise that successful replies normalize into the same public response semantics without leakage.",
+   "response_sha256": "1d9b76b5a5e0d47a5b0aec6428d5812755e173a6789cff953e8139fff8a62634",
+   "sources": [
+    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics.",
+    "Each non-baseline family exposes public text/usage/tool semantics equivalent to the OpenAI-compatible baseline without provider-specific leakage.",
+    "if structured_data is not None and isinstance(data, dict) and \"parsed\" not in data:",
+    "data = {**data, \"parsed\": _json_safe_value(structured_data)}",
+    "data = {**data, \"parsed\": structured_data}"
+   ],
+   "test_focus": "Call build_public_response with a structured_data that is not JSON-safe (e.g. SimpleNamespace). Check that data[\"parsed\"] is the _json_safe_value form and serializes with json.dumps. Also check that a \"parsed\" key already in result.data is kept.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:30:20.395649Z",
+   "answer_sha256": "223781cbcba92842fd6acfbb0d5ec6bd55a988d3d72ead6c275a4e0507b349d8",
+   "call_id": "20260929T172801Z-878cd3",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "223781cbcba92842fd6acfbb0d5ec6bd55a988d3d72ead6c275a4e0507b349d8",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_response_normalization_sm_2265b496.py",
+   "response_sha256": "dc233bb65c2af8df6a73a83182fca2aba4ae9019c47f5a10ecef5861896952a9",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model"
+   ]
+  },
+  "prompt_sha256": "65590209b783ea62115138c42f5a038365b8460cc58778f792b13d0bdd8714e1"
+ },
+ "SM-2A89BC91": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-7feb9c",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the caller's normalized output_text and always exposes the raw provider text. The confirmed input shows this: a Google result publishes 'parsed' where the original publishes ''. That changes the public text semantics the requirement says must match the OpenAI-compatible baseline, and it lets provider-specific text leak through.",
+   "response_sha256": "c4f7f33540ed2125819a650956f64bf098df2015d16fa8ec07ca33e8d7c42241",
+   "sources": [
+    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics.",
+    "Each non-baseline family exposes public text/usage/tool semantics equivalent to the OpenAI-compatible baseline without provider-specific leakage.",
+    "output_text=result.output_text if output_text is None else output_text,",
+    "output_text=result.output_text,"
+   ],
+   "test_focus": "Call build_public_response with an explicit output_text that differs from result.output_text, including the empty string. Assert that the public response's output_text equals the passed override and not the raw provider text.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:21:43.471359Z",
+   "answer_sha256": "0ef71b6e2ab10484703eacd5a0b55ec5574a5bd5b0471bf9e4b45586195fe09a",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "637cf23f9ec6b4bad94b25b6c31af24c43c2d9d7a6c056a477358701e6a3b288",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_response_normalization_sm_2a89bc91.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "9ec211f15f2eed5366cf722472a4d4441b93ae0b61287344ce4d6e3b94da186d"
+ },
+ "SM-44C084CF": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-e526a7",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant puts the raw structured object (here a SimpleNamespace) into public `data['parsed']` instead of its JSON-safe form, and execution confirms the difference. That leaves a non-normalized, possibly provider-specific object in the public response, which breaks the rule that equivalent replies normalize to the same public semantics without provider-specific leakage.",
+   "response_sha256": "edb2b795b5a269b6f1cdb2194cba26310965e10f842b699552694292b51833b3",
+   "sources": [
+    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics.",
+    "Each non-baseline family exposes public text/usage/tool semantics equivalent to the OpenAI-compatible baseline without provider-specific leakage.",
+    "data = {**data, \"parsed\": _json_safe_value(structured_data)}",
+    "data = {**data, \"parsed\": structured_data}",
+    "provider=result.provider,"
+   ],
+   "test_focus": "Pass a non-JSON structured_data value such as SimpleNamespace() and check that `response.data['parsed']` is the JSON-safe form, not the raw object, and that `response.provider` is the plain string value.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:30:20.396586Z",
+   "answer_sha256": "85e774b5fe73d2cf608211e0951468c5797f00647b1ba860c16d64bbf52051d2",
+   "call_id": "20260929T172801Z-07ef02",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "dfbe2b0d9b08a033d4f44d56385c7957c63719ba8669a11b09a4f4b7d69394f3",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_response_normalization_sm_44c084cf.py",
+   "response_sha256": "9414c3e8f6cc27b29639b6701d68f909d4cd04fbc1935b1384a1990ce604d728",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.runtime.output.build_public_response",
+    "llm_router._internal.runtime.output.ProviderResult"
+   ]
+  },
+  "prompt_sha256": "be917cb9b69e32ec7a2a1d37f345d8e1f86a2eb9b26091d21362b8b017a0a32a"
+ },
+ "SM-7211CDB1": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-08dd45",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant ignores an explicit empty override (output_text='' or tool_calls=()) and falls back to the provider's raw result.output_text / result.tool_calls. The public text and tool semantics then expose provider-specific content the normalizer meant to suppress: the confirmed input returns 'parsed' where the original returns ''. That is the leakage the verification criterion rules out.",
+   "response_sha256": "cc5a4309fdbba1fec9247c2980b826e0c3374753344eb6d735ff1a71d7175559",
+   "sources": [
+    "Each non-baseline family exposes public text/usage/tool semantics equivalent to the OpenAI-compatible baseline without provider-specific leakage.",
+    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics.",
+    "output_text=result.output_text if output_text is None else output_text,",
+    "output_text=output_text or result.output_text,",
+    "tool_calls=list(tool_calls or result.tool_calls),"
+   ],
+   "test_focus": "Call build_public_response with a non-empty result.output_text and non-empty result.tool_calls, and pass output_text='' and tool_calls=() explicitly. Check that the public response has output_text == '' and tool_calls == [], not the provider result's values.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:27:59.749764Z",
+   "answer_sha256": "898c414e6082c1e8316303014fb6c292a0752bf178af603fa8a830f6b2d1fef5",
+   "call_id": "20260929T172149Z-1ca723",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "277707da99933bbb579c60e915d1262fb8333e782c3a34ce7882f68eba393db4",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_response_normalization_sm_7211cdb1.py",
+   "response_sha256": "c1e5ae9ddfad079550cbd99639a61b56ea7148936de816a3bb6d5aea80fddfae",
+   "source": "draft author",
+   "sources": [
+    "llm_router.ToolCall",
+    "llm_router._internal.runtime.output.build_public_response"
+   ]
+  },
+  "prompt_sha256": "683e674544be890e85cea3376e4e0d59c6e410671361a5b0c8ba56c3499bc6a5"
+ },
+ "SM-B9EE9F1F": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-ca3168",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant ignores an explicit empty override. When the caller passes output_text=\"\" or tool_calls=(), the public response shows the provider result's raw text or tool calls instead, and the confirmed input shows 'parsed' where the original shows ''. So the public text and tool semantics depend on the provider's own output rather than on the normalized value, which is the provider-specific leakage the criterion rules out.",
+   "response_sha256": "cf7be77f5d90d6755b6670125098bcb06b0c47ca986f070fa33c8debb84d5d10",
+   "sources": [
+    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics.",
+    "Each non-baseline family exposes public text/usage/tool semantics equivalent to the OpenAI-compatible baseline without provider-specific leakage.",
+    "output_text=result.output_text if not output_text else output_text,",
+    "tool_calls=list(tool_calls or result.tool_calls),"
+   ],
+   "test_focus": "Pass a ProviderResult whose output_text and tool_calls are not empty, along with explicit output_text=\"\" and tool_calls=(). The public response must have output_text == '' and tool_calls == [].",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:27:59.750497Z",
+   "answer_sha256": "b0abfe1ccc8086d49b01da66997acd8fa1655e1a34b4c9181ae1f8b2495bb784",
+   "call_id": "20260929T172149Z-07f35f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "c0f9657de25b09456affdcc19df2b30a45f66f07ca49768c483e627206bdc35e",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_response_normalization_sm_b9ee9f1f.py",
+   "response_sha256": "05c44fa04beb92d92b31bbbc6fa7fc31c85fdb37e1766fc2e4f82ff978fc25f6",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.UsageStats",
+    "llm_router.ToolCall",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.output.build_public_response"
+   ]
+  },
+  "prompt_sha256": "79dfab3f1904290a49190e5c56f90db1d917c091e054e2986d09e6e02ef2f0f6"
+ }
+}

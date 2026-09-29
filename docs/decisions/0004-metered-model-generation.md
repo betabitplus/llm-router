@@ -36,12 +36,19 @@ reaches for a tool is refused. On receipt the answer is validated again
 against the same schema. The adapter writes nothing a model did not return. Each accepted
 answer is stored as a response file. Every proposal or draft taken from it carries the
 call id, the backend and its version, the model, and the digests of the prompt, the
-schema and the response, so the gate can recompute the chain. Every call, accepted or
+schema and the response, so the gate can recompute the chain. A question never carries the
+machine it ran on: a shown outcome names an environment variable without its value and the
+home directory without its path. An answer that still carries what the public repository must
+not keep is withdrawn (amended 2026-09-30): its ledger row stays, a list names it with the
+reason, and no current record may cite it. Every call, accepted or
 not, appends one row to a consumption ledger. The row holds the tokens, the list-price
 equivalent where the backend reports it, the duration and the plan windows. Before each
 call a budget guard compares the last known windows and the run's call count with the
 Test Plan's limits. A quota pool that reports no window, Antigravity's smaller one, is
-bounded by the calls the ledger shows it took in the last seven days. Above a limit no call is made and the target is deferred. A deferred,
+bounded by the calls the ledger shows it took in the last seven days. A call's list-price cap
+(amended 2026-09-28) is a fuse that follows its role's most expensive answered call and never
+falls below the Test Plan's; a call that reaches it is asked once more at twice the cap, then of
+the next model, so a change of the models' prices never leaves work stuck behind a cap. Above a limit no call is made and the target is deferred. A deferred,
 rejected or invalid generation, or an unavailable backend, leaves the target without
 current mutants, and its class stays UNKNOWN. None of them is ever a pass. Generation
 runs only on request, for targets whose proposals are missing or stale. The gate, the
@@ -54,7 +61,15 @@ draft author with tools, then one from the last resort, the verdict's own model,
 in a copy of the project where it may read and search, write the one file its pin will be and run
 the cascade's own check, with nothing allowed under the person's home. Only `claude-cli` serves
 them, since its permissions hold the tools to the copy; the cascade judges the final answer
-again, and a pin the last resort wrote says so.
+again, and a pin the last resort wrote says so. Each Claude model answers at the reasoning
+effort the Test Plan names (amended 2026-09-29): a flag sets it, no call reads the person's
+settings, and the ledger records it. A judge and the generator answer at one level. The draft
+author's rungs, whose every answer execution checks in full, climb a ladder of levels, the next
+level asked only after the cascade rejected the draft below, and each mutant climbs on its own,
+never waiting for another's; a ladder keeps only levels far enough apart to differ (amended
+2026-09-29); its canaries are asked from its
+lowest level up until one passes, and a question starts there. An assessor's ladder is
+calibrated from its lowest level up until a level meets the calibration floors.
 
 **Consequences.** Proposal sets become reproducible: one command regenerates a stale
 target, and its drafts follow. The portal shows which model generated each mutant, links
@@ -62,8 +77,15 @@ the stored response, and shows per contract what the generation cost in tokens, 
 price and window share. Generation competes with the person's own sessions for the same
 windows, so the limits defer work instead of exhausting the plan. A machine may keep several
 Claude sign-ins as named CLI profiles and choose one; every ledger row names it, and a call
-never inherits the variables of the agent session that started the run. Antigravity stays
-local, and CI never calls a model: generation is a local run on request. After the pilot the
+never inherits the variables of the agent session that started the run. Several Antigravity
+accounts work through agm (amended 2026-09-29): a run reads every account's quotas, moves agy
+alone to one with quota left, never the person's IDE, and puts it back when it ends; agy's own
+credential store, not agm's list, says which account a call used. A Claude
+sign-in with no room left hands over to another signed-in profile, and while the model a role
+asks first is busy, its next model on the other subscription answers, so both work at once. Antigravity stays
+local, and CI never calls a model: generation is a local run on request. A new model finds its
+own lowest sufficient level through its canaries and its calibration, with no one choosing it,
+and the Model roles page shows how often each level was enough. After the pilot the
 pieces move to their owners. The adapter, the backends, the ledger format, the budget
 guard, the confinement rules and their qualification controls go to `py-testkit`. The
 provenance and spend views go to `ternforge-tooling-docops`. The retention of responses
@@ -80,5 +102,8 @@ by hand from the rendered prompt, as in the pilot, stays possible as generator k
 fallback order would stop all generation whenever that account's window is full or its
 login lapses. Tools for every draft were rejected: a fixed pipeline with the right context
 settles most mutants for less (Agentless), so tools are a rung for what it cannot settle; a
-person writing the rest by hand was rejected as a hack that does not scale.
+person writing the rest by hand was rejected as a hack that does not scale. One high level for
+every call was rejected: with a checker, Anthropic's own coding runs kept the pass rate for half
+the cost by starting low and rerunning the failures higher. Raising a judge's level question by
+question was rejected: its calibrated threshold holds only for the level it measured.
 ```

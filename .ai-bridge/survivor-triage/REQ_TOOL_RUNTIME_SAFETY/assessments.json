@@ -1,4 +1,118 @@
 {
+ "4180d032448ab8db": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230823Z-2482c4",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified condition only affects whether `_log_tool_called` is invoked, which is a pure side effect that returns `None` and does not alter the return value or the type of exception raised by the function.",
+    "response_sha256": "4d091b6b3fed926233fe82d60b876860c0d2cc72ec804c8b6da69d9a205409d0",
+    "sources": [
+     "    if state.can_execute_tools():",
+     "        for call in result.tool_calls:",
+     "            _log_tool_called(request=request, state=state, tool_name=call.name)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230823Z-bdca0b",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The modified condition only controls logging calls that do not mutate state or affect control flow, so both versions produce identical return values and raise identical exception types.",
+    "response_sha256": "f58bbc4ae2e10b7004beb364af7415f39ca00a933e8eb9226bf4d08fc965ab27",
+    "sources": [
+     "    if state.can_execute_tools():",
+     "    if state:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "registry": "ToolRegistry()",
+     "request": "ProviderRequest(request_id='req1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash-001', credential=ProviderCredential(key_id=1, env_var='GOOGLE_API_KEY', value='secret-value'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash-001', output_text='', tool_calls=({'name': 'lookup'},))",
+     "state": "ToolLoopState(max_rounds=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T230823Z-97b849",
+    "confidence": 0.82,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "With max_rounds=0 and completed_rounds=0 (default), state.can_execute_tools() is False so the original skips the logging loop entirely and only run_tool_round's own (ValueError/TypeError or normal) outcome determines the result; but since a bare ToolLoopState instance has no __bool__/__len__ override it is always truthy, so the changed 'if state:' always enters the loop and, hitting a raw Mapping tool call (which lacks a .name attribute), raises an uncaught AttributeError before run_tool_round is ever called, giving a different exception than the original.",
+    "response_sha256": "8165408dbccd8b526e3c5c58b320460eaf5039ed2db214d83c3f6e59d8eb41e5",
+    "sources": [
+     "if state.can_execute_tools():",
+     "if state:",
+     "_log_tool_called(request=request, state=state, tool_name=call.name)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "7ae2187952947011321bef63435506cf55d6930c021d464adb01106e608a0971"
+ },
+ "4d9aa4fd0372304b": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230823Z-d19316",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modification only disables observability logging, which is a side effect that does not affect the function's return value or the exceptions it raises.",
+    "response_sha256": "269036f6147986e57cb10cde07098ab32c417f199ea7080f466acd6098756423",
+    "sources": [
+     "    if state.can_execute_tools():\n        for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)",
+     "    if False:\n        for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230823Z-6c4628",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Disabling `_log_tool_called` does not alter the returned `ToolLoopState` or any raised exceptions because it is purely an observability logging function with no side effects on program execution.",
+    "response_sha256": "7f2c1427835f572fc8f394edab50fe328dd9480b8c7027c655cc676c00b550e5",
+    "sources": [
+     "    if state.can_execute_tools():",
+     "    if False:",
+     "            _log_tool_called(request=request, state=state, tool_name=call.name)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "registry": "ToolRegistry(tools={})",
+     "request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='KEY', value='v'), messages=(), temperature=None, seed=None, schema=None, tool_registry=None, tool_choice=None, kwargs={}, route_index=None)",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='', usage=None, tool_calls=({'name': 'foo'},), tool_call_metadata=())",
+     "state": "ToolLoopState(max_rounds=1, completed_rounds=0, steps=(), outstanding_tool_calls=())"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T230823Z-0d75a3",
+    "confidence": 0.68,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "With state.can_execute_tools() true, the original iterates result.tool_calls and does call.name, so passing a plain dict element (a valid Mapping per run_tool_round's own accepted type) raises AttributeError before run_tool_round ever runs; the changed version guards that loop with 'if False:' so it never accesses call.name and instead goes straight to run_tool_round, whose documented exceptions are only TypeError/ValueError (or a normal return), so the two versions diverge either in exception type or in one raising while the other returns.",
+    "response_sha256": "80962b36f74e76e253643f64ec520057cc675c5bcbdc7cd3b8ce1bb2248d7a18",
+    "sources": [
+     "if state.can_execute_tools():",
+     "for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)",
+     "if False:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "e5df4ba0824c18e9b0949cc810b771acb6a66e1f1014785acf4974b9fa68cc64"
+ },
  "6b53f8e76e60971b": {
   "answers": {
    "antigravity-cli:claude-opus-4-6-thinking": {
@@ -10,6 +124,7 @@
     "problems": [],
     "reason": "The only difference is that the original calls `_log_tool_failed` (a logging side effect) before re-raising, while the changed version replaces it with `pass`. Both versions return the same value and raise the same exception type on all inputs; the missing log call does not affect returns or exception types.",
     "response_sha256": "8566d8938e2cb28b71829edcbaa5927b0e4dfc23a587b7c0653cb415e233f098",
+    "sources": [],
     "verdict": "equivalent"
    },
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -21,6 +136,7 @@
     "problems": [],
     "reason": "The difference between the two versions is only the removal of a logging function call which affects side effects, but not the return value or type of exception raised.",
     "response_sha256": "6a209cd163eb87ba3d57fb650a351b2cbd6906b482555925e6bc57342ed358d9",
+    "sources": [],
     "verdict": "equivalent"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
@@ -32,6 +148,7 @@
     "problems": [],
     "reason": "Both versions return the same ToolLoopState and raise the identical exception types, as the removed _log_tool_failed call only emits an observability event and does not alter control flow or exceptions.",
     "response_sha256": "dc04695151559f40e219545190148958dd1a10b8717ed3f65086d6b116e465d7",
+    "sources": [],
     "verdict": "equivalent"
    },
    "claude-cli:claude-haiku-4-5-20251001": {
@@ -43,6 +160,7 @@
     "problems": [],
     "reason": "Both versions produce identical return values and raise identical exception types; the removed _log_tool_failed() call is a side effect that does not affect the observable behavior as defined in the problem.",
     "response_sha256": "518ee2762b5956418706ae6215b49b5a4224a9aa3cd9a3279c5463493e9ee44f",
+    "sources": [],
     "verdict": "equivalent"
    },
    "claude-cli:claude-sonnet-5": {
@@ -54,6 +172,7 @@
     "problems": [],
     "reason": "The only change is dropping the call to _log_tool_failed in the except block; the exception is still re-raised unchanged (same object, same type) and the return value logic is untouched, so under the given definition of behavior (return value and exception type) the two versions produce identical results for every input, differing only in an internal logging side effect.",
     "response_sha256": "8125e8c06ac4407e6f28ddc1371018036cfac234863947724cfb4c41c818603b",
+    "sources": [],
     "verdict": "equivalent"
    }
   },
@@ -70,6 +189,7 @@
     "problems": [],
     "reason": "The only difference is the removal of the `_log_tool_called` call (replaced with `pass`). This is a logging/observability side effect that does not influence the return value or the type of exception raised. The iteration over `result.tool_calls` still occurs in both versions, so no difference arises from iteration itself. Since behavior is defined as return value and exception type, and the symbolic search confirmed no distinguishing input, the versions are equivalent.",
     "response_sha256": "476466e4ee3ace6380bac3fef5aebd0766bf252fd19db47761f0f560f53d135f",
+    "sources": [],
     "verdict": "equivalent"
    },
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -81,6 +201,7 @@
     "problems": [],
     "reason": "The only difference is the removal of a logging function call. Since logging does not affect the return value or the type of exception raised (and the tests/symbolic search confirm no difference), the behavior of both versions is identical.",
     "response_sha256": "c928f95546e61f27287edfb148352529558a2afa0321d52d9016b94a34302ef9",
+    "sources": [],
     "verdict": "equivalent"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
@@ -92,6 +213,7 @@
     "problems": [],
     "reason": "Removing the call to _log_tool_called does not alter what the function returns or the type of any exception it raises.",
     "response_sha256": "b523bae35bc7a72c14b5cef322e5b5e9cc054e71b20913a88b667378b6996565",
+    "sources": [],
     "verdict": "equivalent"
    },
    "claude-cli:claude-haiku-4-5-20251001": {
@@ -103,6 +225,7 @@
     "problems": [],
     "reason": "The only difference is removal of a logging call (_log_tool_called) which does not affect return values or exception types; both versions execute identical control flow for run_tool_round() and return the same next_state.",
     "response_sha256": "e76a10c72f8280db5645716c9892663abc26d49caf2a70f60a22aa6f584cca81",
+    "sources": [],
     "verdict": "equivalent"
    },
    "claude-cli:claude-sonnet-5": {
@@ -114,6 +237,7 @@
     "problems": [],
     "reason": "The only change is replacing the per-call `_log_tool_called(...)` invocation with `pass`; this is a pure observability side-effect that (per its 'safe' logging contract) does not affect the return value or the type/occurrence of any raised exception, so the two versions are behaviorally identical for every input.",
     "response_sha256": "03f00d3083b538c55b4365736a20233804369aca75fa835761014d3b1a6e9640",
+    "sources": [],
     "verdict": "equivalent"
    }
   },
@@ -130,6 +254,7 @@
     "problems": [],
     "reason": "The only difference is that the original calls `_log_tool_completed` (a logging/observability side effect) in the final loop, while the changed version replaces it with `pass`. Since behavior is defined as return value and exception type, and both versions compute and return the same `next_state`, and `_log_tool_completed` is a safe observability helper unlikely to raise from any combination of the given input parameters, no input can distinguish them on the defined behavioral criteria.",
     "response_sha256": "741bb2bd84b4d53aed77116c97839b66a7744a1893349bf0d224707af2df709b",
+    "sources": [],
     "verdict": "equivalent"
    },
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -141,6 +266,7 @@
     "problems": [],
     "reason": "The removal of the _log_tool_completed logging call removes a side effect but does not change the return value or the type of exception raised by the function.",
     "response_sha256": "86b9bf14695c2de5b7471990ea2124c0fc215ceed8f489bf668934eabcb93a5d",
+    "sources": [],
     "verdict": "equivalent"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
@@ -152,6 +278,7 @@
     "problems": [],
     "reason": "Both versions return the same next_state and raise identical exceptions because the omitted _log_tool_completed call only performs observability logging without affecting the return value or exception behavior.",
     "response_sha256": "a94d7bdfb6de194173b25f65d961f53d95fba609317daa3fec9fc5cf6a0c6d98",
+    "sources": [],
     "verdict": "equivalent"
    },
    "claude-cli:claude-haiku-4-5-20251001": {
@@ -163,6 +290,7 @@
     "problems": [],
     "reason": "Both versions return identical values and raise exceptions from identical sources; the logging call is a side effect that doesn't affect the return value or propagated exception types, and a symbolic search found no distinguishing input.",
     "response_sha256": "66aebfe70fcd1c17a8a8224d673ccaf460e72d50317c477491b7ecf0758d4c8d",
+    "sources": [],
     "verdict": "equivalent"
    },
    "claude-cli:claude-sonnet-5": {
@@ -174,9 +302,118 @@
     "problems": [],
     "reason": "The only change removes the call to _log_tool_completed inside the loop over new steps, replacing it with a no-op pass; this only drops an observability side-effect (assumed non-raising logging) and does not alter the computed next_state or the exception raised by run_tool_round/_log_tool_failed, so both versions return the same value and raise the same exception type for any given ProviderRequest/ToolLoopState/ProviderResult/ToolRegistry input.",
     "response_sha256": "c90916a8c9f6f58c7b2fd7828305d09f4330db86718a4e42d3415f96868c24f8",
+    "sources": [],
     "verdict": "equivalent"
    }
   },
   "prompt_sha256": "1a04b03b1dfbb3d38d624e58c13c9737a551dee30db0c3ed706cfc8702ade1ff"
+ },
+ "e2fbf16e0262be6f": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230823Z-928135",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change removes the conditional check for logging, but since logging is a side effect that does not affect the function's return value or the type of exception it raises, the overall behaviour remains identical.",
+    "response_sha256": "e523cb1445170ff7669140e37ab6cccc9c3e1e13babbac0d91eda64d017f0732",
+    "sources": [
+     "    if state.can_execute_tools():",
+     "    if True:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230823Z-87f916",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Because _log_tool_called only emits observability events without side effects on state or return values, both versions execute run_tool_round identically and produce the exact same return value or exception.",
+    "response_sha256": "4784e0b4ef294064e22bf53de48653d67b9f38212408ddb19702e4929c3d8fff",
+    "sources": [
+     "    if state.can_execute_tools():",
+     "    if True:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T232531Z-c7cda2",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change gates the `_log_tool_called` loop with `if True:` instead of `if state.can_execute_tools():`; since `_log_tool_called` is a void logging call with no declared exceptions and does not mutate `state` or influence `run_tool_round`'s arguments or the later `_log_tool_completed`/`_log_tool_failed` calls, the extra (or fewer) invocations cannot change the function's return value (`next_state`) or the type of any exception raised, so no input distinguishes the two versions under the stated notion of behavior.",
+    "response_sha256": "b5e84bafcf574a15bf8f042f33e99da0479a6485e886b7a801b12c63af56f01c",
+    "sources": [
+     "if state.can_execute_tools():",
+     "if True:",
+     "for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "31e0122408ef5d6f8becdd8f8d18b9ca99418cd591ef9dc52e5fcf7c28a48c57"
+ },
+ "e8b452d04aed4a0b": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "registry": "ToolRegistry()",
+     "request": "ProviderRequest(request_id='r', provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model='pm', credential=ProviderCredential(key_id=1, env_var='e', value='v'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model='pm', output_text='out', tool_calls=({},))",
+     "state": "ToolLoopState(max_rounds=1)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230823Z-15e641",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Because the loop condition is inverted, providing a dictionary in tool_calls causes one version to raise an AttributeError when accessing call.name, while the other version skips the loop entirely.",
+    "response_sha256": "bea4a52b18bdc7ab4c303e62e7d21a24cd106ea37bf0f117136c936c5256d0a7",
+    "sources": [
+     "    if not state.can_execute_tools():",
+     "        for call in result.tool_calls:",
+     "            _log_tool_called(request=request, state=state, tool_name=call.name)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230823Z-3ab79a",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The inverted condition only alters whether _log_tool_called is invoked, which does not affect the returned state or the type of any exception raised.",
+    "response_sha256": "cdc7f9adaa8653c1a753101c7472ec3ea8049ab9548eb44c51d9271926a23b20",
+    "sources": [
+     "    if state.can_execute_tools():",
+     "    if not state.can_execute_tools():"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T230823Z-0345ed",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The inverted condition only toggles whether the `_log_tool_called` side-effect loop runs (which returns None and isn't documented to raise), while the subsequent `run_tool_round` call, its exception handling, and the return of `next_state` execute unconditionally and identically in both versions, so the return value and exception type never differ.",
+    "response_sha256": "73a1f794b8b731b26f524808a702ffab1522d75f11a7e5024c26454ca9e8ecf8",
+    "sources": [
+     "if state.can_execute_tools():",
+     "if not state.can_execute_tools():",
+     "next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "58ba79b9be0edac5a0e1b2a8675cbb0eeb24023a05daaae0c30bf78517a7ad2a"
  }
 }

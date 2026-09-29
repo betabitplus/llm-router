@@ -1,0 +1,215 @@
+{
+ "0c99e43a9ccfd476": [
+  {
+   "at": "2026-09-29T11:47:11.543228Z",
+   "call_id": "20260929T112217Z-72b39b",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "17c15204759ea390ac6a8fb41c90d97ece8a728a2b892085f07105d31bc27d56",
+   "reason": "it does not fail on the mutant: of the changed lines 340\u2013360 it runs lines 340, 346\u2013350, 354\u2013356, 358 and 360 but never lines 343\u2013344",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.895301Z",
+   "call_id": "20260929T114749Z-7995f1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "711141fcd81ba3b6cb760646fc2875f348add69428a4f33148ee8e18057bb8db",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  }
+ ],
+ "0d1ec285e912ae10": [
+  {
+   "at": "2026-09-29T11:47:11.543254Z",
+   "call_id": "20260929T112219Z-a76bde",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "56118a0a68534ed435f631271b0adc09dbb462a87925779f2d0eae6f29971411",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "2028da967c88aa09": [
+  {
+   "at": "2026-09-29T11:47:11.543257Z",
+   "call_id": "20260929T112220Z-277642",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6a9239e0e34c49ddb2ee710849df45188055f85de535a0f7972f0f52c4638a55",
+   "reason": "it breaks the project's lint rules (ruff: line 31: ARG002 Unused method argument: `provider` | line 31: ARG002 Unused method argument: `key_id` | line 34: ARG002 Unused method argument: `provider` | line 34: ARG002 Unused method argument: `key_id` | line 45: ARG002 Unused method argument: `provider`)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.895315Z",
+   "call_id": "20260929T114752Z-b9806f",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "09907f4773f7ff2947005233e4e99fc25a357a36221180b0bb9f50c814adb2b5",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  }
+ ],
+ "87ecdb53561b826d": [
+  {
+   "at": "2026-09-29T11:47:11.543263Z",
+   "call_id": "20260929T112222Z-a41621",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "26a15245c0d8b16090ee459f75c1132ade99eb41cc192063bb1a678ae8934741",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile"
+   ]
+  }
+ ],
+ "e92263fea0939fa2": [
+  {
+   "at": "2026-09-29T11:47:11.543274Z",
+   "call_id": "20260929T112224Z-4f17d8",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "cf5cd37f3ac59bc07c99190f9370b6c19577b0f580162d72d56d2b7729f6661c",
+   "reason": "it does not fail on the mutant: of the changed lines 340\u2013360 it runs lines 340, 346\u2013349, 354\u2013356, 358 and 360 but never lines 343\u2013344",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.895319Z",
+   "call_id": "20260929T114753Z-99d4c2",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e8ec08b72d30701d5fe5ad64dc524691d58dec5be2c21eaa242abed136f06a6f",
+   "reason": "it does not fail on the mutant: of the changed lines 340\u2013360 it runs lines 340, 346\u2013349, 354\u2013356, 358 and 360 but never lines 343\u2013344",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.586302Z",
+   "call_id": "20260929T120217Z-675bcb",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f4f6a7077f6e4280077add2445b2ca1e308ccfbd746f6c97a3e427e85299b6bf",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  }
+ ],
+ "f71e9f7973e36624": [
+  {
+   "at": "2026-09-29T11:47:11.543288Z",
+   "call_id": "20260929T112225Z-8421e8",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ff689c4b0114380ee9f2931fb8c69c090366e9531a0df0f45167781ef899b178",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.RouterProfile"
+   ]
+  }
+ ]
+}

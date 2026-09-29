@@ -56,5 +56,209 @@
    ]
   },
   "prompt_sha256": "09d2886737c5cf79caf56642c75e319ca72e8147af7cde7c2c7c485992c481f5"
+ },
+ "SM-0468831E": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191129Z-8605fd",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant returns any non-router exception with a non-None status_code or status unchanged instead of wrapping it. Provider-specific exception shapes therefore leak past the boundary, which the requirement forbids. The Google GenAI SDK criterion is directly at risk, because SDK errors of this kind usually carry a status attribute.",
+   "response_sha256": "7c7779f397fb32fdfe36aed271822975fc29b2641e10364edb77080e91e881c6",
+   "sources": [
+    "Provider HTTP or SDK failures shall surface through the public provider-error type rather than leaking provider-specific exception shapes.",
+    "A Google GenAI SDK-originated failure becomes the same public ProviderError category with one provider request.",
+    "An HTTP rejection becomes ProviderError with stable status metadata, hides provider detail, and performs one request.",
+    "if getattr(exc, \"status_code\", None) is not None or getattr(exc, \"status\", None) is not None:",
+    "return ProviderError(exc, request.provider, request.model)"
+   ],
+   "test_focus": "Raise a provider-style exception with a non-None status_code or status inside provider execution. Assert the caller receives ProviderError with the provider and model, not the raw exception, after one provider request.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:24:51.655965Z",
+   "answer_sha256": "c69cfc7c6165ae2faa3ba7ac597738b2424d482adaf37f6989c41ae6c3c90320",
+   "call_id": "20260929T191741Z-22632e",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "c69cfc7c6165ae2faa3ba7ac597738b2424d482adaf37f6989c41ae6c3c90320",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0468831e.py",
+   "response_sha256": "c91e5143aa3b156ad9dbad8495eb2bc7508e0f17c511c55e270c73e095051a47",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._api.types.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker",
+    "tests.llm_router.support.workers.retry.RetryWorkerResult"
+   ]
+  },
+  "prompt_sha256": "ec76f86176d24680315c1c3ab0e4b1cab70ddaa2e10bd1038fc2caf4034d8fe5"
+ },
+ "SM-0C2C0162": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191126Z-4b0516",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant swaps provider and model when building ProviderError, so every translated provider failure reports the wrong provider and model identity. That corrupts the metadata of the public provider-error type, which the requirement says must stay stable.",
+   "response_sha256": "1d547efd0d90d98881b3a41f9916128f483ce74226512905a076d0ce6da1c6b0",
+   "sources": [
+    "Provider HTTP or SDK failures shall surface through the public provider-error type rather than leaking provider-specific exception shapes.",
+    "An HTTP rejection becomes ProviderError with stable status metadata, hides provider detail, and performs one request.",
+    "return ProviderError(exc, request.provider, request.model)",
+    "return ProviderError(exc, request.model, request.provider)"
+   ],
+   "test_focus": "Raise a non-LLMRouterError provider failure for a known provider and model, then check that the resulting ProviderError has provider == request.provider and model == request.model, and that its message names them correctly.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:15:34.157957Z",
+   "answer_sha256": "8c8c5d453d46cebe9da6314b8f276ce66f84303787f9109dafeab69e80353200",
+   "call_id": "20260929T191342Z-a084c0",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "8c8c5d453d46cebe9da6314b8f276ce66f84303787f9109dafeab69e80353200",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0c2c0162.py",
+   "response_sha256": "9d666756ebd1d4ffbeb355e93c9b286c240499d89792b701913fae9f2e9c3378",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  "prompt_sha256": "3eb2e79a22f4ad9a53528611bbafe1d6fa8a3d672bcadf2954f7529d6beceba2"
+ },
+ "SM-5DFDF438": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191129Z-d432cb",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant returns exceptions whose class module is `google` or `genai` unchanged, so a real Google GenAI SDK failure reaches callers in its provider-specific form instead of as ProviderError. The requirement's second criterion forbids exactly this.",
+   "response_sha256": "2adbb5b22f4c20d9f94e18f613eab15b133f469dbf6d93c0049fdd2c90a500b8",
+   "sources": [
+    "Provider HTTP or SDK failures shall surface through the public provider-error type rather than leaking provider-specific exception shapes.",
+    "A Google GenAI SDK-originated failure becomes the same public ProviderError category with one provider request.",
+    "if type(exc).__module__.split(\".\")[0] in {\"google\", \"genai\"}:",
+    "return ProviderError(exc, request.provider, request.model)"
+   ],
+   "test_focus": "Raise an exception whose class comes from a `google.*` module (for example a real or stand-in google.genai errors class) inside the provider call, and check that the caller receives ProviderError after exactly one provider request.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:27:06.694221Z",
+   "answer_sha256": "4301d359ee04d6b58d294ccbab530e4c4739e2789eaf7fc15aad703ef9894c79",
+   "call_id": "20260929T192453Z-5003fb",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "4301d359ee04d6b58d294ccbab530e4c4739e2789eaf7fc15aad703ef9894c79",
+   "effort": "high",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_5dfdf438.py",
+   "response_sha256": "65651a06bede028f2d350c3259b31cc7641a06a8c4bed0fde4e74a61b26b7870",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  "prompt_sha256": "135c9818776c1934d22035096a6e763d55cb16cfa6b92c10d2b176ddbad839ee"
+ },
+ "SM-EEA8FD67": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191129Z-7e6164",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant returns any non-LLMRouterError exception that has a non-None status_code unchanged. Provider SDK status errors typically carry such an attribute, so provider-specific exceptions would leak instead of being wrapped in the public ProviderError, which the requirement forbids.",
+   "response_sha256": "8db5c3041479f112896e674c74e05b1e748b8c59c4b4417861748e1245437ca3",
+   "sources": [
+    "Provider HTTP or SDK failures shall surface through the public provider-error type rather than leaking provider-specific exception shapes.",
+    "An HTTP rejection becomes ProviderError with stable status metadata, hides provider detail, and performs one request.",
+    "    if getattr(exc, \"status_code\", None) is not None:\n        return exc",
+    "    return ProviderError(exc, request.provider, request.model)"
+   ],
+   "test_focus": "Have the provider call raise a non-LLMRouterError exception with a status_code attribute (e.g. 429). Assert that it surfaces as ProviderError with stable status metadata, that provider detail is hidden, and that exactly one request was made.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:27:06.695724Z",
+   "answer_sha256": "0f7f65bac2f9dd4ca651fda245a1c6c0b92efb1499eeb22a2398518c0d569c41",
+   "call_id": "20260929T192453Z-24eb56",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "0f7f65bac2f9dd4ca651fda245a1c6c0b92efb1499eeb22a2398518c0d569c41",
+   "effort": "high",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_eea8fd67.py",
+   "response_sha256": "e3e3a26164edfb61b95eb1daac814a91bdf8774ebe24618ece29e7f05aba7b1f",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  "prompt_sha256": "85236a296b463543e95a83788643af650c85f02fee312c045e96e6c30466deef"
  }
 }

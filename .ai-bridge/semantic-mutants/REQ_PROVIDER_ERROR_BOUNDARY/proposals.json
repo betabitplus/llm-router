@@ -1,0 +1,126 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_PROVIDER_ERROR_BOUNDARY",
+ "proposals": [
+  {
+   "id": "SM-0C2C0162",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/executor.py::_provider_boundary_error",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Provider and model arguments are swapped when building ProviderError, so the public error carries wrong provider/model metadata.",
+   "original_sha256": "53178bdd525390c4f191baab2f51ca32376a2f886ea4c0b253f91803fadac581",
+   "context_sha256": "429c1a56fda018265901a5c41e17ed5d35e7b98ef05d146beaa6ee6724376aae",
+   "prompt_sha256": "94b727ea88244fab78fc6881912b36f0755faba9f3688f06a151bf2fe080fb8a",
+   "replacement": "def _provider_boundary_error(\n    exc: Exception,\n    *,\n    request: ProviderRequest,\n) -> Exception:\n    \"\"\"Translate private/provider failures at the provider execution boundary.\"\"\"\n    if isinstance(exc, LLMRouterError):\n        return exc\n    return ProviderError(exc, request.model, request.provider)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-697173",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b90952b7f0cafc72debed376aefb5c1cf51598c79180d1d9fd5df0c50392e14c",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-EEA8FD67",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/executor.py::_provider_boundary_error",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Only non-LLMRouterError exceptions from the SDK are wrapped when they are not already public, but the check is inverted for provider failures: any exception carrying a status_code attribute (HTTP rejection) is passed through raw, leaking provider-specific exception shapes instead of ProviderError.",
+   "original_sha256": "53178bdd525390c4f191baab2f51ca32376a2f886ea4c0b253f91803fadac581",
+   "context_sha256": "429c1a56fda018265901a5c41e17ed5d35e7b98ef05d146beaa6ee6724376aae",
+   "prompt_sha256": "94b727ea88244fab78fc6881912b36f0755faba9f3688f06a151bf2fe080fb8a",
+   "replacement": "def _provider_boundary_error(\n    exc: Exception,\n    *,\n    request: ProviderRequest,\n) -> Exception:\n    \"\"\"Translate private/provider failures at the provider execution boundary.\"\"\"\n    if isinstance(exc, LLMRouterError):\n        return exc\n    if getattr(exc, \"status_code\", None) is not None:\n        return exc\n    return ProviderError(exc, request.provider, request.model)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-697173",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b90952b7f0cafc72debed376aefb5c1cf51598c79180d1d9fd5df0c50392e14c",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-5BF81D81",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/executor.py::_provider_boundary_error",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "SDK-originated failures (non-HTTP exceptions such as Google GenAI SDK errors) are no longer wrapped in ProviderError; only HTTP-like exceptions with a status code are translated, so SDK exceptions leak raw.",
+   "original_sha256": "53178bdd525390c4f191baab2f51ca32376a2f886ea4c0b253f91803fadac581",
+   "context_sha256": "5260a7770caa4e9952900b201b3e793b5af9f2e9b27a2a61559dad93afe036ee",
+   "prompt_sha256": "f10b2664e1a2b57ee67277d2bc7ed61f4d56c5b15ea850f9c1518810b10b1089",
+   "replacement": "def _provider_boundary_error(\n    exc: Exception,\n    *,\n    request: ProviderRequest,\n) -> Exception:\n    \"\"\"Translate private/provider failures at the provider execution boundary.\"\"\"\n    if isinstance(exc, LLMRouterError):\n        return exc\n    if getattr(exc, \"status_code\", None) is None and getattr(exc, \"response\", None) is None:\n        return exc\n    return ProviderError(exc, request.provider, request.model)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-003c71",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "0fae61f2236863bce3871241c424306651e1ae4d168fd2a4de9cc04a5c23f08c",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-0C2C0162",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/executor.py::_provider_boundary_error",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "The ProviderError is built with swapped provider and model arguments, so the public error metadata (provider/model) is wrong and unstable for rejected requests.",
+   "original_sha256": "53178bdd525390c4f191baab2f51ca32376a2f886ea4c0b253f91803fadac581",
+   "context_sha256": "5260a7770caa4e9952900b201b3e793b5af9f2e9b27a2a61559dad93afe036ee",
+   "prompt_sha256": "f10b2664e1a2b57ee67277d2bc7ed61f4d56c5b15ea850f9c1518810b10b1089",
+   "replacement": "def _provider_boundary_error(\n    exc: Exception,\n    *,\n    request: ProviderRequest,\n) -> Exception:\n    \"\"\"Translate private/provider failures at the provider execution boundary.\"\"\"\n    if isinstance(exc, LLMRouterError):\n        return exc\n    return ProviderError(exc, request.model, request.provider)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-003c71",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "0fae61f2236863bce3871241c424306651e1ae4d168fd2a4de9cc04a5c23f08c",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-5DFDF438",
+   "class": "interface.error-status",
+   "target": "src/llm_router/_internal/runtime/executor.py::_provider_boundary_error",
+   "risk": "an error the interface must report comes out with the wrong type or status, or not at all",
+   "rationale": "Only exceptions that are not LLMRouterError are wrapped, but the wrapping now skips SDK-originated/other exception categories: non-HTTP-looking exceptions are returned raw, leaking provider-specific exception shapes instead of ProviderError.",
+   "original_sha256": "53178bdd525390c4f191baab2f51ca32376a2f886ea4c0b253f91803fadac581",
+   "context_sha256": "4f4566e39e1d3876a05fe8d953046e0982e33d19b0b1823c23b73f3767c9cd3f",
+   "prompt_sha256": "4e69cf2aaae28ab06d4e972b7ebc688548758d548b8f9e8bda11e10d4a72d7f4",
+   "replacement": "def _provider_boundary_error(\n    exc: Exception,\n    *,\n    request: ProviderRequest,\n) -> Exception:\n    \"\"\"Translate private/provider failures at the provider execution boundary.\"\"\"\n    if isinstance(exc, LLMRouterError):\n        return exc\n    if type(exc).__module__.split(\".\")[0] in {\"google\", \"genai\"}:\n        return exc\n    return ProviderError(exc, request.provider, request.model)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153515Z-705d7c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "2f24a81343b4530b8d194fc3cf5ee1d6f08f87c842441bba36693e105b2a4736",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-0468831E",
+   "class": "interface.error-status",
+   "target": "src/llm_router/_internal/runtime/executor.py::_provider_boundary_error",
+   "risk": "an error the interface must report comes out with the wrong type or status, or not at all",
+   "rationale": "Any exception carrying a status code is passed through unchanged (leaking provider-specific HTTP exception shapes), and only exceptions without one are wrapped in ProviderError.",
+   "original_sha256": "53178bdd525390c4f191baab2f51ca32376a2f886ea4c0b253f91803fadac581",
+   "context_sha256": "4f4566e39e1d3876a05fe8d953046e0982e33d19b0b1823c23b73f3767c9cd3f",
+   "prompt_sha256": "4e69cf2aaae28ab06d4e972b7ebc688548758d548b8f9e8bda11e10d4a72d7f4",
+   "replacement": "def _provider_boundary_error(\n    exc: Exception,\n    *,\n    request: ProviderRequest,\n) -> Exception:\n    \"\"\"Translate private/provider failures at the provider execution boundary.\"\"\"\n    if isinstance(exc, LLMRouterError):\n        return exc\n    if getattr(exc, \"status_code\", None) is not None or getattr(exc, \"status\", None) is not None:\n        return exc\n    return ProviderError(exc, request.provider, request.model)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153515Z-705d7c",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "2f24a81343b4530b8d194fc3cf5ee1d6f08f87c842441bba36693e105b2a4736",
+    "index": 1
+   }
+  }
+ ]
+}

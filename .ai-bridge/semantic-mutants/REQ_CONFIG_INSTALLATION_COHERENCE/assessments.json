@@ -1,0 +1,111 @@
+{
+ "SM-39305DEA": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-185a19",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Both versions validate the input and either raise the same exception or return the identical config object, only differing in the internal order of cache clearing and lock acquisition which does not affect the return value or exception type.",
+    "response_sha256": "6edc29ff49af6960353b4a1d1e5b3b2e879f305d5d455a750402951f5796f1e3",
+    "sources": [
+     "    with _config_lock:\n        _installed_config = config",
+     "    clear_adapter_caches()\n    with _config_lock:\n        previous = _installed_config\n        _installed_config = config"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-3349c3",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version only moves the cache clear before the assignment and adds a no-op attribute read, so no config input changes the returned value or raised exception.",
+    "response_sha256": "0bdb905091d01007d0bab3718334a9cb22e6ce378d87e4cba404366391fd563c",
+    "sources": [
+     "clear_adapter_caches.__doc__",
+     "previous = _installed_config",
+     "_installed_config = config"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "785f83722648d888835a24e5acfd291caac5448c76bc5b6159d066c481d18d34"
+ },
+ "SM-48E372DD": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-e021a5",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change only conditionally skips side effects like cache clearing and logging, which does not affect the function's return value or the type of exception it raises.",
+    "response_sha256": "a58e4bb175495627f97ea90c38a056a798349034acb3cb5f4a147708d4f5372e",
+    "sources": [
+     "        if current is not None and current == config:\n            return current",
+     "    clear_adapter_caches()"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=<valid BehaviorDefaults>, catalog=<valid ProviderCatalog>)  # installed twice as two equal but distinct instances; the second call differs"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-22d532",
+    "confidence": 0.62,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "When an equal config is already installed, the changed version returns the old installed object (not the argument) and skips clear_adapter_caches and the log, so the identity of the return value and the cache invalidation differ.",
+    "response_sha256": "807b07537b7193e2ad40381289250795d30ed99286c5d8c6a99e43df2eacb0b4",
+    "sources": [
+     "if current is not None and current == config:",
+     "return current",
+     "clear_adapter_caches()"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "9f149c537acd410a20d2df4318745fddf94e061c3704cadb96df7c598241656f"
+ },
+ "SM-F91AFA31": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-b648cc",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The reordering of cache clearing and configuration assignment only affects side effects and thread safety, but it cannot change the return value or the type of exception raised for any single-threaded function invocation based on the `config` input.",
+    "response_sha256": "669a534b69174b942ddea091d37fa8090b462d6b647b4993dae9fd874b0dbbab",
+    "sources": [
+     "    with _config_lock:\n        _installed_config = config\n\n    from llm_router._internal.providers.registry import clear_adapter_caches\n\n    # @impl Config cache invalidation, IMPL_CONFIG_CACHE_INVALIDATION, [TREQ_CONFIG_CACHE_INVALIDATION[revision==1]]\n    clear_adapter_caches()"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-656427",
+    "confidence": 0.7,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change only swaps clear_adapter_caches() and the locked assignment of _installed_config, so the return value and raised exception types match for any config unless clear_adapter_caches raises or reads the installed config, which no input can trigger.",
+    "response_sha256": "ed07c19f6d35f5d49061f2062fefa04fc3ee0bab9410648f2f37741a2c317b67",
+    "sources": [
+     "clear_adapter_caches()",
+     "_installed_config = config",
+     "validate_config(config)"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "89a6748e40b85893a8a3bc199beef750a3ca1a85908588b7b5632cda7f0a430c"
+ }
+}

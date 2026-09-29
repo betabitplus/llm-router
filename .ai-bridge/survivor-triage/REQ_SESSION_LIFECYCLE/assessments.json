@@ -1,0 +1,54 @@
+{
+ "cfdaa730a0d7b1f8": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224109Z-7150df",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Omitting the `encoding=\"utf-8\"` argument behaves identically in standard environments where UTF-8 is the default, and the extra parentheses around the generator expression do not change Python's semantics.",
+    "response_sha256": "3f6bebd214892e08b887903e26d89f5522f00095d1a23a3039b9cf1e305c0735",
+    "sources": [
+     "            text = session_path.read_text(encoding=\"utf-8\")",
+     "        loaded._history = tuple(_copy_message(message) for message in history)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224109Z-d462e5",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Reading session text with the default encoding and adding redundant parentheses around the generator expression in tuple do not change the behavior of load for any valid path.",
+    "response_sha256": "216d07fc2e04304c2bc769135fa6c340ae443c9354a6589c8c84509cf247080f",
+    "sources": [
+     "            text = session_path.read_text(encoding=\"utf-8\")",
+     "        text = session_path.read_text()"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "path": "'session.json'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T224109Z-47d6ab",
+    "confidence": 0.55,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change is dropping `encoding=\\\"utf-8\\\"` from `read_text`, but the function's sole parameter is `path`, and for any given path the file's on-disk bytes are fixed; since `session_path.read_text()` falls back to `locale.getpreferredencoding()`, which on the project's own test/runtime platform resolves to UTF-8 just like the explicit call, both versions decode identically and raise the same `UnicodeDecodeError`/`OSError` classes for any given path, so no path expression alone can separate them.",
+    "response_sha256": "4489b3cf387dad7f351acc5f740cf0feafbc3d879e72d346b2541a97c37386fe",
+    "sources": [
+     "text = session_path.read_text(encoding=\"utf-8\")",
+     "text = session_path.read_text()"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "7496ecba5a7ac91f514363bacf51e8f8302da2648ac6b5530e5ea47245e93369"
+ }
+}

@@ -1,0 +1,593 @@
+{
+ "137765413f3e5276": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230210Z-377acb",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The condition `last_obj != -1` is redundant because if `first_obj != -1` (which means `first_obj >= 0`), the condition `last_obj > first_obj` guarantees that `last_obj > 0`, meaning it cannot be `-1`.",
+    "response_sha256": "69e2291ac6845da485d4ab31ce0da06fac6f1449ee9fe72ad407c926e2154800",
+    "sources": [
+     "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+     "if first_obj != -1 and last_obj > first_obj:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230210Z-66d096",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Because first_obj >= 0 whenever first_obj != -1, the condition last_obj > first_obj already implies last_obj > 0, rendering the check last_obj != -1 redundant.",
+    "response_sha256": "4786eb2710617c7c7164ca86cbb6722e61ade8aac93fb01bc439b77606eb6427",
+    "sources": [
+     "    if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+     "    if first_obj != -1 and last_obj > first_obj:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T225753Z-7ad8cf",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The dropped 'last_obj != -1' check is logically redundant: since first_obj != -1 implies first_obj >= 0, and last_obj == -1 makes 'last_obj > first_obj' automatically False, so both conditions evaluate identically for every input.",
+    "response_sha256": "84acb0c3149d4d0b9d670bdb8a0f8ea666ddef5615facd1213af7e98aaa04e0f",
+    "sources": [
+     "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+     "if first_obj != -1 and last_obj > first_obj:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "e18575acf9d49d0315e39f084cf181e5599185b472a6ba1b4319377c60c24a97"
+ },
+ "178bec10306929cd": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T145200Z-581014",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The find and rfind methods search for different characters ('[' and ']'), so they can never return the same valid index; thus, last_arr >= first_arr is strictly equivalent to last_arr > first_arr.",
+    "response_sha256": "db7f85e32408c59d14cd873f2354876fcf681199269a557823eae28114e0d528",
+    "sources": [
+     "    if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
+     "    if first_arr != -1 and last_arr != -1 and (last_arr >= first_arr):"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T145200Z-9630d5",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Because '[' and ']' are distinct characters, their indices first_arr and last_arr can never be equal when found, so last_arr >= first_arr is logically equivalent to last_arr > first_arr.",
+    "response_sha256": "245b15a2ddb424e9c527a094b7ebd8043e20f7f71420d3df3718c0c3eae0c56e",
+    "sources": [
+     "    if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
+     "    if first_arr != -1 and last_arr != -1 and (last_arr >= first_arr):"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T105002Z-8f92fa",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only semantic change is last_arr > first_arr becoming last_arr >= first_arr, but since first_arr indexes a '[' character and last_arr indexes a ']' character in the same string, they can never be equal, so the >= and > conditions always agree, making the two versions behave identically on every input.",
+    "response_sha256": "f0fb640e52edc13116ae35eb8aa096c50814fc259ae41cd8fe8ecba60709e427",
+    "sources": [
+     "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
+     "if first_arr != -1 and last_arr != -1 and (last_arr >= first_arr):"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "91dad2d6b4ec091b27068e0b2d2a106d58440b0f6de81bc90ad6e042d59e2b30"
+ },
+ "2020243fe707999b": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T225753Z-4f820f",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Since find('{') and rfind('}') look for different characters, their successful result indices can never be equal, making last_obj >= first_obj evaluate exactly the same as last_obj > first_obj.",
+    "response_sha256": "4948ce9981b6c9b1131b5ef51b0f8853d92ef66bf3a09ac1622a8abc6c3ddf16",
+    "sources": [
+     "    if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+     "    if first_obj != -1 and last_obj != -1 and (last_obj >= first_obj):"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230210Z-8ffe95",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Because first_obj locates '{' and last_obj locates '}', they can never refer to the same index, making last_obj >= first_obj logically identical to last_obj > first_obj.",
+    "response_sha256": "983faf09436ee016316159ef13a1deb428d0a6df758c8b2a830bcfa66b746b41",
+    "sources": [
+     "    first_obj = stripped.find(\"{\")",
+     "    last_obj = stripped.rfind(\"}\")",
+     "    if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+     "    if first_obj != -1 and last_obj != -1 and (last_obj >= first_obj):"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T230210Z-969b0e",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "first_obj is the index of the character '{' and last_obj is the index of the character '}'; since a single index cannot hold both distinct characters, last_obj == first_obj is impossible, so changing 'last_obj > first_obj' to 'last_obj >= first_obj' can never affect which branch is taken for any string.",
+    "response_sha256": "9e4c6720d1dd896b5853e539e10da25cf480efca22a2118d67cb5bfce7c50710",
+    "sources": [
+     "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+     "if first_obj != -1 and last_obj != -1 and (last_obj >= first_obj):"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "21acc1a56ab6b5aeae80541e8d73fb44c8f7167878818ada526ffc580392a9b3"
+ },
+ "4ca061c650885f70": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230210Z-33ee21",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The removed startswith check was redundant because if stripped does not start with the fence, it has no leading whitespace and therefore lines[0].strip() cannot match the allowed fence formats either, causing both versions to safely return the original value.",
+    "response_sha256": "58876f091f75a49190eba0978cc6ea3d75837d1ddd2f2257a0a2166959d1a216",
+    "sources": [
+     "    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "    if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230210Z-bae9fe",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Because value.strip() removes leading whitespace, lines[0].strip() matching an opening code fence guarantees that stripped starts with '```', making the removed startswith check redundant.",
+    "response_sha256": "19cf46b04100bb1c338e96cc80c6a82cea185c8e746182caad0bfbb8e09341ed",
+    "sources": [
+     "    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "    if not stripped or not stripped.endswith('```'):",
+     "    if lines[0].strip() not in {'```', '```json', '```JSON'}:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T230210Z-ef6e68",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Since `stripped = value.strip()` removes any leading whitespace, whenever `lines[0].strip()` equals one of the fence markers `{\"```\",\"```json\",\"```JSON\"}` the untouched `lines[0]` must itself begin with those three backticks (only trailing whitespace could have been stripped), so `stripped.startswith(\"```\")` is guaranteed true in exactly the cases where the changed version's dropped startswith check would have mattered, and for empty `stripped` both `not stripped` and the original startswith/endswith test fail identically, so no input can make the two functions return different values.",
+    "response_sha256": "e36a3c0f4f28c1313c6661357ceb5059fb9eccde536c256971ccda16c61a51f8",
+    "sources": [
+     "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "if not stripped or not stripped.endswith('```'):",
+     "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "db00be6cad4e91e1a9f893efa31592a3a2578c8434d23e2f49b62730eaef0a99"
+ },
+ "4f59dd985e000c94": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "\"```json\\n1\\n2\\n3\\n4\\n5\\n```\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230210Z-d2a01b",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version removes the `not` before `stripped.startswith('```')`, causing it to immediately return the unmodified string for any valid fenced block (since True or ... evaluates to True) instead of proceeding to strip the fences.",
+    "response_sha256": "92ea448b9c7a774b431e9ec78ca34e242fb8f8eadcc87c766e3a04045730f1df",
+    "sources": [
+     "    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "    if stripped.startswith('```') or not stripped.endswith('```'):"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "'```\\n{}\\n```'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230210Z-74ad76",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version removes the negation in the startswith check, causing properly fenced JSON strings to match the condition and return early without having their fences stripped.",
+    "response_sha256": "cdbbf3a5667a10a7d622f298181475f5314a462ec91cad9441dcbac767824a7b",
+    "sources": [
+     "    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "    if stripped.startswith('```') or not stripped.endswith('```'):"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "'```json\\n{\"a\": 1}\\n```'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T230210Z-bd1b97",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed line inverts the startswith check (`if stripped.startswith('```') ...`) so any properly fenced string that begins with ``` now returns unchanged instead of having its fence stripped, unlike the original which strips it.",
+    "response_sha256": "095a2a6ce8aa1108e7d4d7c2a9b363e8ffa4aeffe170ab201d495ce740cd25c3",
+    "sources": [
+     "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "if stripped.startswith('```') or not stripped.endswith('```'):"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "24a5c89d635bffe3dbbdd84bc67169bb73dc404b2cf3ef48a4b73ac84c3e5ae0"
+ },
+ "6de617b610b093eb": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "spec": "SchemaSpec(name='bad', json_schema={}, parser=lambda v: 1/0)",
+     "value": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111607Z-3e7444",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "When spec.parse raises, the original returns SchemaValidationResult(valid=False, ...) while the changed version returns SchemaValidationResult(valid=True, ...), so any spec whose parser raises (e.g. one that divides by zero) yields a differing .valid field for the same value.",
+    "response_sha256": "57ce0dea3b1477c78b1bef9e417d0db04cef74350152d1eb053ad789b6db45eb",
+    "sources": [
+     "return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )",
+     "return SchemaValidationResult(valid=True, error_message=preview_value(exc))"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "spec": "SchemaSpec(name='s', json_schema={}, parser=lambda v: (_ for _ in ()).throw(ValueError('bad')))",
+     "value": "1"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111606Z-e1a079",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "When spec.parse raises, the original returns valid=False but the changed version returns valid=True.",
+    "response_sha256": "e406ce03e7c2f96f1c7d80bacec3ec63d630e49725e9db1a6b7b075ccb643e98",
+    "sources": [
+     "return SchemaValidationResult(valid=True, error_message=preview_value(exc))",
+     "valid=False,",
+     "parsed = spec.parse(value)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "25a32338cffb275027790757c4544bbd489c3013aa21d0163dd4d4f3f0e4236d"
+ },
+ "87ad8ca644dbe3d7": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "spec": "SchemaSpec(name=\"s\", json_schema={}, parser=int)",
+     "value": "\"abc\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T105002Z-827764",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "On a value that makes spec.parse raise (e.g. int(\\\"abc\\\") raising ValueError), the original sets error_message=preview_value(exc) while the changed version leaves error_message as its default (None), so the returned SchemaValidationResult differs.",
+    "response_sha256": "b3cd56f56addf36bf7fd7e46ddc63332e4553071ae7de1cfdba40781c3bcb731",
+    "sources": [
+     "error_message=preview_value(exc),",
+     "return SchemaValidationResult(valid=False)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "bb564e502d8cc1f2697c928b01e6afc876801edb651b74e7b926a34395188e5e"
+ },
+ "8f18e1a435591236": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "\"```json\\ncontent\\n```\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111607Z-a621e2",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version replaced the join of the fenced body with a literal '\\\\n'.strip(), so it always returns the empty string instead of the actual inner content, e.g. for '```json\\\\ncontent\\\\n```' the original returns 'content' while the changed version returns ''.",
+    "response_sha256": "7bfeadd8581e2e24761d63a97f1271afd39bf39b218d02f6c9b8bad21dc11405",
+    "sources": [
+     "return \"\\n\".join(lines[1:-1]).strip()",
+     "return '\\n'.strip()"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "\"```json\\n{\\\"a\\\":1}\\n```\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111607Z-dfb72b",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a valid fenced input with content, the original returns the inner text, while the changed version always returns '' because '\\n'.strip() is empty.",
+    "response_sha256": "8eaf74d244e29fec909989f039e22cf1decfdb142fa93f6813662f0f6bef4cea",
+    "sources": [
+     "return \"\\n\".join(lines[1:-1]).strip()",
+     "return '\\n'.strip()"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "0e805ccf07489d61d529b51c2ed99574127f053a84f924961759d68fea9000dd"
+ },
+ "a1048e7de4231e38": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "\"```JSON\\n{}\\n```\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T104957Z-53c880",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The original accepts the fence-open token \\\"```JSON\\\" (uppercase) via the set {\\\"```\\\", \\\"```json\\\", \\\"```JSON\\\"}, while the changed version's set {'```', '```json'} no longer includes it, so a value like \\\"```JSON\\\\n{}\\\\n```\\\" is unwrapped by the original but returned unchanged by the modified function.",
+    "response_sha256": "ca1f33255e760747534649671dcff05260815b7d5df5c6082056fefa2de2a26f",
+    "sources": [
+     "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+     "if lines[0].strip() not in {'```', '```json'}:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "ea02e06bbd5e20644abf252d94d4f4c8f5feb4ed28d66957f8fe774ad4f22cbd"
+ },
+ "a57b176468930694": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "'```json\\n1\\n2\\n3\\n4\\n5\\n6\\n7\\n8\\n9\\n10\\n11\\n12\\n13\\n14\\n15'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230210Z-d48702",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version removes the check for a closing code fence, causing it to incorrectly strip the first and last lines of strings that start with a code fence but do not end with one.",
+    "response_sha256": "2838637ba2aaa50e12dfebec249705c89c84a07c541c07a63104d5442b3e70da",
+    "sources": [
+     "    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "    if False:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "'```\\n{}\\nxxx'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230210Z-9d8023",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version returns the input unchanged when stripped does not end with a code fence, whereas the changed version replaces that check with False and strips the outer lines.",
+    "response_sha256": "8709317b95c9a8415a4e840197129a82575c8a2e71e42989cbbdce90a39fa70d",
+    "sources": [
+     "    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "    if False:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "\"```json\\nfoo\\nbar\\nbaz\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T230210Z-9b0c72",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The change replaces the real fence-boundary guard (`if not stripped.startswith(\\\"```\\\") or not stripped.endswith(\\\"```\\\")`) with `if False`, so inputs that start with a fence line but do NOT end with a closing fence (yet have enough lines and a matching opening marker) are now processed and stripped instead of being returned unchanged.",
+    "response_sha256": "78ae2df227ef0df8a10839d687418aaa1a7ac938c79010a28bcf65e82e0401ca",
+    "sources": [
+     "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "if False:",
+     "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+     "return \"\\n\".join(lines[1:-1]).strip()"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "9f31a9bf9e2915570c0ac24dd3a01316fb01f6e4739158abc6626418690646c6"
+ },
+ "a6d49b98e29bf6d3": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "'```json \\n{\"a\": 1}\\n```'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T105002Z-4c7a66",
+    "confidence": 0.94,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The original strips whitespace from the first line before comparing (`lines[0].strip() not in {...}`), while the changed version compares the raw line (`lines[0] not in {...}`), so a fence line with trailing whitespace like '```json ' matches in the original but not in the changed version, causing different return values for the same input.",
+    "response_sha256": "d1a712947071add4aa2c98e26b08b7303298b6be1cb06769999b383db862a99e",
+    "sources": [
+     "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+     "if lines[0] not in {'```', '```json', '```JSON'}:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "32ce3aa041fb0c825f804499b9cde28d1bb7b90dfe9362742fc6d6c1ebe5e13c"
+ },
+ "cafa38eadba9fb9f": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "'```json\\n  {\"a\": 1}  \\n```'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T105002Z-f54830",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The original applies .strip() to the joined inner content while the changed version omits it, so an input whose inner fenced line has surrounding whitespace yields a stripped string in the original but an unstripped one in the changed version.",
+    "response_sha256": "a5b46376350e9fbbf2cb79c09e6bd2c9bcfe141d0546d3e3e3cfeeeda759082c",
+    "sources": [
+     "return \"\\n\".join(lines[1:-1]).strip()",
+     "return '\\n'.join(lines[1:-1])"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "d877889bd5c87f2c099a07f16daee5ff7b3ce0a758c4f1f9f6e4c28d9ba19051"
+ },
+ "f89c92d6b15a7771": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T145200Z-a61962",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The condition `last_arr != -1` is redundant because if `first_arr != -1` (so `first_arr >= 0`), then `last_arr > first_arr` implies `last_arr > 0`, making `last_arr != -1` necessarily true.",
+    "response_sha256": "7e0772c7a24db02991f4e9c08eb6b58445e6735f4d938ab0b580a3d6029e710b",
+    "sources": [
+     "    if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
+     "    if first_arr != -1 and last_arr > first_arr:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T145200Z-44b20c",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Since first_arr != -1 implies first_arr >= 0, last_arr > first_arr guarantees last_arr >= 1, so last_arr != -1 is redundant and does not change behavior.",
+    "response_sha256": "8478c41ac3f68fd10a2b4fda1e9243c568c0b78605bda02d4b3343e6440f175c",
+    "sources": [
+     "    if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
+     "    if first_arr != -1 and last_arr > first_arr:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T105002Z-27415e",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The dropped `last_arr != -1` check is redundant: since `first_arr != -1` guarantees `first_arr >= 0`, whenever `last_arr == -1` the comparison `last_arr > first_arr` is already false, so the shortened condition yields the same boolean in every case as the original three-part condition.",
+    "response_sha256": "ed13cf376d2ddf208b0707e8c6561ffb1d8b072b8070902697b3a7908c078358",
+    "sources": [
+     "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
+     "if first_arr != -1 and last_arr > first_arr:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "7a58e29aef10938bc81c1292f34b6d014e0bd98bc68ca59c9d5945bc55952a22"
+ },
+ "f8f680e363cf4d0d": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230210Z-523456",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The explicit startswith check is redundant because lines[0] is a prefix of stripped that retains its non-whitespace first character, meaning lines[0].strip() can only match the valid code fence strings if stripped also starts with them.",
+    "response_sha256": "b090e1fea8680726971eee993e7163719135e02f5ec39a9b9557571f58ba2f21",
+    "sources": [
+     "    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "    if not stripped.endswith('```'):",
+     "    if lines[0].strip() not in {'```', '```json', '```JSON'}:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T230210Z-3c6d9a",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Because stripped has no leading whitespace and lines[0] is its first line, lines[0].strip() matching an opening fence requires stripped to start with three backticks, making the startswith check redundant.",
+    "response_sha256": "112a381cd37708ffe0a9c263db8572d023591c820a53740a57ac9a5711869744",
+    "sources": [
+     "    if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "    if not stripped.endswith('```'):",
+     "    if lines[0].strip() not in {'```', '```json', '```JSON'}:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T230210Z-9fbfcd",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The dropped `not stripped.startswith('```')` check is logically redundant: because `stripped` already has no leading whitespace, `lines[0]` is a literal prefix of `stripped`, so `lines[0].strip() in {'```','```json','```JSON'}` can only be true if `stripped` itself starts with '```'; thus whenever the later lines[0] check would let execution proceed, startswith('```') was already true in the original, and whenever startswith would have been false, the lines[0] check fails too and both versions return `value` unchanged.",
+    "response_sha256": "c1c22bdc01f1c2c88d4aefc2f2d69434254f75f7daee797fbfae9f7775cce018",
+    "sources": [
+     "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "if not stripped.endswith('```'):",
+     "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "1fa3e2d82bef175be07eaf71ab7e9ee8439b32c06906ff440ebbbc1b7f78cf9d"
+ }
+}

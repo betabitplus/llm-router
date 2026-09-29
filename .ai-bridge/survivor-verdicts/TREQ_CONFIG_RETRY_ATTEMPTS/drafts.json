@@ -1,0 +1,41 @@
+{
+ "a02b9c41521c0e84": [
+  {
+   "at": "2026-09-29T10:38:22.581621Z",
+   "call_id": "20260929T100528Z-7a1f97",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "23d1a44ac30964d55a5c192efd065fcea288e37dbf4d233ddfde729541e7c9cf",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.config.models.RetryPolicy"
+   ]
+  }
+ ],
+ "a6c77976ba2d4065": [
+  {
+   "at": "2026-09-29T10:38:22.581624Z",
+   "call_id": "20260929T100553Z-356f92",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "04d2237afef12ef0ed380cd3b726803563d09e1ecd3c4e9b9ad106ed6f24516f",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  }
+ ]
+}

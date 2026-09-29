@@ -1,35 +1,220 @@
 {
- "9a81553c4311e34e": {
+ "41a277a968c393aa": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T195357Z-593ec4",
+   "call_id": "20260928T235118Z-f12723",
    "confirmed": false,
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes the error text in the repair prompt: a real message becomes 'Validation failed.', and an empty one is passed through instead of the fallback text. Attempt counting and the stop at the configured limit are unchanged, and the requirement says nothing about what the repair prompt contains.",
-   "response_sha256": "9cc25499f64d5decd64cb1024c9fe4e6cc5901ce34837450e262603a3cc84ac4",
+   "reason": "The mutant only drops the fallback text of the repair message. That text is used only if validation fails with an empty error_message, and I can't rule that case out because the helper isn't shown. Even if it happens, attempt counting, the stopping bound and success on the last allowed response all stay the same. The requirement asks only that repair stop at the configured limit, not what the repair message says.",
+   "response_sha256": "dd134d2cb9275a27b4edb7c038a8c8ec3611c013a8fa9af516095ec370e32c14",
    "sources": [
     "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "error_message = validated.error_message or \"Validation failed.\"",
+    "error_message = validated.error_message"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "condition",
+  "prompt_sha256": "6b7cdd3f0fd10b73c5afad12fd8c22cb2c2961bfe886280e8a11c81d1a100c56",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T090042Z-97ec36",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "6b7cdd3f0fd10b73c5afad12fd8c22cb2c2961bfe886280e8a11c81d1a100c56",
+   "reason": "The change modifies the fallback error message used when validation fails, which is an implementation detail that does not affect the bounded repair attempts mandated by the requirement.",
+   "response_sha256": "a18a226bafc1c6eae59e911048b7388054ab1d9831baaa7aee0b91bdc817d6bf",
+   "sources": [
+    "Requirement REQ_STRUCTURED_OUTPUT_REPAIR (Structured output repair is bounded): Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "error_message = validated.error_message or \"Validation failed.\"",
+    "error_message = validated.error_message"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "63b7393727f5c29f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235027Z-507237",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant checks whether the parsed value is truthy instead of checking the validation flag. So valid output that parses to a falsy value, such as an empty object or list, gets treated as invalid. That triggers a repair or an error, even though the criterion says valid output on the final allowed response must succeed.",
+   "response_sha256": "2c2a82a38e61d9d6690563f57dd65a874da36613272456dff7280af1f5bf65bf",
+   "sources": [
     "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
-    "error_message = validated.error_message and 'Validation failed.'",
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "if validated.valid:",
+    "if validated.value:"
+   ],
+   "test_focus": "With total attempt budget 2, send an invalid first response, then a valid response whose parsed value is falsy (for example {} under a schema that allows an empty object). Check that the call succeeds and returns that value as structured_data instead of raising a structured-output error.",
+   "verdict": "pin"
+  },
+  "operator": "attribute",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.906369Z",
+   "answer_sha256": "8bb0b30cfb655a74971cdbf2fe015cd3b3870d5e46f87966256758778a2d3f73",
+   "call_id": "20260929T114718Z-43ae78",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "8bb0b30cfb655a74971cdbf2fe015cd3b3870d5e46f87966256758778a2d3f73",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_63b7393727f5c29f.py",
+   "response_sha256": "ccbc24f0c17f9db1cb81edc6dcb1515c5d7f52f08d364cd06d946be20d6e9850",
+   "source": "draft author",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.RetryWorkerResult",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  "prompt_sha256": "133e5395265807582f6a92f58a539521c49cdc9d007738326b76cdf4bcfdf349"
+ },
+ "868533cd04ee427f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235131Z-a9e566",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes the text passed to the repair prompt: it always sends 'Validation failed.' instead of the validator's specific error message. The attempt counting and the finite stop, which are what the requirement asks for, stay the same. The versions do differ, but no requirement given here says what the repair message must contain.",
+   "response_sha256": "ec8ee4024cb503ac97b71cd515fbc524939777e4d71f8ad12cbd57252f2edd87",
+   "sources": [
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "error_message = validated.error_message or \"Validation failed.\"",
+    "error_message = 'Validation failed.'",
     "if next_attempts >= config.structured_output_max_attempts:"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
-  "operator": "boolean",
-  "prompt_sha256": "2b5f2e33571b5db29d0747407f3fa8e0546e5af05ce289379ca690ad70700ec1",
+  "operator": "condition",
+  "prompt_sha256": "986053916fccf2be00d695b31ea9055197645cbfb731ef90cf1cbfadceb3cc7e",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260928T195411Z-264f55",
+   "call_id": "20260929T090121Z-5887d0",
    "confirmed": false,
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "2b5f2e33571b5db29d0747407f3fa8e0546e5af05ce289379ca690ad70700ec1",
-   "reason": "The change alters the specific text of the error message passed to the repair prompt, replacing it with a generic string or a falsy value. This is a difference in a message, which is an implementation detail not covered by the requirement that repair attempts must stop at a finite limit.",
-   "response_sha256": "ca0c936d8ec17db889af9cf6abdc4c47c1292c197974588f0d6722bfceba7fde",
+   "prompt_sha256": "986053916fccf2be00d695b31ea9055197645cbfb731ef90cf1cbfadceb3cc7e",
+   "reason": "The requirement restricts the number of repair attempts to a finite limit, but does not dictate the content of the error message used during a repair attempt. Hardcoding the error message to 'Validation failed.' changes the implementation detail but does not violate the bounded retry requirement.",
+   "response_sha256": "da1353cc74240d2b3506412cf1b40604c74e70c51d2725c71d66ad5a7bdfa10c",
+   "sources": [
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "error_message = validated.error_message or \"Validation failed.\"",
+    "error_message = 'Validation failed.'"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "8d730e921a4ddffa": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235131Z-886902",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant returns the boolean validation flag as structured_data instead of the parsed value. So a valid response after one repair \"succeeds\" but hands back True instead of the parsed object, which breaks the success the criterion requires.",
+   "response_sha256": "b63f7851bb1d2d71a90d8a6770a1933c1d391c0c024680c701bd7f27ae341d7b",
+   "sources": [
+    "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "structured_data=validated.value,",
+    "return _ResultStep(state=state, response=build_public_response(result, tool_trace=state.tool_state.steps, structured_data=validated.valid))"
+   ],
+   "test_focus": "With total attempt budget 2, an invalid first response followed by a valid JSON response must return a response whose structured_data equals the parsed object from the second response, not True.",
+   "verdict": "pin"
+  },
+  "operator": "attribute",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.591317Z",
+   "answer_sha256": "7851cf08d46885517c85920cd40451c163de0038c82c5870877997ed47871325",
+   "call_id": "20260929T120217Z-467863",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "7851cf08d46885517c85920cd40451c163de0038c82c5870877997ed47871325",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_8d730e921a4ddffa.py",
+   "response_sha256": "6881c66642c741c2cc70d252c2302b1968f016226d2f5ee8bd4fef4d40bd9755",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.runtime.clear_test_caches",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config"
+   ]
+  },
+  "prompt_sha256": "67bf0290b8c92d13f46d6d37c8beb20e52a75609fdc37a538b53e2a26566e9a4"
+ },
+ "9a81553c4311e34e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235131Z-91a4f6",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes the error text in the repair message: a real validation message is replaced by the generic 'Validation failed.', and an empty one stays empty. The attempt counting, the stop at the limit and success on the final allowed response are unchanged. The requirement only asks that repair stops at a finite limit, and it says nothing about what the repair message contains.",
+   "response_sha256": "40edeaaca979e0a11d74b539f955cafb521115810ada443c21fc5b84a06b6543",
+   "sources": [
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
+    "error_message = validated.error_message or \"Validation failed.\""
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "39468f81f940723c419f66fee3994a3ea673f63d6894422d5ea59386aa465f42",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T090121Z-848311",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "39468f81f940723c419f66fee3994a3ea673f63d6894422d5ea59386aa465f42",
+   "reason": "The requirement mandates that repair attempts stop at a configured finite limit, but it does not specify the exact text of the error message provided to the model during those repair attempts. Changing how the error message is computed alters behavior, but this difference does not violate any stated requirement.",
+   "response_sha256": "6b8c8fd78d11c5b46116a3b0a94d1ef35768f0dc9c068365a781846746a7b6d4",
    "sources": [
     "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
     "error_message = validated.error_message or \"Validation failed.\"",
@@ -38,5 +223,152 @@
    "test_focus": "",
    "verdict": "irrelevant"
   }
+ },
+ "SM-12FA1E31": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191129Z-34d1cc",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the schema from the repair state, so the retry is sent to the provider without asking for structured output. The attempt limit still holds, but the \"repair\" is no longer a structured-output repair. The criterion expects valid structured output on the final allowed response, and passing tests only hide this because the fake provider answers the same way whatever it is sent.",
+   "response_sha256": "a16c134cf21533ba9c984316b46d0b43e3409fa6a831ce96f42a941f9f227c6a",
+   "sources": [
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
+    "            schema=plan.schema,",
+    "            schema=None,"
+   ],
+   "test_focus": "With a budget of 2 and an invalid first response, check that the second provider request still carries the plan's schema (plus the repair message), and that the valid output then succeeds with structured_data set.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:24:51.657330Z",
+   "answer_sha256": "663550b9637e29a359e2899ed503006655f52e589124d4b6486f598d30a388ac",
+   "call_id": "20260929T191741Z-85580a",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "663550b9637e29a359e2899ed503006655f52e589124d4b6486f598d30a388ac",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_sm_12fa1e31.py",
+   "response_sha256": "a6089f36497045fb5962a4601f349bd7fc0244ac8f9f62249db635d883e9a475",
+   "source": "draft author with tools",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.structured_recovery.run_structured_recovery_worker"
+   ]
+  },
+  "prompt_sha256": "258042a2af07a15ef6314ade38c678fa1ef0054aff8b7d5ec67bb476e75b3799"
+ },
+ "be77717ccb35232b": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235131Z-e08c85",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the tool trace from the successful structured response. The repair counting and the stop at the configured limit are unchanged, so this bounded-repair requirement still holds. The lost tool trace matters only to a tool-trace requirement, which is outside this scope.",
+   "response_sha256": "08d52d380504f4f0095233a2fda58fd144eabbdf8146c7ff81a0d2b867a84b1d",
+   "sources": [
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
+    "return _ResultStep(state=state, response=build_public_response(result, structured_data=validated.value))",
+    "tool_trace=state.tool_state.steps,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "43f1c600f135657e08ad68757762d5271efd5b20fadf97cded003c0e01bbb5ea",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T090148Z-cadbd0",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "43f1c600f135657e08ad68757762d5271efd5b20fadf97cded003c0e01bbb5ea",
+   "reason": "The requirement solely mandates that repair attempts for invalid structured output stop at the configured finite limit, without specifying the contents of the returned response object. Although the mutant alters the response by omitting the tool trace and falling back to a default when tool steps exist, this difference does not violate the finite attempt bound or any behavior requested by the requirement.",
+   "response_sha256": "af6fc85418a4672ef2677e0da735531148c818ca3d2bb66be7c19eecff1c6e13",
+   "sources": [
+    "Requirement REQ_STRUCTURED_OUTPUT_REPAIR (Structured output repair is bounded): Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "tool_trace=state.tool_state.steps,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "ea1a8657cd65d4b1": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235150Z-385b24",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the validated value from the success response. A repaired response then \"succeeds\" but has no structured data, so the repair gives the caller nothing. Succeeding on the final allowed response has to mean delivering the validated structured output, and the current tests only check that no error is raised.",
+   "response_sha256": "1e11c70c7ee6f1edd520d3431a5c210c853e9c5364695c71656b4a797681aad7",
+   "sources": [
+    "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "structured_data=validated.value,",
+    "return _ResultStep(state=state, response=build_public_response(result, tool_trace=state.tool_state.steps))"
+   ],
+   "test_focus": "With a total attempt budget of 2, send an invalid first response and then a valid one. Assert that the returned response's structured_data equals the validated value parsed from the second response and is not None.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.592279Z",
+   "answer_sha256": "74e9c3df454a163c8c978aca5dae45c026ad9c53dd1650ef5b5ba1fe6e808328",
+   "call_id": "20260929T120217Z-3f3fa4",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "74e9c3df454a163c8c978aca5dae45c026ad9c53dd1650ef5b5ba1fe6e808328",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_ea1a8657cd65d4b1.py",
+   "response_sha256": "adf9f67af212ec5d165767e139ecc0eee2b7b15e70b4a87ce5e6ee51ad7b9fc8",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.runtime.clear_test_caches",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "5064bef1340a13a8b4e6b56b67efbc9748010d50b147a0ff4cfe1bafab9059f5"
  }
 }

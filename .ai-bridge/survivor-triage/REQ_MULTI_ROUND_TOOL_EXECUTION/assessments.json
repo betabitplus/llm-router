@@ -1,22 +1,229 @@
 {
+ "4ca26f1e4a9fa447": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=0)",
+     "provider_request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model=\"gemini-pro\", credential=ProviderCredential(key_id=1, env_var=\"\", value=\"\"), messages=(), temperature=None, seed=None, schema=None, tool_registry=None, tool_choice=None, kwargs={}, route_index=None)",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model=\"gemini-pro\", output_text=\"\", tool_calls=(1,))",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=(1,)), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T223352Z-377796",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When plan.tool_registry is None and result.tool_calls is not empty, the original version explicitly passes tool_trace=state.tool_state.steps to build_public_response, whereas the changed version omits this argument (defaulting to an empty tuple), resulting in different return values when state.tool_state.steps is not empty.",
+    "response_sha256": "6ee1882f286959e101cc651eab6eb341cbfc79d4a0a195df42c6d65c135fbc9a",
+    "sources": [
+     "    if plan.tool_registry is None:\n        return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n            ),\n        )",
+     "    if plan.tool_registry is None:\n        return _ResultStep(state=state, response=build_public_response(result))"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T223352Z-841c09",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When plan.tool_registry is None, no tool rounds have executed so state.tool_state.steps is empty, matching the default tool_trace=() of build_public_response.",
+    "response_sha256": "6895516703f51475e7b787476b59e29c97666b9355cc012faf94ab2770342e77",
+    "sources": [
+     "                tool_trace=state.tool_state.steps,",
+     "        return _ResultStep(state=state, response=build_public_response(result))"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=5)",
+     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='ENV', value='v'), messages=(NormalizedMessage(role='user', parts=(), meta={}),))",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='hi', usage=None, tool_calls=('call1',), tool_call_metadata=())",
+     "state": "_ExecutionLoopState(messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_state=ToolLoopState(steps=('prior_step',)), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T223357Z-56e70f",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "When plan.tool_registry is None and state.tool_state.steps is non-empty, the original passes tool_trace=state.tool_state.steps to build_public_response, while the changed version calls build_public_response(result) with no tool_trace (defaulting to ()), so the returned response's tool_trace differs.",
+    "response_sha256": "d5ea28011843cbe69c951a3e877902e5382574cd22cfbed93c4f929b5b81dcde",
+    "sources": [
+     "return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n            ),\n        )",
+     "return _ResultStep(state=state, response=build_public_response(result))"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "89a0cdb0419a46bb9aeeb730c48e0c6befd7bf4b3451408f93e02af69803b058"
+ },
+ "9a1e3f3eefc3663d": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(), tool_choice=None, max_tool_rounds=0)",
+     "provider_request": "ProviderRequest(request_id=\"id\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"m\", credential=ProviderCredential(key_id=1, env_var=\"e\", value=\"v\"), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"m\", output_text=\"non-empty text\", tool_calls=(\"tool1\",))",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=ToolRegistry(), schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T223352Z-00a131",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits `output_text=\"\"` when calling `build_public_response` on tool limit reached, which would cause non-empty text from the provider result to be mistakenly preserved in the response instead of cleared.",
+    "response_sha256": "e0d3f6b299a4640b57cdcbf19b9083d5a88150f4e6f44abbf1bcba80d719a991",
+    "sources": [
+     "        return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                output_text=\"\",\n                tool_calls=result.tool_calls,\n                tool_trace=next_tool_state.steps,\n            ),\n        )",
+     "        return _ResultStep(state=state, response=build_public_response(result, tool_calls=result.tool_calls, tool_trace=next_tool_state.steps))"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T223352Z-e5190f",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Omitting the redundant output_text=\"\" keyword argument in the call to build_public_response does not change the resulting response or the function's behavior.",
+    "response_sha256": "6119fe5a86aece075cd501e97d214a2f60da6db3d6a38e07b4da41252930d5cb",
+    "sources": [
+     "                output_text=\"\",",
+     "        return _ResultStep(state=state, response=build_public_response(result, tool_calls=result.tool_calls, tool_trace=next_tool_state.steps))"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(tools={}), tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='KEY', value='secret'), messages=(NormalizedMessage(role='user', parts=(), meta={}),))",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='partial answer before limit', tool_calls=(ToolCall(id='1', name='some_tool', arguments={}),))",
+     "state": "_ExecutionLoopState(messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_state=ToolLoopState(steps=(), round_count=1), tool_choice=None, tool_registry=ToolRegistry(tools={}), schema=None, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T223357Z-20439d",
+    "confidence": 0.75,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "In the tool-limit-reached branch the original explicitly passes output_text=\"\" to build_public_response, forcing an empty output_text, while the changed version omits that keyword so build_public_response uses its own default instead (which normally falls back to result.output_text); so for any state where _tool_limit_reached is True and result.output_text is non-empty, the two versions build a differently-populated LLMRouterResponse.",
+    "response_sha256": "e625ed5a2e779107796bedfbd9f4ee474d7ab872899007b5501140eaa19ae6ba",
+    "sources": [
+     "return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                output_text=\"\",\n                tool_calls=result.tool_calls,\n                tool_trace=next_tool_state.steps,\n            ),\n        )",
+     "if _tool_limit_reached(state=next_tool_state, result=result):\n        _log_tool_round_limit(request=provider_request, state=next_tool_state)\n        return _ResultStep(state=state, response=build_public_response(result, tool_calls=result.tool_calls, tool_trace=next_tool_state.steps))"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "9d26981a398755a6d9d42c7196ff64b65be5dc79b8e62a01a15eba1fc875f89b"
+ },
+ "bdd04396b959d4fd": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(), tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", credential=ProviderCredential(key_id=1, env_var=\"A\", value=\"B\"), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", output_text=\"\", tool_calls=(1,))",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T223352Z-3a5fc2",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When tool_registry is provided but tool_choice is None, the original version evaluates to False and attempts to execute a tool round, whereas the changed version correctly evaluates to True and returns immediately.",
+    "response_sha256": "8c3af689fdb1146b7eff424e27028b522e0039a3728e8d50655dff8b788d1f82",
+    "sources": [
+     "    if plan.tool_registry is None:",
+     "        return _ResultStep("
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(), tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='req_1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='', tool_calls=(ToolCall(),))",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T223352Z-c4d7c0",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When an execution plan specifies a tool registry but leaves tool choice as None, the original version advances the tool round while the changed version returns early with a public response.",
+    "response_sha256": "c05da57970671c18a24659aa7e24d0f378efc7420e18ec4fc77b02ec31f2bfd2",
+    "sources": [
+     "    if plan.tool_registry is None:",
+     "    if plan.tool_choice is None:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=ToolChoice(kind='auto'), max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-1.5-flash', credential=ProviderCredential(key_id=1, env_var='GOOGLE_API_KEY', value='secret'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-1.5-flash', output_text='', tool_calls=(ToolCall(),))",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(), tool_choice=ToolChoice(kind='auto'), tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T223352Z-cfbdc7",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The guard condition was rewritten from checking `plan.tool_registry is None` to `plan.tool_choice is None`; with plan.tool_registry=None but plan.tool_choice not None, the original short-circuits and returns immediately, while the changed version falls through and calls `_run_logged_tool_round(... registry=plan.tool_registry ...)` with registry=None, which a real ToolRegistry-typed function will not handle safely, producing a different outcome (early success vs. proceeding into tool-round logic / failure).",
+    "response_sha256": "4f151a2f4fc1c88921a69fb772ba42fa6b0f0b9ee86028a06dad67bccdd51ec3",
+    "sources": [
+     "if plan.tool_registry is None:",
+     "if plan.tool_choice is None:",
+     "next_tool_state = _run_logged_tool_round(",
+     "registry=plan.tool_registry,"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(), tool_choice=None, max_tool_rounds=3)",
+     "provider_request": "a ProviderRequest with provider=Provider.GOOGLE and other fields set to valid values",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='m', output_text='x', tool_calls=(<any non-empty ToolCall>,))",
+     "state": "an _ExecutionLoopState with a default ToolLoopState, tool_choice=None, tool_registry=ToolRegistry(), schema=None, structured_attempts=0"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111552Z-9bccf7",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The early-return guard changed from checking tool_registry to checking tool_choice, so with a registry set and tool_choice None the original runs the tool round while the changed version returns early.",
+    "response_sha256": "a4b0224fe452d070ade85599a3ce7e135ff77233118fc395167a27f169d28e35",
+    "sources": [
+     "if plan.tool_registry is None:",
+     "if plan.tool_choice is None:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "7708dc919398b6c7ba2de39d959e1facf522803c6cfaf55c17251bba932036bb"
+ },
  "c64b7deb7394ba40": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
      "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
-     "provider_request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", credential=ProviderCredential(key_id=1, env_var=\"x\", value=\"y\"), messages=())",
-     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", output_text=\"\", tool_calls=(1,))",
-     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=None, schema=None, structured_attempts=1)"
+     "provider_request": "ProviderRequest(request_id='1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='m', credential=ProviderCredential(key_id=1, env_var='e', value='v'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='m', output_text='', tool_calls=(1,))",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153834Z-817ec4",
+    "call_id": "20260928T212522Z-9c99f0",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When the plan lacks a tool registry but the result contains tool calls, the original version attempts to build and return a _ResultStep, whereas the changed version returns None.",
-    "response_sha256": "9f60cf928eb6706531f40875ad3d82d7d5a6a1ce6a27656583cd4dcbfe7ab996",
+    "reason": "When `result.tool_calls` is truthy and `plan.tool_registry` is None, the original version returns a `_ResultStep` object whereas the changed version returns `None`.",
+    "response_sha256": "2f1c0b8892a377aaedfb39ac3108657913c1538529c09f3445075cba8f68f72a",
     "sources": [
-     "    if plan.tool_registry is None:\n        return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n            ),\n        )",
+     "    if plan.tool_registry is None:\n        return _ResultStep(",
      "    if plan.tool_registry is None:\n        return None"
     ],
     "verdict": "distinct"
@@ -24,17 +231,17 @@
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
      "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
-     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=())",
-     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='', tool_calls=(ToolCall(),))",
-     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+     "provider_request": "ProviderRequest(request_id='req_1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='', tool_calls=(ToolCall(id='call_1', name='test_tool', arguments={}),))",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153836Z-4a6241",
+    "call_id": "20260928T213154Z-369866",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When result.tool_calls is non-empty and plan.tool_registry is None, the original version returns a _ResultStep instance while the changed version returns None.",
-    "response_sha256": "c8fb50d5f441411d992310af97386968842f834d4fdf084ab2ea344c905f140e",
+    "reason": "When result contains tool calls and plan.tool_registry is None, the original version returns a _ResultStep wrapping the public response whereas the changed version returns None.",
+    "response_sha256": "9832d88b69bea2abbfe399159c762f797d7cb49a2dba23af5cd01f23f4a0fe81",
     "sources": [
      "    if plan.tool_registry is None:",
      "        return _ResultStep(",
@@ -44,88 +251,187 @@
    },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
-     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH_LITE, provider_model='gemini-1', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='secret'), messages=())",
-     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH_LITE, provider_model='gemini-1', output_text='', tool_calls=(ToolCall(id='1', name='t', arguments={}),))",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=3)",
+     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH_LITE, provider_model='gemini-flash-lite', credential=ProviderCredential(key_id=1, env_var='X', value='v'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH_LITE, provider_model='gemini-flash-lite', output_text='hi', tool_calls=('dummy_tool_call',))",
      "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T153819Z-0f1b2a",
-    "confidence": 0.85,
+    "call_id": "20260928T212522Z-d7d3d1",
+    "confidence": 0.9,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "When result.tool_calls is non-empty and plan.tool_registry is None, the original returns a _ResultStep built via build_public_response(result, tool_trace=state.tool_state.steps), while the changed version simply returns None for this branch, so callers relying on that early response see completely different behavior.",
-    "response_sha256": "93a9460e840ef71dcc022159c75bf05d918bfdd32939ae14210987f01bee6305",
+    "reason": "When result.tool_calls is truthy and plan.tool_registry is None, the original returns a _ResultStep built from build_public_response, while the changed version explicitly returns None instead, a clear behavioral divergence caught by the branch 'if plan.tool_registry is None:'.",
+    "response_sha256": "a8513d2893fece45352f1753a1b6f6d996bd7ae189741b44fd4aeeff0dcc4436",
     "sources": [
      "if plan.tool_registry is None:",
-     "return _ResultStep(",
-     "return None"
+     "return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n            ),\n        )",
+     "if plan.tool_registry is None:\n        return None"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "any valid ProviderRequest",
+     "result": "ProviderResult with a non-empty tool_calls tuple, e.g. tool_calls=(ToolCall(...),)",
+     "state": "any valid _ExecutionLoopState"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111557Z-ecd2a9",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With non-empty tool_calls and tool_registry None, the original returns a _ResultStep holding a public response, while the changed version returns None.",
+    "response_sha256": "db356e683baadf88dc6b57d9a1f84a97d58d6ff69ac2cf4ac207ebb605d2a6d4",
+    "sources": [
+     "if plan.tool_registry is None:\n        return None",
+     "return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n            ),\n        )"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "feb5f02c25e6604a3529e486d9bb2756f04d8f8ed2ce16e93df66de9048560cf"
+  "prompt_sha256": "6b6bfe04332843a98da602f25cbfd6f95b2e8450cc465889f1aa7b73267f2a1f"
+ },
+ "d1f8bfd6486f6eb4": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T223357Z-762ec6",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Omitting `tool_calls=result.tool_calls` does not change the function's behavior because `build_public_response` defaults to extracting tool calls from the provided `result` when omitted, as evidenced by the earlier branch where `tool_calls` is also safely omitted.",
+    "response_sha256": "dc9869444609c696b53ef3c9304b88f392e04bc079a89f867cee9c1bee166b4c",
+    "sources": [
+     "            response=build_public_response(",
+     "                result,",
+     "                output_text=\"\",",
+     "                tool_calls=result.tool_calls,",
+     "                tool_trace=next_tool_state.steps,",
+     "            ),"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T223357Z-da5ac9",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Passing tool_calls=result.tool_calls to build_public_response is redundant because build_public_response defaults tool_calls to result.tool_calls from the provider result when omitted.",
+    "response_sha256": "6abdb318bd36d756c9d43ce699fb97f9a4dc16095746b5972c75b7531f03de4e",
+    "sources": [
+     "                tool_calls=result.tool_calls,",
+     "        return _ResultStep(state=state, response=build_public_response(result, output_text='', tool_trace=next_tool_state.steps))"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(), tool_choice=None, max_tool_rounds=0)",
+     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.OPENROUTER, model=Model.LLAMA_8B, provider_model='llama-8b', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.OPENROUTER, model=Model.LLAMA_8B, provider_model='llama-8b', output_text='', tool_calls=(ToolCallPlaceholder(),))",
+     "state": "_ExecutionLoopState(messages=(), tool_state=<ToolLoopState instance whose round-count already equals/exceeds the configured max, e.g. the same object _run_logged_tool_round would return as 'limit reached' for this request>, tool_choice=None, tool_registry=ToolRegistry(), schema=None, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T223357Z-a0c5b5",
+    "confidence": 0.62,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "When `_tool_limit_reached` is True and `plan.tool_registry` is not None, the original calls `build_public_response(result, output_text='', tool_calls=result.tool_calls, tool_trace=next_tool_state.steps)` while the changed version drops the `tool_calls=result.tool_calls` argument, so the resulting `_ResultStep.response.tool_calls` differs (populated vs. default/empty) for any request whose tool round hits the local limit with non-empty `result.tool_calls`.",
+    "response_sha256": "d501de8bb20dcba5b782ca57cd7162cd55927cc813d9d21fa9b427ad39a2f778",
+    "sources": [
+     "return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                output_text=\"\",\n                tool_calls=result.tool_calls,\n                tool_trace=next_tool_state.steps,\n            ),\n        )",
+     "return _ResultStep(state=state, response=build_public_response(result, output_text='', tool_trace=next_tool_state.steps))"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "e7a32801005e5375269de681629ee705f3a27cfb789cbdec64708e584dde888c"
  },
  "ee8c1e76f998e445": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
      "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(), tool_choice=None, max_tool_rounds=0)",
-     "provider_request": "ProviderRequest(request_id='1', provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model='gemini-pro', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=())",
-     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model='gemini-pro', output_text='', tool_calls=(ToolCall(),))",
-     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+     "provider_request": "ProviderRequest(request_id='1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='flash', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='flash', output_text='', tool_calls=(ToolCall(),))",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(), tool_choice=None, tool_registry=ToolRegistry(), schema=None, structured_attempts=0)"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T153844Z-651c10",
-    "confidence": 1,
+    "call_id": "20260928T213154Z-255940",
+    "confidence": 0.95,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "If the tool limit is reached (e.g., due to many tool steps or a low max_tool_rounds), the original version returns a _ResultStep whereas the changed version returns None.",
-    "response_sha256": "61457aa5391c9bbaebfe38d6897424a7025ab3a3fa5b0b119e3dc0e14dc15685",
+    "reason": "When the tool round limit is reached, the original version returns a _ResultStep containing the public response, whereas the changed version returns None, leading to different return values for the same input.",
+    "response_sha256": "e1c571d0fd3d576da55d320abbcfb8729153890fb842dae8593d3e04ee95896c",
     "sources": [
      "    if _tool_limit_reached(state=next_tool_state, result=result):",
      "        _log_tool_round_limit(request=provider_request, state=next_tool_state)",
-     "        return _ResultStep("
+     "        return None"
     ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260928T153848Z-5feef4",
-    "confidence": 0.95,
+    "call_id": "20260928T212602Z-66bc9d",
+    "confidence": 0.9,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The only difference between the two versions is returning None instead of _ResultStep when _tool_limit_reached is True, but this branch cannot be reached by valid inputs built from the project's types, making both versions behave identically.",
-    "response_sha256": "f1baf7eddc33a0e7ba3e4f9c92c60475914f758641bbbf765fdc7c47d0412ee1",
+    "reason": "The two versions diverge only when _tool_limit_reached returns true where the changed version returns None instead of a _ResultStep, but because the implementations of _run_logged_tool_round and _tool_limit_reached and the definition of ToolLoopState are omitted, it cannot be determined from the text alone whether that branch is reachable.",
+    "response_sha256": "af7049ed2bad9351481fce249718841a9a89a9e025805bcd0102a5dd18de2f86",
     "sources": [
      "    if _tool_limit_reached(state=next_tool_state, result=result):",
      "        return None"
     ],
-    "verdict": "equivalent"
+    "verdict": "unsure"
    },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(tools={}), tool_choice=None, max_tool_rounds=0)",
-     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=())",
-     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='', tool_calls=(ToolCall(name='t', arguments={}, id='c1'),))",
-     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=(), rounds=0), tool_choice=None, tool_registry=ToolRegistry(tools={}), schema=None, structured_attempts=0)"
+     "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(tools={}), tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='req-1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='secret'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), temperature=None, seed=None, schema=None, tool_registry=ToolRegistry(tools={}), tool_choice=None, kwargs={}, route_index=None)",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='', usage=None, tool_calls=(ToolCall(id='call-1', name='search', arguments={}),), tool_call_metadata=())",
+     "state": "_ExecutionLoopState(messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_state=ToolLoopState(steps=(), rounds=1), tool_choice=None, tool_registry=ToolRegistry(tools={}), schema=None, structured_attempts=0)"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T153839Z-8f506f",
-    "confidence": 0.75,
+    "call_id": "20260928T212540Z-fd9a4d",
+    "confidence": 0.7,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "In the tool-limit branch the original returns a populated _ResultStep with response=build_public_response(result, output_text=\"\", tool_calls=result.tool_calls, tool_trace=next_tool_state.steps), while the changed version just does return None, which callers treat like 'no tool calls at all', dropping the emitted response entirely; any input that makes _tool_limit_reached(state=next_tool_state, result=result) True (e.g. max_tool_rounds=0 with a non-empty result.tool_calls) exposes this divergence.",
-    "response_sha256": "cb00d9c2d1e5458e163afa608638047f10f7bfe1c8b7a2a300049697f62618dd",
+    "reason": "Whenever _tool_limit_reached(state=next_tool_state, result=result) is True (e.g. tool_state already at the configured round cap), the original still returns a fully populated _ResultStep with response=build_public_response(result, output_text='', tool_calls=result.tool_calls, tool_trace=next_tool_state.steps), while the changed version simply does 'return None', so any caller reading '.response' off the result diverges between a real object and None even though both versions still call _log_tool_round_limit first.",
+    "response_sha256": "cb605c4bcc8d3105fc19fb3acbb40a50ac34763d78ea85d85756060eec367a5e",
     "sources": [
      "if _tool_limit_reached(state=next_tool_state, result=result):",
      "return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                output_text=\"\",\n                tool_calls=result.tool_calls,\n                tool_trace=next_tool_state.steps,\n            ),\n        )",
-     "return None"
+     "_log_tool_round_limit(request=provider_request, state=next_tool_state)\n        return None"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=ToolRegistry(tools={}), tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "a ProviderRequest with any valid fields",
+     "result": "a ProviderResult with non-empty tool_calls, e.g. one ToolCall",
+     "state": "an _ExecutionLoopState with a fresh ToolLoopState, so one round reaches the limit"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111557Z-7c99e1",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "When the tool round limit is reached, the original returns a _ResultStep carrying a response, while the changed version returns None.",
+    "response_sha256": "aeb1485d99e074f1bc1c355f00246670bea4056d27823c8eb0afd9e7dee5a9e5",
+    "sources": [
+     "        return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                output_text=\"\",\n                tool_calls=result.tool_calls,\n                tool_trace=next_tool_state.steps,\n            ),\n        )",
+     "if _tool_limit_reached(state=next_tool_state, result=result):\n        _log_tool_round_limit(request=provider_request, state=next_tool_state)\n        return None"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "be42ce99ee6ed133e034598250fe9f9ffc2283ce3d225d3da47289f448f9c1fd"
+  "prompt_sha256": "8e4619e82ff482bda32f2e96014f5cde3eed71a7c2b2648bd8dfee19a567863d"
  }
 }

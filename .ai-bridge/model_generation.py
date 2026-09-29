@@ -27,6 +27,7 @@ Backends:
 
 from __future__ import annotations
 
+import atexit
 import hashlib
 import itertools
 import json
@@ -65,12 +66,43 @@ ROLES = {
 TOOL_ROLES = ("draft_author_tools", "draft_author_last")
 TOOL_BACKENDS = ("claude-cli",)
 TOOLS = "Read,Grep,Glob,Write,Edit,Bash"
+# The reasoning effort each backend takes by flag (Claude Code's model configuration, agy --help). An
+# Antigravity model whose id names its level (gemini-3.8-flash-high) takes none: its id is its level.
+EFFORT_LEVELS = {"claude-cli": ("low", "medium", "high", "xhigh", "max"), "antigravity-cli": ("low", "medium", "high", "max")}
+LEVEL_IN_ID = re.compile(r"-(?:low|medium|high)$")
+# The roles whose every answer execution checks in full: a draft is kept only when it breaks no rule,
+# passes on the original five times and fails on the mutant. Only they may name a ladder of levels,
+# the next level asked after a rejected draft, as Anthropic advises for work with a checker (run low,
+# re-run the failures higher). A judge answers at the one level its canaries and calibration
+# measured; the generator too, since execution checks its defect's form, not whether it matters.
+ESCALATING_ROLES = ("draft_author", "draft_author_tools", "draft_author_last")
 
 
 def model_family(model: str) -> str:
     """Whose model it is, whichever backend serves it: Antigravity serves Claude as well as Gemini."""
     name = model.lower()
     return "anthropic" if name.startswith("claude") else "google" if name.startswith("gemini") else "openai" if name.startswith("gpt") else "other"
+
+
+def entry_key(backend: str, model: str, effort: str = "") -> str:
+    """How records name a model at its level: ``backend:model``, and ``@level`` when a flag sets one.
+    A model the Test Plan lists without a level keeps the name its answers were stored under."""
+    return f"{backend}:{model}" + (f"@{effort}" if effort else "")
+
+
+def parse_effort(cell: str, backend: str, model: str, where: str) -> list[str]:
+    """A Test Plan Effort cell, fail-closed: empty or a dash when no flag sets the level, else one
+    level or a rising ladder ``low → medium``, each a level the backend takes by flag."""
+    text = cell.replace("`", "").strip()
+    if text in {"", "—", "-"}:
+        return []
+    levels = [part.strip() for part in text.split("→")]
+    allowed = EFFORT_LEVELS.get(backend, ())
+    if any(level not in allowed for level in levels) or [allowed.index(level) for level in levels] != sorted({allowed.index(level) for level in levels}):
+        raise RuntimeError(f"Test Plan: {where} names an unknown or unordered Effort {cell!r} for {backend}")
+    if backend == "antigravity-cli" and LEVEL_IN_ID.search(model):
+        raise RuntimeError(f"Test Plan: {where}: {model} names its level in its id, so its Effort stays empty")
+    return levels
 
 BUDGET_LABELS = {
     "5-hour window": "five_hour",
@@ -82,7 +114,10 @@ BUDGET_LABELS = {
     "Parallel calls to start with": "parallel_calls",
     "Parallel calls at most": "parallel_calls_max",
     "Smaller-pool calls per week": "pool_calls_per_week",
+    "Antigravity quota kept free": "agy_quota_floor",
 }
+# Budget rows given in percent.
+PERCENT_BUDGETS = {"five_hour", "seven_day", "agy_quota_floor"}
 # Test Plan labels of the Survivor judgement settings.
 JUDGEMENT_LABELS = {
     "Symbolic paths per mutant": "symbolic_paths",
@@ -90,7 +125,11 @@ JUDGEMENT_LABELS = {
     "False-equivalent rate": "alpha",
     "Assessed equivalence": "assessed_equivalence",
 }
-OUTCOMES = ("ok", "invalid", "rejected", "error", "timeout", "unavailable", "deferred")
+OUTCOMES = ("ok", "invalid", "rejected", "error", "timeout", "capped", "unavailable", "deferred")
+# A price cap is a fuse against a call that runs away, not a price list: it stands at this many
+# times the most expensive answered call of its role, and never below the Test Plan's cap, so it
+# moves with what the models cost instead of standing in the way when their prices change.
+CAP_FACTOR = 3
 # The cheapest model of each backend, for the probe that reads availability and windows.
 PROBE_MODELS = {"claude-cli": "claude-haiku-4-5-20251001", "antigravity-cli": "gemini-3.8-flash-low"}
 # Variables that would bill an API account instead of the subscription.
@@ -254,6 +293,12 @@ class ClaudeCli:
         self.runner = runner
         self.profile = profile or claude_profile()[0]
 
+    def profiles(self) -> list[str]:
+        """Every Claude CLI sign-in of this machine, the chosen one first: a run moves to the next when
+        the one in use has no room left in its windows."""
+        named = sorted(path.name for path in CLAUDE_PROFILES_DIR.iterdir() if path.is_dir()) if CLAUDE_PROFILES_DIR.is_dir() else []
+        return list(dict.fromkeys([self.profile, "default", *named]))
+
     def version(self) -> str:
         if not self.executable:
             return ""
@@ -261,10 +306,11 @@ class ClaudeCli:
         match = re.search(r"\d+\.\d+\.\d+", done.stdout or "")
         return match.group(0) if match else ""
 
-    def command(self, model: str, system: str, schema: dict | None, usd_cap: float | None, workspace: Workspace | None = None) -> list[str]:
+    def command(self, model: str, system: str, schema: dict | None, usd_cap: float | None, workspace: Workspace | None = None, effort: str = "") -> list[str]:
         # Without a workspace a call has no tools at all; with one, only what its permissions allow,
-        # without asking anyone and without the person's own settings.
-        tools = ["--tools", ""] if workspace is None else [
+        # without asking anyone. Neither reads the person's own settings: safe mode keeps a level
+        # saved there for a model, and it would set the call's effort (it did, 2026-09-26 to 09-28).
+        tools = ["--tools", "", "--setting-sources", ""] if workspace is None else [
             "--tools", TOOLS, "--permission-mode", "dontAsk",
             "--settings", json.dumps({"permissions": workspace.permissions()}, sort_keys=True), "--setting-sources", "",
         ]
@@ -277,9 +323,11 @@ class ClaudeCli:
             command += ["--json-schema", json.dumps(schema)]
         if usd_cap is not None:
             command += ["--max-budget-usd", f"{usd_cap:.2f}"]
+        if effort:
+            command += ["--effort", effort]
         return command
 
-    def invoke(self, *, model: str, system: str, prompt: str, schema: dict | None, usd_cap: float | None = None, timeout: int = TIMEOUT, workspace: Workspace | None = None) -> Invocation:
+    def invoke(self, *, model: str, system: str, prompt: str, schema: dict | None, usd_cap: float | None = None, timeout: int = TIMEOUT, workspace: Workspace | None = None, effort: str = "") -> Invocation:
         if not self.executable:
             return Invocation("unavailable", "the claude CLI is not installed")
         if self.profile != "default" and not (CLAUDE_PROFILES_DIR / self.profile).is_dir():
@@ -289,7 +337,7 @@ class ClaudeCli:
         with tempfile.TemporaryDirectory(prefix="ternforge-model-call-") as empty:
             try:
                 done = self.runner(
-                    self.command(model, system, schema, usd_cap, workspace), input=prompt, capture_output=True, text=True,
+                    self.command(model, system, schema, usd_cap, workspace, effort), input=prompt, capture_output=True, text=True,
                     cwd=str(workspace.root) if workspace is not None else empty, env=claude_env(self.profile), timeout=timeout,
                 )
             except subprocess.TimeoutExpired:
@@ -361,7 +409,7 @@ def parse_claude_stream(stdout: str, stderr: str, returncode: int, schema: dict 
         if str(result.get("api_error_status")) in {"401", "403"} or re.search(r"log ?in|authenticate|authentication|oauth", text, re.IGNORECASE):
             return Invocation("unavailable", "the claude CLI is not signed in: " + _clip(text), **common)
         if result.get("subtype") == "error_max_budget_usd":
-            return Invocation("error", "the call reached its list-price cap", **common)
+            return Invocation("capped", "the call reached its list-price cap", **common)
         return Invocation("error", "the call failed: " + _clip(text), **common)
     if schema is None:
         return Invocation("ok", "", {"text": str(result.get("result") or "")}, **common)
@@ -372,6 +420,113 @@ def parse_claude_stream(stdout: str, stderr: str, returncode: int, schema: dict 
     if errors:
         return Invocation("invalid", "the answer breaks its schema: " + _clip("; ".join(errors[:4])), **common)
     return Invocation("ok", "", structured, **common)
+
+
+# --- Antigravity accounts --------------------------------------------------------------
+
+EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+
+
+# When Antigravity says a spent quota resets ("Individual quota reached. … Resets in 94h9m42s").
+QUOTA_RESET = re.compile(r"Resets in (?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?")
+
+
+def quota_resets_at(reason: str, at: str) -> datetime | None:
+    """When a quota a rejection names resets, read from its reason and the time of its row."""
+    match = QUOTA_RESET.search(reason or "")
+    if not match or not any(match.groups()):
+        return None
+    try:
+        start = datetime.fromisoformat(at)
+    except (TypeError, ValueError):
+        return None
+    hours, minutes, seconds = (int(value or 0) for value in match.groups())
+    return start + timedelta(hours=hours, minutes=minutes, seconds=seconds)
+
+
+def quota_family(model: str) -> str:
+    """Which quota agm reports a model draws on: Gemini Pro, Gemini Flash, or the one Claude and GPT share."""
+    if model_family(model) != "google":
+        return "other"
+    return "gemini-pro" if "-pro" in model.lower() else "gemini-flash"
+
+
+def parse_agm_aliases(text: str) -> dict[str, str]:
+    """``agm alias``: the alias of each account that has one, by account."""
+    aliases = {}
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) == 2 and EMAIL.fullmatch(parts[1]):
+            aliases[parts[1]] = parts[0]
+    return aliases
+
+
+def parse_agm_list(text: str) -> dict[str, dict]:
+    """``agm list``: per account, whether agy uses it and what each quota has left, in percent."""
+    accounts = {}
+    for line in text.splitlines():
+        match = re.fullmatch(r"\s*(\S+@\S+)\s+(?:(\S+)\s+)?(\d+)%\s+(\d+)%\s+(\d+)%\s*", line)
+        if match and EMAIL.fullmatch(match.group(1)):
+            _account, status, pro, flash, other = match.groups()
+            accounts[match.group(1)] = {"agy": "cli" in (status or "").split(","), "gemini-pro": int(pro), "gemini-flash": int(flash), "other": int(other)}
+    return accounts
+
+
+class AgmAccounts:
+    """The Antigravity sign-ins agm keeps (its multi-account switcher): which one agy uses and what each
+    quota has left. A switch applies to agy alone (``--target agy``), never to the person's IDE. An
+    account is known by its alias, its address stays in memory for the switch, and a record names it
+    only by a digest."""
+
+    def __init__(self, executable: str | None = None, runner=subprocess.run):
+        self.executable = executable if executable is not None else shutil.which("agm") or ""
+        self.runner = runner
+        self.addresses: dict[str, str] = {}
+
+    def _run(self, *args: str, timeout: int = 120) -> str:
+        try:
+            done = self.runner([self.executable, *args], capture_output=True, text=True, timeout=timeout, stdin=subprocess.DEVNULL)
+        except (OSError, subprocess.TimeoutExpired):
+            return ""
+        return (done.stdout or "") if done.returncode == 0 else ""
+
+    def cli_address(self) -> str:
+        """The account agy's own credential store holds, as ``agm sync`` reads it: the one its calls
+        use. agm's list may name another (on 2026-09-29 it named the second account while the store
+        held the first), so this, not the list, says which account agy uses."""
+        match = re.search(r"CLI \(agy\) credential store:\s*(\S+)", self._run("sync"))
+        return match.group(1) if match and EMAIL.fullmatch(match.group(1)) else ""
+
+    def alias_of(self, address: str) -> str:
+        return next((alias for alias, known in self.addresses.items() if known == address), "account-" + sha256_text(address)[:8])
+
+    def snapshot(self) -> dict[str, dict]:
+        """Every account by alias with its quotas, read live, and whether agy uses it; empty without agm."""
+        if not self.executable:
+            return {}
+        self._run("refresh-all", timeout=300)
+        aliases = parse_agm_aliases(self._run("alias"))
+        snapshot = {}
+        for address, row in parse_agm_list(self._run("list")).items():
+            alias = aliases.get(address) or "account-" + sha256_text(address)[:8]
+            self.addresses[alias] = address
+            snapshot[alias] = row
+        actual = self.cli_address()
+        if actual:
+            for alias, row in snapshot.items():
+                row["agy"] = self.addresses[alias] == actual
+        return snapshot
+
+    def switch(self, alias: str) -> bool:
+        """Move agy alone to an account; True once its credential store holds that account."""
+        try:
+            done = self.runner(
+                [self.executable, "switch", self.addresses.get(alias, alias), "--target", "agy"],
+                capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+        return done.returncode == 0 and self.cli_address() == self.addresses.get(alias, alias)
 
 
 class AntigravityCli:
@@ -390,9 +545,12 @@ class AntigravityCli:
     # does anyway is refused (the headless run denies the permission and answers nothing).
     TOOLLESS = "Answer from the text alone: do not run commands, read or write files, or use any tool."
 
-    def __init__(self, executable: str | None = None, runner=subprocess.run):
+    def __init__(self, executable: str | None = None, runner=subprocess.run, accounts: AgmAccounts | None = None):
         self.executable = executable or shutil.which("agy") or ""
         self.runner = runner
+        # With agm, the run reads every account's quotas and moves agy to one that has some left.
+        self.accounts = accounts if accounts is not None else AgmAccounts()
+        self.profile = ""
 
     def version(self) -> str:
         if not self.executable:
@@ -401,16 +559,18 @@ class AntigravityCli:
         match = re.search(r"\d+\.\d+\.\d+", (done.stdout or "") + (done.stderr or ""))
         return match.group(0) if match else ""
 
-    def command(self, model: str, system: str, prompt: str, schema: dict | None) -> list[str]:
+    def command(self, model: str, system: str, prompt: str, schema: dict | None, effort: str = "") -> list[str]:
         command = [
             self.executable, f"-p={self.TOOLLESS}\n{system}\n\n{prompt}", "--output-format", "json", "--model", model,
             "--disable-slash-commands", "--sandbox",
         ]
         if schema is not None:
             command += ["--json-schema", json.dumps(schema)]
+        if effort:
+            command += ["--effort", effort]
         return command
 
-    def invoke(self, *, model: str, system: str, prompt: str, schema: dict | None, usd_cap: float | None = None, timeout: int = TIMEOUT, workspace: Workspace | None = None) -> Invocation:
+    def invoke(self, *, model: str, system: str, prompt: str, schema: dict | None, usd_cap: float | None = None, timeout: int = TIMEOUT, workspace: Workspace | None = None, effort: str = "") -> Invocation:
         if workspace is not None:
             return Invocation("unavailable", "a call with tools goes only through the claude CLI, whose permissions hold its tools to the copy")
         if not self.executable:
@@ -419,7 +579,7 @@ class AntigravityCli:
         with tempfile.TemporaryDirectory(prefix="ternforge-model-call-") as empty:
             try:
                 done = self.runner(
-                    self.command(model, system, prompt, schema), capture_output=True, text=True,
+                    self.command(model, system, prompt, schema, effort), capture_output=True, text=True,
                     cwd=empty, env=subscription_env(), timeout=timeout, stdin=subprocess.DEVNULL,
                 )
             except subprocess.TimeoutExpired:
@@ -494,7 +654,10 @@ def parse_roles(rows: list[dict]) -> dict[str, list[dict]]:
             raise RuntimeError(f"Test Plan: a Model generation row names an unknown role, backend, order or model: {row}")
         if role in TOOL_ROLES and backend not in TOOL_BACKENDS:
             raise RuntimeError(f"Test Plan: the {role} role works with tools, which only {', '.join(TOOL_BACKENDS)} can hold to the copy: {row}")
-        roles.setdefault(role, []).append({"order": int(order), "backend": backend, "model": model})
+        effort = parse_effort(row.get("Effort", ""), backend, model, f"the {role} row of {model}")
+        if len(effort) > 1 and role not in ESCALATING_ROLES:
+            raise RuntimeError(f"Test Plan: the {role} role answers at one level; only a role whose answers execution checks in full climbs a ladder: {row}")
+        roles.setdefault(role, []).append({"order": int(order), "backend": backend, "model": model, "effort": effort})
     if set(roles) != set(ROLES.values()):
         raise RuntimeError(f"Test Plan: Model generation must list every role {sorted(ROLES)}")
     for role, entries in roles.items():
@@ -513,13 +676,13 @@ def parse_budget(rows: list[dict]) -> dict[str, float]:
         value = re.sub(r"\*\*", "", row.get("Limit", "")).strip()
         if key is None:
             raise RuntimeError(f"Test Plan: unknown Generation budget row {row.get('Budget')!r}")
-        match = re.fullmatch(r"(\d+(?:\.\d+)?)%", value) if key in {"five_hour", "seven_day"} else (
+        match = re.fullmatch(r"(\d+(?:\.\d+)?)%", value) if key in PERCENT_BUDGETS else (
             re.fullmatch(r"\$(\d+(?:\.\d+)?)", value) if key in {"usd_per_call", "usd_per_tool_call"} else re.fullmatch(r"(\d+)", value)
         )
         if not match:
             raise RuntimeError(f"Test Plan: Generation budget {row.get('Budget')!r} has an unreadable limit {value!r}")
         number = float(match.group(1))
-        budget[key] = number / 100 if key in {"five_hour", "seven_day"} else number
+        budget[key] = number / 100 if key in PERCENT_BUDGETS else number
     if set(budget) != set(BUDGET_LABELS.values()):
         raise RuntimeError(f"Test Plan: Generation budget must set every limit {sorted(BUDGET_LABELS)}")
     return budget
@@ -529,8 +692,10 @@ def parse_assessors(rows: list[dict]) -> list[dict]:
     """The Test Plan's Survivor judgement table, fail-closed: assessors numbered 1, 2, … in order,
     each with its models ordered 1, 2, …, every model a known backend's and listed once. Every
     assessor answers and none stands in for another; within an assessor a later model answers only
-    when the ones before it cannot."""
-    assessors = []
+    when the ones before it cannot. A row whose Effort is a ladder of levels is the search for the
+    lowest level that meets the calibration floors: each level answers as a model of its own, in
+    rising order, and the calibration asks a level only once the one below it missed the floors."""
+    listed = []
     for row in rows:
         number = row.get("Assessor", "")
         order = row.get("Order", "") or "1"
@@ -538,13 +703,21 @@ def parse_assessors(rows: list[dict]) -> list[dict]:
         model = row.get("Model", "").strip("`")
         if not number.isdigit() or not order.isdigit() or backend not in BACKENDS or not model:
             raise RuntimeError(f"Test Plan: a Survivor judgement row names an unknown assessor, order, backend or model: {row}")
-        assessors.append({"assessor": int(number), "order": int(order), "backend": backend, "model": model, "key": f"{backend}:{model}"})
-    numbers = [row["assessor"] for row in assessors]
+        levels = parse_effort(row.get("Effort", ""), backend, model, f"assessor {number}'s {model}")
+        listed.append({"assessor": int(number), "order": int(order), "backend": backend, "model": model, "levels": levels})
+    numbers = [row["assessor"] for row in listed]
     if numbers != sorted(numbers) or sorted(set(numbers)) != list(range(1, len(set(numbers)) + 1)):
         raise RuntimeError("Test Plan: the survivor assessors must be numbered 1, 2, … in order")
-    for number, models in assessor_seats(assessors).items():
+    assessors = []
+    for number, models in assessor_seats(listed).items():
         if [row["order"] for row in models] != list(range(1, len(models) + 1)):
             raise RuntimeError(f"Test Plan: the models of survivor assessor {number} must be ordered 1, 2, …")
+        for row in models:
+            for level in row["levels"] or [""]:
+                assessors.append({
+                    "assessor": number, "order": sum(item["assessor"] == number for item in assessors) + 1, "backend": row["backend"],
+                    "model": row["model"], "effort": level, "levels": row["levels"], "key": entry_key(row["backend"], row["model"], level),
+                })
     if len({row["key"] for row in assessors}) != len(assessors):
         raise RuntimeError("Test Plan: a survivor assessor model is listed twice")
     return assessors
@@ -558,11 +731,66 @@ def assessor_seats(assessors: list[dict]) -> dict[int, list[dict]]:
     return seats
 
 
+# The calibration floors an assessor model must meet, its canary (ADR_0006): a confirmed input for
+# at least this share of the labelled distinct pairs, and at most the false-equivalent rate of the
+# distinct pairs it answered, labelled or observed, judged equivalent.
+INPUT_FLOOR = 0.8
+
+
+def calibration_floors(key: str, labelled_distinct: list[str], answers: dict, confirmed: dict, observed: dict, alpha: float) -> dict:
+    """One assessor model against the calibration floors. ``answers`` and ``confirmed`` hold, per
+    labelled pair, each model's answer without problems and whether execution confirmed its input;
+    ``observed`` holds each observed pair's answers without problems."""
+    found = sum(1 for pid in labelled_distinct if (confirmed.get(pid) or {}).get(key) is True)
+    verdicts = [(answers.get(pid) or {})[key].get("verdict") for pid in labelled_distinct if key in (answers.get(pid) or {})]
+    verdicts += [given[key].get("verdict") for given in observed.values() if key in (given or {})]
+    equivalent = verdicts.count("equivalent")
+    return {
+        "confirmed": found, "equivalent_on_distinct": equivalent, "distinct_answered": len(verdicts),
+        "met": found >= INPUT_FLOOR * len(labelled_distinct) and equivalent <= alpha * len(verdicts),
+    }
+
+
+def ladder_below_floors(assessors: list[dict], complete: set, labelled_distinct: list[str], answers: dict, confirmed: dict, observed: dict, alpha: float) -> set[str]:
+    """The models, among those that answered every labelled pair, that miss the calibration floors:
+    they answer no new question for their assessor, and at a level of a ladder the calibration asks
+    the next level. What they answered before stays in the judgements it is part of."""
+    return {
+        row["key"] for row in assessors
+        if row["key"] in complete and not calibration_floors(row["key"], labelled_distinct, answers, confirmed, observed, alpha)["met"]
+    }
+
+
+def calibration_search(assessors: list[dict], below) -> set[str]:
+    """The assessor models a calibration asks: every model listed at one level and, of a model whose
+    Effort is a ladder of levels, only its lowest level not seen missing the floors (``below``). A
+    new model so climbs one level at a time and stops at the first that meets them, and no level
+    above that one is paid for."""
+    asked, climbed = set(), set()
+    for row in assessors:
+        ladder = (row["assessor"], row["backend"], row["model"])
+        if not row.get("levels"):
+            if row["key"] not in below:
+                asked.add(row["key"])
+        elif ladder not in climbed and row["key"] not in below:
+            asked.add(row["key"])
+            climbed.add(ladder)
+    return asked
+
+
 def assessor_configurations(assessors: list[dict], usable) -> list[list[str]]:
-    """Every combination of models that can judge a survivor, one usable model per assessor, the
-    first models first. Empty while an assessor has no usable model."""
+    """Every combination of models that can judge a survivor, one usable model per assessor that has
+    one, the first models first. An assessor none of whose models may answer takes no part; a
+    combination needs at least two assessors from at least two model families, else there is none."""
     choices = [[row["key"] for row in models if row["key"] in usable] for models in assessor_seats(assessors).values()]
-    return [list(combination) for combination in itertools.product(*choices)] if choices and all(choices) else []
+    choices = [choice for choice in choices if choice]
+    if len(choices) < 2:
+        return []
+
+    def family(key: str) -> str:
+        return model_family(key.split(":", 1)[1].split("@", 1)[0])
+
+    return [list(combination) for combination in itertools.product(*choices) if len({family(key) for key in combination}) >= 2]
 
 
 def parse_judgement(rows: list[dict]) -> dict:
@@ -608,6 +836,23 @@ def read_ledger(path: Path = LEDGER_PATH) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
+def answered_prices(rows: list[dict]) -> dict[tuple[str, bool], float]:
+    """The most expensive answered call of each role, with tools and without, in ledger rows."""
+    prices: dict[tuple[str, bool], float] = {}
+    for row in rows:
+        if row.get("outcome") == "ok" and row.get("list_usd") is not None and row.get("role") != "probe":
+            key = (str(row.get("role")), "tools_used" in row)
+            prices[key] = max(prices.get(key, 0.0), float(row["list_usd"]))
+    return prices
+
+
+def price_cap(budget: dict, prices: dict, role: str, tools: bool) -> float:
+    """The list-price cap of a call of one role: the Test Plan's cap, or ``CAP_FACTOR`` times the most
+    expensive answered call of the role, whichever is larger."""
+    floor = float(budget["usd_per_tool_call" if tools else "usd_per_call"])
+    return round(max(floor, CAP_FACTOR * prices.get((role, tools), 0.0)), 2)
+
+
 class Run:
     """One generation run: backends tried per role in order, every call guarded and ledgered."""
 
@@ -621,8 +866,9 @@ class Run:
         self.calls = 0
         self.windows: dict[str, dict | None] = {}
         self.availability: dict[str, str] = {}
-        # (role, backend, model) the run must skip, with why: a model that has not passed its role's canaries.
-        self.blocked: dict[tuple[str, str, str], str] = {}
+        # (role, backend, model, level) the run must skip, with why: a model at a level that has not
+        # passed its role's canaries. The level is empty for a model whose level no flag sets.
+        self.blocked: dict[tuple[str, str, str, str], str] = {}
         # (backend, quota pool) whose quota rejected a call in this run.
         self.rejected_models: dict[tuple[str, str], str] = {}
         # (backend, smaller quota pool): its calls in the seven days before the run, read from the
@@ -630,6 +876,9 @@ class Run:
         self.pool_calls: dict[tuple[str, str], int] = {}
         self.versions: dict[str, str] = {}
         self.rows: list[dict] = []
+        # The most expensive answered call of each role, read from the ledger once and raised as the
+        # run's own calls are answered: what a call's price cap is measured against.
+        self.prices: dict[tuple[str, bool], float] | None = None
         # Several calls may run at once (call_many): the budget, the windows and the ledger change
         # under one lock. Each quota pool finds how many calls it takes at a time the way TCP finds
         # its window: it starts at the Test Plan's parallel calls, doubles while every call at the
@@ -645,6 +894,15 @@ class Run:
         self.at_limit: dict[str, int] = {}
         # Every halving opens a new epoch: an answer to a call made before it is old news.
         self.epochs: dict[str, int] = {}
+        # Antigravity accounts agm keeps: their quotas read once per run, the (backend, account, quota)
+        # spent, and the account agy used before, put back when the run ends. A quota spent until a
+        # time a rejection named stays spent until then, in this run and the next.
+        self.agy_accounts: dict[str, dict] = {}
+        self.exhausted: set[tuple[str, str, str]] = set()
+        self.quota_resets: dict[tuple[str, str, str], str] = {}
+        self.agy_original: dict[str, str] = {}
+        # Claude sign-ins whose windows had no room left in this run.
+        self.full_profiles: dict[str, set[str]] = {}
 
     def concurrency_pool(self, name: str, model: str) -> str:
         """What a limit on simultaneous calls applies to: the whole account where its plan window is
@@ -698,17 +956,161 @@ class Run:
             with self.ledger_path.open("a") as handle:
                 handle.write(json.dumps(row, sort_keys=True) + "\n")
             self.rows.append(row)
+            if self.prices is not None:
+                for key, price in answered_prices([row]).items():
+                    self.prices[key] = max(self.prices.get(key, 0.0), price)
             return row
+
+    def price_cap(self, role: str, tools: bool) -> float:
+        """The list-price cap of this role's next call (``price_cap``)."""
+        with self.lock:
+            if self.prices is None:
+                self.prices = answered_prices(read_ledger(self.ledger_path))
+            return price_cap(self.budget, self.prices, role, tools)
 
     def probe(self, name: str) -> str:
         """Availability and windows of a backend, read once per run with its cheapest model."""
         with self.lock:
             return self._probe(name)
 
+    def accounts(self, name: str):
+        """The Antigravity accounts agm keeps for a backend, or None where there is no agm."""
+        accounts = getattr(self.backend(name), "accounts", None)
+        return accounts if accounts is not None and getattr(accounts, "executable", "") else None
+
+    def read_accounts(self, name: str) -> None:
+        """Read once per run what each account's quotas have left and which one agy uses; the run puts
+        that one back when it ends."""
+        if name in self.agy_accounts:
+            return
+        accounts = self.accounts(name)
+        snapshot = accounts.snapshot() if accounts else {}
+        self.agy_accounts[name] = snapshot
+        active = next((alias for alias, row in snapshot.items() if row.get("agy")), "")
+        if snapshot:
+            self.backend(name).profile = active
+            self.agy_original[name] = active
+            atexit.register(self.restore_accounts)
+            # agm reads each account's short window, not the week: a rejection that named when its
+            # quota resets keeps that quota spent until then on its account, so no call is spent on
+            # finding out again; only a rejection whose account agy's credential store confirmed.
+            now = datetime.fromisoformat(self.clock())
+            labels = {account_label(alias) or alias: alias for alias in snapshot}
+            for row in read_ledger(self.ledger_path):
+                if row.get("backend") != name or row.get("outcome") != "rejected" or not row.get("account_verified"):
+                    continue
+                resets = quota_resets_at(str(row.get("reason") or ""), str(row.get("at") or ""))
+                if resets is None or resets <= now:
+                    continue
+                self.spend_quota(name, str(row.get("model") or ""), labels.get(str(row.get("account") or "")), str(row.get("reason") or ""), resets)
+
+    def spend_quota(self, name: str, model: str, alias: str | None, reason: str, resets: datetime | None = None) -> None:
+        """Mark a model's quota spent on the account that refused it, with the time it resets when the
+        refusal said."""
+        if not alias:
+            return
+        family = quota_family(model)
+        self.exhausted.add((name, alias, family))
+        if resets is not None:
+            self.quota_resets[(name, alias, family)] = resets.isoformat(timespec="seconds").replace("+00:00", "Z")
+
+    def quota_left(self, name: str, alias: str, model: str) -> int:
+        """What an account has left of the quota a model draws on, in percent; -1 once spent in this run."""
+        family = quota_family(model)
+        if (name, alias, family) in self.exhausted:
+            return -1
+        return int(((self.agy_accounts.get(name) or {}).get(alias) or {}).get(family, 0))
+
+    def choose_account(self, name: str, model: str) -> str:
+        """Keep the account agy uses while its quota for the model is above what the Test Plan keeps free,
+        else move agy alone to the account with the most left. Why no account can take the call, or an
+        empty string."""
+        snapshot = self.agy_accounts.get(name) or {}
+        if not snapshot:
+            return ""
+        backend = self.backend(name)
+        floor = 100 * float(self.budget.get("agy_quota_floor", 0.0))
+        if backend.profile in snapshot and self.quota_left(name, backend.profile, model) > floor:
+            return ""
+        best = max(sorted(snapshot), key=lambda alias: self.quota_left(name, alias, model))
+        if self.quota_left(name, best, model) <= floor:
+            resets = sorted(at for (owner, _alias, family), at in self.quota_resets.items() if owner == name and family == quota_family(model))
+            if resets:
+                return f"no Antigravity account has {quota_family(model)} quota left; the first one refused resets at {resets[0]}"
+            return f"no Antigravity account has more than the {floor:.0f}% of its {quota_family(model)} quota the Test Plan keeps free"
+        if not self.accounts(name).switch(best):
+            return "agm could not move agy to an account with quota left"
+        backend.profile = best
+        return ""
+
+    def restore_accounts(self) -> None:
+        """Put agy back on the account it used before the run."""
+        with self.lock:
+            for name, alias in self.agy_original.items():
+                backend, accounts = self.backend(name), self.accounts(name)
+                if alias and backend.profile != alias and accounts and accounts.switch(alias):
+                    backend.profile = alias
+
+    def window_reason(self, name: str) -> str:
+        """Why the windows of the sign-in a backend uses take no more calls, or an empty string."""
+        windows = self.windows.get(name) or {}
+        if windows.get("status") == "rejected":
+            return "the plan's usage window rejects calls until it resets"
+        for key, label in (("five_hour", "5-hour"), ("seven_day", "weekly")):
+            used = windows.get(key)
+            if used is not None and used >= self.budget[key]:
+                return f"the {label} window is at {used:.0%}, at or above its {self.budget[key]:.0%} limit"
+        return ""
+
+    def switch_profile(self, name: str) -> bool:
+        """Move a backend whose sign-in has no room left in its windows to another signed-in profile of
+        the machine that has, probing each once; True once it uses one with room."""
+        backend = self.backend(name)
+        profiles = getattr(backend, "profiles", None)
+        if not callable(profiles):
+            return False
+        full = self.full_profiles.setdefault(name, set())
+        full.add(backend.profile)
+        for other in profiles():
+            if other in full:
+                continue
+            backend.profile = other
+            system, prompt = "Answer with one word.", "Reply with OK."
+            invocation = backend.invoke(model=PROBE_MODELS[name], system=system, prompt=prompt, schema=None, usd_cap=0.05, timeout=120)
+            self.windows[name] = invocation.windows if invocation.outcome != "rejected" else {**(invocation.windows or {}), "status": "rejected"}
+            self.record({
+                "call_id": new_call_id(), "role": "probe", "purpose": "probe", "contract_id": "", "subject": "",
+                "backend": name, "account": self.account(name), "backend_version": invocation.backend_version or self.versions.get(name, ""),
+                "model": PROBE_MODELS[name], "outcome": invocation.outcome, "reason": invocation.reason, "prompt_sha256": sha256_text(prompt),
+                "system_sha256": sha256_text(system), "schema_sha256": "", "response_sha256": "",
+                "tokens": invocation.tokens, "list_usd": invocation.list_usd, "seconds": invocation.seconds, "windows": invocation.windows,
+            })
+            if invocation.outcome == "ok" and not self.window_reason(name):
+                return True
+            full.add(other)
+        return False
+
+    def has_room(self, pool: str) -> bool:
+        """Whether a pool runs fewer calls now than it takes."""
+        with self.turns:
+            return self.in_flight.get(pool, 0) < self.limits.get(pool, self.parallel)
+
+    def could_take(self, role: str, entry: dict, step: int) -> bool:
+        """Whether a model of the role could take a call at once: its level passed its canaries, its
+        backend is available, the guard would not defer it and its pool has room."""
+        name, model = entry["backend"], entry["model"]
+        with self.lock:
+            if (role, name, model, self.level(role, entry, step)) in self.blocked or self._probe(name) or self.deferral(name, model):
+                return False
+        return self.has_room(self.concurrency_pool(name, model))
+
     def _probe(self, name: str) -> str:
         if name in self.availability:
             return self.availability[name]
         backend = self.backend(name)
+        # With several Antigravity accounts the probe itself runs on one with quota left.
+        self.read_accounts(name)
+        self.choose_account(name, PROBE_MODELS[name])
         system, prompt = "Answer with one word.", "Reply with OK."
         invocation = backend.invoke(model=PROBE_MODELS[name], system=system, prompt=prompt, schema=None, usd_cap=0.05, timeout=120)
         self.versions[name] = invocation.backend_version or backend.version()
@@ -725,6 +1127,11 @@ class Run:
             "system_sha256": sha256_text(system), "schema_sha256": "", "response_sha256": "",
             "tokens": invocation.tokens, "list_usd": invocation.list_usd, "seconds": invocation.seconds,
             "windows": invocation.windows,
+            # What each Antigravity account had left when the run began, each named by a digest.
+            **({"quotas": {
+                account_label(alias) or alias: {family: row.get(family) for family in ("gemini-pro", "gemini-flash", "other")}
+                for alias, row in sorted((self.agy_accounts.get(name) or {}).items())
+            }} if self.agy_accounts.get(name) else {}),
         })
         return self.availability[name]
 
@@ -762,20 +1169,19 @@ class Run:
         """Why the guard would not make a call on this backend and model now, or an empty string."""
         if self.calls >= self.budget["calls_per_run"]:
             return f"the run reached its limit of {int(self.budget['calls_per_run'])} calls"
+        # Where agm reads the accounts' quotas, they decide, and the ledger's count of the smaller pool is not needed.
+        if model and self.agy_accounts.get(name):
+            return self.choose_account(name, model)
         if model and (name, self.quota_pool(name, model)) in self.rejected_models:
             return f"the {self.quota_pool(name, model)} quota of {name} rejects calls until it resets"
         pool = self.smaller_pool(name, model) if model else ""
         limit = self.budget.get("pool_calls_per_week")
         if pool and limit is not None and self.pool_week(name, pool) >= limit:
             return f"the {pool} quota of {name} took {self.pool_week(name, pool)} calls in the last 7 days, at or above its limit of {int(limit)}"
-        windows = self.windows.get(name) or {}
-        if windows.get("status") == "rejected":
-            return "the plan's usage window rejects calls until it resets"
-        for key, label in (("five_hour", "5-hour"), ("seven_day", "weekly")):
-            used = windows.get(key)
-            if used is not None and used >= self.budget[key]:
-                return f"the {label} window is at {used:.0%}, at or above its {self.budget[key]:.0%} limit"
-        return ""
+        # A sign-in with no room left hands over to another of the machine's that has some.
+        if self.window_reason(name):
+            self.switch_profile(name)
+        return self.window_reason(name)
 
     def call(self, role: str, *, purpose: str, contract_id: str, subject: str, system: str, prompt: str, schema: dict, response_dir: Path, workspace: Workspace | None = None) -> tuple[dict, dict | None]:
         """Try the role's backends in order. Return the ledger row of the last attempt and, when a
@@ -797,22 +1203,50 @@ class Run:
         with ThreadPoolExecutor(max_workers=min(len(requests), self.parallel_max * (len(BACKENDS) + 1))) as pool:
             return list(pool.map(lambda request: self.call_with_attempts(**request), requests))
 
-    def call_with_attempts(self, role: str, *, purpose: str, contract_id: str, subject: str, system: str, prompt: str, schema: dict, response_dir: Path, workspace: Workspace | None = None) -> tuple[dict, dict | None, list[dict]]:
+    def level(self, role: str, entry: dict, step: int) -> str:
+        """The level a model answers at on a question's ``step``: of the levels of its ladder its
+        canaries let answer, the one that many steps up, or the top one; the first listed when none may
+        (its block is then the reason its attempt records); empty when no flag sets its level."""
+        levels = list(entry.get("effort") or [])
+        open_levels = [level for level in levels if (role, entry["backend"], entry["model"], level) not in self.blocked] or levels[:1]
+        return open_levels[min(step, len(open_levels) - 1)] if open_levels else ""
+
+    def call_with_attempts(self, role: str, *, purpose: str, contract_id: str, subject: str, system: str, prompt: str, schema: dict, response_dir: Path, workspace: Workspace | None = None, step: int = 0) -> tuple[dict, dict | None, list[dict]]:
         """``call``, and the ledger rows of every attempt it made, in order. With a workspace the call
-        works in that copy of the project with the tools its permissions allow."""
+        works in that copy of the project with the tools its permissions allow. ``step`` counts the
+        answers to this question the cascade rejected before: a model with a ladder of levels answers
+        that many levels up it (``level``)."""
         schema_sha = sha256_text(stable_json(schema))
         attempts = []
-        for entry in self.roles[role]:
+        # The role's models in order. A model whose call reached its price cap is asked once more at
+        # twice the cap: a hard question gets its answer, a call that runs away is stopped again, and
+        # the next model is asked.
+        cap = self.price_cap(role, workspace is not None)
+        queue = [(entry, cap, False) for entry in self.roles[role]]
+        while queue:
+            entry, usd_cap, again = queue.pop(0)
+            # Two channels at once: while the model a call would use first runs as many calls as its pool
+            # takes, a later model of the role on another pool that has room answers, and the first stays next.
+            here = self.concurrency_pool(entry["backend"], entry["model"])
+            if not self.has_room(here):
+                for index, (other, other_cap, other_again) in enumerate(queue):
+                    if self.concurrency_pool(other["backend"], other["model"]) != here and self.could_take(role, other, step):
+                        queue.pop(index)
+                        queue.insert(0, (entry, usd_cap, again))
+                        entry, usd_cap, again = other, other_cap, other_again
+                        break
             name, model = entry["backend"], entry["model"]
+            effort = self.level(role, entry, step)
             base = {
                 "call_id": new_call_id(), "role": role, "purpose": purpose, "contract_id": contract_id, "subject": subject,
-                "backend": name, "account": self.account(name), "model": model, "prompt_sha256": sha256_text(prompt), "system_sha256": sha256_text(system),
+                "backend": name, "account": self.account(name), "model": model, "effort": effort,
+                "prompt_sha256": sha256_text(prompt), "system_sha256": sha256_text(system),
                 "schema_sha256": schema_sha, "response_sha256": "",
             }
             # The guard decides and reserves the call under the lock, so calls made at once never
             # overrun the run's limit or a window another call has just reported full.
             with self.lock:
-                skipped = self.blocked.get((role, name, model))
+                skipped = self.blocked.get((role, name, model, effort))
                 if skipped:
                     attempts.append(self.record({**base, "backend_version": self.versions.get(name, ""), "outcome": "unavailable", "reason": skipped, "tokens": {}, "list_usd": None, "seconds": 0.0, "windows": None}))
                     continue
@@ -821,6 +1255,9 @@ class Run:
                     attempts.append(self.record({**base, "backend_version": self.versions.get(name, ""), "outcome": "unavailable", "reason": unavailable, "tokens": {}, "list_usd": None, "seconds": 0.0, "windows": self.windows.get(name)}))
                     continue
                 deferred = self.deferral(name, model)
+                # The guard may have moved agy to another account: the row names the one the call uses.
+                base["account"] = self.account(name)
+                used = str(getattr(self.backend(name), "profile", "") or "")
                 if deferred:
                     attempts.append(self.record({**base, "backend_version": self.versions.get(name, ""), "outcome": "deferred", "reason": deferred, "tokens": {}, "list_usd": None, "seconds": 0.0, "windows": self.windows.get(name)}))
                     continue
@@ -833,16 +1270,28 @@ class Run:
             invocation = None
             try:
                 invocation = self.backend(name).invoke(
-                    model=model, system=system, prompt=prompt, schema=schema, workspace=workspace,
-                    usd_cap=self.budget["usd_per_tool_call" if workspace is not None else "usd_per_call"],
+                    model=model, system=system, prompt=prompt, schema=schema, workspace=workspace, usd_cap=usd_cap, effort=effort,
                 )
             finally:
                 answered = invocation is not None and invocation.outcome in {"ok", "invalid"}
                 self.leave(pool, epoch, invocation is not None and overloaded(invocation), answered and in_flight == limit)
+            verified = None
             with self.lock:
                 if invocation.windows is not None:
                     self.windows[name] = invocation.windows
-                if invocation.outcome == "rejected":
+                if invocation.outcome == "rejected" and self.agy_accounts.get(name):
+                    # The account the call used refused it if agy's credential store still holds that
+                    # account: its quota for the model is spent, and the next check moves agy to another
+                    # that has some or defers the call. Where the store holds another account, the run
+                    # follows the store and blames no account.
+                    accounts = self.accounts(name)
+                    actual = accounts.cli_address()
+                    verified = actual == accounts.addresses.get(used, used)
+                    if actual and not verified:
+                        self.backend(name).profile = accounts.alias_of(actual)
+                    else:
+                        self.spend_quota(name, model, used, invocation.reason, quota_resets_at(invocation.reason, self.clock()))
+                elif invocation.outcome == "rejected":
                     self.reject(name, model, invocation)
                 version = invocation.backend_version or self.versions.get(name, "")
             response = None
@@ -850,7 +1299,7 @@ class Run:
                 response = {
                     "schema": RESPONSE_SCHEMA, "call_id": base["call_id"], "role": role, "purpose": purpose,
                     "contract_id": contract_id, "subject": subject, "backend": name, "backend_version": version,
-                    "model": model, "system": system, "prompt": prompt, "answer_schema": schema,
+                    "model": model, "effort": effort, "system": system, "prompt": prompt, "answer_schema": schema,
                     "prompt_sha256": base["prompt_sha256"], "system_sha256": base["system_sha256"], "schema_sha256": schema_sha,
                     "structured": invocation.structured,
                 }
@@ -864,13 +1313,21 @@ class Run:
                 **base, "backend_version": version, "outcome": invocation.outcome, "reason": invocation.reason,
                 "tokens": invocation.tokens, "list_usd": invocation.list_usd, "seconds": invocation.seconds,
                 "windows": invocation.windows, "in_flight": in_flight, "parallel_limit": limit,
-                "backed_off": overloaded(invocation),
+                "backed_off": overloaded(invocation), "usd_cap": usd_cap,
                 **({"tools_used": invocation.tools_used, "denied": invocation.denied} if workspace is not None else {}),
+                **({"account_verified": verified} if verified is not None else {}),
             })
             attempts.append(row)
             if response is not None:
                 return row, response, attempts
-            if invocation.outcome in {"rejected", "unavailable"}:
+            if invocation.outcome == "capped" and not again:
+                queue.insert(0, (entry, round(2 * usd_cap, 2), True))
+                continue
+            if invocation.outcome == "rejected" and self.agy_accounts.get(name):
+                # The same model on another account, if one has quota left; else the guard defers it.
+                queue.insert(0, (entry, usd_cap, again))
+                continue
+            if invocation.outcome in {"rejected", "unavailable", "capped"}:
                 continue
             return row, None, attempts
         return attempts[-1], None, attempts

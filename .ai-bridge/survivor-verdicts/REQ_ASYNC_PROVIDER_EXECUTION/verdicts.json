@@ -48,6 +48,45 @@
   },
   "prompt_sha256": "a57e7d61340b30f175b9b81d820e6321be2e7d6395d7b2c57f1da8e1ff9be0e9"
  },
+ "06f20fb109d3fe21": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234615Z-fddd77",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "This is probably equivalent, but that rests on an unverified assumption, since no input was tried. The success trace is only built after the `if wait_seconds > 0: ... continue` branch, so `wait_seconds` there is never positive. That makes dropping `wait_seconds=wait_seconds` match the builder's zero/no-wait default (assumed, not checked), so the async response contract looks the same.",
+   "response_sha256": "20e8b7c2b09bfb962f6e6f6d02df494b1486135c6e217eb1f1885be6e193f96b",
+   "sources": [
+    "Asynchronous requests shall support text, structured output, and media-capable provider routes without changing the public response contract.",
+    "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)",
+    "if wait_seconds > 0:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "argument",
+  "prompt_sha256": "0930fc7a4f85688381c2831a1bb81bacbfe9ffffbea95c9b44ebf5f442ccf1bd",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T085728Z-25d952",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "0930fc7a4f85688381c2831a1bb81bacbfe9ffffbea95c9b44ebf5f442ccf1bd",
+   "reason": "The mutant omits the `wait_seconds` argument when building the success trace. Even if this changes the trace metadata returned by the router, it does not alter the normalized text, structured output, or media semantics of the response that the requirement mandates.",
+   "response_sha256": "f56af5370bbe11058efbecf3b641a4cd26555bb729580991819a50393f740644",
+   "sources": [
+    "Asynchronous requests shall support text, structured output, and media-capable provider routes without changing the public response contract.",
+    "wait_seconds=wait_seconds,",
+    "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
  "16484951d7dcf335": {
   "answer": {
    "backend": "claude-cli",
@@ -251,6 +290,237 @@
   "operator": "boundary",
   "prompt_sha256": "b0d703a1e24d12465885707ce9c070bd4de35a993d2e11763d7a38df20efebd6"
  },
+ "8a48c40fdfe50bce": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234615Z-77000d",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When a provider call fails in `_run_async`, the mutant records the failed-attempt trace without the error. After a fallback, the async response then carries a trace that no longer says why that route failed. The sync path presumably keeps the error, so async execution changes the public response contract, which the requirement forbids.",
+   "response_sha256": "887ef744259623668937f6f7f96c0a8602d4cb16dd446a8fee4a24f514d0c6d1",
+   "sources": [
+    "Asynchronous requests shall support text, structured output, and media-capable provider routes without changing the public response contract.",
+    "failed_traces.append(build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id))",
+    "error=exc,"
+   ],
+   "test_focus": "Make the first route's async provider call raise, let a later route succeed, and check that the failed attempt's trace in the returned response records that error, matching the sync behaviour.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T00:24:30.365873Z",
+   "answer_sha256": "55946cb35f0ce6c0a430fc7eec4e3e5bb200f29837718e55dfe765edfcd77751",
+   "call_id": "20260929T001300Z-af6912",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "55946cb35f0ce6c0a430fc7eec4e3e5bb200f29837718e55dfe765edfcd77751",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_8a48c40fdfe50bce.py",
+   "response_sha256": "06e7857314b6c187d45ad5789fb2ca58ffa4687c393375d9ec3f7e2ef714378f",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model.DEEPSEEK_V4_FLASH",
+    "llm_router.Model.LLAMA_8B",
+    "llm_router.Provider.NVIDIA",
+    "llm_router.RouterProfile"
+   ]
+  },
+  "prompt_sha256": "381817852bd51b26a79e41b866b75489fa94adf570ff17fe4c413b9ba2fc7c0d"
+ },
+ "98f548ec2fdcdd17": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234615Z-3b21e5",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The only change passes the list expression `failed_traces or blocked_requests` in place of its bool(), and apart from that only the formatting differs. The list is truthy exactly when the bool would be True, so a fallback-success flag that is checked for truthiness behaves the same. I couldn't see _remember_fallback_success, so this assumes it only tests the flag for truthiness and doesn't store it or compare it by identity. Either way, the public async response contract stays the same.",
+   "response_sha256": "c05b9db2ff6c2a1a37e4f0a4b29f64c854028826af7f42cfbbbc1fc0302298b5",
+   "sources": [
+    "fallback_occurred=bool(failed_traces or blocked_requests),",
+    "self._remember_fallback_success(route=route, fallback_occurred=failed_traces or blocked_requests)",
+    "Asynchronous requests shall support text, structured output, and media-capable provider routes without changing the public response contract."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "conversion",
+  "prompt_sha256": "3997ef88f4df8fed3bd0cc658cdcad6311de4ab144c762a0fac8f5c419774250",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T085728Z-b2b4cf",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "3997ef88f4df8fed3bd0cc658cdcad6311de4ab144c762a0fac8f5c419774250",
+   "reason": "Removing the boolean cast changes the type of the fallback_occurred argument from a boolean to a list. This alters internal state but does not affect the public response contract for asynchronous requests.",
+   "response_sha256": "c291214ab9e12cc1d8b001fadfe6dd5b195190b5bf400e3aa90524a76b1f0098",
+   "sources": [
+    "Requirement REQ_ASYNC_PROVIDER_EXECUTION (Asynchronous provider execution): Asynchronous requests shall support text, structured output, and media-capable provider routes without changing the public response contract.",
+    "fallback_occurred=bool(failed_traces or blocked_requests),",
+    "self._remember_fallback_success(route=route, fallback_occurred=failed_traces or blocked_requests)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "SM-230B4176": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171638Z-d125ac",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant silently drops every dict- or list-valued call override when it builds each route's settings. That would lose a JSON-schema dict, stop lists or header maps, so an async structured-output request could reach the provider without its schema. This breaks the async structured-output promise. The existing tests likely pass only because they give no dict or list override, or pass the schema as a model class.",
+   "response_sha256": "3c0faa4195ab6b2bd189a39d5e2cb73364a5c8ec4a563cb09e2b74c112908f53",
+   "sources": [
+    "Asynchronous requests shall support text, structured output, and media-capable provider routes without changing the public response contract.",
+    "Every JSON-schema-capable family returns schema-valid structured data asynchronously.",
+    "if not isinstance(value, (dict, list))",
+    "route=route, call_overrides=route_overrides"
+   ],
+   "test_focus": "An async call whose override includes a dict JSON schema, and optionally a list option, must pass those values unchanged into the route settings and provider request, and must return schema-valid structured data.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:27:59.746080Z",
+   "answer_sha256": "6dc5f9d4e332eda6a5ae5c6bfc126437957c88196385efe9c84ee2eca6d89592",
+   "call_id": "20260929T172149Z-cef702",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "6dc5f9d4e332eda6a5ae5c6bfc126437957c88196385efe9c84ee2eca6d89592",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_230b4176.py",
+   "response_sha256": "33a76d5eaf58aace7132b1b6de42637a15e65bc9eb9b05631bf3a78fbe5187cf",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  "prompt_sha256": "3473f97bed858ff724c792035b4c591b346c53030a1910d5af7d5178f8b62257"
+ },
+ "SM-592318D7": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-d5a349",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant runs every route with the first route's settings (model, provider options, attempt timeout) and no longer uses that route's own settings. So an async fallback to a different provider family gets the wrong request settings and records the wrong settings in its trace. That breaks async support for any provider route that is not first in the order.",
+   "response_sha256": "5d973487870c94dad0e286fe9d9e8b3fdc8cbb67ccdd2da3be974a8bbe960bb4",
+   "sources": [
+    "Asynchronous requests shall support text, structured output, and media-capable provider routes without changing the public response contract.",
+    "Every supported adapter family returns the normalized text contract asynchronously.",
+    "settings = self._settings_for_route(\n                route=route, call_overrides=call_overrides\n            )",
+    "settings = first_settings"
+   ],
+   "test_focus": "Make an async request where the first route fails and a fallback route from another family has its own settings. Check that the fallback call and its trace use that route's own settings (for example its model and attempt_timeout_seconds), not the first route's, and that the normalized response is returned.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:32:55.495061Z",
+   "answer_sha256": "cacd351cb9537f4ad4c303033a01ffdf1e3b29666c02c981241335b0a5b353da",
+   "call_id": "20260929T173021Z-8687f2",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "cacd351cb9537f4ad4c303033a01ffdf1e3b29666c02c981241335b0a5b353da",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_592318d7.py",
+   "response_sha256": "35186261e3e2a15b46ff1fb11168b4eb4d18331b43458407649455444d8539ef",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  "prompt_sha256": "94e728ba8e2c04479e8ce55a73736a0777dd02112729eb6cf64531ba1993019f"
+ },
+ "SM-AA98B36D": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-fe11a9",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "On the async success path, the mutant turns any non-string content (image, file and video parts, or structured inputs) into its `str()` form before `_complete_success` finalizes the response. The blocked-retry path and the original code both pass the content unchanged. The requirement says media routes must work asynchronously \"without changing the public response contract\", and a stringified payload reaching the completion step breaks that for every non-text request.",
+   "response_sha256": "8b17e69a5f8701dd83274df908fa6a5b6ba86fa157df4dfcac7439de08cae5b2",
+   "sources": [
+    "Asynchronous requests shall support text, structured output, and media-capable provider routes without changing the public response contract.",
+    "Every image-capable family preserves grounded structured image semantics asynchronously.",
+    "Every file-capable family preserves grounded structured document semantics asynchronously.",
+    "content=content if isinstance(content, str) else str(content),"
+   ],
+   "test_focus": "Send an async request whose content is not a string (for example image or file parts) through a mocked provider that succeeds on the first attempt. Check that `_complete_success` gets the original content object, not a string, and that the normalized response matches what the unmutated code returns.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:27:59.747767Z",
+   "answer_sha256": "e941ac34952943425d92633435b08d0e94a52b98344b85502bfd6d52f5495c18",
+   "call_id": "20260929T172149Z-ad2d13",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "17a2e983c97e8f7aa65f1ee0e901a0c987abaa25c6241d5d6352fb753c6a3e0c",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_aa98b36d.py",
+   "response_sha256": "ef55dde5d37005ba132779272c5f9cfa32ac7952c02d11d8d6a377f04ddcf43e",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  "prompt_sha256": "42a82f6d81cfc3ae28915bbc19567bf8b3dbbbffaa233e2ae7c62245c9936b30"
+ },
  "a73d76c7050e2371": {
   "answer": {
    "backend": "claude-cli",
@@ -284,6 +554,52 @@
    "source": "draft author"
   },
   "prompt_sha256": "e9fcf0476a3e2ae05e432860085e135ff1f9ae91f0c8f65a8f75ad04f2f62ade"
+ },
+ "b5451a90524408d8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234615Z-d688d6",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant stops counting a blocked earlier route as a fallback. So when a later route succeeds after an earlier one was skipped because it had to wait, the async path no longer records that success as a fallback, which changes which route later requests try first. That breaks parity with the synchronous routing behavior, which the async path must keep so the public contract stays the same.",
+   "response_sha256": "4868e8f5136c875db0078fad72308949b0acd4820b832a8448eb2a84fa1ea3f3",
+   "sources": [
+    "Asynchronous requests shall support text, structured output, and media-capable provider routes without changing the public response contract.",
+    "fallback_occurred=bool(failed_traces or blocked_requests),",
+    "self._remember_fallback_success(route=route, fallback_occurred=bool(failed_traces))"
+   ],
+   "test_focus": "Make the first route blocked with a wait above zero and let the second route succeed asynchronously. Then check that the fallback success is remembered, so the next async request's route order matches what the sync path would produce.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.586259Z",
+   "answer_sha256": "3fe81b00a0e5b790e6b0735e4dbed2b0437f68dd717235239648ed95068a1f58",
+   "call_id": "20260929T094858Z-496988",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "8ac3c3f675ba94dc730be637087a35fae1d59903c5709802a9ada5709e43346a",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_b5451a90524408d8.py",
+   "response_sha256": "95c524a188b8661ab002f16484a8df04b15ee3f8e5af8d1ae4f6682354d92cea",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  "prompt_sha256": "f1cb7318e05d3cd7e7239c93fa76a5f88c2c0f7febd3aa6ab4a74608132f3dab"
  },
  "c673733c4b655a92": {
   "answer": {

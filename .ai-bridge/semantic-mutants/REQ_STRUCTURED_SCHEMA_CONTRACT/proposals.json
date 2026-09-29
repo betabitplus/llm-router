@@ -1,0 +1,806 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_STRUCTURED_SCHEMA_CONTRACT",
+ "proposals": [
+  {
+   "id": "SM-AC84BBA0",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_mapping_schema",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Validation only checks the top-level required keys and property types instead of enforcing the full schema, silently ignoring nested/common constraints (enum, minimum, items, etc.).",
+   "original_sha256": "962497fecd673331925f8fa0e6f3242172b480dd9866f5765a4cff1cc2666099",
+   "context_sha256": "1e823e8d0afa9a20ffa1f23b6ed6c5066e3f15c4fb0fa1adc2a0348f261bdf18",
+   "prompt_sha256": "0465382b39c601853b735cbc66acfbbd5690ea4e3ae461bf720968675ab710d1",
+   "replacement": "def _parse_mapping_schema(schema: Mapping[str, Any], value: object) -> dict[str, Any]:\n    \"\"\"Parse and validate output against the complete caller JSON Schema mapping.\"\"\"\n    parsed = _parse_json_object(value)\n    shallow: dict[str, Any] = {\"type\": \"object\"}\n    if \"required\" in schema:\n        shallow[\"required\"] = schema[\"required\"]\n    properties = schema.get(\"properties\")\n    if isinstance(properties, Mapping):\n        shallow[\"properties\"] = {\n            name: {\"type\": prop[\"type\"]} if isinstance(prop, Mapping) and \"type\" in prop else {}\n            for name, prop in properties.items()\n        }\n    Draft202012Validator(shallow).validate(parsed)\n    return parsed",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-e0a823",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "691b9017cd836d212fe4dbdcab1db95e0fae3e61a3f6aaef135417fb20ec3043",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-E93E3F33",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_mapping_schema",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Validator is built from a schema with nested subschema keywords stripped ($defs/$ref, additionalProperties, etc.), weakening router-side validation as if a provider transform were applied.",
+   "original_sha256": "962497fecd673331925f8fa0e6f3242172b480dd9866f5765a4cff1cc2666099",
+   "context_sha256": "1e823e8d0afa9a20ffa1f23b6ed6c5066e3f15c4fb0fa1adc2a0348f261bdf18",
+   "prompt_sha256": "0465382b39c601853b735cbc66acfbbd5690ea4e3ae461bf720968675ab710d1",
+   "replacement": "def _parse_mapping_schema(schema: Mapping[str, Any], value: object) -> dict[str, Any]:\n    \"\"\"Parse and validate output against the complete caller JSON Schema mapping.\"\"\"\n    parsed = _parse_json_object(value)\n    relaxed = {\n        key: item\n        for key, item in dict(schema).items()\n        if key not in {\"additionalProperties\", \"$defs\", \"definitions\", \"allOf\", \"anyOf\", \"oneOf\", \"not\"}\n    }\n    Draft202012Validator(relaxed).validate(parsed)\n    return parsed",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-e0a823",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "691b9017cd836d212fe4dbdcab1db95e0fae3e61a3f6aaef135417fb20ec3043",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-CCCFC5DF",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_pydantic_model",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Replaces `model.model_validate_json` with `model.model_validate` for string payloads, wrongly choosing the dictionary validation method for a JSON string payload.",
+   "original_sha256": "1fb8f11f74345fbd8b575c73365569e8b1fc19b028594897f347b1b7141c4f2c",
+   "context_sha256": "f41fce0ba710f71ec42a3287b22d9b1be975b705f6f252780ea7c207e16f7c53",
+   "prompt_sha256": "46e4a03c896c0a60310369e17fcd3674413480e93a9e2ae047d524bbf95a1e52",
+   "replacement": "def _parse_pydantic_model(model: type[BaseModel], value: object) -> BaseModel:\n    \"\"\"Parse a Pydantic model from text, mappings, or existing model objects.\"\"\"\n    if isinstance(value, model):\n        return value\n    if isinstance(value, str):\n        payload = _extract_json_payload(value)\n        return model.model_validate(payload)\n    return model.model_validate(value)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-44a718",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "33da11711dbd62345148cdf24c20e2e26dae1c4134b9ff84a1d97f0db0353020",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-E58B2C96",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_pydantic_model",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Checks if `value` is any `BaseModel` instead of the specific `model` requested, wrongly choosing the type criteria and potentially returning an instance of a different Pydantic model.",
+   "original_sha256": "1fb8f11f74345fbd8b575c73365569e8b1fc19b028594897f347b1b7141c4f2c",
+   "context_sha256": "f41fce0ba710f71ec42a3287b22d9b1be975b705f6f252780ea7c207e16f7c53",
+   "prompt_sha256": "46e4a03c896c0a60310369e17fcd3674413480e93a9e2ae047d524bbf95a1e52",
+   "replacement": "def _parse_pydantic_model(model: type[BaseModel], value: object) -> BaseModel:\n    \"\"\"Parse a Pydantic model from text, mappings, or existing model objects.\"\"\"\n    if isinstance(value, BaseModel):\n        return value\n    if isinstance(value, str):\n        payload = _extract_json_payload(value)\n        return model.model_validate_json(payload)\n    return model.model_validate(value)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-44a718",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "33da11711dbd62345148cdf24c20e2e26dae1c4134b9ff84a1d97f0db0353020",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-008E10B9",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_pydantic_schema_spec",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Schema is generated in serialization mode instead of validation mode, so the preserved JSON schema differs from the model's input schema (e.g. computed fields added, defaults marked required), weakening router-side validation.",
+   "original_sha256": "09ee1f5da7284a373197089bfd83e28e0794d98c4a0b0f8f59d64c071fcceb12",
+   "context_sha256": "835a601b02f027665e8c6d438aa6fd241bb14721a29c410a010c9034d71b9a8f",
+   "prompt_sha256": "46a8ad2e4ee51f18a09b632cd6a0d6c700d4ec0b7cafad54ad5f593991536ffe",
+   "replacement": "def _pydantic_schema_spec(model: type[BaseModel]) -> SchemaSpec:\n    \"\"\"Return a schema spec backed by Pydantic validation.\"\"\"\n    return SchemaSpec(\n        name=model.__name__,\n        json_schema=model.model_json_schema(mode=\"serialization\"),\n        parser=lambda value: _parse_pydantic_model(model, value),\n        model_type=model,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-2331e9",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "d414b38c4120306761b704ee22b0fe0b0c92ebf0a96ba494518fb858fcdd81ac",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-93155217",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_pydantic_schema_spec",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "The spec's name and model type are computed wrongly: the parser and model_type are bound to BaseModel-level/incorrect values, and the schema is generated from a stripped copy of properties, so the requested model is not reconstructed and required constraints are dropped.",
+   "original_sha256": "09ee1f5da7284a373197089bfd83e28e0794d98c4a0b0f8f59d64c071fcceb12",
+   "context_sha256": "835a601b02f027665e8c6d438aa6fd241bb14721a29c410a010c9034d71b9a8f",
+   "prompt_sha256": "46a8ad2e4ee51f18a09b632cd6a0d6c700d4ec0b7cafad54ad5f593991536ffe",
+   "replacement": "def _pydantic_schema_spec(model: type[BaseModel]) -> SchemaSpec:\n    \"\"\"Return a schema spec backed by Pydantic validation.\"\"\"\n    schema = dict(model.model_json_schema())\n    schema.pop(\"required\", None)\n    schema.pop(\"$defs\", None)\n    return SchemaSpec(\n        name=model.__name__,\n        json_schema=schema,\n        parser=lambda value: _parse_pydantic_model(model, value),\n        model_type=model,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-2331e9",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "d414b38c4120306761b704ee22b0fe0b0c92ebf0a96ba494518fb858fcdd81ac",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-BF818699",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_validate_mapping_schema_definition",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Using `.get(\"type\", \"object\") != \"object\"` subtly alters behavior by rejecting explicitly provided `None` values for the \"type\" field, which are allowed by the original implementation.",
+   "original_sha256": "76e7486ed7ef07897aedd58ae7d0b3aa72dc30db830c10c263ef17eed8a19a74",
+   "context_sha256": "016c90eda2acd700167368193979537b10bc7724732c34ea552f01308ebc5f8e",
+   "prompt_sha256": "429dab9cd7b9d85655ed621dbc2369493539c014e79147ee7a9af7a5b0f967d0",
+   "replacement": "def _validate_mapping_schema_definition(schema: Mapping[str, Any]) -> None:\n    \"\"\"Fail closed unless a caller mapping is a valid object Draft 2020-12 schema.\"\"\"\n    try:\n        Draft202012Validator.check_schema(dict(schema))\n    except SchemaError as exc:\n        msg = \"response_schema mapping must be a valid Draft 2020-12 JSON Schema.\"\n        raise ValueError(msg) from exc\n\n    if schema.get(\"type\", \"object\") != \"object\":\n        msg = \"response_schema mapping must describe a JSON object.\"\n        raise ValueError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-db96e1",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "d4b4602461da27860acc74c8816f8c6aa7ec86d5a2d33e323000302016a928fb",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-EF50CA95",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_validate_mapping_schema_definition",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Catching the broad `Exception` class instead of the specific `SchemaError` masks potential errors such as `TypeError` or `ValueError` that could be raised during `dict(schema)` conversion.",
+   "original_sha256": "76e7486ed7ef07897aedd58ae7d0b3aa72dc30db830c10c263ef17eed8a19a74",
+   "context_sha256": "016c90eda2acd700167368193979537b10bc7724732c34ea552f01308ebc5f8e",
+   "prompt_sha256": "429dab9cd7b9d85655ed621dbc2369493539c014e79147ee7a9af7a5b0f967d0",
+   "replacement": "def _validate_mapping_schema_definition(schema: Mapping[str, Any]) -> None:\n    \"\"\"Fail closed unless a caller mapping is a valid object Draft 2020-12 schema.\"\"\"\n    try:\n        Draft202012Validator.check_schema(dict(schema))\n    except Exception as exc:\n        msg = \"response_schema mapping must be a valid Draft 2020-12 JSON Schema.\"\n        raise ValueError(msg) from exc\n\n    if schema.get(\"type\") not in {None, \"object\"}:\n        msg = \"response_schema mapping must describe a JSON object.\"\n        raise ValueError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-db96e1",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "d4b4602461da27860acc74c8816f8c6aa7ec86d5a2d33e323000302016a928fb",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-6B29FD70",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::normalize_schema",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Mapping schema is validated on the original input only after the copy is made, but the parser closes over a schema derived without the nested definitions: the parser validates against a shallow copy stripped of '$defs'/'definitions', so nested/common constraints referenced via $ref are silently ignored or fail to be enforced.",
+   "original_sha256": "0761fab1e48cef07cbced9432d8ec473bd226a7cc2724ab203bc8cf685b60e76",
+   "context_sha256": "914be185af2e286ae2256f1f260c97d2ff4854284e11bf25bb1b133ecc38be1c",
+   "prompt_sha256": "a6c130d07f53af6dac2938edabeacfa1a276038a7cb6082faa29e73124892049",
+   "replacement": "def normalize_schema(schema: object) -> SchemaSpec:\n    \"\"\"Convert a public schema input into a provider-neutral schema spec.\"\"\"\n    if isinstance(schema, type) and issubclass(schema, BaseModel):\n        return _pydantic_schema_spec(schema)\n    if isinstance(schema, Mapping):\n        copied = deepcopy(dict(schema))\n        _validate_mapping_schema_definition(copied)\n        name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")\n        validation_schema = {\n            key: value\n            for key, value in copied.items()\n            if key not in {\"$defs\", \"definitions\"}\n        }\n        return SchemaSpec(\n            name=name,\n            json_schema=copied,\n            parser=lambda value: _parse_mapping_schema(validation_schema, value),\n        )\n\n    msg = \"response_schema must be a Pydantic model type or JSON schema mapping.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-31a0c8",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "0b3bce7edda6206a1e1f5511ffa668b48fc18594356b80d7f09f24e8328d6570",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-9051DAE0",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::normalize_schema",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Schema validation of the mapping definition is performed on a placeholder/empty-property view rather than the actual schema, so invalid JSON Schemas (e.g. bad nested keyword types) are not rejected during normalization before provider execution.",
+   "original_sha256": "0761fab1e48cef07cbced9432d8ec473bd226a7cc2724ab203bc8cf685b60e76",
+   "context_sha256": "914be185af2e286ae2256f1f260c97d2ff4854284e11bf25bb1b133ecc38be1c",
+   "prompt_sha256": "a6c130d07f53af6dac2938edabeacfa1a276038a7cb6082faa29e73124892049",
+   "replacement": "def normalize_schema(schema: object) -> SchemaSpec:\n    \"\"\"Convert a public schema input into a provider-neutral schema spec.\"\"\"\n    if isinstance(schema, type) and issubclass(schema, BaseModel):\n        return _pydantic_schema_spec(schema)\n    if isinstance(schema, Mapping):\n        copied = deepcopy(dict(schema))\n        top_level_only = {\n            key: value\n            for key, value in copied.items()\n            if key in {\"type\", \"title\", \"$id\", \"$schema\"}\n        }\n        _validate_mapping_schema_definition(top_level_only)\n        name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")\n        return SchemaSpec(\n            name=name,\n            json_schema=copied,\n            parser=lambda value: _parse_mapping_schema(copied, value),\n        )\n\n    msg = \"response_schema must be a Pydantic model type or JSON schema mapping.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-31a0c8",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "0b3bce7edda6206a1e1f5511ffa668b48fc18594356b80d7f09f24e8328d6570",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-D3962C5D",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::validate_schema_output",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    try:\n        parsed = spec.parse(value)\n    except Exception as exc:\n        return SchemaValidationResult(valid=False, error_message=preview_value(exc))\n    return SchemaValidationResult(valid=True, value=value)",
+   "original_sha256": "d3962c5d7c3dcb7f83e9fe785f3e17a31ab01033733aeddc299cb660e609140a",
+   "context_sha256": "c39546ded861e0dd7da48bcb8ff2002079213b71cc95d3acfafa057c94544250",
+   "prompt_sha256": "34d1961b8f553122eb315e23e75853254cfe7171bff8e420b17a408207e42f86",
+   "replacement": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    try:\n        parsed = spec.parse(value)\n    except Exception as exc:\n        return SchemaValidationResult(valid=False, error_message=preview_value(exc))\n    return SchemaValidationResult(valid=True, value=parsed)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-820372",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "11ab18f69313c3bf7c7f3c684334478623e575fd1d65c6716eb684da4f8e2f26",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-21182039",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::with_schema_transform",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "The adapter-supplied schema name is ignored, so the transformed spec always keeps the original name and the provider receives a stale schema name.",
+   "original_sha256": "8a4cf197d519307761e80e3d73c4cf1784222e2587bb48856b74fa48311d5d83",
+   "context_sha256": "0d753906258bd88362247dc0e82b3a4d7d1e5083044c085e27763e1ee5432dd1",
+   "prompt_sha256": "4880355c06293053928524bb7e7e1888a1823302e373a3c82140580da9c9c488",
+   "replacement": "def with_schema_transform(\n    spec: SchemaSpec,\n    transform: Callable[[Mapping[str, Any]], Mapping[str, Any]],\n    *,\n    name: str | None = None,\n) -> SchemaSpec:\n    \"\"\"Return a copy of `spec` with an adapter-provided schema transform.\"\"\"\n    transformed = transform(spec.json_schema)\n    return replace(\n        spec,\n        name=spec.name,\n        json_schema=transformed,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-3f09ea",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "92c21f2cd4096fba0dd5127ac1187e4872dbffdced3bc0e1f21fad43082f8f86",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-DD714EDA",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::with_schema_transform",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "After the transform, the schema is reduced to a few top-level keywords, dropping $defs, composition keywords and other nested/common constraints. This weakens the schema router-side validation enforces.",
+   "original_sha256": "8a4cf197d519307761e80e3d73c4cf1784222e2587bb48856b74fa48311d5d83",
+   "context_sha256": "0d753906258bd88362247dc0e82b3a4d7d1e5083044c085e27763e1ee5432dd1",
+   "prompt_sha256": "4880355c06293053928524bb7e7e1888a1823302e373a3c82140580da9c9c488",
+   "replacement": "def with_schema_transform(\n    spec: SchemaSpec,\n    transform: Callable[[Mapping[str, Any]], Mapping[str, Any]],\n    *,\n    name: str | None = None,\n) -> SchemaSpec:\n    \"\"\"Return a copy of `spec` with an adapter-provided schema transform.\"\"\"\n    transformed = transform(spec.json_schema)\n    allowed = {\"type\", \"properties\", \"required\", \"additionalProperties\", \"title\", \"description\"}\n    transformed = {k: v for k, v in transformed.items() if k in allowed}\n    return replace(\n        spec,\n        name=spec.name if name is None else name,\n        json_schema=transformed,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-3f09ea",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "92c21f2cd4096fba0dd5127ac1187e4872dbffdced3bc0e1f21fad43082f8f86",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-9FB4700F",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_mapping_schema",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Router-side validation only checks the top-level required keys and property types, silently ignoring nested/common constraints (enum, minimum, nested objects, etc.) declared in the schema.",
+   "original_sha256": "962497fecd673331925f8fa0e6f3242172b480dd9866f5765a4cff1cc2666099",
+   "context_sha256": "1774a211232b70cf94b1b83cad0593ef2aebd1bd0517d7571ba5c9cd720ee3d4",
+   "prompt_sha256": "138f715cedd815bc41ed8f3b0278497007b8e3eea578ec18eebdeb1c0e7306e9",
+   "replacement": "def _parse_mapping_schema(schema: Mapping[str, Any], value: object) -> dict[str, Any]:\n    \"\"\"Parse and validate output against the complete caller JSON Schema mapping.\"\"\"\n    parsed = _parse_json_object(value)\n    shallow: dict[str, Any] = {\"type\": \"object\"}\n    required = schema.get(\"required\")\n    if required is not None:\n        shallow[\"required\"] = required\n    properties = schema.get(\"properties\")\n    if isinstance(properties, Mapping):\n        shallow[\"properties\"] = {\n            name: ({\"type\": prop[\"type\"]} if isinstance(prop, Mapping) and \"type\" in prop else {})\n            for name, prop in properties.items()\n        }\n    Draft202012Validator(shallow).validate(parsed)\n    return parsed",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-5439da",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "86e00c0c91c8b9ed0407a1d4c5b2f2ed24a8401c81d6a5bffffc448ef0f57984",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-20764B72",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_mapping_schema",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Validation uses the legacy Draft 7 validator instead of Draft 2020-12, so 2020-12 keywords such as prefixItems and $defs-based semantics are not enforced by router-side validation.",
+   "original_sha256": "962497fecd673331925f8fa0e6f3242172b480dd9866f5765a4cff1cc2666099",
+   "context_sha256": "1774a211232b70cf94b1b83cad0593ef2aebd1bd0517d7571ba5c9cd720ee3d4",
+   "prompt_sha256": "138f715cedd815bc41ed8f3b0278497007b8e3eea578ec18eebdeb1c0e7306e9",
+   "replacement": "def _parse_mapping_schema(schema: Mapping[str, Any], value: object) -> dict[str, Any]:\n    \"\"\"Parse and validate output against the complete caller JSON Schema mapping.\"\"\"\n    from jsonschema import Draft7Validator\n\n    parsed = _parse_json_object(value)\n    Draft7Validator(dict(schema)).validate(parsed)\n    return parsed",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-5439da",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "86e00c0c91c8b9ed0407a1d4c5b2f2ed24a8401c81d6a5bffffc448ef0f57984",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-D49276DB",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_pydantic_model",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Fails to extract JSON payload from string output, breaking model reconstruction when LLM replies with markdown-wrapped JSON",
+   "original_sha256": "1fb8f11f74345fbd8b575c73365569e8b1fc19b028594897f347b1b7141c4f2c",
+   "context_sha256": "b977b879f7b240a97fcb5f4b56464413779d020af39fb93ca16dc2d48dea50f8",
+   "prompt_sha256": "496a80d8ae7cc72853834f8149f2a5e1356c1bdc4458f5d846a498a181546ad1",
+   "replacement": "def _parse_pydantic_model(model: type[BaseModel], value: object) -> BaseModel:\n    \"\"\"Parse a Pydantic model from text, mappings, or existing model objects.\"\"\"\n    if isinstance(value, model):\n        return value\n    if isinstance(value, str):\n        return model.model_validate_json(value)\n    return model.model_validate(value)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-49a260",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "87699befc4e4f5087f18de75ede0c20df3fe2de06bb3ba32edd82dab9f277e58",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-CCCFC5DF",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_pydantic_model",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Uses model_validate instead of model_validate_json for string payload, causing validation to fail because it receives a string rather than a parsed dictionary",
+   "original_sha256": "1fb8f11f74345fbd8b575c73365569e8b1fc19b028594897f347b1b7141c4f2c",
+   "context_sha256": "b977b879f7b240a97fcb5f4b56464413779d020af39fb93ca16dc2d48dea50f8",
+   "prompt_sha256": "496a80d8ae7cc72853834f8149f2a5e1356c1bdc4458f5d846a498a181546ad1",
+   "replacement": "def _parse_pydantic_model(model: type[BaseModel], value: object) -> BaseModel:\n    \"\"\"Parse a Pydantic model from text, mappings, or existing model objects.\"\"\"\n    if isinstance(value, model):\n        return value\n    if isinstance(value, str):\n        payload = _extract_json_payload(value)\n        return model.model_validate(payload)\n    return model.model_validate(value)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-49a260",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "87699befc4e4f5087f18de75ede0c20df3fe2de06bb3ba32edd82dab9f277e58",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-09EE1F5D",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_pydantic_schema_spec",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "def _pydantic_schema_spec(model: type[BaseModel]) -> SchemaSpec:\n    \"\"\"Return a schema spec backed by Pydantic validation.\"\"\"\n    return SchemaSpec(\n        name=model.__name__,\n        json_schema=model.model_json_schema(),\n        parser=lambda value: value,\n        model_type=model,\n    )",
+   "original_sha256": "09ee1f5da7284a373197089bfd83e28e0794d98c4a0b0f8f59d64c071fcceb12",
+   "context_sha256": "d50eef84464640a0d3f2913db10f3171a90da5330caeea4e5286544ee64472d1",
+   "prompt_sha256": "7a4fed0a19596737ab341933c83cb4e7cc936f595199cbbb1b47f86d16e331cd",
+   "replacement": "def _pydantic_schema_spec(model: type[BaseModel]) -> SchemaSpec:\n    \"\"\"Return a schema spec backed by Pydantic validation.\"\"\"\n    return SchemaSpec(\n        name=model.__name__,\n        json_schema=model.model_json_schema(),\n        parser=lambda value: _parse_pydantic_model(model, value),\n        model_type=model,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-f38e2d",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "1747d4d79470ad33f2ef7bd257860d472de61ef77bc7a08ee79c8c2aa33d0d6c",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-07EEEA4D",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_validate_mapping_schema_definition",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Meta-schema validation is only run when the mapping declares \"properties\", so invalid schemas without properties (e.g. {\"type\":\"object\",\"required\":\"x\"}) are no longer rejected before provider execution.",
+   "original_sha256": "76e7486ed7ef07897aedd58ae7d0b3aa72dc30db830c10c263ef17eed8a19a74",
+   "context_sha256": "a20219ea81c510ba5bcaf60e1517ddcd36055e46180b1dd4ab62af216c1c5f3f",
+   "prompt_sha256": "2f32704eecd46ee102e23b387fe57aa3560ebc228478ac749f94fe14744ff665",
+   "replacement": "def _validate_mapping_schema_definition(schema: Mapping[str, Any]) -> None:\n    \"\"\"Fail closed unless a caller mapping is a valid object Draft 2020-12 schema.\"\"\"\n    if \"properties\" in schema:\n        try:\n            Draft202012Validator.check_schema(dict(schema))\n        except SchemaError as exc:\n            msg = \"response_schema mapping must be a valid Draft 2020-12 JSON Schema.\"\n            raise ValueError(msg) from exc\n\n    if schema.get(\"type\") not in {None, \"object\"}:\n        msg = \"response_schema mapping must describe a JSON object.\"\n        raise ValueError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-04dd0d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "02492014ea4a9ff5b1751d7430689339c3661801c22de076d9269db32ae9e231",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-6E643223",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_validate_mapping_schema_definition",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "The object-type check only applies to string `type` values, so non-object schemas declared with a list type (e.g. {\"type\":[\"string\"]} or [\"array\"]) are accepted as valid object schemas.",
+   "original_sha256": "76e7486ed7ef07897aedd58ae7d0b3aa72dc30db830c10c263ef17eed8a19a74",
+   "context_sha256": "a20219ea81c510ba5bcaf60e1517ddcd36055e46180b1dd4ab62af216c1c5f3f",
+   "prompt_sha256": "2f32704eecd46ee102e23b387fe57aa3560ebc228478ac749f94fe14744ff665",
+   "replacement": "def _validate_mapping_schema_definition(schema: Mapping[str, Any]) -> None:\n    \"\"\"Fail closed unless a caller mapping is a valid object Draft 2020-12 schema.\"\"\"\n    try:\n        Draft202012Validator.check_schema(dict(schema))\n    except SchemaError as exc:\n        msg = \"response_schema mapping must be a valid Draft 2020-12 JSON Schema.\"\n        raise ValueError(msg) from exc\n\n    declared_type = schema.get(\"type\")\n    if isinstance(declared_type, str) and declared_type != \"object\":\n        msg = \"response_schema mapping must describe a JSON object.\"\n        raise ValueError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-04dd0d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "02492014ea4a9ff5b1751d7430689339c3661801c22de076d9269db32ae9e231",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-FF179DA1",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::normalize_schema",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Mapping schemas are no longer validated during normalization; invalid JSON Schema mappings are accepted and only fail later (or never), instead of being rejected before provider execution.",
+   "original_sha256": "0761fab1e48cef07cbced9432d8ec473bd226a7cc2724ab203bc8cf685b60e76",
+   "context_sha256": "be9284ccac8979a25f1b1c4b59c500fea172be3a2cedfb2c999b2bf312f8a156",
+   "prompt_sha256": "c29bcb36c73fe82ea1b10975ba5f781f5c88a58298e463de881c9015c295b90c",
+   "replacement": "def normalize_schema(schema: object) -> SchemaSpec:\n    \"\"\"Convert a public schema input into a provider-neutral schema spec.\"\"\"\n    if isinstance(schema, type) and issubclass(schema, BaseModel):\n        return _pydantic_schema_spec(schema)\n    if isinstance(schema, Mapping):\n        copied = deepcopy(dict(schema))\n        name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")\n        return SchemaSpec(\n            name=name,\n            json_schema=copied,\n            parser=lambda value: _parse_mapping_schema(copied, value),\n        )\n\n    msg = \"response_schema must be a Pydantic model type or JSON schema mapping.\"\n    raise TypeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-93f367",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "bc35639f70fe8f2d6ea941724ccbe1fbb239a7ab8ccbed256802e7af16589786",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-5D31FD4F",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::normalize_schema",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Mapping schema is validated but the spec's parser and json_schema use a shallow, top-level-only copy of the schema with nested 'properties'/'items' constraints stripped, so router-side validation silently ignores declared nested constraints.",
+   "original_sha256": "0761fab1e48cef07cbced9432d8ec473bd226a7cc2724ab203bc8cf685b60e76",
+   "context_sha256": "be9284ccac8979a25f1b1c4b59c500fea172be3a2cedfb2c999b2bf312f8a156",
+   "prompt_sha256": "c29bcb36c73fe82ea1b10975ba5f781f5c88a58298e463de881c9015c295b90c",
+   "replacement": "def normalize_schema(schema: object) -> SchemaSpec:\n    \"\"\"Convert a public schema input into a provider-neutral schema spec.\"\"\"\n    if isinstance(schema, type) and issubclass(schema, BaseModel):\n        return _pydantic_schema_spec(schema)\n    if isinstance(schema, Mapping):\n        copied = deepcopy(dict(schema))\n        _validate_mapping_schema_definition(copied)\n        name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")\n        relaxed = {\n            key: value\n            for key, value in copied.items()\n            if key not in {\"required\", \"additionalProperties\"}\n        }\n        return SchemaSpec(\n            name=name,\n            json_schema=copied,\n            parser=lambda value: _parse_mapping_schema(relaxed, value),\n        )\n\n    msg = \"response_schema must be a Pydantic model type or JSON schema mapping.\"\n    raise TypeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-93f367",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "bc35639f70fe8f2d6ea941724ccbe1fbb239a7ab8ccbed256802e7af16589786",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-04B797BF",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::validate_schema_output",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Validation succeeds but the raw candidate is returned instead of the parsed result, so Pydantic model types are never reconstructed from valid JSON output.",
+   "original_sha256": "d3962c5d7c3dcb7f83e9fe785f3e17a31ab01033733aeddc299cb660e609140a",
+   "context_sha256": "eb4e8f6a9e7ba24f1a850010fa8bc34c71d17b4774444d7328d322e9c37229c6",
+   "prompt_sha256": "5ac1bf592a9140645c902df001f1c2ded91f96600373994d48d19979d7d5ebff",
+   "replacement": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    try:\n        spec.parse(value)\n    except Exception as exc:\n        return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )\n    return SchemaValidationResult(valid=True, value=value)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-6616af",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "182419774c45569cbbcf2b1edc80e4ee54eb05949f0ad8817b9f3aa8adaa93a9",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-207182AF",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::validate_schema_output",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Validation failures on dict outputs are silently swallowed and treated as valid, so nested or common JSON Schema constraints on object outputs are no longer enforced router-side.",
+   "original_sha256": "d3962c5d7c3dcb7f83e9fe785f3e17a31ab01033733aeddc299cb660e609140a",
+   "context_sha256": "eb4e8f6a9e7ba24f1a850010fa8bc34c71d17b4774444d7328d322e9c37229c6",
+   "prompt_sha256": "5ac1bf592a9140645c902df001f1c2ded91f96600373994d48d19979d7d5ebff",
+   "replacement": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    try:\n        parsed = spec.parse(value)\n    except Exception as exc:\n        if isinstance(value, dict) and value:\n            return SchemaValidationResult(valid=True, value=value)\n        return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )\n    return SchemaValidationResult(valid=True, value=parsed)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-6616af",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "182419774c45569cbbcf2b1edc80e4ee54eb05949f0ad8817b9f3aa8adaa93a9",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-D0010079",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::with_schema_transform",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "After the provider transform, only a few top-level keywords are kept, so $defs, nested item constraints and other declared JSON Schema keywords are silently dropped, which weakens router-side validation.",
+   "original_sha256": "8a4cf197d519307761e80e3d73c4cf1784222e2587bb48856b74fa48311d5d83",
+   "context_sha256": "3e1e6147d7e37fcb52e9cc6769d4ded4ef5b7226a1e9a4d0b64857b58e731526",
+   "prompt_sha256": "d6fcc12bd8c05402a654a1136bafb5c18f1a34dcf9f7589cd58831a647600cfb",
+   "replacement": "def with_schema_transform(\n    spec: SchemaSpec,\n    transform: Callable[[Mapping[str, Any]], Mapping[str, Any]],\n    *,\n    name: str | None = None,\n) -> SchemaSpec:\n    \"\"\"Return a copy of `spec` with an adapter-provided schema transform.\"\"\"\n    transformed = transform(spec.json_schema)\n    kept_keys = (\"type\", \"properties\", \"required\", \"additionalProperties\")\n    transformed = {k: v for k, v in transformed.items() if k in kept_keys}\n    return replace(\n        spec,\n        name=spec.name if name is None else name,\n        json_schema=transformed,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-54b789",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "21f197571d2158d90a6b21abba9047644bd158eeb8f7eec415d6a004761b0ae1",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-1C2A60D5",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::with_schema_transform",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "The name override is applied with truthiness instead of an `is None` check, so an explicitly supplied empty name is ignored and the original name is kept.",
+   "original_sha256": "8a4cf197d519307761e80e3d73c4cf1784222e2587bb48856b74fa48311d5d83",
+   "context_sha256": "3e1e6147d7e37fcb52e9cc6769d4ded4ef5b7226a1e9a4d0b64857b58e731526",
+   "prompt_sha256": "d6fcc12bd8c05402a654a1136bafb5c18f1a34dcf9f7589cd58831a647600cfb",
+   "replacement": "def with_schema_transform(\n    spec: SchemaSpec,\n    transform: Callable[[Mapping[str, Any]], Mapping[str, Any]],\n    *,\n    name: str | None = None,\n) -> SchemaSpec:\n    \"\"\"Return a copy of `spec` with an adapter-provided schema transform.\"\"\"\n    transformed = transform(spec.json_schema)\n    return replace(\n        spec,\n        name=name or spec.name,\n        json_schema=transformed,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-54b789",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "21f197571d2158d90a6b21abba9047644bd158eeb8f7eec415d6a004761b0ae1",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-F50D9BF4",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_mapping_schema",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Validation only enforces the top-level required/properties of the schema, silently dropping nested and common constraints (e.g. $defs, items, enum, format), so payloads violating nested constraints are accepted.",
+   "original_sha256": "962497fecd673331925f8fa0e6f3242172b480dd9866f5765a4cff1cc2666099",
+   "context_sha256": "f90851df3eb26fd9c46526d283688ed6624e25046c8cd2d4f4b64dde36d4fcb9",
+   "prompt_sha256": "6a693ccf701444185cc0a991b117c2a5e3c135315d2ad5fdb56764378d296bdb",
+   "replacement": "def _parse_mapping_schema(schema: Mapping[str, Any], value: object) -> dict[str, Any]:\n    \"\"\"Parse and validate output against the complete caller JSON Schema mapping.\"\"\"\n    parsed = _parse_json_object(value)\n    shallow_schema: dict[str, Any] = {\"type\": \"object\"}\n    if \"required\" in schema:\n        shallow_schema[\"required\"] = schema[\"required\"]\n    if \"properties\" in schema:\n        shallow_schema[\"properties\"] = {\n            name: ({\"type\": prop[\"type\"]} if isinstance(prop, Mapping) and \"type\" in prop else {})\n            for name, prop in schema[\"properties\"].items()\n        }\n    Draft202012Validator(shallow_schema).validate(parsed)\n    return parsed",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-65a33b",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "159487387a3e7b14f48cfe308c29a518d91d78a4dc8c03e5bbc2be6cf28906f4",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-4A74651D",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_mapping_schema",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "After validation, the parsed payload is filtered to only the fields listed in top-level properties, so fields allowed through patternProperties/additionalProperties or otherwise part of the payload are dropped and the returned object differs from the validated one.",
+   "original_sha256": "962497fecd673331925f8fa0e6f3242172b480dd9866f5765a4cff1cc2666099",
+   "context_sha256": "f90851df3eb26fd9c46526d283688ed6624e25046c8cd2d4f4b64dde36d4fcb9",
+   "prompt_sha256": "6a693ccf701444185cc0a991b117c2a5e3c135315d2ad5fdb56764378d296bdb",
+   "replacement": "def _parse_mapping_schema(schema: Mapping[str, Any], value: object) -> dict[str, Any]:\n    \"\"\"Parse and validate output against the complete caller JSON Schema mapping.\"\"\"\n    parsed = _parse_json_object(value)\n    Draft202012Validator(dict(schema)).validate(parsed)\n    properties = schema.get(\"properties\")\n    if isinstance(properties, Mapping):\n        return {key: item for key, item in parsed.items() if key in properties}\n    return parsed",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-65a33b",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "159487387a3e7b14f48cfe308c29a518d91d78a4dc8c03e5bbc2be6cf28906f4",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-B71A417C",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_pydantic_model",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Existing model instances are rebuilt via a lossy dump that excludes unset fields, and string parsing drops required fields silently by using model_construct on the decoded JSON, bypassing validation.",
+   "original_sha256": "1fb8f11f74345fbd8b575c73365569e8b1fc19b028594897f347b1b7141c4f2c",
+   "context_sha256": "17257d9598cc5fffd6dfb2cece6789d45202f86025d142358259d912a84551c6",
+   "prompt_sha256": "464cde9cc64c76548accfce8d91b6ef5edeece958b5e6f51cdcf8575bf61a914",
+   "replacement": "def _parse_pydantic_model(model: type[BaseModel], value: object) -> BaseModel:\n    \"\"\"Parse a Pydantic model from text, mappings, or existing model objects.\"\"\"\n    if isinstance(value, model):\n        return value\n    if isinstance(value, str):\n        import json\n\n        payload = _extract_json_payload(value)\n        data = json.loads(payload)\n        if isinstance(data, dict):\n            return model.model_construct(**data)\n        return model.model_validate(data)\n    return model.model_validate(value)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153705Z-2c3013",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "0be700ffb478f3b2276c66dd98c28108a3518f53ae9ea74072c533aa9feb7d11",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-C6EBF982",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_parse_pydantic_model",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Mapping values are validated after being filtered to only the model's declared fields that are present and non-None, so null/required fields crossing the interface are dropped instead of being rejected or preserved.",
+   "original_sha256": "1fb8f11f74345fbd8b575c73365569e8b1fc19b028594897f347b1b7141c4f2c",
+   "context_sha256": "17257d9598cc5fffd6dfb2cece6789d45202f86025d142358259d912a84551c6",
+   "prompt_sha256": "464cde9cc64c76548accfce8d91b6ef5edeece958b5e6f51cdcf8575bf61a914",
+   "replacement": "def _parse_pydantic_model(model: type[BaseModel], value: object) -> BaseModel:\n    \"\"\"Parse a Pydantic model from text, mappings, or existing model objects.\"\"\"\n    if isinstance(value, model):\n        return value\n    if isinstance(value, str):\n        payload = _extract_json_payload(value)\n        return model.model_validate_json(payload)\n    if isinstance(value, dict):\n        value = {k: v for k, v in value.items() if v is not None}\n    return model.model_validate(value)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153705Z-2c3013",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "0be700ffb478f3b2276c66dd98c28108a3518f53ae9ea74072c533aa9feb7d11",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-008E10B9",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_pydantic_schema_spec",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Schema is generated in serialization mode instead of validation mode, so the schema sent to the provider/validated against can drop or alter fields (e.g. fields with defaults become required or computed fields are added), diverging from the model's input contract.",
+   "original_sha256": "09ee1f5da7284a373197089bfd83e28e0794d98c4a0b0f8f59d64c071fcceb12",
+   "context_sha256": "7cafcf46722539024c76c039da4d4a928d4479abb1a9159a0e09eddfbee25b07",
+   "prompt_sha256": "1fe9d19198652cab4ae9131031cd573e8c2948e1767ef5affb53b8c775900ced",
+   "replacement": "def _pydantic_schema_spec(model: type[BaseModel]) -> SchemaSpec:\n    \"\"\"Return a schema spec backed by Pydantic validation.\"\"\"\n    return SchemaSpec(\n        name=model.__name__,\n        json_schema=model.model_json_schema(mode=\"serialization\"),\n        parser=lambda value: _parse_pydantic_model(model, value),\n        model_type=model,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-3d532e",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b9d0262bc960306d115f7c24a578f2b806ddd4d53c11848623f6ced80ef7451c",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-F375873A",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_pydantic_schema_spec",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Schema is generated with by_alias=False, so fields that have aliases are exposed under their Python names rather than the alias names the model requires; the provider output then fails or loses required aliased fields on reconstruction.",
+   "original_sha256": "09ee1f5da7284a373197089bfd83e28e0794d98c4a0b0f8f59d64c071fcceb12",
+   "context_sha256": "7cafcf46722539024c76c039da4d4a928d4479abb1a9159a0e09eddfbee25b07",
+   "prompt_sha256": "1fe9d19198652cab4ae9131031cd573e8c2948e1767ef5affb53b8c775900ced",
+   "replacement": "def _pydantic_schema_spec(model: type[BaseModel]) -> SchemaSpec:\n    \"\"\"Return a schema spec backed by Pydantic validation.\"\"\"\n    return SchemaSpec(\n        name=model.__name__,\n        json_schema=model.model_json_schema(by_alias=False),\n        parser=lambda value: _parse_pydantic_model(model, value),\n        model_type=model,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-3d532e",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b9d0262bc960306d115f7c24a578f2b806ddd4d53c11848623f6ced80ef7451c",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-5AEDEC78",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_validate_mapping_schema_definition",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Schema validation checks against the older Draft 7 metaschema instead of Draft 2020-12, so 2020-12-only keywords (e.g. prefixItems, $defs, dependentRequired) with invalid values are accepted and later ignored by router-side validation.",
+   "original_sha256": "76e7486ed7ef07897aedd58ae7d0b3aa72dc30db830c10c263ef17eed8a19a74",
+   "context_sha256": "c18d14fca1874881cc545c02c7603cfc3c9f8f0f7301e190d4317a6112e0f3ef",
+   "prompt_sha256": "39bd865109b7b765060476fe5ed7e77cb94993b83fe4510ef50bdf744e894fc1",
+   "replacement": "def _validate_mapping_schema_definition(schema: Mapping[str, Any]) -> None:\n    \"\"\"Fail closed unless a caller mapping is a valid object Draft 2020-12 schema.\"\"\"\n    try:\n        Draft7Validator.check_schema(dict(schema))\n    except SchemaError as exc:\n        msg = \"response_schema mapping must be a valid Draft 2020-12 JSON Schema.\"\n        raise ValueError(msg) from exc\n\n    if schema.get(\"type\") not in {None, \"object\"}:\n        msg = \"response_schema mapping must describe a JSON object.\"\n        raise ValueError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-8240c0",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "64c3b2f14177cf05965d665a50643459465fa55ef4a4567112f65a351305fd4f",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-61C51200",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::_validate_mapping_schema_definition",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "The object-type check only rejects a schema when the type is a non-string, so non-object scalar types like \"array\" or \"string\" are accepted as response schemas; the router then validates against a non-object contract.",
+   "original_sha256": "76e7486ed7ef07897aedd58ae7d0b3aa72dc30db830c10c263ef17eed8a19a74",
+   "context_sha256": "c18d14fca1874881cc545c02c7603cfc3c9f8f0f7301e190d4317a6112e0f3ef",
+   "prompt_sha256": "39bd865109b7b765060476fe5ed7e77cb94993b83fe4510ef50bdf744e894fc1",
+   "replacement": "def _validate_mapping_schema_definition(schema: Mapping[str, Any]) -> None:\n    \"\"\"Fail closed unless a caller mapping is a valid object Draft 2020-12 schema.\"\"\"\n    try:\n        Draft202012Validator.check_schema(dict(schema))\n    except SchemaError as exc:\n        msg = \"response_schema mapping must be a valid Draft 2020-12 JSON Schema.\"\n        raise ValueError(msg) from exc\n\n    schema_type = schema.get(\"type\")\n    if schema_type is not None and not isinstance(schema_type, str):\n        msg = \"response_schema mapping must describe a JSON object.\"\n        raise ValueError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-8240c0",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "64c3b2f14177cf05965d665a50643459465fa55ef4a4567112f65a351305fd4f",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-9C5C73BC",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::normalize_schema",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Remove deepcopy when preparing schema copy to allow provider mutations to leak into router-side validation, weakening constraints.",
+   "original_sha256": "0761fab1e48cef07cbced9432d8ec473bd226a7cc2724ab203bc8cf685b60e76",
+   "context_sha256": "73c2d5ba34bcacb9481aa2547a032b75cf4f8f728706cba10a97788d57914237",
+   "prompt_sha256": "b6d82d5a05de1687de31d8033a06440132692e14ec00d005d5252e094e2c233d",
+   "replacement": "def normalize_schema(schema: object) -> SchemaSpec:\n    \"\"\"Convert a public schema input into a provider-neutral schema spec.\"\"\"\n    if isinstance(schema, type) and issubclass(schema, BaseModel):\n        return _pydantic_schema_spec(schema)\n    if isinstance(schema, Mapping):\n        copied = dict(schema)\n        _validate_mapping_schema_definition(copied)\n        name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")\n        return SchemaSpec(\n            name=name,\n            json_schema=copied,\n            parser=lambda value: _parse_mapping_schema(copied, value),\n        )\n\n    msg = \"response_schema must be a Pydantic model type or JSON schema mapping.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-f924f8",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "b7347c5b5368ba6df7645b5f8e6671ec586ee0eb0ad77328eed6fddf92aea5db",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-FF179DA1",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::normalize_schema",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Omit mapping schema definition validation, allowing invalid schemas to be accepted and silently dropping validation constraints.",
+   "original_sha256": "0761fab1e48cef07cbced9432d8ec473bd226a7cc2724ab203bc8cf685b60e76",
+   "context_sha256": "73c2d5ba34bcacb9481aa2547a032b75cf4f8f728706cba10a97788d57914237",
+   "prompt_sha256": "b6d82d5a05de1687de31d8033a06440132692e14ec00d005d5252e094e2c233d",
+   "replacement": "def normalize_schema(schema: object) -> SchemaSpec:\n    \"\"\"Convert a public schema input into a provider-neutral schema spec.\"\"\"\n    if isinstance(schema, type) and issubclass(schema, BaseModel):\n        return _pydantic_schema_spec(schema)\n    if isinstance(schema, Mapping):\n        copied = deepcopy(dict(schema))\n        name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")\n        return SchemaSpec(\n            name=name,\n            json_schema=copied,\n            parser=lambda value: _parse_mapping_schema(copied, value),\n        )\n\n    msg = \"response_schema must be a Pydantic model type or JSON schema mapping.\"\n    raise TypeError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-f924f8",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "b7347c5b5368ba6df7645b5f8e6671ec586ee0eb0ad77328eed6fddf92aea5db",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-04B797BF",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::validate_schema_output",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Validation returns the original candidate value instead of the parsed value, so Pydantic model reconstruction (or schema-normalized output) is lost and callers get raw data rather than the requested model type.",
+   "original_sha256": "d3962c5d7c3dcb7f83e9fe785f3e17a31ab01033733aeddc299cb660e609140a",
+   "context_sha256": "c3e9b21dd990cbfd6c8c06679967463183084eedc46a58afe168000512c5f524",
+   "prompt_sha256": "0cde8949537bd43ed85911bc679004591d9d3ff65a23edc4cbb2da8ce4d5a43e",
+   "replacement": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    try:\n        spec.parse(value)\n    except Exception as exc:\n        return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )\n    return SchemaValidationResult(valid=True, value=value)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-050406",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "c26101b76dfba8adcb5b2af3508d2383dd41f86c39c4e3acdfa104a141ad58b0",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-2AE24515",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::validate_schema_output",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Router-side validation is silently weakened: when the value is a dict, only top-level required keys are checked by filtering to declared top-level properties, dropping fields, and nested constraints are bypassed by parsing a trimmed copy while the trimmed value is returned.",
+   "original_sha256": "d3962c5d7c3dcb7f83e9fe785f3e17a31ab01033733aeddc299cb660e609140a",
+   "context_sha256": "c3e9b21dd990cbfd6c8c06679967463183084eedc46a58afe168000512c5f524",
+   "prompt_sha256": "0cde8949537bd43ed85911bc679004591d9d3ff65a23edc4cbb2da8ce4d5a43e",
+   "replacement": "def validate_schema_output(\n    spec: SchemaSpec,\n    value: object,\n) -> SchemaValidationResult:\n    \"\"\"Validate a candidate structured output without raising.\"\"\"\n    candidate = value\n    if isinstance(value, dict):\n        candidate = {\n            key: item\n            for key, item in value.items()\n            if item is not None\n        }\n    try:\n        parsed = spec.parse(candidate)\n    except Exception as exc:\n        return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )\n    return SchemaValidationResult(valid=True, value=parsed)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-050406",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "c26101b76dfba8adcb5b2af3508d2383dd41f86c39c4e3acdfa104a141ad58b0",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-2093BBD0",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::with_schema_transform",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "The transformed schema is shallow-filtered so that `$defs`/`definitions` are dropped, leaving nested `$ref` targets missing, so router-side validation loses or cannot resolve nested constraints.",
+   "original_sha256": "8a4cf197d519307761e80e3d73c4cf1784222e2587bb48856b74fa48311d5d83",
+   "context_sha256": "41e7a82d93108b510e80c99d62a42baedfcc83d1fa1ecee967671e64e0bcfa2c",
+   "prompt_sha256": "bd1803e2e63a69bf96364c1d031bb64868f49dc0cf11c8ab6592b1212930ce0d",
+   "replacement": "def with_schema_transform(\n    spec: SchemaSpec,\n    transform: Callable[[Mapping[str, Any]], Mapping[str, Any]],\n    *,\n    name: str | None = None,\n) -> SchemaSpec:\n    \"\"\"Return a copy of `spec` with an adapter-provided schema transform.\"\"\"\n    transformed = transform(spec.json_schema)\n    transformed = {\n        key: value\n        for key, value in transformed.items()\n        if key not in (\"$defs\", \"definitions\")\n    }\n    return replace(\n        spec,\n        name=spec.name if name is None else name,\n        json_schema=transformed,\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-f14e87",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "56fc31e8ead432da4d947f302b5cbb1ec3f607c6ada7109c04727601d410ac75",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-AAB2D195",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/capabilities/schema.py::with_schema_transform",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "After the transform, `required` is pruned to names present in top-level `properties`, silently dropping required fields declared via composition (allOf/anyOf) or when the transform moved properties, weakening validation.",
+   "original_sha256": "8a4cf197d519307761e80e3d73c4cf1784222e2587bb48856b74fa48311d5d83",
+   "context_sha256": "41e7a82d93108b510e80c99d62a42baedfcc83d1fa1ecee967671e64e0bcfa2c",
+   "prompt_sha256": "bd1803e2e63a69bf96364c1d031bb64868f49dc0cf11c8ab6592b1212930ce0d",
+   "replacement": "def with_schema_transform(\n    spec: SchemaSpec,\n    transform: Callable[[Mapping[str, Any]], Mapping[str, Any]],\n    *,\n    name: str | None = None,\n) -> SchemaSpec:\n    \"\"\"Return a copy of `spec` with an adapter-provided schema transform.\"\"\"\n    transformed = dict(transform(spec.json_schema))\n    required = transformed.get(\"required\")\n    if isinstance(required, (list, tuple)):\n        properties = transformed.get(\"properties\", {})\n        transformed[\"required\"] = [\n            item for item in required if item in properties\n        ]\n    return replace(\n        spec,\n        name=spec.name if name is None else name,\n        json_schema=transformed,\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-f14e87",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "56fc31e8ead432da4d947f302b5cbb1ec3f607c6ada7109c04727601d410ac75",
+    "index": 1
+   }
+  }
+ ]
+}

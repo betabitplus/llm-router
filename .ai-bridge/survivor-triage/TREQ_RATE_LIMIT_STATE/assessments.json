@@ -108,6 +108,218 @@
   },
   "prompt_sha256": "4ba6fa42da62add071937169dbb7bb6ee65478d979fb576c5610e72dcc90e5b2"
  },
+ "50264430ac7ff216": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-f51e4a",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change only replaces conditional logging with unconditional logging, which produces no difference in the method's return value, the state of the object, or any exceptions raised.",
+    "response_sha256": "18cb39a40a3be521eee5e07c152fa61139d92b2488d36551196cd3cc06d7f43a",
+    "sources": [
+     "        if should_log_opened:",
+     "    if True:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-4e58c5",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions produce identical object states and return values because the modification only affects logger.info, which does not mutate the instance or raise exceptions.",
+    "response_sha256": "27c230cb8acc36a06f1f2de943986d8b6a817fe8594be30bcbc31a7452760007",
+    "sources": [
+     "        if should_log_opened:",
+     "    if True:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T233825Z-8a6d20",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change is replacing `if should_log_opened:` with `if True:`, which always invokes logger.info; but the return value (None) and the mutated bucket state (failure_count, cooldown_until) are computed identically in the `with self._lock` block in both versions, and cooldown_seconds/provider/key_id are always valid attributes so no new exception can arise from the added unconditional logging call \u2014 behavior defined as return/state/exception type is unaffected.",
+    "response_sha256": "accf8f318226bd80b55ed0026995875ca800173f7016ce4c5fcffee186b7584c",
+    "sources": [
+     "if should_log_opened:",
+     "if True:",
+     "bucket.failure_count += 1",
+     "bucket.cooldown_until = current + limits.cooldown_seconds"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "969aceb967f68cb62bc84816b6b5602e1de34df256ea2e625d8ac8b02b606558"
+ },
+ "66821bfaa7f7419b": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-aa61b4",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The variable `should_log_cleared` is only evaluated for its truthiness in an `if` statement, meaning the removal of the `bool()` cast has no effect on the function's execution or side-effects.",
+    "response_sha256": "d26b31bcb3733aeb0fa47cbff5343053a266347bdc032b846ba178b6ae8143a7",
+    "sources": [
+     "            should_log_cleared = bool(\n                bucket.failure_count or bucket.cooldown_until > current\n            )",
+     "        should_log_cleared = bucket.failure_count or bucket.cooldown_until > current",
+     "        if should_log_cleared:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-df777b",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Omitting the redundant bool wrapper leaves the truth value tested by the if condition unchanged because Python's if statement evaluates the truth value of its condition directly.",
+    "response_sha256": "96945d1c9392e280e4395c8267d3c6f9ba66cff910dce14cc16d0e018bbcfe0a",
+    "sources": [
+     "            should_log_cleared = bool(",
+     "                bucket.failure_count or bucket.cooldown_until > current",
+     "            )",
+     "        should_log_cleared = bucket.failure_count or bucket.cooldown_until > current",
+     "        if should_log_cleared:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-87e889",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change is removing bool() around 'bucket.failure_count or bucket.cooldown_until > current'; that variable is only ever used in a truthy 'if should_log_cleared:' check, so whether it holds True/False or an int/bool from 'or' doesn't change control flow, return value, or object state.",
+    "response_sha256": "6409e229adacb6d75c5b664eeb8641dd9f73005c67ea9c7334652675cd45cd79",
+    "sources": [
+     "should_log_cleared = bool(",
+     "bucket.failure_count or bucket.cooldown_until > current",
+     "if should_log_cleared:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "141ac3fd26d55be0e3fd233deb567162509601d8ac7c9265339bd086c5739047"
+ },
+ "67c1c8b2d1f78261": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-0dc3cc",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The only difference between the two versions is the condition for logging, which does not affect the method's return value, the object's state, or the exceptions raised.",
+    "response_sha256": "3db6e18972a51d2f7bb19fbb8e6a18a2a477346fa19728bcd12bf1d49e8ab6c7",
+    "sources": [
+     "        if should_log_cleared:",
+     "    if not should_log_cleared:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-e9472e",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The only change is inverting the condition for calling logger.info, which does not affect the method's return value, the state of the LimiterState object, or any raised exceptions.",
+    "response_sha256": "8b0f189995e144ea7c8040ac0408b17c42e87650c456e0ffbd0d098efa108759",
+    "sources": [
+     "        if should_log_cleared:",
+     "    if not should_log_cleared:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-e2aec8",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change is inverting the condition guarding the `logger.info(...)` call (`if should_log_cleared` vs `if not should_log_cleared`), but the bucket mutations (`bucket.next_available_at = ...`, `bucket.failure_count = 0`) and the return value (`None`) are identical in both versions and unconditional of that flag, so per the stated definition of behaviour (return value, object state, exception type) the two versions cannot be told apart\u2014only an unobservable logging side effect differs.",
+    "response_sha256": "eafddadb6c388e1dc6679cfc240b8155f708c6542d4e1db286e91c280cbff7bf",
+    "sources": [
+     "bucket.next_available_at = current + limits.min_interval_seconds()",
+     "bucket.failure_count = 0",
+     "if should_log_cleared:",
+     "if not should_log_cleared:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "cb926fe961756de9e82a20e79430c9610f31ba9933284b8b0ab149e57e22acdf"
+ },
+ "753353272439298a": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-f5d505",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change only affects whether a log message is emitted, which does not alter the method's return value, the state of the LimiterState object, or the type of exception raised.",
+    "response_sha256": "f7fc94890673cd926d8055fa59766af524f2f72c8c11012b2fb3e920904a17bf",
+    "sources": [
+     "        if should_log_opened:\n            logger.info(",
+     "    if not should_log_opened:\n        logger.info('Route cooldown opened', event_type='llm_router.routing.cooldown.opened', provider=provider.value if isinstance(provider, Provider) else provider, key_id=key_id, wait_seconds=limits.cooldown_seconds)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-77b802",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The only difference between the two versions is whether logger.info is called, which does not affect the method's return value, object state, or exceptions.",
+    "response_sha256": "b96ab087f702a4bfabc8e13c724eeef76b5d47f06ce75b904f4e81eff0aa92df",
+    "sources": [
+     "        if should_log_opened:",
+     "    if not should_log_opened:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-8fe3a2",
+    "confidence": 0.78,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change is the guard on the logger.info call (`if should_log_opened` vs `if not should_log_opened`), which flips when the log message fires but does not alter the bucket mutations inside the lock, the method's return value (always None), or raise any exception, so per the given behavior definition (return value, object state, exception type) the two versions are indistinguishable.",
+    "response_sha256": "700b77cdf0ce9d85b7eaef6a65b77914d8078b4835a2d8f0c7ccfb90af35f286",
+    "sources": [
+     "if should_log_opened:",
+     "if not should_log_opened:",
+     "bucket.cooldown_until = current + limits.cooldown_seconds",
+     "bucket.failure_count = 0",
+     "should_log_opened = True"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "be86fd5e76fd433351a2faa57be23b2c69591327a8493a8c72bdda7e6e74e7a9"
+ },
  "7cd0a40c605b3f65": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -159,5 +371,489 @@
    }
   },
   "prompt_sha256": "abc9151a968a29653b97fa4e0438640540595a4cadbb24a75bc7c45c0bbcbac2"
+ },
+ "7d8cf2a980915b49": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-d0d7b6",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The only difference is the initialization of `should_log_opened`, which affects whether `logger.info` is called when no cooldown is opened; however, since logging does not alter the method's return value, the object's state, or raise exceptions, the behaviour as defined remains identical.",
+    "response_sha256": "ba0a96e41375ec4ed19f1f8dce35eb31120ae9a4160a1f697f559b189d645897",
+    "sources": [
+     "        should_log_opened = False",
+     "    should_log_opened = True"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-4be4ba",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed flag only affects whether the logger is called, which does not alter the method's return value, object state, or raised exceptions.",
+    "response_sha256": "f410efc888d5629f87c527b256811b11137741cd74579891e8c7766833ef1fd2",
+    "sources": [
+     "        should_log_opened = False",
+     "    should_log_opened = True",
+     "        if should_log_opened:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-16eea2",
+    "confidence": 0.75,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change is the initial value of should_log_opened (False vs True), which only affects whether logger.info is called\u2014not the returned value, not self._buckets state, and not any exception, so per the defined behavior criteria the two versions are equivalent.",
+    "response_sha256": "2b774a1fdd708182a0429b085355e345ff3183aecf18c2daaddc3ac5a9183633",
+    "sources": [
+     "should_log_opened = False",
+     "should_log_opened = True",
+     "if should_log_opened:\n            logger.info(",
+     "bucket.failure_count += 1"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "f608aae4b1ec63b76f4b104d581f72a9252a7a708e966c1b98219cbb01c5a648"
+ },
+ "866bbdd87a294337": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-c5b347",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The versions only differ in whether they log a message under certain conditions, which does not affect the method's return value, the object's resulting state, or any raised exceptions.",
+    "response_sha256": "6be53b240a00fcfe679ea006ac7c9ad8d30b73740651541deb4ca03a1006bb6e",
+    "sources": [
+     "            should_log_cleared = bool(",
+     "                bucket.failure_count or bucket.cooldown_until > current",
+     "            )",
+     "        should_log_cleared = bool(bucket.failure_count)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-890a5a",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed condition only affects the local should_log_cleared variable used for logging, leaving the return value, exception behavior, and LimiterState object state completely identical.",
+    "response_sha256": "df579c606f078e8805a68544954e44c582f19960e69865397e933bda5a1fe13b",
+    "sources": [
+     "                bucket.failure_count or bucket.cooldown_until > current",
+     "        should_log_cleared = bool(bucket.failure_count)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-d8fb80",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only difference is the condition for `should_log_cleared`, which only controls whether a logger.info call is emitted; the returned value (None) and the bucket's resulting state (`next_available_at` and `failure_count = 0`) are identical in both versions for any input, so no test of return value, object state, or exception type can distinguish them.",
+    "response_sha256": "0dcb01238c937eec41999affd11c1420787378084af62971cc0da413c4c53ba5",
+    "sources": [
+     "should_log_cleared = bool(\n                bucket.failure_count or bucket.cooldown_until > current\n            )",
+     "should_log_cleared = bool(bucket.failure_count)",
+     "bucket.failure_count = 0"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "87674397deef529db10a03f8ba1acae076ff2406cdd3762ede31b921d6775f46"
+ },
+ "96a28c868f99fb34": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=30.0, cooldown_after_failures=1)",
+     "now": "0.0",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-290a21",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed code replaces `bucket.failure_count = 0` with `pass`, so after a cooldown-triggering failure the bucket's failure_count is left non-zero instead of reset, differing in the object's post-call state (and affecting later record_success's should_log_cleared computation).",
+    "response_sha256": "564916b40a2c73bb62f3a347f718c9230a21b3bf9b38de461a7ce5ca4b0f2b10",
+    "sources": [
+     "bucket.cooldown_until = current + limits.cooldown_seconds",
+     "bucket.failure_count = 0",
+     "should_log_opened = True"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "1ce3498b37fcaddfebc334f46a5c0c4a3e4cdb0139e3f64c16de143a52c7a67a"
+ },
+ "99d124741e83ae13": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=1)",
+     "now": "None",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-1c7caf",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When now is None and the failure limit is reached, the changed version assigns None to current, raising a TypeError when it attempts to add limits.cooldown_seconds.",
+    "response_sha256": "4394303c96854d251aafd8f387aa12ef2c23350eaead1927260f070a17cb959f",
+    "sources": [
+     "current = monotonic() if now is None else now",
+     "current = monotonic() if False else now",
+     "bucket.cooldown_until = current + limits.cooldown_seconds"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=1)",
+     "now": "None",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-7396f6",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When now is None and cooldown is triggered, the changed version sets current to None instead of monotonic(), raising a TypeError when computing cooldown_until.",
+    "response_sha256": "3875f26400c48de6febf034e0026a4d68131926f8eb04cda7244cde43e5c7e4a",
+    "sources": [
+     "        current = monotonic() if now is None else now",
+     "    current = monotonic() if False else now",
+     "                bucket.cooldown_until = current + limits.cooldown_seconds"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=30.0, cooldown_after_failures=1)",
+     "now": "None",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-e1d76c",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed line `current = monotonic() if False else now` always sets current=now (i.e. None when now is None), unlike the original `monotonic() if now is None else now`; when now=None and cooldown triggers, `bucket.cooldown_until = current + limits.cooldown_seconds` becomes `None + float`, raising TypeError in the changed version while the original succeeds normally.",
+    "response_sha256": "78146d2dad9c99ab50978438e2dc7a6765305226d6cc9b2a25ba3dadc2ab20aa",
+    "sources": [
+     "current = monotonic() if now is None else now",
+     "current = monotonic() if False else now",
+     "bucket.cooldown_until = current + limits.cooldown_seconds"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "38df2dd4f65c9a0bbd98aa7e60912071a9de37930fc676a504ce7531a8bf8731"
+ },
+ "9f72abc51a357f38": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=5.0, cooldown_after_failures=0)",
+     "now": "0",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-bef731",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The original guards the cooldown trigger with `limits.cooldown_after_failures > 0`, so a limit of 0 (or negative) never opens cooldown; the changed version drops that guard, so with cooldown_after_failures=0 the check `bucket.failure_count >= limits.cooldown_after_failures` (1 >= 0) is true on the very first failure, setting cooldown_until and logging, unlike the original.",
+    "response_sha256": "ba695818de9d086d58db1c72e54e234b5575fde87d9cd684bf10cfe5fd97f363",
+    "sources": [
+     "limits.cooldown_after_failures > 0",
+     "and bucket.failure_count >= limits.cooldown_after_failures",
+     "if bucket.failure_count >= limits.cooldown_after_failures:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "4b8f68ade0e7a754b9cadc42f3a4d9de16cac5dc6f82399ec88ad86a77d1af31"
+ },
+ "aa491dc0b51552a2": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-4da658",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The only difference between the versions is that the changed version always calls logger.info, which affects logging side-effects but does not alter the method's return value, the state of the LimiterState object, or the type of exception raised.",
+    "response_sha256": "563b0702e75ea58972324748ae53cc93e8dfcc0d23aa749e01df3fe6be910e8b",
+    "sources": [
+     "        if should_log_cleared:",
+     "    if True:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-a93550",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions produce identical return values and mutate the limiter state identically, with the only difference being logger output which is not part of the object's state or behavior.",
+    "response_sha256": "29b923c7675d34714856679ce07513a604e2a99de4eb1fdf7f81af2780180615",
+    "sources": [
+     "        if should_log_cleared:",
+     "    if True:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T233825Z-89bd58",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change is replacing `if should_log_cleared:` with `if True:`, which affects only whether `logger.info(...)` is invoked; it does not change `bucket.next_available_at`, `bucket.failure_count`, the return value (always None), or the exception type raised, so under the task's definition of behaviour the two versions are indistinguishable.",
+    "response_sha256": "580fe62d740e7fb2231658ab8e349edc220fc286fb4dbc257cba860ab1aa2b6c",
+    "sources": [
+     "should_log_cleared = bool(",
+     "bucket.failure_count or bucket.cooldown_until > current",
+     "if should_log_cleared:",
+     "if True:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "52735f223b37c014728ec04d30ee6c6f56c378a25b13f4f93fd6db0d8fe2745e"
+ },
+ "ccfdc3bcaac9808a": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-ca3bb7",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "On a freshly initialized LimiterState, a new LimiterBucket is created with failure_count defaulting to 0, making the original condition logically identical to the changed condition for any single method call.",
+    "response_sha256": "e81b9f2a1a0b4ffbfeadb7edf81ed28637db9c28b3bfd2e0f35fd8055bcc2702",
+    "sources": [
+     "            should_log_cleared = bool(\n                bucket.failure_count or bucket.cooldown_until > current\n            )",
+     "        should_log_cleared = bool(bucket.cooldown_until > current)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-5c6572",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The change only alters should_log_cleared, which controls logger.info invocation and does not affect the method's return value, object state, or exception behavior.",
+    "response_sha256": "6e58d76e4b35ea95062240669a04a7c512dd1e57dad6fc7c17ae67a0cfa9ad48",
+    "sources": [
+     "                bucket.failure_count or bucket.cooldown_until > current",
+     "        should_log_cleared = bool(bucket.cooldown_until > current)",
+     "        bucket.failure_count = 0",
+     "    if should_log_cleared:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=0)",
+     "now": "5.0",
+     "provider": "Provider.GOOGLE",
+     "setup_call": "state.record_failure(provider=Provider.GOOGLE, key_id=1, limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=0), now=0.0)  # sets bucket.failure_count = 1, cooldown_until stays 0.0 because cooldown_after_failures=0 skips the cooldown branch"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-31843e",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "After a prior record_failure leaves failure_count=1 and cooldown_until=0.0 (using cooldown_after_failures=0 so cooldown never opens), calling record_success at now=5.0 has cooldown_until(0.0) <= current(5.0), so original's `bool(bucket.failure_count or bucket.cooldown_until > current)` evaluates True (failure_count truthy) and logs 'Route cooldown cleared', while the changed `bool(bucket.cooldown_until > current)` evaluates False and stays silent.",
+    "response_sha256": "652cb28c22b182a4a8a7de9dd5ddb2db76f77d3668ebfa9fb2aa4e497a771e5b",
+    "sources": [
+     "should_log_cleared = bool(\n                bucket.failure_count or bucket.cooldown_until > current\n            )",
+     "should_log_cleared = bool(bucket.cooldown_until > current)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "f2bf9fd9bc82ec44627050f7dbed81606e592f044f3a39bf35e7403ea7bb8700"
+ },
+ "cd5c3873436c0d0c": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=5.0, cooldown_after_failures=0)",
+     "now": "0.0",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-5f45f4",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The guard changed from checking `limits.cooldown_after_failures > 0` to `limits.cooldown_seconds > 0`; with cooldown_after_failures=0 and cooldown_seconds=5.0, the original never opens cooldown on the first failure (0>0 is False) while the changed version does (failure_count=1 >= 0 is True), diverging in bucket.cooldown_until, failure_count reset, and the logged event.",
+    "response_sha256": "cd3ab960d39e9970e72636c1d721085c36b9a6eb60286a93a51e38b8e0996612",
+    "sources": [
+     "if (",
+     "limits.cooldown_after_failures > 0",
+     "and bucket.failure_count >= limits.cooldown_after_failures",
+     "if limits.cooldown_seconds > 0 and bucket.failure_count >= limits.cooldown_after_failures:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "d69717c57cdc6a41a30848131fedede92cefb8fdfb68ed87e6f7a9ca346b74e8"
+ },
+ "cfccb967b6b28523": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=1)",
+     "now": "None",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-6883c2",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When `now` is `None`, the changed version evaluates `current` to `None` instead of `monotonic()`, resulting in a `TypeError` when attempting to add `limits.min_interval_seconds()` to it.",
+    "response_sha256": "49eb5ad495503422cd609e46670d4f1f67bda3deb723fc2d9444927aa5aeed69",
+    "sources": [
+     "current = monotonic() if now is None else now",
+     "current = monotonic() if False else now",
+     "bucket.next_available_at = current + limits.min_interval_seconds()"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "key_id": "0",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=3)",
+     "now": "None",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-e04337",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When now is None, the original version sets current to monotonic() whereas the changed version sets current to None, causing a TypeError when calculating bucket.next_available_at.",
+    "response_sha256": "1cea9589458d5c314459693d0bcde57768b97e2236aa38e797b93a5dcda3513e",
+    "sources": [
+     "        current = monotonic() if now is None else now",
+     "    current = monotonic() if False else now"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=30.0, cooldown_after_failures=3)",
+     "now": "None",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-360d3e",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed line 'current = monotonic() if False else now' always sets current=now, so when now=None the original computed current=monotonic() (a float) while the changed version leaves current=None, causing 'current + limits.min_interval_seconds()' to raise TypeError in the changed version but succeed in the original.",
+    "response_sha256": "585ba6e5798a335429b74ac6e887f351baf536bb52001239690e352896b5deb8",
+    "sources": [
+     "current = monotonic() if now is None else now",
+     "current = monotonic() if False else now",
+     "bucket.next_available_at = current + limits.min_interval_seconds()"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "f7eec58dadbb6000d031a699f089f2e31e19648eaeaab02f1fd2f846852df757"
+ },
+ "fe6b5732a0060288": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-ccbe61",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change only modifies a flag that controls whether a logging statement is executed, which has no effect on the method's return value, object state, or the exceptions it raises.",
+    "response_sha256": "dc628ad32cd8c3e60be7f71ceab7040c6954cfa2929e411ad2f710cbb0f54ade",
+    "sources": [
+     "                should_log_opened = True",
+     "            should_log_opened = False",
+     "        if should_log_opened:",
+     "            logger.info("
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084119Z-02ff1a",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The change only sets the local variable should_log_opened to False instead of True, which suppresses a logger call without affecting the method's return value, the object's state, or exception behavior.",
+    "response_sha256": "6be39b2817d22a0dd9c4876b89329a511cfa3496e7482759b27bbf573dedf716",
+    "sources": [
+     "                should_log_opened = True",
+     "            should_log_opened = False"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T233154Z-1bc8a3",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change is should_log_opened = True -> False, which only suppresses the logger.info call; the bucket mutations (failure_count, cooldown_until) inside the lock are identical, the return value (None) is identical, and no exception behavior changes, and logging to the module-level logger is not part of the object's own state.",
+    "response_sha256": "45c607dfbc0c444000976b3c3575f14abd3b2fc9959ce88d9b943cca8cae3fbe",
+    "sources": [
+     "bucket.cooldown_until = current + limits.cooldown_seconds",
+     "bucket.failure_count = 0",
+     "should_log_opened = True",
+     "should_log_opened = False"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "1786c21454ce216c1c0f96cfbe9f8ba13d11c4a5575823fab6747c3680f3b657"
  }
 }

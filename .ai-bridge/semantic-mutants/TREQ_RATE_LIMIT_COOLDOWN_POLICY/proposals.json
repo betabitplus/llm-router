@@ -1,0 +1,46 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "TREQ_RATE_LIMIT_COOLDOWN_POLICY",
+ "proposals": [
+  {
+   "id": "SM-FB3C4498",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/limiter.py::LimiterState.record_failure",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Uses `cooldown_after_failures` instead of `cooldown_seconds` to compute the cooldown expiration time.",
+   "original_sha256": "c275b60266cc4f0f2e075ec0e3afafa7b5552232f0055d314614338069dd72aa",
+   "context_sha256": "c1d02084ee44d41db5aea8d571fc1ba3a837f216cd44c2c3ff61a4fa05c5e929",
+   "prompt_sha256": "111e1e59709d11bb1eeec8dbc1d675068c8a62b477dbf02215383212c2a327a0",
+   "replacement": "    def record_failure(\n        self,\n        *,\n        provider: Provider | str,\n        key_id: int,\n        limits: ProviderLimits,\n        now: float | None = None,\n    ) -> None:\n        \"\"\"Record a failed request and open cooldown when configured.\"\"\"\n        current = monotonic() if now is None else now\n        should_log_opened = False\n        with self._lock:\n            bucket = self._bucket(provider=provider, key_id=key_id)\n            bucket.failure_count += 1\n            if (\n                limits.cooldown_after_failures > 0\n                and bucket.failure_count >= limits.cooldown_after_failures\n            ):\n                bucket.cooldown_until = current + limits.cooldown_after_failures\n                bucket.failure_count = 0\n                should_log_opened = True\n        if should_log_opened:\n            logger.info(\n                \"Route cooldown opened\",\n                event_type=\"llm_router.routing.cooldown.opened\",\n                provider=provider.value if isinstance(provider, Provider) else provider,\n                key_id=key_id,\n                wait_seconds=limits.cooldown_seconds,\n            )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153655Z-db1467",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "c436ef9b606e85976b9fc4590da01a07fd320291fe378d55cc3a5017ab7bdfe2",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-3FF17EF6",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/limiter.py::LimiterState.record_failure",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Checks the failure count against `cooldown_seconds` instead of `cooldown_after_failures`.",
+   "original_sha256": "c275b60266cc4f0f2e075ec0e3afafa7b5552232f0055d314614338069dd72aa",
+   "context_sha256": "c1d02084ee44d41db5aea8d571fc1ba3a837f216cd44c2c3ff61a4fa05c5e929",
+   "prompt_sha256": "111e1e59709d11bb1eeec8dbc1d675068c8a62b477dbf02215383212c2a327a0",
+   "replacement": "    def record_failure(\n        self,\n        *,\n        provider: Provider | str,\n        key_id: int,\n        limits: ProviderLimits,\n        now: float | None = None,\n    ) -> None:\n        \"\"\"Record a failed request and open cooldown when configured.\"\"\"\n        current = monotonic() if now is None else now\n        should_log_opened = False\n        with self._lock:\n            bucket = self._bucket(provider=provider, key_id=key_id)\n            bucket.failure_count += 1\n            if (\n                limits.cooldown_after_failures > 0\n                and bucket.failure_count >= limits.cooldown_seconds\n            ):\n                bucket.cooldown_until = current + limits.cooldown_seconds\n                bucket.failure_count = 0\n                should_log_opened = True\n        if should_log_opened:\n            logger.info(\n                \"Route cooldown opened\",\n                event_type=\"llm_router.routing.cooldown.opened\",\n                provider=provider.value if isinstance(provider, Provider) else provider,\n                key_id=key_id,\n                wait_seconds=limits.cooldown_seconds,\n            )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153655Z-db1467",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "c436ef9b606e85976b9fc4590da01a07fd320291fe378d55cc3a5017ab7bdfe2",
+    "index": 1
+   }
+  }
+ ]
+}

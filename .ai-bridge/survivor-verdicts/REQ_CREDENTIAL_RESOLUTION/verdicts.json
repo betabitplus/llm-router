@@ -1,4 +1,43 @@
 {
+ "50e4a41c052fa9e4": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T085717Z-791eda",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For any valid `Collection[int] | None`, `candidate in preferred` gives the same result whether or not the collection is first turned into a set. Key selection, the rotation offset and the resolved key therefore stay the same. The versions could only differ for a one-shot iterator or for unhashable elements, and the parameter's type excludes both.",
+   "response_sha256": "b1bbe643672a684a9c6d843776a88a0fd949e18789182f5079dd012309b59fd0",
+   "sources": [
+    "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs.",
+    "preferred = set(preferred_key_ids or ())",
+    "preferred = preferred_key_ids or ()"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "conversion",
+  "prompt_sha256": "d0145118da562722ff8d15a37f21b20c35c1e010e837d1e733b2084614cfd6a0",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T085728Z-79a5cc",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "d0145118da562722ff8d15a37f21b20c35c1e010e837d1e733b2084614cfd6a0",
+   "reason": "Removing the `set()` conversion leaves the membership test `candidate in preferred` semantically unchanged, as any valid `Collection[int]` evaluates the `in` operator identically. The results and side effects are exactly the same.",
+   "response_sha256": "b3320f57df03c363153fb5cad603f88d0dfc3cffd29e79a340d7aad44d468d87",
+   "sources": [
+    "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs.",
+    "preferred = set(preferred_key_ids or ())",
+    "preferred = preferred_key_ids or ()"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
  "53bdcf1990f4aaa4": {
   "answer": {
    "backend": "claude-cli",
@@ -66,6 +105,54 @@
    "source": "draft author"
   },
   "prompt_sha256": "a897210571b006afd16f452a930b8d79f1b69c33afc532cfd26785ca4dbc4fe2"
+ },
+ "6a19c74173ddbaf9": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T223148Z-3c2d31",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For key_id='auto' with keys available, the mutant returns a lazy generator instead of a tuple of resolved keys. It can be consumed only once, has no len() and cannot be indexed. Rotation over the candidates is then no longer deterministic: a second pass sees no keys, and resolution is put off until the generator is consumed. Execution confirmed that the two versions differ on this input.",
+   "response_sha256": "cb65156e4296d9652b4753407835496c345ded6e98f385d0a1a933ee71b1c040",
+   "sources": [
+    "Configured fixed keys, custom environment names, optional credentials, and automatically rotated keys shall resolve deterministically.",
+    "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs.",
+    "return (self._resolve_fixed(provider=provider, key_id=candidate) for candidate in keys)",
+    "\"\"\"Return concrete key candidates without advancing automatic rotation.\"\"\""
+   ],
+   "test_focus": "Call candidates(key_id='auto') on a resolver with configured custom-key mappings. Check that it returns a tuple of ResolvedKey in the expected deterministic order, and that iterating it twice gives the same keys.",
+   "verdict": "pin"
+  },
+  "operator": "conversion",
+  "pin": {
+   "adopted_at": "2026-09-29T22:33:18.681234Z",
+   "answer_sha256": "4abed299e8509da356e47fc56569ad79baaa9fde979cbd6da7193018742ec384",
+   "call_id": "20260929T223252Z-f99ce0",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "4abed299e8509da356e47fc56569ad79baaa9fde979cbd6da7193018742ec384",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_6a19c74173ddbaf9.py",
+   "response_sha256": "518c0e422a6a6022ea889e398831a1f4d9c9c9e599c50edc36b54593bf6dcf29",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.runtime.limiter.ResolvedKey"
+   ]
+  },
+  "prompt_sha256": "cf26664e3ca82dc92c4e176bf45783cc8749f2ec6754e41fdad6ff71499f0e76"
  },
  "779116a1f28d187b": {
   "answer": {
@@ -236,6 +323,53 @@
    "source": "draft author"
   },
   "prompt_sha256": "18f37ae236c3d566486b654d636cb7ddf6089f30194f4f46a609f4781b800d04"
+ },
+ "e917251d85f56c41": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T085809Z-cd0cf0",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "After a prior call advances the offset, the mutant drops the wrap-around keys, so a preferred key that sits before the offset is never chosen. Example: keys [1,2,3], first call picks 1, then a call preferring {1} returns 2 instead of 1. This breaks the deterministic automatic rotation, which is meant to prefer eligible candidates.",
+   "response_sha256": "5dfa627281ce4fc18bc37a7abf2c84a5e68fc045cc4dc2c44ee492d539fbcadc",
+   "sources": [
+    "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs.",
+    "ordered_keys = [*keys[start:], *keys[:start]]",
+    "ordered_keys = [*keys[start:]]",
+    "\"\"\"Rotate among discovered provider keys, preferring eligible candidates.\"\"\""
+   ],
+   "test_focus": "With configured keys 1,2,3, make one auto resolution, then resolve with preferred_key_ids={1} and check that key 1 is returned.",
+   "verdict": "pin"
+  },
+  "operator": "container",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.900779Z",
+   "answer_sha256": "7be9557618da0302f9bdb85cbb8876412462d63f2aac05048e4a3950af466c51",
+   "call_id": "20260929T114718Z-344494",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "1cc26969265c9c5defa536306974cbba77aee393218a24ce50253d649f236b9a",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_e917251d85f56c41.py",
+   "response_sha256": "419957a1349fe5cefafbc1dbe974a9f964afc2613e956a2126f5e11d0f0c71a2",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.assembly.build_default_config"
+   ]
+  },
+  "prompt_sha256": "f03199967e4013e41cdff1b79aca85431ece0da88bd182eda104d49d9fbfea56"
  },
  "f6c26fefc186db93": {
   "answer": {

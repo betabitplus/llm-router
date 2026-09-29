@@ -1,0 +1,84 @@
+{
+ "SM-AE82B8CB": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "history": "(ChatMessage(role=None, parts=()), ChatMessage(role=None, parts=()))",
+     "system": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-2ba358",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "For any history tuple containing more than one message, the changed version incorrectly truncates the last message from the list before encoding.",
+    "response_sha256": "665974063bf43f8f70991c96b39fe57fd29cb0ce3285090ef3f9ec66dff0907b",
+    "sources": [
+     "        \"history\": [_encode_message(message) for message in history],",
+     "        \"history\": [_encode_message(message) for message in history[:-1]] if len(history) > 1 else [_encode_message(message) for message in history],"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "history": "(ChatMessage(role=ChatRole.USER, parts=(), meta={}), ChatMessage(role=ChatRole.USER, parts=(), meta={}))",
+     "system": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-193ff4",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With two or more messages the changed version drops the last one from the encoded history, while the original encodes all of them.",
+    "response_sha256": "95a62319af5996ffc70381aa2971462fc6c2e77552172c5f72cfcf640b556355",
+    "sources": [
+     "\"history\": [_encode_message(message) for message in history[:-1]] if len(history) > 1 else [_encode_message(message) for message in history],",
+     "\"history\": [_encode_message(message) for message in history],"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "326f9b2572171f00c2186581605a9b6b55bedc8b5d7ff7f18a6f407293e30911"
+ },
+ "SM-B91A9265": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "history": "(ChatMessage(role=ChatRole.USER, parts=()), ChatMessage(role=ChatRole.USER, parts=()))",
+     "system": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-170d71",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version skips consecutive identical encoded messages, yielding a shorter history list in the JSON string than the original version for an input with consecutive duplicate messages.",
+    "response_sha256": "65e830a74995170ba6e34bc6fbc2d1691bdf7dbfe4984c318aae66321fb0adc9",
+    "sources": [
+     "        \"history\": [_encode_message(message) for message in history],",
+     "        if encoded_history and encoded_history[-1] == encoded:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "history": "(ChatMessage(role=ChatRole.USER, parts=(TextPart('hi'),)), ChatMessage(role=ChatRole.USER, parts=(TextPart('hi'),)))",
+     "system": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-4015cd",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version skips a message whose encoding equals the previous one, so two identical consecutive messages give two history entries in the original and one in the changed version.",
+    "response_sha256": "76d36e2e69ef4bc85103f56350d10c7fbc11bea2c7e8e70161cb458a5fdb3f59",
+    "sources": [
+     "if encoded_history and encoded_history[-1] == encoded:",
+     "\"history\": [_encode_message(message) for message in history],"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "7929629947a958647e3c0ae772c6016a98cf0f01b65ac67dd507fca8807b2e94"
+ }
+}

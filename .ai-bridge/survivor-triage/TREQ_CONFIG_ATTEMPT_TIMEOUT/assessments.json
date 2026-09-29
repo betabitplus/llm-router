@@ -1,0 +1,116 @@
+{
+ "3b57c08f839ab791": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(\n    default_provider=Provider.GOOGLE,\n    default_model=Model.GEMINI_FLASH,\n    default_key_id=0,\n    defaults=BehaviorDefaults(\n        retry_policy=RetryPolicy(\n            min_wait_seconds=1.0,\n            max_wait_seconds=2.0,\n            max_attempts=1\n        ),\n        policy=RouterPolicyDefaults(\n            max_attempts=1,\n            attempt_timeout_seconds=0.5,\n            wait_for_cooldown_if_all_blocked=False,\n            round_robin_start=False,\n            shuffle_fallbacks=False,\n            min_routes_for_fallback_shuffle=1,\n            default_limits=ProviderLimits(\n                rps=1.0,\n                rpm=1.0,\n                cooldown_seconds=1.0,\n                cooldown_after_failures=1\n            )\n        ),\n        default_max_tool_rounds=1,\n        structured_output_max_attempts=1,\n        provider_limits=ProviderLimits(\n            rps=1.0,\n            rpm=1.0,\n            cooldown_seconds=1.0,\n            cooldown_after_failures=1\n        )\n    ),\n    catalog=ProviderCatalog(\n        providers={\n            Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)\n        },\n        provider_base_urls={\n            Provider.GOOGLE: \"url\",\n            Provider.AISTUDIO: \"url\",\n            Provider.GEMINI_WEBAPI: \"url\",\n            Provider.QWENCHAT: \"url\",\n            Provider.OPENROUTER: \"url\",\n            Provider.MISTRAL: \"url\",\n            Provider.NVIDIA: \"url\",\n            Provider.GROQ: \"url\",\n            Provider.ALIBABA: \"url\"\n        },\n        models={\n            Model.GEMINI_FLASH: {\n                Provider.GOOGLE: \"model\"\n            }\n        }\n    )\n)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081345Z-95d8fe",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version strictly requires the attempt timeout to be greater than 1 rather than 0, causing it to raise an exception for a timeout of 0.5 that the original accepts.",
+    "response_sha256": "a26abd2878a59e81994c2f7a79274f404eee547ff2f2f044bd6a24f2a3985e07",
+    "sources": [
+     "    if policy.attempt_timeout_seconds is not None:\n        _require(\n            condition=policy.attempt_timeout_seconds > 0,\n            message=\"policy attempt timeout must be greater than 0.\",\n        )",
+     "    if policy.attempt_timeout_seconds is not None:\n        _require(condition=policy.attempt_timeout_seconds > 1, message='policy attempt timeout must be greater than 0.')"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=0.5, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: \"https://example.com\", Provider.AISTUDIO: \"https://example.com\", Provider.GEMINI_WEBAPI: \"https://example.com\", Provider.QWENCHAT: \"https://example.com\", Provider.OPENROUTER: \"https://example.com\", Provider.MISTRAL: \"https://example.com\", Provider.NVIDIA: \"https://example.com\", Provider.GROQ: \"https://example.com\", Provider.ALIBABA: \"https://example.com\"}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: \"gemini-flash\"}}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081345Z-8ea256",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version validates that attempt_timeout_seconds is greater than 1 rather than greater than 0, causing it to reject valid configurations with an attempt timeout between 0 and 1.",
+    "response_sha256": "e4aa3e4ed1030dd8bad0d40ebc3470fe043b512d490d2e1aad61f8e82da00cc3",
+    "sources": [
+     "            condition=policy.attempt_timeout_seconds > 0,",
+     "        _require(condition=policy.attempt_timeout_seconds > 1, message='policy attempt timeout must be greater than 0.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=0.5, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1), limits_by_provider={}), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_var='GOOGLE_API_KEY')}, provider_base_urls={Provider.GOOGLE: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash-model-id'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232825Z-c466df",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version tightens the attempt-timeout check from `> 0` to `> 1`, so a value like 0.5 passes validation in the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "b91e4fbdb8ad1ec8035be12dc8064fe9a09ef677929b6038ee2f898b04c5bb64",
+    "sources": [
+     "_require(\n        condition=policy.attempt_timeout_seconds > 0,\n        message=\"policy attempt timeout must be greater than 0.\",\n    )",
+     "_require(condition=policy.attempt_timeout_seconds > 1, message='policy attempt timeout must be greater than 0.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(...) with an otherwise valid config (all other checks passing) whose policy.attempt_timeout_seconds = 0.5, e.g. RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=0.5, ...)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111611Z-39b091",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The timeout check changed from > 0 to > 1, so attempt_timeout_seconds=0.5 (or 1.0) passes the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "3401e63074b8dae862b70921a5cc8707ca594c51f79460b7568a81cc416ec523",
+    "sources": [
+     "_require(condition=policy.attempt_timeout_seconds > 1, message='policy attempt timeout must be greater than 0.')",
+     "condition=policy.attempt_timeout_seconds > 0,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "8bef3a0ed833b2f1db4274ee27a921a5d8288442658dddf52a14a20da2bc71ac"
+ },
+ "b6340db1c7f8750a": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls={Provider.GOOGLE: 'https://example.com'}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash-model'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T231642Z-fe8106",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The change replaces `if policy.attempt_timeout_seconds is not None:` with `if True:`, so when attempt_timeout_seconds is None the changed code evaluates `None > 0`, raising TypeError, whereas the original silently skips the check and, with the rest of the config valid, returns None.",
+    "response_sha256": "504985d4087462a2a903973847a6f8789846008f95a8241e13472b9466c42b43",
+    "sources": [
+     "if policy.attempt_timeout_seconds is not None:",
+     "if True:",
+     "_require(condition=policy.attempt_timeout_seconds > 0, message='policy attempt timeout must be greater than 0.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(...) valid in every respect (positive retry waits, max_attempts>=1, default provider/model present and mapped, base URLs for required providers), with defaults=BehaviorDefaults(policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, ...))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111611Z-5b462d",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With attempt_timeout_seconds=None, the original skips the check and returns None, but the changed version evaluates None > 0 and raises TypeError.",
+    "response_sha256": "f75b2177140ad5bf0a20b35ee616ce5670181408eeaaac88cb9e4bfef0dc20bd",
+    "sources": [
+     "if True:",
+     "_require(condition=policy.attempt_timeout_seconds > 0, message='policy attempt timeout must be greater than 0.')",
+     "if policy.attempt_timeout_seconds is not None:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "059fefa1510ed702537f2e63774dec0e9583265b2a74ffc57791adea74957602"
+ }
+}

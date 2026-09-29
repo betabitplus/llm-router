@@ -1,46 +1,121 @@
 {
-  "schema": "ternforge-model-canaries-1",
-  "generator": {
-    "id": "G-SUMMARY",
-    "requirement": {"id": "TREQ_CALIBRATION_SUMMARY", "revision": 1, "statement": "A record's summary shows its name, shows its level only above 2, and never shows its secret."},
-    "criteria": ["the secret never appears in a summary", "the level appears only above 2"],
-    "selection": {"class": "spec.wrong-outcome", "target": "src/calibration_target.py::Record.summary", "budget": 2, "risk": "the secret or a wrong value becomes observable"}
+ "schema": "ternforge-model-canaries-1",
+ "generator": {
+  "id": "G-SUMMARY",
+  "requirement": {
+   "id": "TREQ_CALIBRATION_SUMMARY",
+   "revision": 1,
+   "statement": "A record's summary shows its name, shows its level only above 2, and never shows its secret."
   },
-  "draft_author": {
-    "id": "D-SECRET",
-    "requirement": {"id": "TREQ_CALIBRATION_SUMMARY", "revision": 1, "statement": "A record's summary shows its name, shows its level only above 2, and never shows its secret."},
-    "criteria": ["the secret never appears in a summary"],
-    "proposal": "C-DISTINGUISHED",
-    "found": {"input": "Record(name='a', secret='s', level=0).summary()", "original": "{'name': 'a'}", "mutant": "{'name': 'a', 'secret': 's'}"},
-    "tests": ["checks/calibration_checks.py"]
+  "criteria": [
+   "the secret never appears in a summary",
+   "the level appears only above 2"
+  ],
+  "selection": {
+   "class": "spec.wrong-outcome",
+   "target": "src/calibration_target.py::Record.summary",
+   "budget": 2,
+   "risk": "the secret or a wrong value becomes observable"
+  }
+ },
+ "draft_author": {
+  "id": "D-SECRET",
+  "requirement": {
+   "id": "TREQ_CALIBRATION_SUMMARY",
+   "revision": 1,
+   "statement": "A record's summary shows its name, shows its level only above 2, and never shows its secret."
   },
-  "verdict": [
-    {
-      "id": "V-PIN",
-      "expected": "pin",
-      "context": "Technical requirement CALIBRATION_RETRY (Retry bounds): A retry policy allows at least one attempt and never more than its configured maximum.\nIts verification criteria: a policy with a maximum of 1 makes exactly one attempt",
-      "target": "attempts_allowed",
-      "original": "def attempts_allowed(maximum: int, used: int) -> bool:\n    return used < maximum",
-      "mutant": "def attempts_allowed(maximum: int, used: int) -> bool:\n    return used <= maximum",
-      "judgement": "an input is confirmed by execution: attempts_allowed(maximum=1, used=1); the original gives False and the mutant gives True (found by symbolic search)."
-    },
-    {
-      "id": "V-EQUIVALENT",
-      "expected": "equivalent",
-      "context": "Technical requirement CALIBRATION_DOUBLE (Counts double): A count is doubled.\nIts verification criteria: doubling 3 gives 6",
-      "target": "double",
-      "original": "def double(value: int) -> int:\n    return value * 2",
-      "mutant": "def double(value: int) -> int:\n    return value + value",
-      "judgement": "the symbolic search ended exhausted after 3 paths; every assessor answered equivalent (0.99): both return two times the value; its label is likely-equivalent."
-    },
-    {
-      "id": "V-ESCALATE",
-      "expected": "escalate",
-      "context": "Goal CALIBRATION_FAIR_BILLING (Fair billing): Users are billed only for what they use.\nFeature CALIBRATION_BILLING (Request billing): Completed requests are billed; whether a cancelled request is billed is still open and is the product owner's decision.\nTechnical requirement CALIBRATION_BILL_TOTAL (Bill total): The bill adds the price of every billed request.\nIts verification criteria: a bill of two completed requests adds both prices",
-      "target": "billed",
-      "original": "def billed(status: str) -> bool:\n    return status == \"completed\"",
-      "mutant": "def billed(status: str) -> bool:\n    return status in {\"completed\", \"cancelled\"}",
-      "judgement": "an input is confirmed by execution: billed(status='cancelled'); the original gives False and the mutant gives True (found by symbolic search)."
-    }
+  "criteria": [
+   "the secret never appears in a summary"
+  ],
+  "proposal": "C-DISTINGUISHED",
+  "found": {
+   "input": "Record(name='a', secret='s', level=0).summary()",
+   "original": "{'name': 'a'}",
+   "mutant": "{'name': 'a', 'secret': 's'}"
+  },
+  "tests": [
+   "checks/calibration_checks.py"
   ]
+ },
+ "verdict": [
+  {
+   "id": "V-PIN",
+   "expected": "pin",
+   "context": "Technical requirement CALIBRATION_RETRY (Retry bounds): A retry policy allows at least one attempt and never more than its configured maximum.\nIts verification criteria: a policy with a maximum of 1 makes exactly one attempt",
+   "target": "attempts_allowed",
+   "original": "def attempts_allowed(maximum: int, used: int) -> bool:\n    return used < maximum",
+   "mutant": "def attempts_allowed(maximum: int, used: int) -> bool:\n    return used <= maximum",
+   "judgement": "an input is confirmed by execution: attempts_allowed(maximum=1, used=1); the original gives False and the mutant gives True (found by symbolic search)."
+  },
+  {
+   "id": "V-EQUIVALENT",
+   "expected": "equivalent",
+   "context": "Technical requirement CALIBRATION_DOUBLE (Counts double): A count is doubled.\nIts verification criteria: doubling 3 gives 6",
+   "target": "double",
+   "original": "def double(value: int) -> int:\n    return value * 2",
+   "mutant": "def double(value: int) -> int:\n    return value + value",
+   "judgement": "the symbolic search ended exhausted after 3 paths; every assessor answered equivalent (0.99): both return two times the value; its label is likely-equivalent."
+  },
+  {
+   "id": "V-ESCALATE",
+   "expected": "escalate",
+   "context": "Goal CALIBRATION_FAIR_BILLING (Fair billing): Users are billed only for what they use.\nFeature CALIBRATION_BILLING (Request billing): Completed requests are billed; whether a cancelled request is billed is still open and is the product owner's decision.\nTechnical requirement CALIBRATION_BILL_TOTAL (Bill total): The bill adds the price of every billed request.\nIts verification criteria: a bill of two completed requests adds both prices",
+   "target": "billed",
+   "original": "def billed(status: str) -> bool:\n    return status == \"completed\"",
+   "mutant": "def billed(status: str) -> bool:\n    return status in {\"completed\", \"cancelled\"}",
+   "judgement": "an input is confirmed by execution: billed(status='cancelled'); the original gives False and the mutant gives True (found by symbolic search)."
+  },
+  {
+   "id": "V-REAL-PIN",
+   "expected": "pin",
+   "context": "Goal GOAL_CONFIGURATION_PREDICTABILITY (Make effective request configuration predictable)\nFeature FEAT_CONFIGURATION_PRECEDENCE (Configuration precedence and validation)\nRequirement REQ_CREDENTIAL_RESOLUTION (Credentials resolve deterministically): Configured fixed keys, custom environment names, optional credentials, and automatically rotated keys shall resolve deterministically. A missing required credential shall surface as the public missing-key error.\nIts verification criteria: A configured fixed key resolves through its configured custom environment name.; Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs.; A missing required credential raises the public missing-key error with identity.; Every provider family that permits an absent bearer credential resolves the permitted empty value.; A public request with a missing required credential surfaces the missing-key error.",
+   "target": "KeyResolver.candidates",
+   "original": "    def candidates(\n        self, *, provider: Provider, key_id: KeyId\n    ) -> tuple[ResolvedKey, ...]:\n        \"\"\"Return concrete key candidates without advancing automatic rotation.\"\"\"\n        if key_id != \"auto\":\n            return (self._resolve_fixed(provider=provider, key_id=key_id),)\n        keys = self._available_keys(provider=provider)\n        if keys:\n            return tuple(\n                self._resolve_fixed(provider=provider, key_id=candidate)\n                for candidate in keys\n            )\n        env_var = self._key_name(provider=provider, key_id=self._config.default_key_id)\n        if _allows_missing_key(provider):\n            return (\n                ResolvedKey(\n                    key_id=self._config.default_key_id,\n                    env_var=env_var,\n                    value=\"\",\n                ),\n            )\n        raise ApiKeyNotFoundError(\n            env_var,\n            provider.value,\n            self._config.default_key_id,\n        )",
+   "mutant": "def candidates(self, *, provider: Provider, key_id: KeyId) -> tuple[ResolvedKey, ...]:\n    \"\"\"Return concrete key candidates without advancing automatic rotation.\"\"\"\n    if key_id != 'auto':\n        return (self._resolve_fixed(provider=provider, key_id=key_id),)\n    keys = self._available_keys(provider=provider)\n    if keys:\n        return (self._resolve_fixed(provider=provider, key_id=candidate) for candidate in keys)\n    env_var = self._key_name(provider=provider, key_id=self._config.default_key_id)\n    if _allows_missing_key(provider):\n        return (ResolvedKey(key_id=self._config.default_key_id, env_var=env_var, value=''),)\n    raise ApiKeyNotFoundError(env_var, provider.value, self._config.default_key_id)",
+   "judgement": "an input is confirmed by execution: KeyResolver(config=LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE, api_key_env_vars={1: 'PATH'})}))).candidates(key_id='auto', provider=Provider.GOOGLE); the original gives [[('dataclass', 'ResolvedKey', {'key_id': 1, 'env_var': 'PATH', 'value': '<$HOME>/.cache/uv/builds-v0/.tmpcHDA93/bin:<$HOME>/.cache/uv/archive-v0/iLgvAx5p-D8TXcZG/bin:<$VIRTUAL_ENV>/bin:<$HOME>/Documents/3.Projects/2.Spaces/toolset/llm-… and the mutant gives [('value', 'generator', '<generator object KeyResolver.candidates.<locals>.<genexpr>>'), ('object', 'KeyResolver', {'_auto_offsets': {}, '_config': ('dataclass', 'LLMRouterConfig', {'default_provider': ('enum', 'Provider', 'google'), 'default_model': ('enum', 'Model', 'gemini-3.6-flash'), 'default_k… (found by antigravity-cli:gemini-3.1-pro-high).",
+   "source": "REQ_CREDENTIAL_RESOLUTION · 6a19c74173ddbaf9",
+   "grounds": {
+    "verdict": "pin",
+    "verdict_model": "claude-opus-5-5",
+    "review": null,
+    "review_model": null,
+    "pin": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_6a19c74173ddbaf9.py"
+   }
+  },
+  {
+   "id": "V-REAL-IRRELEVANT",
+   "expected": "irrelevant",
+   "context": "Goal GOAL_SESSION_CONTINUITY (Preserve conversational state without cross-request contamination)\nFeature FEAT_SESSION_LIFECYCLE (Session lifecycle)\nRequirement REQ_SESSION_PERSISTENCE (Session persistence round-trips state): Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.\nTechnical requirement TREQ_SESSION_SERIALIZATION (Session serialization rejects incompatible data): Session serialization shall preserve supported embedded media bytes and reject unsupported serialization versions rather than loading incompatible state.\nIts verification criteria: File bytes, image bytes, local-video bytes/descriptor metadata, and remote-video descriptor metadata each survive save/load.; Unsupported serialization versions raise SessionSerializationError instead of loading incompatible state.",
+   "target": "encode_session",
+   "original": "def encode_session(*, system: str | None, history: tuple[ChatMessage, ...]) -> str:\n    \"\"\"Return a JSON session artifact containing only public semantics.\"\"\"\n    payload = {\n        \"version\": _SESSION_VERSION,\n        \"system\": system,\n        \"history\": [_encode_message(message) for message in history],\n    }\n    return json.dumps(payload, indent=2, sort_keys=True)",
+   "mutant": "def encode_session(*, system: str | None, history: tuple[ChatMessage, ...]) -> str:\n    \"\"\"Return a JSON session artifact containing only public semantics.\"\"\"\n    payload = {'version': _SESSION_VERSION, 'system': system, 'history': [_encode_message(message) for message in history]}\n    return json.dumps(payload, sort_keys=True)",
+   "judgement": "an input is confirmed by execution: encode_session(history=(), system='\" \\n\"\\\\\\\\\\\\'); the original gives '{\\n  \"history\": [],\\n  \"system\": \"\\\\\" \\\\n\\\\\"\\\\\\\\\\\\\\\\\\\\\\\\\",\\n  \"version\": 1\\n}' and the mutant gives '{\"history\": [], \"system\": \"\\\\\" \\\\n\\\\\"\\\\\\\\\\\\\\\\\\\\\\\\\", \"version\": 1}' (found by symbolic search).",
+   "source": "TREQ_SESSION_SERIALIZATION · 92622e5a5f97e586",
+   "grounds": {
+    "verdict": "irrelevant",
+    "verdict_model": "claude-opus-5-5",
+    "review": "irrelevant",
+    "review_model": "gemini-3.1-pro-high",
+    "pin": null
+   }
+  },
+  {
+   "id": "V-REAL-EQUIVALENT",
+   "expected": "equivalent",
+   "context": "Goal GOAL_ROUTING_RELIABILITY (Preserve request progress across route failures)\nFeature FEAT_ROUTE_FALLBACK (Route fallback)\nRequirement REQ_ROUTE_TIMEOUT_FALLBACK (Route timeout fallback): An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.\nIts verification criteria: Sync and async requests both stop waiting on a timed-out route, then continue to another eligible route and succeed.; Sync and async requests with no fallback both expose the public timeout after exactly the terminal timed-out attempt.",
+   "target": "RouterRuntime._call_sync_with_timeout",
+   "original": "    def _call_sync_with_timeout(\n        self,\n        request: ResolvedRequest,\n        *,\n        timeout_seconds: float | None,\n    ) -> LLMRouterResponse:\n        \"\"\"Run one sync executor attempt with optional timeout.\"\"\"\n        if timeout_seconds is None:\n            return self._executor.execute(request)\n        pool = ThreadPoolExecutor(max_workers=1)\n        future = pool.submit(self._executor.execute, request)\n        timed_out = False\n        try:\n            return future.result(timeout=timeout_seconds)\n        except FutureTimeoutError as exc:\n            timed_out = True\n            future.cancel()\n            msg = \"Attempt timed out.\"\n            raise TimeoutError(msg) from exc\n        finally:\n            pool.shutdown(wait=not timed_out, cancel_futures=True)",
+   "mutant": "def _call_sync_with_timeout(self, request: ResolvedRequest, *, timeout_seconds: float | None) -> LLMRouterResponse:\n    \"\"\"Run one sync executor attempt with optional timeout.\"\"\"\n    if timeout_seconds is None:\n        return self._executor.execute(request)\n    pool = ThreadPoolExecutor(max_workers=1)\n    future = pool.submit(self._executor.execute, request)\n    timed_out = False\n    try:\n        return future.result(timeout=timeout_seconds)\n    except FutureTimeoutError as exc:\n        timed_out = True\n        pass\n        msg = 'Attempt timed out.'\n        raise TimeoutError(msg) from exc\n    finally:\n        pool.shutdown(wait=not timed_out, cancel_futures=True)",
+   "judgement": "it could not be judged: RouterRuntime cannot be built from typed arguments; no input was tried.",
+   "source": "REQ_ROUTE_TIMEOUT_FALLBACK · b39c78844ce0f60e",
+   "grounds": {
+    "verdict": "equivalent",
+    "verdict_model": "claude-opus-5-5",
+    "review": "equivalent",
+    "review_model": "gemini-3.1-pro-high",
+    "pin": null
+   }
+  }
+ ]
 }

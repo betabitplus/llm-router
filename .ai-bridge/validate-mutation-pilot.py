@@ -4,6 +4,7 @@ import ast
 import hashlib
 import importlib.util
 import json
+import tomllib
 import re
 import subprocess
 import sys
@@ -46,8 +47,9 @@ def load(path: Path):
 
 def only_campaign_extras(contract: dict, challenged: set, expected: set) -> bool:
     """Classes challenged beyond the declared retained challenges may only come from
-    the current Implementation fault campaign, or, for a specification or interface class,
-    from current semantic mutants that the cascade decided (caught or told apart)."""
+    the current Implementation fault campaign, for a specification or interface class
+    from current semantic mutants that the cascade decided (caught or told apart), or, for
+    spec.wrong-outcome, from current scenario oracle mutants that ran (050)."""
     classes = (contract.get("fault_actual") or {}).get("classes") or {}
 
     def semantic_challenge(class_id: str) -> bool:
@@ -59,10 +61,40 @@ def only_campaign_extras(contract: dict, challenged: set, expected: set) -> bool
             and int(counts.get("caught") or 0) + int(counts.get("distinguished") or 0) > 0
         )
 
+    def scenario_challenge(class_id: str) -> bool:
+        row = classes.get(class_id, {})
+        counts = row.get("scenario_counts") or {}
+        return (
+            class_id == "spec.wrong-outcome"
+            and row.get("scenario_state") == "current"
+            and sum(int(counts.get(outcome) or 0) for outcome in ("caught", "survived", "unchecked")) > 0
+        )
+
     return set(expected) <= set(challenged) and all(
         (class_id.startswith("impl.") and classes.get(class_id, {}).get("campaign_state") == "current")
         or semantic_challenge(class_id)
+        or scenario_challenge(class_id)
         for class_id in set(challenged) - set(expected)
+    )
+
+
+def fault_page_holds(page: str, contract: dict, required: set, challenged: set) -> bool:
+    """What a contract's page shows of its Fault Model. While a required class is unchallenged the model
+    is partial: FAIL on the page, as the Overall. Once every one is challenged (050: by the campaign,
+    semantic or scenario mutants), the Fault Model passes exactly when every one is detected."""
+    if challenged < required:
+        return '<div class="overall not-met">FAIL</div>' in page and bool(
+            re.search(r'<strong>Fault model.*?<span class="status not-met">FAIL</span>', page, re.DOTALL)
+        )
+    classes = (contract.get("fault_actual") or {}).get("classes") or {}
+    state = 'met">PASS' if all((classes.get(class_id) or {}).get("detected") for class_id in required) else 'not-met">FAIL'
+    return bool(re.search(r'<strong>Fault model.*?<span class="status ' + state + "</span>", page, re.DOTALL))
+
+
+def fault_page_text(required: set, challenged: set) -> str:
+    return (
+        f"Fault Model FAIL and Overall FAIL while {len(required - challenged)} required class(es) stay unchallenged"
+        if challenged < required else f"the Fault Model its {len(required)} challenged classes decide"
     )
 
 
@@ -254,15 +286,21 @@ def check_verification_explorer(module: str) -> None:
         retained_path = ROOT / f"test-results/semantic-mutants/{contract_id}.json"
         for row in (load(retained_path).get("results") or []) if retained_path.is_file() else []:
             if (contract_id, row["class"]) in listed:
-                semantic_expected.append((contract_id, row["id"], SEMANTIC_OUTCOME_STATUS[row["outcome"]]))
+                # A survivor a recorded verdict judged equivalent or irrelevant may show as equivalent (N/A), as
+                # the facts take it out of its class (ADR_0006).
+                judged = recorded_verdicts.get((contract_id, row["id"])) if row["outcome"] in {"undecided", "distinguished"} else None
+                allowed_status = {SEMANTIC_OUTCOME_STATUS[row["outcome"]], *(["na"] if judged in SUPPRESSING else [])}
+                semantic_expected.append((contract_id, f"{row['class']}:{row['id']}", allowed_status))
     mutant_rows = {item["id"]: item for item in by_kind.get("mutant", [])}
     not_generated = []
     for contract_id in sorted(semantic_selections()):
         proposals_path = BRIDGE / f"semantic-mutants/{contract_id}/proposals.json"
-        targets = {row["target"] for row in (load(proposals_path).get("proposals") or [])} if proposals_path.is_file() else set()
+        # A selection is a class at a target: one function may be selected for several classes.
+        key = semantic_module().selection_key
+        answered = {key(row) for row in (load(proposals_path).get("proposals") or [])} if proposals_path.is_file() else set()
         for selection in ((facts.get(contract_id) or {}).get("target") or {}).get("semantic_mutants") or []:
-            if selection["target"] not in targets and (contract_id, selection["class"]) in listed:
-                not_generated.append(f"mutant|{contract_id}|semantic-target:{selection['target']}")
+            if key(selection) not in answered and (contract_id, selection["class"]) in listed:
+                not_generated.append(f"mutant|{contract_id}|semantic-target:{key(selection)}")
     check(
         all(
             (mutant_rows.get(row_id) or {}).get("status") == "unknown" and (mutant_rows.get(row_id) or {}).get("causes") == ["generate"]
@@ -273,7 +311,7 @@ def check_verification_explorer(module: str) -> None:
     )
     check(
         all(
-            (mutant_rows.get(f"mutant|{contract_id}|semantic:{proposal_id}") or {}).get("status") == status
+            (mutant_rows.get(f"mutant|{contract_id}|semantic:{proposal_id}") or {}).get("status") in status
             and (mutant_rows.get(f"mutant|{contract_id}|semantic:{proposal_id}") or {}).get("attrs", {}).get("origin") == "semantic"
             for contract_id, proposal_id, status in semantic_expected
         ),
@@ -403,7 +441,10 @@ def check_verification_explorer(module: str) -> None:
     )
 
 
-MUTATION_OPERATORS = ["comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body"]
+MUTATION_OPERATORS = [
+    "comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body",
+    "argument", "condition", "conditional", "negation", "container", "conversion", "method", "attribute",
+]
 MUTATION_CLASSES = {
     "comparison": "impl.comparison",
     "boundary": "impl.boundary",
@@ -412,6 +453,14 @@ MUTATION_CLASSES = {
     "return": "impl.control-flow",
     "statement": "impl.effect",
     "body": "impl.effect",
+    "argument": "impl.effect",
+    "conversion": "impl.effect",
+    "method": "impl.effect",
+    "container": "impl.effect",
+    "attribute": "impl.effect",
+    "condition": "impl.control-flow",
+    "conditional": "impl.control-flow",
+    "negation": "impl.control-flow",
 }
 MTE_STATUSES = {"Killed", "Survived", "NoCoverage", "Timeout", "RuntimeError", "CompileError", "Ignored", "Pending"}
 
@@ -562,22 +611,29 @@ def check_mutation_system(monitor_facts: dict) -> None:
         and sorted([*(config.get("contracts") or []), *(config.get("not_current") or [])]) == sorted(entries),
         "the mutation report follows the Mutation Testing Report Schema 2 and holds every contract whose result counts, naming the others",
     )
-    expected: dict[str, str] = {}
+    # A line several contracts claim is challenged by each of them (050), so its mutant is listed once
+    # per contract, each with its own status; the report keeps ids unique with a -2, -3, … suffix.
+    expected: dict[str, list[str]] = {}
     for contract_id in config.get("contracts") or []:
         plan = entries[contract_id].get("plan") or {}
         allowed = {(path, line) for path, lines in (plan.get("attributable_lines") or {}).items() for line in lines}
         raw = reports.get(contract_id) or {}
         for row in raw.get("results") or []:
             if row.get("operator") in MUTATION_CLASSES and (relative_path(row.get("file_path")), int(row.get("line_number") or -1)) in allowed:
-                expected[str(row.get("fingerprint"))] = expected_mte_status(row)
+                expected.setdefault(str(row.get("fingerprint")), []).append(expected_mte_status(row))
         for row in (raw.get("ternforge") or {}).get("not_planted") or []:
             if (relative_path(row.get("file_path")), int(row.get("line_number") or -1)) in allowed:
-                expected[str(row.get("fingerprint"))] = "Ignored"
+                expected.setdefault(str(row.get("fingerprint")), []).append("Ignored")
     mutants = [(path, row) for path, source in (report.get("files") or {}).items() for row in source.get("mutants") or []]
-    actual = {str(row.get("id")): str(row.get("status")) for _path, row in mutants}
+    actual: dict[str, list[str]] = {}
+    for _path, row in mutants:
+        actual.setdefault(re.sub(r"-\d+$", "", str(row.get("id"))), []).append(str(row.get("status")))
+    ids = [str(row.get("id")) for _path, row in mutants]
     check(
-        bool(expected) and actual == expected and len(actual) == len(mutants),
-        f"the mutation report lists exactly the {len(expected)} mutants of the retained reports (arid ones as Ignored) with their statuses",
+        bool(expected) and len(set(ids)) == len(ids)
+        and {key: sorted(value) for key, value in actual.items()} == {key: sorted(value) for key, value in expected.items()},
+        f"the mutation report lists exactly the {sum(map(len, expected.values()))} mutants of the retained reports, "
+        "a mutant of a line several contracts claim once for each (arid ones as Ignored), with their statuses",
     )
     check(
         all(row.get("status") in MTE_STATUSES for _path, row in mutants)
@@ -807,11 +863,23 @@ def check_semantic_mutants(monitor_facts: dict) -> None:
         and len(by_call) == len(ledger),
         f"the model ledger's {len(ledger)} rows are well formed, one per call",
     )
+    # An answer is withdrawn only when it carries what a public repository must not keep (050): its call stays
+    # in the ledger, the list says why, its answer is gone, and no current record cites it.
+    withdrawn_path = BRIDGE / "semantic-mutants/withdrawn-answers.json"
+    withdrawn = load(withdrawn_path) if withdrawn_path.is_file() else {}
     check(
-        all(row["call_id"] in stored for row in ledger if row["outcome"] == "ok" and row.get("role") != "probe")
+        all(row["call_id"] in stored or row["call_id"] in withdrawn for row in ledger if row["outcome"] == "ok" and row.get("role") != "probe")
         and all(by_call.get(call_id, {}).get("outcome") == "ok" for call_id in stored)
         and all(not row.get("response_sha256") for row in ledger if row["outcome"] != "ok"),
         f"each of the {len(stored)} stored model answers belongs to an accepted call, and no failed, deferred or unavailable call left one",
+    )
+    cited = cited_answers()
+    check(
+        all(
+            by_call.get(call_id, {}).get("outcome") == "ok" and call_id not in stored and str(entry.get("reason") or "") and call_id not in cited
+            for call_id, entry in withdrawn.items()
+        ),
+        f"each of the {len(withdrawn)} withdrawn model answers was an accepted call's, says why, is gone and no current record cites it",
     )
     texts = [ledger_path.read_text() if ledger_path.is_file() else ""] + [path.read_text() for path in stored.values()]
     check(
@@ -847,7 +915,8 @@ def check_semantic_mutants(monitor_facts: dict) -> None:
         top = proposals.get("generator") or {}
         selections = ((monitor_facts.get("contracts") or {}).get(contract_id, {}).get("target") or {}).get("semantic_mutants") or []
         classes = ((monitor_facts.get("contracts") or {}).get(contract_id, {}).get("fault_actual") or {}).get("classes") or {}
-        missing = [selection for selection in selections if selection["target"] not in {row["target"] for row in rows_proposed}]
+        key = semantic_module().selection_key
+        missing = [selection for selection in selections if key(selection) not in {key(row) for row in rows_proposed}]
         for class_id in {selection["class"] for selection in missing}:
             count = sum(selection["class"] == class_id for selection in missing)
             actual = classes.get(class_id) or {}
@@ -898,37 +967,58 @@ def check_semantic_mutants(monitor_facts: dict) -> None:
         if not rows_proposed:
             continue
         retained = load(ROOT / f"test-results/semantic-mutants/{contract_id}.json")
-        rows = {row["id"]: row for row in retained.get("results") or []}
+        # A mutant's id is its normal form's digest, so the same mutant selected for two classes
+        # carries one id twice: a result belongs to a proposal by its place, never by its id alone.
+        results = retained.get("results") or []
         check(
             retained.get("schema") == "ternforge-semantic-mutants-1"
-            and set(rows) == {row["id"] for row in rows_proposed}
-            and all(row["outcome"] in SEMANTIC_OUTCOME_STATUS for row in rows.values())
+            and [(row.get("id"), row.get("class")) for row in results] == [(row["id"], row["class"]) for row in rows_proposed]
+            and all(row["outcome"] in SEMANTIC_OUTCOME_STATUS for row in results)
             and all(row.get("original_sha256") and row.get("context_sha256") and row.get("prompt_sha256") and row.get("replacement") for row in rows_proposed),
-            f"{contract_id}: every frozen semantic mutant carries its provenance, and the cascade judged each one",
+            f"{contract_id}: every frozen semantic mutant carries its provenance, and the cascade judged each one in its place",
         )
         check(
-            all((row.get("differential") or {}).get("found") and (row.get("differential") or {}).get("input") for row in rows.values() if row["outcome"] == "distinguished")
-            and all((row.get("tests") or {}).get("returncode") == 1 for row in rows.values() if row["outcome"] == "caught")
-            and all((row.get("tests") or {}).get("returncode") == 0 for row in rows.values() if row["outcome"] in {"distinguished", "undecided"})
+            all((row.get("differential") or {}).get("found") and (row.get("differential") or {}).get("input") for row in results if row["outcome"] == "distinguished")
+            # Caught: a contract test fails on it, or the tests do not finish within the campaign's
+            # confirming time limit, as a timeout counts in the campaign.
+            and all(
+                (row.get("tests") or {}).get("returncode") == 1
+                or ((row.get("tests") or {}).get("returncode") is None and "do not finish on it within" in str(row.get("reason") or ""))
+                for row in results if row["outcome"] == "caught"
+            )
+            and all((row.get("tests") or {}).get("returncode") == 0 for row in results if row["outcome"] in {"distinguished", "undecided"})
             and all(
                 (row.get("draft") or {}).get("passes_on_original") == 5 and (row.get("draft") or {}).get("fails_on_mutant") is True
-                for row in rows.values()
+                for row in results
                 if (row.get("draft") or {}).get("accepted")
             )
-            and all((row.get("draft") or {}).get("ran") is False for row in rows.values() if (row.get("draft") or {}).get("primitives") or (row.get("draft") or {}).get("imports_beyond_allowed") or (row.get("draft") or {}).get("lint")),
-            f"{contract_id}: a caught mutant failed a contract test, a survivor passed them all, a distinguished one names its input, "
+            and all((row.get("draft") or {}).get("ran") is False for row in results if (row.get("draft") or {}).get("primitives") or (row.get("draft") or {}).get("imports_beyond_allowed") or (row.get("draft") or {}).get("lint")),
+            f"{contract_id}: a caught mutant failed a contract test or kept them from finishing in time, a survivor passed them all, a distinguished one names its input, "
             "a kept draft passes five times and fails on its mutant, and a draft that reaches beyond or breaks a lint rule was never run",
         )
-        for class_id in {row["class"] for row in rows.values()}:
-            counts = {outcome: sum(row["outcome"] == outcome for row in rows.values() if row["class"] == class_id) for outcome in SEMANTIC_OUTCOME_STATUS}
+        # A survivor a recorded verdict judged equivalent or irrelevant counts as equivalent (ADR_0006): the
+        # person's decision wins over the model's answer, and a suppression holds only with a review.
+        verdict_folder = BRIDGE / f"survivor-verdicts/{contract_id}"
+        answered = load(verdict_folder / "verdicts.json") if (verdict_folder / "verdicts.json").is_file() else {}
+        decided = load(verdict_folder / "decisions.json") if (verdict_folder / "decisions.json").is_file() else {}
+        suppressing = {key for key in set(answered) | set(decided) if effective_verdict(answered.get(key) or {}, decided.get(key)) in SUPPRESSING}
+        for class_id in {row["class"] for row in results}:
+            raw = {outcome: sum(row["outcome"] == outcome for row in results if row["class"] == class_id) for outcome in SEMANTIC_OUTCOME_STATUS}
+            judged = {outcome: sum(row["outcome"] == outcome and row["id"] in suppressing for row in results if row["class"] == class_id) for outcome in ("undecided", "distinguished")}
             actual = classes.get(class_id) or {}
+            counts = actual.get("semantic_counts") or {}
+            moved = {outcome: raw[outcome] - int(counts.get(outcome) or 0) for outcome in judged}
             check(
                 actual.get("semantic_state") == "current"
-                and actual.get("semantic_counts") == counts
+                and set(counts) == set(SEMANTIC_OUTCOME_STATUS)
+                and all(counts[outcome] == raw[outcome] for outcome in SEMANTIC_OUTCOME_STATUS if outcome not in {"undecided", "distinguished", "equivalent"})
+                and all(0 <= moved[outcome] <= judged[outcome] for outcome in moved)
+                and counts["equivalent"] == raw["equivalent"] + sum(moved.values())
                 and int(actual.get("undecided") or 0) >= counts["undecided"] + counts["stale"]
                 and (not counts["distinguished"] or actual.get("detected") is False)
                 and ((counts["caught"] + counts["distinguished"]) == 0 or actual.get("exercised") is True),
-                f"{contract_id} · {class_id}: the class counts its current semantic mutants, and a distinguished one keeps it from being caught",
+                f"{contract_id} · {class_id}: the class counts its current semantic mutants, a survivor only a recorded verdict "
+                "takes out as equivalent, and a distinguished one keeps it from being caught",
             )
         for proposal in rows_proposed:
             check(
@@ -945,6 +1035,8 @@ def check_semantic_mutants(monitor_facts: dict) -> None:
     check_survivor_verdicts(models, by_call, usable)
     check_draft_attempts(by_call)
     check_ladder(monitor_facts)
+    check_scenario_mutants(monitor_facts)
+    check_architecture_mutants()
 
 
 DRAFT_CAUSES = {"kept", "syntax", "grounding", "runtime-api", "rules", "lint", "behaviour", "weak", "unknown"}
@@ -1004,6 +1096,45 @@ def check_ladder(monitor_facts: dict) -> None:
     )
 
 
+def cited_answers() -> set[str]:
+    """Every call a current record names as its answer: verdicts, reviews and pins, assessor answers, the
+    calibration's and the canaries' answers, generated mutants and their drafts. A draft attempt's row is
+    history, not a current record."""
+    cited: set[str] = set()
+
+    def add(call_id: object) -> None:
+        if call_id:
+            cited.add(str(call_id))
+
+    verdict_dir = BRIDGE / "survivor-verdicts"
+    for folder in sorted(path for path in verdict_dir.iterdir() if path.is_dir()) if verdict_dir.is_dir() else []:
+        for entry in (load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}).values():
+            for part in ("answer", "review", "pin"):
+                add((entry.get(part) or {}).get("call_id"))
+    for store in (BRIDGE / "survivor-triage", BRIDGE / "semantic-mutants"):
+        for path in sorted(store.glob("*/assessments.json")) if store.is_dir() else []:
+            for entry in load(path).values():
+                for answer in (entry.get("answers") or {}).values():
+                    add(answer.get("call_id"))
+    for path in sorted((BRIDGE / "semantic-mutants").glob("*/proposals.json")):
+        payload = load(path)
+        add((payload.get("generator") or {}).get("call_id"))
+        for proposal in payload.get("proposals") or []:
+            add((proposal.get("generator") or {}).get("call_id"))
+    for path in sorted((BRIDGE / "semantic-mutants").glob("*/drafts/provenance.json")):
+        for record in load(path).values():
+            add((record or {}).get("call_id"))
+    calibration = BRIDGE / "semantic-mutants/assessor-calibration/calibration.json"
+    for answers in ((load(calibration) if calibration.is_file() else {}).get("answers") or {}).values():
+        for answer in answers.values():
+            add(answer.get("call_id"))
+    canaries = BRIDGE / "semantic-mutants/canary-results/results.json"
+    for canary in (load(canaries) if canaries.is_file() else {}).values():
+        for case in (canary.get("cases") or {}).values():
+            add(case.get("call_id"))
+    return cited
+
+
 def recorded_answer_files() -> dict[tuple[str, str], Path]:
     """Every stored answer a current record names, by the page folder it is published in and its
     call: draft attempts, verdicts, reviews and pins by contract, assessor answers by contract, the
@@ -1040,9 +1171,60 @@ def recorded_answer_files() -> dict[tuple[str, str], Path]:
     return found
 
 
-def check_model_roles_page() -> None:
+SCENARIO_OUTCOMES = {"caught", "survived", "invalid", "unchecked"}
+
+
+def check_scenario_mutants(monitor_facts: dict) -> None:
+    """Scenario oracle mutants (050): each counted for the contracts its scenario names, and a class that
+    counts them gives exactly their outcomes, never caught while one of them survives."""
+    results_path = ROOT / "test-results/scenario-mutants/results.json"
+    retained = load(results_path) if results_path.is_file() else {}
+    rows = {row.get("id"): row for row in retained.get("results") or []}
+    check(
+        not retained or (retained.get("schema") == "ternforge-scenario-mutants-1" and all(row.get("outcome") in SCENARIO_OUTCOMES for row in rows.values())
+                         and all(row.get("scenarios") for row in rows.values())),
+        f"the {len(rows)} retained scenario oracle mutants are well formed, each with the scenarios it ran",
+    )
+    for contract_id, contract in sorted((monitor_facts.get("contracts") or {}).items()):
+        actual = ((contract.get("fault_actual") or {}).get("classes") or {}).get("spec.wrong-outcome") or {}
+        ids = actual.get("scenario_mutant_ids")
+        tagged = {
+            key for key, row in rows.items()
+            if any(str(item).split("[", 1)[0] == contract_id for scenario in row.get("scenarios") or [] for item in scenario.get("contracts") or [])
+        }
+        if ids is None:
+            continue
+        counts: dict[str, int] = {}
+        for key in ids:
+            outcome = (rows.get(key) or {}).get("outcome")
+            counts[str(outcome)] = counts.get(str(outcome), 0) + 1
+        check(
+            all(key in rows for key in ids) and tagged <= set(ids) and actual.get("scenario_counts") == counts
+            and (not (counts.get("survived") or counts.get("unchecked")) or actual.get("detected") is False),
+            f"{contract_id} · spec.wrong-outcome: the class counts its {len(ids)} scenario oracle mutants as they came out, every one tagged for it among them",
+        )
+
+
+def check_architecture_mutants() -> None:
+    """Architecture mutants (050): one result for every import-linter rule the project declares."""
+    results_path = ROOT / "test-results/architecture-mutants/results.json"
+    if not results_path.is_file():
+        return
+    retained = load(results_path)
+    declared = {row.get("id") for row in ((tomllib.loads((ROOT / "pyproject.toml").read_text()).get("tool") or {}).get("importlinter") or {}).get("contracts") or []}
+    results = {row.get("contract"): row for row in retained.get("results") or []}
+    check(
+        retained.get("schema") == "ternforge-architecture-mutants-1" and set(results) == declared
+        and all(row.get("outcome") in {"caught", "survived", "invalid"} for row in results.values()),
+        f"every one of the {len(declared)} import-linter rules has its architecture mutant result: "
+        + ", ".join(f"{name} {sum(row.get('outcome') == name for row in results.values())}" for name in ("caught", "survived", "invalid")),
+    )
+
+
+def check_model_roles_page(budget: dict) -> None:
     """The Model roles page (049): one section drawn from the retained records, whose draft counts
-    and health the gate recounts from the recorded attempts, with each canary as its record says."""
+    and health the gate recounts from the recorded attempts, with each canary as its record says,
+    and each role's price cap as the ledger and the Test Plan make it (050)."""
     page_path = HTML / "model-roles.html"
     page = page_path.read_text() if page_path.is_file() else ""
     marker = '<script type="application/json" id="tf-model-roles-facts">'
@@ -1068,6 +1250,16 @@ def check_model_roles_page() -> None:
         draft.get("recorded") == len(recorded) and draft.get("recent") == len(recent) and draft.get("kept") == kept
         and draft.get("status") == status and (draft.get("window"), draft.get("floor"), draft.get("minimum")) == (20, 0.2, 10),
         f"the Model roles page counts the {len(recorded)} recorded draft attempts as they are: {kept} of the last {len(recent)} kept, {status}",
+    )
+    # Each rung's drafts by model and level, the data a ladder of levels starts from, as recorded.
+    efforts: dict[tuple[int, str, str], list[int]] = {}
+    for row in recorded:
+        tally = efforts.setdefault((int(row.get("level") or 1), str(row.get("model")), str(row.get("effort") or "")), [0, 0])
+        tally[0] += 1
+        tally[1] += row.get("cause") == "kept"
+    check(
+        {(int(row.get("rung") or 0), str(row.get("model")), str(row.get("effort") or "")): [row.get("attempts"), row.get("kept")] for row in draft.get("efforts") or []} == efforts,
+        f"the Model roles page counts each rung's recorded drafts by model and level as their records are ({len(efforts)} rows)",
     )
     canaries = load(BRIDGE / "semantic-mutants/canary-results/results.json")
     check(
@@ -1104,6 +1296,26 @@ def check_model_roles_page() -> None:
     check(
         sum(row.get("answers", 0) for row in roles) == len(judged) and sum(row.get("troubled", 0) for row in roles) == sum(bool(answer.get("problems")) for answer in judged),
         f"the Model roles page counts the {len(judged)} judging answers that cite, {sum(bool(answer.get('problems')) for answer in judged)} of them not holding up, as their records are",
+    )
+    # A price cap follows its role's most expensive answered call and never falls below the Test
+    # Plan's, and every call a cap stopped is counted, from the ledger itself.
+    models = load_bridge_module("gate_model_generation", "model_generation.py")
+    ledger = models.read_ledger(BRIDGE / "semantic-mutants/model-ledger.jsonl")
+    prices = models.answered_prices(ledger)
+    caps = facts.get("caps") or {}
+    stopped = [row for row in ledger if row.get("outcome") == "capped"]
+    check(
+        bool(budget) and caps.get("factor") == models.CAP_FACTOR and caps.get("capped") == len(stopped)
+        and {(row["role"], row["tools"]) for row in caps.get("roles") or []}
+        == {key for key in {*prices, *((str(row.get("role")), "tools_used" in row) for row in stopped)} if not key[0].startswith("canary")}
+        and all(
+            row["cap"] == models.price_cap(budget, prices, row["role"], row["tools"])
+            and row["floor"] == float(budget["usd_per_tool_call" if row["tools"] else "usd_per_call"])
+            and row["highest"] == round(prices.get((row["role"], row["tools"]), 0.0), 4)
+            and row["capped"] == sum(str(hit.get("role")) == row["role"] and ("tools_used" in hit) == row["tools"] for hit in stopped)
+            for row in caps.get("roles") or []
+        ),
+        f"the Model roles page gives each role's price cap as the ledger and the Test Plan make it, and counts the {len(stopped)} calls a cap stopped",
     )
 
 
@@ -1290,14 +1502,16 @@ def check_survivor_judgement(monitor_facts: dict, models, by_call: dict, usable:
     def answers_bound(folder: Path) -> bool:
         assessments = load(folder / "assessments.json") if (folder / "assessments.json").is_file() else {}
         for entry in assessments.values():
-            for answer in (entry.get("answers") or {}).values():
+            for member, answer in (entry.get("answers") or {}).items():
                 response_path = folder / "responses" / f"{answer.get('call_id')}.json"
                 response = load(response_path) if response_path.is_file() else {}
                 call = by_call.get(str(answer.get("call_id"))) or {}
                 structured = response.get("structured") or {}
-                # The stored answer is its response read by the current rule, arguments and problems included.
+                # The stored answer is its response read by the current rule, arguments and problems
+                # included, kept under the model and level that gave it.
                 if not (
                     response and models.response_sha256(response) == answer.get("response_sha256") == call.get("response_sha256")
+                    and models.entry_key(str(response.get("backend") or ""), str(response.get("model") or ""), str(response.get("effort") or "")) == member
                     and call.get("outcome") == "ok" and response.get("backend") in usable
                     and structured.get("verdict") == answer.get("verdict") and structured.get("confidence") == answer.get("confidence")
                     and {key: judge.argument_text(value) for key, value in (structured.get("arguments") or {}).items()} == answer.get("arguments")
@@ -1318,9 +1532,12 @@ def check_survivor_judgement(monitor_facts: dict, models, by_call: dict, usable:
             )
         if status == "likely-equivalent":
             voted = judged.get("members") or []
+            # The members hold a calibrated configuration; an answer given before by an assessor that now
+            # sits out may stay beside it, and since every member says equivalent, so does the configuration.
             return (
                 judged.get("calibrated") is True and threshold is not None and judged.get("threshold") == threshold
-                and float(judged.get("score") or 0) > threshold and [row.get("member") for row in voted] in configurations
+                and float(judged.get("score") or 0) > threshold
+                and any(set(configuration) <= {row.get("member") for row in voted} for configuration in configurations)
                 and all(row.get("verdict") == "equivalent" for row in voted)
             )
         return True
@@ -1424,7 +1641,25 @@ def declared_provider_capabilities() -> dict[str, dict[str, bool]]:
     return result
 
 
+def check_no_home_path() -> None:
+    """Nothing the repository would keep carries the machine's home directory, since the repository is
+    public: no pilot record, stored model answer, pin, test or doc source. A found input once made a
+    function read ``PATH``, and its value reached a verdict's question (050)."""
+    home = str(Path.home())
+    kept = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "--", ".ai-bridge", "tests", "docs"],
+        cwd=ROOT, capture_output=True, text=True, check=True,
+    ).stdout.splitlines()
+    carrying = sorted(
+        name for name in kept
+        if (ROOT / name).is_file() and Path(name).suffix in {".json", ".jsonl", ".md", ".py", ".txt", ".yaml", ".yml", ".feature", ".toml"}
+        and home in (ROOT / name).read_text(errors="ignore")
+    )
+    check(len(home) > 1 and not carrying, f"no file the repository would keep carries the machine's home directory {carrying[:6]}")
+
+
 def main() -> None:
+    check_no_home_path()
     required = [
         ROOT / "test-results/implementation-faults/campaign.json",
         ROOT / "test-results/implementation-faults/diff/summary.json",
@@ -4077,21 +4312,17 @@ def main() -> None:
             .get(class_id, {})
             .get("exercised")
         }
-        routing_classes = (routing_contract.get("fault_actual") or {}).get("classes") or {}
-        campaign_challenged = challenged_faults - set(expected_challenges)
+        # Its required classes may all be challenged now, by the campaign or by its semantic or scenario
+        # mutants (050); while any is not, the Fault Model stays partial and the Overall FAIL.
         check(
-            set(expected_challenges) <= challenged_faults
-            and all(
-                class_id.startswith("impl.")
-                and routing_classes[class_id].get("campaign_state") == "current"
-                for class_id in campaign_challenged
-            )
-            and challenged_faults < required_faults,
-            f"{contract_id}: partial Fault Model remains explicit instead of becoming false-green",
+            only_campaign_extras(routing_contract, challenged_faults, set(expected_challenges))
+            and challenged_faults <= required_faults,
+            f"{contract_id}: every fault class it challenges comes from its declared challenges, the campaign or its "
+            f"semantic or scenario mutants ({len(challenged_faults)} of {len(required_faults)} required)",
         )
         check(
-            '<div class="overall not-met">FAIL</div>' in contract_pages[contract_id],
-            f"{contract_id}: rendered Overall remains FAIL while required fault classes are still unchallenged",
+            fault_page_holds(contract_pages[contract_id], routing_contract, required_faults, challenged_faults),
+            f"{contract_id}: rendered monitor shows " + fault_page_text(required_faults, challenged_faults),
         )
 
     resilience_expectations = {
@@ -4228,17 +4459,20 @@ def main() -> None:
             .get(class_id, {})
             .get("exercised")
         }
+        # Its required classes may all be challenged now, by the campaign or by its semantic or scenario
+        # mutants (050); while any is not, the Fault Model stays partial: FAIL, as the Overall. Once all
+        # are, the Fault Model passes exactly when every one of them is detected.
         check(
             only_campaign_extras(contract, challenged_faults, set(expected["faults"]))
-            and challenged_faults < required_faults,
-            f"{contract_id}: partial Resilience Fault Model remains explicit instead of becoming false-green",
+            and challenged_faults <= required_faults,
+            f"{contract_id}: every Resilience fault class it challenges comes from its declared challenges, the campaign "
+            f"or its semantic or scenario mutants ({len(challenged_faults)} of {len(required_faults)} required)",
         )
         page = contract_pages[contract_id]
         check(
-            '<div class="overall not-met">FAIL</div>' in page
-            and re.search(r'<strong>Verification coverage.*?<span class="status met">PASS</span>', page, re.DOTALL)
-            and re.search(r'<strong>Fault model.*?<span class="status not-met">FAIL</span>', page, re.DOTALL),
-            f"{contract_id}: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
+            re.search(r'<strong>Verification coverage.*?<span class="status met">PASS</span>', page, re.DOTALL)
+            and fault_page_holds(page, contract, required_faults, challenged_faults),
+            f"{contract_id}: rendered monitor keeps Coverage PASS and shows " + fault_page_text(required_faults, challenged_faults),
         )
 
     security_contracts = monitor_facts["contracts"]
@@ -4647,26 +4881,22 @@ def main() -> None:
         }
         check(
             only_campaign_extras(contract, challenged_faults, set(expected_faults))
-            and challenged_faults < required_faults,
-            f"{contract_id}: partial Provider Fault Model remains explicit instead of becoming false-green",
+            and challenged_faults <= required_faults,
+            f"{contract_id}: every Provider fault class it challenges comes from its declared challenges, the campaign "
+            f"or its semantic or scenario mutants ({len(challenged_faults)} of {len(required_faults)} required)",
         )
         page = contract_pages[contract_id]
         coverage_pass = bool(cast("dict[str, Any]", expected).get("coverage_pass", True))
         coverage_class = "met" if coverage_pass else "not-met"
         coverage_label = "PASS" if coverage_pass else "FAIL"
         check(
-            '<div class="overall not-met">FAIL</div>' in page
-            and re.search(
+            re.search(
                 rf'<strong>Verification coverage.*?<span class="status {coverage_class}">{coverage_label}</span>',
                 page,
                 re.DOTALL,
             )
-            and re.search(
-                r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
-                page,
-                re.DOTALL,
-            ),
-            f"{contract_id}: rendered monitor keeps honest Coverage, Fault Model FAIL, and Overall FAIL",
+            and fault_page_holds(page, contract, required_faults, challenged_faults),
+            f"{contract_id}: rendered monitor keeps honest Coverage and shows " + fault_page_text(required_faults, challenged_faults),
         )
 
     small_feature_expectations = {
@@ -4840,22 +5070,18 @@ def main() -> None:
             check(
                 bool(required_faults)
                 and only_campaign_extras(contract, challenged_faults, set())
-                and challenged_faults < required_faults,
-                f"{contract_id}: incomplete required Fault Model remains explicit instead of becoming false-green",
+                and challenged_faults <= required_faults,
+                f"{contract_id}: every fault class it challenges comes from the campaign or its semantic or scenario "
+                f"mutants ({len(challenged_faults)} of {len(required_faults)} required)",
             )
             check(
-                '<div class="overall not-met">FAIL</div>' in page
-                and re.search(
+                re.search(
                     r'<strong>Verification coverage.*?<span class="status met">PASS</span>',
                     page,
                     re.DOTALL,
                 )
-                and re.search(
-                    r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
-                    page,
-                    re.DOTALL,
-                ),
-                f"{contract_id}: rendered monitor keeps Coverage PASS, Fault Model FAIL, and Overall FAIL",
+                and fault_page_holds(page, contract, required_faults, challenged_faults),
+                f"{contract_id}: rendered monitor keeps Coverage PASS and shows " + fault_page_text(required_faults, challenged_faults),
             )
 
     structured_expectations = {
@@ -4985,30 +5211,28 @@ def main() -> None:
             .get(class_id, {})
             .get("exercised")
         }
+        # No test declares a fault challenge for these contracts: what is challenged comes only from the
+        # current campaign, semantic mutants or scenario oracle mutants (050).
         check(
             retained == {}
             and bool(required_faults)
-            and challenged_faults == set()
-            and challenged_faults < required_faults,
-            f"{contract_id}: absent retained fault challenges stay explicitly red instead of becoming false-green",
+            and only_campaign_extras(contract, challenged_faults, set())
+            and challenged_faults <= required_faults,
+            f"{contract_id}: with no retained fault challenge, every class it challenges comes from the campaign or its "
+            f"semantic or scenario mutants ({len(challenged_faults)} of {len(required_faults)} required)",
         )
 
         page = contract_pages[contract_id]
         coverage_class = "met" if expected["coverage_pass"] else "not-met"
         coverage_label = "PASS" if expected["coverage_pass"] else "FAIL"
         check(
-            '<div class="overall not-met">FAIL</div>' in page
-            and re.search(
+            re.search(
                 rf'<strong>Verification coverage.*?<span class="status {coverage_class}">{coverage_label}</span>',
                 page,
                 re.DOTALL,
             )
-            and re.search(
-                r'<strong>Fault model.*?<span class="status not-met">FAIL</span>',
-                page,
-                re.DOTALL,
-            ),
-            f"{contract_id}: rendered monitor preserves honest Coverage status, Fault Model FAIL, and Overall FAIL",
+            and fault_page_holds(page, contract, required_faults, challenged_faults),
+            f"{contract_id}: rendered monitor preserves honest Coverage status and shows " + fault_page_text(required_faults, challenged_faults),
         )
 
     check(assurance_page.count('id="tf-requirement-monitor"') == 1,
@@ -5324,7 +5548,34 @@ def main() -> None:
         "REQ_SENSITIVE_DATA_PROTECTION",
         "TREQ_VCR_RESPONSE_CONTENT_REDACTION",
     }
-    complete_fault_contracts = set(developer_fault_expectations)
+    def fault_complete(contract: dict) -> bool:
+        required = {
+            item["id"]
+            for group in (contract.get("target") or {}).get("fault_groups") or []
+            for item in group.get("items") or []
+            if item.get("state") == "required"
+        }
+        classes = (contract.get("fault_actual") or {}).get("classes") or {}
+        return bool(required) and all((classes.get(class_id) or {}).get("exercised") and (classes.get(class_id) or {}).get("detected") for class_id in required)
+
+    # A Fault Model is complete once every required class is challenged and detected: by its declared
+    # challenges, the campaign, or its semantic or scenario mutants (050). The developer-tool contracts
+    # were the first, and stay so.
+    complete_fault_contracts = {contract_id for contract_id, contract in monitor_facts["contracts"].items() if fault_complete(contract)}
+    check(
+        set(developer_fault_expectations) <= complete_fault_contracts,
+        f"the developer-tool contracts keep a complete Fault Model ({len(complete_fault_contracts)} complete in all)",
+    )
+    def overall_met(contract_id: str, seen: tuple = ()) -> bool:
+        """A contract passes when its coverage and Fault Model are complete and every Technical requirement
+        it requires passes in turn."""
+        required = ((monitor_facts["contracts"].get(contract_id) or {}).get("target") or {}).get("required_treqs") or []
+        return (
+            contract_id not in partial_coverage_contracts
+            and contract_id in complete_fault_contracts
+            and all(overall_met(treq, (*seen, contract_id)) for treq in required if treq not in seen)
+        )
+
     for contract_id, page in contract_pages.items():
         coverage_class = (
             "not-met" if contract_id in partial_coverage_contracts else "met"
@@ -5335,14 +5586,21 @@ def main() -> None:
         fault_complete = contract_id in complete_fault_contracts
         fault_class = "met" if fault_complete else "not-met"
         fault_label = "PASS" if fault_complete else "FAIL"
-        overall_class = (
-            "met"
-            if fault_complete and contract_id not in partial_coverage_contracts
-            else "not-met"
-        )
+        treqs = ((monitor_facts["contracts"].get(contract_id) or {}).get("target") or {}).get("required_treqs") or []
+        supported = all(overall_met(treq, (contract_id,)) for treq in treqs)
+        overall_class = "met" if overall_met(contract_id) else "not-met"
         overall_label = "PASS" if overall_class == "met" else "FAIL"
         check(
             f'<div class="overall {overall_class}">{overall_label}</div>' in page
+            # The Technical support it requires passes only when each of those Technical requirements does.
+            and (
+                not treqs
+                or re.search(
+                    rf'<strong>Technical support</strong><span class="status {"met" if supported else "not-met"}">{"PASS" if supported else "FAIL"}</span>',
+                    page,
+                    flags=re.DOTALL,
+                )
+            )
             and re.search(
                 rf'<strong>Verification coverage</strong><span class="status {coverage_class}">{coverage_label}</span>',
                 page,
@@ -5970,7 +6228,8 @@ def main() -> None:
         and class_map.get("boolean") == "impl.control-flow"
         and class_map.get("return") == "impl.control-flow"
         and class_map.get("statement") == "impl.effect"
-        and class_map.get("body") == "impl.effect",
+        and class_map.get("body") == "impl.effect"
+        and all(class_map.get(name) == klass for name, klass in MUTATION_CLASSES.items()),
         "Implementation fault campaign is retained and maps its operator families onto all five Implementation classes",
     )
     full_pytest_plugin = BRIDGE / "pytest_plugins/gremlins_full_pytest.py"
@@ -6787,7 +7046,7 @@ def main() -> None:
         "the map, and neither Mutation Analysis nor a Depth Map; patching an already patched navigation adds nothing",
     )
     check_verification_explorer(map_pages_module)
-    check_model_roles_page()
+    check_model_roles_page(((monitor_facts.get("policy") or {}).get("model_generation") or {}).get("budget") or {})
     qualification_harness_source = (BRIDGE / "qualify-evidence-confidence.py").read_text()
     check(
         "'<section id=\"verification-health-map\">\\n<h1>Verification Health Map'" in map_pages_module
@@ -6928,6 +7187,8 @@ def main() -> None:
         "semantic_mutants.py",
         "model_generation.py",
         "survivor_equivalence.py",
+        "scenario_mutants.py",
+        "architecture_mutants.py",
         "assurance_monitor_domain.py",
         "assurance_monitor_registry.py",
         "assurance_monitor_ui.py",
@@ -7094,6 +7355,9 @@ def main() -> None:
         "src/llm_router/_api/errors.py",
         "src/llm_router/_internal/capabilities/schema.py",
         "src/llm_router/_internal/capabilities/content.py",
+        # Their @impl scopes narrowed to what their requirement states, nothing else (050).
+        "src/llm_router/_internal/capabilities/media.py",
+        "src/llm_router/_internal/config/state.py",
         # Its @impl link follows REQ_TOOL_CHOICE to revision 2, the owner's decision (history 046).
         "src/llm_router/_internal/capabilities/tools.py",
         "src/llm_router/_internal/config/validation.py",

@@ -1,4 +1,54 @@
 {
+ "4bcf2fc831eaf45c": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T145320Z-95484c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Omitting the context_getter argument only affects the contextual data sent to the logger during retries, which does not change the method's return value, the object's state, or the type of exceptions raised.",
+    "response_sha256": "93c35cc6c3ac8abe7df7c878b38c29bfea05c0e89281d29da1958b0ddcadf419",
+    "sources": [
+     "        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )",
+     "    retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T145320Z-e17ef9",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Omitting context_getter in build_provider_retrying only alters retry logging metadata and does not affect the method's return value, object state, or raised exception types.",
+    "response_sha256": "435c11d06b88e62571bbf5e236de95e8765786068be544e374de35580c0ef63c",
+    "sources": [
+     "            context_getter=lambda: _retry_context(request),",
+     "    retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T123012Z-d60ba0",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change only drops the context_getter argument, which supplies log fields for retry logging, so returns, object state and exception types stay the same.",
+    "response_sha256": "63485ebed7ad844ef24ac5c50e7f9672aa774e6e175f4ee1fcfffbd5acb553fa",
+    "sources": [
+     "retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)",
+     "context_getter=lambda: _retry_context(request),"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "5e4d97c87f75d6b3fcb666bbe6af0ba8c193a992f10754103a51d4048a093f43"
+ },
  "5a829211adec3347": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -57,9 +107,49 @@
      "reason=\"server_status\","
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "status_code": "10**9"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111625Z-e9ac23",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a very large status code not in the explicit sets, the original returns a RETRYABLE RetryDecision with reason \"server_status\", while the changed version returns None.",
+    "response_sha256": "c696afd06793a6d43ac37919ba258318f83f3ae95e4b257a9955586877ed2796",
+    "sources": [
+     "if status_code >= _SERVER_ERROR_STATUS_MIN:",
+     "        return None",
+     "reason=\"server_status\","
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "8c0f4e22fb1e2fcf27041eacb046ed4381e1587e9be6d5611d9716f08903567f"
+ },
+ "77d6a6e9eef042e8": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "status_code": "429"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232324Z-f478cd",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "In the first branch the changed version drops status_code=status_code, so for any retryable code like 429 it returns RetryDecision(..., status_code=None) via the dataclass default instead of RetryDecision(..., status_code=429) as in the original.",
+    "response_sha256": "8f17192c9d791015fce7ac16a7ea944f3b3c84d20e9b8b709767884d121a430b",
+    "sources": [
+     "return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"retryable_status\",\n            status_code=status_code,\n        )",
+     "return RetryDecision(classification=RetryClassification.RETRYABLE, reason='retryable_status')"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "66a54728807c302e4b9d17ceee75215d72e679f30ad82faa8feb234ab2d7862c"
  },
  "d8f7199ce8dc26c9": {
   "answers": {
@@ -114,5 +204,27 @@
    }
   },
   "prompt_sha256": "7e0f570497a7ba264c84d34d23dbd999867c5ee0fe1fce083c6bcd760d76261f"
+ },
+ "f0760cfe8c668b1a": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "status_code": "400"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232948Z-25037d",
+    "confidence": 0.7,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "For status codes in _NON_RETRYABLE_STATUS_CODES (e.g. 400), the original sets status_code=status_code while the changed version omits it, defaulting to None, so RetryDecision.status_code differs between versions.",
+    "response_sha256": "5341efee98fd63f462fe942e6fd84fbec3803b39fc1939a83e60486f6d05dd4b",
+    "sources": [
+     "return RetryDecision(\n            classification=RetryClassification.NON_RETRYABLE,\n            reason=\"caller_or_auth_status\",\n            status_code=status_code,\n        )",
+     "return RetryDecision(classification=RetryClassification.NON_RETRYABLE, reason='caller_or_auth_status')"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "14180ba5acf9a719389b56b7e75800843a274c08e96c4d1af4e4415047ebc74e"
  }
 }

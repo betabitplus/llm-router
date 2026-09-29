@@ -19,83 +19,85 @@ def _require(*, condition: bool, message: str) -> None:
 
 
 # @impl Configuration validation, IMPL_INVALID_CONFIGURATION_ERRORS, [REQ_INVALID_CONFIGURATION_ERRORS[revision==2]]
-# @impl Provider identity validation, IMPL_CONFIG_PROVIDER_IDENTITY, [TREQ_CONFIG_PROVIDER_IDENTITY[revision==1]]
-# @impl Required base URL validation, IMPL_CONFIG_REQUIRED_BASE_URL, [TREQ_CONFIG_REQUIRED_BASE_URL[revision==1]]
-# @impl Attempt timeout validation, IMPL_CONFIG_ATTEMPT_TIMEOUT, [TREQ_CONFIG_ATTEMPT_TIMEOUT[revision==1]]
-# @impl Retry attempt validation, IMPL_CONFIG_RETRY_ATTEMPTS, [TREQ_CONFIG_RETRY_ATTEMPTS[revision==1]]
-# @impl Retry wait validation, IMPL_CONFIG_RETRY_WAIT_BOUNDS, [TREQ_CONFIG_RETRY_WAIT_BOUNDS[revision==1]]
-# @impl Route-attempt limit validation, IMPL_CONFIG_ROUTE_ATTEMPT_LIMIT, [TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT[revision==1]]
-# @impl Fallback shuffle validation, IMPL_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES, [TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES[revision==1]]
-# @impl Tool-round limit validation, IMPL_CONFIG_TOOL_ROUND_LIMIT, [TREQ_CONFIG_TOOL_ROUND_LIMIT[revision==1]]
-# @impl Structured-output attempt validation, IMPL_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS, [TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS[revision==1]]
-# @impl Default provider validation, IMPL_CONFIG_DEFAULT_PROVIDER_DECLARATION, [TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION[revision==1]]
-# @impl Default model mapping validation, IMPL_CONFIG_DEFAULT_MODEL_MAPPING, [TREQ_CONFIG_DEFAULT_MODEL_MAPPING[revision==1]]
-# @impl Model provider reference validation, IMPL_CONFIG_MODEL_PROVIDER_REFERENCES, [TREQ_CONFIG_MODEL_PROVIDER_REFERENCES[revision==1]]
 def validate_config(config: LLMRouterConfig) -> None:
     """Validate one runtime config snapshot."""
     retry = config.retry_policy
+    # @impl Retry wait validation, IMPL_CONFIG_RETRY_WAIT_BOUNDS, [TREQ_CONFIG_RETRY_WAIT_BOUNDS[revision==1]]
     _require(
         condition=retry.min_wait_seconds > 0,
         message="retry min wait must be greater than 0.",
     )
+    # @impl Retry wait order validation, IMPL_CONFIG_RETRY_WAIT_ORDER, [TREQ_CONFIG_RETRY_WAIT_BOUNDS[revision==1]]
     _require(
         condition=retry.max_wait_seconds >= retry.min_wait_seconds,
         message="retry max wait is invalid.",
     )
+    # @impl Retry attempt validation, IMPL_CONFIG_RETRY_ATTEMPTS, [TREQ_CONFIG_RETRY_ATTEMPTS[revision==1]]
     _require(
         condition=retry.max_attempts >= 1,
         message="retry max attempts must be at least 1.",
     )
 
     policy = config.policy
+    # @impl Route-attempt limit validation, IMPL_CONFIG_ROUTE_ATTEMPT_LIMIT, [TREQ_CONFIG_ROUTE_ATTEMPT_LIMIT[revision==1]]
     if policy.max_attempts is not None:
         _require(
             condition=policy.max_attempts >= 1,
             message="policy max attempts must be at least 1.",
         )
+    # @impl Attempt timeout validation, IMPL_CONFIG_ATTEMPT_TIMEOUT, [TREQ_CONFIG_ATTEMPT_TIMEOUT[revision==1]]
     if policy.attempt_timeout_seconds is not None:
         _require(
             condition=policy.attempt_timeout_seconds > 0,
             message="policy attempt timeout must be greater than 0.",
         )
+    # @impl Fallback shuffle validation, IMPL_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES, [TREQ_CONFIG_FALLBACK_SHUFFLE_MIN_ROUTES[revision==1]]
     _require(
         condition=policy.min_routes_for_fallback_shuffle >= 1,
         message="minimum routes for fallback shuffle must be at least 1.",
     )
 
+    # @impl Tool-round limit validation, IMPL_CONFIG_TOOL_ROUND_LIMIT, [TREQ_CONFIG_TOOL_ROUND_LIMIT[revision==1]]
     _require(
         condition=config.default_max_tool_rounds >= 1,
         message="default max tool rounds must be at least 1.",
     )
+    # @impl Structured-output attempt validation, IMPL_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS, [TREQ_CONFIG_STRUCTURED_OUTPUT_ATTEMPTS[revision==1]]
     _require(
         condition=config.structured_output_max_attempts >= 1,
         message="structured output max attempts must be at least 1.",
     )
+    # @impl Default provider validation, IMPL_CONFIG_DEFAULT_PROVIDER_DECLARATION, [TREQ_CONFIG_DEFAULT_PROVIDER_DECLARATION[revision==1]]
     _require(
         condition=config.default_provider in config.catalog.providers,
         message="default provider must be present in the provider catalog.",
     )
+    # @impl Default model mapping validation, IMPL_CONFIG_DEFAULT_MODEL_MAPPING, [TREQ_CONFIG_DEFAULT_MODEL_MAPPING[revision==1]]
     _require(
         condition=config.default_model in config.models,
         message="default model must be present in the model registry.",
     )
+    # @impl Default model provider mapping validation, IMPL_CONFIG_DEFAULT_MODEL_PROVIDER_MAPPING, [TREQ_CONFIG_DEFAULT_MODEL_MAPPING[revision==1]]
     _require(
         condition=config.default_provider in config.models[config.default_model],
         message="default model must have a mapping for the default provider.",
     )
 
+    # @impl Provider identity validation, IMPL_CONFIG_PROVIDER_IDENTITY, [TREQ_CONFIG_PROVIDER_IDENTITY[revision==1]]
     for provider, spec in config.catalog.providers.items():
         _require(
             condition=provider == spec.provider,
             message="provider spec key must match provider.",
         )
 
+    # @impl Required base URL validation, IMPL_CONFIG_REQUIRED_BASE_URL, [TREQ_CONFIG_REQUIRED_BASE_URL[revision==1]]
     for provider in _PROVIDERS_REQUIRING_BASE_URL:
         _require(
             condition=provider in config.provider_base_urls,
             message=f"provider '{provider.value}' requires a base URL.",
         )
 
+    # @impl Model provider reference validation, IMPL_CONFIG_MODEL_PROVIDER_REFERENCES, [TREQ_CONFIG_MODEL_PROVIDER_REFERENCES[revision==1]]
     for model, provider_models in config.models.items():
         _require(
             condition=bool(provider_models),

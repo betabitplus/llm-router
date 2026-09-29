@@ -1,0 +1,243 @@
+{
+ "369e66334b7d7d71": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "VideoSchema(path='test.mp4', fps=30, start_offset=0, end_offset=10)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081203Z-0b13f5",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version incorrectly assigns value.end_offset to start_offset when returning a VideoFileMedia, producing a different result when start_offset and end_offset are not equal.",
+    "response_sha256": "139bfb4bb7ddaa42375b72b5f38c7eba030186a23cbcb79bebdd22ee1d224a83",
+    "sources": [
+     "            start_offset=value.start_offset,",
+     "        return VideoFileMedia(kind='video_file', path=value.path, fps=value.fps, start_offset=value.end_offset, end_offset=value.end_offset)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "VideoSchema(path='test.mp4', fps=30, start_offset=0, end_offset=10)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081211Z-fa53b9",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is a VideoSchema with start_offset distinct from end_offset, the changed version sets start_offset to value.end_offset instead of value.start_offset when creating VideoFileMedia.",
+    "response_sha256": "484af140a9d43b8f0ad11553dfaef9a95e3a1466c54b2ad5c56206db2e1dec57",
+    "sources": [
+     "            start_offset=value.start_offset,",
+     "        return VideoFileMedia(kind='video_file', path=value.path, fps=value.fps, start_offset=value.end_offset, end_offset=value.end_offset)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "VideoSchema(path='clip.mp4', fps=30, start_offset=0, end_offset=10)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T231620Z-cd610f",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version sets VideoFileMedia.start_offset=value.end_offset instead of value.start_offset, so any VideoSchema with start_offset != end_offset yields a differing descriptor.",
+    "response_sha256": "398a244195e0180b974cfcbc761e12e704615c54a16f19cf4c97620bc94ea5f9",
+    "sources": [
+     "return VideoFileMedia(kind='video_file', path=value.path, fps=value.fps, start_offset=value.end_offset, end_offset=value.end_offset)",
+     "start_offset=value.start_offset,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "02fe3a3a50d4fa27839aeb67a396e84d5a2925606bad400c70ec76557fe3285b"
+ },
+ "68771b7b6b05d78f": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "VideoSchema(path='test.mp4', fps=30, start_offset=0, end_offset=10)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081211Z-48b08c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified version incorrectly assigns `value.start_offset` to `end_offset` when processing a `VideoSchema`, leading to a different media descriptor being returned when the start and end offsets are not equal.",
+    "response_sha256": "5f676768603d723c0d05c392c3aac5eeebe27ee6fbb2b9eda92d98e6053746df",
+    "sources": [
+     "            end_offset=value.end_offset,",
+     "        return VideoFileMedia(kind='video_file', path=value.path, fps=value.fps, start_offset=value.start_offset, end_offset=value.start_offset)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "VideoSchema(path='video.mp4', fps=30, start_offset=0, end_offset=10)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081211Z-5c4eda",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For a VideoSchema input where start_offset and end_offset differ, the changed version sets end_offset to value.start_offset instead of value.end_offset.",
+    "response_sha256": "66372d3c9570944c85f383d860722d9d91a3284c8d4cdff06b89fbd5592dbb45",
+    "sources": [
+     "            end_offset=value.end_offset,",
+     "        return VideoFileMedia(kind='video_file', path=value.path, fps=value.fps, start_offset=value.start_offset, end_offset=value.start_offset)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "VideoSchema(path='a.mp4', mime_type=None, fps=30, start_offset=1, end_offset=5)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T231620Z-8efd47",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "In the VideoSchema branch the changed version sets end_offset=value.start_offset instead of value.end_offset, so for a VideoSchema with differing start_offset and end_offset the two versions return VideoFileMedia objects with different end_offset values.",
+    "response_sha256": "38d72444a065d91d232228a3bba29ff77b11d3a1b84e4e91507655487119afa2",
+    "sources": [
+     "return VideoFileMedia(\n            kind=\"video_file\",\n            path=value.path,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )",
+     "return VideoFileMedia(kind='video_file', path=value.path, fps=value.fps, start_offset=value.start_offset, end_offset=value.start_offset)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "VideoSchema(path='a.mp4', fps=1, start_offset=0, end_offset=5)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111611Z-502e74",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version sets end_offset to value.start_offset for VideoSchema, so any video with end_offset different from start_offset returns a different descriptor.",
+    "response_sha256": "049ca04b6292b7590769c0b950563e63432f35a01826a301f281cddcac67a3f3",
+    "sources": [
+     "return VideoFileMedia(kind='video_file', path=value.path, fps=value.fps, start_offset=value.start_offset, end_offset=value.start_offset)",
+     "end_offset=value.end_offset,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "98810215e02457d5579b0914f3c430048b0b35247d8af53c98b6a04c651808a4"
+ },
+ "8ba45c4ec318c00e": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "VideoUrlSchema(url='test', fps=30, start_offset=0, end_offset=1)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081211Z-3e343d",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified version assigns `value.end_offset` instead of `value.start_offset` to the `start_offset` parameter of `VideoUrlMedia`, resulting in different behavior when the two offsets are not equal.",
+    "response_sha256": "3d4728fcc051d7c85452d143dc6aaca0d07e9e2db17d884d28ff2b711a8fc778",
+    "sources": [
+     "            start_offset=value.start_offset,",
+     "        return VideoUrlMedia(kind='video_url', url=value.url, fps=value.fps, start_offset=value.end_offset, end_offset=value.end_offset)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "VideoUrlSchema(url='https://example.com/video.mp4', fps=30, start_offset=1, end_offset=2)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081211Z-8da10d",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is a VideoUrlSchema with different start_offset and end_offset values, the changed version sets start_offset to value.end_offset instead of value.start_offset.",
+    "response_sha256": "7ca53c71a7fe11b4b9a8578eea7b78e73f16415d4ef7cf034c9a636c86e570e2",
+    "sources": [
+     "            start_offset=value.start_offset,",
+     "        return VideoUrlMedia(kind='video_url', url=value.url, fps=value.fps, start_offset=value.end_offset, end_offset=value.end_offset)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "VideoUrlSchema(url='http://example.com/v.mp4', fps=30, start_offset=1, end_offset=5)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T232813Z-64d1b0",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "In the changed version, VideoUrlMedia.start_offset is set from value.end_offset instead of value.start_offset, so any VideoUrlSchema with start_offset != end_offset produces a differing descriptor.",
+    "response_sha256": "dcde411b5415503222e95aa739569efd0c4ec8daba8a899c64c075111aeded76",
+    "sources": [
+     "return VideoUrlMedia(kind='video_url', url=value.url, fps=value.fps, start_offset=value.end_offset, end_offset=value.end_offset)",
+     "start_offset=value.start_offset,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "8c43e5a68745b4d2711f446f653287048f14f047be78184e3bbed8dfce78f512"
+ },
+ "a6b4e513b6f3bf73": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "VideoUrlSchema(url='url', fps=30, start_offset=0, end_offset=1)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081211Z-ed3a71",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version incorrectly sets 'end_offset' to the 'start_offset' of the VideoUrlSchema when returning the VideoUrlMedia object.",
+    "response_sha256": "2a21734d703782a84c5470aa79cb263eb848f0c1f3dd9fb0a58d4842573e9468",
+    "sources": [
+     "            end_offset=value.end_offset,",
+     "        return VideoUrlMedia(kind='video_url', url=value.url, fps=value.fps, start_offset=value.start_offset, end_offset=value.start_offset)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "VideoUrlSchema(url='https://example.com/video.mp4', fps=30, start_offset=0, end_offset=10)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081211Z-7743de",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version returns VideoUrlMedia with end_offset set to value.end_offset, whereas the changed version incorrectly sets end_offset to value.start_offset.",
+    "response_sha256": "0de41e53b0316b2d6b3dc2095152e14c35dc5fe8c1d25c192ed10f205929aba5",
+    "sources": [
+     "            end_offset=value.end_offset,",
+     "        return VideoUrlMedia(kind='video_url', url=value.url, fps=value.fps, start_offset=value.start_offset, end_offset=value.start_offset)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "value": "VideoUrlSchema(url='http://example.com/video.mp4', fps=1, start_offset=1, end_offset=2)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T231620Z-4caced",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "In the VideoUrlSchema branch the changed code sets end_offset=value.start_offset instead of value.end_offset, so any VideoUrlSchema with start_offset != end_offset yields a different VideoUrlMedia.end_offset between the two versions.",
+    "response_sha256": "336e506a8f368feaf467bbddc711f77666da8a0da09e1319605a7aaeabbe7430",
+    "sources": [
+     "return VideoUrlMedia(\n            kind=\"video_url\",\n            url=value.url,\n            fps=value.fps,\n            start_offset=value.start_offset,\n            end_offset=value.end_offset,\n        )",
+     "return VideoUrlMedia(kind='video_url', url=value.url, fps=value.fps, start_offset=value.start_offset, end_offset=value.start_offset)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "9d0e45bbed86f7d2089934d8bdc121c8029a962a94271381959f129ecd3882cf"
+ }
+}

@@ -1,0 +1,126 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_RATE_LIMIT_ROUTING",
+ "proposals": [
+  {
+   "id": "SM-5F722C2E",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._prepare_request",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "When all automatic credentials are blocked, the earliest-wait selection picks the credentials with the longest wait (max) instead of the shortest, so the chosen key is wrongly computed.",
+   "original_sha256": "249cab0f3f24f44d810e63d5b5dfe90aa63510c7059a1fddb64774bf00e4ca61",
+   "context_sha256": "a9623d2be9571cb3396af11a53cbc328d5127ab2239c03874f358e05d007dd94",
+   "prompt_sha256": "9ab3586d86b1850c20b7770e71aa4569e5f3dc6df898b9f31d7109791d034a8d",
+   "replacement": "    def _prepare_request(\n        self,\n        *,\n        request_id: str,\n        route: ExpandedRoute,\n        settings: EffectiveSettings,\n        content: object,\n    ) -> tuple[ResolvedRequest, float]:\n        \"\"\"Build one provider-neutral request and apply limiter waiting.\"\"\"\n        if not isinstance(route.provider, Provider):\n            msg = f\"Unknown provider: {route.provider}\"\n            raise ValueError(msg)  # noqa: TRY004\n        preferred_key_ids: set[int] | None = None\n        # @impl Availability-aware key selection, IMPL_RATE_LIMIT_AVAILABLE_KEY_SELECTION, [TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]]\n        if settings.key_id == \"auto\":\n            candidates = self._keys.candidates(\n                provider=route.provider,\n                key_id=settings.key_id,\n            )\n            candidate_waits = {\n                candidate.key_id: self._limiter.wait_seconds(\n                    provider=route.provider,\n                    key_id=candidate.key_id,\n                )\n                for candidate in candidates\n            }\n            available_key_ids = {\n                key_id\n                for key_id, candidate_wait in candidate_waits.items()\n                if candidate_wait <= 0.0\n            }\n            if available_key_ids:\n                preferred_key_ids = available_key_ids\n            else:\n                latest_wait = max(candidate_waits.values())\n                preferred_key_ids = {\n                    key_id\n                    for key_id, candidate_wait in candidate_waits.items()\n                    if candidate_wait == latest_wait\n                }\n        key = self._keys.resolve(\n            provider=route.provider,\n            key_id=settings.key_id,\n            preferred_key_ids=preferred_key_ids,\n        )\n        wait_seconds = self._limiter.wait_seconds(\n            provider=route.provider,\n            key_id=key.key_id,\n        )\n        if wait_seconds > 0:\n            logger.info(\n                \"Route blocked by limit\",\n                event_type=\"llm_router.routing.limit.blocked\",\n                request_id=request_id,\n                provider=route.provider.value,\n                route_index=route.route_index,\n                key_id=key.key_id,\n                wait_seconds=wait_seconds,\n            )\n        messages = self._messages_for_content(content)\n        return (\n            ResolvedRequest(\n                request_id=request_id,\n                route=route,\n                settings=settings,\n                key=key,\n                messages=messages,\n                content=content,\n            ),\n            wait_seconds,\n        )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-4bd476",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "6724a747f0137e5f70382a8f5fc9c979eba401a7257fc1e84b6b38924606c1db",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-04F10964",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._prepare_request",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Key availability preference is dropped when selecting available credentials: only the first available key is considered blocked-aware via a wait computed for the wrong key, so the reported wait comes from a stale first candidate and rotation among available keys is broken (preferred set restricted to the single lowest key id).",
+   "original_sha256": "249cab0f3f24f44d810e63d5b5dfe90aa63510c7059a1fddb64774bf00e4ca61",
+   "context_sha256": "a9623d2be9571cb3396af11a53cbc328d5127ab2239c03874f358e05d007dd94",
+   "prompt_sha256": "9ab3586d86b1850c20b7770e71aa4569e5f3dc6df898b9f31d7109791d034a8d",
+   "replacement": "    def _prepare_request(\n        self,\n        *,\n        request_id: str,\n        route: ExpandedRoute,\n        settings: EffectiveSettings,\n        content: object,\n    ) -> tuple[ResolvedRequest, float]:\n        \"\"\"Build one provider-neutral request and apply limiter waiting.\"\"\"\n        if not isinstance(route.provider, Provider):\n            msg = f\"Unknown provider: {route.provider}\"\n            raise ValueError(msg)  # noqa: TRY004\n        preferred_key_ids: set[int] | None = None\n        # @impl Availability-aware key selection, IMPL_RATE_LIMIT_AVAILABLE_KEY_SELECTION, [TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]]\n        if settings.key_id == \"auto\":\n            candidates = self._keys.candidates(\n                provider=route.provider,\n                key_id=settings.key_id,\n            )\n            candidate_waits = {\n                candidate.key_id: self._limiter.wait_seconds(\n                    provider=route.provider,\n                    key_id=candidate.key_id,\n                )\n                for candidate in candidates\n            }\n            available_key_ids = {\n                key_id\n                for key_id, candidate_wait in candidate_waits.items()\n                if candidate_wait <= 0.0\n            }\n            if available_key_ids:\n                preferred_key_ids = {min(available_key_ids)}\n            else:\n                earliest_wait = min(candidate_waits.values())\n                preferred_key_ids = {\n                    key_id\n                    for key_id, candidate_wait in candidate_waits.items()\n                    if candidate_wait == earliest_wait\n                }\n        key = self._keys.resolve(\n            provider=route.provider,\n            key_id=settings.key_id,\n            preferred_key_ids=preferred_key_ids,\n        )\n        wait_seconds = self._limiter.wait_seconds(\n            provider=route.provider,\n            key_id=key.key_id,\n        )\n        if wait_seconds > 0:\n            logger.info(\n                \"Route blocked by limit\",\n                event_type=\"llm_router.routing.limit.blocked\",\n                request_id=request_id,\n                provider=route.provider.value,\n                route_index=route.route_index,\n                key_id=key.key_id,\n                wait_seconds=wait_seconds,\n            )\n        messages = self._messages_for_content(content)\n        return (\n            ResolvedRequest(\n                request_id=request_id,\n                route=route,\n                settings=settings,\n                key=key,\n                messages=messages,\n                content=content,\n            ),\n            wait_seconds,\n        )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-4bd476",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "6724a747f0137e5f70382a8f5fc9c979eba401a7257fc1e84b6b38924606c1db",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-4DB15E7E",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._prepare_request",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Availability preference is only applied when more than one key is available; with exactly one available key among blocked ones, the key manager rotates over all keys and may pick a blocked key, causing a blocked credential to be used (and waited on/called) while an available one exists.",
+   "original_sha256": "249cab0f3f24f44d810e63d5b5dfe90aa63510c7059a1fddb64774bf00e4ca61",
+   "context_sha256": "2ce9572b34e8b4580feb69e7080c082bb2da8c88ab2d6a9fdcc4d5d7fa098779",
+   "prompt_sha256": "ee37087b77ab2bdcf51f2d6bd4dd5a2a6ce88dc890b0f1d2cd8f98abafeff9f4",
+   "replacement": "    def _prepare_request(\n        self,\n        *,\n        request_id: str,\n        route: ExpandedRoute,\n        settings: EffectiveSettings,\n        content: object,\n    ) -> tuple[ResolvedRequest, float]:\n        \"\"\"Build one provider-neutral request and apply limiter waiting.\"\"\"\n        if not isinstance(route.provider, Provider):\n            msg = f\"Unknown provider: {route.provider}\"\n            raise ValueError(msg)  # noqa: TRY004\n        preferred_key_ids: set[int] | None = None\n        # @impl Availability-aware key selection, IMPL_RATE_LIMIT_AVAILABLE_KEY_SELECTION, [TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]]\n        if settings.key_id == \"auto\":\n            candidates = self._keys.candidates(\n                provider=route.provider,\n                key_id=settings.key_id,\n            )\n            candidate_waits = {\n                candidate.key_id: self._limiter.wait_seconds(\n                    provider=route.provider,\n                    key_id=candidate.key_id,\n                )\n                for candidate in candidates\n            }\n            available_key_ids = {\n                key_id\n                for key_id, candidate_wait in candidate_waits.items()\n                if candidate_wait <= 0.0\n            }\n            if len(available_key_ids) > 1:\n                preferred_key_ids = available_key_ids\n            elif not available_key_ids:\n                earliest_wait = min(candidate_waits.values())\n                preferred_key_ids = {\n                    key_id\n                    for key_id, candidate_wait in candidate_waits.items()\n                    if candidate_wait == earliest_wait\n                }\n        key = self._keys.resolve(\n            provider=route.provider,\n            key_id=settings.key_id,\n            preferred_key_ids=preferred_key_ids,\n        )\n        wait_seconds = self._limiter.wait_seconds(\n            provider=route.provider,\n            key_id=key.key_id,\n        )\n        if wait_seconds > 0:\n            logger.info(\n                \"Route blocked by limit\",\n                event_type=\"llm_router.routing.limit.blocked\",\n                request_id=request_id,\n                provider=route.provider.value,\n                route_index=route.route_index,\n                key_id=key.key_id,\n                wait_seconds=wait_seconds,\n            )\n        messages = self._messages_for_content(content)\n        return (\n            ResolvedRequest(\n                request_id=request_id,\n                route=route,\n                settings=settings,\n                key=key,\n                messages=messages,\n                content=content,\n            ),\n            wait_seconds,\n        )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-8797b5",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "d5ab81c9a5369feb65220094b69f47a1afce2e965dec0a3a3349af68ecc2ed7b",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-B6F5BA72",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._prepare_request",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Limiter wait is only reported for automatic key selection; for explicitly pinned keys the wait is reported as 0.0, so a blocked route looks available and is called instead of being skipped or failing fast.",
+   "original_sha256": "249cab0f3f24f44d810e63d5b5dfe90aa63510c7059a1fddb64774bf00e4ca61",
+   "context_sha256": "2ce9572b34e8b4580feb69e7080c082bb2da8c88ab2d6a9fdcc4d5d7fa098779",
+   "prompt_sha256": "ee37087b77ab2bdcf51f2d6bd4dd5a2a6ce88dc890b0f1d2cd8f98abafeff9f4",
+   "replacement": "    def _prepare_request(\n        self,\n        *,\n        request_id: str,\n        route: ExpandedRoute,\n        settings: EffectiveSettings,\n        content: object,\n    ) -> tuple[ResolvedRequest, float]:\n        \"\"\"Build one provider-neutral request and apply limiter waiting.\"\"\"\n        if not isinstance(route.provider, Provider):\n            msg = f\"Unknown provider: {route.provider}\"\n            raise ValueError(msg)  # noqa: TRY004\n        preferred_key_ids: set[int] | None = None\n        # @impl Availability-aware key selection, IMPL_RATE_LIMIT_AVAILABLE_KEY_SELECTION, [TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]]\n        if settings.key_id == \"auto\":\n            candidates = self._keys.candidates(\n                provider=route.provider,\n                key_id=settings.key_id,\n            )\n            candidate_waits = {\n                candidate.key_id: self._limiter.wait_seconds(\n                    provider=route.provider,\n                    key_id=candidate.key_id,\n                )\n                for candidate in candidates\n            }\n            available_key_ids = {\n                key_id\n                for key_id, candidate_wait in candidate_waits.items()\n                if candidate_wait <= 0.0\n            }\n            if available_key_ids:\n                preferred_key_ids = available_key_ids\n            else:\n                earliest_wait = min(candidate_waits.values())\n                preferred_key_ids = {\n                    key_id\n                    for key_id, candidate_wait in candidate_waits.items()\n                    if candidate_wait == earliest_wait\n                }\n        key = self._keys.resolve(\n            provider=route.provider,\n            key_id=settings.key_id,\n            preferred_key_ids=preferred_key_ids,\n        )\n        if settings.key_id == \"auto\":\n            wait_seconds = self._limiter.wait_seconds(\n                provider=route.provider,\n                key_id=key.key_id,\n            )\n        else:\n            wait_seconds = 0.0\n        if wait_seconds > 0:\n            logger.info(\n                \"Route blocked by limit\",\n                event_type=\"llm_router.routing.limit.blocked\",\n                request_id=request_id,\n                provider=route.provider.value,\n                route_index=route.route_index,\n                key_id=key.key_id,\n                wait_seconds=wait_seconds,\n            )\n        messages = self._messages_for_content(content)\n        return (\n            ResolvedRequest(\n                request_id=request_id,\n                route=route,\n                settings=settings,\n                key=key,\n                messages=messages,\n                content=content,\n            ),\n            wait_seconds,\n        )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-8797b5",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "d5ab81c9a5369feb65220094b69f47a1afce2e965dec0a3a3349af68ecc2ed7b",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-518AB7BA",
+   "class": "interface.error-status",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._prepare_request",
+   "risk": "an error the interface must report comes out with the wrong type or status, or not at all",
+   "rationale": "Unknown-provider error is raised with the wrong exception type (TypeError instead of ValueError), so callers handling the documented ValueError miss it.",
+   "original_sha256": "249cab0f3f24f44d810e63d5b5dfe90aa63510c7059a1fddb64774bf00e4ca61",
+   "context_sha256": "f5011c773da5f4a0187a48faef82e15d7ed3827d5931b3df4796c3cc4e8102cc",
+   "prompt_sha256": "91dd83dd79315ca489dc698dc81b31a704343bae16a30d38f379517f7d728c3e",
+   "replacement": "    def _prepare_request(\n        self,\n        *,\n        request_id: str,\n        route: ExpandedRoute,\n        settings: EffectiveSettings,\n        content: object,\n    ) -> tuple[ResolvedRequest, float]:\n        \"\"\"Build one provider-neutral request and apply limiter waiting.\"\"\"\n        if not isinstance(route.provider, Provider):\n            msg = f\"Unknown provider: {route.provider}\"\n            raise TypeError(msg)\n        preferred_key_ids: set[int] | None = None\n        # @impl Availability-aware key selection, IMPL_RATE_LIMIT_AVAILABLE_KEY_SELECTION, [TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]]\n        if settings.key_id == \"auto\":\n            candidates = self._keys.candidates(\n                provider=route.provider,\n                key_id=settings.key_id,\n            )\n            candidate_waits = {\n                candidate.key_id: self._limiter.wait_seconds(\n                    provider=route.provider,\n                    key_id=candidate.key_id,\n                )\n                for candidate in candidates\n            }\n            available_key_ids = {\n                key_id\n                for key_id, candidate_wait in candidate_waits.items()\n                if candidate_wait <= 0.0\n            }\n            if available_key_ids:\n                preferred_key_ids = available_key_ids\n            else:\n                earliest_wait = min(candidate_waits.values())\n                preferred_key_ids = {\n                    key_id\n                    for key_id, candidate_wait in candidate_waits.items()\n                    if candidate_wait == earliest_wait\n                }\n        key = self._keys.resolve(\n            provider=route.provider,\n            key_id=settings.key_id,\n            preferred_key_ids=preferred_key_ids,\n        )\n        wait_seconds = self._limiter.wait_seconds(\n            provider=route.provider,\n            key_id=key.key_id,\n        )\n        if wait_seconds > 0:\n            logger.info(\n                \"Route blocked by limit\",\n                event_type=\"llm_router.routing.limit.blocked\",\n                request_id=request_id,\n                provider=route.provider.value,\n                route_index=route.route_index,\n                key_id=key.key_id,\n                wait_seconds=wait_seconds,\n            )\n        messages = self._messages_for_content(content)\n        return (\n            ResolvedRequest(\n                request_id=request_id,\n                route=route,\n                settings=settings,\n                key=key,\n                messages=messages,\n                content=content,\n            ),\n            wait_seconds,\n        )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-ab5e91",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "31d08da1a5a9d240a9c90722cf64ede111453e0316dfed3e2e8a0b1cd02753e0",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-A8B9DD74",
+   "class": "interface.error-status",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._prepare_request",
+   "risk": "an error the interface must report comes out with the wrong type or status, or not at all",
+   "rationale": "When every automatic credential is blocked, the earliest-available key is chosen but the returned wait is reported as 0, so the blocked state is never surfaced and the caller neither fails fast nor waits; the blocked route is called anyway.",
+   "original_sha256": "249cab0f3f24f44d810e63d5b5dfe90aa63510c7059a1fddb64774bf00e4ca61",
+   "context_sha256": "f5011c773da5f4a0187a48faef82e15d7ed3827d5931b3df4796c3cc4e8102cc",
+   "prompt_sha256": "91dd83dd79315ca489dc698dc81b31a704343bae16a30d38f379517f7d728c3e",
+   "replacement": "    def _prepare_request(\n        self,\n        *,\n        request_id: str,\n        route: ExpandedRoute,\n        settings: EffectiveSettings,\n        content: object,\n    ) -> tuple[ResolvedRequest, float]:\n        \"\"\"Build one provider-neutral request and apply limiter waiting.\"\"\"\n        if not isinstance(route.provider, Provider):\n            msg = f\"Unknown provider: {route.provider}\"\n            raise ValueError(msg)  # noqa: TRY004\n        preferred_key_ids: set[int] | None = None\n        all_auto_blocked = False\n        # @impl Availability-aware key selection, IMPL_RATE_LIMIT_AVAILABLE_KEY_SELECTION, [TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]]\n        if settings.key_id == \"auto\":\n            candidates = self._keys.candidates(\n                provider=route.provider,\n                key_id=settings.key_id,\n            )\n            candidate_waits = {\n                candidate.key_id: self._limiter.wait_seconds(\n                    provider=route.provider,\n                    key_id=candidate.key_id,\n                )\n                for candidate in candidates\n            }\n            available_key_ids = {\n                key_id\n                for key_id, candidate_wait in candidate_waits.items()\n                if candidate_wait <= 0.0\n            }\n            if available_key_ids:\n                preferred_key_ids = available_key_ids\n            else:\n                all_auto_blocked = True\n                earliest_wait = min(candidate_waits.values())\n                preferred_key_ids = {\n                    key_id\n                    for key_id, candidate_wait in candidate_waits.items()\n                    if candidate_wait == earliest_wait\n                }\n        key = self._keys.resolve(\n            provider=route.provider,\n            key_id=settings.key_id,\n            preferred_key_ids=preferred_key_ids,\n        )\n        wait_seconds = self._limiter.wait_seconds(\n            provider=route.provider,\n            key_id=key.key_id,\n        )\n        if wait_seconds > 0:\n            logger.info(\n                \"Route blocked by limit\",\n                event_type=\"llm_router.routing.limit.blocked\",\n                request_id=request_id,\n                provider=route.provider.value,\n                route_index=route.route_index,\n                key_id=key.key_id,\n                wait_seconds=wait_seconds,\n            )\n        if all_auto_blocked:\n            wait_seconds = 0.0\n        messages = self._messages_for_content(content)\n        return (\n            ResolvedRequest(\n                request_id=request_id,\n                route=route,\n                settings=settings,\n                key=key,\n                messages=messages,\n                content=content,\n            ),\n            wait_seconds,\n        )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-ab5e91",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "31d08da1a5a9d240a9c90722cf64ede111453e0316dfed3e2e8a0b1cd02753e0",
+    "index": 1
+   }
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "SM-80E21F07": {
+  "kind": "model",
+  "call_id": "20260929T185126Z-8918a0",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "b01400f7791f17c4ff89b8ed66f7377948d1590accec7b14c3cd32f0b8100d09",
+  "attempt": 1
+ }
+}

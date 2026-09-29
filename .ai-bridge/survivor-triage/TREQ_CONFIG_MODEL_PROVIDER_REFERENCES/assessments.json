@@ -1,0 +1,52 @@
+{
+ "de2cbbbd9acd877b": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081944Z-4ac182",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Removing the explicit 'bool()' cast does not change the runtime behavior because the condition parameter will evaluate the truthiness of the mapping identically in both cases.",
+    "response_sha256": "02d7c7070d46f55dffe03d3fb2a317f0b40f33ec4770f0738d5ce888bce9ea28",
+    "sources": [
+     "        _require(\n            condition=bool(provider_models),\n            message=f\"model '{model.value}' must map to a provider.\",\n        )",
+     "        _require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081944Z-c685da",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "In Python, passing a mapping directly to a condition check evaluates its truth value identically to passing its explicit boolean conversion bool(provider_models).",
+    "response_sha256": "8177a27ba72313455b5e6befe45d024e8dd610071e1488cb3aae1ff2d6092472",
+    "sources": [
+     "            condition=bool(provider_models),",
+     "        _require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T231851Z-4d34bc",
+    "confidence": 0.94,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only textual difference is `condition=bool(provider_models)` vs `condition=provider_models`, but `_require` only ever uses the condition in a boolean context (raise-if-falsy), so an empty vs non-empty mapping produces the same effective boolean outcome either way, making the two versions behaviorally indistinguishable for any config.",
+    "response_sha256": "074969d0acf0909c448e687b45176e2239cafd72030522b358bad96385479bc9",
+    "sources": [
+     "_require(\n            condition=bool(provider_models),\n            message=f\"model '{model.value}' must map to a provider.\",\n        )",
+     "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "53c5a568c4ca349f6b7ed2465b1bd08e9a66cea486eb6864eed02c2f1e3465a7"
+ }
+}

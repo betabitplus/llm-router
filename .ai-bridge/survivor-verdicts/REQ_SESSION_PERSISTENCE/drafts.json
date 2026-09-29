@@ -1,0 +1,99 @@
+{
+ "5fd031363386257e": [
+  {
+   "at": "2026-09-29T00:24:30.363863Z",
+   "call_id": "20260929T001300Z-83b1df",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "8d32576718a1100cfc7b843d196ba33b425343e37d2f32db320661d8ab1baf8f",
+   "reason": "it uses pathlib",
+   "sources": [
+    "llm_router.Session",
+    "llm_router._internal.runtime.errors.SessionSerializationError",
+    "llm_router._internal.session.store.SessionStore.load"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.884495Z",
+   "call_id": "20260929T114718Z-28544c",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5e27f8d61eb8383a328145f0c66a161797b45699d320eb23aebcf5085581d602",
+   "reason": "it uses pathlib, tempfile",
+   "sources": [
+    "llm_router.Session",
+    "llm_router._internal.runtime.errors.SessionSerializationError"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.579983Z",
+   "call_id": "20260929T120217Z-59643d",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "55def27959e0bc6b7f62ac53e76786a0969c0331c6e2613c2f7407fcfffd1bcb",
+   "reason": "",
+   "sources": [
+    "llm_router.Session",
+    "llm_router._internal.runtime.errors.SessionSerializationError"
+   ]
+  }
+ ],
+ "cfdaa730a0d7b1f8": [
+  {
+   "at": "2026-09-29T10:38:22.574231Z",
+   "call_id": "20260929T094858Z-0ea007",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "1722ef82df4209ef16356cc7339d91850a98a608a08aafe85a0f5c61ba2d2eb8",
+   "reason": "it uses pathlib",
+   "sources": [
+    "llm_router._internal.session.SessionStore",
+    "llm_router._internal.session.store.SessionStore"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.885651Z",
+   "call_id": "20260929T114718Z-c85491",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6952929a37289fedfaddf3a2df98dc2d3b1fd002fec07ba1a6055bf0e7c01745",
+   "reason": "it breaks the project's lint rules (ruff: line 22: ARG001 Unused function argument: `newline`)",
+   "sources": [
+    "llm_router._internal.session.SessionStore"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.580126Z",
+   "call_id": "20260929T120217Z-de7724",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6acdb70d859c734ad0fd611f335d64e8bdf3271f68ab4b63a2ab3a7ca4972276",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.session.SessionStore"
+   ]
+  }
+ ]
+}

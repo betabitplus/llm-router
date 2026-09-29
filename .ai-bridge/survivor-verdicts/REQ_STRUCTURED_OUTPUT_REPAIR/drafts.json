@@ -1,0 +1,279 @@
+{
+ "63b7393727f5c29f": [
+  {
+   "at": "2026-09-29T10:38:22.576467Z",
+   "call_id": "20260929T094858Z-b1c548",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "b84c616790ce4af942708a8b40f3050a221e17a7109aa7f631f54978e20a7921",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: Provider 'qwenchat' failed for model 'qwen-max-latest'. Reason: Structured output validation failed. | assert False is True | +  where False = StructuredRecoveryWorkerResult(ok=False, output_text='', error_type='ProviderError', error_message=\"Provider 'qwenchat' failed for model 'qwen-max-latest'. Reason: Structured output ",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._internal.config.state.get_config",
+    "llm_router._internal.config.state.install_config",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.runtime.clear_test_caches",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.structured_recovery.StructuredRecoveryWorkerResult",
+    "tests.llm_router.support.workers.structured_recovery.run_structured_recovery_worker",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.886510Z",
+   "call_id": "20260929T114718Z-43ae78",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "53a849114da45812ce99324acb00cd7a43ac205b3ebf9e5fbe3e89a6189945d6",
+   "reason": "",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.RetryWorkerResult",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  }
+ ],
+ "8d730e921a4ddffa": [
+  {
+   "at": "2026-09-29T10:38:22.576818Z",
+   "call_id": "20260929T094858Z-2d2212",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "d1891e9133702765977d12e51c3d72c5812c209ba1895847e02b713760d1b5dc",
+   "reason": "it does not fail on the mutant: it runs the changed lines 443\u2013454, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._internal.config.state.get_config",
+    "llm_router._internal.config.state.install_config",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.runtime.clear_test_caches",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.structured_recovery.StructuredRecoveryWorkerResult",
+    "tests.llm_router.support.workers.structured_recovery.run_structured_recovery_worker",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.886535Z",
+   "call_id": "20260929T114718Z-2d0cf0",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "88700dc75e26a18679bcaaad1b8774e98b04bb6accaadd780d32f3dfa2d9f59e",
+   "reason": "it does not fail on the mutant: it runs the changed lines 443\u2013454, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.runtime.clear_test_caches",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.structured_recovery.StructuredRecoveryWorkerResult",
+    "tests.llm_router.support.workers.structured_recovery.run_structured_recovery_worker",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.581424Z",
+   "call_id": "20260929T120217Z-467863",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3673546848bcd0cc393f5913f5fab751dc9028711a801b92d993c2956d15db2a",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.runtime.clear_test_caches",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config"
+   ]
+  }
+ ],
+ "SM-12FA1E31": [
+  {
+   "at": "2026-09-29T19:15:34.147617Z",
+   "call_id": "20260929T191342Z-e73524",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "92498d7f9c6a565d0ea77e0808ad26ec8ef1d1e5a7983ed5a577462e947b4aef",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert 1 == 2)",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.RetryWorkerResult",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:17:38.721220Z",
+   "call_id": "20260929T191536Z-492009",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f40c7c3b4ab18b6ecc3f34e03343a799b2aeb733b7159014620d863a4694ac3b",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert 1 == 2)",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.RetryWorkerResult",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:24:51.650152Z",
+   "call_id": "20260929T191741Z-85580a",
+   "cause": "kept",
+   "context_gaps": [
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.structured_recovery.run_structured_recovery_worker"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6e191f424eec50ea26280b509eb5aa72311df47a30a4fe917c302a08ca1bc9a9",
+   "reason": "",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.structured_recovery.run_structured_recovery_worker"
+   ]
+  }
+ ],
+ "ea1a8657cd65d4b1": [
+  {
+   "at": "2026-09-29T10:38:22.577412Z",
+   "call_id": "20260929T094858Z-6d4157",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "39f6353734777257b6b6d909c929cd1fc9ab91fc992858ee47eb899d48828863",
+   "reason": "it does not fail on the mutant: it runs the changed lines 443\u2013454, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.runtime.clear_test_caches",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.structured_recovery.StructuredRecoveryWorkerResult",
+    "tests.llm_router.support.workers.structured_recovery.run_structured_recovery_worker",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.886643Z",
+   "call_id": "20260929T114718Z-8c804d",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "147f6c6bf679c18b8a341b6b160640b734beb47141a3d82c16ef551ffc9d271f",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert 'INC-2048' in '' | +  where '' = StructuredRecoveryWorkerResult(ok=True, output_text='{\"incident_id\": \"INC-2048\", \"severity\": \"SEV2\", \"tags\": [\"db\", \"api\"]}', error_type=None, error_message=None, returncode=0, stdout='', stderr='').stdout)",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.runtime.clear_test_caches",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.structured_recovery.run_structured_recovery_worker",
+    "tests.llm_router.support.workers.structured_recovery.StructuredRecoveryWorkerResult",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.581452Z",
+   "call_id": "20260929T120217Z-3f3fa4",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "573be6d3e0d6d5a1043decbe7e63975af48fa1c934f4d22bc4f890f50b3179dc",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.runtime.clear_test_caches",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ]
+}

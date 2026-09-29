@@ -31,6 +31,19 @@ not duplicate the thirteen technical validation-rule denominators.
 configuration validation implementation. No provider surrogate is required because the
 contract requires failure before provider execution.
 
+### Semantic mutants
+
+| Fault class                        | Target                                                           | Budget | Risk                                                                                  |
+| ---------------------------------- | ---------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/config/validation.py::validate_config` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`           | `src/llm_router/_internal/config/validation.py::validate_config` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/config/validation.py::validate_config` |      2 | an order or a before/after boundary its requirement names is broken                   |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/config/validation.py::validate_config` |      2 | an external interaction its requirement rules out happens anyway                      |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-criteria)=
 
 ### Verification criteria
@@ -191,6 +204,17 @@ registry is rejected locally before provider execution.
 | Interface / protocol  | No provider payload or status participates in model declaration.                                                                     |
 | Architecture          | Internal topology is not normative.                                                                                                  |
 | Specification / model | Accepting an undeclared model or omitting that partition violates the constraint.                                                    |
+
+### Semantic mutants
+
+| Fault class              | Target                                                       | Budget | Risk                                                                                  |
+| ------------------------ | ------------------------------------------------------------ | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`     | `src/llm_router/_internal/runtime/routes.py::_resolve_model` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition` | `src/llm_router/_internal/runtime/routes.py::_resolve_model` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
 
 (verification-profile-treq-config-required-base-url)=
 

@@ -33,6 +33,43 @@
   },
   "prompt_sha256": "f6aa8580973a5dfba265d40255669bb2641b86f479b8c5f47cf274c357d6ebaa"
  },
+ "SM-4D75202A": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191129Z-60c1d3",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops any provider kwarg supplied on the request if its value is falsy (0, None, False, empty). So an explicit request value like {'custom_kwarg': 0} disappears from kwargs, and it would also fail to replace a router or route default for the same key. This breaks both the override rule and the rule that explicit empty or null values stay distinguishable from omission.",
+   "response_sha256": "0bae673113f84c8ea2d5bc56a320bb577a48939e1093d6af63fa38c509aae281",
+   "sources": [
+    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
+    "Generated combinations preserve omission as distinct from an explicit call value.",
+    "if key not in CALL_OVERRIDE_FIELDS and value"
+   ],
+   "test_focus": "Give a request provider kwarg a falsy value (0, None or an empty collection) and check that it still appears in effective kwargs and overrides a router or route default of the same key.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:13:36.455614Z",
+   "answer_sha256": "3aa96e62662746275b815a74e521b9cc70b54aec0abc391eb5893c57ad251a6f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "3aa96e62662746275b815a74e521b9cc70b54aec0abc391eb5893c57ad251a6f",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_sm_4d75202a.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "1f077c68f6c7336ecd77787ec0ec66b772d1823f518336057211a768a12d3fc3"
+ },
  "bf8a96501e88d45d": {
   "answer": {
    "backend": "claude-cli",

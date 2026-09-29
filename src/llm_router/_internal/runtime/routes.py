@@ -119,7 +119,6 @@ def expand_route_plan(
     return RoutePlan(routes=tuple(routes), policy_defaults=policy_defaults)
 
 
-# @impl Route attempt cap, IMPL_ROUTE_ATTEMPT_LIMIT, [REQ_ROUTE_ATTEMPT_LIMIT[revision==1]]
 # @impl Stable route ordering, IMPL_ROUTE_ORDER, [TREQ_ROUTE_ORDER[revision==1]]
 def ordered_routes(
     plan: RoutePlan,
@@ -139,6 +138,7 @@ def ordered_routes(
         fallbacks = routes[1:]
         shuffler.shuffle(fallbacks)
         routes = [routes[0], *fallbacks]
+    # @impl Route attempt cap, IMPL_ROUTE_ATTEMPT_LIMIT, [REQ_ROUTE_ATTEMPT_LIMIT[revision==1]]
     if options.max_attempts is not None:
         routes = routes[: options.max_attempts]
     return tuple(routes)

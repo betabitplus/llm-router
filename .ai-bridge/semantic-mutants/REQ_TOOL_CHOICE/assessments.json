@@ -1,0 +1,26 @@
+{
+ "SM-B25D86B3": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "choice": "\"required\"",
+     "registry": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-35f8e1",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With choice \"required\" and no registry, the original returns ToolChoice(kind=\"required\"), but the changed version returns ToolChoice(kind=\"auto\").",
+    "response_sha256": "1da880ce5809e98ce6d03e3050b066d1543deb649d4855e705428d21cd9675e4",
+    "sources": [
+     "if registry is None:",
+     "return ToolChoice(kind=\"auto\")",
+     "if choice == \"required\":"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "46633b938b9f841767c4d6154704ae5ffd4cd97c7f9c595b8fae182cf794f4e1"
+ }
+}

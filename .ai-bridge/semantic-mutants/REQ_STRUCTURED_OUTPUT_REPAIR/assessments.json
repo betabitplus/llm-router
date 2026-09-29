@@ -1,0 +1,50 @@
+{
+ "SM-12FA1E31": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=0, structured_output_max_attempts=2, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=\"dummy\", tool_registry=None, tool_choice=None, max_tool_rounds=0)",
+     "provider_request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", credential=ProviderCredential(key_id=1, env_var=\"K\", value=\"V\"), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", output_text=\"\")",
+     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=None, schema=\"dummy\", structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-7b96a0",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When structured validation fails and attempts remain, the original version preserves the plan's schema in the new loop state, whereas the changed version incorrectly drops it by setting schema to None.",
+    "response_sha256": "ef5cae33b205fcf2a073017205639a70e8c844bdc0463423348cd709658ddf17",
+    "sources": [
+     "            schema=plan.schema,",
+     "            schema=None,"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig with structured_output_max_attempts=3",
+     "plan": "_ExecutionPlan(schema=<same SchemaSpec>, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest with schema=SchemaSpec (a JSON object schema requiring an integer field 'a')",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='m', output_text='not json')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(), tool_choice=None, tool_registry=None, schema=<same SchemaSpec>, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164215Z-6707db",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "On a failed validation with attempts remaining, the original returns a state with schema=plan.schema while the changed version returns schema=None, so the returned _ResultStep differs.",
+    "response_sha256": "d0bca450a1a1ee9fef62700187dc787f3bcf5d34884767ce003aaf015ef439e1",
+    "sources": [
+     "            schema=None,",
+     "            schema=plan.schema,",
+     "    if next_attempts >= config.structured_output_max_attempts:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "bb7b50f5e245871c17ea4606d51271ab0044ba571cc726b64f88ee70bf670f1b"
+ }
+}

@@ -1,4 +1,156 @@
 {
+ "8a48c40fdfe50bce": [
+  {
+   "at": "2026-09-29T00:24:30.357715Z",
+   "call_id": "20260929T001300Z-af6912",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "635848e5d72c388c458e01fbaaec9ca9ad8a25ad3035476568e988340337e6bd",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model.DEEPSEEK_V4_FLASH",
+    "llm_router.Model.LLAMA_8B",
+    "llm_router.Provider.NVIDIA",
+    "llm_router.RouterProfile"
+   ]
+  }
+ ],
+ "SM-230B4176": [
+  {
+   "at": "2026-09-29T17:27:59.739030Z",
+   "call_id": "20260929T172149Z-cef702",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "96d24b1888d7483103bbb747dd3b98bfee65ae46d9c760e745c49e4025848ba4",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  }
+ ],
+ "SM-592318D7": [
+  {
+   "at": "2026-09-29T17:27:59.739144Z",
+   "call_id": "20260929T172149Z-b69a01",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ce4c71c5b65d23150b9f9e133c54717098c9caee13860a6db98d038f3b9b9b2e",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ConfigurationError: Conflicting route policy default: attempt_timeout_seconds.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:30:20.389059Z",
+   "call_id": "20260929T172801Z-d71a3a",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f113b2db9e6fa611f20681813202fe8bbdc3e57cd9ddfb851fa65a1dc356cf43",
+   "reason": "it breaks the project's lint rules (ruff: line 44: ARG001 Unused function argument: `timeout_seconds`)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:32:55.489963Z",
+   "call_id": "20260929T173021Z-8687f2",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "146ed743f3e2e0eafaa4e496826f5742e7eb14cc6aaed08547fb14fae4b7f234",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  }
+ ],
+ "SM-AA98B36D": [
+  {
+   "at": "2026-09-29T17:27:59.739203Z",
+   "call_id": "20260929T172149Z-ad2d13",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "45887c1279fbebd4ac5cb5d69f25b6f759c192f4a6383e6aaca47eae298a7098",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  }
+ ],
+ "b5451a90524408d8": [
+  {
+   "at": "2026-09-29T00:24:30.358418Z",
+   "call_id": "20260929T001300Z-3c4c81",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "e2163c24aec0e4c6d660280c9c17b6ce65ce2fe6c15c159edbb79666c9b61dca",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: '_DummyRequest' object has no attribute 'settings')",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-29T10:38:22.575531Z",
+   "call_id": "20260929T094858Z-496988",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "c1156008644a73ba5c314c94c5948ee14bfe1fcd57fb0ac7e1983dcde653cef4",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  }
+ ],
  "e1a047184fcbb294": [
   {
    "at": "2026-09-28T10:39:06.981119Z",

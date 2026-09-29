@@ -1,0 +1,2854 @@
+{
+ "01fd76634a96fdbd": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T105139Z-22ca06",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without the ordering check, a response with ']' before '[' and no complete object gets sliced to '' or a truncated fragment instead of being returned unchanged. So a valid scalar payload such as '\"see ] and [\"' stops parsing and validating against the caller's schema.",
+   "response_sha256": "74a99ee22b0f73c5e60b88064456fd465091b84c390e7f1ba2158857cc225da2",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if first_arr != -1 and last_arr != -1:",
+    "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:"
+   ],
+   "test_focus": "Check that a response whose text holds a ']' before a '[' and no complete object is returned unchanged. For example, the top-level JSON string '\"a ] b [\"' must come back as-is and parse as the structured result, not come back as an empty string.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.550668Z",
+   "answer_sha256": "d8e8270c9811a3a13e147510f991a1ba20af1cfd7d0c7e37aa46f2f8178bc40d",
+   "call_id": "20260929T105401Z-1e9c01",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "d8e8270c9811a3a13e147510f991a1ba20af1cfd7d0c7e37aa46f2f8178bc40d",
+   "effort": "",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_01fd76634a96fdbd.py",
+   "response_sha256": "b124448ee25574227c30eacb61f4f501385edc4cec22c05ece7e0d9ccd8a95e2",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._api.types.LLMRouterResponse",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.RootModel"
+   ]
+  },
+  "prompt_sha256": "4b13f25d8cedb013624404d0ee4dd190d73ba5db69ba12a956ab2b52d2c58808"
+ },
+ "0ddb26b38c02ad8c": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235308Z-3724ea",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the `first_obj != -1` guard. When the text has a stray '}' but no '{', it slices from index -1 and returns a garbage fragment. It never reaches the array branch, so a JSON array answer that ends with chatter such as '[1,2] :}' no longer parses into the requested structured result.",
+   "response_sha256": "b4e4f2cb6b908bbc8bede9f2129ef87c283eb02c6456035c2f82ba129ff524bc",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if last_obj != -1 and last_obj > first_obj:",
+    "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:"
+   ],
+   "test_focus": "Given a provider response holding a JSON array plus trailing chatter that has a '}' but no '{' (e.g. '[1,2] done :}'), the extracted payload must be '[1,2]' and must parse and validate against an array schema.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.596323Z",
+   "answer_sha256": "305d1d39f704f46101508c09d13313e10e4608f425d11e7969874066f7c8bad4",
+   "call_id": "20260929T094858Z-7c1b74",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "34430b78dfc81ce595d23270385bcc19bbb62e3f0daf3d01e5758af341166be5",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_0ddb26b38c02ad8c.py",
+   "response_sha256": "fc41858d1390d8e9723b5a23b6e7223abcb7df87fe91687e07fd0b7bbb6dce76",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "c1438868efb6fa54eaef0ba556fcc2da57ff39dc03fe2e15137e498af7880ad3"
+ },
+ "1045c8ab17c9edbd": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235308Z-185e69",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant removes the rejection of non-object structured output. A JSON array or scalar now fails later with an incidental AttributeError from `.items()`, not the documented TypeError. A non-dict Mapping gets through without being rejected. Either way the check that output parses into a validatable JSON object is weakened.",
+   "response_sha256": "f1f16d8a8ec38da4c5f701b1b443985fb4561540247bf7af86f339bc70306797",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "raise TypeError(msg)",
+    "msg = 'Structured output must be a JSON object.'\n        pass"
+   ],
+   "test_focus": "Give a structured-output candidate that decodes to a JSON array (e.g. '[1, 2]'). Assert that it raises TypeError with the message \"Structured output must be a JSON object.\"",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.597232Z",
+   "answer_sha256": "8ef8d670675bf9ce07941d13ab167c2a1a8ba0300c45ebb6e0ece8be980aacaa",
+   "call_id": "20260929T120217Z-445307",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "8ef8d670675bf9ce07941d13ab167c2a1a8ba0300c45ebb6e0ece8be980aacaa",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_1045c8ab17c9edbd.py",
+   "response_sha256": "4b7f4fdf971e596f0d6f6205f45015853bff583bc695605bb9c023f2ba1f63d5",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.ProviderError",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ]
+  },
+  "prompt_sha256": "07e6c4b3196ba8b4f75262b27bc9c13260be5561cb6013f35665dc8eac3ac737"
+ },
+ "11a288f4bd5f641d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235308Z-93bd60",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When a reply has no JSON object but does contain `]`, the mutant compares an int with a string and raises a TypeError. The original would have extracted the JSON array. Array-shaped structured results would then fail instead of parsing against the caller's schema.",
+   "response_sha256": "19275d0ff29388791ef7286626f17ee0b185cd4f951d0462306f7f58fdee50bc",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "first_arr = stripped",
+    "if first_arr != -1 and last_arr != -1 and (last_arr > first_arr):"
+   ],
+   "test_focus": "Feed a JSON array reply with no object in it, wrapped in fences or chatter (e.g. \"Result: [1, 2]\"). Check that the structured result parses to that array and validates against an array schema, with no exception.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "prompt_sha256": "6445c16b7d782dd246c76c1469af1c954b47d1237a70998afae64c0dc15e328d"
+ },
+ "137765413f3e5276": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T091140Z-1cb525",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "If first_obj != -1, then first_obj >= 0. So last_obj > first_obj already means last_obj >= 1, which makes the dropped last_obj != -1 check redundant. The condition gives the same result for every input string.",
+   "response_sha256": "3593372698b59942b50924b48d171595eba065190096052cfad801b63cb23359",
+   "sources": [
+    "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+    "if first_obj != -1 and last_obj > first_obj:",
+    "Provider-specific response formatting shall not change the public structured result."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "condition",
+  "prompt_sha256": "e0d342680cfae2d13830be077f91e7ed900f5f7ec814662b13513c99ae5f9e30",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T091209Z-498aed",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "e0d342680cfae2d13830be077f91e7ed900f5f7ec814662b13513c99ae5f9e30",
+   "reason": "The dropped 'last_obj != -1' check is logically redundant. If 'first_obj != -1', it must be >= 0. Therefore, 'last_obj > first_obj' guarantees that 'last_obj > 0', making it impossible for 'last_obj' to be -1.",
+   "response_sha256": "9a9ad043a57446cf09fdf7be18a75618fe3e14555708b9b118ca41a542ca8001",
+   "sources": [
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+    "if first_obj != -1 and last_obj > first_obj:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "178bec10306929cd": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T145419Z-fef26b",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The two conditions can only disagree when last_arr == first_arr. When both are found, first_arr points at a '[' and last_arr points at a ']', so the two indexes can never be equal. The guard therefore gives the same result in both versions for every input, and the structured result is unchanged.",
+   "response_sha256": "d6599dd545598501890bfb40cb3a7574ce364f93ffb3a12a1209a9d483e19998",
+   "sources": [
+    "if first_arr != -1 and last_arr != -1 and (last_arr >= first_arr):",
+    "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "comparison",
+  "prompt_sha256": "6a37973ab90dabb82ece83d7908e6f830f26f94c6b314f17379dddc02b5ce0a9",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T145520Z-623f0a",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "6a37973ab90dabb82ece83d7908e6f830f26f94c6b314f17379dddc02b5ce0a9",
+   "reason": "Because the string indices first_arr and last_arr must point to distinct characters ('[' and ']'), they can never be equal when found. Therefore, the condition `last_arr >= first_arr` is logically identical to `last_arr > first_arr` on all inputs, producing exactly the same parsing behavior.",
+   "response_sha256": "1fbf77c9441ce0e774e5960f80730c471ceeaa2d67f8e9a848518fbf66071694",
+   "sources": [
+    "Requirement REQ_STRUCTURED_TEXT_OUTPUT (Structured text output): A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if first_arr != -1 and last_arr != -1 and (last_arr >= first_arr):"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "198de47a71640802": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T125745Z-f5314b",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without the minimum-line guard, only a fence with no content between the markers behaves differently. The original returns the raw fence text and the mutant returns an empty string, and neither is JSON that could parse and validate against the requested schema. Every fenced response that carries content is stripped the same way, so the public structured result does not change; at most the parse-failure message differs.",
+   "response_sha256": "eb1d33ac95bac8b647e02d9de199ca0d7ac451a05120762878702e4d51c20c02",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if len(lines) < _MIN_FENCED_JSON_LINES:",
+    "if False:",
+    "return '\\n'.join(lines[1:-1]).strip()"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "76fe0de6ad759e15da47ea24ffdfa8ae10022ea167770c24d62e5d9dd2838f8f",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T145429Z-8bdb20",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "76fe0de6ad759e15da47ea24ffdfa8ae10022ea167770c24d62e5d9dd2838f8f",
+   "reason": "The requirement mandates that valid structured data can be parsed regardless of provider formatting, but it does not specify the exact intermediate output for malformed or empty code fences. Both versions fail to produce valid JSON for the confirmed input, making their differing intermediate strings an implementation detail.",
+   "response_sha256": "4568ade13ba9d2e12bfacd8abf469b5db049a9e3959bcde87c61ac5a7c3828a3",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if len(lines) < _MIN_FENCED_JSON_LINES:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "1d475cc4b98b3b39": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235322Z-31ffe1",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "This matters when a provider hands over a dict that is already decoded (the non-string branch). Its keys may not be strings, and the original code turned every key into a string. The mutant passes those keys through unchanged, so provider-specific key types reach the public result, and a key like 1 would no longer match a schema property named \"1\".",
+   "response_sha256": "b28a63776d4d57515ba960bf115cbe6dc3147801ecba414fce9f88c0b8a92b76",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "return {str(key): item for key, item in decoded.items()}",
+    "return {key: item for key, item in decoded.items()}"
+   ],
+   "test_focus": "Pass a dict that is already decoded and has a non-string key (e.g. {1: \"x\"}) through the structured-output path. Assert that the public result has only string keys (e.g. {\"1\": \"x\"}) and validates against the requested schema.",
+   "verdict": "pin"
+  },
+  "operator": "conversion",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.600099Z",
+   "answer_sha256": "42273d008b4a0290022caa47049f044370765cadf88173dd502bb2df1b294baf",
+   "call_id": "20260929T120217Z-24c265",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "42273d008b4a0290022caa47049f044370765cadf88173dd502bb2df1b294baf",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_1d475cc4b98b3b39.py",
+   "response_sha256": "ef5f88a6bf34fa4ae09b4baacc8981f59df48fa6f1a6c5ea9b26b2b3c2369002",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "a3f0b4ed5ccb2608cb533b2331b7e0e5f6b37ec4db7beeb0bd4ca4cf44980886"
+ },
+ "2020243fe707999b": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T091233Z-55c5c8",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When both are found, first_obj points at '{' and last_obj points at '}'. One index can't hold two different characters, so last_obj == first_obj never happens, and `>=` picks the same branch as `>` for every input string.",
+   "response_sha256": "9aafbe3d639d1e862b0470d1e61c1e0999c5ac00f8a101c3229876349e8e8882",
+   "sources": [
+    "if first_obj != -1 and last_obj != -1 and (last_obj >= first_obj):",
+    "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "comparison",
+  "prompt_sha256": "9122f1f3e854ab36193f6bfdc9e78a0326a41d8963fef61f13ba1a6cdf0f484b",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T091403Z-e4030b",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "9122f1f3e854ab36193f6bfdc9e78a0326a41d8963fef61f13ba1a6cdf0f484b",
+   "reason": "Because `find('{')` and `rfind('}')` search for distinct characters, their successful index locations can never be equal. Therefore, `last_obj == first_obj` is an impossible state, making the condition `last_obj >= first_obj` logically identical to `last_obj > first_obj` across all possible inputs.",
+   "response_sha256": "ab239729085ead9cebf9d12d858bccfac32240bc0f12141bbe503ee105732f27",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "    if first_obj != -1 and last_obj != -1 and (last_obj >= first_obj):"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "21276b664ad25fd0": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235629Z-ec63ed",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With 'or', any text holding an unmatched '{' or '}' (e.g. a JSON array whose string contains '{') takes the object branch and returns an empty or broken slice instead of the array. The structured result then no longer parses or validates against the requested schema.",
+   "response_sha256": "e776f7ee08dc42148802a72dffaae02af56c069d5b5d57750aa8746ab3ad2466",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if first_obj != -1 or last_obj != -1 or last_obj > first_obj:",
+    "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:"
+   ],
+   "test_focus": "Feed an array-schema reply with chatter and a lone '{' inside a string value (e.g. 'Result: [\"a{\"]'). Check that the extracted payload is the full array and still parses and validates.",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "a02ab498323bb256b659d178a79a3e727c8b28935f8821b5bb907599d699af52"
+ },
+ "245b3268fc24b414": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235629Z-88acc1",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant never extracts or decodes JSON from string candidates, so a provider that returns its structured output as JSON text now raises TypeError instead of giving the parsed object. That breaks returning structured data that parses and validates, independent of provider.",
+   "response_sha256": "27f9c2ded224dde0aa818ebf151465f71613305bffb10654ed62244a102f3e7a",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if isinstance(value, str):",
+    "if False:"
+   ],
+   "test_focus": "Give a JSON object as a string (including a fenced/wrapped payload) to the structured-output path and assert it returns the same dict as a native-dict provider response.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.911797Z",
+   "answer_sha256": "8810dae01db96f85e129f09bd673272f3fb65510f17352e342a2b429c6e46488",
+   "call_id": "20260929T114718Z-df2f0c",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "8810dae01db96f85e129f09bd673272f3fb65510f17352e342a2b429c6e46488",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_245b3268fc24b414.py",
+   "response_sha256": "2400d685c5b059ef18ba35df1a136297bd9459f1e3cd68088c71684995cb08fd",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "a7b9a7731fabda0a6fa20edf564fe251b23ce41749ae47e2ed15cd138d1aca9b"
+ },
+ "25bba4d0464eefdd": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235629Z-b0d3b6",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For a short fenced response such as a single-line \"```{...}```\", the mutant returns None where the original returns the text unchanged. The None then reaches JSON parsing, which fails with a TypeError instead of the normal parse or validation failure. That lets provider-specific formatting change how the public structured result is handled, which the requirement forbids.",
+   "response_sha256": "b1f823756effda8f4fbfc69ad181e68b9438f14375e7e83fac87fa655729dd39",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if len(lines) < _MIN_FENCED_JSON_LINES:",
+    "return None"
+   ],
+   "test_focus": "Feed a structured-output route a provider reply that is fenced but has too few lines (for example \"```{\\\"a\\\": 1}```\"). Check that the helper returns the original string, not None, and that the route handles it through its normal parse and validation path.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.598220Z",
+   "answer_sha256": "1e56fff2eed76f4a92414b35acb39b776aced6693eb10055fda9648f25629e6b",
+   "call_id": "20260929T095053Z-40de09",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "6ed92bad989d008dd5a1e76d9c91c3c1444c739db72b551372794e406cd12833",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_25bba4d0464eefdd.py",
+   "response_sha256": "7c3a535663c13f183ab5b6eeff86f70c4b476889b2f6b7415281231ce6814a66",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "d34ceb7d7dbe5b681fc695c46a134482f0dc759f1e7c6ede395b068d12b856b5"
+ },
+ "2c420db103b29600": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235643Z-64a0f4",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "In the mutant, `last_arr` is the string itself, so for any array payload with no object braces the check `last_arr > first_arr` compares a str with an int and raises TypeError. A structured result that is a top-level JSON array, possibly wrapped in fences or extra text, can then no longer be parsed and validated against the caller's schema.",
+   "response_sha256": "5245db121b2d0475d1d0cef2d5284e5f275b7f1018f2ac0c2b768b7502c0d67b",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "last_arr = stripped",
+    "if first_arr != -1 and last_arr != -1 and (last_arr > first_arr):"
+   ],
+   "test_focus": "Give a provider response that is a fenced or chatter-wrapped top-level JSON array with no curly braces, and check that the extracted payload is exactly the array text and that it parses and validates against an array schema.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "prompt_sha256": "b58fa2444773f67f202bdb16b551204c65fe82d1b60fc5f4c277593e5d9634d2"
+ },
+ "2c9f7f6d82356258": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235643Z-f65766",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Inverting the isinstance check means JSON text returned by a provider is never decoded and gets rejected as not being an object. Already-decoded dicts are sent down the string-extraction path instead. As a result, text routes can no longer return structured data parsed against the schema.",
+   "response_sha256": "6ba115920362e4eae213e9e792058219e808d7157fa8c73b7670779b1c84fbe4",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if not isinstance(value, str):",
+    "if isinstance(value, str):"
+   ],
+   "test_focus": "Check that a structured text route whose provider returns a JSON string (including one wrapped in provider formatting) gives back the parsed dict matching the schema, and that a provider returning an already-decoded dict gives back that same mapping.",
+   "verdict": "pin"
+  },
+  "operator": "negation",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.914369Z",
+   "answer_sha256": "70e221e9169a6a53ff89fc4449ff7d5e72f6b33e8a7c74e045167795c659360f",
+   "call_id": "20260929T114718Z-aa77a1",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "70e221e9169a6a53ff89fc4449ff7d5e72f6b33e8a7c74e045167795c659360f",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_2c9f7f6d82356258.py",
+   "response_sha256": "74158e745d9d37d91f48e8f9bec03e03be003ff293a55a34f52a8fd36ed52279",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "4a4dc26437af993791bc5fa9274fed7df1f1f69cca06b880d25dcce4e8d79b7c"
+ },
+ "3346a8edbcf6b98d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235643Z-ab5236",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant strips a fence when only one end has backticks. An opening fence with no closing one then has its last line silently thrown away. This lets malformed provider formatting change the public structured result, for example turning an invalid reply into truncated data that still parses, where the original leaves the text alone.",
+   "response_sha256": "92da84b215df414d29ac61c681d9e206af9f03190c016f87f48a2c1e71df5826",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):"
+   ],
+   "test_focus": "Pass text that opens with ```json but has no closing fence, such as \"```json\\n{\\\"a\\\": 1}\\nextra\". Check that _strip_json_fence returns it unchanged and does not drop the last line, so it is not accepted as a structured result.",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.552429Z",
+   "answer_sha256": "757976e1dceef201e0725c1d9120faf85fffe81d3df02fa6cd5c1eec8fe4b885",
+   "call_id": "20260929T105401Z-3aa980",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "dfaa235889d423bbcacb8cbae4de2cdefe87e576dc94c5917f0aef98ed9ede14",
+   "effort": "",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_3346a8edbcf6b98d.py",
+   "response_sha256": "f85c2e01a73c489f812a105c93991962a43c549cce2654142bb9cedec87210d0",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "58b684d17cb40890432241a66574a4373534a6f9d785d0d4f5a674bfe9aac3d6"
+ },
+ "45ece0cc88cab110": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235643Z-66d4ab",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant turns off Markdown fence stripping completely. A provider reply wrapped in ```json ... ``` then reaches the parser unchanged and fails to parse, so provider-specific formatting changes the public structured result.",
+   "response_sha256": "5fcc2e3f3292289b9ec126478cb98cea8fb04f7618215e26a4e3894ceca77992",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if True:",
+    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):"
+   ],
+   "test_focus": "Give a text route a provider reply wrapped in ```json fences. Check that the public structured result parses and validates against the requested schema, and that it matches the result for the same JSON without fences.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "a5c170f70ef9da9973e1089a296d4d00664e1dd43299d33698c9ec1b35e7bf3d"
+ },
+ "496bb61b6b6a77ee": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235658Z-f2c9a2",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With no array brackets in the text (e.g. a bare JSON scalar like 42 or \"ok\", or ']' before '['), the mutant returns stripped[-1:0] == \"\" instead of the stripped text. That output can't be parsed or validated against the caller's schema, which breaks the structured result.",
+   "response_sha256": "50d64819b42dec2b6cf9d1f88f410a4552a3c55cbb240b04387af928cacfd37d",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if True:\n        return stripped[first_arr:last_arr + 1]",
+    "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:"
+   ],
+   "test_focus": "Send provider output that has no object or array brackets (e.g. a fenced bare scalar `42`). Check that the payload is the scalar text, not an empty string, and that the structured result validates against the requested scalar schema.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.599650Z",
+   "answer_sha256": "1379cf17c9e744c4398bff22f7f4cb288107e1931a0f46ef05f76bb461bf434d",
+   "call_id": "20260929T095130Z-a047dc",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "b34b0e4c2eb54e027d218c9735536d528d6c21c78b6ab3ff353d35960470b188",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_496bb61b6b6a77ee.py",
+   "response_sha256": "f993cdcd6d11f72dcd1bf9238dd128044567388d044e4f6a6691fd4080de913f",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "09fb90704ddb167aca0fb832a2bd8bf0652b6580b1c8e821f2dae712b6d8d202"
+ },
+ "4ca061c650885f70": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T091418Z-0c5c49",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "After value.strip(), stripped has no leading whitespace. So if it doesn't start with \"```\", lines[0].strip() can't match any fence marker and the mutant returns value, just like the original. Empty input also returns value in both versions, so the dropped startswith check is redundant.",
+   "response_sha256": "bdc46f63d128d796500d7cc2303baa3be74445e5bc0c1fe94178171f4c0894bb",
+   "sources": [
+    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+    "if not stripped or not stripped.endswith('```'):",
+    "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+    "Provider-specific response formatting shall not change the public structured result."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "method",
+  "prompt_sha256": "78f8f984f012e17aa6d8d0f56b94e0832f33b1c1279794bad05be1734b7b0dd3",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T091430Z-7cb6b4",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "78f8f984f012e17aa6d8d0f56b94e0832f33b1c1279794bad05be1734b7b0dd3",
+   "reason": "The removed startswith check is mathematically redundant because value.strip() ensures the string has no leading whitespace; if it lacks the code fence prefix, its first line cannot match the allowed fence formats in the subsequent check, causing both versions to safely return the original value.",
+   "response_sha256": "1a9ebf3dc9ab3909e37fb024b67d2a5d7320b4f68d06aed5334bc0d76fc8aaf3",
+   "sources": [
+    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+    "if not stripped or not stripped.endswith('```'):",
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "4f59dd985e000c94": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235658Z-93c04d",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant stops stripping fenced JSON. A provider reply wrapped in ```json fences then reaches the caller unparsed or fails to parse, so provider-specific formatting changes the public structured result.",
+   "response_sha256": "c1eccaee0138f29eda590bd8efa638fdb04a3d0a264b1d2d22183f956d7c9759",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if stripped.startswith('```') or not stripped.endswith('```'):",
+    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):"
+   ],
+   "test_focus": "Check that a structured text route whose provider returns JSON wrapped in a ```json Markdown fence yields the parsed, schema-valid result, the same as for unfenced JSON.",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "b32a4398739f92316c4fe17dec6ea0a1053a5f6c4b5efbc7e2a394e8f6c06689"
+ },
+ "55a384aafca36bde": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235658Z-fe2465",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When the candidate output fails to parse, the mutant returns None instead of a SchemaValidationResult with valid=False and an error message. As a result, callers can no longer tell that the output did not validate against the caller-requested schema, and they may crash when they read `.valid`. That breaks the requirement's promise that the structured result validates against the schema.",
+   "response_sha256": "10f42d56e865727e56f89f93e5ca944976362e07e087e37a5065a2935604b24c",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "        return None",
+    "        return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )"
+   ],
+   "test_focus": "Call validate_schema_output with a value that fails spec.parse, and assert that it returns a SchemaValidationResult with valid=False and a non-empty error_message, not None.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "prompt_sha256": "3cf2572205edcfcfc5d8fc0da12db142777b33f39b500b92f700b39078eb63d4"
+ },
+ "594d55ab4bfdf987": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235709Z-dc7dea",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For a fenced reply with an unrecognised tag (e.g. ```text), the mutant returns None where the original returns the text unchanged. Parsing None raises a TypeError instead of the normal structured-output parse or validation error, so provider-specific formatting changes the public result, which the requirement forbids.",
+   "response_sha256": "e777007cdf94c90d6648156adef88c34467e94e40fcaa0b79f34ccd56cc7eae3",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if lines[0].strip() not in {'```', '```json', '```JSON'}:\n        return None",
+    "return value"
+   ],
+   "test_focus": "Give a structured text route a provider reply wrapped in a fence with an unrecognised language tag (e.g. ```text) and check that the text reaches the parser unchanged and fails with the normal structured-output error, not a TypeError from None.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.553582Z",
+   "answer_sha256": "390605d6b0fe5942b2a9109f1bb1d41ff2bb6295aa90351e2fa29edab7f009c2",
+   "call_id": "20260929T105401Z-6b0b6f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "390605d6b0fe5942b2a9109f1bb1d41ff2bb6295aa90351e2fa29edab7f009c2",
+   "effort": "",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_594d55ab4bfdf987.py",
+   "response_sha256": "9a2e1128321cefedff2194fd1d836960df8c919a48b4807deb4aa63652c46944",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "41ea9c36f77c3dd0965abf26440278efc784edeb971bc2aeb6166a50b5679376"
+ },
+ "5b5f64ae9f619fd8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235709Z-0922e8",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without the last_obj > first_obj guard, text where a '}' precedes the first '{' (e.g. a JSON array of strings like [\"a}\", \"{b\"]) yields an empty/garbled slice instead of falling through to array extraction, so the structured result no longer parses and validates against the requested schema.",
+   "response_sha256": "072aca5320770b96dbecfaa6004532092b68df14e30d7da977c28b534c6794a8",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+    "if first_obj != -1 and last_obj != -1:"
+   ],
+   "test_focus": "Extracting a JSON array whose last '}' comes before its first '{' (e.g. '[\"a}\", \"{b\"]', optionally fenced) must return the whole array text and parse/validate against the requested schema.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.600987Z",
+   "answer_sha256": "f488085ec864573e637f675ba4dd3807ac08383062e9b2ef9cc254c13c334a51",
+   "call_id": "20260929T095148Z-f00d6d",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "90a812038b16782b0e132e1e1299dab3db3b141cb8800deab71d873ccc1e7ac5",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_5b5f64ae9f619fd8.py",
+   "response_sha256": "de217a72610cba7a310e2984084fd49d9f5a29d28a3416195ab2ff43e05b7c71",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "362efcca28404b277898e2a4d195bef47dbc5ef2e5549df00d5faac7c4f5b13c"
+ },
+ "5b724a1640748451": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235709Z-216529",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With the array branch disabled, a provider reply that puts a top-level JSON array of scalars inside surrounding text (e.g. \"Result: [1, 2, 3] hope this helps\") comes back unchanged instead of as \"[1, 2, 3]\". That text doesn't parse, so the caller never gets a structured result that validates against the array schema they asked for.",
+   "response_sha256": "25bdb300b2d230126c7a829f096e2288412f7eddc4452f0ce9e1a6b3f3aee865",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if False:",
+    "    if first_arr != -1 and last_arr != -1 and last_arr > first_arr:"
+   ],
+   "test_focus": "Request an array schema and have the provider reply with a JSON array of scalars wrapped in extra text (e.g. \"Here you go: [1, 2, 3] done\"). Assert the public structured result parses to [1, 2, 3] and validates against the schema.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "97a2c7fd460f99a9ebff8440163fef6938c552b9ef3037e77f5c4a9e24dece9a"
+ },
+ "5d42724e6abd7c36": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T123151Z-7af7aa",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The two versions only differ when the fenced text has exactly the minimum number of lines. There, the original returns an empty string (lines[1:-1] is empty) and the mutant returns the raw fenced text. Neither result is valid JSON, so neither can become a structured result that validates against the schema. The difference never reaches anything the requirement asks for.",
+   "response_sha256": "3c036c8cb171dc9a58726183702953d8d97cc18cc8248a58c999bb305acfbfac",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if len(lines) < _MIN_FENCED_JSON_LINES:",
+    "if len(lines) <= _MIN_FENCED_JSON_LINES:",
+    "return \"\\n\".join(lines[1:-1]).strip()"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "comparison",
+  "pin": {
+   "adopted_at": "2026-09-29T15:05:19.551335Z",
+   "answer_sha256": "d6d9596f99d271989e0a2ab467515efbf3db004f154d8d74d3fc1ef66e26bd1a",
+   "call_id": "20260929T150310Z-947f1d",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "d6d9596f99d271989e0a2ab467515efbf3db004f154d8d74d3fc1ef66e26bd1a",
+   "effort": "high",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_5d42724e6abd7c36.py",
+   "response_sha256": "2c09eb21caa51ef1f10b4bfcde8e76b60598b05be0edae9087870a7b1f07c2c6",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ]
+  },
+  "prompt_sha256": "6a8643c5333b2420dd7bd4de807953463e229eb616f9abb6ec0628d9750b436a",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T145535Z-cca001",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "6a8643c5333b2420dd7bd4de807953463e229eb616f9abb6ec0628d9750b436a",
+   "reason": "The mutant modifies the line count threshold, causing it to fail to strip formatting when the fenced content is empty. This violates the requirement by allowing provider-specific markdown fences to leak through into the structured result.",
+   "response_sha256": "69f9aed3bd20df1f3a05b04c4362d5006c1bc9864d0d17e7524724026ba2df24",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "without provider-specific result formatting leaking through.",
+    "if len(lines) < _MIN_FENCED_JSON_LINES:",
+    "if len(lines) <= _MIN_FENCED_JSON_LINES:"
+   ],
+   "test_focus": "A test must provide an empty payload wrapped in code fences and verify that the output is an empty string with the formatting completely stripped.",
+   "verdict": "pin"
+  }
+ },
+ "61ee605eb792ca32": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235722Z-ee6e7a",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant now sends every input, including dicts a provider has already parsed, through `_extract_json_payload` and `json.loads`. For adapters that return a mapping instead of a JSON string, this will most likely raise instead of returning the object. That breaks the promise of a structured result that validates for every supported adapter family.",
+   "response_sha256": "f2a9f21ce7c4b8f793874feffb93daf66bbea49f8d85f677c9477bb9a6da544e",
+   "sources": [
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if isinstance(value, str):",
+    "decoded = value"
+   ],
+   "test_focus": "Pass a provider response whose structured-output candidate is already a dict (not a string) and check that the public result is that same mapping and validates against the requested schema.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T12:19:27.430079Z",
+   "answer_sha256": "7c1d067686a5a4450c6e9d0bfb67be40ccfff8f8b929e14df00601b55ae61389",
+   "call_id": "20260929T121608Z-b122ac",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "7c1d067686a5a4450c6e9d0bfb67be40ccfff8f8b929e14df00601b55ae61389",
+   "effort": "high",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_61ee605eb792ca32.py",
+   "response_sha256": "a400748ef64c68cfd94d44a28017da77d66d48b17ada99b7471fac295c517186",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.LLMRouter.query",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "46934cbfab1d395a2fe8f4562f79e0f37e0719e0fc43f77b49ce5d5926b31f86"
+ },
+ "6232a4f662a368fe": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235722Z-e74240",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When a provider wraps JSON in a Markdown code fence, the mutant returns None instead of the JSON text inside it. The structured result then can't be parsed or validated, so the provider's formatting breaks the public structured result.",
+   "response_sha256": "4f6d46368cd99b499f8d13527234fb181f4c875dd5c9d7221d67ad287736103f",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "return \"\\n\".join(lines[1:-1]).strip()",
+    "return None"
+   ],
+   "test_focus": "Send a provider response wrapped in a ```json fence and check that the public structured result parses and validates against the requested schema, matching what the same JSON returns without a fence.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.602330Z",
+   "answer_sha256": "6be77c15b799b5c1aa74d7f6754ab1c40e79f948dca73f00e74ec62be1764fad",
+   "call_id": "20260929T095342Z-21c9ce",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "9960ad790d99508d5cd3a311d603cc6f39376d212031377f2969786bb67b3a33",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_6232a4f662a368fe.py",
+   "response_sha256": "1046eb83bb245064071b6cad0a9d2745f0397e5f76a830a7575f853c4143883c",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "9e9527381582bbb2ad210daadf0ddc39f2a107765501ede1e7fceb867fc4f2fa"
+ },
+ "695ed183c60fa307": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T105230Z-f44181",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the check that only accepts the opening fence tags ```, ```json and ```JSON, so it also strips fences with other tags or with content on the opening line. Whatever it returns still has to parse and validate against the caller's schema, and the confirmed input fails that step under both versions. So the public structured result that the requirement protects does not change, and the difference stays in how leniently the internal fence is recognised.",
+   "response_sha256": "a77bd7a6abbd125856dc17908bc39df60db240ed26810b2e0368ae5132aa77ee",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+    "Provider-specific response formatting shall not change the public structured result."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "ced97e246ec17da62f19a3417141b0861eb13e515c1105c453af2e214f4b51ac",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T145535Z-9e4085",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "ced97e246ec17da62f19a3417141b0861eb13e515c1105c453af2e214f4b51ac",
+   "reason": "The requirement mandates that provider-specific response formatting does not alter the structured result, but it does not specify a strict whitelist of markdown language identifiers that may accompany a code fence. The precise conditions and strictness under which a fence is stripped are an implementation detail.",
+   "response_sha256": "9ff4947954b6e0ce806b28e0823a03a8ff555b755f5d89b4cf2a9e6144f55c73",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+    "if False:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "69c9a7cc23c00f7e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235722Z-ba1534",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only differs when the text has no JSON object or array. In that case it returns the text without trimming surrounding whitespace, so the text holds no structured payload for the schema to validate anyway. Whenever an object or array is present, both versions slice out exactly the same text, so the public structured result is unchanged.",
+   "response_sha256": "d0c804ec7ced89ae22579e93b02cafd662d288f309c0e56c17e5cd707165cfb8",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "stripped = _strip_json_fence(value).strip()",
+    "return stripped"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "method",
+  "prompt_sha256": "014168042004f5052daa9130c69b8d69a7971a556b4d2a342aef640ce2d2db57",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T091453Z-ae1a58",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "014168042004f5052daa9130c69b8d69a7971a556b4d2a342aef640ce2d2db57",
+   "reason": "The requirement mandates that the public structured result must not leak provider-specific formatting, but since standard JSON parsers inherently ignore surrounding whitespace, omitting the strip operation does not change the final parsed data. For inputs lacking valid JSON objects or arrays, the differing whitespace in the intermediate string either parses to the same primitive value or equivalently fails to parse in both versions, rendering the difference irrelevant to the requirement's guarantees.",
+   "response_sha256": "b03b94e31039ae85a0704509100ebfd30fabcd0e471884d62a31700824bd2b1d",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Provider-specific response formatting shall not change the public structured result.",
+    "stripped = _strip_json_fence(value).strip()",
+    "stripped = _strip_json_fence(value)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "6dcac2e49b50d6c2": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235736Z-7e3540",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Turning `and` into `or` means a reply with only one bracket, or with brackets in the wrong order, gets sliced into garbage. For example, the valid JSON string \"a]\" becomes a lone quote character, while the original returns the text whole and it parses. That breaks returning structured data that parses and validates against the requested schema.",
+   "response_sha256": "3fad7495bacec0c80fcb75a601158b5b4acb6b23fd2a79db9a099daa16db5d0f",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if first_arr != -1 or last_arr != -1 or last_arr > first_arr:",
+    "return stripped[first_arr:last_arr + 1]"
+   ],
+   "test_focus": "Check that a structured reply whose valid JSON payload holds an unmatched bracket (e.g. the JSON string \"a]\" for a string schema, or \"x] y [\" chatter) comes back unchanged, so it still parses and validates.",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.603337Z",
+   "answer_sha256": "f705a560f5728e1d73ca5e00e67c623812366ac57a60070a62d1ef9a153b70b7",
+   "call_id": "20260929T095336Z-26e6ed",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "d79b7c28f94855ee68c345471ece5bb0dc91272c69374afe8e8d80c8e922ed0d",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_6dcac2e49b50d6c2.py",
+   "response_sha256": "6231e24e41a58ab5a0b09dbd16f04bf921b4f1ec715ef2517b39c3d763303a21",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.RootModel"
+   ]
+  },
+  "prompt_sha256": "b19275178207b076d4ead07fe10ec40d1700f429456d86e3f9d52b1948d00648"
+ },
+ "6de617b610b093eb": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235736Z-ee0971",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With this change, output that fails to parse is reported as valid, so data that doesn't match the schema gets through as a structured result. The requirement says the result must parse and validate against the schema the caller asked for.",
+   "response_sha256": "5f2eb48c1e96bd0768a7798c1e46014c4ff77745e3dd26dd23bdfa612847e4f7",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "return SchemaValidationResult(valid=True, error_message=preview_value(exc))",
+    "valid=False,"
+   ],
+   "test_focus": "Call validate_schema_output with a value that fails spec.parse, and check that the result has valid=False and a non-empty error_message.",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.604715Z",
+   "answer_sha256": "f7db19a2af56a6e6f0221401495ceccaa3920692ddc1f6a2984b191e8d8d5964",
+   "call_id": "20260929T095336Z-9ce90b",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "f7db19a2af56a6e6f0221401495ceccaa3920692ddc1f6a2984b191e8d8d5964",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_6de617b610b093eb.py",
+   "response_sha256": "e4d9d061de6da0a3fe22c7fcde05ac4231ace92123bdefb8bd5980a890a944f2",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.SchemaValidationResult",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "a4cfbd6961dbd0a79ef3eb7e70ed23d050ea1a41106a112cb6adb64aeda9149f"
+ },
+ "7130406b420847c9": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235736Z-b68a1f",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When the provider text has no brace or bracket pair, as with a scalar JSON value like `42`, `true` or `\"text\"`, the original returns the stripped text and it parses. The mutant returns None, so parsing crashes or fails, and a valid structured result for a scalar schema never reaches the caller.",
+   "response_sha256": "a9ea8601603cf4af2fdc5ca058937796381394a5f5035fee61f6c23fc69f8e0e",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "return None",
+    "return stripped"
+   ],
+   "test_focus": "The test must check that a provider response holding a bare scalar JSON value (for example \"42\" or a fenced \"true\") comes back as a parsed structured result that validates against a matching scalar schema, not a failure.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "prompt_sha256": "291adb47c38027d2ea2c0781a0d9876b1388eaea76f0c45def45bda631ac32c5"
+ },
+ "745bcea4332c9c50": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235736Z-4b2825",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant returns None where the parsed JSON object mapping should be, so a structured text route can no longer return structured data that parses and validates against the requested schema. No existing test runs this line.",
+   "response_sha256": "200e0781c3384d9dace8d6e5aa233df6183a25a256c09739092faf7393ee5273",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "return {str(key): item for key, item in decoded.items()}",
+    "return None"
+   ],
+   "test_focus": "Send a supported text route a structured-output response with a valid JSON object string (and one with an already-decoded dict), and check that the public result equals that object and validates against the requested schema.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.915816Z",
+   "answer_sha256": "7d6ff0ad77acb96b7367eadd74319acf3943a1a7bccaca855fb9acaedaebdce9",
+   "call_id": "20260929T114718Z-391b3e",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "7d6ff0ad77acb96b7367eadd74319acf3943a1a7bccaca855fb9acaedaebdce9",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_745bcea4332c9c50.py",
+   "response_sha256": "7b74df1cfccb8faa4b6d73ccacf602c10a16dc22eabe404e978ad960f3c79e86",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "156157a10262a58a7331f8ca6abd94267e79b61d71a25ac6f0fc8144d746213b"
+ },
+ "75054f13881a1d8f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235747Z-f22f24",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "In the mutant, `lines` is the whole string, so `lines[0]` is a single backtick character. That character never matches the allowed opening lines, so every fenced reply comes back unchanged with its Markdown fence still in place. A provider that wraps its JSON in ```json fences would then fail to parse, and the requirement says provider formatting must not change the structured result.",
+   "response_sha256": "31f13a5ecfb6a22d1658abbc6e086ddb4654ceffd3ee24427a90cbe944f4b2d3",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "lines = stripped",
+    "lines = stripped.splitlines()"
+   ],
+   "test_focus": "Give a supported adapter a text reply wrapped in a ```json ... ``` fence and check that the public structured result parses and validates against the requested schema. It must match the result for the same JSON without the fence.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "prompt_sha256": "5f2580304f8d34ff47c1b67c8a2453fa3e4f8139bd70311d7d82d3f856952e74"
+ },
+ "79163f48d8a86b51": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235747Z-54ed75",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant turns off array extraction for well-formed arrays, so a provider reply that wraps a JSON array in extra text is returned unparseable instead of as the array. Provider-specific formatting then changes the public structured result, which the requirement forbids.",
+   "response_sha256": "5efa3adaf9ade88d8d068d385faaed365ae0d4b2347010817351656cdb546057",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if first_arr != -1 and last_arr != -1 and (last_arr < first_arr):"
+   ],
+   "test_focus": "With a caller-requested array schema, a provider reply that surrounds a JSON array of scalars with prose (no braces) must still return the parsed array and validate against the schema.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "prompt_sha256": "8376469cdc48885dbd68d5dda2363e563eaf896c2d8d457e4ebe1c6567f213f7"
+ },
+ "7bb039bcfc778dc9": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235747Z-d3c8b9",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without the closing-fence check, any reply that starts with ``` has its last line thrown away, whatever that line is. A malformed or unclosed reply (for example \"```\\n1\\n2\") can then parse as truncated data instead of being rejected, so provider-specific formatting changes the public structured result.",
+   "response_sha256": "2f00d5a999acdc0cc8acbd9de8c98cda59f36803be9e18b1ddab619173bbe4be",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+    "if not stripped.startswith('```'):"
+   ],
+   "test_focus": "Test that a reply opened with ```json but not closed with ```, such as \"```json\\n{\\\"a\\\":1}\\n{\\\"a\\\":2}\", is returned unstripped with its last line kept, rather than being cut down to parseable data.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.554674Z",
+   "answer_sha256": "4ba559c93eba047215d64a6afc20b845448a77833b272ccf046db0bd5197ca02",
+   "call_id": "20260929T105401Z-f8f3d3",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "4ba559c93eba047215d64a6afc20b845448a77833b272ccf046db0bd5197ca02",
+   "effort": "",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_7bb039bcfc778dc9.py",
+   "response_sha256": "d7c79ec22dbd06a8173358ede021096dc6997798622dd045e895dc01e18747d3",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "aebc674123031f5481443961349275e475015014761f9e7864d48a7391026f7a"
+ },
+ "7d94e9829a10df2e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235747Z-887cf5",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With the mutant, a provider reply wrapped in a ```json fence is passed through unchanged, so it no longer parses as the requested structured data. The provider's Markdown formatting then changes the public result, which the requirement forbids.",
+   "response_sha256": "bc7a491be84f51ef116cd520c886fff734127e379f43713885bdc811ab5de1e5",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if len(lines) < _MIN_FENCED_JSON_LINES:"
+   ],
+   "test_focus": "A text route whose provider returns the JSON inside a ```json ... ``` fence must still return a parsed structured result that validates against the requested schema.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "60c6752b04d6a20b17384b6c06fa153d3b3a4ee4fb3e4b24cf45c4c4e514d1cd"
+ },
+ "8400a761e6861e17": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235801Z-dda49b",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant no longer strips surrounding whitespace before looking for the fence. A provider reply such as \"\\n```json\\n{...}\\n```\\n\" (a fenced block with a leading or trailing newline, which is common) keeps its fence and then fails to parse. That lets provider-specific formatting change the public structured result, which the requirement forbids.",
+   "response_sha256": "6dc840565c5dea3737be8e9959f8fe3967d8b5ea7a26599ef848a9aacf477bf5",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "stripped = value.strip()"
+   ],
+   "test_focus": "Check that a fenced JSON reply with leading or trailing whitespace or newlines around the ``` fence still parses into the structured result and validates against the requested schema.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.601567Z",
+   "answer_sha256": "451b854e35243657a740644dba17679ace88c8c3e7295e0a1d3d4065cbb53738",
+   "call_id": "20260929T120217Z-4dba11",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "451b854e35243657a740644dba17679ace88c8c3e7295e0a1d3d4065cbb53738",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_8400a761e6861e17.py",
+   "response_sha256": "944eb9fd04e3d405f67dfa8668d4fc5f14fa58032c10d93bbf0c8244a680dbc3",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "f1791b2c06bd08a6256e48b38156d9a816bf75b6ec9a8416b2ab61679a493cd6"
+ },
+ "87ad8ca644dbe3d7": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T105246Z-240c7d",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the diagnostic error_message on a failed validation. It still reports valid=False and leaves successful parsing unchanged. The requirement covers returning structured data that parses and validates against the schema, not the wording of failure diagnostics.",
+   "response_sha256": "99d172becbcf46f0152b50f698d83055c2113d7c3421f5aa81e67cd1479e1c04",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "return SchemaValidationResult(valid=False)",
+    "error_message=preview_value(exc),"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "84b814bb78715067a0c58079911d7fb086a6bc4b1770eee99001ad6d3a9d0cc9"
+ },
+ "8f18e1a435591236": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235801Z-618912",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With the mutant, any provider reply wrapped in a ```json fence becomes an empty string. That reply then fails to parse into the requested schema, so provider-specific formatting changes the public structured result.",
+   "response_sha256": "9d75a48465f10ec79cda62e09a558d2742e7788237f182a1695205499dfce576",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "return \"\\n\".join(lines[1:-1]).strip()",
+    "return '\\n'.strip()"
+   ],
+   "test_focus": "Give a supported text route a provider response of ```json\\n{...}\\n```. Assert that the public structured result parses and validates against the requested schema with the expected field values.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.606077Z",
+   "answer_sha256": "f1efc9e74f016c2a10ad6943c8b2165f09562bf93411cad56b6d6c27a71f1013",
+   "call_id": "20260929T095409Z-1bd10c",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "ace333a53f341a2f588af96e8c60e32dab9cc5ecb3880cc9a33ee87162b7fef3",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_8f18e1a435591236.py",
+   "response_sha256": "043ecc3f77e7ede6adbb8f629cff3ace2e6c8b24a475775e95372a404939df47",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.BaseModel",
+    "pydantic.Field",
+    "pytest.MonkeyPatch"
+   ]
+  },
+  "prompt_sha256": "e264a5a4482c72a6ecab0bde081b06dce1bf7c0233803a0fcdb37624b350a866"
+ },
+ "8faa56db726fb19e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235801Z-c3f8d7",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without the closing-fence check, the mutant strips the first and last lines from any text that only opens with ```. That can silently drop provider content and change the structured result, where the original leaves the text untouched. This breaks the rule that provider formatting must not change the public structured result.",
+   "response_sha256": "55ab70566f04a8f5c36b8c8cf297c5aa961fd927f747502025a04745e78975b7",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+    "if not stripped.startswith('```') or not stripped:"
+   ],
+   "test_focus": "Check that text opening with ``` but lacking a closing fence (e.g. \"```json\\n{\\\"a\\\":1}\\n{\\\"b\\\":2}\") is returned unchanged rather than having its first and last lines stripped.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.560909Z",
+   "answer_sha256": "4cc141b076ab6c7ac7f3ebbacca71e68faf6745d840ee45b6eb65caf2aa5a07d",
+   "call_id": "20260929T112151Z-3f1797",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "4cc141b076ab6c7ac7f3ebbacca71e68faf6745d840ee45b6eb65caf2aa5a07d",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_8faa56db726fb19e.py",
+   "response_sha256": "62bc013b3c38c9c957f77a3b0ce38bd9868f24f9c05a8f90aa730445f6da32fd",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "51e64cfb4a30455dfa55e6710505b5649a93e9585b9373b52ca43708be65a552"
+ },
+ "9441d73a639d5991": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235812Z-d883ff",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutated condition can never be true, so a JSON array surrounded by provider chatter is returned with the chatter still attached and fails to parse. That lets provider-specific formatting change the public structured result, which the requirement forbids.",
+   "response_sha256": "043c11358eb69631ce6fcb26d94cde82f51b27e5e1591e7724abc5cabe10d11f",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if first_arr != -1 and last_arr == -1 and (last_arr > first_arr):"
+   ],
+   "test_focus": "Given provider text like 'Here you go: [1, 2, 3] hope this helps', check that _extract_json_payload returns exactly '[1, 2, 3]' and that the structured result parses and validates against an array schema.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "prompt_sha256": "26ee26e56a992131325725cca4e4486a5f203fbd85c09ca1b2087176e11d136d"
+ },
+ "947990a908ee3485": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235812Z-ba6283",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant flips the closing-fence check, so a properly fenced reply such as \"```json\\n{...}\\n```\" is returned with its fence still on. The JSON then fails to parse and the schema check fails. That is the provider-specific formatting leaking into the public structured result, which the requirement forbids. The mutant also strips text that has no closing fence, as the confirmed input shows.",
+   "response_sha256": "af7447455fe14d7abd2daa90b174d230478d0a0a50f48e4091d2e752e237e620",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if not stripped.startswith('```') or stripped.endswith('```'):"
+   ],
+   "test_focus": "Test that a structured text route whose provider wraps valid JSON in a ```json ... ``` fence returns the parsed object that validates against the schema. Also test that a reply with an opening fence but no closing fence is returned unchanged.",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "df4ebc8e713c8e63090df9c40114c1aa55191d1d96e42094e37232c50216ae43"
+ },
+ "SM-1134D975": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171746Z-77bd27",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "On the confirmed input, both versions reject the output and produce no structured result; the only difference is the exception class (ValueError vs TypeError). The requirement only covers returning structured data that parses and validates against the caller's schema, and says nothing about which error type a rejected output raises. For text that is already a valid JSON object, skipping extraction should give the same dict or a more faithful one (inferred, not run).",
+   "response_sha256": "1fb7e7cecd866a4ff2228c0d2d455364a9525102e751befc7d8087652f3e7e13",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Provider-specific response formatting shall not change the public structured result.",
+    "        try:\n            decoded = json.loads(value)\n        except json.JSONDecodeError:\n            value = _extract_json_payload(value)",
+    "the original gives ('raises', 'ValueError') and the mutant gives ('raises', 'TypeError')"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "03320b27b72da404ca2e5700a2d30e8a8a0006284cae95f29eeed36ea19fa6f7",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T201120Z-94386b",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "03320b27b72da404ca2e5700a2d30e8a8a0006284cae95f29eeed36ea19fa6f7",
+   "reason": "The requirement mandates that the text route must return structured data that parses and validates against the schema, independent of provider-specific formatting. It does not mandate which specific exception type to raise when parsing malformed or garbage inputs. The difference between raising a ValueError and a TypeError for invalid input is an implementation detail not covered by the requirement.",
+   "response_sha256": "f0c386b53c692e7102fe9f59ae0a37a3a35cd8b502ae745cdb54031df11d2ea5",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema. Provider-specific response formatting shall not change the public structured result.",
+    "value = _extract_json_payload(value)",
+    "raise ValueError(msg) from exc",
+    "raise TypeError(msg)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "SM-2D3D81E7": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171746Z-e1f358",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement says the structured result must parse and validate against the caller-requested schema, which here is a JSON object. The mutant unwraps a one-item list like [{}] and accepts it instead of raising TypeError. This lets a provider's non-conforming output shape pass silently as the public result.",
+   "response_sha256": "280ae8bebb98fc75403d94080359e5bd55fb536ce8ae4ab1d3ad545a19553d0a",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if isinstance(decoded, list) and len(decoded) == 1:",
+    "decoded = decoded[0]"
+   ],
+   "test_focus": "Passing a one-item list containing an object (for example [{}] or the JSON string \"[{\\\"a\\\": 1}]\") to structured-output parsing must raise TypeError (\"Structured output must be a JSON object.\") and must not return the inner dict.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:34:01.871927Z",
+   "answer_sha256": "dcbea4e9717f7e7f1b92206e22d62a6ff8ce505681d4b6acc3ed69a2f8158bef",
+   "call_id": "20260929T193017Z-f73095",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "dcbea4e9717f7e7f1b92206e22d62a6ff8ce505681d4b6acc3ed69a2f8158bef",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_sm_2d3d81e7.py",
+   "response_sha256": "dd568d52ce323824a720ade917e43fef563525f69e55871533e3d544a4eba38f",
+   "source": "last resort",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "5c2508a01b2a2c13f2135b29c1f664b029799b6a22cd39fe0e4a639fabbd682a"
+ },
+ "SM-69699DF1": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191129Z-e70aed",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only moves the `find(\"[\")` and `rfind(\"]\")` calls ahead of the object check. On a str these calls have no side effects and cannot raise, and the order of the returns (object first, then array, then the stripped text) is unchanged, so every input gives the same result.",
+   "response_sha256": "7cf2d31d89dc6be3263cf2a0fed921fa9dfe294e4fea49ef3d15a5d88b7bb10e",
+   "sources": [
+    "first_arr = stripped.find(\"[\")",
+    "last_arr = stripped.rfind(\"]\")",
+    "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "cea18fdaf292132a511494a16eaecb97db2317a94341929d4e4fa9e5a75de4c7",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T201201Z-d311eb",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "cea18fdaf292132a511494a16eaecb97db2317a94341929d4e4fa9e5a75de4c7",
+   "reason": "Moving the array boundary search calls before the object return statement does not alter behavior because string search methods are pure and have no side-effects.",
+   "response_sha256": "971022cddc16465a7a66ba1c0c10d396ae323f325ee25107f05374817af6d6c7",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "    first_arr = stripped.find(\"[\")"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "SM-943AE866": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171746Z-0edd88",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Unfenced input: the mutant only trims surrounding whitespace, which JSON parsing ignores, and both '\\n' and '' fail to parse, so the structured result is the same. Fence labels: the mutant also unwraps fences like ```yaml, where the original returns text starting with ``` that can never parse as JSON. So it never changes a successful result; it can only turn a failure into a result still checked against the caller's schema, which the requirement doesn't forbid.",
+   "response_sha256": "c09234f87db3275da8c2a5091b420e318b6acae2d710597067dc9482b220b11d",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Provider-specific response formatting shall not change the public structured result.",
+    "        return stripped",
+    "    if not lines[0].strip().startswith(\"```\"):",
+    "    if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "4576a04c800d3abddf1819d3d5a444471b84a6f69c98885d9bd64bb2d4250d2a",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T201120Z-25e391",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "4576a04c800d3abddf1819d3d5a444471b84a6f69c98885d9bd64bb2d4250d2a",
+   "reason": "Returning a whitespace-stripped string instead of the original value when no markdown fence is found does not affect the parsed JSON, as JSON parsers ignore leading and trailing whitespace.",
+   "response_sha256": "179b316e01ddd39a783602bbb7d90b3847815c0b50bbda205c19257be13c16ef",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "return value"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "SM-A1CB8BE4": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191129Z-15a6c1",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant marks any dict or list as valid and returns it raw, skipping spec.parse. Output that doesn't match the schema is accepted and never parsed, which breaks the requirement that the structured result parse and validate against the schema the caller requested.",
+   "response_sha256": "bee655e7d74906089683ca3c912504fc0f6b60188306e45a34725b920262dcc2",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "if isinstance(value, (dict, list)):",
+    "return SchemaValidationResult(valid=True, value=value)"
+   ],
+   "test_focus": "Give validate_schema_output a dict that the SchemaSpec parser rejects and check that the result has valid=False and an error message. Also check that a dict the parser accepts returns the parsed value, not the raw input.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "6e04a8ff0f498138bd0f4b9b0f94300b56aff1820ced05d157b6f382abf19c8e"
+ },
+ "SM-C1639EC8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171746Z-390ac1",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant strips and lowercases every key in the parsed object. A result with mixed-case keys or keys that have spaces (for example \"userName\") would then no longer validate against the schema the caller asked for, and the key names the caller sees would change. That breaks the requirement that the structured result validate against the requested schema.",
+   "response_sha256": "426ba7f860573b7f98817166a98d9290f3345ba4966f6dc811086a188bf5b390",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "return {str(key).strip().lower(): item for key, item in decoded.items()}"
+   ],
+   "test_focus": "Parse structured output whose keys have mixed case and leading or trailing spaces (e.g. {\"UserName\": 1, \" Key \": 2}). Check that each key comes back exactly as given and that the result still validates against a schema that uses those exact key names.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:27:59.755216Z",
+   "answer_sha256": "af368ec2e3c04f1acc9d54a86d25f9751895ac4500b80d50367bc328166d064d",
+   "call_id": "20260929T172149Z-e10518",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "af368ec2e3c04f1acc9d54a86d25f9751895ac4500b80d50367bc328166d064d",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_sm_c1639ec8.py",
+   "response_sha256": "553f2d8bc7970cee2c75e084a7f6e88fd965b3e75f9bb5d18729fca2b56987ed",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "e33cf5851ff40e15e71fadb4d7613236f60df8fb0b2c05cc979f7936213f1bb1"
+ },
+ "SM-FDD8D792": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171746Z-7889c7",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant silently drops keys whose value is null. A schema with a required nullable field would then get a result that fails validation, and the public structured result would differ from what the provider returned. The confirmed input {'.': None} \u2192 {} shows this.",
+   "response_sha256": "040af403ad42596455f73646c92d01c426231147adccae1ce1a186c3a756c60a",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "return {str(key): item for key, item in decoded.items() if item is not None}",
+    "return {str(key): item for key, item in decoded.items()}"
+   ],
+   "test_focus": "Parse a structured output that contains a null-valued field (for example '{\"a\": null, \"b\": 1}'). Assert that the returned mapping keeps key \"a\" with value None and still validates against a schema where \"a\" is required and nullable.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:27:59.757913Z",
+   "answer_sha256": "fdc8bf695622e76c778660ff288da9cad4c54fa4eb03e8cc721d47edf5c62639",
+   "call_id": "20260929T172149Z-c323b2",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "fdc8bf695622e76c778660ff288da9cad4c54fa4eb03e8cc721d47edf5c62639",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_sm_fdd8d792.py",
+   "response_sha256": "09a6d38b31fdea7b0b8faa97a3698d725da3a9db914e0748a33db67ab6bbb0a5",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "7e99d69a0d76cbc9bc6259f9fba9a760cae79e6bc2f9f4ad715c86ab78e66f56"
+ },
+ "a1048e7de4231e38": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T105254Z-be330c",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "If a provider wraps its JSON in a \"```JSON\" fence, the mutant leaves the fence in place. The structured result then fails to parse, so provider-specific formatting changes the public result, which the requirement forbids.",
+   "response_sha256": "89076f66fb6f6074dc456e70dcc6f16fd13d4718b738b8dec401b83c30126a7e",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:"
+   ],
+   "test_focus": "A structured text response wrapped in \"```JSON\\n{...}\\n```\" must come back as the parsed object and validate against the requested schema, exactly as it does for the \"```json\" and bare \"```\" fences.",
+   "verdict": "pin"
+  },
+  "operator": "container",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.603659Z",
+   "answer_sha256": "2008126cb9197baf1a26bce2ab82f211b02e013a13dcc823453d394fd45664d0",
+   "call_id": "20260929T120217Z-3c7bde",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "2008126cb9197baf1a26bce2ab82f211b02e013a13dcc823453d394fd45664d0",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_a1048e7de4231e38.py",
+   "response_sha256": "cab3226e02ac2025531aaedac4ac97e754d19c29a331cbc8e72044d306820e3f",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "910c0ee3e2f498594c2370d4de9bc780ca277d4302a947ed9fe611fd5f378139"
+ },
+ "a1ecc6333d1910f4": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235812Z-4d01fa",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Iterating the dict directly unpacks its keys instead of key/value pairs. A normal JSON object like {\"name\": \"x\"} then raises ValueError or gives garbage. That breaks the promise to return structured data that validates against the requested schema.",
+   "response_sha256": "b35b698f0a451dc595ee731f5af7301c044dd52fc13e5bc7253e5adc57a1768a",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "return {str(key): item for key, item in decoded}"
+   ],
+   "test_focus": "Parse a structured-output JSON string with multi-character keys, such as {\"name\": \"Ada\", \"age\": 3}, through a supported text route. Check that the public result equals that exact mapping.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.917466Z",
+   "answer_sha256": "f630559fdb133e21581733fbe6d54df056a70ac700a9644a23ed3e8d243e4f5c",
+   "call_id": "20260929T114718Z-e535e2",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "f630559fdb133e21581733fbe6d54df056a70ac700a9644a23ed3e8d243e4f5c",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_a1ecc6333d1910f4.py",
+   "response_sha256": "3fa59159c2c0310f8b15654de61471ef3b489be5a0661add351f6044d5d90e9a",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "54bc29357fe866522dbcd4071ca4b5eb89380d2bbb2bbcfe16bfe8cfb9c6391b"
+ },
+ "a57b176468930694": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235824Z-420a41",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without the closing-fence check, a response that opens a fence but never closes it loses its last line. That line is real content, so the output is truncated. This can make broken or partial provider output look like valid structured data, or change the result, which lets provider formatting alter the public structured result.",
+   "response_sha256": "740548cabd2175e67580b98c80c1bd028c4b85c932196096a8a3452a7dc31901",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
+   ],
+   "test_focus": "Check that text opening with ```json but lacking a closing fence is returned unchanged, keeping its final line, while a properly closed fence is still stripped.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.556218Z",
+   "answer_sha256": "d67e6e945721363c5761edde78ec73662020ebc3cae2a37ae02180da8ead329f",
+   "call_id": "20260929T105401Z-da3a10",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "d67e6e945721363c5761edde78ec73662020ebc3cae2a37ae02180da8ead329f",
+   "effort": "",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_a57b176468930694.py",
+   "response_sha256": "19b4c6ff7318fded2870acaf5d7a36a17e9191595021cafe74ee159fe23e7a0c",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "53a436eebab94616ddbcf74577a4c1b0d187494a71347e12690f7ae4ac713f6e"
+ },
+ "a6d49b98e29bf6d3": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T105254Z-9ab783",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "If a provider wraps its JSON in a fence whose opening line has trailing whitespace (\"```json \"), the mutant leaves the fence in place, so the structured result fails to parse. That means the provider's response formatting changes the public result, which the requirement forbids.",
+   "response_sha256": "924de6ed7a1ffcc9f9fb5372542e56d07be9f508f7a56b1af401ce73e70b76bc",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:"
+   ],
+   "test_focus": "Check that a structured response wrapped as '```json \\n{\"a\": 1}\\n```' (opening fence line with trailing whitespace) is unwrapped, parses to {\"a\": 1} and validates against the requested schema.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.604971Z",
+   "answer_sha256": "37d0756759c0a930f56541d5b0ba8d6f5a0a224235bde9ec92b4177604737efe",
+   "call_id": "20260929T120217Z-fa9f87",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "37d0756759c0a930f56541d5b0ba8d6f5a0a224235bde9ec92b4177604737efe",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_a6d49b98e29bf6d3.py",
+   "response_sha256": "e7f0f6a71b1e245004347d7ca805fb804fef6bf5c716f85d5d8935735e0ce1bb",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "b24a00b066bfaed6b5b5751dc7a91697e14856e51ed9a18ff313e675bb1c560a"
+ },
+ "a7ba458316157d60": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T105300Z-6315c1",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops support for an untagged ``` opening fence. If a provider wraps its JSON in a plain Markdown fence, the fence stays in the output and the structured result fails to parse or validate. That lets provider-specific formatting change the public result, which the requirement forbids.",
+   "response_sha256": "f6efdcbafd8a1423f09e160b9cc8b046d10fb83176712427dc774bf3a734d4f3",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if lines[0].strip() not in {'```json', '```JSON'}:",
+    "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:"
+   ],
+   "test_focus": "Wrap a valid JSON object in a plain ``` fence with no language tag (e.g. \"```\\n{\\\"a\\\": 1}\\n```\") and check that the bare JSON is returned and parses and validates against the requested schema.",
+   "verdict": "pin"
+  },
+  "operator": "container",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.606162Z",
+   "answer_sha256": "b4141fb3c9caf10ac0dd8755f8933b58af10c4648095069ab28737b3270ab69b",
+   "call_id": "20260929T120217Z-344811",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "b4141fb3c9caf10ac0dd8755f8933b58af10c4648095069ab28737b3270ab69b",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_a7ba458316157d60.py",
+   "response_sha256": "9fd9fb7008476adb92200fdd3d9fa2e1ecaba3a9ab069ad0ff6539f1f31868e9",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "127d515399ec83764a25f6c5f80be50284219653d51803d5269497be7d4a28dc"
+ },
+ "ace0572a7b9ddcf1": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000118Z-db20d3",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "After the change, a provider response wrapped in a ```json fence is no longer unwrapped, so the structured result fails to parse or validate. That lets provider-specific formatting change the public structured result, which the requirement forbids.",
+   "response_sha256": "ba19189fac90b10d6707a46b3df91084afaf35881c076fdfea58cf3a96b91001",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through."
+   ],
+   "test_focus": "A text route whose provider returns schema-valid JSON wrapped in a \"```json\" fenced block must return the parsed structured result that validates against the requested schema.",
+   "verdict": "pin"
+  },
+  "operator": "container",
+  "prompt_sha256": "c022e3992af306281d95a353a5e40c16720f2232d2bcee1bb71c758f3a213753"
+ },
+ "b5318e3ef6f5d37e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000127Z-01d710",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With this change, every structured-output candidate raises TypeError, including valid JSON objects. As a result, no supported text route can return the parsed structured data the requirement asks for. No test currently reaches this line, so a pin has to exercise the success path.",
+   "response_sha256": "f2136fecbef5d4ca1df732c0540c0ced6e150a13869bf4dd843f21dcda0e132f",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "    if True:",
+    "if not isinstance(decoded, dict):"
+   ],
+   "test_focus": "Check that a supported text route returns a valid JSON object response, or JSON wrapped in provider formatting, as a parsed dict that validates against the requested schema. Also check that a JSON array or scalar raises TypeError.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.919140Z",
+   "answer_sha256": "2db3fcf8cc284b57bf885eed4bd1e65ef691d3e2b57282a1da64e1207642c7f5",
+   "call_id": "20260929T114718Z-74d52a",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "2db3fcf8cc284b57bf885eed4bd1e65ef691d3e2b57282a1da64e1207642c7f5",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_b5318e3ef6f5d37e.py",
+   "response_sha256": "8b1d06da0de40aecffae2d3c79cf6d4443fa05160478388886efc755cd7ec782",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "2c61df7ff3be4addda0c79325a4385c036029d674c4133f78a40e67fb714cdcc"
+ },
+ "bda23ea9bf7ea9e3": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000127Z-a68b6b",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With the flipped comparison, any fenced reply longer than the minimum line count, such as a pretty-printed JSON object inside a code fence, is returned with the fence still on. That reply then fails to parse, so the provider's formatting leaks into the public structured result. This breaks the requirement that such formatting must not change what callers get back.",
+   "response_sha256": "54b7f5a75e4ee5dcd9e14e7403d6c7762c983476f62210f8eefabb7d6dbf4326",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if len(lines) > _MIN_FENCED_JSON_LINES:"
+   ],
+   "test_focus": "Give a structured text route a provider reply of multi-line JSON wrapped in a ```json fence (more than three lines). Check that the public result parses and validates against the requested schema.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "prompt_sha256": "bd8090eec13dcba5dadbcbb19cc507199b2880f4b48854887524db057bb8347f"
+ },
+ "bfa1905a769a5c06": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000127Z-5ab3d3",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "If the mutant always returns an empty dict, every structured result loses the caller's data, so it no longer holds the requested content and fails schemas that have required fields. No test currently runs this function, so a test must pin it.",
+   "response_sha256": "9cedcf3cb4a4821ccc1824667db2d7188dd74e0b1cf3cd5011c3df4e5f042b9c",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "return {str(key): item for key, item in decoded.items()}",
+    "return {}"
+   ],
+   "test_focus": "Send a structured text request whose provider response has a JSON object string, possibly wrapped. Assert the public structured result equals the parsed object with its fields and validates against the requested schema. Also assert that non-JSON input raises ValueError and a non-object value raises TypeError.",
+   "verdict": "pin"
+  },
+  "operator": "body",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.608551Z",
+   "answer_sha256": "c721b93e6feb5989b42b99944c6c5d9bad2086bf27df2788f43c0eadc5a26bc9",
+   "call_id": "20260929T120217Z-4b3599",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "c721b93e6feb5989b42b99944c6c5d9bad2086bf27df2788f43c0eadc5a26bc9",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_bfa1905a769a5c06.py",
+   "response_sha256": "597b4fc7648a36f059a9cb48aab124685032d4367b6c626e0dd6e03bf2157c5e",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "71f938575312eb21ae2b2e248a2604beffbc28737b41e8702d40cb3aa33bdc12"
+ },
+ "c1932ce7c6d4798d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000127Z-f946dc",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When a provider sends back a JSON array, possibly wrapped in fences or extra text, the mutant returns None instead of the array text. Parsing then fails, so a caller who asked for an array schema gets no valid structured result. That breaks the requirement.",
+   "response_sha256": "7eab290719159c3569a3beba4d3ac4fdb332c4d9565236faef4d601e80f4ca58",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "return None",
+    "return stripped[first_arr : last_arr + 1]"
+   ],
+   "test_focus": "Request an array-typed schema where the provider returns a fenced or chatter-wrapped JSON array with no object braces. Check that the public structured result parses to that array and validates against the schema.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "prompt_sha256": "ca2271abbc8f18745e42748821d6444860ed52a322d08fd0f6320d5569cd2d7e"
+ },
+ "c53380d99ec39dcd": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000140Z-3d2361",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without the `first_arr != -1` check, text that has a ']' but no '[' (and no {...} object) gets sliced from index -1. For example, the valid JSON string \"\\\"a]\\\"\" becomes an empty string instead of being returned unchanged, so a valid structured reply no longer parses against the caller's schema.",
+   "response_sha256": "8970a512de25cbf6c712bbd48db4cc24cf64e60cbfe2004b7cc591ed0ad435eb",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
+    "if last_arr != -1 and last_arr > first_arr:"
+   ],
+   "test_focus": "Give the extractor or a structured text route a reply with a ']' but no '[' or braces, such as the JSON string \"\\\"a]\\\"\", and check that the text comes back unchanged and parses.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.607577Z",
+   "answer_sha256": "7005268bbfb1b1005da87ae25be8616055ee77803ba657d54f21a0c2da165961",
+   "call_id": "20260929T100038Z-2a7eac",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "7dbced01477526a85d15e07275612e7669bfe51c881260777538c5b5c0428da8",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_c53380d99ec39dcd.py",
+   "response_sha256": "ca82793aa3180b9a92f1a904e2a70a26af867b702c0928b85a0eb75ee2ad5f24",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "pydantic.RootModel"
+   ]
+  },
+  "prompt_sha256": "afd83257a623b8b1c05475e28f276373bb953956190a83b859fc1f5205639c83"
+ },
+ "cafa38eadba9fb9f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T105300Z-0008a0",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only keeps whitespace around the JSON body inside the fence. JSON parsing ignores surrounding whitespace, so the parsed structured data and its schema validation are the same. The requirement covers the parsed, validated result, not the intermediate text.",
+   "response_sha256": "7be6325ae21edea6fd1072dfbb0037f873123860e2d798f0a17bdcecf7604389",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "return \"\\n\".join(lines[1:-1]).strip()",
+    "return '\\n'.join(lines[1:-1])"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "method",
+  "prompt_sha256": "cdbbd3e29d69392c9546e48960fc75521fb8418afdc272a5fad4657f64d53a07",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T145607Z-7031a7",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "cdbbd3e29d69392c9546e48960fc75521fb8418afdc272a5fad4657f64d53a07",
+   "reason": "The extra whitespace returned by the mutant does not affect JSON parsing, meaning both versions produce strings that parse into the exact same structured data. The requirement only mandates that the output parses and validates against the schema, not that it is strictly stripped of whitespace.",
+   "response_sha256": "2789ee95db1e8874250f75253192d0b861734da24f9bc2f90f6ccaeb80f84bbf",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "return \"\\n\".join(lines[1:-1]).strip()"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "d3d06f3ed1c4b9af": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000140Z-28be9e",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "If the structured-output text isn't valid JSON, the mutant stops raising the \"not valid JSON\" ValueError. `decoded` is then never set, so it crashes with UnboundLocalError. The requirement promises structured data that parses and validates, so a parse failure must be reported as a ValueError, not as an internal crash.",
+   "response_sha256": "536cdb45b5a685b0997cb4247080aa98f0b24214d6432c53e5442b0628ab5c2d",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "raise ValueError(msg) from exc",
+    "msg = f'Structured output is not valid JSON: {exc.msg}.'\n            pass"
+   ],
+   "test_focus": "Give _parse_json_object (or a text route) a string that is not valid JSON, and assert that it raises ValueError with the message \"Structured output is not valid JSON\".",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.610473Z",
+   "answer_sha256": "ab6639a964c5e1e9d9c51c636af02a43f53a581667f88c706fc84902c9e5a9b6",
+   "call_id": "20260929T120217Z-345dc0",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "ab6639a964c5e1e9d9c51c636af02a43f53a581667f88c706fc84902c9e5a9b6",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_d3d06f3ed1c4b9af.py",
+   "response_sha256": "420550dc775c69d6e2b6c92e9b1db8fc49d45ce7b4e2f5dd403052639f0aaaea",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ]
+  },
+  "prompt_sha256": "1f433b71057793bd1dc464ddd34affa23b7d40349aeab812bde1effcba88e104"
+ },
+ "d46cfe0eae74f0be": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000140Z-8629a5",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For a JSON array wrapped in provider chatter (e.g. \"Result: [1, 2] done\"), the original returns \"[1, 2]\". The mutant skips the array branch whenever '[' is present, so it returns the whole text with the chatter still in it, and parsing fails. That lets provider-specific formatting break the structured result.",
+   "response_sha256": "4cee12cadca59744db1a52fc7a316b0c92764d40484ce0d502a81bb5fcba5c2d",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "Provider-specific response formatting shall not change the public structured result.",
+    "if first_arr == -1 and last_arr != -1 and (last_arr > first_arr):"
+   ],
+   "test_focus": "Check that a response holding a JSON array surrounded by extra text, with no object braces, is extracted to exactly the array text, parses, and validates against an array schema.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "prompt_sha256": "ded307c9825d870d3eb3c369817014ed97bb6744c91fcbfc4e12f288a3ec2547"
+ },
+ "dd3c89d4bb7ee905": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000150Z-703a99",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant always returns the object slice, so any reply with no braces comes back empty: a top-level JSON array reply ('[1,2]' -> ''), or a reply fenced or padded with chatter. An array-schema request then no longer parses or validates, which breaks the promise of structured data that validates against the caller-requested schema.",
+   "response_sha256": "0f4b58aacdc5fe004a5cdb866eaad52575ec255070fa10a90886b9aa674771fb",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if True:",
+    "return stripped[first_obj:last_obj + 1]"
+   ],
+   "test_focus": "Check that a provider reply holding a top-level JSON array, with or without fences or chatter, comes back as the exact array text and parses against an array schema. Also check that a reply without braces is not reduced to an empty string.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "2bbfc945cb7b5df8e784191d616f2114f513aa11f337d50a74c956c86f088a68"
+ },
+ "dd75771132cecdc4": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000150Z-fa1a9f",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant flips the type check. Every valid JSON object now raises TypeError, and any value that is not a dict fails on .items(). So no structured result that parses and validates can be returned. This breaks the requirement directly.",
+   "response_sha256": "a89079532bee8cdc76780b339b30481e5f4208560357e245814fb3fac174b165",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if isinstance(decoded, dict):",
+    "if not isinstance(decoded, dict):"
+   ],
+   "test_focus": "Parse a JSON-object string or dict with the structured-output path and check that it returns the matching dict. Also check that a JSON array raises TypeError with the message 'Structured output must be a JSON object.'",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.920598Z",
+   "answer_sha256": "cd5d9846fc364acfa8560c7b8cede3dbc29c0d9bc18edfa20d030f320f6bf248",
+   "call_id": "20260929T114731Z-5c9548",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "cd5d9846fc364acfa8560c7b8cede3dbc29c0d9bc18edfa20d030f320f6bf248",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_dd75771132cecdc4.py",
+   "response_sha256": "2e4a9ed38c047271a50b825d94126b89bb7ebd84fbaa0074bb4ff0a0ae9583ce",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "6a678b41b279c7f75f9027a017af2dd49ed6a6ef41e4ffc96b62f13975eec2a1"
+ },
+ "e2950b39a3916838": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000150Z-f90a02",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For an array payload (for example \"[1,2]\", or an array inside fences or surrounded by extra text), the mutant drops the closing bracket and the character before it. The result doesn't parse, so the public structured result no longer validates against the caller-requested schema.",
+   "response_sha256": "bfc7fef53439695cb0239a1d93da539b44ea0821ae43df6b4a0427ce622857e4",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "return stripped[first_arr:last_arr - 1]"
+   ],
+   "test_focus": "Request a structured result whose schema is a top-level array, with the provider's text wrapped in fences or extra text. Check that the parsed result equals the full array and validates against the schema.",
+   "verdict": "pin"
+  },
+  "operator": "arithmetic",
+  "prompt_sha256": "e0e632424a481b5241065486052038f7c9f5ad14ff460dad321f01cea808dba3"
+ },
+ "e380cf04b476a823": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000150Z-6b9cbb",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without the check, a provider reply that is valid JSON but not an object (for example an array or a scalar) now fails with an AttributeError from `.items()` instead of the intended TypeError. A non-dict mapping would also get through. Either way, provider-specific output is no longer cleanly rejected as a structured result that fails validation.",
+   "response_sha256": "d142e3f517d596a39d86f7bb64771bbb8275d54e6ac123daff2763248862eb49",
+   "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if not isinstance(decoded, dict):",
+    "if False:",
+    "msg = \"Structured output must be a JSON object.\""
+   ],
+   "test_focus": "Give the structured-output parse valid JSON that is not an object (for example '[1, 2]' or '42'). Check that it raises TypeError with the message 'Structured output must be a JSON object.'",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T12:19:27.432729Z",
+   "answer_sha256": "fea1ed7678f36d000a43dad68292129c5fea96e29faf38f314f34d82752d3527",
+   "call_id": "20260929T121608Z-eeab4b",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "fea1ed7678f36d000a43dad68292129c5fea96e29faf38f314f34d82752d3527",
+   "effort": "high",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_e380cf04b476a823.py",
+   "response_sha256": "dedba993afd1885514fed29412f6bd0380904b19d93f3063067d603c5f506439",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ]
+  },
+  "prompt_sha256": "2a256ce9d89d9cb9b06f58948bfcddc590775a8597963dc5b5e91a88a30bb5fc"
+ },
+ "f36ddb27c1be600d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000201Z-cc7bf3",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant always returns the fenced text unchanged, so a provider response wrapped in a ```json code fence is no longer unwrapped. That provider-specific formatting then either stops the result from parsing or leaks into it. The requirement says provider formatting shall not change the public structured result.",
+   "response_sha256": "2dceba71e0fb570c2c7eaad15b4fce23e6aebc1a64a0a290f64931d2c17f7a0b",
+   "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "if True:\n        return value"
+   ],
+   "test_focus": "Have a text route receive a provider response wrapped in a ```json ... ``` fence, and check that the public structured result parses and validates against the requested schema the same way the unfenced response does.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "079d33d142ab57d6a55bbf11c0749122084430e4d3211a5e9c34b445d19e85b7"
+ },
+ "f89c92d6b15a7771": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T145601Z-228c9c",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Once `first_arr != -1` holds, `first_arr >= 0`, so `last_arr > first_arr` already forces `last_arr >= 1`. That makes the dropped `last_arr != -1` check redundant: both conditions give the same result for every input, and the extracted payload is unchanged.",
+   "response_sha256": "0105d3306cee400f91de9495d5e937ccc727d57343721f1fd2599297433e2479",
+   "sources": [
+    "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
+    "if first_arr != -1 and last_arr > first_arr:",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "condition",
+  "prompt_sha256": "3fc719d83f0c157a3289de52b3ef23e54227419aaa8edc99940bf0a5fd97b495",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T145623Z-3d2784",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "3fc719d83f0c157a3289de52b3ef23e54227419aaa8edc99940bf0a5fd97b495",
+   "reason": "The condition `last_arr != -1` is mathematically redundant because `first_arr != -1` guarantees `first_arr >= 0`. Therefore, if `last_arr` is `-1`, the check `last_arr > first_arr` inherently evaluates to false, leaving the function's output identical in all cases.",
+   "response_sha256": "82a1b4673d8168c04bffa25ca0d0df86587df52b9371cc66ffbb06c94671cca4",
+   "sources": [
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
+    "if first_arr != -1 and last_arr > first_arr:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "f8f680e363cf4d0d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T091930Z-e68cd4",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "`stripped` has no leading whitespace, and every character `splitlines()` breaks on is whitespace to `strip()`, so `lines[0]` starts at `stripped[0]`. It can only match a fence opener if `stripped` starts with three backticks, which makes the removed `startswith` check redundant for every input.",
+   "response_sha256": "ff4b867175b0324a9a3d5d21f618712f42e8bcf1e7ed308cfc6d7a2e5b806420",
+   "sources": [
+    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+    "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+    "Provider-specific response formatting shall not change the public structured result."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "condition",
+  "prompt_sha256": "fa342bd31aa19eebb05e78b30332066ad7f546be5547f1d2065c2d3f29295085",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092019Z-4803d0",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "fa342bd31aa19eebb05e78b30332066ad7f546be5547f1d2065c2d3f29295085",
+   "reason": "The dropped startswith check is logically redundant. Because stripped already has no leading whitespace, the subsequent check requiring lines[0].strip() to match a code fence ensures that stripped must also start with those same characters, making both versions functionally identical.",
+   "response_sha256": "c455d9e9e04e197d64c17ea0084ede4678904e1acc04349b6e91f431c92c7d8b",
+   "sources": [
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ }
+}

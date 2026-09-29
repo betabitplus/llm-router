@@ -53,6 +53,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -533,12 +534,21 @@ def _simple(kind) -> bool:
     return False
 
 
+def _hints(obj, namespace) -> dict:
+    """The resolved annotations of a callable or dataclass; one that names a type its module imports
+    only for type checking has no strategy, like any other type the fuzzer cannot build."""
+    try:
+        return typing.get_type_hints(obj, namespace)
+    except (NameError, AttributeError, SyntaxError, TypeError) as error:
+        raise TypeError(f"{getattr(obj, '__qualname__', obj)} names a type its module does not define at run time ({error})") from error
+
+
 def _builds(cls, strings, numbers, depth=0):
     """The constructor arguments of a dataclass: every required field, and the defaulted fields of a
     simple type; a defaulted field of the project's own type keeps its default."""
     import hypothesis.strategies as st
 
-    hints = typing.get_type_hints(cls, vars(sys.modules[cls.__module__]))
+    hints = _hints(cls, vars(sys.modules[cls.__module__]))
     fields = {}
     for item in dataclasses.fields(cls):
         if not item.init:
@@ -596,7 +606,7 @@ def differential(original_file: Path, mutated_file: Path, qualname: str, codes: 
             else:
                 import hypothesis.strategies as st
 
-                signature = typing.get_type_hints(getattr(original_cls, name), vars(original))
+                signature = _hints(getattr(original_cls, name), vars(original))
                 params = {key: _strategy(kind, strings, numbers) for key, kind in signature.items() if key != "return"}
                 strategy = st.tuples(fields, st.fixed_dictionaries(params))
 
@@ -610,7 +620,7 @@ def differential(original_file: Path, mutated_file: Path, qualname: str, codes: 
         else:
             import hypothesis.strategies as st
 
-            signature = typing.get_type_hints(getattr(original, name), vars(original))
+            signature = _hints(getattr(original, name), vars(original))
             strategy = st.fixed_dictionaries(
                 {key: _strategy(kind, strings, numbers) for key, kind in signature.items() if key != "return"}
             )
@@ -647,9 +657,10 @@ def differential(original_file: Path, mutated_file: Path, qualname: str, codes: 
         return {"found": False, "reason": f"no difference in {examples} generated inputs"}
     return {
         "found": True,
-        "input": repr(example)[:600],
-        "original": repr(observe(original_cls, example))[:300],
-        "mutant": repr(observe(mutant_cls, example))[:300],
+        # Shown without the machine it ran on: an input may make the code read an environment variable.
+        "input": equivalence().redact_environment(repr(example))[:600],
+        "original": equivalence().redact_environment(repr(observe(original_cls, example)))[:300],
+        "mutant": equivalence().redact_environment(repr(observe(mutant_cls, example)))[:300],
     }
 
 
@@ -684,11 +695,16 @@ def run_tests(project: Path, workdir: Path, tests: list[str], timeout: int = 900
         "-p", "no:randomly", "-p", "no:cacheprovider", *HERMETIC_OPTIONS, "--no-cov", *tests,
     ]
     started = time.monotonic()
+    # The run gets a process group of its own, so a time limit stops the tests themselves and not
+    # only uv, which starts them: a mutant that hangs would otherwise leave pytest spinning.
+    process = subprocess.Popen(command, cwd=workdir, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True)
     try:
-        completed = subprocess.run(command, cwd=workdir, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
-        code, output = completed.returncode, completed.stdout or ""
-    except subprocess.TimeoutExpired as error:
-        code, output = None, str(error.stdout or "")
+        output, _ = process.communicate(timeout=timeout)
+        code, output = process.returncode, output or ""
+    except subprocess.TimeoutExpired:
+        os.killpg(process.pid, signal.SIGKILL)
+        output, _ = process.communicate()
+        code, output = None, output or ""
     errors = test_errors(output, workdir)
     if code is None:
         errors = [f"the run did not finish within {timeout} seconds", *errors]
@@ -826,6 +842,12 @@ def equivalence():
     return _EQUIVALENCE
 
 
+def selection_key(row: dict) -> str:
+    """A semantic selection by what it asks for: its class at its target. One function may be selected
+    for several classes, each a question and a budget of its own; a proposal carries the key it answers."""
+    return f"{row['target']}|{row['class']}"
+
+
 def proposal_inputs(root: Path, proposal: dict, context_sha256: str) -> tuple[bool, str]:
     """Is the proposal still about the code and the context it was generated for?"""
     path, qualname = proposal["target"].split("::", 1)
@@ -840,7 +862,7 @@ def proposal_inputs(root: Path, proposal: dict, context_sha256: str) -> tuple[bo
     return True, ""
 
 
-def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list[str], context_sha256: dict[str, str], drafts: dict[str, str] | None = None, judgement: dict | None = None, symbolic_cache: dict | None = None) -> dict:
+def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list[str], context_sha256: dict[str, str], drafts: dict[str, str] | None = None, judgement: dict | None = None, symbolic_cache: dict | None = None, time_limits: list[float] | None = None) -> dict:
     """Judge every proposal of one contract; nothing here calls a model.
 
     ``root`` is the source tree to copy (the repository, or a calibration project); the tests
@@ -865,7 +887,7 @@ def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list
             original_source = file.read_text()
             original_code = function_source(original_source, qualname) or ""
             row = {key: proposal[key] for key in ("id", "class", "target", "risk")}
-            fresh, why = proposal_inputs(root, proposal, context_sha256.get(proposal["target"], ""))
+            fresh, why = proposal_inputs(root, proposal, context_sha256.get(selection_key(proposal), ""))
             if not fresh:
                 results.append({**row, "outcome": "stale", "reason": why})
                 continue
@@ -908,10 +930,20 @@ def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list
                 if baseline_errors is not None and mutant_errors is not None and mutant_errors > baseline_errors:
                     results.append({**row, "outcome": "invalid", "reason": f"it adds {mutant_errors - baseline_errors} type error(s)"})
                     continue
-                run = run_tests(PROJECT, workdir, tests)
+                # The campaign's time limits (1.25 times the retained run's time for these tests and
+                # 10 s, twice that to confirm): a run that does not finish is run once more at the
+                # confirming limit, so a busy machine is not taken for a hang.
+                limit, confirm = time_limits or (900.0, 900.0)
+                run = run_tests(PROJECT, workdir, tests, timeout=limit)
+                if run["returncode"] is None and confirm > limit:
+                    run = run_tests(PROJECT, workdir, tests, timeout=confirm)
                 row["tests"] = {"count": len(tests), **run}
                 if run["returncode"] == 1:
                     results.append({**row, "outcome": "caught", "reason": "a test of the contract fails on it"})
+                    continue
+                if run["returncode"] is None:
+                    # A hang the tests expose is caught, as a timeout is in the campaign.
+                    results.append({**row, "outcome": "caught", "reason": f"the tests do not finish on it within {confirm:g} s"})
                     continue
                 if run["returncode"] != 0:
                     results.append({**row, "outcome": "invalid", "reason": f"the tests could not run (exit {run['returncode']})"})
@@ -1412,8 +1444,8 @@ def class_projection(results: list[dict]) -> dict[str, dict]:
 def targets_without_proposals(selections: list[dict], proposals: list[dict]) -> list[dict]:
     """The selected targets that have no proposal at all: never generated, or every generation
     so far was deferred, unavailable or rejected. (A stale proposal is judged as stale instead.)"""
-    targets = {proposal["target"] for proposal in proposals}
-    return [selection for selection in selections if selection["target"] not in targets]
+    answered = {selection_key(proposal) for proposal in proposals}
+    return [selection for selection in selections if selection_key(selection) not in answered]
 
 
 def add_targets_without_proposals(projected: dict[str, dict], missing: list[dict]) -> dict[str, dict]:
@@ -2292,6 +2324,7 @@ def main() -> None:
         request.get("drafts") or {},
         request.get("judgement"),
         request.get("symbolic_cache"),
+        request.get("time_limits"),
     )
     Path(sys.argv[3]).write_text(json.dumps(outcome, indent=2, sort_keys=True) + "\n")
 

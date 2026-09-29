@@ -1,0 +1,86 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_SESSION_PERSISTENCE",
+ "proposals": [
+  {
+   "id": "SM-D51CCFBD",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/session/store.py::SessionStore.load",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "load drops the last message of the decoded history, so a loaded session does not preserve the exact conversation history.",
+   "original_sha256": "4bbac0ca0dc1bdb88b81dd7fbb0068c7f8d377942141c8625761a7acd583e541",
+   "context_sha256": "40aa9090b60c35d2edbf282a4a230e43478369d582356d4c62efe9b4ebf387ab",
+   "prompt_sha256": "494a0bd8da81ce81a3997ae2dab2ea5e023fac3eb161bb17a81958eea8577ce4",
+   "replacement": "    @classmethod\n    # @impl Session persistence, IMPL_SESSION_PERSISTENCE, [REQ_SESSION_PERSISTENCE[revision==1]]\n    def load(cls, path: str | Path) -> SessionStore:\n        \"\"\"Load a session artifact.\"\"\"\n        session_path = Path(path)\n        try:\n            text = session_path.read_text(encoding=\"utf-8\")\n        except OSError as exc:\n            msg = f\"Could not load session from {session_path}.\"\n            raise SessionSerializationError(msg) from exc\n        system, history = decode_session(text)\n        loaded = cls(system=system)\n        loaded._history = tuple(_copy_message(message) for message in history[:-1])\n        logger.info(\n            \"Session loaded\",\n            event_type=\"llm_router.session.loaded\",\n            history_count=len(loaded._history),\n            path=str(session_path),\n        )\n        return loaded\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-92b926",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "ea86eeb95e1430a3cb9c31dc8fd91c51e211860cf193b85d68faa23ec1b8e5b7",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-0A4FCF00",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/session/store.py::SessionStore.load",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "load reverses the order of the decoded history and so the conversation order is not preserved after a round trip.",
+   "original_sha256": "4bbac0ca0dc1bdb88b81dd7fbb0068c7f8d377942141c8625761a7acd583e541",
+   "context_sha256": "40aa9090b60c35d2edbf282a4a230e43478369d582356d4c62efe9b4ebf387ab",
+   "prompt_sha256": "494a0bd8da81ce81a3997ae2dab2ea5e023fac3eb161bb17a81958eea8577ce4",
+   "replacement": "    @classmethod\n    # @impl Session persistence, IMPL_SESSION_PERSISTENCE, [REQ_SESSION_PERSISTENCE[revision==1]]\n    def load(cls, path: str | Path) -> SessionStore:\n        \"\"\"Load a session artifact.\"\"\"\n        session_path = Path(path)\n        try:\n            text = session_path.read_text(encoding=\"utf-8\")\n        except OSError as exc:\n            msg = f\"Could not load session from {session_path}.\"\n            raise SessionSerializationError(msg) from exc\n        system, history = decode_session(text)\n        loaded = cls(system=system)\n        loaded._history = tuple(\n            _copy_message(message) for message in reversed(history)\n        )\n        logger.info(\n            \"Session loaded\",\n            event_type=\"llm_router.session.loaded\",\n            history_count=len(loaded._history),\n            path=str(session_path),\n        )\n        return loaded\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-92b926",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "ea86eeb95e1430a3cb9c31dc8fd91c51e211860cf193b85d68faa23ec1b8e5b7",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-52D40AF4",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/session/store.py::SessionStore.load",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "load drops the system prompt: the decoded system instruction is ignored and the loaded store is built without it, so the system prompt is not preserved across save/load.",
+   "original_sha256": "4bbac0ca0dc1bdb88b81dd7fbb0068c7f8d377942141c8625761a7acd583e541",
+   "context_sha256": "f9e26fe6bc2b9310eeddf71c5a2026f63050c21691f51180a8f8a520ee2ed1eb",
+   "prompt_sha256": "865a55cf9e118dce4a48e09fff51b34b25241ab0779151623ec6ad5d999d4114",
+   "replacement": "    @classmethod\n    # @impl Session persistence, IMPL_SESSION_PERSISTENCE, [REQ_SESSION_PERSISTENCE[revision==1]]\n    def load(cls, path: str | Path) -> SessionStore:\n        \"\"\"Load a session artifact.\"\"\"\n        session_path = Path(path)\n        try:\n            text = session_path.read_text(encoding=\"utf-8\")\n        except OSError as exc:\n            msg = f\"Could not load session from {session_path}.\"\n            raise SessionSerializationError(msg) from exc\n        _system, history = decode_session(text)\n        loaded = cls()\n        loaded._history = tuple(_copy_message(message) for message in history)\n        logger.info(\n            \"Session loaded\",\n            event_type=\"llm_router.session.loaded\",\n            history_count=len(loaded._history),\n            path=str(session_path),\n        )\n        return loaded",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-21d72b",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "db5a3e921345574048cf480530e24eaf41ce70208f4a84d1e9d17092b893da37",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-332E2DB0",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/session/store.py::SessionStore.load",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "load reorders conversation history (reversed) when restoring it, so message order is not preserved across save/load.",
+   "original_sha256": "4bbac0ca0dc1bdb88b81dd7fbb0068c7f8d377942141c8625761a7acd583e541",
+   "context_sha256": "f9e26fe6bc2b9310eeddf71c5a2026f63050c21691f51180a8f8a520ee2ed1eb",
+   "prompt_sha256": "865a55cf9e118dce4a48e09fff51b34b25241ab0779151623ec6ad5d999d4114",
+   "replacement": "    @classmethod\n    # @impl Session persistence, IMPL_SESSION_PERSISTENCE, [REQ_SESSION_PERSISTENCE[revision==1]]\n    def load(cls, path: str | Path) -> SessionStore:\n        \"\"\"Load a session artifact.\"\"\"\n        session_path = Path(path)\n        try:\n            text = session_path.read_text(encoding=\"utf-8\")\n        except OSError as exc:\n            msg = f\"Could not load session from {session_path}.\"\n            raise SessionSerializationError(msg) from exc\n        system, history = decode_session(text)\n        loaded = cls(system=system)\n        loaded._history = tuple(_copy_message(message) for message in reversed(tuple(history)))\n        logger.info(\n            \"Session loaded\",\n            event_type=\"llm_router.session.loaded\",\n            history_count=len(loaded._history),\n            path=str(session_path),\n        )\n        return loaded",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-21d72b",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "db5a3e921345574048cf480530e24eaf41ce70208f4a84d1e9d17092b893da37",
+    "index": 1
+   }
+  }
+ ]
+}

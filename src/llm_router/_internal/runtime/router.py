@@ -337,7 +337,6 @@ class RouterRuntime:
         )
 
     # @impl Rate-limit-aware request preparation, IMPL_RATE_LIMIT_ROUTING, [REQ_RATE_LIMIT_ROUTING[revision==1]]
-    # @impl Availability-aware key selection, IMPL_RATE_LIMIT_AVAILABLE_KEY_SELECTION, [TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]]
     def _prepare_request(
         self,
         *,
@@ -351,6 +350,7 @@ class RouterRuntime:
             msg = f"Unknown provider: {route.provider}"
             raise ValueError(msg)  # noqa: TRY004
         preferred_key_ids: set[int] | None = None
+        # @impl Availability-aware key selection, IMPL_RATE_LIMIT_AVAILABLE_KEY_SELECTION, [TREQ_RATE_LIMIT_AVAILABILITY_SELECTION[revision==1]]
         if settings.key_id == "auto":
             candidates = self._keys.candidates(
                 provider=route.provider,

@@ -1,14 +1,28 @@
 """Ternforge mutation operators and noise rules for pytest-gremlins.
 
 The engine's native operators change decisions (comparisons, boundaries, boolean
-logic, returned values). This module adds the two operators behind the Test Plan's
-``impl.effect`` class, and everything that keeps a mutant honest before it runs:
+logic, returned values). This module adds the operators the engine lacks, and
+everything that keeps a mutant honest before it runs:
 
 * ``statement`` removes a statement with an effect: a call, an attribute or item
   write, an augmented assignment, ``raise`` or ``del``. It never removes a plain
   name binding, so a removal cannot unbind a name.
 * ``body`` replaces a function body with a default of its annotated return type,
   the extreme mutation that finds pseudo-tested functions.
+* Python's own faults, after PyTation (arXiv 2601.19088), which found most of its
+  mutants beyond what Cosmic Ray makes: ``argument`` removes an optional argument of a
+  call (never one the callee requires, when the project defines the callee);
+  ``condition`` removes one operand of an ``and``/``or``; ``container`` removes an
+  element of a list, tuple, set or dict literal; ``conversion`` removes a built-in
+  conversion (``int(x)`` → ``x``); ``method`` removes a bound method call used as a
+  value (``text.strip()`` → ``text``); ``attribute`` reads another attribute the same
+  code reads on the same object whose name is at least half alike, the most similar first
+  (``policy.min_wait`` → ``policy.max_wait``). PyTation's removal of an attribute access
+  is left out: nearly every such mutant breaks a type and is caught at once.
+* ``conditional`` replaces the condition of an ``if``, ``while`` or conditional
+  expression with ``True`` or ``False`` (Stryker, PIT), and ``negation`` negates a
+  condition that is a plain value, where no other operator reaches (Google's unary
+  operator insertion).
 * Arid-code rules keep mutants out of code whose change no contract can observe.
 * The ``# mutation: <category>[<operators>] <reason>`` pragma suppresses mutants
   visibly, with a category and a reason; a suppressed mutant never runs.
@@ -21,17 +35,39 @@ from __future__ import annotations
 
 import ast
 import copy
+import difflib
 import hashlib
 import io
 import re
 import tokenize
 from dataclasses import dataclass, field
+from pathlib import Path
 
-OPERATOR_NAMES = ("comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body")
+OPERATOR_NAMES = (
+    "comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body",
+    "argument", "condition", "conditional", "negation", "container", "conversion", "method", "attribute",
+)
 # The prior of operator productivity (Google's: relational, logical, statement removal, then
-# the rest); the recorded verdicts refine it, and a pull request reports one survivor per line
-# in that order.
-OPERATOR_PRIORITY = ("comparison", "boolean", "arithmetic", "statement", "return", "boundary", "body")
+# the rest, with PyTation's survival rates placing its operators); the recorded verdicts refine
+# it, and a pull request reports one survivor per line in that order.
+OPERATOR_PRIORITY = (
+    "comparison", "boolean", "condition", "arithmetic", "statement", "argument", "return", "negation",
+    "conversion", "container", "boundary", "method", "attribute", "conditional", "body",
+)
+# The operators that change a condition as a whole: planted on the test of an if, while or
+# conditional expression, never by the engine's own visit of the expression.
+TEST_OPERATORS = ("conditional", "negation")
+CONVERSIONS = {"int", "float", "str", "bool", "bytes", "list", "tuple", "set", "frozenset", "dict"}
+# A literal of these kinds already has the type its conversion returns.
+CONVERSION_LITERALS = {
+    "str": (ast.JoinedStr,), "list": (ast.List, ast.ListComp), "tuple": (ast.Tuple,), "set": (ast.Set, ast.SetComp),
+    "dict": (ast.Dict, ast.DictComp),
+}
+CONTAINER_REMOVALS = 3
+# An attribute is swapped only for one whose name is at least this alike (difflib's ratio): the slip
+# of ``min_wait`` for ``max_wait``; unrelated names break a type and are caught at once (PyTation
+# found 94% of its swaps caught), so they cost a run and teach nothing.
+ATTRIBUTE_SIMILARITY = 0.5
 ARID_RULES = ("arid.logging", "arid.sleep", "arid.type-checking", "arid.repr")
 SUPPRESSION_CATEGORIES = ("equivalent", "unproductive", "arid")
 
@@ -289,6 +325,470 @@ class BodyRemoval:
 
     def mutate(self, node: ast.AST) -> list[ast.AST]:
         return [ast.Return(value=value) for _label, value in body_mutation_plan(node)[0]]
+
+
+# --- Python's own faults: what the operators below know of each node ----------------
+
+
+class Project:
+    """Where the project's modules live, each parsed once: enough to see what a callee requires
+    and whether a name is a module, without importing anything."""
+
+    def __init__(self, roots) -> None:
+        self.roots = [Path(root).resolve() for root in roots]
+        self.trees: dict[Path, ast.Module | None] = {}
+        self.imported: dict[str, dict[str, tuple[str, str | None]]] = {}
+
+    def module_file(self, name: str) -> Path | None:
+        parts = [part for part in name.split(".") if part]
+        for root in self.roots:
+            base = root.joinpath(*parts) if parts else root
+            for candidate in (base.with_suffix(".py"), base / "__init__.py"):
+                if parts and candidate.is_file():
+                    return candidate
+        return None
+
+    def tree(self, path: Path) -> ast.Module | None:
+        if path not in self.trees:
+            try:
+                self.trees[path] = ast.parse(path.read_text())
+            except (OSError, SyntaxError, ValueError):
+                self.trees[path] = None
+        return self.trees[path]
+
+    def module_name(self, path: str) -> str:
+        resolved = Path(path).resolve()
+        for root in self.roots:
+            try:
+                relative = resolved.relative_to(root)
+            except ValueError:
+                continue
+            parts = list(relative.with_suffix("").parts)
+            if parts and parts[-1] == "__init__":
+                parts = parts[:-1]
+            return ".".join(parts)
+        return ""
+
+    def imports(self, tree: ast.Module, path: str) -> dict[str, tuple[str, str | None]]:
+        """What each imported name of a module refers to: (module, name), or (module, None)."""
+        if path in self.imported:
+            return self.imported[path]
+        current = self.module_name(path)
+        package = current if Path(path).name == "__init__.py" else current.rpartition(".")[0]
+        found: dict[str, tuple[str, str | None]] = {}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                base = node.module or ""
+                if node.level:
+                    anchor = package.split(".") if package else []
+                    anchor = anchor[: max(0, len(anchor) - (node.level - 1))]
+                    base = ".".join([*anchor, *([base] if base else [])])
+                for alias in node.names:
+                    found[alias.asname or alias.name] = (base, alias.name)
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    found[alias.asname or alias.name.split(".")[0]] = (alias.name if alias.asname else alias.name.split(".")[0], None)
+        self.imported[path] = found
+        return found
+
+    def definition(self, tree: ast.Module, path: str, name: str) -> ast.AST | None:
+        """The def or class a module-level name stands for: the module's own, or one a project module defines."""
+        for node in tree.body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == name:
+                return node
+        target = self.imports(tree, path).get(name)
+        if not target or target[1] is None:
+            return None
+        module_path = self.module_file(target[0])
+        module_tree = self.tree(module_path) if module_path else None
+        for node in module_tree.body if module_tree is not None else []:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == target[1]:
+                return node
+        return None
+
+    def modules(self, tree: ast.Module, path: str) -> set[str]:
+        """The names a module binds to modules: ``import x`` and ``from package import module``."""
+        return {
+            name for name, (module, item) in self.imports(tree, path).items()
+            if item is None or self.module_file(f"{module}.{item}") is not None
+        }
+
+
+def _imported_modules(tree: ast.Module) -> set[str]:
+    return {alias.asname or alias.name.split(".")[0] for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names}
+
+
+def _declares_fields(cls: ast.ClassDef) -> bool:
+    """A class whose annotated names are its constructor's parameters (a dataclass, attrs or
+    pydantic model, a named tuple)."""
+    decorators = {(dotted_name(d.func if isinstance(d, ast.Call) else d) or "").split(".")[-1] for d in cls.decorator_list}
+    bases = {(dotted_name(base) or "").split(".")[-1] for base in cls.bases}
+    return bool(decorators & {"dataclass", "define", "frozen", "attrs", "mutable"}) or bool(bases & {"BaseModel", "NamedTuple"})
+
+
+def required_parameters(definition: ast.AST | None) -> set[str]:
+    """The keyword names a call of a definition cannot leave out; empty when they cannot be known."""
+    if isinstance(definition, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        arguments = definition.args
+        positional = [*arguments.posonlyargs, *arguments.args]
+        required = {item.arg for item in positional[: len(positional) - len(arguments.defaults)]}
+        required |= {item.arg for item, default in zip(arguments.kwonlyargs, arguments.kw_defaults, strict=True) if default is None}
+        return required - {"self", "cls"}
+    if isinstance(definition, ast.ClassDef):
+        init = next((item for item in definition.body if isinstance(item, ast.FunctionDef) and item.name == "__init__"), None)
+        if init is not None:
+            return required_parameters(init)
+        if _declares_fields(definition):
+            return {
+                item.target.id for item in definition.body
+                if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name) and item.value is None
+                and "ClassVar" not in ast.unparse(item.annotation)
+            }
+    return set()
+
+
+class _Link:
+    """A node's parent, kept so that copying a mutant copies the node and never its whole module."""
+
+    __slots__ = ("node",)
+
+    def __init__(self, node: ast.AST) -> None:
+        self.node = node
+
+    def __copy__(self) -> _Link:
+        return self
+
+    def __deepcopy__(self, _memo: dict) -> _Link:
+        return self
+
+
+def parent_of(node: ast.AST) -> ast.AST | None:
+    link = getattr(node, "_tf_parent", None)
+    return link.node if isinstance(link, _Link) else None
+
+
+def _enclosing(node: ast.AST, kinds: tuple[type, ...]) -> ast.AST | None:
+    parent = parent_of(node)
+    while parent is not None and not isinstance(parent, kinds):
+        parent = parent_of(parent)
+    return parent
+
+
+def _class_attributes(cls: ast.ClassDef) -> set[str]:
+    """The data attributes of a class: its annotated or assigned names and what its methods set on ``self``."""
+    names = set()
+    for item in cls.body:
+        if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
+            names.add(item.target.id)
+        elif isinstance(item, ast.Assign):
+            names |= {target.id for target in item.targets if isinstance(target, ast.Name)}
+    for node in ast.walk(cls):
+        if isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Store) and isinstance(node.value, ast.Name) and node.value.id == "self":
+            names.add(node.attr)
+    return {name for name in names if not (name.startswith("__") and name.endswith("__"))}
+
+
+def _is_dunder(name: str) -> bool:
+    return name.startswith("__") and name.endswith("__")
+
+
+def annotate(tree: ast.Module, path: str = "", project: Project | None = None) -> ast.Module:
+    """Mark on each node what the Python operators read: its parent, whether it is the condition
+    of an if, while or conditional expression, the keywords a project callee requires, whether a
+    call stands as a statement or is made on a module, and for an attribute read the other
+    attributes the same code reads on the same object."""
+    if getattr(tree, "_tf_annotated", False):
+        return tree
+    tree._tf_annotated = True  # ty: ignore[unresolved-attribute]
+    for parent in ast.walk(tree):
+        for child in ast.iter_child_nodes(parent):
+            child._tf_parent = _Link(parent)  # ty: ignore[unresolved-attribute]
+        if isinstance(parent, (ast.If, ast.While, ast.IfExp)):
+            parent.test._tf_test = True  # ty: ignore[unresolved-attribute]
+        # An if without else around one effect statement, read before any mutant rewrites its body.
+        if isinstance(parent, ast.If):
+            parent.test._tf_single_effect = (  # ty: ignore[unresolved-attribute]
+                not parent.orelse and len(parent.body) == 1 and is_effect_statement(parent.body[0])
+            )
+    modules = project.modules(tree, path) if project is not None else _imported_modules(tree)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            parent = parent_of(node)
+            node._tf_statement = isinstance(parent, ast.Expr) or (  # ty: ignore[unresolved-attribute]
+                isinstance(parent, ast.Await) and isinstance(parent_of(parent), ast.Expr)
+            )
+            node._tf_awaited = isinstance(parent, ast.Await)  # ty: ignore[unresolved-attribute]
+            # The first argument as written, before a mutant of it rewrites it.
+            node._tf_first_argument = node.args[0] if node.args else None  # ty: ignore[unresolved-attribute]
+            receiver = node.func.value if isinstance(node.func, ast.Attribute) else None
+            node._tf_module_receiver = isinstance(receiver, ast.Name) and receiver.id in modules  # ty: ignore[unresolved-attribute]
+            definition = None
+            if project is not None and isinstance(node.func, ast.Name):
+                definition = project.definition(tree, path, node.func.id)
+            elif isinstance(receiver, ast.Name) and receiver.id in {"self", "cls"} and isinstance(node.func, ast.Attribute):
+                cls = _enclosing(node, (ast.ClassDef,))
+                definition = next(
+                    (item for item in getattr(cls, "body", []) if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name == node.func.attr),
+                    None,
+                )
+            node._tf_required = required_parameters(definition)  # ty: ignore[unresolved-attribute]
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            reads: dict[str, set[str]] = {}
+            attributes = []
+            for item in _own_nodes(node):
+                if not isinstance(item, ast.Attribute) or _is_dunder(item.attr):
+                    continue
+                parent = parent_of(item)
+                if isinstance(parent, ast.Call) and parent.func is item:
+                    continue
+                receiver = ast.unparse(item.value)
+                if isinstance(item.value, ast.Name) and item.value.id in modules:
+                    continue
+                reads.setdefault(receiver, set()).add(item.attr)
+                if isinstance(item.ctx, ast.Load):
+                    attributes.append((item, receiver))
+            owner = parent_of(node)
+            if isinstance(owner, ast.ClassDef):
+                reads["self"] = reads.get("self", set()) | _class_attributes(owner)
+            for item, receiver in attributes:
+                item._tf_siblings = sorted(reads.get(receiver, set()) - {item.attr})  # ty: ignore[unresolved-attribute]
+    return tree
+
+
+def _described(node: ast.AST, text: str) -> ast.AST:
+    node._tf_description = text  # ty: ignore[unresolved-attribute]
+    return node
+
+
+class _PythonOperator:
+    """What the Python operators share: each mutant carries its own description."""
+
+    name = ""
+    description = ""
+
+    def describe(self, _original: ast.AST, mutated: ast.AST) -> str:
+        return str(getattr(mutated, "_tf_description", f"{self.name} mutation"))
+
+
+class ArgumentRemoval(_PythonOperator):
+    """Remove an optional keyword argument of a call (PyTation's RemFuncArg)."""
+
+    name = "argument"
+    description = "Remove an optional keyword argument of a call"
+
+    def removable(self, node: ast.AST) -> list[int]:
+        if not isinstance(node, ast.Call):
+            return []
+        required = getattr(node, "_tf_required", set()) or set()
+        return [index for index, keyword in enumerate(node.keywords) if keyword.arg is not None and keyword.arg not in required]
+
+    def can_mutate(self, node: ast.AST) -> bool:
+        return bool(self.removable(node))
+
+    def mutate(self, node: ast.AST) -> list[ast.AST]:
+        mutated = []
+        for index in self.removable(node):
+            call = copy.deepcopy(node)
+            keyword = call.keywords.pop(index)
+            mutated.append(_described(call, f"removed argument {keyword.arg}={compact(clean_source(keyword.value), 40)}"))
+        return mutated
+
+
+class ConditionOperandRemoval(_PythonOperator):
+    """Remove one operand of an ``and`` or ``or`` (PyTation's RemExpCond)."""
+
+    name = "condition"
+    description = "Remove one operand of an and/or condition"
+
+    def can_mutate(self, node: ast.AST) -> bool:
+        return isinstance(node, ast.BoolOp) and len(node.values) >= 2
+
+    def mutate(self, node: ast.AST) -> list[ast.AST]:
+        if not self.can_mutate(node):
+            return []
+        word = "and" if isinstance(node.op, ast.And) else "or"
+        mutated = []
+        for index, operand in enumerate(node.values):
+            rest = [copy.deepcopy(value) for position, value in enumerate(node.values) if position != index]
+            result = rest[0] if len(rest) == 1 else ast.BoolOp(op=copy.deepcopy(node.op), values=rest)
+            mutated.append(_described(result, f"removed `{compact(clean_source(operand), 50)}` from the {word}"))
+        return mutated
+
+
+class ConditionalReplacement(_PythonOperator):
+    """Replace a condition with ``True`` or ``False`` (Stryker's ConditionalExpression, PIT's
+    conditionals); a loop's condition only with ``False``, never into a loop without end."""
+
+    name = "conditional"
+    description = "Replace a condition with True or False"
+
+    def can_mutate(self, node: ast.AST) -> bool:
+        return bool(getattr(node, "_tf_test", False)) and not isinstance(node, ast.Constant)
+
+    def mutate(self, node: ast.AST) -> list[ast.AST]:
+        if not self.can_mutate(node):
+            return []
+        values = (False,) if isinstance(parent_of(node), ast.While) else (True, False)
+        # An if without else around one effect statement: False would repeat the statement mutant.
+        if getattr(node, "_tf_single_effect", False):
+            values = (True,)
+        return [_described(ast.Constant(value=value), f"condition → {value}") for value in values]
+
+
+class NegationInsertion(_PythonOperator):
+    """Negate a condition that is a plain value, where no comparison or boolean operator reaches
+    (Google's unary operator insertion)."""
+
+    name = "negation"
+    description = "Negate a condition that is a plain value"
+
+    def can_mutate(self, node: ast.AST) -> bool:
+        return (
+            bool(getattr(node, "_tf_test", False))
+            and not isinstance(parent_of(node), ast.While)
+            and not isinstance(node, (ast.Compare, ast.BoolOp, ast.Constant))
+            and not (isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not))
+        )
+
+    def mutate(self, node: ast.AST) -> list[ast.AST]:
+        if not self.can_mutate(node):
+            return []
+        return [_described(ast.UnaryOp(op=ast.Not(), operand=copy.deepcopy(node)), "negated the condition")]
+
+
+class ContainerElementRemoval(_PythonOperator):
+    """Remove an element of a list, tuple, set or dict literal (PyTation's RemElCont): the first,
+    the middle and the last, never a tuple a statement unpacks or returns, nor a subscript."""
+
+    name = "container"
+    description = "Remove an element of a container literal"
+
+    @staticmethod
+    def _allowed(node: ast.AST) -> bool:
+        parent = parent_of(node)
+        if isinstance(node, (ast.List, ast.Tuple)) and not isinstance(node.ctx, ast.Load):
+            return False
+        if isinstance(node, ast.Tuple) and isinstance(parent, ast.Return):
+            return False
+        if isinstance(parent, ast.Subscript) and parent.slice is node:
+            return False
+        if isinstance(parent, ast.Assign) and parent.value is node and any(
+            isinstance(target, (ast.Tuple, ast.List)) or (isinstance(target, ast.Name) and target.id == "__all__") for target in parent.targets
+        ):
+            return False
+        return not isinstance(parent, (ast.Starred, ast.JoinedStr, ast.FormattedValue))
+
+    @staticmethod
+    def _items(node: ast.AST) -> list:
+        if isinstance(node, ast.Dict):
+            return [index for index, key in enumerate(node.keys) if key is not None]
+        if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
+            return list(range(len(node.elts)))
+        return []
+
+    def can_mutate(self, node: ast.AST) -> bool:
+        return bool(self._items(node)) and self._allowed(node)
+
+    def mutate(self, node: ast.AST) -> list[ast.AST]:
+        if not self.can_mutate(node):
+            return []
+        items = self._items(node)
+        chosen = sorted({items[0], items[len(items) // 2], items[-1]})[:CONTAINER_REMOVALS]
+        kind = {ast.Dict: "dict", ast.List: "list", ast.Tuple: "tuple", ast.Set: "set"}[type(node)]
+        mutated = []
+        for index in chosen:
+            copied = copy.deepcopy(node)
+            if isinstance(copied, ast.Dict):
+                removed = f"{clean_source(node.keys[index])}: {clean_source(node.values[index])}"
+                del copied.keys[index], copied.values[index]
+            else:
+                removed = clean_source(node.elts[index])
+                del copied.elts[index]
+            if isinstance(copied, ast.Set) and not copied.elts:
+                copied = ast.Call(func=ast.Name(id="set", ctx=ast.Load()), args=[], keywords=[])
+            mutated.append(_described(copied, f"removed `{compact(removed, 50)}` from the {kind}"))
+        return mutated
+
+
+class ConversionRemoval(_PythonOperator):
+    """Remove a built-in conversion around a value (PyTation's RemConvFunc), unless the value
+    is written as a literal of the conversion's own type."""
+
+    name = "conversion"
+    description = "Remove a built-in conversion"
+
+    def can_mutate(self, node: ast.AST) -> bool:
+        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in CONVERSIONS):
+            return False
+        if len(node.args) != 1 or node.keywords or isinstance(node.args[0], ast.Starred) or getattr(node, "_tf_statement", False):
+            return False
+        value = getattr(node, "_tf_first_argument", None) or node.args[0]
+        if isinstance(value, CONVERSION_LITERALS.get(node.func.id, ())):
+            return False
+        if isinstance(value, ast.Constant) and type(value.value).__name__ == node.func.id:
+            return False
+        return not (isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id == node.func.id)
+
+    def mutate(self, node: ast.AST) -> list[ast.AST]:
+        if not self.can_mutate(node):
+            return []
+        return [_described(copy.deepcopy(node.args[0]), f"removed {node.func.id}() around `{compact(clean_source(node.args[0]), 50)}`")]
+
+
+class MethodCallRemoval(_PythonOperator):
+    """Leave out a bound method call whose value the code uses (PyTation's RemMetCall): not on a
+    module or a class, not awaited, not a statement (the statement operator removes those)."""
+
+    name = "method"
+    description = "Remove a bound method call used as a value"
+
+    def can_mutate(self, node: ast.AST) -> bool:
+        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)) or _is_dunder(node.func.attr):
+            return False
+        if getattr(node, "_tf_statement", False) or getattr(node, "_tf_awaited", False) or getattr(node, "_tf_module_receiver", False):
+            return False
+        receiver = node.func.value
+        if isinstance(receiver, ast.Name) and receiver.id[:1].isupper():
+            return False
+        return not (isinstance(receiver, ast.Call) and isinstance(receiver.func, ast.Name) and receiver.func.id == "super")
+
+    def mutate(self, node: ast.AST) -> list[ast.AST]:
+        if not self.can_mutate(node):
+            return []
+        return [_described(copy.deepcopy(node.func.value), f"removed .{node.func.attr}(…)")]
+
+
+class AttributeSwap(_PythonOperator):
+    """Read another attribute the same code reads on the same object, the most similar name
+    first (PyTation's ChUsedAttr): the slip of ``min`` for ``max``, ``input`` for ``output``."""
+
+    name = "attribute"
+    description = "Read another attribute of the same object"
+
+    @staticmethod
+    def _alike(node: ast.AST) -> list[str]:
+        if not isinstance(node, ast.Attribute) or not isinstance(node.ctx, ast.Load):
+            return []
+        return [name for name in getattr(node, "_tf_siblings", None) or [] if difflib.SequenceMatcher(None, node.attr, name).ratio() >= ATTRIBUTE_SIMILARITY]
+
+    def can_mutate(self, node: ast.AST) -> bool:
+        return bool(self._alike(node))
+
+    def mutate(self, node: ast.AST) -> list[ast.AST]:
+        if not self.can_mutate(node):
+            return []
+        siblings = self._alike(node)
+        other = max(siblings, key=lambda name: (difflib.SequenceMatcher(None, node.attr, name).ratio(), [-ord(char) for char in name]))
+        swapped = copy.deepcopy(node)
+        swapped.attr = other
+        receiver = compact(clean_source(node.value), 40)
+        return [_described(swapped, f"{receiver}.{node.attr} → {receiver}.{other}")]
+
+
+PYTHON_OPERATORS = (
+    ArgumentRemoval, ConditionOperandRemoval, ConditionalReplacement, NegationInsertion,
+    ContainerElementRemoval, ConversionRemoval, MethodCallRemoval, AttributeSwap,
+)
 
 
 # --- arid code ---------------------------------------------------------------------

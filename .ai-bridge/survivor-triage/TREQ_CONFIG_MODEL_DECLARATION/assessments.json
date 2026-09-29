@@ -1,4 +1,54 @@
 {
+ "0912db8ce4b47a9a": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081544Z-2b75ca",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "In Python, passing an Enum member to its own class constructor returns the member itself, making the explicit `isinstance` check functionally redundant since `Model(model)` handles valid instances identically.",
+    "response_sha256": "151228c0566f446c3c0a92cdc10e3a2bbd40657395d8375cc666c645fe75bb45",
+    "sources": [
+     "    if isinstance(model, Model):\n        resolved = model\n    else:\n        try:\n            resolved = Model(model)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081544Z-963bcd",
+    "confidence": 0.98,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Calling Model(model) on an existing Model enum instance returns the member itself, so bypassing the isinstance check produces identical behavior for all inputs.",
+    "response_sha256": "22421dee5f7b686ee7fd8e847f8de08b511bb8a226307fe88de6438be86d5865",
+    "sources": [
+     "    if isinstance(model, Model):",
+     "    if False:",
+     "            resolved = Model(model)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T231804Z-07b0a5",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "When model is already a Model instance, calling Model(model) on an existing enum member just returns that same member, so the changed code's forced else-branch produces the same resolved value as the original's isinstance shortcut, and all other cases (strings, invalid values) go through the identical try/except path in both versions.",
+    "response_sha256": "7dc29b2337c9b821dab22cf36f514224b239fda08cf78369aef7d3fa8d684b4f",
+    "sources": [
+     "if isinstance(model, Model):\n        resolved = model",
+     "if False:\n        resolved = model"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "ed78e7660bbf2f4567855a02ec9d37c43d0b4754c579dad7c7b34167311f4681"
+ },
  "3cc16a6300b216ed": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -52,6 +102,24 @@
     "sources": [
      "return resolved",
      "return None"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=<BehaviorDefaults as used in tests>, catalog=ProviderCatalog(models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))",
+     "model": "Model.GEMINI_FLASH"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111613Z-c812f2",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For any valid model present in config.models, the original returns the resolved Model while the changed version returns None.",
+    "response_sha256": "a06122268bad1f2e0f6d3290a68b7a5e279dabdb4d38b8b94b7ba1391fed8f31",
+    "sources": [
+     "    return resolved",
+     "    return None"
     ],
     "verdict": "distinct"
    }
@@ -115,8 +183,170 @@
      "if resolved not in config.models:"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 2.0, 1), policy=RouterPolicyDefaults(None, None, False, False, False, 2, ProviderLimits(1.0, 60.0, 1.0, 1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(1.0, 60.0, 1.0, 1)), catalog=ProviderCatalog())",
+     "model": "not-a-model"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111613Z-2251d4",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For an invalid model string, the original raises ConfigurationError, but the changed version swallows the ValueError with pass, leaving `resolved` unbound, so the next line raises UnboundLocalError.",
+    "response_sha256": "8facca9261475cf704b7c4e6db6e15687025bae25b9e1f354e9ad15d5a4ea65c",
+    "sources": [
+     "raise ConfigurationError(msg) from exc",
+     "msg = f'Unknown model: {model}'\n            pass",
+     "if resolved not in config.models:"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "acbf8762c5fc4a543782fd81ed3a12238e685dddc55a5149192cc6a88aa80808"
+ },
+ "e1379ec0c0ed9e96": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(0.0, 0.0, 0), policy=RouterPolicyDefaults(0, 0.0, False, False, False, 0, ProviderLimits(0.0, 0.0, 0.0, 0)), default_max_tool_rounds=0, structured_output_max_attempts=0, provider_limits=ProviderLimits(0.0, 0.0, 0.0, 0)), catalog=ProviderCatalog(models={Model.GEMINI_FLASH: {}}))",
+     "model": "Model.GEMINI_FLASH.value"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081544Z-7a6c38",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When given a valid model string, the original version correctly resolves it to a Model enum via the else block, whereas the changed version keeps it as a string, causing a ConfigurationError when looking it up in config.models (which expects Model keys).",
+    "response_sha256": "75d23fe2b8e669f8cc78ef0d0925657b77e31b4919f406b04c532216572902ba",
+    "sources": [
+     "    if isinstance(model, Model):",
+     "    if True:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=1.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))",
+     "model": "Model.GEMINI_FLASH.value"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081544Z-10b8f0",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When model is passed as a string representation of a valid Model enum, the original version resolves it to a Model enum member via Model(model) before checking config.models, whereas the changed version never executes the conversion branch and leaves resolved as a string, causing it to fail the membership check in config.models and raise ConfigurationError.",
+    "response_sha256": "380fc0a9588a07bc9aedf4415a9339f0929a4724a1389f3f251e3e622edacdcf",
+    "sources": [
+     "    if isinstance(model, Model):",
+     "    if True:",
+     "            resolved = Model(model)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={}, provider_base_urls={}, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))",
+     "model": "Model.GEMINI_FLASH.value"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T231804Z-f21afb",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Original converts a valid string via Model(model) to the enum member before checking membership, while the changed code (always taking the `if True` branch) leaves `resolved` as the raw string, so `resolved not in config.models` (whose keys are Model instances) is true and it raises ConfigurationError instead of returning the resolved enum, provided Model is not a str-mixin enum where string equals the member.",
+    "response_sha256": "c23f989479b842fe36ff028cc9666a0f872460c963d38819b16d7a8e94701a8b",
+    "sources": [
+     "if isinstance(model, Model):",
+     "if True:",
+     "if resolved not in config.models:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 2.0, 3), policy=RouterPolicyDefaults(None, None, False, False, False, 2, ProviderLimits(1.0, 60.0, 1.0, 1)), default_max_tool_rounds=3, structured_output_max_attempts=2, provider_limits=ProviderLimits(1.0, 60.0, 1.0, 1)), catalog=ProviderCatalog(models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))",
+     "model": "Model.GEMINI_FLASH.value"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T111614Z-973646",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a valid string model value, the original converts it to the Model enum and returns it, while the change keeps the raw string, so it either raises ConfigurationError on the membership check (plain Enum) or returns a str instead of a Model.",
+    "response_sha256": "b73060b156b12bf7cdfaaa6424a5427df7edb9eea5f4e5986adfad4fd48bfc43",
+    "sources": [
+     "if True:",
+     "resolved = model",
+     "resolved = Model(model)",
+     "if resolved not in config.models:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "646a156dec7623cb37fd760ea0f93915214505e9877261c3071b82be0dd59bb1"
+ },
+ "feb268a2d271b818": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(\n    default_provider=Provider.GOOGLE,\n    default_model=Model.GEMINI_FLASH,\n    default_key_id=1,\n    defaults=BehaviorDefaults(\n        retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3),\n        policy=RouterPolicyDefaults(\n            max_attempts=3,\n            attempt_timeout_seconds=5.0,\n            wait_for_cooldown_if_all_blocked=False,\n            round_robin_start=False,\n            shuffle_fallbacks=False,\n            min_routes_for_fallback_shuffle=1,\n            default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)\n        ),\n        default_max_tool_rounds=1,\n        structured_output_max_attempts=1,\n        provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)\n    ),\n    catalog=ProviderCatalog(models={Model.GEMINI_FLASH: {}})\n)",
+     "model": "Model.GEMINI_FLASH.value"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081544Z-bb6561",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When given a valid string input, the original version properly converts it to a Model enum before validating it against the configuration, whereas the changed version incorrectly assigns the string directly to 'resolved', causing the validation check against config.models to fail and erroneously raise a ConfigurationError.",
+    "response_sha256": "56363167151927044fb4936ed67e5fe3d02313fd204ba9e27188fc4870f68a97",
+    "sources": [
+     "    if isinstance(model, Model):\n        resolved = model",
+     "    if not isinstance(model, Model):\n        resolved = model"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(0.0, 1.0, 1), policy=RouterPolicyDefaults(1, 1.0, False, False, False, 1, ProviderLimits(1.0, 1.0, 1.0, 1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(1.0, 1.0, 1.0, 1)), catalog=ProviderCatalog(models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))",
+     "model": "Model.GEMINI_FLASH"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T081544Z-1c72cb",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When model is an instance of Model present in config.models, the original version returns it directly, whereas the changed version executes the else branch where Model(model) raises ValueError, causing a ConfigurationError to be raised.",
+    "response_sha256": "31fb26c5c29ab89aae5711abd194f0cfe7682dc2d411fe325f6f5e6478aae9d2",
+    "sources": [
+     "    if isinstance(model, Model):",
+     "    if not isinstance(model, Model):",
+     "            resolved = Model(model)",
+     "        except ValueError as exc:",
+     "            raise ConfigurationError(msg) from exc"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))",
+     "model": "Model.GEMINI_FLASH.value"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T231804Z-662559",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "When model is a plain string equal to a valid Model value, the original converts it via `Model(model)` (else-branch runs because isinstance is False), returning the actual Model enum instance, whereas the swapped condition makes the changed version take the `if` branch and set `resolved = model` unconverted, so it returns the raw string (or, if the eventual `in` check fails for a non-str-mixin Enum, raises ConfigurationError) instead of the Model enum instance the original returns.",
+    "response_sha256": "f0e2c1712f84ec98094d55232df0b6a02aa77efebe99132a9a743082a87ff1d7",
+    "sources": [
+     "if isinstance(model, Model):\n        resolved = model",
+     "if not isinstance(model, Model):\n        resolved = model"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "6e05b6300cd84bc17a807ddc5d5a1ec3770cab6bccca43d50a0dc68534add6d1"
  }
 }

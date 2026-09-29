@@ -1,0 +1,150 @@
+{
+ "03b3464429e96b31": [
+  {
+   "at": "2026-09-29T00:24:30.362171Z",
+   "call_id": "20260929T001300Z-6a4f39",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "6c6eb2ed962e39a46552726bca65f0b96dcae547f3b7473a96cb58877f098e20",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "PIL.Image.Image",
+    "PIL.Image.new",
+    "pytest.raises",
+    "pytest.mark.verifies",
+    "pytest.mark.verification_kind"
+   ]
+  }
+ ],
+ "0bdce5fb12999eee": [
+  {
+   "at": "2026-09-29T00:24:30.362193Z",
+   "call_id": "20260929T001300Z-6ad8cc",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "a0ee0136e03f29e30743451eeed1aca0ff81589d9f39ce8215c92e2cc18aca96",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.content.MediaPart",
+    "llm_router._internal.capabilities.media.ImageMedia",
+    "llm_router._internal.capabilities.media._MIN_IMAGE_DIMENSION",
+    "PIL.Image.Image",
+    "PIL.Image.new"
+   ]
+  }
+ ],
+ "0c1b36286cf6938e": [
+  {
+   "at": "2026-09-29T00:24:30.362197Z",
+   "call_id": "20260929T001300Z-24b1a3",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "048719110310960db2af5db510acb046372cd008c41717ceb6ed861302fffc22",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  }
+ ],
+ "4e35b24fc276e4ad": [
+  {
+   "at": "2026-09-29T00:24:30.362200Z",
+   "call_id": "20260929T001300Z-43e481",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "87c8f35ed033514b415388824650909e1988384c79ad0250487e6458380f1e98",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.content.MediaPart",
+    "llm_router._internal.capabilities.media.ImageMedia"
+   ]
+  }
+ ],
+ "ab94f138074323bc": [
+  {
+   "at": "2026-09-29T00:24:30.362204Z",
+   "call_id": "20260929T001300Z-8cc1f5",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "ee9d3f37dca0d7cb5a919b459bb114a3b1e266597971483c3ab3af1a55eedbbc",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "PIL.Image.Image"
+   ]
+  }
+ ],
+ "e9186235c6377e40": [
+  {
+   "at": "2026-09-29T00:24:30.362215Z",
+   "call_id": "20260929T001300Z-19794c",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "326dff9842a71464da4c25abbac469ad666904bf4e34bd541abafc9b4b2719b6",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.content.MediaPart",
+    "llm_router._internal.capabilities.media.ImageMedia",
+    "llm_router._internal.capabilities.media._MAX_IMAGE_DIMENSION"
+   ]
+  }
+ ],
+ "f02a96133d01bfce": [
+  {
+   "at": "2026-09-29T00:24:30.362218Z",
+   "call_id": "20260929T001300Z-5e69af",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "3964d828e602fb6ace1b64f70825e03b7b0c02b6d2522035d07397531e488c7a",
+   "reason": "",
+   "sources": [
+    "llm_router.ChatMessage",
+    "llm_router._internal.capabilities.content.TextPart",
+    "llm_router._internal.capabilities.content.normalize_chat_message",
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  }
+ ],
+ "fbcda5c66084477c": [
+  {
+   "at": "2026-09-29T00:24:30.362221Z",
+   "call_id": "20260929T001300Z-d948f8",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "cb9cdec237fa66ad23e65478a0854dad7a340ef7777d0feb65d8427c8949c19d",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.content.TextPart"
+   ]
+  }
+ ]
+}

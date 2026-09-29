@@ -3335,7 +3335,7 @@ function explorerPage(model){
  const OWNERS=[["requirement","Requirements"],["treq","Technical requirements"],["feature","Capabilities"],["goal","Goals"],["product","Product / System"]];
  const GROUPS=["Implementation","Runtime / dependency","Interface / protocol","Architecture","Specification / model"];
  // The engine's operators, most productive first, and what each one changes.
- const OPERATORS=[["comparison","Comparison"],["boolean","Boolean"],["statement","Statement removed"],["return","Return value"],["boundary","Boundary"],["body","Body replaced"],["semantic","Semantic"]];
+ const OPERATORS=[["comparison","Comparison"],["boolean","Boolean"],["condition","Condition operand removed"],["arithmetic","Arithmetic"],["statement","Statement removed"],["argument","Argument removed"],["return","Return value"],["negation","Condition negated"],["conversion","Conversion removed"],["container","Container element removed"],["boundary","Boundary"],["method","Method call removed"],["attribute","Other attribute read"],["conditional","Condition replaced"],["body","Body replaced"],["semantic","Semantic"]];
  const OPERATOR_TIP={
   comparison:"Swaps a comparison operator, such as < for <=.",
   boolean:"Swaps and for or, drops a not, or flips True and False.",
@@ -3343,6 +3343,15 @@ function explorerPage(model){
   return:"Replaces a returned value with None or its negation.",
   boundary:"Shifts a compared constant by one.",
   body:"Replaces a whole function body with a default of its return type.",
+  arithmetic:"Swaps an arithmetic operator, such as + for -.",
+  condition:"Removes one operand of an and or an or.",
+  argument:"Removes an optional keyword argument of a call.",
+  negation:"Negates a condition that is a plain value.",
+  conversion:"Removes a built-in conversion such as int() around a value.",
+  container:"Removes an element of a list, tuple, set or dict literal.",
+  method:"Leaves out a method call whose value the code uses.",
+  attribute:"Reads another attribute the same code reads on the same object.",
+  conditional:"Replaces a condition with True or False.",
   semantic:"A realistic defect proposed for the risk the profile names."
  };
  const GROUP_BY=[
@@ -3825,6 +3834,7 @@ def model_roles_article(facts: dict, facts_json: str) -> str:
     judging = facts["judging"]
     judged_answers = sum(row["answers"] for row in judging["roles"])
     judged_troubled = sum(row["troubled"] for row in judging["roles"])
+    caps: dict = facts.get("caps") or {"factor": 3, "roles": [], "capped": 0}
     cards = "".join((
         card("Draft author", word, draft["status"], health_note),
         card("Invented project API", str(len(invented)), "fail" if invented else "pass" if draft["recent"] else "unknown",
@@ -3840,6 +3850,9 @@ def model_roles_article(facts: dict, facts_json: str) -> str:
         card("Judges' sources", f"{judged_answers - judged_troubled} of {judged_answers}", "fail" if judged_troubled else "pass" if judged_answers else "unknown",
              "verdicts, reviews and assessor answers whose sources are found in their own question"
              + (": the others do not count and are asked again" if judged_troubled else "")),
+        card("Price caps", f"{caps['capped']} stopped", "fail" if caps["capped"] else "pass",
+             "calls that reached their price cap: each was asked once more at twice the cap, then of the next model"
+             if caps["capped"] else "no call has reached its price cap; each cap follows its role's most expensive answered call"),
     ))
     total = sum(draft["causes"].values())
     order = [cause for cause in causes if draft["causes"].get(cause)]
@@ -3893,6 +3906,12 @@ def model_roles_article(facts: dict, facts_json: str) -> str:
         [[plain(f"{level} · {rungs[level]}"), plain(draft["levels"][str(level)]["attempts"]), plain(draft["levels"][str(level)]["kept"])] for level in (1, 2, 3)],
         numeric={1, 2},
     )
+    efforts = table(
+        ["Rung", "Model", "Level", "Recorded drafts", "Kept", "Kept share"],
+        [[plain(f"{row['rung']} · {rungs.get(row['rung'], '')}"), plain(row["model"]), plain(row["shown"]), plain(row["attempts"]), plain(row["kept"]),
+          plain(share(row["kept"], row["attempts"]))] for row in draft.get("efforts") or []],
+        numeric={3, 4, 5},
+    ) if draft.get("efforts") else "<p>No draft has been recorded with its level yet.</p>"
     last_resort = table(
         ["Contract", "Mutant", "Model", "Pin", "When"],
         [[plain(row.get("contract_id")), (f"<code>{escape(str(row.get('key')))}</code>", ""), plain(row.get("model")),
@@ -3913,13 +3932,23 @@ def model_roles_article(facts: dict, facts_json: str) -> str:
         nowrap={2},
     ) if judging["troubled"] else "<p>Every current answer's sources are found in its own question.</p>"
     calls = table(
-        ["Role", "Model", "Last call", "Calls made", "Deferred", "Unavailable", "Failed", "List price"],
-        [[plain(row["role"]), plain(row["model"]), plain(str(row.get("last") or "")[:10]), plain(row["calls"]), plain(row["deferred"]),
-          plain(row["unavailable"]), (escape(str(row["failed"])), "fail" if row["failed"] else ""), plain(f"${row['usd']:.2f}")]
+        ["Role", "Model", "Level", "Last call", "Calls made", "Deferred", "Unavailable", "Failed", "Stopped by the cap", "List price"],
+        [[plain(row["role"]), plain(row["model"]), plain(row.get("level") or "—"), plain(str(row.get("last") or "")[:10]), plain(row["calls"]), plain(row["deferred"]),
+          plain(row["unavailable"]), (escape(str(row["failed"])), "fail" if row["failed"] else ""),
+          (escape(str(row.get("capped", 0))), "fail" if row.get("capped") else ""), plain(f"${row['usd']:.2f}")]
          for row in facts["calls"]],
-        numeric={3, 4, 5, 6, 7},
-        nowrap={2},
+        numeric={4, 5, 6, 7, 8, 9},
+        nowrap={3},
     )
+    cap_table = table(
+        ["Role", "Tools", "Cap now", "Test Plan's cap", "Most expensive answered call", "Stopped by the cap", "Last stopped"],
+        [[plain(row["role"]), plain("with tools" if row["tools"] else "without"), plain(f"${row['cap']:.2f}"), plain(f"${row['floor']:.2f}"),
+          plain(f"${row['highest']:.3f}"), (escape(str(row["capped"])), "fail" if row["capped"] else ""),
+          plain(str(row.get("last_capped") or "—")[:16].replace("T", " "))]
+         for row in caps["roles"]],
+        numeric={2, 3, 4, 5},
+        nowrap={6},
+    ) if caps["roles"] else "<p>No call has reported its list price yet.</p>"
     return (
         '<section id="model-roles">\n<h1>Model roles<a class="headerlink" href="#model-roles" title="Link to this heading">#</a></h1>\n'
         f'<style id="tf-model-roles-style">\n{_palette("#model-roles")}\n{MODEL_ROLES_CSS}\n</style>\n'
@@ -3933,11 +3962,15 @@ def model_roles_article(facts: dict, facts_json: str) -> str:
         f"answers ({draft['earlier_invented']} of them use a name the project does not define).</p>\n"
         f'<div class="tf-mr-bar" role="img" aria-label="Recorded drafts by cause">{bar}</div><div class="tf-mr-legend">{legend}</div>\n'
         f"{models}\n<h3>Latest rejected drafts</h3>\n{rejected}\n<h3>Context gaps</h3>\n{gaps}\n"
-        '<h3 id="ladder">The ladder</h3>\n<p class="tf-mr-note">A mutant every draft without tools missed gets one draft from the '
+        '<h3 id="ladder">The ladder</h3>\n<p class="tf-mr-note">A mutant every draft without tools missed gets drafts from the '
         "draft author with tools, working in a copy of the project where it reads the code and runs the cascade's own check, and "
-        "then one from the last resort, the verdict's own model with the same tools. A pin the last resort wrote says so in its "
+        "then from the last resort, the verdict's own model with the same tools: one at each level of the rung's ladder of levels, "
+        "the next level only after the cascade rejected the draft below. A pin the last resort wrote says so in its "
         "header, so a later verdict model can look at it again.</p>\n"
-        f"{ladder}\n<h3>Pins the last resort wrote</h3>\n{last_resort}\n"
+        f"{ladder}\n"
+        '<h3 id="levels">Levels</h3>\n<p class="tf-mr-note">How often each model kept its draft at each level: the data a ladder '
+        "of levels starts from. A level no attempt recorded is read from its call's sign-in: before 2026-09-29 no call recorded one.</p>\n"
+        f"{efforts}\n<h3>Pins the last resort wrote</h3>\n{last_resort}\n"
         '<h2 id="judging">Judges\' sources</h2>\n<p class="tf-mr-note">The verdict, its review and every assessor cite what their '
         "answer rests on, copied word for word from their question: a line the change touches and, for a verdict, the words of the "
         "requirement. An answer whose sources are not in its question does not count and is asked again.</p>\n"
@@ -3946,8 +3979,16 @@ def model_roles_article(facts: dict, facts_json: str) -> str:
         "passes its canaries, the role's very question on cases whose outcome is known.</p>\n"
         f"{canaries}\n"
         '<h2 id="calls">Calls by role and model</h2>\n<p class="tf-mr-note">From the consumption ledger: every call made, and every '
-        "call the budget deferred or no backend could take.</p>\n"
+        "call the budget deferred or no backend could take, by the level it answered at. A Claude call sets its level by flag and "
+        "reads none of the person's settings; before 2026-09-29 calls recorded no level, and the level shown is the one its sign-in "
+        "gave it: a level saved in that sign-in's settings, else the model's default in Claude Code. An Antigravity model names its "
+        "level in its id.</p>\n"
         f"{calls}\n"
+        '<h2 id="price-caps">Price caps</h2>\n<p class="tf-mr-note">A call that reports its list price stops at its cap, a fuse '
+        f"against a call that runs away: the Test Plan's cap, or {caps['factor']} times the role's most expensive answered call, "
+        "whichever is larger, so the cap follows the models' prices when they change. A call that reaches it is asked once more at "
+        "twice the cap; one that reaches that too is asked of the role's next model, and a rung of the ladder climbs.</p>\n"
+        f"{cap_table}\n"
         '<p class="tf-mr-note">Read from the retained records only: each contract\'s drafts.json and stored answers under '
         ".ai-bridge/survivor-verdicts, the survivor triage, the canary results, the assessors' calibration and the model ledger. "
         "Every stored question and answer a record names is published beside this page, and the explorer links each survivor's.</p>\n"

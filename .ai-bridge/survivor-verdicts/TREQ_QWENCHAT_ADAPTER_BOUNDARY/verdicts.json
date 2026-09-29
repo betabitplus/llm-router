@@ -1,4 +1,95 @@
 {
+ "0ea91b89794129d0": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T093718Z-2104c6",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "dict.update(mapping) and dict.update(dict(mapping)) read keys and values the same way and store the same pairs in payload, and neither keeps a reference to kwargs. The completion payload that crosses the QwenChat boundary is therefore identical for any input.",
+   "response_sha256": "2396241651d58df8cb7929475ca68187d0fe765ea01cf2d7f6176948c46f68c1",
+   "sources": [
+    "payload.update(dict(request.kwargs))",
+    "payload.update(request.kwargs)",
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "conversion",
+  "prompt_sha256": "5c64bae3b2c5d50cd66f1f804dfa9f98933fe2685549fed35e527a9c5da0b4eb",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093727Z-ffea8e",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "5c64bae3b2c5d50cd66f1f804dfa9f98933fe2685549fed35e527a9c5da0b4eb",
+   "reason": "Passing request.kwargs directly to payload.update behaves identically to wrapping it in a dict first, as dict.update natively accepts any mapping. The resulting payload and behavior are functionally indistinguishable.",
+   "response_sha256": "4fe79a066885838873a1b0eb3ef0cedc765a3e7f78220dc8fdda27a611f68e20",
+   "sources": [
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "payload.update(dict(request.kwargs))",
+    "payload.update(request.kwargs)"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "14086e0bf74da773": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000642Z-3a7bdd",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant puts the registry's own descriptor objects into the payload instead of fresh dict copies. If a descriptor is a read-only mapping, the tools entries are no longer plain JSON-serializable dicts. Even if they are dicts, any later change to the payload also changes the shared tool registry, which alters the tool definitions sent in later requests. Either way, normalized request semantics are not preserved across the HTTP boundary.",
+   "response_sha256": "1ffe150609b97f77fc5d6a4281ff3263fb63b8479dd044ccc34ea50041621856",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "dict(definition.descriptor)",
+    "payload['tools'] = [definition.descriptor for definition in request.tool_registry.tools.values()]"
+   ],
+   "test_focus": "Check that each payload[\"tools\"] entry is a plain dict equal to its descriptor but not the same object, and that changing the payload's tool entry leaves the registry descriptor unchanged.",
+   "verdict": "pin"
+  },
+  "operator": "conversion",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.559402Z",
+   "answer_sha256": "3c1fc311ad398d53ea88a43e1b852014a8144d97ff1478d128c40e57a23e0207",
+   "call_id": "20260929T105827Z-851c5b",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "3c1fc311ad398d53ea88a43e1b852014a8144d97ff1478d128c40e57a23e0207",
+   "effort": "",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_14086e0bf74da773.py",
+   "response_sha256": "0cd74495c0a7e452f7728995f8ad120d3e441061da5319b68a2624a014da647e",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolDefinition",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "40e9eb0d2d2dd734a2f2dcfa7267a0b57ab361c616b476e478848ce8123ae3ff"
+ },
  "14f4d9793d873316": {
   "answer": {
    "backend": "claude-cli",
@@ -77,6 +168,58 @@
   },
   "prompt_sha256": "a8d15cccf7ff8f20b27ea2de315dff2122ca0abe32688daaa9c39b45e4862f5b"
  },
+ "20359188ebc2e80d": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000642Z-0fafa2",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops `message=failure.message` when it wraps a transport exception in `ProviderError`. Unless the constructor defaults to that same message, the public error text changes, which breaks the normalized public-error semantics and the provider-error translation the requirement asks for.",
+   "response_sha256": "0efc1181a8979ea1ac1fa8eb8b45de5e1ddee3e9816a05a60f1e632f9f4c87b4",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "message=failure.message,",
+    "raise ProviderError(failure, request.provider, request.model) from exc"
+   ],
+   "test_focus": "Make the QwenChat HTTP client raise a transport exception during `aexecute`, then check that the raised `ProviderError`'s public message equals the normalized transport failure's message.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.930860Z",
+   "answer_sha256": "e2c25ef6bc0fc83a1e5c65d43b53648d6b75cf7bbda62f5601166c71edd6475d",
+   "call_id": "20260929T114747Z-be3311",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "e2c25ef6bc0fc83a1e5c65d43b53648d6b75cf7bbda62f5601166c71edd6475d",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_20359188ebc2e80d.py",
+   "response_sha256": "108f86d7f1881c7913f42fe3870fe27cdb17ac6de9a9350af77fcc6b944b06d7",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter",
+    "llm_router._internal.providers.qwenchat.transport_failure"
+   ]
+  },
+  "prompt_sha256": "4539df3f4ecdfde2ffd3c99cd419cae5cba79c975d434c0a79788a43f9baa95c"
+ },
  "2038c0b46cff816b": {
   "answer": {
    "backend": "claude-cli",
@@ -145,6 +288,105 @@
   },
   "prompt_sha256": "59a3be2611d1fc2d40bb5b6608349cb0bc47b55e8991b3c71084c93d41996009"
  },
+ "36fb82fcc47860a2": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000642Z-337a08",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The original code turns temperature into a float before building the QwenChat payload; the mutant drops that step. An int, Decimal or numeric-string temperature would then reach the native boundary with a different wire type, or fail to serialize at all, so the normalized request semantics are not preserved.",
+   "response_sha256": "9e1deb7b2e6c9d1ddf9aa63d47dcde59d3b1c72e498191dfa718c84419070813",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "payload[\"temperature\"] = float(request.temperature)",
+    "payload['temperature'] = request.temperature"
+   ],
+   "test_focus": "Build the payload with a non-float temperature such as int 1 or Decimal(\"0.5\"). Assert payload[\"temperature\"] is a float with the same value, e.g. 1.0.",
+   "verdict": "pin"
+  },
+  "operator": "conversion",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.562747Z",
+   "answer_sha256": "84f03cadf003ea72638bf21e562a5c1a5e0a469269f586b176d3ffa4088066b6",
+   "call_id": "20260929T112151Z-ac7843",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "84f03cadf003ea72638bf21e562a5c1a5e0a469269f586b176d3ffa4088066b6",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_36fb82fcc47860a2.py",
+   "response_sha256": "fab50f5c3c802c245f0ff106ab9c9f1b941dda5a3bf9548d723d50480c80dfdc",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "835ad54c9325af58fd7d8f596b685a603c3ffd81cc9d8e306b2bf6d96ec0ccf7"
+ },
+ "3efa4e88882211c0": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000653Z-5319bf",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant sends the chat POST without the built JSON payload. The proxy therefore never receives the messages, model or uploaded media references, which breaks proxy HTTP behavior and normalized request semantics.",
+   "response_sha256": "a9ebc19d02a5cac372a4d288665200d74670bc64eb58732794154b38c6951834",
+   "sources": [
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "A retryable upload is retried before exactly one dependent chat request uses the successful uploaded reference.",
+    "response = await client.post(_chat_url(self.base_url), headers=json_headers(request))"
+   ],
+   "test_focus": "Use a mock HTTP transport to check that the async chat POST body is the JSON payload built from the request, including the uploaded media reference.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.933396Z",
+   "answer_sha256": "3a92f78e00e67cf10a4fc89bc9db581eda1a051f99f545f3ed7eb0380f761eed",
+   "call_id": "20260929T114747Z-cd8c4f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "3a92f78e00e67cf10a4fc89bc9db581eda1a051f99f545f3ed7eb0380f761eed",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_3efa4e88882211c0.py",
+   "response_sha256": "b9bed4dff8a3ca680a6d6fd12b01db74f69f3248b1d81678efa71439c86b8a62",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "a14b6a4dd028f00c0fd2146c0a04b8ee8abb516ca1ca2d601d7d4e2d32e9ba2b"
+ },
  "40231175bc1ce35e": {
   "answer": {
    "backend": "claude-cli",
@@ -178,6 +420,56 @@
    "source": "draft author"
   },
   "prompt_sha256": "1f6b7eb1879af1c326bad8e0c7d05e9b57aff6d4ba8ea9a655dcf4392bb98133"
+ },
+ "474c40f4f8c20c86": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000653Z-01076f",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant no longer passes the adapter's configured timeout_seconds, so the client falls back to httpx's default 5-second timeout. With a short configured timeout, a slow proxy now succeeds when it should raise a transport ProviderError. With a long configured timeout, a slow generation now fails. Either way the proxy HTTP behavior at the transport boundary changes.",
+   "response_sha256": "cc3116dd1b264d03a4c0c8f39cb783e8f4726cf566069f6e9523b5384095b852",
+   "sources": [
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "timeout=self.timeout_seconds,",
+    "async with httpx.AsyncClient(trust_env=False) as client:"
+   ],
+   "test_focus": "Give the async QwenChat adapter a specific timeout_seconds, then check that it reaches the httpx.AsyncClient. For example: a proxy that responds slower than a short configured timeout must raise a transport ProviderError, or the patched AsyncClient must receive timeout=timeout_seconds.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.563964Z",
+   "answer_sha256": "1b9409848d14bec931a60e524a6d54ad5f62b2f14ba67a5a08f370b4e33e3da4",
+   "call_id": "20260929T112151Z-3e55d1",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "1b9409848d14bec931a60e524a6d54ad5f62b2f14ba67a5a08f370b4e33e3da4",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_474c40f4f8c20c86.py",
+   "response_sha256": "47981c0713ffdc08f5d71c5d9852d03a5c332bb2e624b07a174f73d96ba41f89",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "38b0a6dedf7154a942efb59d4d51928b6b0b79409b8186562b019368b06872d7"
  },
  "4f1c2e37ad20c744": {
   "answer": {
@@ -315,6 +607,147 @@
   },
   "prompt_sha256": "f59aac5cdd6812815b1d94497ebc1396d942b4b096d5b46bf5af9fda6929916d"
  },
+ "7a41433f8cd09b7a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000653Z-b65202",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "dict.update takes the same key/value pairs from a mapping or an iterable of pairs whether or not it is first copied with dict(), so the payload ends up the same. The shallow copy never escapes the function, so the change can't be observed.",
+   "response_sha256": "ed5b513f21b3fa6c9aa557e4406b9514e103b2f2d3123e9d9826c71a399c0b0a",
+   "sources": [
+    "payload.update(dict(request.kwargs))",
+    "payload.update(request.kwargs)",
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "conversion",
+  "prompt_sha256": "5eee5255afb74c373026e94a1261b2346ec7039d9b3d7807c2995a51f5e1c10e",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093743Z-f3a734",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "5eee5255afb74c373026e94a1261b2346ec7039d9b3d7807c2995a51f5e1c10e",
+   "reason": "Removing the redundant `dict()` cast around `request.kwargs` when passed to `payload.update()` results in identical dictionary content, as `.update()` natively accepts mappings and iterables of key-value pairs. The versions are functionally indistinguishable.",
+   "response_sha256": "b71de622dc8a39581a9e4f0d8804ae58d8aeaf511dab81f5f4b779334cafb0db",
+   "sources": [
+    "payload.update(dict(request.kwargs))",
+    "payload.update(request.kwargs)",
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "7a62ad64f09cc0a0": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000653Z-98554f",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "This should be pinned. The request never set tool_choice, but the mutant still sends 'tool_choice': 'auto' to QwenChat whenever a tool registry exists, even an empty one with no tools. That changes the native request, so the normalized request semantics the adapter must preserve across the boundary are no longer kept.",
+   "response_sha256": "396610409d788ceef9210fbc79201d04a338d83913a5acfb701fc14353764040",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "if request.tool_registry is not None:",
+    "if request.tool_choice is not None:"
+   ],
+   "test_focus": "Build a payload from a request with an empty ToolRegistry and tool_choice=None, and check that the payload has no 'tool_choice' key (and no 'tools' key).",
+   "verdict": "pin"
+  },
+  "operator": "attribute",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.564896Z",
+   "answer_sha256": "65ac48716dce1ba29875c5daafa9e44d6ca086889f875d444ba65d70d2e10e00",
+   "call_id": "20260929T112151Z-0a9bde",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "65ac48716dce1ba29875c5daafa9e44d6ca086889f875d444ba65d70d2e10e00",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7a62ad64f09cc0a0.py",
+   "response_sha256": "1284135baf14cd732fc79ea50460c36a0aee8778a878af5acda8fe2a2f7d12ed",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "c077e2ada6374593eaec78b1e6242d2e8a42bde0d1e87c2ddd47e3deb4dac137"
+ },
+ "7b8bea28d9ae00fa": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000701Z-574ea3",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant leaves out json_headers(request) on the async chat POST, so auth and other request headers are never sent to the QwenChat proxy. That breaks the required proxy HTTP behavior across the transport boundary.",
+   "response_sha256": "fb8059cb81324c35bacf950edce9f4db1a24bdcc20fe21e96acfd9db94d9e489",
+   "sources": [
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "Proxy text, media upload, provider-error translation, and tool-output normalization preserve QwenChat semantics.",
+    "headers=json_headers(request),",
+    "response = await client.post(_chat_url(self.base_url), json=payload)"
+   ],
+   "test_focus": "Run aexecute against a mocked QwenChat proxy. Check that the chat POST carries the headers from json_headers(request), such as authorization and content type.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.566091Z",
+   "answer_sha256": "486309f3a0649e9cbcf43beb21b3c33a0d5e826457b03fd8d6e50cbf5bd6ee18",
+   "call_id": "20260929T112151Z-6317e8",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "486309f3a0649e9cbcf43beb21b3c33a0d5e826457b03fd8d6e50cbf5bd6ee18",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7b8bea28d9ae00fa.py",
+   "response_sha256": "ef92bdab04ec589553c4b1f986467763f9dda6a8a8c1e5f388cc2a9fc320de0d",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter",
+    "llm_router._internal.providers.qwenchat.json_headers"
+   ]
+  },
+  "prompt_sha256": "c066b0ea5939d521fb3fa4b879154bec84ce5e576c3c1bf099c38a979d893f47"
+ },
  "7f08bc96d2f666c5": {
   "answer": {
    "backend": "claude-cli",
@@ -348,6 +781,152 @@
    "source": "draft author"
   },
   "prompt_sha256": "617ae49656e7c5140563496b5a97d04615d501b98894d5e5827c0d3e63e8299c"
+ },
+ "7ff18671bd521f50": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T093757Z-51e87b",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without rstrip, a configured base_url ending in '/' yields request URLs with a double slash when paths are joined, changing the proxy HTTP requests the adapter emits. That breaks the requirement to preserve proxy HTTP behavior across the transport boundary.",
+   "response_sha256": "8b66ae83be9f1e6b18186db31df9de62071805011d2671928bb89a0e841b861d",
+   "sources": [
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "Proxy text, media upload, provider-error translation, and tool-output normalization preserve QwenChat semantics.",
+    "self.base_url = base_url.rstrip(\"/\")",
+    "self.base_url = base_url"
+   ],
+   "test_focus": "Construct QwenChatAdapter with a base_url ending in '/' and assert the outgoing proxy request URL has no double slash (it equals the URL produced without the trailing slash).",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.566927Z",
+   "answer_sha256": "3d7a8f5d7f461ffe668a5c920832cd158fbb5c393cee77db751b6d16d30fdacc",
+   "call_id": "20260929T112151Z-9342b5",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "3d7a8f5d7f461ffe668a5c920832cd158fbb5c393cee77db751b6d16d30fdacc",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7ff18671bd521f50.py",
+   "response_sha256": "5bde21d86420c5585f3884d3d07a8994d94e478fb575d06fa87055573a84ae53",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "593318c3412216f2db6593a1e0fbba3904174ab2c16c29629657ee579c4dbf79"
+ },
+ "863d7828367112c3": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000701Z-284c7a",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant leaves messages out of the payload, so text and uploaded media references never reach QwenChat. That breaks proxy text and media-upload semantics across the transport boundary.",
+   "response_sha256": "2414f8e298cd754261c84f12944437278fa582f6770266b94afe71b2885290e5",
+   "sources": [
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "Proxy text, media upload, provider-error translation, and tool-output normalization preserve QwenChat semantics.",
+    "\"messages\": messages,"
+   ],
+   "test_focus": "Await abuild_payload with a text message and an uploaded media part, then assert that payload['messages'] holds the normalized messages, including the uploaded media reference.",
+   "verdict": "pin"
+  },
+  "operator": "container",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.568005Z",
+   "answer_sha256": "ffe8731779c8b32df3b8ecab7288d5d5e21eb2e4bb4551a7747327a4883c7c38",
+   "call_id": "20260929T112151Z-bad037",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "ffe8731779c8b32df3b8ecab7288d5d5e21eb2e4bb4551a7747327a4883c7c38",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_863d7828367112c3.py",
+   "response_sha256": "884fc4e06e3fc3760118cbfa1eac51abd6c73a8efbc482958ab1c1bc281e4740",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "f59c7df6a6039919ac901305f82f5ef5d3645491c843c9802e0b3c3bd67b2a0c"
+ },
+ "8654a7b1099c3580": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T093757Z-5c5444",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant no longer passes the normalized failure's message into the ProviderError raised on a transport failure. The original passes it explicitly, and the async path does too, so nothing shows the default message is the same. The public error message is part of the provider-error translation the requirement protects.",
+   "response_sha256": "f60933b62755275b096627c53a746388ffba90fe18a9d10883adce9f4817da2b",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "                message=failure.message,",
+    "        raise ProviderError(failure, request.provider, request.model) from exc"
+   ],
+   "test_focus": "Make the synchronous QwenChat HTTP transport fail (for example, a connection error), then check that the raised ProviderError's public message equals the normalized transport failure's message.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.934730Z",
+   "answer_sha256": "0380d4a8c70f1a6dd53d741499c6886e2bfa23e7655a148d9324bf3362bfca7a",
+   "call_id": "20260929T114749Z-ed4f2b",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "0380d4a8c70f1a6dd53d741499c6886e2bfa23e7655a148d9324bf3362bfca7a",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8654a7b1099c3580.py",
+   "response_sha256": "d31f11f6fbf465bdd31affb6a6cff07d56ae770ff1b012be83e975bbc0cc72bb",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.qwenchat",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "d5ca1c2c07b3909f5734d1ff4d4df379951fd5affd7a2415f26f477e5d0b9136"
  },
  "8916bf123bb5af04": {
   "answer": {
@@ -426,6 +1005,105 @@
   },
   "prompt_sha256": "28154fcda03892ecdbd79d35699fd3a628510dfd1ee5e7f8d4a2aa16915e06f5"
  },
+ "8f495188e4365ff8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000701Z-af7349",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant stops converting the seed with int(), so any seed that is int-like but not a plain int (for example a bool, a numpy integer or a numeric string) reaches the QwenChat payload in its original form. Python allows such inputs even if seed is typed as int, so the versions can be told apart, and the requirement says normalized request semantics must hold across the native HTTP boundary.",
+   "response_sha256": "e95de4b2a813261824af3a7aadd992def112837bf62800e6dab494a1e2f4e2d3",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "payload[\"seed\"] = int(request.seed)",
+    "payload['seed'] = request.seed"
+   ],
+   "test_focus": "Await abuild_payload with an int-like seed that is not a plain int (for example True or numpy.int64(7)), then check that payload['seed'] is exactly a plain int with the expected value, such as type(...) is int.",
+   "verdict": "pin"
+  },
+  "operator": "conversion",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.569194Z",
+   "answer_sha256": "3a9fd3542671dc4661c35164f0be0360d734a913ff278b5466c9417bfe657be8",
+   "call_id": "20260929T112151Z-60a318",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "3a9fd3542671dc4661c35164f0be0360d734a913ff278b5466c9417bfe657be8",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8f495188e4365ff8.py",
+   "response_sha256": "a7c7b5db65ad85152ce9e78ef32e94defb76be1199e29fb0eb3b8a4d78134629",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "840376a0fed5cb0796cafaf47ccc270459881c43c45f6d71a65c7b7cedd4d635"
+ },
+ "8fddc8d6682ad36b": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000701Z-4c2f74",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without the float() coercion, the normalized temperature is no longer turned into a numeric provider field. Non-float values (strings, Decimal, int) pass through unchanged, and invalid values reach the QwenChat HTTP body instead of being rejected. That breaks the requirement that normalized request semantics are preserved across the native boundary.",
+   "response_sha256": "2ec67cf5494b5f75a9e263d1b58043cfd31d7f9080e4a107cd1e5e638a21cdc8",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "payload[\"temperature\"] = float(request.temperature)",
+    "payload['temperature'] = request.temperature"
+   ],
+   "test_focus": "build_payload must emit temperature as a Python float (e.g. temperature=1 or \"0.5\" becomes 1.0 or 0.5) and must raise ValueError for a non-numeric temperature such as 'not-a-number'.",
+   "verdict": "pin"
+  },
+  "operator": "conversion",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.570102Z",
+   "answer_sha256": "9c60859e905ccfe4963a993bba94be0adcb526063d87e814aaf2015f00d8ed5b",
+   "call_id": "20260929T112151Z-2e61bb",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "9c60859e905ccfe4963a993bba94be0adcb526063d87e814aaf2015f00d8ed5b",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8fddc8d6682ad36b.py",
+   "response_sha256": "a55348c00060233b0b093c6c1d37bf0b0f176211f444e9775c88b84d7b363b5b",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "5a4dd64c0bcded288b3a76073f2bb9a659f38f459ae2de818a442209fe11f2a0"
+ },
  "97f91dfe57fdbb0a": {
   "answer": {
    "backend": "claude-cli",
@@ -440,6 +1118,56 @@
   },
   "operator": "body",
   "prompt_sha256": "3d8b33ed8dcd621483a6ff7b39a6197b03bb0adfbf15b5d82b241ec4e368c764"
+ },
+ "9d019d63a7b5816c": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000712Z-52a8c2",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For a request with no tools and no tool choice, the mutant adds `tool_choice: 'auto'` to the native QwenChat payload. The adapter then sends a tool directive the caller never asked for, which breaks the normalized request semantics across the transport boundary. OpenAI-compatible backends may also reject `tool_choice` when no tools are given.",
+   "response_sha256": "fcee337c975535c64f4f78b8bd7bb506f22c1d9d9fa6148b9eda1a4308a4892d",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "Proxy text, media upload, provider-error translation, and tool-output normalization preserve QwenChat semantics.",
+    "if request.tool_choice is not None:",
+    "if True:"
+   ],
+   "test_focus": "Build a payload from a request where tool_choice is None and there is no tool registry, and assert that the payload has no 'tool_choice' key.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.571361Z",
+   "answer_sha256": "1725d64bacd733d228dd0ecccea322ca8c7536e8288ac5767c435361154119a9",
+   "call_id": "20260929T112151Z-8a097d",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "1725d64bacd733d228dd0ecccea322ca8c7536e8288ac5767c435361154119a9",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_9d019d63a7b5816c.py",
+   "response_sha256": "8f8ce8601f3d5e7d45a763f199813b01f19b8bb7857471bf28ce83539d6f16b1",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "fd5c640adfa18883f10dc755e4fa2be4408bbb65020388b0f88fcf06cf04ed55"
  },
  "aeeb7e44dc927403": {
   "answer": {
@@ -474,6 +1202,259 @@
    "source": "draft author"
   },
   "prompt_sha256": "2e6a99585048b7828d02d343ae39e94689cad18c02eff8fae509f144d0c6d166"
+ },
+ "b1c0fd5ecaa6d923": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000712Z-3a3335",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant decides whether to send `tool_choice` by checking the tool registry instead of the request's own `tool_choice`. If a request sets `tool_choice` without a registry, the choice is dropped. If a request has a registry but no `tool_choice`, the mutant still calls `tool_choice_payload` on the unset choice and sends whatever comes back. Either way the normalized request no longer matches what is sent across the QwenChat boundary.",
+   "response_sha256": "68f67bc1487596d5304b7a4105d8c5d6551a87d95a821e0a4bf90b2fc9219092",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "    if request.tool_registry is not None:\n        payload['tool_choice'] = tool_choice_payload(request)"
+   ],
+   "test_focus": "Check that the payload contains `tool_choice` exactly when `request.tool_choice` is not None. Cover a request with tools but no `tool_choice` (the key must be absent) and a request with `tool_choice` but no tool registry (the key must be present).",
+   "verdict": "pin"
+  },
+  "operator": "attribute",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.572567Z",
+   "answer_sha256": "a43038082ac3ac6deb47e8b41771bfe1ef6dfb32d0913e408f9d97a909fe5677",
+   "call_id": "20260929T112202Z-c7167d",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "bb59262802ac84d3540f59b2ee842dfd77aedc5168b2452c996ca4c1497a8cf8",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b1c0fd5ecaa6d923.py",
+   "response_sha256": "6f7fe64f35cdd2ab0a89da9e639e53024cbcb5f2545ccb5c7e987b15f761d17c",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolChoice",
+    "llm_router._internal.capabilities.tools.ToolDefinition",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "7b1f5c8854ac34b3a4761374299ac7fb15535f6af35e8eaeb57972c416af7812"
+ },
+ "b2c437a6ff46e0ea": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000712Z-e4e89c",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The original always sends QwenChat a whole-number seed. The mutant passes the value through unchanged, so a seed of 3.7 reaches the provider as 3.7 instead of 3. That changes the seed semantics the adapter must preserve across its HTTP boundary.",
+   "response_sha256": "07b41e6c052d1e54c9ca4d561c17fa567247040e32f8330c48dd732d155f6f6d",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "payload[\"seed\"] = int(request.seed)",
+    "payload['seed'] = request.seed"
+   ],
+   "test_focus": "Build a payload with a seed that isn't a whole number (e.g. 3.7), then assert that payload['seed'] == 3 and that it is an int.",
+   "verdict": "pin"
+  },
+  "operator": "conversion",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.573568Z",
+   "answer_sha256": "56161cdcfb48aee9e1266dfd11d0361d2c85b3b276e52588fd27c26222fc8503",
+   "call_id": "20260929T112202Z-e413f5",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "56161cdcfb48aee9e1266dfd11d0361d2c85b3b276e52588fd27c26222fc8503",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b2c437a6ff46e0ea.py",
+   "response_sha256": "c207bc128506191d6d5ecaa925d23706f22e724d3e7317d0ca3f6fcc493ae5e5",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "c4ad45cc1743a54f425e1f9f91603ce9b3c5639cfbbb6b7c34c598bcd8172dc7"
+ },
+ "b4ed2e3d119cad14": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000712Z-faf211",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "An empty tool registry means the normalized request has no tools. The original leaves `tools` out of the payload, while the mutant sends `\"tools\": []` to the QwenChat HTTP boundary. OpenAI-compatible endpoints commonly reject an empty tools array, so the mutant changes the native request for the same normalized request and fails to preserve normalized request semantics.",
+   "response_sha256": "cafdeb4e2de8a90bcc51083231bd80314573d7512e1a1c977d45136206003207",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "if request.tool_registry is not None and request.tool_registry.tools:",
+    "if request.tool_registry is not None:"
+   ],
+   "test_focus": "Check that build_payload with ToolRegistry(tools={}) returns a payload without a 'tools' key, the same as with tool_registry=None.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.574557Z",
+   "answer_sha256": "06d7c384d7163a70f94ed7a17ac7435ee1a55f0656b70ddbd01d3f67c47f12de",
+   "call_id": "20260929T112203Z-45f964",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "06d7c384d7163a70f94ed7a17ac7435ee1a55f0656b70ddbd01d3f67c47f12de",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b4ed2e3d119cad14.py",
+   "response_sha256": "ec1d5295fbc956c66728acfeed80ff731128a48857455e6ace6701e27cb6ae4f",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "781f150eef90118636f32978d928b0e4fcce3f65e4cdc7cc4fe5de6eae237b08"
+ },
+ "b9c4c2db2ed665d6": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000723Z-88a0ee",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant leaves the \"model\" key out of the QwenChat payload, so the normalized request's provider_model never reaches the proxy. That breaks the request semantics the adapter must preserve across its HTTP boundary.",
+   "response_sha256": "a8ec0e29d15e62f0c147f46c78566bb28c146d99513ccc9274ce8912c8655195",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "\"model\": request.provider_model,",
+    "payload: dict[str, Any] = {'messages': messages, 'stream': False}"
+   ],
+   "test_focus": "Build a payload with abuild_payload for a request with a set provider_model, then check that payload[\"model\"] equals that provider_model and that the proxy chat request carries it.",
+   "verdict": "pin"
+  },
+  "operator": "container",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.575458Z",
+   "answer_sha256": "eb87dea4394e4e1d80bc187044d3add8df716190c21e8428179ae7808cc9f4bc",
+   "call_id": "20260929T112205Z-8f3949",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "39dc2f56a221be61c10c6cd781fe471ab19fb07470fb97df56dad3a9ce81fac9",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b9c4c2db2ed665d6.py",
+   "response_sha256": "588a3a9d40332c33e8f05bd78e670e26976828c4da5f996650f276b0d72c4cc7",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "8b1a7131190180f35eb8ae8cb2fe136f0b9183d94a0a90b93d972d411e067075"
+ },
+ "cb633e63a453812c": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T093806Z-3f0e4b",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the adapter's configured timeout, so httpx falls back to its 5-second default. A proxy that answers in 10 seconds with timeout_seconds=60 succeeds in the original but fails as a ProviderError in the mutant. That changes the proxy HTTP behavior the QwenChat boundary requirement says must be preserved. The equivalence verdicts only compared how a timeout, once it fires, is turned into an error; they did not consider when it fires.",
+   "response_sha256": "2535ddcea7ee0377b2d0521e21d1bcd2a4d44205a8fa5a8ba77c16d4a6f90484",
+   "sources": [
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "with httpx.Client(timeout=self.timeout_seconds, trust_env=False) as client:",
+    "Provider-specific transport selection and boundary behavior shall conform to the derived adapter technical requirements"
+   ],
+   "test_focus": "Check that execute builds its httpx.Client with timeout equal to adapter.timeout_seconds, for example by patching httpx.Client or by using a slow mock transport where the configured timeout lets the request succeed but the 5-second default would not.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.576407Z",
+   "answer_sha256": "0a7ed6f17e5cba1c15725b09ee19ba40665221e4d05ceb25676832c1dd7dcd0c",
+   "call_id": "20260929T112212Z-82b36a",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "0a7ed6f17e5cba1c15725b09ee19ba40665221e4d05ceb25676832c1dd7dcd0c",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cb633e63a453812c.py",
+   "response_sha256": "f17a55f30e1abda98a37f464d41123a2194f9447b6500f85008c98da80194d27",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.qwenchat",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ]
+  },
+  "prompt_sha256": "76a1f4ffa1cd75fa3aebc3e70a381330843c8353a8447772739983e5fc6d680f"
  },
  "cbd3f30a9cbff5df": {
   "answer": {
@@ -634,5 +1615,55 @@
    "source": "draft author"
   },
   "prompt_sha256": "b32ac718e18f42637fee55d27058c4ed967b99e0a94cc2ca3668465a4cad7dea"
+ },
+ "f78852f8c6d406f7": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000723Z-912382",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant always calls tool_choice_payload and writes a tool_choice field, even when the request set no tool choice. That puts a field the caller never asked for into the native QwenChat payload, or raises an error if tool_choice_payload rejects None. Either way the adapter no longer preserves the normalized request at its transport boundary.",
+   "response_sha256": "5e6c66b4bafefc24963bdab4104b10a40e44730c29ba76a6d7871d623a43f2c4",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "The QwenChat adapter shall preserve proxy HTTP behavior, media uploads, upload retry, normalized tool outputs, and provider-error translation across its transport boundary.",
+    "if request.tool_choice is not None:",
+    "if True:"
+   ],
+   "test_focus": "Build a payload with abuild_payload for a request whose tool_choice is None, and assert that the payload has no \"tool_choice\" key and that the proxy request body leaves it out.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.577921Z",
+   "answer_sha256": "cf8189c51aa8ca429c3d5119314eaf8cce354c0d92b72baa3f98b8a483c0110e",
+   "call_id": "20260929T112216Z-da657a",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "1bc67647e5ac05c56d2c63e1b26f041e42c4d9f179596d709d0b76e830e661b9",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_f78852f8c6d406f7.py",
+   "response_sha256": "2abf1c935d2dc1ece661c5c9ee476fba5f14063aead571237f9a16db1472e367",
+   "source": "draft author",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  "prompt_sha256": "a7daacc6eb6706a070d66d1946ca10bac53f1c650e5a55fc4fc77d3abdd921a2"
  }
 }

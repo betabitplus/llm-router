@@ -1,0 +1,86 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "TREQ_REPAIR_PROMPT_BOUNDS",
+ "proposals": [
+  {
+   "id": "SM-7AD2AD07",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::build_repair_prompt",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "The schema identity is incorporated without bounds, directly violating the requirement to bound all dynamic components in the repair prompt.",
+   "original_sha256": "eeeab5126fb5c6d9bbed5634827680aa8269146c52df44faf5dbd78ec0ba9832",
+   "context_sha256": "2e9558999588028f4058aba4daae1565d5f76e4a7316c71856ee63451d779623",
+   "prompt_sha256": "2eec42e932992b42117507ef2985c4a55bd67410ec9c6d5a1d056affd4fc1667",
+   "replacement": "def build_repair_prompt(\n    *,\n    spec: SchemaSpec,\n    invalid_output: object,\n    error_message: str,\n) -> str:\n    \"\"\"Build bounded validation guidance for a structured-output repair turn.\"\"\"\n    output_preview = preview_value(invalid_output, max_chars=500)\n    error_preview = preview_text(error_message, max_chars=300)\n    schema_name = spec.name\n    schema_preview = preview_text(\n        json.dumps(dict(spec.json_schema), sort_keys=True),\n        max_chars=500,\n    )\n    return (\n        \"The previous response did not match the required schema.\\n\"\n        f\"Schema: {schema_name}\\n\"\n        f\"Required schema preview: {schema_preview}\\n\"\n        f\"Validation error: {error_preview}\\n\"\n        f\"Previous response preview: {output_preview}\\n\"\n        \"Return only valid JSON that satisfies the schema.\"\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153658Z-d3d88d",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "fd7e5603571ddf9e900477e8249ed2489639b0043299d43f666212cb83c38f51",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-FBF6A886",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/schema.py::build_repair_prompt",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "The schema identity is computed wrongly by using the SchemaSpec's class name rather than its configured name property, changing the prompt criteria.",
+   "original_sha256": "eeeab5126fb5c6d9bbed5634827680aa8269146c52df44faf5dbd78ec0ba9832",
+   "context_sha256": "2e9558999588028f4058aba4daae1565d5f76e4a7316c71856ee63451d779623",
+   "prompt_sha256": "2eec42e932992b42117507ef2985c4a55bd67410ec9c6d5a1d056affd4fc1667",
+   "replacement": "def build_repair_prompt(\n    *,\n    spec: SchemaSpec,\n    invalid_output: object,\n    error_message: str,\n) -> str:\n    \"\"\"Build bounded validation guidance for a structured-output repair turn.\"\"\"\n    output_preview = preview_value(invalid_output, max_chars=500)\n    error_preview = preview_text(error_message, max_chars=300)\n    schema_name = preview_text(type(spec).__name__, max_chars=120)\n    schema_preview = preview_text(\n        json.dumps(dict(spec.json_schema), sort_keys=True),\n        max_chars=500,\n    )\n    return (\n        \"The previous response did not match the required schema.\\n\"\n        f\"Schema: {schema_name}\\n\"\n        f\"Required schema preview: {schema_preview}\\n\"\n        f\"Validation error: {error_preview}\\n\"\n        f\"Previous response preview: {output_preview}\\n\"\n        \"Return only valid JSON that satisfies the schema.\"\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153658Z-d3d88d",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "fd7e5603571ddf9e900477e8249ed2489639b0043299d43f666212cb83c38f51",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-DDCF6FE2",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::build_repair_prompt",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Schema name is no longer bounded: the raw spec.name is interpolated into the repair prompt, so a very long schema identity expands the prompt beyond its cap.",
+   "original_sha256": "eeeab5126fb5c6d9bbed5634827680aa8269146c52df44faf5dbd78ec0ba9832",
+   "context_sha256": "69157f079ef43fb3df540eb99de217e5c2d3042438b3a58fc8925ec84985867c",
+   "prompt_sha256": "98d686073bcfb84e22ad1b1f9ab0819d24bf7c3df8add5f9e8ed5359162ea94b",
+   "replacement": "def build_repair_prompt(\n    *,\n    spec: SchemaSpec,\n    invalid_output: object,\n    error_message: str,\n) -> str:\n    \"\"\"Build bounded validation guidance for a structured-output repair turn.\"\"\"\n    output_preview = preview_value(invalid_output, max_chars=500)\n    error_preview = preview_text(error_message, max_chars=300)\n    schema_name = str(spec.name)\n    schema_preview = preview_text(\n        json.dumps(dict(spec.json_schema), sort_keys=True),\n        max_chars=500,\n    )\n    return (\n        \"The previous response did not match the required schema.\\n\"\n        f\"Schema: {schema_name}\\n\"\n        f\"Required schema preview: {schema_preview}\\n\"\n        f\"Validation error: {error_preview}\\n\"\n        f\"Previous response preview: {output_preview}\\n\"\n        \"Return only valid JSON that satisfies the schema.\"\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153706Z-364b9b",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "2fa3bf346448c25dbecfc662b22bd18553edfe8a249fcf4cf4be52b4261533f0",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-B1879BD0",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/capabilities/schema.py::build_repair_prompt",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Validation error details are not bounded: the raw error_message is included in the prompt, so long validation details can exceed the cap.",
+   "original_sha256": "eeeab5126fb5c6d9bbed5634827680aa8269146c52df44faf5dbd78ec0ba9832",
+   "context_sha256": "69157f079ef43fb3df540eb99de217e5c2d3042438b3a58fc8925ec84985867c",
+   "prompt_sha256": "98d686073bcfb84e22ad1b1f9ab0819d24bf7c3df8add5f9e8ed5359162ea94b",
+   "replacement": "def build_repair_prompt(\n    *,\n    spec: SchemaSpec,\n    invalid_output: object,\n    error_message: str,\n) -> str:\n    \"\"\"Build bounded validation guidance for a structured-output repair turn.\"\"\"\n    output_preview = preview_value(invalid_output, max_chars=500)\n    error_preview = error_message.strip() or preview_text(error_message, max_chars=300)\n    schema_name = preview_text(spec.name, max_chars=120)\n    schema_preview = preview_text(\n        json.dumps(dict(spec.json_schema), sort_keys=True),\n        max_chars=500,\n    )\n    return (\n        \"The previous response did not match the required schema.\\n\"\n        f\"Schema: {schema_name}\\n\"\n        f\"Required schema preview: {schema_preview}\\n\"\n        f\"Validation error: {error_preview}\\n\"\n        f\"Previous response preview: {output_preview}\\n\"\n        \"Return only valid JSON that satisfies the schema.\"\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153706Z-364b9b",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "2fa3bf346448c25dbecfc662b22bd18553edfe8a249fcf4cf4be52b4261533f0",
+    "index": 1
+   }
+  }
+ ]
+}

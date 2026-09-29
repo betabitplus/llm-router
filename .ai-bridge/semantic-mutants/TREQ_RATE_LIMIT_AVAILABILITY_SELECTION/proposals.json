@@ -1,0 +1,86 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "TREQ_RATE_LIMIT_AVAILABILITY_SELECTION",
+ "proposals": [
+  {
+   "id": "SM-EB91AEC4",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._select_blocked_request",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Returns the blocked request with the longest remaining wait instead of the shortest wait by replacing min() with max().",
+   "original_sha256": "63a3e4b2ac85684347724a18dd934a35a631ad00296fd968009121381287db25",
+   "context_sha256": "700553cea2cf947139b875cd335a8c322b50192c53afdda183261e1c5a25c799",
+   "prompt_sha256": "84dcd3242fb1a8ce25f30e319569f415111057038b79952377d75a08aae6dad2",
+   "replacement": "    def _select_blocked_request(\n        self,\n        blocked_requests: Sequence[_BlockedRequest],\n    ) -> _BlockedRequest:\n        \"\"\"Return the blocked route with the shortest remaining wait.\"\"\"\n        return max(blocked_requests, key=lambda blocked: blocked.wait_seconds)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153655Z-d5a89a",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "c7af8cd315939e747d4374e07c4c66dddc40d3b3309b6e44266a1f8280dff860",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-6C9E8E1B",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._select_blocked_request",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Returns the first available blocked request in the sequence, ignoring the remaining wait times and failing to enforce the shortest wait ordering.",
+   "original_sha256": "63a3e4b2ac85684347724a18dd934a35a631ad00296fd968009121381287db25",
+   "context_sha256": "700553cea2cf947139b875cd335a8c322b50192c53afdda183261e1c5a25c799",
+   "prompt_sha256": "84dcd3242fb1a8ce25f30e319569f415111057038b79952377d75a08aae6dad2",
+   "replacement": "    def _select_blocked_request(\n        self,\n        blocked_requests: Sequence[_BlockedRequest],\n    ) -> _BlockedRequest:\n        \"\"\"Return the blocked route with the shortest remaining wait.\"\"\"\n        return blocked_requests[0]",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153655Z-d5a89a",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "c7af8cd315939e747d4374e07c4c66dddc40d3b3309b6e44266a1f8280dff860",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-6C9E8E1B",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._select_blocked_request",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Returns the first blocked request in the sequence instead of searching for the one with the shortest remaining wait.",
+   "original_sha256": "63a3e4b2ac85684347724a18dd934a35a631ad00296fd968009121381287db25",
+   "context_sha256": "4ec11528ff6426a1b1a86d78d772eeb217981297515924d6a72cc47b5532bd09",
+   "prompt_sha256": "25760b9984b3ab0a9fd36aee032f1c85e80f22801801cbf2631976f879aea0a5",
+   "replacement": "    def _select_blocked_request(\n        self,\n        blocked_requests: Sequence[_BlockedRequest],\n    ) -> _BlockedRequest:\n        \"\"\"Return the blocked route with the shortest remaining wait.\"\"\"\n        return blocked_requests[0]",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153655Z-8766d5",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "b956f31d0b0dc6f986224b0b948eb7915131e3b6e708dcde57565cad0180d740",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-EB91AEC4",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._select_blocked_request",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Selects the candidate with the longest remaining wait by using max() instead of min().",
+   "original_sha256": "63a3e4b2ac85684347724a18dd934a35a631ad00296fd968009121381287db25",
+   "context_sha256": "4ec11528ff6426a1b1a86d78d772eeb217981297515924d6a72cc47b5532bd09",
+   "prompt_sha256": "25760b9984b3ab0a9fd36aee032f1c85e80f22801801cbf2631976f879aea0a5",
+   "replacement": "    def _select_blocked_request(\n        self,\n        blocked_requests: Sequence[_BlockedRequest],\n    ) -> _BlockedRequest:\n        \"\"\"Return the blocked route with the shortest remaining wait.\"\"\"\n        return max(blocked_requests, key=lambda blocked: blocked.wait_seconds)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153655Z-8766d5",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "b956f31d0b0dc6f986224b0b948eb7915131e3b6e708dcde57565cad0180d740",
+    "index": 1
+   }
+  }
+ ]
+}

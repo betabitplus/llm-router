@@ -1,0 +1,54 @@
+{
+ "cfdaa730a0d7b1f8": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224219Z-eca929",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The only functional difference is the omission of `encoding=\"utf-8\"` in `read_text()`, which relies entirely on external file contents and system locale rather than the `path` argument itself, meaning no purely symbolic input parameter can reliably tell them apart.",
+    "response_sha256": "2556c35378e8c18d01000df6d0ca96a3a04a12f96598f81cd698fd42ffa7d8fc",
+    "sources": [
+     "text = session_path.read_text(encoding=\"utf-8\")",
+     "text = session_path.read_text()"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224219Z-35155b",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions behave identically because wrapping the generator expression in extra parentheses does not alter tuple creation, and no path input can make read_text produce different return values or exception types.",
+    "response_sha256": "267f37699841409d08c3f34c4d4548ba33fdfce7d75bb94338c4e7c2550e27d1",
+    "sources": [
+     "            text = session_path.read_text(encoding=\"utf-8\")",
+     "        text = session_path.read_text()",
+     "        loaded._history = tuple(_copy_message(message) for message in history)",
+     "    loaded._history = tuple((_copy_message(message) for message in history))"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T224219Z-1570da",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only functional change is dropping encoding=\"utf-8\" from read_text(); on this darwin/macOS environment Path.read_text() defaults to locale.getpreferredencoding(False), which is UTF-8, so for any path whose file content is valid UTF-8 (the only kind decode_session can meaningfully process) both versions read identical text and therefore return identical results or raise identical exceptions.",
+    "response_sha256": "ef536a2050f6994f0f31637003192d80ac702b0c01b6c49036e0ae1c7413af6a",
+    "sources": [
+     "text = session_path.read_text(encoding=\"utf-8\")",
+     "text = session_path.read_text()"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "7496ecba5a7ac91f514363bacf51e8f8302da2648ac6b5530e5ea47245e93369"
+ }
+}

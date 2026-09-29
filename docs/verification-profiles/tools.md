@@ -84,6 +84,18 @@ llm-router plus the observed tool trace, not fidelity of provider reasoning.
 | Architecture          | This Requirement does not prescribe an internal layering path for tool-choice normalization.                                                |
 | Specification / model | Wrong selected tool and missing provider-family partitions directly invalidate the explicit-choice contract.                                |
 
+### Semantic mutants
+
+| Fault class                | Target                                                                  | Budget | Risk                                                                                  |
+| -------------------------- | ----------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/capabilities/tools.py::normalize_tool_choice` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`   | `src/llm_router/_internal/capabilities/tools.py::normalize_tool_choice` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `interface.payload-schema` | `src/llm_router/_internal/capabilities/tools.py::normalize_tool_choice` |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-req-multi-round-tool-execution)=
 
 ## Profile · REQ_MULTI_ROUND_TOOL_EXECUTION
@@ -151,6 +163,19 @@ therefore remain Surrogate at L0.
 | Interface / protocol  | An extra or missing provider turn changes the required workflow; provider tool-call parsing and schema normalization belong to the ToolRegistry TREQ.                    |
 | Architecture          | Internal registry layering is owned by the Technical requirement rather than duplicated on the parent product claim.                                                     |
 | Specification / model | Required provider-family partitions, add→multiply ordering, intermediate-result propagation, and final outcome are all part of the normative behavior.                   |
+
+### Semantic mutants
+
+| Fault class                        | Target                                                               | Budget | Risk                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/runtime/executor.py::_advance_tool_result` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`           | `src/llm_router/_internal/runtime/executor.py::_advance_tool_result` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/runtime/executor.py::_advance_tool_result` |      2 | an order or a before/after boundary its requirement names is broken                   |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/executor.py::_advance_tool_result` |      2 | an external interaction its requirement rules out happens anyway                      |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
 
 (verification-profile-treq-tool-registry)=
 
@@ -270,3 +295,16 @@ participant remains Surrogate at L0.
 | Interface / protocol  | A further provider turn after local failure or limit exhaustion is explicitly forbidden; provider response schema/status is not.                                                                |
 | Architecture          | This contract constrains observable safety behavior rather than a particular internal layering topology.                                                                                        |
 | Specification / model | Failure vs limit partitions, termination ordering, preserved outstanding call, and public error outcome are normative semantics.                                                                |
+
+### Semantic mutants
+
+| Fault class                        | Target                                                                 | Budget | Risk                                                                                  |
+| ---------------------------------- | ---------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`           | `src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round` |      2 | an order or a before/after boundary its requirement names is broken                   |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round` |      2 | an external interaction its requirement rules out happens anyway                      |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.

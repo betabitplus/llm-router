@@ -1,0 +1,166 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_TOOL_RUNTIME_SAFETY",
+ "proposals": [
+  {
+   "id": "SM-B88AB727",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "A local ToolExecutionError is logged but swallowed; the unchanged state is returned instead of re-raising, so the failure never surfaces as the public tool-execution error and the loop continues to another provider turn.",
+   "original_sha256": "5d12ae74ae6d3dbf04a7ab1d172fb43ec4975305deabcf7fb685e9f0b6173685",
+   "context_sha256": "5a119990674940a75d53a2864642491b7401b848f91a6627ba207df6fd0b41ad",
+   "prompt_sha256": "78b71e6634377c810e2259af78d8b2380a60ebfc6d5337ffae3425ab4aeead1f",
+   "replacement": "def _run_logged_tool_round(\n    *,\n    request: ProviderRequest,\n    state: ToolLoopState,\n    result: ProviderResult,\n    registry: ToolRegistry,\n) -> ToolLoopState:\n    \"\"\"Run one tool round and emit safe tool observability events.\"\"\"\n    if state.can_execute_tools():\n        for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)\n    try:\n        next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )\n    except ToolExecutionError as exc:\n        _log_tool_failed(request=request, state=state, error=exc)\n        return state\n    for step in next_state.steps[len(state.steps) :]:\n        _log_tool_completed(request=request, state=state, tool_name=step.tool_name)\n    return next_state\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-a2f4d3",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "97237b34eb696ca9a5ce70d9c8aa69a5f3dda7ec0b98e988e2badaa66dda2648",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-ECF40350",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "When the round limit is reached (state cannot execute tools), the function returns the state early without delegating to run_tool_round, so the limit handling and the outstanding tool call preservation in the public response are skipped.",
+   "original_sha256": "5d12ae74ae6d3dbf04a7ab1d172fb43ec4975305deabcf7fb685e9f0b6173685",
+   "context_sha256": "5a119990674940a75d53a2864642491b7401b848f91a6627ba207df6fd0b41ad",
+   "prompt_sha256": "78b71e6634377c810e2259af78d8b2380a60ebfc6d5337ffae3425ab4aeead1f",
+   "replacement": "def _run_logged_tool_round(\n    *,\n    request: ProviderRequest,\n    state: ToolLoopState,\n    result: ProviderResult,\n    registry: ToolRegistry,\n) -> ToolLoopState:\n    \"\"\"Run one tool round and emit safe tool observability events.\"\"\"\n    if not state.can_execute_tools():\n        return state\n    for call in result.tool_calls:\n        _log_tool_called(request=request, state=state, tool_name=call.name)\n    try:\n        next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )\n    except ToolExecutionError as exc:\n        _log_tool_failed(request=request, state=state, error=exc)\n        raise\n    for step in next_state.steps[len(state.steps) :]:\n        _log_tool_completed(request=request, state=state, tool_name=step.tool_name)\n    return next_state\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-a2f4d3",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "97237b34eb696ca9a5ce70d9c8aa69a5f3dda7ec0b98e988e2badaa66dda2648",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-B88AB727",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Local tool failures are swallowed: ToolExecutionError is logged but not re-raised, so the state is returned unchanged and the loop continues to another provider turn instead of surfacing the public error.",
+   "original_sha256": "5d12ae74ae6d3dbf04a7ab1d172fb43ec4975305deabcf7fb685e9f0b6173685",
+   "context_sha256": "f29f69c08ffaaf97f82d52fd60c3e38948d9804c09ccd8faf7ade69f769ecf6d",
+   "prompt_sha256": "aba0e22f12b0c318eddecbbb639f108affb52ec9c3c8187c202df0a916324e2b",
+   "replacement": "def _run_logged_tool_round(\n    *,\n    request: ProviderRequest,\n    state: ToolLoopState,\n    result: ProviderResult,\n    registry: ToolRegistry,\n) -> ToolLoopState:\n    \"\"\"Run one tool round and emit safe tool observability events.\"\"\"\n    if state.can_execute_tools():\n        for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)\n    try:\n        next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )\n    except ToolExecutionError as exc:\n        _log_tool_failed(request=request, state=state, error=exc)\n        return state\n    for step in next_state.steps[len(state.steps) :]:\n        _log_tool_completed(request=request, state=state, tool_name=step.tool_name)\n    return next_state",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-de6e86",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "879e9a18b5cc64c81c7f647cbe1093dd0f09357a26efd49f7123c6063153bec3",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-2548C67D",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Non-public local failures are wrapped differently: any generic Exception from a tool round is logged and re-raised as a ToolExecutionError built from the raw exception text, leaking sensitive arguments; also the round-limit check for logging is dropped so calls are logged as called even when the limit is reached.",
+   "original_sha256": "5d12ae74ae6d3dbf04a7ab1d172fb43ec4975305deabcf7fb685e9f0b6173685",
+   "context_sha256": "f29f69c08ffaaf97f82d52fd60c3e38948d9804c09ccd8faf7ade69f769ecf6d",
+   "prompt_sha256": "aba0e22f12b0c318eddecbbb639f108affb52ec9c3c8187c202df0a916324e2b",
+   "replacement": "def _run_logged_tool_round(\n    *,\n    request: ProviderRequest,\n    state: ToolLoopState,\n    result: ProviderResult,\n    registry: ToolRegistry,\n) -> ToolLoopState:\n    \"\"\"Run one tool round and emit safe tool observability events.\"\"\"\n    for call in result.tool_calls:\n        _log_tool_called(request=request, state=state, tool_name=call.name)\n    try:\n        next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )\n    except ToolExecutionError as exc:\n        _log_tool_failed(request=request, state=state, error=exc)\n        raise\n    for step in next_state.steps[len(state.steps) :]:\n        _log_tool_completed(request=request, state=state, tool_name=step.tool_name)\n    return next_state",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-de6e86",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "879e9a18b5cc64c81c7f647cbe1093dd0f09357a26efd49f7123c6063153bec3",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-80E21F07",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Tool-called events are logged after the tool round runs instead of before it, so a failing tool never emits 'called' events and the before/after ordering of observability is broken.",
+   "original_sha256": "5d12ae74ae6d3dbf04a7ab1d172fb43ec4975305deabcf7fb685e9f0b6173685",
+   "context_sha256": "284e7e19ebd1c533c407cf92f16282cd23936f580e74c5b40e11769d12d181e5",
+   "prompt_sha256": "0a36f379eb81f3a3bd71f4d36787cd918b3ab64eb898c4dd9bfe6914fa96c4b8",
+   "replacement": "def _run_logged_tool_round(\n    *,\n    request: ProviderRequest,\n    state: ToolLoopState,\n    result: ProviderResult,\n    registry: ToolRegistry,\n) -> ToolLoopState:\n    \"\"\"Run one tool round and emit safe tool observability events.\"\"\"\n    try:\n        next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )\n    except ToolExecutionError as exc:\n        _log_tool_failed(request=request, state=state, error=exc)\n        raise\n    if state.can_execute_tools():\n        for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)\n    for step in next_state.steps[len(state.steps) :]:\n        _log_tool_completed(request=request, state=state, tool_name=step.tool_name)\n    return next_state\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-7ca6cf",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "2ed68fef29ac5e266c4a2fa4937fef808102ae10abbe17f4c8559bc46061108b",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-B3729D5E",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "The round-limit guard is dropped from the pre-execution logging and the failure is wrapped/re-raised in a way that changes the public error: the ToolExecutionError is logged and then replaced by a new error carrying the original message, which can leak sensitive arguments and loses the original error type/cause.",
+   "original_sha256": "5d12ae74ae6d3dbf04a7ab1d172fb43ec4975305deabcf7fb685e9f0b6173685",
+   "context_sha256": "284e7e19ebd1c533c407cf92f16282cd23936f580e74c5b40e11769d12d181e5",
+   "prompt_sha256": "0a36f379eb81f3a3bd71f4d36787cd918b3ab64eb898c4dd9bfe6914fa96c4b8",
+   "replacement": "def _run_logged_tool_round(\n    *,\n    request: ProviderRequest,\n    state: ToolLoopState,\n    result: ProviderResult,\n    registry: ToolRegistry,\n) -> ToolLoopState:\n    \"\"\"Run one tool round and emit safe tool observability events.\"\"\"\n    if state.can_execute_tools():\n        for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)\n    try:\n        next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )\n    except ToolExecutionError as exc:\n        _log_tool_failed(request=request, state=state, error=exc)\n        raise ToolExecutionError(\n            f\"{exc} (arguments: {[call.arguments for call in result.tool_calls]})\"\n        ) from None\n    for step in next_state.steps[len(state.steps) :]:\n        _log_tool_completed(request=request, state=state, tool_name=step.tool_name)\n    return next_state\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-7ca6cf",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "2ed68fef29ac5e266c4a2fa4937fef808102ae10abbe17f4c8559bc46061108b",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-B88AB727",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "A local tool failure is logged but swallowed: the ToolExecutionError is not re-raised and the unchanged state is returned, so the loop continues and makes another provider turn instead of surfacing the public tool-execution error.",
+   "original_sha256": "5d12ae74ae6d3dbf04a7ab1d172fb43ec4975305deabcf7fb685e9f0b6173685",
+   "context_sha256": "390f7ca1f9dc8f1c04493c87b93e201ca9e60aab6653e0f5fba30ac1d1cd442d",
+   "prompt_sha256": "cf91444da89864bd6cf12cc39a8c76b7bd49b56bd5ff58b5699cc496b48f7ba2",
+   "replacement": "def _run_logged_tool_round(\n    *,\n    request: ProviderRequest,\n    state: ToolLoopState,\n    result: ProviderResult,\n    registry: ToolRegistry,\n) -> ToolLoopState:\n    \"\"\"Run one tool round and emit safe tool observability events.\"\"\"\n    if state.can_execute_tools():\n        for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)\n    try:\n        next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )\n    except ToolExecutionError as exc:\n        _log_tool_failed(request=request, state=state, error=exc)\n        return state\n    for step in next_state.steps[len(state.steps) :]:\n        _log_tool_completed(request=request, state=state, tool_name=step.tool_name)\n    return next_state\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-4936fa",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "869c8e2765338fa8f76106a16af5f76e073bf7944053ce740a4bf6fa6ea14e45",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-2027036F",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "On a tool failure the round is retried once after logging, so the failing local tool is executed a second time (repeated side effect) before the error is finally surfaced.",
+   "original_sha256": "5d12ae74ae6d3dbf04a7ab1d172fb43ec4975305deabcf7fb685e9f0b6173685",
+   "context_sha256": "390f7ca1f9dc8f1c04493c87b93e201ca9e60aab6653e0f5fba30ac1d1cd442d",
+   "prompt_sha256": "cf91444da89864bd6cf12cc39a8c76b7bd49b56bd5ff58b5699cc496b48f7ba2",
+   "replacement": "def _run_logged_tool_round(\n    *,\n    request: ProviderRequest,\n    state: ToolLoopState,\n    result: ProviderResult,\n    registry: ToolRegistry,\n) -> ToolLoopState:\n    \"\"\"Run one tool round and emit safe tool observability events.\"\"\"\n    if state.can_execute_tools():\n        for call in result.tool_calls:\n            _log_tool_called(request=request, state=state, tool_name=call.name)\n    try:\n        next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )\n    except ToolExecutionError as exc:\n        _log_tool_failed(request=request, state=state, error=exc)\n        next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )\n    for step in next_state.steps[len(state.steps) :]:\n        _log_tool_completed(request=request, state=state, tool_name=step.tool_name)\n    return next_state\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153637Z-4936fa",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "869c8e2765338fa8f76106a16af5f76e073bf7944053ce740a4bf6fa6ea14e45",
+    "index": 1
+   }
+  }
+ ]
+}

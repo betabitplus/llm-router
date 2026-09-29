@@ -147,5 +147,255 @@
     "src.llm_router._api.errors.LLMRouterError"
    ]
   }
+ ],
+ "SM-0468831E": [
+  {
+   "at": "2026-09-29T19:15:34.146516Z",
+   "call_id": "20260929T191342Z-c67665",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7bb6f3d8fb58025edf5171f1ea2bf0a3cbe453480d44c407a1783559e071be64",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 561\u2013562: of the function under test it runs lines 559\u2013560; the nearest it gets is line 560",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:17:38.719885Z",
+   "call_id": "20260929T191536Z-c53059",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d4218b8c0c0a2286923badcff926ca59f842fd79347ec7b2ebf509542dc5a9ff",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 561\u2013562: of the function under test it runs lines 559\u2013560; the nearest it gets is line 560",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:24:51.648902Z",
+   "call_id": "20260929T191741Z-22632e",
+   "cause": "kept",
+   "context_gaps": [
+    "tests.llm_router.support.workers.retry.google_success_response"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "15d6a73809539f5b5781aa5ded3675adabf4d73ac8602289cc76b3cadfe3e0c3",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker",
+    "tests.llm_router.support.workers.retry.RetryWorkerResult"
+   ]
+  }
+ ],
+ "SM-0C2C0162": [
+  {
+   "at": "2026-09-29T19:15:34.146601Z",
+   "call_id": "20260929T191342Z-a084c0",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "50a77b5bc619ce1dc3b4675b54b274a4aac956939ee50b2b809e26f14eb3fdf3",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  }
+ ],
+ "SM-5DFDF438": [
+  {
+   "at": "2026-09-29T19:15:34.146612Z",
+   "call_id": "20260929T191342Z-a34114",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7b6c14e496a3b39a559b14e079c991f49269ae2792673f5a8c413c34d2c78ac5",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 561\u2013562: of the function under test it runs lines 559\u2013560; the nearest it gets is line 560",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:17:38.719949Z",
+   "call_id": "20260929T191536Z-bf3178",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "883686c553b8a873afb5eb93e6cc2f3a44301efef65c3e457947628f0c0cfb36",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert 5 == 1)",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:24:51.648932Z",
+   "call_id": "20260929T191741Z-4ee29d",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6ddab6a889e1cc07c7b1109f04225e4745dca36d250a7124b089fc78b81b2300",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 561\u2013562: of the function under test it runs lines 559\u2013560; the nearest it gets is line 560",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:27:06.690142Z",
+   "call_id": "20260929T192453Z-5003fb",
+   "cause": "kept",
+   "context_gaps": [
+    "tests.llm_router.support.workers.retry.google_success_response"
+   ],
+   "effort": "high",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "be252ee1d1bbd0047f356338bfdd4067dec715ac4fcab93a173fa123a04c83f0",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  }
+ ],
+ "SM-EEA8FD67": [
+  {
+   "at": "2026-09-29T19:15:34.146631Z",
+   "call_id": "20260929T191342Z-e660fa",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ae5a31fdd748ed74774e4028d21e056f6f6365386c809cb24267bae70ed4d52a",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 561\u2013562: of the function under test it runs lines 559\u2013560; the nearest it gets is line 560",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:17:38.719979Z",
+   "call_id": "20260929T191536Z-cae675",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "51286c2566691fa2dba09b0abe5ca15f8a6e0e571e5073a6855547ba0c3b3f0c",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 561\u2013562: of the function under test it runs lines 559\u2013560; the nearest it gets is line 560",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:24:51.649062Z",
+   "call_id": "20260929T191741Z-d2842a",
+   "cause": "weak",
+   "context_gaps": [
+    "tests.llm_router.support.workers.retry.google_error_response",
+    "tests.llm_router.support.workers.retry.openai_error_response"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "533ed88fa6d643bdd22910e89860699ea2e8c6c15a413a08666b2238d680408c",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 561\u2013562: of the function under test it runs lines 559\u2013560; the nearest it gets is line 560",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.google_error_response"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:27:06.690262Z",
+   "call_id": "20260929T192453Z-24eb56",
+   "cause": "kept",
+   "context_gaps": [
+    "tests.llm_router.support.workers.retry.google_success_response"
+   ],
+   "effort": "high",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a1ea1280286a41b8cc69293f678313a6ca4a1d8521c780cb7da0e817124f66de",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  }
  ]
 }

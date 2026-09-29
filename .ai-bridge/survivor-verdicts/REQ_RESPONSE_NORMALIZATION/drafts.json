@@ -1,0 +1,117 @@
+{
+ "SM-2265B496": [
+  {
+   "at": "2026-09-29T17:27:59.740301Z",
+   "call_id": "20260929T172149Z-9a0513",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "18407d1a836215c09d1dd1ff4a7c5d3653e1d559279211a486e15f445c53956e",
+   "reason": "it uses vars",
+   "sources": [
+    "llm_router.Model",
+    "llm_router._internal.runtime.output.build_public_response"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:30:20.390494Z",
+   "call_id": "20260929T172801Z-878cd3",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fb143e466c8fb8ae846c73a074f2a6992f33a451aa8a06fd9486a95fb450f74d",
+   "reason": "",
+   "sources": [
+    "llm_router.Model"
+   ]
+  }
+ ],
+ "SM-44C084CF": [
+  {
+   "at": "2026-09-29T17:27:59.740328Z",
+   "call_id": "20260929T172149Z-aaf1e5",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6e055027d3a40e558359dbdb1d1c068e8d7c2a355a8f471ad6bbfc87da7e50c9",
+   "reason": "it does not fail on the mutant: of the changed lines 44\u201348 it runs line 45 but never line 44",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.response_normalization.run_response_normalization_dual_worker",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:30:20.390513Z",
+   "call_id": "20260929T172801Z-07ef02",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2b3dd6e0b155aff24b918e35efa9f40bf9a62603cee2abb0ae831d150777b250",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.runtime.output.build_public_response",
+    "llm_router._internal.runtime.output.ProviderResult"
+   ]
+  }
+ ],
+ "SM-7211CDB1": [
+  {
+   "at": "2026-09-29T17:27:59.740394Z",
+   "call_id": "20260929T172149Z-1ca723",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "bc1409ae1974d5b58d16feb7a5227fe2450cd95a83f7f96864791881835deec4",
+   "reason": "",
+   "sources": [
+    "llm_router.ToolCall",
+    "llm_router._internal.runtime.output.build_public_response"
+   ]
+  }
+ ],
+ "SM-B9EE9F1F": [
+  {
+   "at": "2026-09-29T17:27:59.740407Z",
+   "call_id": "20260929T172149Z-07f35f",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ba024377491bab2bd1d2fc56381b0c14104d5939de797e0ac4101859ad8180ab",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.UsageStats",
+    "llm_router.ToolCall",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.output.build_public_response"
+   ]
+  }
+ ]
+}

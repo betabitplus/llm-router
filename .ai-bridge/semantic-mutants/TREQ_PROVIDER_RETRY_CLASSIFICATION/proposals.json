@@ -1,0 +1,246 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "TREQ_PROVIDER_RETRY_CLASSIFICATION",
+ "proposals": [
+  {
+   "id": "SM-9549C7EF",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/providers/retry.py::classify_exception",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Classification falls back to message-substring matching: an unrelated exception whose message looks retry-like (e.g. 'timeout', 'connection') is classified retryable, violating explicit exception-type semantics.",
+   "original_sha256": "f31db3bd2cb73df1249145922d756dc5838a3c3d697450826c9fbc0146fb1575",
+   "context_sha256": "de788082d581ba7526d08250ea3b71854ceaaeb1081801a5fa08056b1002b5b3",
+   "prompt_sha256": "129cd2fa55947aae59d610dffd00b1fc995dcfb64bf3d333c6854af117b6b9f9",
+   "replacement": "def classify_exception(exc: BaseException) -> RetryDecision:\n    \"\"\"Classify failures by explicit transport exception types.\"\"\"\n    message = str(exc).lower()\n    if _is_retryable_transport_exception(exc) or any(\n        token in message for token in (\"timeout\", \"timed out\", \"connection\", \"temporar\")\n    ):\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"transport_exception\",\n        )\n    return RetryDecision(\n        classification=RetryClassification.NON_RETRYABLE,\n        reason=\"exception_not_retryable\",\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-31e770",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "a8b068a77490dcec1849ab0d74f12f655dc952458586b1068217608e08082b65",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-E9C317B3",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/providers/retry.py::classify_exception",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Retryability is checked on the exception's cause/context chain, and a wrapped transport error or any exception with a retryable cause is chosen; also the direct transport exception itself is misclassified when it has no cause, so the decision is computed from the wrong object.",
+   "original_sha256": "f31db3bd2cb73df1249145922d756dc5838a3c3d697450826c9fbc0146fb1575",
+   "context_sha256": "de788082d581ba7526d08250ea3b71854ceaaeb1081801a5fa08056b1002b5b3",
+   "prompt_sha256": "129cd2fa55947aae59d610dffd00b1fc995dcfb64bf3d333c6854af117b6b9f9",
+   "replacement": "def classify_exception(exc: BaseException) -> RetryDecision:\n    \"\"\"Classify failures by explicit transport exception types.\"\"\"\n    cause = exc.__cause__ or exc.__context__\n    if cause is not None and _is_retryable_transport_exception(cause):\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"transport_exception\",\n        )\n    return RetryDecision(\n        classification=RetryClassification.NON_RETRYABLE,\n        reason=\"exception_not_retryable\",\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-31e770",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "a8b068a77490dcec1849ab0d74f12f655dc952458586b1068217608e08082b65",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-AD46F34B",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/providers/retry.py::classify_status_code",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Server-error fallback is applied before the explicit non-retryable set, so explicit permanent statuses in the 5xx range (e.g. 501/505) get classified as retryable by range instead of by explicit status semantics.",
+   "original_sha256": "84963844d7f11d32371cc34b2e1be8ed4e3cad5fd331534b46283883529492c3",
+   "context_sha256": "0741eafe7aad3c07d4915f88b436b8e44f6dc1199de64a1958cb5ebeea0d719f",
+   "prompt_sha256": "5c8b31a5bfe2a7c8fd4a55cae56c42fd55d483f91ff3bff98137cd4b00cda6f5",
+   "replacement": "def classify_status_code(status_code: int) -> RetryDecision:\n    \"\"\"Classify an HTTP status code for same-provider retry.\"\"\"\n    if status_code in _RETRYABLE_STATUS_CODES:\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"retryable_status\",\n            status_code=status_code,\n        )\n    if status_code >= _SERVER_ERROR_STATUS_MIN:\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"server_status\",\n            status_code=status_code,\n        )\n    if status_code in _NON_RETRYABLE_STATUS_CODES:\n        return RetryDecision(\n            classification=RetryClassification.NON_RETRYABLE,\n            reason=\"caller_or_auth_status\",\n            status_code=status_code,\n        )\n    return RetryDecision(\n        classification=RetryClassification.NON_RETRYABLE,\n        reason=\"status_not_retryable\",\n        status_code=status_code,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-62857e",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "5a99ef018aea75f5eb1d9abd5fdfaa5f70b8f0cfddf7bb2c9788055a7da98a10",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-E7A746A1",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/providers/retry.py::classify_status_code",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Non-retryable explicit statuses are checked first, so a status present in both sets (e.g. 408/429 or similar) is classified as permanent instead of retryable; the retryable set loses precedence.",
+   "original_sha256": "84963844d7f11d32371cc34b2e1be8ed4e3cad5fd331534b46283883529492c3",
+   "context_sha256": "0741eafe7aad3c07d4915f88b436b8e44f6dc1199de64a1958cb5ebeea0d719f",
+   "prompt_sha256": "5c8b31a5bfe2a7c8fd4a55cae56c42fd55d483f91ff3bff98137cd4b00cda6f5",
+   "replacement": "def classify_status_code(status_code: int) -> RetryDecision:\n    \"\"\"Classify an HTTP status code for same-provider retry.\"\"\"\n    if status_code in _NON_RETRYABLE_STATUS_CODES or 400 <= status_code < 500:\n        return RetryDecision(\n            classification=RetryClassification.NON_RETRYABLE,\n            reason=\"caller_or_auth_status\",\n            status_code=status_code,\n        )\n    if status_code in _RETRYABLE_STATUS_CODES:\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"retryable_status\",\n            status_code=status_code,\n        )\n    if status_code >= _SERVER_ERROR_STATUS_MIN:\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"server_status\",\n            status_code=status_code,\n        )\n    return RetryDecision(\n        classification=RetryClassification.NON_RETRYABLE,\n        reason=\"status_not_retryable\",\n        status_code=status_code,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-62857e",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "5a99ef018aea75f5eb1d9abd5fdfaa5f70b8f0cfddf7bb2c9788055a7da98a10",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-F4AC62D8",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Exhaustion classification falls back to message substrings: any exception whose text mentions 'retry' or 'timeout' is treated as a retryable exhausted error, so an unrelated retry-like exception is misclassified.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "d70912d06b23700447befe79d753e6bc0a7f53be42adeb14fa7b62a3143f2552",
+   "prompt_sha256": "82aaba22d014c013688c14e5313a83fe19c3412c6c3088e40b1296bfe1f2fed1",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )\n        try:\n            for attempt in retrying:\n                with attempt:\n                    return adapter.execute(request)\n        except Exception as exc:\n            message = str(exc).lower()\n            if (\n                is_retryable_provider_error(exc)\n                or \"retry\" in message\n                or \"timeout\" in message\n            ):\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n            raise _provider_boundary_error(exc, request=request) from exc\n        msg = \"Provider retry loop ended without a result.\"\n        raise RuntimeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-485c63",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "0ed63807cb7bd2d7633f0d34ccb1d54531b52e312e7d5c74145244d1d800f408",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-C186D4DA",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Retry-exhausted event is chosen on a wrong basis: it is logged only when the error's class name looks like a transport/timeout error rather than using the shared retryable classification, so permanent statuses or other retryable errors are logged inconsistently.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "d70912d06b23700447befe79d753e6bc0a7f53be42adeb14fa7b62a3143f2552",
+   "prompt_sha256": "82aaba22d014c013688c14e5313a83fe19c3412c6c3088e40b1296bfe1f2fed1",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )\n        try:\n            for attempt in retrying:\n                with attempt:\n                    return adapter.execute(request)\n        except Exception as exc:\n            name = type(exc).__name__.lower()\n            if \"timeout\" in name or \"connection\" in name or is_retryable_provider_error(exc) is None:\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n            raise _provider_boundary_error(exc, request=request) from exc\n        msg = \"Provider retry loop ended without a result.\"\n        raise RuntimeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-485c63",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "0ed63807cb7bd2d7633f0d34ccb1d54531b52e312e7d5c74145244d1d800f408",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-DC2AE198",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/providers/retry.py::classify_exception",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Classification falls back to message substring matching, so an unrelated retry-like exception with a 'timeout'/'retry' message is treated as retryable.",
+   "original_sha256": "f31db3bd2cb73df1249145922d756dc5838a3c3d697450826c9fbc0146fb1575",
+   "context_sha256": "b9f22cad2166e7c4cbc9763014258c9ceba8f4376c88b718afc69bf4a3a90f8c",
+   "prompt_sha256": "8de9052f9a38161beba979889e5b13ffe350e6bfc15dbaf3d8b28a3119706b60",
+   "replacement": "def classify_exception(exc: BaseException) -> RetryDecision:\n    \"\"\"Classify failures by explicit transport exception types.\"\"\"\n    message = str(exc).lower()\n    if _is_retryable_transport_exception(exc) or any(\n        marker in message for marker in (\"timeout\", \"timed out\", \"retry\", \"temporarily\")\n    ):\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"transport_exception\",\n        )\n    return RetryDecision(\n        classification=RetryClassification.NON_RETRYABLE,\n        reason=\"exception_not_retryable\",\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-8ea5a4",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "e19a1d6c11d7290d9fb164f74d0b306f99ced48c6ea5779e9b5d554af03bbbbd",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-11502F33",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/providers/retry.py::classify_exception",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Transport exceptions are only retryable when they are exact type matches of a base class check; subclasses (e.g. specific transport error subclasses) are no longer treated as retryable, and the check is applied on the exception's type name instead of the type semantics.",
+   "original_sha256": "f31db3bd2cb73df1249145922d756dc5838a3c3d697450826c9fbc0146fb1575",
+   "context_sha256": "b9f22cad2166e7c4cbc9763014258c9ceba8f4376c88b718afc69bf4a3a90f8c",
+   "prompt_sha256": "8de9052f9a38161beba979889e5b13ffe350e6bfc15dbaf3d8b28a3119706b60",
+   "replacement": "def classify_exception(exc: BaseException) -> RetryDecision:\n    \"\"\"Classify failures by explicit transport exception types.\"\"\"\n    if type(exc).__name__ in {\"TimeoutError\", \"ConnectionError\"} and _is_retryable_transport_exception(exc):\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"transport_exception\",\n        )\n    return RetryDecision(\n        classification=RetryClassification.NON_RETRYABLE,\n        reason=\"exception_not_retryable\",\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-8ea5a4",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "e19a1d6c11d7290d9fb164f74d0b306f99ced48c6ea5779e9b5d554af03bbbbd",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-3B340019",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/providers/retry.py::classify_status_code",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Server-status fallback is bounded to a narrow range (500-503), so other 5xx statuses like 504 or 599 not in the explicit retryable set are treated as permanent instead of retryable.",
+   "original_sha256": "84963844d7f11d32371cc34b2e1be8ed4e3cad5fd331534b46283883529492c3",
+   "context_sha256": "98013a522d6da19ac91213d57548502bc5f8379e330968b3e18f1c32c718305c",
+   "prompt_sha256": "7faa9df3e8be734e72b4b90404a1207999a59d79c530eed037a128501e94f14d",
+   "replacement": "def classify_status_code(status_code: int) -> RetryDecision:\n    \"\"\"Classify an HTTP status code for same-provider retry.\"\"\"\n    if status_code in _RETRYABLE_STATUS_CODES:\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"retryable_status\",\n            status_code=status_code,\n        )\n    if status_code in _NON_RETRYABLE_STATUS_CODES:\n        return RetryDecision(\n            classification=RetryClassification.NON_RETRYABLE,\n            reason=\"caller_or_auth_status\",\n            status_code=status_code,\n        )\n    if _SERVER_ERROR_STATUS_MIN <= status_code <= _SERVER_ERROR_STATUS_MIN + 3:\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"server_status\",\n            status_code=status_code,\n        )\n    return RetryDecision(\n        classification=RetryClassification.NON_RETRYABLE,\n        reason=\"status_not_retryable\",\n        status_code=status_code,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-050fd6",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "57abdc198f2dc8302058d61b0150ac23865d870523f070c7e3b5fca78888dddf",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-1D3F715A",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/providers/retry.py::classify_status_code",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "The non-retryable status check is moved ahead of the retryable check, so any status present in both sets (e.g. 429 or 408 if listed as caller errors) is classified as permanent rather than retryable. Also the retryable set lookup is skipped for caller/auth statuses.",
+   "original_sha256": "84963844d7f11d32371cc34b2e1be8ed4e3cad5fd331534b46283883529492c3",
+   "context_sha256": "98013a522d6da19ac91213d57548502bc5f8379e330968b3e18f1c32c718305c",
+   "prompt_sha256": "7faa9df3e8be734e72b4b90404a1207999a59d79c530eed037a128501e94f14d",
+   "replacement": "def classify_status_code(status_code: int) -> RetryDecision:\n    \"\"\"Classify an HTTP status code for same-provider retry.\"\"\"\n    if 400 <= status_code < 500:\n        return RetryDecision(\n            classification=RetryClassification.NON_RETRYABLE,\n            reason=\"caller_or_auth_status\",\n            status_code=status_code,\n        )\n    if status_code in _RETRYABLE_STATUS_CODES:\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"retryable_status\",\n            status_code=status_code,\n        )\n    if status_code >= _SERVER_ERROR_STATUS_MIN:\n        return RetryDecision(\n            classification=RetryClassification.RETRYABLE,\n            reason=\"server_status\",\n            status_code=status_code,\n        )\n    return RetryDecision(\n        classification=RetryClassification.NON_RETRYABLE,\n        reason=\"status_not_retryable\",\n        status_code=status_code,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-050fd6",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "57abdc198f2dc8302058d61b0150ac23865d870523f070c7e3b5fca78888dddf",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-92C272BA",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Retry-exhaustion classification uses message substrings instead of explicit exception/status semantics, so unrelated retry-like exceptions are treated as retryable and transport exceptions/statuses with other messages are not.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "5b2c51245fc446f2b5a7d323641a3f2736821fcf0ac46051066e325a92aa19dd",
+   "prompt_sha256": "a283211aa1b68465232c9b84c8e079e4c87341a6047ef3f8317e7c9fbd264680",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )\n        try:\n            for attempt in retrying:\n                with attempt:\n                    return adapter.execute(request)\n        except Exception as exc:\n            message = str(exc).lower()\n            if any(token in message for token in (\"retry\", \"timeout\", \"temporar\", \"unavailable\")):\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n            raise _provider_boundary_error(exc, request=request) from exc\n        msg = \"Provider retry loop ended without a result.\"\n        raise RuntimeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-e2c7bd",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "aad7165b2b6df905d33cacdf100f325ad7febcd119e88ba52a16b5eb8fac7b41",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-67F2A5BF",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Exhaustion classification only recognizes exceptions carrying a hardcoded set of HTTP status codes; transport exceptions without a status code are no longer treated as retryable, and permanent statuses like 4xx other than 429 are handled by a coarse range check.",
+   "original_sha256": "b6e97e4ba12223672ae7f83c8ffe453ed27f444dfe09a0ea5a54dff88ee049d9",
+   "context_sha256": "5b2c51245fc446f2b5a7d323641a3f2736821fcf0ac46051066e325a92aa19dd",
+   "prompt_sha256": "a283211aa1b68465232c9b84c8e079e4c87341a6047ef3f8317e7c9fbd264680",
+   "replacement": "    def _execute_provider_sync(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Run one provider call with same-route retry.\"\"\"\n        adapter = self._adapter_for(request)\n        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )\n        try:\n            for attempt in retrying:\n                with attempt:\n                    return adapter.execute(request)\n        except Exception as exc:\n            status = getattr(exc, \"status_code\", None)\n            if isinstance(status, int) and status >= 400:\n                retryable = True\n            else:\n                retryable = False\n            if retryable:\n                log_retry_exhausted(\n                    logger,\n                    error=exc,\n                    event_type=\"llm_router.provider.retry.exhausted\",\n                    context=_retry_context(request),\n                )\n            raise _provider_boundary_error(exc, request=request) from exc\n        msg = \"Provider retry loop ended without a result.\"\n        raise RuntimeError(msg)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153643Z-e2c7bd",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "aad7165b2b6df905d33cacdf100f325ad7febcd119e88ba52a16b5eb8fac7b41",
+    "index": 1
+   }
+  }
+ ]
+}

@@ -1,0 +1,95 @@
+{
+ "SM-39305DEA": [
+  {
+   "at": "2026-09-29T19:15:34.144376Z",
+   "call_id": "20260929T191342Z-9d8be9",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4d80f095dabebf527b6fa0b5f2e0d7e9725ae732626c308014de4372be3742d1",
+   "reason": "",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._internal.providers.registry.clear_adapter_caches"
+   ]
+  }
+ ],
+ "SM-48E372DD": [
+  {
+   "at": "2026-09-29T19:15:34.144502Z",
+   "call_id": "20260929T191342Z-3e8ea0",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c66ab4c30f648eb00f9748ccddc9a3e86f4669ef5a94536656d2e1e28f5f1412",
+   "reason": "it imports collections.abc, llm_router._internal.config.models",
+   "sources": [
+    "llm_router.install_config",
+    "llm_router.get_config",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:17:38.719023Z",
+   "call_id": "20260929T191536Z-4bc2e3",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d9c458245bad2690491b45710f9b46c8d24b5c343c1218db17e7b689031a5f8c",
+   "reason": "it imports collections.abc",
+   "sources": [
+    "llm_router.install_config",
+    "llm_router.get_config",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  },
+  {
+   "at": "2026-09-29T19:24:51.647785Z",
+   "call_id": "20260929T191741Z-17d026",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "15ca51ef0a59419dd8f6cd0e654a5ccc94af89a54edf97acf92984a77ba2ab01",
+   "reason": "",
+   "sources": [
+    "llm_router.install_config",
+    "llm_router.get_config",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  }
+ ],
+ "SM-F91AFA31": [
+  {
+   "at": "2026-09-29T19:15:34.144564Z",
+   "call_id": "20260929T191342Z-189ca4",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "905ba1f65e2c7ff3ea08facaf1ba979525fb643abf8a11fd2fd05b23a2a7de4b",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.registry.clear_adapter_caches",
+    "llm_router.install_config",
+    "llm_router.get_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults"
+   ]
+  }
+ ]
+}

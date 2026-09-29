@@ -440,7 +440,6 @@ def _advance_tool_result(
 
 
 # @impl Structured output repair loop, IMPL_STRUCTURED_OUTPUT_REPAIR, [REQ_STRUCTURED_OUTPUT_REPAIR[revision==2]]
-# @impl Structured output attempt bound, IMPL_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]
 def _advance_structured_result(
     *,
     config: LLMRouterConfig,
@@ -466,8 +465,10 @@ def _advance_structured_result(
             ),
         )
 
+    # @impl Structured output attempt count, IMPL_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]
     next_attempts = state.structured_attempts + 1
     error_message = validated.error_message or "Validation failed."
+    # @impl Structured output attempt bound, IMPL_STRUCTURED_OUTPUT_ATTEMPT_LIMIT, [TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]]
     if next_attempts >= config.structured_output_max_attempts:
         _log_schema_repair_exhausted(request=provider_request)
         raise structured_output_error(result=result)

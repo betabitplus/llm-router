@@ -77,6 +77,19 @@ count, not external provider reasoning.
 | Architecture          | The parent contract does not prescribe internal module layering.                                                          |
 | Specification / model | Temporary/permanent and sync/async partitions are normative product behavior; missing one can hide a public recovery gap. |
 
+### Semantic mutants
+
+| Fault class                        | Target                                                                                       | Budget | Risk                                                                                      |
+| ---------------------------------- | -------------------------------------------------------------------------------------------- | -----: | ----------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync` |      2 | a result its requirement or criteria name is computed or chosen wrongly                   |
+| `spec.missing-partition`           | `src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync` |      2 | one input partition its requirement or criteria name is no longer handled as they say     |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync` |      2 | an external interaction its requirement rules out happens anyway                          |
+| `interface.error-status`           | `src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync` |      2 | an error the interface must report comes out with the wrong type or status, or not at all |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-treq-provider-retry-classification)=
 
 ## Profile · TREQ_PROVIDER_RETRY_CLASSIFICATION
@@ -135,6 +148,21 @@ involved.
 | Architecture          | Classification correctness does not prescribe a specific module topology.                                                                                       |
 | Specification / model | Retryable/permanent status and transport/unrelated exception partitions are all required; omission or inversion violates the rule.                              |
 
+### Semantic mutants
+
+| Fault class              | Target                                                                                       | Budget | Risk                                                                                  |
+| ------------------------ | -------------------------------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`     | `src/llm_router/_internal/providers/retry.py::classify_exception`                            |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`     | `src/llm_router/_internal/providers/retry.py::classify_status_code`                          |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.wrong-outcome`     | `src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition` | `src/llm_router/_internal/providers/retry.py::classify_exception`                            |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition` | `src/llm_router/_internal/providers/retry.py::classify_status_code`                          |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `spec.missing-partition` | `src/llm_router/_internal/runtime/executor.py::ProviderRouteExecutor._execute_provider_sync` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
 (verification-profile-treq-provider-retry-bounds)=
 
 ## Profile · TREQ_PROVIDER_RETRY_BOUNDS
@@ -190,6 +218,21 @@ provider boundary; the external participant is therefore Surrogate at L0.
 | Interface / protocol  | An interaction after the configured attempt ceiling is the observable failure mode.                                                                                  |
 | Architecture          | The bound does not require a specific internal layering topology.                                                                                                    |
 | Specification / model | Initial-call counting and stop-before-extra-call ordering are normative technical semantics.                                                                         |
+
+### Semantic mutants
+
+| Fault class                        | Target                                                                       | Budget | Risk                                                                    |
+| ---------------------------------- | ---------------------------------------------------------------------------- | -----: | ----------------------------------------------------------------------- |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/providers/retry.py::build_provider_async_retrying` |      2 | a result its requirement or criteria name is computed or chosen wrongly |
+| `spec.wrong-outcome`               | `src/llm_router/_internal/providers/retry.py::build_provider_retrying`       |      2 | a result its requirement or criteria name is computed or chosen wrongly |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/providers/retry.py::build_provider_async_retrying` |      2 | an order or a before/after boundary its requirement names is broken     |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/providers/retry.py::build_provider_retrying`       |      2 | an order or a before/after boundary its requirement names is broken     |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/providers/retry.py::build_provider_async_retrying` |      2 | an external interaction its requirement rules out happens anyway        |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/providers/retry.py::build_provider_retrying`       |      2 | an external interaction its requirement rules out happens anyway        |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
 
 (verification-profile-req-structured-output-repair)=
 
@@ -255,6 +298,18 @@ Surrogate at L0.
 | Interface / protocol  | A schema-invalid successful provider response is the public recovery stimulus.                                                                                                               |
 | Architecture          | The parent requirement does not prescribe internal layering.                                                                                                                                 |
 | Specification / model | Invalid→repair→validated-result behavior is the normative product claim; missing the invalid partition would hide the feature.                                                               |
+
+### Semantic mutants
+
+| Fault class                | Target                                                                     | Budget | Risk                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`       | `src/llm_router/_internal/runtime/executor.py::_advance_structured_result` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition`   | `src/llm_router/_internal/runtime/executor.py::_advance_structured_result` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+| `interface.payload-schema` | `src/llm_router/_internal/runtime/executor.py::_advance_structured_result` |      2 | a payload that crosses the interface loses or changes a field its schema requires     |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
 
 (verification-profile-treq-structured-output-attempt-bounds)=
 
@@ -367,3 +422,14 @@ with generated values; no external participant or model substitute is involved.
 | Interface / protocol  | The prompt builder consumes already-normalized dynamic values rather than owning an external protocol boundary.                                        |
 | Architecture          | Bounded prompt construction does not prescribe module topology.                                                                                        |
 | Specification / model | Schema identity, preview, invalid output, and validation detail are independent dynamic partitions that all require bounds.                            |
+
+### Semantic mutants
+
+| Fault class              | Target                                                                 | Budget | Risk                                                                                  |
+| ------------------------ | ---------------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.wrong-outcome`     | `src/llm_router/_internal/capabilities/schema.py::build_repair_prompt` |      2 | a result its requirement or criteria name is computed or chosen wrongly               |
+| `spec.missing-partition` | `src/llm_router/_internal/capabilities/schema.py::build_repair_prompt` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.

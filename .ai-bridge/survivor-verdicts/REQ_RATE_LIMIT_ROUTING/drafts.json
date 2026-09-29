@@ -1,0 +1,36 @@
+{
+ "SM-04F10964": [
+  {
+   "at": "2026-09-29T17:27:59.739960Z",
+   "call_id": "20260929T172149Z-2f7cd8",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3fc8a098069f673c6a3e1a79f6c4da18e4d73ee4f77d9b14b7b922fc64b98a35",
+   "reason": "it breaks the project's lint rules (ruff: line 34: ARG002 Unused method argument: `provider` | line 34: ARG002 Unused method argument: `key_id` | line 40: ARG002 Unused method argument: `provider` | line 41: ARG002 Unused method argument: `key_id` | line 51: ARG002 Unused method argument: `provider` | line 51: ARG002 Unused method argument: `key_id`)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  {
+   "at": "2026-09-29T17:30:20.389967Z",
+   "call_id": "20260929T172801Z-cbe460",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "693c2c4e2051f3810a4429cd34a56b07bfec3c3b50d3f5bb7ec20010a68b691f",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  }
+ ]
+}

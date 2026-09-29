@@ -1,0 +1,112 @@
+{
+ "SM-11502F33": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "exc": "ConnectionRefusedError()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-4862f8",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version uses an exact class name check that excludes subclasses of transport errors like ConnectionRefusedError, whereas the original version would successfully identify them as retryable.",
+    "response_sha256": "0644f78a5fef376eaf8ecf6c78df79592c754d4b19cdb32ad12c12711dd06e39",
+    "sources": [
+     "    if _is_retryable_transport_exception(exc):",
+     "    if type(exc).__name__ in {\"TimeoutError\", \"ConnectionError\"} and _is_retryable_transport_exception(exc):"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "exc": "ConnectionResetError()"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-226704",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change requires the exception's own class name to be exactly TimeoutError or ConnectionError, so a subclass like ConnectionResetError, which the chain-based helper likely accepts, flips from RETRYABLE to NON_RETRYABLE.",
+    "response_sha256": "ed3fe3b67610bd97b03430a218934e25f683c60516aacacf74f1d6e7bba4d8f4",
+    "sources": [
+     "if type(exc).__name__ in {\"TimeoutError\", \"ConnectionError\"} and _is_retryable_transport_exception(exc):",
+     "if _is_retryable_transport_exception(exc):"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "c187c6d3a86d6fa9c1e397c706f840eae7fe3c757b350b66b6bf33c8fd8582e8"
+ },
+ "SM-AD46F34B": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-314a94",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The sets of non-retryable status codes and server error status codes are disjoint, meaning swapping the order of these independent conditional returns does not alter the function's output.",
+    "response_sha256": "380741884228acc483f7eefc78f95ddad66fd853c2be33ad8ea3a7a7eb58f650",
+    "sources": [
+     "    if status_code in _NON_RETRYABLE_STATUS_CODES:",
+     "    if status_code >= _SERVER_ERROR_STATUS_MIN:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-aa7fdb",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The reordering only matters if a code is in _NON_RETRYABLE_STATUS_CODES and also >= _SERVER_ERROR_STATUS_MIN, which is unlikely since those sets hold 4xx codes, and no differing input was found.",
+    "response_sha256": "0bd178d67ef69b5cb72f3be901b9bd2e356e5a160c3c8ce47e360cda79e8dca7",
+    "sources": [
+     "if status_code >= _SERVER_ERROR_STATUS_MIN:",
+     "if status_code in _NON_RETRYABLE_STATUS_CODES:"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "204cfa15b5b0b3399c35ce85422666817cf154f0b2d2c75964ba66c57ec5a932"
+ },
+ "SM-F4AC62D8": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T183837Z-cc18f3",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified condition only controls whether a warning is logged before raising the exception, which does not alter the method's return value, object state, or the type of the raised exception.",
+    "response_sha256": "77323ae78cb1d18b386a04b71742a317b67b6d9b334e5a4bc3d21502ea0884f0",
+    "sources": [
+     "            message = str(exc).lower()\n            if (\n                is_retryable_provider_error(exc)\n                or \"retry\" in message\n                or \"timeout\" in message\n            ):",
+     "            raise _provider_boundary_error(exc, request=request) from exc"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260929T164219Z-16c41e",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change only widens when the exhaustion log is emitted (message contains \"retry\" or \"timeout\"); the returned value and the raised boundary error are the same in both versions.",
+    "response_sha256": "ed5173883758cb06c5009f740911babf70b5081f6e38f40e96e6a89292abb4ce",
+    "sources": [
+     "or \"retry\" in message",
+     "or \"timeout\" in message",
+     "raise _provider_boundary_error(exc, request=request) from exc"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "9b8d39b10a032bf83847004f13d365de9e29fd4785fcfdc9f3b76957c4f688ec"
+ }
+}

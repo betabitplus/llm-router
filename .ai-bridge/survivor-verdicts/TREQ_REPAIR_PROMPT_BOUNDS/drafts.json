@@ -1,0 +1,152 @@
+{
+ "3d767806f2945e38": [
+  {
+   "at": "2026-09-29T11:47:11.544959Z",
+   "call_id": "20260929T112247Z-5f495e",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5937106f7cdc18c73fe66c018242769041a243937604a1bfce76fad6bec34367",
+   "reason": "it does not fail on the mutant: it runs the changed lines 122\u2013128, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.896754Z",
+   "call_id": "20260929T114758Z-ca1709",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5816bdc9ca37da023e1f365c04cf3337df0f3fc7faca7bfe10866882e063c509",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert 0 >= 250)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.587327Z",
+   "call_id": "20260929T120217Z-c2f741",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c99f0ea515de882f08c8495ff016173c47f43e7532f919dd1f1207e810613157",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  }
+ ],
+ "65a49b2023696bc9": [
+  {
+   "at": "2026-09-29T11:47:11.544969Z",
+   "call_id": "20260929T112248Z-8651fd",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5ed97278c6110e2a22c4fc8187f4d7cc7d2a2d84b04b0ffc68833a9e03e63f98",
+   "reason": "it does not fail on the mutant: it runs the changed lines 122\u2013128, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.896775Z",
+   "call_id": "20260929T114800Z-d301ce",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "eb7546722a9e898e14697af8457109cb5c0d23d3614d0e5fe1e87b62556ac85c",
+   "reason": "it does not fail on the mutant: it runs the changed lines 122\u2013128, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.587339Z",
+   "call_id": "20260929T120217Z-b0b9d4",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "18ab367d6d272707484c42fbcd0c6e82af1fd4fff618bafca989a4c5fee70a1f",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  }
+ ],
+ "7ddc0005bc330ecf": [
+  {
+   "at": "2026-09-29T11:47:11.544974Z",
+   "call_id": "20260929T112249Z-46cd37",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "454ebaa9df32e92305f68dd5227da50c1321fc6d7f3098e585b908101446f1f7",
+   "reason": "it does not fail on the mutant: it runs the changed lines 122\u2013128, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.896785Z",
+   "call_id": "20260929T114800Z-112d7e",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "60b6913f6bee339b17787d7ea5fc5ed12df9730b14e7bc360e464827494e5213",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert 3 >= 450 | +  where 3 = len('...'))",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:16:07.587350Z",
+   "call_id": "20260929T120217Z-0de944",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d418e4866de690467ead9002f67d4759267ff2713b32db86a41e975a670acf35",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  }
+ ]
+}

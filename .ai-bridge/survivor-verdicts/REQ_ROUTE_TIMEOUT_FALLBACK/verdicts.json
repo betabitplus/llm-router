@@ -1,4 +1,42 @@
 {
+ "1d3b41f3104390c6": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234928Z-ad8d53",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Each call makes a new pool and submits one task to it, and the pool starts threads only as tasks arrive. So the default max_workers still runs exactly one worker thread. Timing, the timeout error, fallback and shutdown behave the same, so no input can tell the versions apart.",
+   "response_sha256": "5cea0f2ba5edb7b172eb6f7797a11507f4516178e1dc066197f0a3d518d985c3",
+   "sources": [
+    "pool = ThreadPoolExecutor(max_workers=1)",
+    "pool = ThreadPoolExecutor()",
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "argument",
+  "prompt_sha256": "20653e247e2b9d0123b08c3f6986ced5e7fad302a7eeddb8ffc0f0dd2e6e7d76",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T085928Z-c79b20",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "20653e247e2b9d0123b08c3f6986ced5e7fad302a7eeddb8ffc0f0dd2e6e7d76",
+   "reason": "The requirement governs timeouts and fallbacks, and the change merely alters the maximum capacity of a thread pool that only ever receives a single task. Since only one task is submitted, the functional behavior for timeouts and routing remains strictly identical, and no input can tell the versions apart.",
+   "response_sha256": "c4d2e94a4daa197df593eab66453f02e48e6ce20076236a268ab6ebc88d6dc51",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "pool = ThreadPoolExecutor(max_workers=1)"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
  "1d6328ad0f851ffd": {
   "answer": {
    "backend": "claude-cli",
@@ -71,6 +109,181 @@
    "source": "draft author"
   },
   "prompt_sha256": "c105ba3cee07c075fee8c8258c4b1c90ca004c55232da8338e6a6f7e838bc77e"
+ },
+ "47c27bae6c554d3e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234941Z-76b75f",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With timeout_seconds None, the mutant runs the executor in a thread pool and waits via future.result(timeout=None), which blocks until done and returns the same response or re-raises the same exception. The remaining differences (a worker thread instead of the caller's thread, and rewording a TimeoutError the executor raises itself) are outside what the timeout-fallback requirement asks, which only covers attempts that have a timeout.",
+   "response_sha256": "6a633798a603ac4113819666bd3e6652ae9f12a9305a7ac0b330420d50a1f3d1",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "if timeout_seconds is None:\n            return self._executor.execute(request)",
+    "if False:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "8960463d61dbc5c02bc29be2d267c1229a85b6363ef1333d04502777e6c1d254",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T085911Z-c7cf01",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "8960463d61dbc5c02bc29be2d267c1229a85b6363ef1333d04502777e6c1d254",
+   "reason": "The change forces the use of a thread pool even when no timeout is configured by bypassing the `timeout_seconds is None` check. This modifies an internal execution optimization but does not affect the required behavior for timed-out attempts or fallbacks.",
+   "response_sha256": "a3dfb2e39ff2e7e345523e0073240c5d554fdac884f6de5469b6786cd2dc3fe8",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "if timeout_seconds is None:",
+    "if False:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "SM-908D5413": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-669dbe",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant treats a timeout of 0 as \"no timeout\", so it runs the executor directly and waits on the route indefinitely. The original treats 0 as a real timeout: the attempt times out at once and moves on to fallback, just as the async path does. That breaks \"stop waiting on the current route\" for a configured zero timeout and makes sync behave differently from async. This assumes a zero timeout can reach this method; if earlier validation rejects 0, the two versions are equivalent.",
+   "response_sha256": "ef0bc3a516d9dc3cf27222f33cd50f32ec777d1f9d4d022d396861855700af19",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "Sync and async requests both stop waiting on a timed-out route, then continue to another eligible route and succeed.",
+    "if not timeout_seconds:",
+    "if timeout_seconds is None:"
+   ],
+   "test_focus": "Use a sync request with an attempt timeout of 0 and a slow first route. Check that the attempt raises the timeout and falls back to the next eligible route, or surfaces the public timeout when no route remains, matching the async path.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:30:20.398535Z",
+   "answer_sha256": "94f49401e720b098f04ef668d7a08ccafe289aee36e124107f2ce70cdd5ccf3e",
+   "call_id": "20260929T172801Z-f2265f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "94f49401e720b098f04ef668d7a08ccafe289aee36e124107f2ce70cdd5ccf3e",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_908d5413.py",
+   "response_sha256": "bedb8df9cd7619ec0ed3bbed9ddba8ac46cd721d7340627a30599d54c9a79fda",
+   "source": "draft author",
+   "sources": [
+    "llm_router",
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "llm_router._internal.runtime.router.LLMRouterResponse",
+    "llm_router._internal.runtime.router.ResolvedRequest"
+   ]
+  },
+  "prompt_sha256": "4fe211ab006283ebed9fb7b58d14d2124cc15b94fc79d6c7bfe4ce4dd34b2386"
+ },
+ "SM-BD2A25D9": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-f160cc",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "After the first timeout, the mutant keeps waiting on the same route for a second timeout period. A route that finishes within that grace window gets its response returned, when the attempt should have timed out and moved to the fallback route. That breaks \"stop waiting on the current route\".",
+   "response_sha256": "b8ee1ad8f84a55189c39daac787bc65cb3b6b13dd7f089788da6ba12f7eff069",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "Sync and async requests both stop waiting on a timed-out route, then continue to another eligible route and succeed.",
+    "# Grace period: keep waiting on the same route once more.",
+    "return future.result(timeout=timeout_seconds)"
+   ],
+   "test_focus": "Make a sync request where the first route's executor responds after more than one timeout but less than two. Check that the response comes from the fallback route, not the slow first route. With no fallback, check that the timeout error is raised after about one timeout.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:27:59.753937Z",
+   "answer_sha256": "6b4002a6f22e5f3ae05c1920e9a8aae0a20c7ceaa06fab4d0f88cf5d8678e94e",
+   "call_id": "20260929T172149Z-4b1d80",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "cb3ad6c2eaa9d4bddf215689b3ee5f831cea837f1b8b09466c0fbee0956086ff",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_bd2a25d9.py",
+   "response_sha256": "36ee306bda8c4497fb815d8dcca22a8868f726ff24f01c4b49591233296bbaf8",
+   "source": "draft author",
+   "sources": [
+    "llm_router",
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "llm_router._internal.runtime.router.LLMRouterResponse",
+    "llm_router._internal.runtime.router.ResolvedRequest"
+   ]
+  },
+  "prompt_sha256": "a862eda583bb75f20881338287f985987e792890568f3186bc30beac3dbc3d8b"
+ },
+ "a8d0a937c7bbe96f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234941Z-d2d939",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The pool only ever gets one submitted task. On timeout, future.cancel() has already cancelled it if it hadn't started, and a running task can't be cancelled anyway. On success or error, the task has finished and wait=True. So cancel_futures=True has nothing left to cancel, and both versions behave the same.",
+   "response_sha256": "1cf6ef8ea6073df84048360739c6d0bf17d17ca2be61cb51144c4059451d7c18",
+   "sources": [
+    "pool.shutdown(wait=not timed_out, cancel_futures=True)",
+    "future.cancel()",
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "argument",
+  "prompt_sha256": "e4c13621b3ba6f960ec9034861cc9569ef56c5f9fe618e6726e6e8819d68c838",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T085951Z-376407",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "e4c13621b3ba6f960ec9034861cc9569ef56c5f9fe618e6726e6e8819d68c838",
+   "reason": "The ThreadPoolExecutor has only one task submitted to it, which is explicitly cancelled via `future.cancel()` upon a timeout. Because both `future.cancel()` and `cancel_futures=True` target pending futures that have not started running, omitting the argument from `pool.shutdown` has no effect, making the versions equivalent.",
+   "response_sha256": "c4c6cf78c2f44a7c0aaa63f88317eacc8556926fc0817bd514419a85e491b590",
+   "sources": [
+    "Sync and async requests both stop waiting on a timed-out route, then continue to another eligible route and succeed.",
+    "pool.shutdown(wait=not timed_out, cancel_futures=True)",
+    "pool.shutdown(wait=not timed_out)",
+    "future.cancel()"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
  },
  "ac82539c9e31aa00": {
   "answer": {

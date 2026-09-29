@@ -1,0 +1,126 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "TREQ_SESSION_SERIALIZATION",
+ "proposals": [
+  {
+   "id": "SM-DB7C9088",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/session/serialization.py::encode_session",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Encoded payload writes a hard-coded/incorrect version (previous version) instead of the current _SESSION_VERSION, so saved sessions are mislabeled and version checks on load are wrong.",
+   "original_sha256": "4e436bfce2021fc92210c0df996bfdb72e450ad1f2127c0557eee405780de99d",
+   "context_sha256": "bd87e29c0f0c1379cfe0d18ae154919702289b97a7ea2f0d990ac608d76360bf",
+   "prompt_sha256": "9c8270effbb44b199f5f2d7bb1a749ea38845f24845d77ffab8dc116de2c0974",
+   "replacement": "def encode_session(*, system: str | None, history: tuple[ChatMessage, ...]) -> str:\n    \"\"\"Return a JSON session artifact containing only public semantics.\"\"\"\n    payload = {\n        \"version\": _SESSION_VERSION - 1,\n        \"system\": system,\n        \"history\": [_encode_message(message) for message in history],\n    }\n    return json.dumps(payload, indent=2, sort_keys=True)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153705Z-0e3b90",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "8ccfbb7e5b110265a1d5ca44eb1379f659ba3185302e2e4dea292859b4a52328",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-A96F2E5C",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/session/serialization.py::encode_session",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "History is encoded with the last message dropped (and system dropped when empty), so embedded media in the final message does not survive save/load.",
+   "original_sha256": "4e436bfce2021fc92210c0df996bfdb72e450ad1f2127c0557eee405780de99d",
+   "context_sha256": "bd87e29c0f0c1379cfe0d18ae154919702289b97a7ea2f0d990ac608d76360bf",
+   "prompt_sha256": "9c8270effbb44b199f5f2d7bb1a749ea38845f24845d77ffab8dc116de2c0974",
+   "replacement": "def encode_session(*, system: str | None, history: tuple[ChatMessage, ...]) -> str:\n    \"\"\"Return a JSON session artifact containing only public semantics.\"\"\"\n    payload = {\n        \"version\": _SESSION_VERSION,\n        \"system\": system or None,\n        \"history\": [_encode_message(message) for message in history[:-1]] if len(history) > 1 else [_encode_message(message) for message in history],\n    }\n    return json.dumps(payload, indent=2, sort_keys=True)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153705Z-0e3b90",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "8ccfbb7e5b110265a1d5ca44eb1379f659ba3185302e2e4dea292859b4a52328",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-F7C472D9",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/session/serialization.py::encode_session",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "The serialization version is no longer written into the artifact, so a loader that defaults a missing version can accept incompatible state instead of raising SessionSerializationError.",
+   "original_sha256": "4e436bfce2021fc92210c0df996bfdb72e450ad1f2127c0557eee405780de99d",
+   "context_sha256": "27904a7917ef4453ac73a5e50766ce8bfbf918c9cd1a3391f4d2a76e19f5b057",
+   "prompt_sha256": "ecf88b1fdd9dbea33c503581049cd9239988c5915acad6043352fe33aa70fd5d",
+   "replacement": "def encode_session(*, system: str | None, history: tuple[ChatMessage, ...]) -> str:\n    \"\"\"Return a JSON session artifact containing only public semantics.\"\"\"\n    payload = {\n        \"system\": system,\n        \"history\": [_encode_message(message) for message in history],\n    }\n    return json.dumps(payload, indent=2, sort_keys=True)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153705Z-0cc035",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "30744337538c4548e5718fc25078688e4cfe1550f21b2f240b3feb86b0f8e291",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-B91A9265",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/session/serialization.py::encode_session",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "History encoding drops messages whose encoded form equals the previous one (a 'dedupe' shortcut), so repeated identical messages carrying embedded file/image/video bytes are lost on save/load.",
+   "original_sha256": "4e436bfce2021fc92210c0df996bfdb72e450ad1f2127c0557eee405780de99d",
+   "context_sha256": "27904a7917ef4453ac73a5e50766ce8bfbf918c9cd1a3391f4d2a76e19f5b057",
+   "prompt_sha256": "ecf88b1fdd9dbea33c503581049cd9239988c5915acad6043352fe33aa70fd5d",
+   "replacement": "def encode_session(*, system: str | None, history: tuple[ChatMessage, ...]) -> str:\n    \"\"\"Return a JSON session artifact containing only public semantics.\"\"\"\n    encoded_history = []\n    for message in history:\n        encoded = _encode_message(message)\n        if encoded_history and encoded_history[-1] == encoded:\n            continue\n        encoded_history.append(encoded)\n    payload = {\n        \"version\": _SESSION_VERSION,\n        \"system\": system,\n        \"history\": encoded_history,\n    }\n    return json.dumps(payload, indent=2, sort_keys=True)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153705Z-0cc035",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "30744337538c4548e5718fc25078688e4cfe1550f21b2f240b3feb86b0f8e291",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-587B20AF",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/session/serialization.py::encode_session",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "The encoded session payload omits the required 'system' field when a system prompt is set, so the system prompt is lost across save/load.",
+   "original_sha256": "4e436bfce2021fc92210c0df996bfdb72e450ad1f2127c0557eee405780de99d",
+   "context_sha256": "89400772824a732152d08bd7933ba78c97b5c7ddcbab1e3896929173ce38ac58",
+   "prompt_sha256": "9e5d344654132a314b9442aab086d7ff9925e91aadeb5307c60506b32dc47b27",
+   "replacement": "def encode_session(*, system: str | None, history: tuple[ChatMessage, ...]) -> str:\n    \"\"\"Return a JSON session artifact containing only public semantics.\"\"\"\n    payload = {\n        \"version\": _SESSION_VERSION,\n        \"history\": [_encode_message(message) for message in history],\n    }\n    if system is None:\n        payload[\"system\"] = None\n    return json.dumps(payload, indent=2, sort_keys=True)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153705Z-ac600d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "83e433db1a2afb97f52f2a1e1e8de4d3b2f102aac5bc305a5daf435b9a809967",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-AE82B8CB",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/session/serialization.py::encode_session",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Encoding drops the final history message (and so its embedded media payload) by slicing off the last entry, so the last message's media bytes/descriptor do not survive save/load.",
+   "original_sha256": "4e436bfce2021fc92210c0df996bfdb72e450ad1f2127c0557eee405780de99d",
+   "context_sha256": "89400772824a732152d08bd7933ba78c97b5c7ddcbab1e3896929173ce38ac58",
+   "prompt_sha256": "9e5d344654132a314b9442aab086d7ff9925e91aadeb5307c60506b32dc47b27",
+   "replacement": "def encode_session(*, system: str | None, history: tuple[ChatMessage, ...]) -> str:\n    \"\"\"Return a JSON session artifact containing only public semantics.\"\"\"\n    payload = {\n        \"version\": _SESSION_VERSION,\n        \"system\": system,\n        \"history\": [_encode_message(message) for message in history[:-1]] if len(history) > 1 else [_encode_message(message) for message in history],\n    }\n    return json.dumps(payload, indent=2, sort_keys=True)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153705Z-ac600d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "83e433db1a2afb97f52f2a1e1e8de4d3b2f102aac5bc305a5daf435b9a809967",
+    "index": 1
+   }
+  }
+ ]
+}

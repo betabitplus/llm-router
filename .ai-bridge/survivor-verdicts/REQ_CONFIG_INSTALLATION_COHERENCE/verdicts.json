@@ -33,6 +33,150 @@
   },
   "prompt_sha256": "85db3ec91ba2175c4ee30ea21305492e274870166a91c8fb97c1107fbce30615"
  },
+ "SM-39305DEA": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191126Z-67950b",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant clears adapter caches before installing the new config. A concurrent adapter rebuild in that gap caches an adapter built from the old config, and it survives the install. Later public requests then use a stale provider adapter, which breaks the promise that the installed configuration becomes effective coherently for subsequent runtime behavior.",
+   "response_sha256": "e6af62419a95cf4716cacfabba1e7f31f855943e99bead1351a20d9bca659332",
+   "sources": [
+    "Installing a new active configuration shall round-trip through the public configuration API and become the effective configuration for subsequent runtime behavior.",
+    "A public request created after installation exhibits a replacement-derived value at the provider boundary.",
+    "Installed configuration becomes effective coherently",
+    "clear_adapter_caches()\n    with _config_lock:\n        previous = _installed_config\n        _installed_config = config"
+   ],
+   "test_focus": "Simulate a concurrent rebuild by wrapping clear_adapter_caches so it rebuilds or looks up an adapter when called. Then check that a public request made after install_config still shows a replacement-derived value at the provider boundary, i.e. no old-config adapter stays cached.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:15:34.154162Z",
+   "answer_sha256": "b6fe5a318743740212d3c7d8542a6e67d31194fab7019f2e9f57b4173acf5db5",
+   "call_id": "20260929T191342Z-9d8be9",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "56756b8f8b8c94e0161336cf58299409cba442c6b99ac167d450b10cc9db784a",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py",
+   "response_sha256": "06e91261d0f51aaf3e8c114a6986149c71ea9720d1a37309b552f66beb245540",
+   "source": "draft author",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._internal.providers.registry.clear_adapter_caches"
+   ]
+  },
+  "prompt_sha256": "80c43a6217023ba581404a7c1bc09b8344c3df64fab9dad8725b170ddab1d845"
+ },
+ "SM-48E372DD": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191126Z-d8760d",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When an equal but separate config object is installed, the mutant leaves the old object active and returns it, skipping cache invalidation. This breaks the requirement that the installed snapshot, that exact object, becomes the active configuration and round-trips through the public API.",
+   "response_sha256": "3eaceb1cc0a41c35c34ee7ad6c443abc33573a382d70bfaed63ca3ead2ba4da7",
+   "sources": [
+    "Installing a distinct valid snapshot makes that exact snapshot active via public API.",
+    "Installing a new active configuration shall round-trip through the public configuration API and become the effective configuration for subsequent runtime behavior.",
+    "if current is not None and current == config:",
+    "return current"
+   ],
+   "test_focus": "Install config A, then install a separate object B equal to A. Assert that install_config(B) returns B and that the public getter returns B by identity (`is`), not the previously installed A.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:24:51.654096Z",
+   "answer_sha256": "8ce78a4e4d8932513dbd08bf23c611f170420203eb41840bb220360de9ad3b7b",
+   "call_id": "20260929T191741Z-17d026",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "8ce78a4e4d8932513dbd08bf23c611f170420203eb41840bb220360de9ad3b7b",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_48e372dd.py",
+   "response_sha256": "887f37dc026dc6d151878384cdd58a7b16573d9a0d7dd7d6f20ecd90687734b5",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.install_config",
+    "llm_router.get_config",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  },
+  "prompt_sha256": "f2659a618225f2fac5a904a5d6df4e7dbd1a7adb32be8bd47c39beaf8168b998"
+ },
+ "SM-F91AFA31": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191129Z-a095e3",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant clears adapter caches before the new snapshot is installed. A concurrent adapter build in that gap can re-cache an adapter from the old config, and requests after installation would keep using it. That breaks coherent installation, and the ordering can be detected by wrapping clear_adapter_caches.",
+   "response_sha256": "7ebda63a7a7e2bace983b3339d42c8eb528cb1e2dfbf364aebd87dc231524325",
+   "sources": [
+    "Installed configuration becomes effective coherently",
+    "become the effective configuration for subsequent runtime behavior",
+    "A public request created after installation exhibits a replacement-derived value at the provider boundary.",
+    "clear_adapter_caches()\n    with _config_lock:\n        _installed_config = config"
+   ],
+   "test_focus": "Wrap clear_adapter_caches so that, right after clearing, it records the active config and resolves an adapter (standing in for a concurrent request). Then assert that the recorded config is already the new snapshot, and that a public request made after install_config shows the replacement-derived value at the provider boundary.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:15:34.155242Z",
+   "answer_sha256": "48b4f4720732edee1aa8f3803bee4dcabe13b8ef2587bf857146fd615c67a9b0",
+   "call_id": "20260929T191342Z-189ca4",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "48b4f4720732edee1aa8f3803bee4dcabe13b8ef2587bf857146fd615c67a9b0",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_f91afa31.py",
+   "response_sha256": "48b288d1c1dd1cce849703a3a4e9c234305e7e8cd9f621814c8aea3b1013fa83",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.providers.registry.clear_adapter_caches",
+    "llm_router.install_config",
+    "llm_router.get_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults"
+   ]
+  },
+  "prompt_sha256": "39180aec58ee199e28a09bdc3ed2fc61505ef5a6362d64fea14172dd1a3e62de"
+ },
  "a2e61f2155653e45": {
   "answer": {
    "backend": "claude-cli",

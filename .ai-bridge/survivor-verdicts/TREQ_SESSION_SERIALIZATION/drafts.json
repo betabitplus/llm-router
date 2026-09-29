@@ -1,0 +1,52 @@
+{
+ "00e231387191a730": [
+  {
+   "at": "2026-09-29T11:47:11.546399Z",
+   "call_id": "20260929T112259Z-8b7182",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8800017035a3476c841ed1bcf086909c4a2649864645681e1daa2e8e320a802c",
+   "reason": "it uses pathlib",
+   "sources": [
+    "llm_router._internal.session.SessionStore"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.898366Z",
+   "call_id": "20260929T114801Z-14c45b",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b338a07a4824d8d5864cfa7a43e71e544b3f903e1912a89d3d60d0e1463e9ec1",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.session.serialization.encode_session"
+   ]
+  }
+ ],
+ "SM-B91A9265": [
+  {
+   "at": "2026-09-29T19:15:34.153141Z",
+   "call_id": "20260929T191342Z-8ce77c",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "76d21e0bd4e1039d4cf0b52a28cc3e701216ddac89b9f7e5d975978d0ec5ffd8",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.session.serialization.encode_session",
+    "llm_router._api.types.ChatMessage"
+   ]
+  }
+ ]
+}

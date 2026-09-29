@@ -1,0 +1,590 @@
+{
+ "02d729b5b4d8836a": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084953Z-0abd22",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Slicing a list with `[:None]` produces a shallow copy containing the exact same elements as the original list, so unconditionally applying `routes[:options.max_attempts]` has the exact same effect as the conditional slice when converted to a tuple.",
+    "response_sha256": "4298f6f7276325ffafc33d2862b7293f7d43f68f0e4c40c89ddaf0b6e9d6bbb6",
+    "sources": [
+     "    if options.max_attempts is not None:",
+     "        routes = routes[: options.max_attempts]",
+     "    if True:",
+     "        routes = routes[:options.max_attempts]"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084953Z-846900",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When options.max_attempts is None, slicing a list with routes[:None] preserves all elements so converting to a tuple yields the same result, and for all other values both versions execute the same slice.",
+    "response_sha256": "d8dc96af15340363fac307d7e1d46371d3df914a36c79dca87ee296855a73362",
+    "sources": [
+     "    if options.max_attempts is not None:",
+     "    if True:",
+     "        routes = routes[:options.max_attempts]"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T233915Z-791942",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Python slicing treats a None bound as \"no limit\", so `routes[:options.max_attempts]` when max_attempts is None behaves identically to leaving `routes` unsliced, matching the original's `if options.max_attempts is not None` guard in every case.",
+    "response_sha256": "c2084bd9de779f25c05f8052236e78ab818bf65ff6465013e1c50a36c90f0d7b",
+    "sources": [
+     "if options.max_attempts is not None:",
+     "routes = routes[:options.max_attempts]"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "014097ac5fbd73ef5448e366c3e017336cd302dba550bf635b7aa5803b599c05"
+ },
+ "14045e0aa1675aec": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=0, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m', defaults=RouteGenerationDefaults(key_id='k')),))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084953Z-9af279",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When the input has routes, the original version returns a tuple, whereas the changed version returns a list.",
+    "response_sha256": "4a6d9ed0fdb59a53d32684564a7141d78c1311f983ebc3a383f208b09c97a496",
+    "sources": [
+     "    return tuple(routes)",
+     "    return routes"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-flash\", defaults=RouteGenerationDefaults(key_id=\"default\")),))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084958Z-2b7357",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When plan.routes is not empty, the original version returns a tuple while the changed version returns a list.",
+    "response_sha256": "99b076dada2d97e561ce2467b037aea4aaa09cbea361537a32d68bdefff2375d",
+    "sources": [
+     "    return tuple(routes)",
+     "    return routes"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None, selected_start_route_index=None, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH_LITE, provider=Provider.GOOGLE, provider_model='gemini-flash-lite', defaults=RouteGenerationDefaults(key_id=KeyId('k1'))),))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233915Z-c77eb1",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed version drops the final tuple() conversion and returns the list produced by _ordered_start/slicing directly, so for any non-empty routes tuple the original returns a tuple while the changed version returns a list, and tuple != list under == even with identical elements.",
+    "response_sha256": "8fae9d36d1d288bb9398037658ca9b131554ec5b9c452a2149a6715897ed776b",
+    "sources": [
+     "return tuple(routes)",
+     "return routes"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "083eafde83ec6e1f05ee89e501aed73e8527192db918493a615594afe2bf594b"
+ },
+ "3f852ed18986c20a": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='a', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=2, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='b', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=3, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='c', defaults=RouteGenerationDefaults(key_id='k'))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084620Z-981739",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version removes the check for `options.shuffle_fallbacks` from the `if` condition, causing it to incorrectly shuffle fallback routes even when `shuffle_fallbacks` is `False`.",
+    "response_sha256": "631079be6706adda514f47cb54bd6573581bf44b179f7435cdc3adb19faeafc9",
+    "sources": [
+     "    if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):",
+     "    if len(routes) >= options.min_routes_for_fallback_shuffle:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None, selected_start_route_index=None, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m0', defaults=RouteGenerationDefaults(key_id='k0')), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m1', defaults=RouteGenerationDefaults(key_id='k1')), ExpandedRoute(route_index=2, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m2', defaults=RouteGenerationDefaults(key_id='k2')), ExpandedRoute(route_index=3, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m3', defaults=RouteGenerationDefaults(key_id='k3')), ExpandedRoute(route_index=4, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m4', defaults=RouteGenerationDefaults(key_id='k4')), ExpandedRoute(route_index=5, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m5', defaults=RouteGenerationDefaults(key_id='k5')), ExpandedRoute(route_index=6, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m6', defaults=RouteGenerationDefaults(key_id='k6')), ExpandedRoute(route_index=7, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m7', defaults=RouteGenerationDefaults(key_id='k7'))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084620Z-23870a",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version omits the check on options.shuffle_fallbacks, causing fallback routes to be shuffled whenever the route count meets min_routes_for_fallback_shuffle even if shuffle_fallbacks is False.",
+    "response_sha256": "8743ea403f868f3fff5474fbd82fd24694e57a2c1cc051592d02d19e508a4ccf",
+    "sources": [
+     "        options.shuffle_fallbacks",
+     "        and len(routes) >= options.min_routes_for_fallback_shuffle",
+     "    if len(routes) >= options.min_routes_for_fallback_shuffle:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None, selected_start_route_index=None, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='gemini-flash-1', defaults=RouteGenerationDefaults(key_id=KeyId('k0'))), ExpandedRoute(route_index=1, model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER, provider_model='deepseek-v3', defaults=RouteGenerationDefaults(key_id=KeyId('k1'))), ExpandedRoute(route_index=2, model=Model.MISTRAL_LARGE, provider=Provider.MISTRAL, provider_model='mistral-large', defaults=RouteGenerationDefaults(key_id=KeyId('k2')))))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233915Z-8ea142",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed code drops the `options.shuffle_fallbacks and` guard, so with shuffle_fallbacks=False and 3 routes (>= min_routes_for_fallback_shuffle=2) the original never shuffles the fallbacks while the changed version still calls shuffler.shuffle on them, letting the returned order of the last two routes differ from the untouched original order.",
+    "response_sha256": "0c59e358407e413add7d87c57f774ee136f2b20511de856d9613cd1b5128fb1a",
+    "sources": [
+     "if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):",
+     "if len(routes) >= options.min_routes_for_fallback_shuffle:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "fdadff9ee3bfecf4f090f14ca58f077129ec3d2cf3f45ff2ced520c6eebcbea8"
+ },
+ "65460db34db9c168": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=3, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"a\", defaults=RouteGenerationDefaults(key_id=\"k\")), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"b\", defaults=RouteGenerationDefaults(key_id=\"k\")), ExpandedRoute(route_index=2, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"c\", defaults=RouteGenerationDefaults(key_id=\"k\"))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T090854Z-92f1a9",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When a plan contains three or more routes and 'shuffle_fallbacks' is False, the original version preserves the fallback order deterministically, whereas the changed version unconditionally shuffles the fallbacks, resulting in non-deterministic behavior and a potentially different route order.",
+    "response_sha256": "32658ae6c9642fde26f358af49f2a29a1a7ba1c4f08b1fea2fda2c95c1f2fa4a",
+    "sources": [
+     "    if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):",
+     "    if True:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='gemini-flash', defaults=RouteGenerationDefaults(key_id='k0')), ExpandedRoute(route_index=1, model=Model.GEMINI_PRO, provider=Provider.GOOGLE, provider_model='gemini-pro', defaults=RouteGenerationDefaults(key_id='k1')), ExpandedRoute(route_index=2, model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER, provider_model='deepseek-v3', defaults=RouteGenerationDefaults(key_id='k2')), ExpandedRoute(route_index=3, model=Model.MISTRAL_LARGE, provider=Provider.MISTRAL, provider_model='mistral-large', defaults=RouteGenerationDefaults(key_id='k3')), ExpandedRoute(route_index=4, model=Model.QWEN_MAX_LATEST, provider=Provider.ALIBABA, provider_model='qwen-max', defaults=RouteGenerationDefaults(key_id='k4')), ExpandedRoute(route_index=5, model=Model.LLAMA_8B, provider=Provider.GROQ, provider_model='llama-8b', defaults=RouteGenerationDefaults(key_id='k5'))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T090854Z-2adc95",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When options.shuffle_fallbacks is False and multiple fallback routes exist, the original version preserves the fallback routes in order while the changed version unconditionally shuffles them.",
+    "response_sha256": "24c7cbd548bcdafdfca170ba2b2df5574b4989f3d3a5b3b66125ec8003d19cb6",
+    "sources": [
+     "        options.shuffle_fallbacks",
+     "        and len(routes) >= options.min_routes_for_fallback_shuffle",
+     "    if True:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=100, request_index=0, max_attempts=None, selected_start_route_index=None, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='model-a', defaults=RouteGenerationDefaults(key_id='k0')), ExpandedRoute(route_index=1, model=Model.GEMINI_PRO, provider=Provider.GOOGLE, provider_model='model-b', defaults=RouteGenerationDefaults(key_id='k1')), ExpandedRoute(route_index=2, model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER, provider_model='model-c', defaults=RouteGenerationDefaults(key_id='k2'))))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233915Z-9e75b5",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The change replaces the gating condition `options.shuffle_fallbacks and len(routes) >= options.min_routes_for_fallback_shuffle` with `if True:`, so fallback routes are always shuffled even when shuffle_fallbacks=False or too few routes; with shuffle_fallbacks=False and 3 routes the original never shuffles (deterministic order preserved) while the modified version still calls shuffler.shuffle on the fallbacks, which with the default SystemRandom() can reorder them differently across runs, producing a return value different from the original's fixed output.",
+    "response_sha256": "8e427774fc90d1aaa95f5b24f5b94dbdf093fc8655c4f7f6e2e23921963952fe",
+    "sources": [
+     "if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):",
+     "if True:",
+     "shuffler = SystemRandom() if options.shuffler is None else options.shuffler",
+     "fallbacks = routes[1:]\n        shuffler.shuffle(fallbacks)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "c9318751f9c7d78103fac15f23c60f2a1095877fea331f9aa841f658539a2d91"
+ },
+ "6b8fc165c635150f": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"A\", defaults=RouteGenerationDefaults(key_id=\"k\")), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"B\", defaults=RouteGenerationDefaults(key_id=\"k\")), ExpandedRoute(route_index=2, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"C\", defaults=RouteGenerationDefaults(key_id=\"k\"))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084620Z-805753",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version checks the truthiness of `options.shuffler` instead of `options.shuffle_fallbacks`, skipping the shuffle block entirely when fallbacks are enabled but no custom shuffler is provided (i.e., `options.shuffler` is `None`).",
+    "response_sha256": "5dcb2e4d703a3cf0780d39333ab0b462888d56b607809f80a85244a3eeaa90ce",
+    "sources": [
+     "    if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):",
+     "    if options.shuffler and len(routes) >= options.min_routes_for_fallback_shuffle:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-flash\", defaults=RouteGenerationDefaults(key_id=\"k0\")), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-flash\", defaults=RouteGenerationDefaults(key_id=\"k1\")), ExpandedRoute(route_index=2, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-flash\", defaults=RouteGenerationDefaults(key_id=\"k2\")), ExpandedRoute(route_index=3, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-flash\", defaults=RouteGenerationDefaults(key_id=\"k3\")), ExpandedRoute(route_index=4, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-flash\", defaults=RouteGenerationDefaults(key_id=\"k4\")), ExpandedRoute(route_index=5, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-flash\", defaults=RouteGenerationDefaults(key_id=\"k5\")), ExpandedRoute(route_index=6, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-flash\", defaults=RouteGenerationDefaults(key_id=\"k6\")), ExpandedRoute(route_index=7, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-flash\", defaults=RouteGenerationDefaults(key_id=\"k7\"))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084620Z-e992c3",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When options.shuffle_fallbacks is True and options.shuffler is None, the original version shuffles fallback routes using SystemRandom whereas the changed version skips shuffling because options.shuffler is falsy.",
+    "response_sha256": "aeef814cbe5d1034723d85c373edd32be4c0a5b2e749535068a34331202a1e6a",
+    "sources": [
+     "        options.shuffle_fallbacks",
+     "    if options.shuffler and len(routes) >= options.min_routes_for_fallback_shuffle:",
+     "        shuffler = SystemRandom() if options.shuffler is None else options.shuffler"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None, selected_start_route_index=0, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='route-0', defaults=RouteGenerationDefaults(key_id='k0')), ExpandedRoute(route_index=1, model=Model.GEMINI_PRO, provider=Provider.AISTUDIO, provider_model='route-1', defaults=RouteGenerationDefaults(key_id='k1')), ExpandedRoute(route_index=2, model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER, provider_model='route-2', defaults=RouteGenerationDefaults(key_id='k2'))))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233915Z-7ebe99",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Original gates shuffling on `options.shuffle_fallbacks`, so with shuffle_fallbacks=True and shuffler=None it still builds a SystemRandom() and shuffles the 2 fallback routes; the changed version gates on `options.shuffler` truthiness, and since shuffler is None (falsy) it skips shuffling entirely, so with 3 routes and min_routes_for_fallback_shuffle=2 the two versions can produce different orderings on the same input.",
+    "response_sha256": "d205d28d871888022bb77387ad94f1b9b3749f65753e3e887bd23d75e0fad74e",
+    "sources": [
+     "if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):",
+     "if options.shuffler and len(routes) >= options.min_routes_for_fallback_shuffle:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "f1c81f3f870c1d9c8f3889920dc3ee75620d4f9096f7ba8fecef7dc947e40d83"
+ },
+ "73f9e013ae38b43a": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None, selected_start_route_index=None, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='gemini-flash', defaults=RouteGenerationDefaults(key_id='k1')), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='gemini-flash', defaults=RouteGenerationDefaults(key_id='k1'))))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233915Z-d8a5d3",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "When options.shuffler is None and shuffle_fallbacks triggers, the original falls back to `SystemRandom()` and shuffles fine, but the changed code's `SystemRandom() if False else options.shuffler` always keeps `options.shuffler` (None), so calling `shuffler.shuffle(fallbacks)` raises AttributeError instead of returning a tuple.",
+    "response_sha256": "c02b93669cf28b556757d5f9d1d4dfa964cc7382b6d39b103ef100ac1a607fdb",
+    "sources": [
+     "shuffler = SystemRandom() if options.shuffler is None else options.shuffler",
+     "shuffler = SystemRandom() if False else options.shuffler",
+     "shuffler.shuffle(fallbacks)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "9b145a39b77dca6bdac93b5eea3875f6eb71ccdfb951f44b93e7d3632c8b1ce6"
+ },
+ "896165f2ae8f1610": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=4, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='a', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='b', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=2, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='c', defaults=RouteGenerationDefaults(key_id='k'))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084953Z-7d501c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When exactly three routes are provided and min_routes_for_fallback_shuffle is 4, the original version skips shuffling since the route count is less than 4 (returning a deterministic order), while the changed version unconditionally shuffles the fallback routes.",
+    "response_sha256": "75981309b4392e4b43c181371301562154bdc4bcdba26492cd378455cd3154fd",
+    "sources": [
+     "    if (",
+     "        options.shuffle_fallbacks",
+     "        and len(routes) >= options.min_routes_for_fallback_shuffle",
+     "    ):"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=10, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH_LITE, provider=Provider.GOOGLE, provider_model=\"gemini-flash-lite\", defaults=RouteGenerationDefaults(key_id=\"k0\")), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-flash\", defaults=RouteGenerationDefaults(key_id=\"k1\")), ExpandedRoute(route_index=2, model=Model.GEMINI_PRO, provider=Provider.GOOGLE, provider_model=\"gemini-pro\", defaults=RouteGenerationDefaults(key_id=\"k2\")), ExpandedRoute(route_index=3, model=Model.DEEPSEEK_V3, provider=Provider.GOOGLE, provider_model=\"deepseek-v3\", defaults=RouteGenerationDefaults(key_id=\"k3\"))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084953Z-703a01",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When shuffle_fallbacks is True but the number of routes is less than min_routes_for_fallback_shuffle, the original version preserves fallback order while the changed version shuffles them.",
+    "response_sha256": "bbe1a89918536c141b84ed02f1ca0bed3dd3c1d23c56a28fb4976b94e7c60fe8",
+    "sources": [
+     "        and len(routes) >= options.min_routes_for_fallback_shuffle",
+     "    if options.shuffle_fallbacks:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=10, request_index=0, max_attempts=None, selected_start_route_index=0, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m0', defaults=RouteGenerationDefaults(key_id='k0')), ExpandedRoute(route_index=1, model=Model.GEMINI_PRO, provider=Provider.GOOGLE, provider_model='m1', defaults=RouteGenerationDefaults(key_id='k1')), ExpandedRoute(route_index=2, model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER, provider_model='m2', defaults=RouteGenerationDefaults(key_id='k2'))))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233915Z-5c89e2",
+    "confidence": 0.78,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The original guards fallback shuffling with `len(routes) >= options.min_routes_for_fallback_shuffle`; with 3 routes and min_routes_for_fallback_shuffle=10 that guard is False so it returns the unshuffled (r0,r1,r2) order deterministically, while the changed code checks only `if options.shuffle_fallbacks:` and always calls shuffler.shuffle on the 2-element fallback list, so with SystemRandom it can (and on roughly half of runs will) return (r0,r2,r1) instead \u2014 a directly observable output divergence caused precisely by the removed length condition.",
+    "response_sha256": "adbcbd8a594796413c6e706f437f67a2a6483952e561419cf2f2928137d2a7d5",
+    "sources": [
+     "if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):",
+     "if options.shuffle_fallbacks:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "dc5d8468d74aadb8dd7696b05706464b8d6151d70127a3171dfa6af3e72f60f8"
+ },
+ "93873599753fc994": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=1, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='a', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='b', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=2, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='c', defaults=RouteGenerationDefaults(key_id='k'))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084953Z-5cac03",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version assigns the immutable tuple `plan.routes` to `routes` without converting it to a list, which causes `shuffler.shuffle(fallbacks)` to raise a `TypeError` when it attempts to modify the tuple in place.",
+    "response_sha256": "165ba2f0a11ea7f2f6401f29f9ae3332542f87160861bc6eb49dffde64a282e0",
+    "sources": [
+     "    routes = list(plan.routes)",
+     "    routes = plan.routes",
+     "        shuffler.shuffle(fallbacks)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-flash\", defaults=RouteGenerationDefaults(key_id=\"k0\")), ExpandedRoute(route_index=1, model=Model.GEMINI_PRO, provider=Provider.GOOGLE, provider_model=\"gemini-pro\", defaults=RouteGenerationDefaults(key_id=\"k1\")), ExpandedRoute(route_index=2, model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER, provider_model=\"deepseek-v3\", defaults=RouteGenerationDefaults(key_id=\"k2\"))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084953Z-7f3cc8",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When plan.routes contains multiple fallback routes and fallback shuffling is enabled, the changed version keeps routes as an immutable tuple, causing shuffler.shuffle(fallbacks) to raise a TypeError on the tuple slice fallbacks = routes[1:], whereas the original version converts routes to a list.",
+    "response_sha256": "b154d508446d9005ee08b6b7f72588f09eaeb72581d1a48579ae9c127e13b602",
+    "sources": [
+     "routes = list(plan.routes)",
+     "routes = plan.routes",
+     "fallbacks = routes[1:]",
+     "shuffler.shuffle(fallbacks)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=3, request_index=0, max_attempts=None, selected_start_route_index=None, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH_LITE, provider=Provider.GOOGLE, provider_model='m0', defaults=RouteGenerationDefaults(key_id='k0')), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH_LITE, provider=Provider.GOOGLE, provider_model='m1', defaults=RouteGenerationDefaults(key_id='k1')), ExpandedRoute(route_index=2, model=Model.GEMINI_FLASH_LITE, provider=Provider.GOOGLE, provider_model='m2', defaults=RouteGenerationDefaults(key_id='k2'))))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233915Z-4fcf60",
+    "confidence": 0.65,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The original does `routes = list(plan.routes)`, producing a mutable list, while the changed version does `routes = plan.routes`, keeping the immutable tuple from RoutePlan.routes; since `_ordered_start` is a no-op passthrough when round_robin_start is False and selected_start_route_index is None, `routes` stays a tuple in the changed version, so `fallbacks = routes[1:]` is a tuple and `shuffler.shuffle(fallbacks)` raises TypeError ('tuple' object does not support item assignment), whereas the original's list-based fallbacks shuffle successfully and return a tuple with no error.",
+    "response_sha256": "96c94c5e245f48b7d793e7554204a94317405a103d9e0aca1185bb4bff5fa6fe",
+    "sources": [
+     "routes = list(plan.routes)",
+     "routes = plan.routes",
+     "fallbacks = routes[1:]",
+     "shuffler.shuffle(fallbacks)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "366b64e75313429bdebaf32dc66f20cb86b337f6e8e6a01487f488317e6aad56"
+ },
+ "9aa5ae42eb7bf0e0": {
+  "answers": {
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=True, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None, selected_start_route_index=None, shuffler=None)",
+     "plan": "RoutePlan(routes=())"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233915Z-1c76cf",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The original guards with `if not routes: return ()` so an empty RoutePlan short-circuits before `_ordered_start` is ever called, whereas the changed version's dead `if False:` never triggers and instead calls `_ordered_start([], options=options)` on an empty list, which is documented to 'Apply explicit sticky or round-robin start selection' and thus almost certainly indexes/mod-divides by len(routes), raising an exception (e.g. ZeroDivisionError/IndexError) on empty input where the original simply returns ().",
+    "response_sha256": "acba30cbadc02e2188722ba8ca733971c758e0b4cd7758387e593ff0ab054947",
+    "sources": [
+     "if not routes:\n        return ()",
+     "if False:\n        return ()",
+     "routes = _ordered_start(routes, options=options)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "61c5ca55979f4298357b573acba3595b72ebb7fede104ad621729aef52feb6a9"
+ },
+ "a27e03f14aab8822": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=4, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='a', defaults=RouteGenerationDefaults(key_id=KeyId('1'))), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='b', defaults=RouteGenerationDefaults(key_id=KeyId('2'))), ExpandedRoute(route_index=2, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='c', defaults=RouteGenerationDefaults(key_id=KeyId('3')))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084620Z-8dbdd5",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version contains a typo where it compares the route count to the boolean 'options.shuffle_fallbacks' (evaluating to 1) instead of 'options.min_routes_for_fallback_shuffle', causing it to erroneously shuffle the fallback routes whenever shuffling is enabled and there are at least three routes.",
+    "response_sha256": "7e1112d979279cbf0b3ff101d853d7f4fb5e1225d488b7b8899dbec6850ef39c",
+    "sources": [
+     "    if (",
+     "        options.shuffle_fallbacks",
+     "        and len(routes) >= options.min_routes_for_fallback_shuffle",
+     "    ):",
+     "    if options.shuffle_fallbacks and len(routes) >= options.shuffle_fallbacks:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=10, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m0', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m1', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=2, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m2', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=3, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m3', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=4, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m4', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=5, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m5', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=6, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m6', defaults=RouteGenerationDefaults(key_id='k')), ExpandedRoute(route_index=7, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m7', defaults=RouteGenerationDefaults(key_id='k'))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084620Z-a9cbdf",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When shuffle_fallbacks is True and the number of routes is less than min_routes_for_fallback_shuffle, the original version skips fallback shuffling while the changed version compares len(routes) against shuffle_fallbacks (which evaluates to 1) and shuffles the fallbacks.",
+    "response_sha256": "2b2f8c8b5ef7cd347514ff016587f34868fd05388f38f45f214376bd7c9ededd",
+    "sources": [
+     "        and len(routes) >= options.min_routes_for_fallback_shuffle",
+     "    if options.shuffle_fallbacks and len(routes) >= options.shuffle_fallbacks:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=4, request_index=0, max_attempts=None, selected_start_route_index=None, shuffler=random.Random(1))",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH_LITE, provider=Provider.GOOGLE, provider_model='p0', defaults=RouteGenerationDefaults(key_id='k0')), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='p1', defaults=RouteGenerationDefaults(key_id='k1')), ExpandedRoute(route_index=2, model=Model.GEMINI_PRO, provider=Provider.GOOGLE, provider_model='p2', defaults=RouteGenerationDefaults(key_id='k2'))))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233915Z-181786",
+    "confidence": 0.82,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed code replaced the length check `len(routes) >= options.min_routes_for_fallback_shuffle` with `len(routes) >= options.shuffle_fallbacks`; since `shuffle_fallbacks` is a bool (True==1), the changed guard becomes `len(routes) >= 1` (always true once routes exist), so with 3 routes and `min_routes_for_fallback_shuffle=4` the original skips shuffling (3>=4 is False) while the changed version shuffles (3>=True is True), and with a seeded `random.Random(1)` shuffler that swaps the two fallback routes, the two versions return differently ordered tuples for the same input.",
+    "response_sha256": "bfe96639282a838ee0b2b9afd6267398f726de5597df0e2a957b51ca74fcb06d",
+    "sources": [
+     "if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):",
+     "if options.shuffle_fallbacks and len(routes) >= options.shuffle_fallbacks:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "d5735554d220aae6d6ae5ee51a8f3e0a97657a2939889d5d488e39785b43ff05"
+ },
+ "eec518360ab2e988": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(0, Model.GEMINI_FLASH, Provider.GOOGLE, \"a\", RouteGenerationDefaults(\"k\")), ExpandedRoute(1, Model.GEMINI_FLASH, Provider.GOOGLE, \"b\", RouteGenerationDefaults(\"k\"))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084953Z-451bdf",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version incorrectly checks if `options.shuffle_fallbacks` is None instead of `options.shuffler`, so when `options.shuffler` is None, `shuffler` is assigned None, causing an AttributeError when `shuffler.shuffle(fallbacks)` is called.",
+    "response_sha256": "4392d9832eed30616dbe9ce1a34708b484ec4b7a592b06cd678527b0ae26cb8d",
+    "sources": [
+     "        shuffler = SystemRandom() if options.shuffler is None else options.shuffler",
+     "        shuffler = SystemRandom() if options.shuffle_fallbacks is None else options.shuffler"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None, selected_start_route_index=None, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-1.5-flash\", defaults=RouteGenerationDefaults(key_id=\"k1\")), ExpandedRoute(route_index=1, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-1.5-flash\", defaults=RouteGenerationDefaults(key_id=\"k2\")), ExpandedRoute(route_index=2, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model=\"gemini-1.5-flash\", defaults=RouteGenerationDefaults(key_id=\"k3\"))))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260929T084953Z-f8b7f8",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When options.shuffle_fallbacks is True and options.shuffler is None, the changed version checks whether options.shuffle_fallbacks is None instead of options.shuffler, causing shuffler to remain None and raising an AttributeError on shuffler.shuffle(fallbacks).",
+    "response_sha256": "208aed82efe0de53970b86184a57f8ad01dac33d85740772b9fce2ad1efe04c6",
+    "sources": [
+     "shuffler = SystemRandom() if options.shuffler is None else options.shuffler",
+     "shuffler = SystemRandom() if options.shuffle_fallbacks is None else options.shuffler"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None, selected_start_route_index=None, shuffler=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH_LITE, provider=Provider.GOOGLE, provider_model='gemini-1', defaults=RouteGenerationDefaults(key_id=KeyId())), ExpandedRoute(route_index=1, model=Model.GEMINI_PRO, provider=Provider.GOOGLE, provider_model='gemini-2', defaults=RouteGenerationDefaults(key_id=KeyId()))))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T233915Z-5d11f3",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The changed line checks 'options.shuffle_fallbacks is None' instead of 'options.shuffler is None'; since this branch only executes when shuffle_fallbacks is truthy, that check is always False there, so shuffler stays None and 'None.shuffle(fallbacks)' raises AttributeError, whereas the original correctly falls back to SystemRandom() and returns normally.",
+    "response_sha256": "3542b7c532c96e51e4aabf285fff00ec8c2a9f99fe0c130bd915446be8022b33",
+    "sources": [
+     "shuffler = SystemRandom() if options.shuffler is None else options.shuffler",
+     "shuffler = SystemRandom() if options.shuffle_fallbacks is None else options.shuffler"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "9790d6b87c2382c8d0a6a370118d037c707a1a529827e79a9f0858c4d68aeb62"
+ }
+}

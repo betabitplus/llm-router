@@ -1,0 +1,166 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_ROUTE_TIMEOUT_FALLBACK",
+ "proposals": [
+  {
+   "id": "SM-6C69BC54",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "On timeout the function waits for the timed-out attempt to finish (shutdown wait=True) so it doesn't stop waiting on the slow route; the timed_out flag is inverted in effect, blocking until the executor completes before fallback/timeout.",
+   "original_sha256": "127d32a531e059619210a020e14d4820a1609a61ae122c78f864ac98dc6eaf82",
+   "context_sha256": "8d72370105e745e28db84f7e41218d2a3c42a6a3845161447e40649211de6eb1",
+   "prompt_sha256": "6b879b24cc61f4d577a75844325843ff801c5eb9991eea473292c5f6176741bd",
+   "replacement": "    def _call_sync_with_timeout(\n        self,\n        request: ResolvedRequest,\n        *,\n        timeout_seconds: float | None,\n    ) -> LLMRouterResponse:\n        \"\"\"Run one sync executor attempt with optional timeout.\"\"\"\n        if timeout_seconds is None:\n            return self._executor.execute(request)\n        pool = ThreadPoolExecutor(max_workers=1)\n        future = pool.submit(self._executor.execute, request)\n        timed_out = False\n        try:\n            return future.result(timeout=timeout_seconds)\n        except FutureTimeoutError as exc:\n            timed_out = True\n            future.cancel()\n            msg = \"Attempt timed out.\"\n            raise TimeoutError(msg) from exc\n        finally:\n            pool.shutdown(wait=True, cancel_futures=True)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-828158",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "fc5de86fde7c07f81f15f881f600fef35de1ed578cac1e834ae32c887f815c5f",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-5AE862AB",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "A timeout is swallowed: instead of raising TimeoutError for the timed-out attempt, the function waits again without a limit for the result, so the route never stops being waited on and no timeout is surfaced or fallback taken.",
+   "original_sha256": "127d32a531e059619210a020e14d4820a1609a61ae122c78f864ac98dc6eaf82",
+   "context_sha256": "8d72370105e745e28db84f7e41218d2a3c42a6a3845161447e40649211de6eb1",
+   "prompt_sha256": "6b879b24cc61f4d577a75844325843ff801c5eb9991eea473292c5f6176741bd",
+   "replacement": "    def _call_sync_with_timeout(\n        self,\n        request: ResolvedRequest,\n        *,\n        timeout_seconds: float | None,\n    ) -> LLMRouterResponse:\n        \"\"\"Run one sync executor attempt with optional timeout.\"\"\"\n        if timeout_seconds is None:\n            return self._executor.execute(request)\n        pool = ThreadPoolExecutor(max_workers=1)\n        future = pool.submit(self._executor.execute, request)\n        timed_out = False\n        try:\n            try:\n                return future.result(timeout=timeout_seconds)\n            except FutureTimeoutError:\n                timed_out = False\n                return future.result()\n        finally:\n            pool.shutdown(wait=not timed_out, cancel_futures=True)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-828158",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "fc5de86fde7c07f81f15f881f600fef35de1ed578cac1e834ae32c887f815c5f",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-67D9CEE8",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "After a timeout the pool is still shut down with wait=True, so the caller blocks until the timed-out route finishes; the attempt does not stop waiting on the slow route, so fallback or the terminal timeout is delayed.",
+   "original_sha256": "127d32a531e059619210a020e14d4820a1609a61ae122c78f864ac98dc6eaf82",
+   "context_sha256": "13804f563fe1c356bb71bacc7cce1ba5dee08bde211db6c41b26f272b8fac122",
+   "prompt_sha256": "7b6f4505f9b089e73eea5b4061ed43de1f071e9ea9e7b24ea47b141c55c08198",
+   "replacement": "    def _call_sync_with_timeout(\n        self,\n        request: ResolvedRequest,\n        *,\n        timeout_seconds: float | None,\n    ) -> LLMRouterResponse:\n        \"\"\"Run one sync executor attempt with optional timeout.\"\"\"\n        if timeout_seconds is None:\n            return self._executor.execute(request)\n        pool = ThreadPoolExecutor(max_workers=1)\n        future = pool.submit(self._executor.execute, request)\n        try:\n            return future.result(timeout=timeout_seconds)\n        except FutureTimeoutError as exc:\n            future.cancel()\n            msg = \"Attempt timed out.\"\n            raise TimeoutError(msg) from exc\n        finally:\n            pool.shutdown(wait=True, cancel_futures=True)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-ab7f3b",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "40b47a6ff40b618c7b764d6b14464e500a65c7ff6725d98a1f852bf23bb37b65",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-908D5413",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "A zero timeout is treated as falsy and run with no timeout at all, so an attempt with timeout_seconds=0 never times out and neither falls back nor surfaces a timeout.",
+   "original_sha256": "127d32a531e059619210a020e14d4820a1609a61ae122c78f864ac98dc6eaf82",
+   "context_sha256": "13804f563fe1c356bb71bacc7cce1ba5dee08bde211db6c41b26f272b8fac122",
+   "prompt_sha256": "7b6f4505f9b089e73eea5b4061ed43de1f071e9ea9e7b24ea47b141c55c08198",
+   "replacement": "    def _call_sync_with_timeout(\n        self,\n        request: ResolvedRequest,\n        *,\n        timeout_seconds: float | None,\n    ) -> LLMRouterResponse:\n        \"\"\"Run one sync executor attempt with optional timeout.\"\"\"\n        if not timeout_seconds:\n            return self._executor.execute(request)\n        pool = ThreadPoolExecutor(max_workers=1)\n        future = pool.submit(self._executor.execute, request)\n        timed_out = False\n        try:\n            return future.result(timeout=timeout_seconds)\n        except FutureTimeoutError as exc:\n            timed_out = True\n            future.cancel()\n            msg = \"Attempt timed out.\"\n            raise TimeoutError(msg) from exc\n        finally:\n            pool.shutdown(wait=not timed_out, cancel_futures=True)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-ab7f3b",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "40b47a6ff40b618c7b764d6b14464e500a65c7ff6725d98a1f852bf23bb37b65",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-67D9CEE8",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "The pool shutdown in finally always waits for the worker thread, even after a timeout. The caller keeps blocking on the timed-out route until it finishes, so fallback or the timeout error comes only after the slow attempt ends.",
+   "original_sha256": "127d32a531e059619210a020e14d4820a1609a61ae122c78f864ac98dc6eaf82",
+   "context_sha256": "800c93bc13a558937b27ffe7abab991207a40b3a2c820442b353e75aac79a2e6",
+   "prompt_sha256": "cba68e0fd1e3dd74e712c991e529213618263010bba34261f780fa29ad8c0d1a",
+   "replacement": "    def _call_sync_with_timeout(\n        self,\n        request: ResolvedRequest,\n        *,\n        timeout_seconds: float | None,\n    ) -> LLMRouterResponse:\n        \"\"\"Run one sync executor attempt with optional timeout.\"\"\"\n        if timeout_seconds is None:\n            return self._executor.execute(request)\n        pool = ThreadPoolExecutor(max_workers=1)\n        future = pool.submit(self._executor.execute, request)\n        try:\n            return future.result(timeout=timeout_seconds)\n        except FutureTimeoutError as exc:\n            future.cancel()\n            msg = \"Attempt timed out.\"\n            raise TimeoutError(msg) from exc\n        finally:\n            pool.shutdown(wait=True, cancel_futures=True)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-844e45",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "0167f22608ec9b0f0fc72c74e1e82a26b79e18fea408c24feacc330684a8c470",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-4E1AF7FB",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "The timeout is checked after the attempt finishes instead of bounding the wait. The executor runs inline to completion, then elapsed time is compared with the limit. The caller does not stop waiting on the slow route, and the timeout is raised only after the attempt has fully ended.",
+   "original_sha256": "127d32a531e059619210a020e14d4820a1609a61ae122c78f864ac98dc6eaf82",
+   "context_sha256": "800c93bc13a558937b27ffe7abab991207a40b3a2c820442b353e75aac79a2e6",
+   "prompt_sha256": "cba68e0fd1e3dd74e712c991e529213618263010bba34261f780fa29ad8c0d1a",
+   "replacement": "    def _call_sync_with_timeout(\n        self,\n        request: ResolvedRequest,\n        *,\n        timeout_seconds: float | None,\n    ) -> LLMRouterResponse:\n        \"\"\"Run one sync executor attempt with optional timeout.\"\"\"\n        if timeout_seconds is None:\n            return self._executor.execute(request)\n        started = time.monotonic()\n        response = self._executor.execute(request)\n        if time.monotonic() - started > timeout_seconds:\n            msg = \"Attempt timed out.\"\n            raise TimeoutError(msg)\n        return response\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-844e45",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "0167f22608ec9b0f0fc72c74e1e82a26b79e18fea408c24feacc330684a8c470",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-67D9CEE8",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "The pool is always shut down with wait=True, so after a timeout the caller blocks until the timed-out route's worker thread finishes. The router keeps waiting on the timed-out route before it falls back or raises.",
+   "original_sha256": "127d32a531e059619210a020e14d4820a1609a61ae122c78f864ac98dc6eaf82",
+   "context_sha256": "17305525aabb7c95840ca4e997e770f28bb708a08a19602ecc393bb05550cd40",
+   "prompt_sha256": "dfdd0e1d3d9b4b1e2eecb5da6b9f6a64e076ba9d3bc9e7f495719e7f5d7df6fc",
+   "replacement": "    def _call_sync_with_timeout(\n        self,\n        request: ResolvedRequest,\n        *,\n        timeout_seconds: float | None,\n    ) -> LLMRouterResponse:\n        \"\"\"Run one sync executor attempt with optional timeout.\"\"\"\n        if timeout_seconds is None:\n            return self._executor.execute(request)\n        pool = ThreadPoolExecutor(max_workers=1)\n        future = pool.submit(self._executor.execute, request)\n        try:\n            return future.result(timeout=timeout_seconds)\n        except FutureTimeoutError as exc:\n            future.cancel()\n            msg = \"Attempt timed out.\"\n            raise TimeoutError(msg) from exc\n        finally:\n            pool.shutdown(wait=True, cancel_futures=True)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-94340f",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "6b789ce896e6e9d248d3ebe3e2230ebb9deb74aef51260bdcaae920f5b89d3bf",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-BD2A25D9",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "After the first timeout the code waits a second time on the same in-flight route call, adding a grace wait, and returns its result if it finishes. It keeps waiting on the timed-out route and delays fallback or the terminal timeout.",
+   "original_sha256": "127d32a531e059619210a020e14d4820a1609a61ae122c78f864ac98dc6eaf82",
+   "context_sha256": "17305525aabb7c95840ca4e997e770f28bb708a08a19602ecc393bb05550cd40",
+   "prompt_sha256": "dfdd0e1d3d9b4b1e2eecb5da6b9f6a64e076ba9d3bc9e7f495719e7f5d7df6fc",
+   "replacement": "    def _call_sync_with_timeout(\n        self,\n        request: ResolvedRequest,\n        *,\n        timeout_seconds: float | None,\n    ) -> LLMRouterResponse:\n        \"\"\"Run one sync executor attempt with optional timeout.\"\"\"\n        if timeout_seconds is None:\n            return self._executor.execute(request)\n        pool = ThreadPoolExecutor(max_workers=1)\n        future = pool.submit(self._executor.execute, request)\n        timed_out = False\n        try:\n            try:\n                return future.result(timeout=timeout_seconds)\n            except FutureTimeoutError:\n                # Grace period: keep waiting on the same route once more.\n                return future.result(timeout=timeout_seconds)\n        except FutureTimeoutError as exc:\n            timed_out = True\n            future.cancel()\n            msg = \"Attempt timed out.\"\n            raise TimeoutError(msg) from exc\n        finally:\n            pool.shutdown(wait=not timed_out, cancel_futures=True)\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-94340f",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "6b789ce896e6e9d248d3ebe3e2230ebb9deb74aef51260bdcaae920f5b89d3bf",
+    "index": 1
+   }
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "SM-B25D86B3": {
+  "kind": "model",
+  "call_id": "20260929T165720Z-86984a",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "32017970bdda104b9e7e4d27c5d20947230db1fbe0e03335d62f1191b301c1be",
+  "attempt": 1
+ }
+}

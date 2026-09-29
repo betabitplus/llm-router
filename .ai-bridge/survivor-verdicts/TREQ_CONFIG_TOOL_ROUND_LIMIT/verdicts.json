@@ -1,0 +1,98 @@
+{
+ "c18833e1526efa72": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092719Z-6d3025",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The technical requirement makes one the smallest allowed tool-round limit (\"at least one\"). The mutant raises ConfigurationError for a default_max_tool_rounds of exactly 1, which execution confirmed, so it rejects a valid configuration.",
+   "response_sha256": "ebd42fc14e8398d43c2415a1946b6252c4907b20556e61c74e806bd8b2fea8a3",
+   "sources": [
+    "The configured default maximum tool-round count shall be at least one.",
+    "A default tool-round maximum below one is rejected.",
+    "_require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')",
+    "condition=config.default_max_tool_rounds >= 1,"
+   ],
+   "test_focus": "Check that validate_config accepts a config whose default_max_tool_rounds is 1 without raising, and still raises ConfigurationError when it is 0.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.557618Z",
+   "answer_sha256": "739014df9037a8e7fe103860818431bfb8b74fe5fd97a56ee28595c27e335d76",
+   "call_id": "20260929T105509Z-57160f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "739014df9037a8e7fe103860818431bfb8b74fe5fd97a56ee28595c27e335d76",
+   "effort": "",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_tool_round_limit_c18833e1526efa72.py",
+   "response_sha256": "aed98c4bc419df9b31f597aa901ec28d14d035fc8e81a067d9bf32a49426965b",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  },
+  "prompt_sha256": "4bafb1fee09033cf62c15b1c4f14ff47801fd72471e0707f27ff680f769bbd67"
+ },
+ "c37a776247b2f0eb": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092726Z-1eb519",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant rejects default_max_tool_rounds=1, but the requirement says a limit of at least one is valid. So a correct configuration now fails, which breaks the boundary the requirement sets. Execution confirmed this: the original returns None and the mutant raises ConfigurationError.",
+   "response_sha256": "f4422c848655417ee0d2e21d8e690703536b3119edec437a7c79159ca6acf5a0",
+   "sources": [
+    "The configured default maximum tool-round count shall be at least one.",
+    "A default tool-round maximum below one is rejected.",
+    "_require(condition=config.default_max_tool_rounds >= 2, message='default max tool rounds must be at least 1.')",
+    "condition=config.default_max_tool_rounds >= 1,"
+   ],
+   "test_focus": "Check that validate_config accepts an otherwise valid config with default_max_tool_rounds=1 and rejects one with default_max_tool_rounds=0 by raising ConfigurationError.",
+   "verdict": "pin"
+  },
+  "operator": "boundary",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.562078Z",
+   "answer_sha256": "23efdf2e7f9d2fb9cedb8ee4a6f184b2a56d850401bc5b2f913e65b3cd6362f7",
+   "call_id": "20260929T112151Z-03e4df",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "23efdf2e7f9d2fb9cedb8ee4a6f184b2a56d850401bc5b2f913e65b3cd6362f7",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_tool_round_limit_c37a776247b2f0eb.py",
+   "response_sha256": "cfc8c5310b5ac7722d981d86843d34700f464e601cdc62c4ede2cf2fd1840ca3",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.config.validation.validate_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults"
+   ]
+  },
+  "prompt_sha256": "7b08db9586b2ce4385581104c1ad31101932ff1e845b8d77e5c57a03edeaea31"
+ }
+}

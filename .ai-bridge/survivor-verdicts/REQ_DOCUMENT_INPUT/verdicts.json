@@ -1,0 +1,50 @@
+{
+ "477252af3262a12a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T234837Z-3fac0b",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant removes the FileSchema check, so every value is treated as a document. Unsupported values then fail with an AttributeError instead of a clean TypeError, and images and videos are misrouted into the file path. Document normalisation has to recognise only supported document inputs, so this change breaks that promise.",
+   "response_sha256": "4f8445da812e7f8fc48d23e4fb15216ee12f78bbc97e588101e1c9b6c09a2753",
+   "sources": [
+    "Provider routes that declare document input support shall accept a supported document input and return structured output grounded in the document contents.",
+    "if isinstance(value, FileSchema):",
+    "if True:",
+    "msg = f\"Unsupported media value: {type(value).__name__}.\""
+   ],
+   "test_focus": "Check that describe_media returns FileMedia only for a FileSchema, and that a non-document value such as a plain string raises TypeError with the \"Unsupported media value\" message.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.902976Z",
+   "answer_sha256": "a985eea5a97fd8fb72242a650b1c7abcdf68762ea81e1f9a86a7f7de8b3722a4",
+   "call_id": "20260929T114718Z-72f513",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "a985eea5a97fd8fb72242a650b1c7abcdf68762ea81e1f9a86a7f7de8b3722a4",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_document_input_477252af3262a12a.py",
+   "response_sha256": "d570770735fca524e8173483047c8cb13c519088610085a61cfc638acc84e06f",
+   "source": "draft author",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.Model",
+    "llm_router.Provider"
+   ]
+  },
+  "prompt_sha256": "363def0d711f93888f26176292fbe0f75e7ba360fd41e5d8be2adb5b42a0dc7d"
+ }
+}

@@ -1,0 +1,41 @@
+{
+ "477252af3262a12a": [
+  {
+   "at": "2026-09-29T00:24:30.360867Z",
+   "call_id": "20260929T001300Z-eb210b",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no FileMedia (it lives in llm_router._internal.capabilities.media)",
+    "llm_router has no describe_media (it lives in llm_router._internal.capabilities.media)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "85ec42caba7b87b4c69519c57dbad2089f79e4c2990ff13c9c5c7fb0155de542",
+   "reason": "it breaks the project's lint rules (ruff: line 13: S108 Probable insecure usage of temporary file or directory: \"/tmp/example.pdf\"); it does not fit the project's code as written: llm_router has no FileMedia (it lives in llm_router._internal.capabilities.media) | llm_router has no describe_media (it lives in llm_router._internal.capabilities.media)",
+   "sources": [
+    "llm_router._internal.capabilities.media.describe_media",
+    "llm_router._internal.capabilities.media.FileMedia",
+    "llm_router._api.types.FileSchema"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.882832Z",
+   "call_id": "20260929T114718Z-72f513",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d429eb2507bfcbe3aeca4e2c55223d65892dec5a63b6dd10e4f49407d8003ac7",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.Model",
+    "llm_router.Provider"
+   ]
+  }
+ ]
+}

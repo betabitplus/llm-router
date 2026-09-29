@@ -1,0 +1,46 @@
+{
+ "7476f8d4086d1401": [
+  {
+   "at": "2026-09-29T00:24:30.361518Z",
+   "call_id": "20260929T001300Z-767d53",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "521035e3bed365bcb4a62c7b7320ab7769c8cde74a57f4dd74b0fd361149f9b1",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "be0c42b2c0522019": [
+  {
+   "at": "2026-09-29T00:24:30.361535Z",
+   "call_id": "20260929T001300Z-8f8cd7",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "58a25663c0a1ab6e9a6c4b6a86c4bf6b5a8154fc338d16ee24ffdcfbee7bb4ce",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.builders.build_test_image",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,97 @@
+{
+ "3b57c08f839ab791": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092217Z-d0e96c",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The constraint is that the attempt timeout is greater than zero, so a positive value such as 0.5 must be accepted. The mutant raises ConfigurationError for any timeout of 1 or less, so it rejects a configuration that breaks no constraint.",
+   "response_sha256": "1e90ace911d019f4b1499c467c1bc75c4abe514a866cf6e8d1548c740b7353c2",
+   "sources": [
+    "The effective attempt timeout shall be greater than zero.",
+    "llm-router shall reject an effective request configuration that violates an applicable configuration constraint with a public configuration error before initiating provider execution.",
+    "_require(condition=policy.attempt_timeout_seconds > 1, message='policy attempt timeout must be greater than 0.')"
+   ],
+   "test_focus": "Check that validate_config accepts a config whose attempt_timeout_seconds is a positive fraction such as 0.5 without raising, and still rejects 0 and negative values.",
+   "verdict": "pin"
+  },
+  "operator": "boundary",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.609694Z",
+   "answer_sha256": "6e92b46f4af7551859392b221fd2b57008860eaa32fdad2aa41b86530e2e0c7f",
+   "call_id": "20260929T100428Z-6aa605",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "6e92b46f4af7551859392b221fd2b57008860eaa32fdad2aa41b86530e2e0c7f",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_3b57c08f839ab791.py",
+   "response_sha256": "25ada62f77090fe67583a7c5fcdc64e939570f8f23a70c3294969cda54078f7a",
+   "source": "draft author",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validation.validate_config"
+   ]
+  },
+  "prompt_sha256": "403592021bc3bc5917bc1fb4ad532c95326c0c5fc253a43e3a1d9f2e6cc24c6b"
+ },
+ "b6340db1c7f8750a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000259Z-9ad7f3",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant always evaluates `None > 0` when no attempt timeout is set, so it raises TypeError instead of the public ConfigurationError. In the confirmed input, an invalid config therefore fails with TypeError rather than the public configuration error the requirement names. An otherwise valid config with no timeout would also likely be refused.",
+   "response_sha256": "e30318361f1aed9337505895ea19c37a8c3e38391cbca49c81ab74a666ae16b5",
+   "sources": [
+    "llm-router shall reject an effective request configuration that violates an applicable configuration constraint with a public configuration error before initiating provider execution.",
+    "The effective attempt timeout shall be greater than zero.",
+    "if policy.attempt_timeout_seconds is not None:",
+    "if True:"
+   ],
+   "test_focus": "Validating a config with attempt_timeout_seconds=None must never raise TypeError: an otherwise-valid config passes, and a config that breaks another rule raises ConfigurationError.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.610267Z",
+   "answer_sha256": "d4994e9cb9cde5daee37bf5c47cf209f2b8dbc6fc68e28c2273356dd2f0f5cd1",
+   "call_id": "20260929T100428Z-a65cde",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "d4994e9cb9cde5daee37bf5c47cf209f2b8dbc6fc68e28c2273356dd2f0f5cd1",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_b6340db1c7f8750a.py",
+   "response_sha256": "71eb9b9f7629aebfecd8bd3596e4cdc0f134c2c90915c85ea57c1cca4064298a",
+   "source": "draft author",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config",
+    "dataclasses.replace",
+    "pytest.mark.verification_kind",
+    "pytest.mark.verifies",
+    "pytest.raises"
+   ]
+  },
+  "prompt_sha256": "8c9e041abb2f1313d0606c6684808bb9f1cf3098349b72327d964370ff8e15cb"
+ }
+}

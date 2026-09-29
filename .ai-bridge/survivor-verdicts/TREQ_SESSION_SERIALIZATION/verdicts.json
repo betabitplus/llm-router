@@ -1,4 +1,246 @@
 {
+ "00e231387191a730": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T001200Z-4ea58b",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant leaves the system prompt out of the encoded session, so a saved-then-loaded session loses its system prompt. The requirement explicitly calls for the system prompt to be preserved.",
+   "response_sha256": "b387b055cf0ee1aa1157737b11d0287af82ce1ebd0794d742ef3d9ae624f5811",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "\"system\": system,",
+    "payload = {'version': _SESSION_VERSION, 'history': [_encode_message(message) for message in history]}"
+   ],
+   "test_focus": "Save a session with a non-empty system prompt, load it again, and check that the loaded system prompt equals the original.",
+   "verdict": "pin"
+  },
+  "operator": "container",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.941727Z",
+   "answer_sha256": "4de00ad3f2d5eae5cfe919ea9af2c92dfb1f97904c81e08560c418f83bea2438",
+   "call_id": "20260929T114801Z-14c45b",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "4de00ad3f2d5eae5cfe919ea9af2c92dfb1f97904c81e08560c418f83bea2438",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_00e231387191a730.py",
+   "response_sha256": "39916320272a94d38951c04586599d48188b2f84da141264338f7fb5cbb608a6",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.session.serialization.encode_session"
+   ]
+  },
+  "prompt_sha256": "08746c819a46de2df5897851275805f13c9bd09886e17acc96869dddd0a3d5d5"
+ },
+ "92622e5a5f97e586": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T001200Z-c3ecbc",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops only the pretty-print indentation. Both outputs are valid JSON with the same content, so save/load still round-trips everything and versions are still checked. The output strings differ, but only in whitespace, which no requirement covers.",
+   "response_sha256": "9dd9f459b2cae5b73dcc8327a7f3c0a9f580d4a7ca42bfb0453da79673a9d242",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "return json.dumps(payload, indent=2, sort_keys=True)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "3a5f5d35836baaac8c70001a62acfab23e84cdb288950c6ecf90ce16f505531e",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T094723Z-28bf8a",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "3a5f5d35836baaac8c70001a62acfab23e84cdb288950c6ecf90ce16f505531e",
+   "reason": "The mutation removes the `indent=2` argument from the JSON serialization, altering only the whitespace formatting. Because standard JSON parsing is whitespace-agnostic, the data still successfully round-trips as required, making the exact formatting an irrelevant implementation detail.",
+   "response_sha256": "0c1ee880ded0aa9da201fa1e79d22c0011c73139b8492e01d762bea1cf0be26b",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "return json.dumps(payload, indent=2, sort_keys=True)",
+    "return json.dumps(payload, sort_keys=True)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "9e3d1c41b323b0bb": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T001212Z-bf6dac",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Dropping sort_keys only changes the order of keys in the JSON text. Loading the output still gives back the same system, history and version. The requirement asks for state to survive save/load and for unsupported versions to be rejected. It never asks for a deterministic or canonical key order.",
+   "response_sha256": "edf338fd5714de057c720512879dda8db8649bca75600a94ed1ad3729e0ef8fc",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "Unsupported serialization versions raise SessionSerializationError instead of loading incompatible state.",
+    "return json.dumps(payload, indent=2, sort_keys=True)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "c190ddd9ce5a9fbb3019c3c4abfc9eac5cc3cf5c969bc48f2a94b94caf1fb5c1",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T094723Z-4a3a4a",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "c190ddd9ce5a9fbb3019c3c4abfc9eac5cc3cf5c969bc48f2a94b94caf1fb5c1",
+   "reason": "The requirement mandates preserving session state data, not the specific key ordering within the JSON serialized string. JSON objects are unordered by definition, so omitting `sort_keys=True` does not impact the round-tripping of state.",
+   "response_sha256": "666c1305618effc8d3528bf60d77428c916eafd71d98b33ff2b63f92f61fda46",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "return json.dumps(payload, indent=2, sort_keys=True)",
+    "return json.dumps(payload, indent=2)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "SM-A96F2E5C": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171746Z-8600ba",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the last message from any history longer than one message, so the session no longer keeps its conversation history. It also turns an empty-string system prompt into null (confirmed: system '' is written as null). Both break the requirement that save/load preserves the system prompt and conversation history.",
+   "response_sha256": "695fe87c28efaea9ebfa0402ef9310d1f93f5dfa6f059ecbc4ebb76f3ff55dd0",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "\"history\": [_encode_message(message) for message in history[:-1]] if len(history) > 1 else [_encode_message(message) for message in history],",
+    "\"system\": system or None,",
+    "Preserve conversational state without cross-request contamination"
+   ],
+   "test_focus": "Save and load a session with system prompt '' and two or more history messages; check that the loaded system prompt is exactly '' and that every message, including the last one, comes back in order.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:21:43.479325Z",
+   "answer_sha256": "362d75d89709d3d4b008d537fc4a576ccd6ffab7c4b212fdc0b10d1086fd2222",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "362d75d89709d3d4b008d537fc4a576ccd6ffab7c4b212fdc0b10d1086fd2222",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_a96f2e5c.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "aad45d4bdcb412b9ca25e9cb64be27705bb8307c5621677ad6a701af7c302849"
+ },
+ "SM-AE82B8CB": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191216Z-e0d341",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When the history has more than one message, the mutant leaves the last message out of the saved artifact. Execution confirmed this: two messages went in and one came out. That breaks the requirement that saving and loading a session preserve its conversation history.",
+   "response_sha256": "1245e87149f082fc67e5166922210a444491b2d4afc80be951db38cc266e0ec4",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "\"history\": [_encode_message(message) for message in history[:-1]] if len(history) > 1 else [_encode_message(message) for message in history],",
+    "\"history\": [_encode_message(message) for message in history],"
+   ],
+   "test_focus": "Save a session whose history has two or more distinct messages, then load it. Check that the loaded history equals the original, and that the last message in particular is still there.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:13:36.460095Z",
+   "answer_sha256": "f3492df7d9d29bdf5a53f3ceb9f87c1e1e3a5f5bbdc7e18191555e7283cda2a5",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "c745bf925be896740e1a6f9af35ab03746bb668d3eed40b915be1c12bda66528",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_ae82b8cb.py",
+   "source": "kept semantic draft"
+  },
+  "prompt_sha256": "f81dda7fe5f289de6b811f8ce9b58cb1df659ed738f85ce4fd6a83c3a35f6a88"
+ },
+ "SM-B91A9265": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191216Z-87e617",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops any message whose encoding matches the message just before it. A history with two identical consecutive turns (for example, a user repeating \"hi\") would come back from save/load one message short. That breaks the requirement that saving and loading preserve the conversation history. The proposed inputs were rejected only because they named ChatRole, not because the two versions behave the same.",
+   "response_sha256": "8c8e60207cab762168d0483a5856119a23158d9bdae67876b1001e62388e6968",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "if encoded_history and encoded_history[-1] == encoded:",
+    "continue",
+    "\"history\": [_encode_message(message) for message in history],"
+   ],
+   "test_focus": "Save a session whose history has two identical consecutive messages (same role and content), load it back, and check that the loaded history has the same length as the original and matches it message for message.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:15:34.169734Z",
+   "answer_sha256": "a6f2adea02c1fb4a18216d5a291af25ab941d0e56186e82f8423b694ee783ebe",
+   "call_id": "20260929T191342Z-8ce77c",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "b44d004e6c7ef20436dfdb9070687252ab8210f50f4800fc786330c9c76da971",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_b91a9265.py",
+   "response_sha256": "dae3dd04c66391749be25b3ed7c181a3394f6889f318d42923e6743b0efdc42e",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.session.serialization.encode_session",
+    "llm_router._api.types.ChatMessage"
+   ]
+  },
+  "prompt_sha256": "c679b408a63e6ce9008e701274d5cdfad53fcfea56aee37588aa51bf38a8c6fb"
+ },
  "a2ea086ea892f112": {
   "answer": {
    "backend": "claude-cli",

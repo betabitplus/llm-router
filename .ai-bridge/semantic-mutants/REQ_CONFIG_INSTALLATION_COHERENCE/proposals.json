@@ -1,0 +1,126 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_CONFIG_INSTALLATION_COHERENCE",
+ "proposals": [
+  {
+   "id": "SM-9B5E00F5",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/config/state.py::install_config",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Installed snapshot is a copy/different object rather than the exact validated snapshot: the global stores a shallow copy while the caller gets the original, so the public API returns a non-identical active config.",
+   "original_sha256": "884dae0cbfe609babd106618fea28b429508e9fec5895930245191715efe93c3",
+   "context_sha256": "3f59a179d1233af502633b426413213b8481d0e5658494326b717e43f7fa9642",
+   "prompt_sha256": "e5edfe74b168e04ffe614b0f738f7ce720ade48c49da216e1fdff9ec553bb5b6",
+   "replacement": "def install_config(config: object) -> LLMRouterConfig:\n    \"\"\"Install a validated config snapshot.\"\"\"\n    if not isinstance(config, LLMRouterConfig):\n        msg = \"install_config() expects an LLMRouterConfig instance.\"\n        raise TypeError(msg)\n\n    validate_config(config)\n    global _installed_config  # noqa: PLW0603\n    import copy\n\n    with _config_lock:\n        _installed_config = copy.copy(config)\n\n    from llm_router._internal.providers.registry import clear_adapter_caches\n\n    # @impl Config cache invalidation, IMPL_CONFIG_CACHE_INVALIDATION, [TREQ_CONFIG_CACHE_INVALIDATION[revision==1]]\n    clear_adapter_caches()\n    logger.info(\n        \"Configuration installed\",\n        event_type=\"llm_router.config.runtime.installed\",\n        default_provider=config.default_provider.value,\n        default_model=config.default_model.value,\n        provider_count=len(config.catalog.providers),\n        model_count=len(config.models),\n        structured_output_max_attempts=int(config.structured_output_max_attempts),\n    )\n    return config",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153515Z-d76434",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "fcf975193e7b94e137bc0fc92ed775aa5b9e048e000f69f43414f5346a9e3d67",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-39305DEA",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/config/state.py::install_config",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Adapter caches are cleared before the new config is installed, so a concurrent/subsequent adapter build can recapture the old snapshot and runtime keeps stale provider values after installation.",
+   "original_sha256": "884dae0cbfe609babd106618fea28b429508e9fec5895930245191715efe93c3",
+   "context_sha256": "3f59a179d1233af502633b426413213b8481d0e5658494326b717e43f7fa9642",
+   "prompt_sha256": "e5edfe74b168e04ffe614b0f738f7ce720ade48c49da216e1fdff9ec553bb5b6",
+   "replacement": "def install_config(config: object) -> LLMRouterConfig:\n    \"\"\"Install a validated config snapshot.\"\"\"\n    if not isinstance(config, LLMRouterConfig):\n        msg = \"install_config() expects an LLMRouterConfig instance.\"\n        raise TypeError(msg)\n\n    validate_config(config)\n    global _installed_config  # noqa: PLW0603\n    from llm_router._internal.providers.registry import clear_adapter_caches\n\n    # @impl Config cache invalidation, IMPL_CONFIG_CACHE_INVALIDATION, [TREQ_CONFIG_CACHE_INVALIDATION[revision==1]]\n    clear_adapter_caches()\n    with _config_lock:\n        previous = _installed_config\n        _installed_config = config\n        if previous is not None and previous is not config:\n            # Keep any lazily rebuilt adapters consistent with the prior snapshot\n            clear_adapter_caches.__doc__\n    logger.info(\n        \"Configuration installed\",\n        event_type=\"llm_router.config.runtime.installed\",\n        default_provider=config.default_provider.value,\n        default_model=config.default_model.value,\n        provider_count=len(config.catalog.providers),\n        model_count=len(config.models),\n        structured_output_max_attempts=int(config.structured_output_max_attempts),\n    )\n    return config",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153515Z-d76434",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "fcf975193e7b94e137bc0fc92ed775aa5b9e048e000f69f43414f5346a9e3d67",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-9E7AF212",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/config/state.py::install_config",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Adapter caches are cleared only when the default provider changes, so installing a snapshot that differs in models, catalog or other values leaves cached adapters built from the previous snapshot; later requests reach the provider with stale values.",
+   "original_sha256": "884dae0cbfe609babd106618fea28b429508e9fec5895930245191715efe93c3",
+   "context_sha256": "ace9016940156b396edc0a63aba9c0942b6f90fc0aa8d8d82d8e0b8da0d5d0a0",
+   "prompt_sha256": "5eadbe8c5f9fecdadb1ab099f3c412beaa18859cbc0e04d754799859b3c112b7",
+   "replacement": "def install_config(config: object) -> LLMRouterConfig:\n    \"\"\"Install a validated config snapshot.\"\"\"\n    if not isinstance(config, LLMRouterConfig):\n        msg = \"install_config() expects an LLMRouterConfig instance.\"\n        raise TypeError(msg)\n\n    validate_config(config)\n    global _installed_config  # noqa: PLW0603\n    with _config_lock:\n        previous = _installed_config\n        _installed_config = config\n\n    from llm_router._internal.providers.registry import clear_adapter_caches\n\n    # @impl Config cache invalidation, IMPL_CONFIG_CACHE_INVALIDATION, [TREQ_CONFIG_CACHE_INVALIDATION[revision==1]]\n    if previous is None or previous.default_provider != config.default_provider:\n        clear_adapter_caches()\n    logger.info(\n        \"Configuration installed\",\n        event_type=\"llm_router.config.runtime.installed\",\n        default_provider=config.default_provider.value,\n        default_model=config.default_model.value,\n        provider_count=len(config.catalog.providers),\n        model_count=len(config.models),\n        structured_output_max_attempts=int(config.structured_output_max_attempts),\n    )\n    return config\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-72ea0d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "3f05097deac691421c5447aa44af84177f45409bc4d8ccd3f981675d8a4cf605",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-48E372DD",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/config/state.py::install_config",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "When the new snapshot compares equal to the currently installed one, installation is skipped and the old object is returned, so the exact distinct snapshot passed in is not made active and caches are not cleared.",
+   "original_sha256": "884dae0cbfe609babd106618fea28b429508e9fec5895930245191715efe93c3",
+   "context_sha256": "ace9016940156b396edc0a63aba9c0942b6f90fc0aa8d8d82d8e0b8da0d5d0a0",
+   "prompt_sha256": "5eadbe8c5f9fecdadb1ab099f3c412beaa18859cbc0e04d754799859b3c112b7",
+   "replacement": "def install_config(config: object) -> LLMRouterConfig:\n    \"\"\"Install a validated config snapshot.\"\"\"\n    if not isinstance(config, LLMRouterConfig):\n        msg = \"install_config() expects an LLMRouterConfig instance.\"\n        raise TypeError(msg)\n\n    validate_config(config)\n    global _installed_config  # noqa: PLW0603\n    with _config_lock:\n        current = _installed_config\n        if current is not None and current == config:\n            return current\n        _installed_config = config\n\n    from llm_router._internal.providers.registry import clear_adapter_caches\n\n    # @impl Config cache invalidation, IMPL_CONFIG_CACHE_INVALIDATION, [TREQ_CONFIG_CACHE_INVALIDATION[revision==1]]\n    clear_adapter_caches()\n    logger.info(\n        \"Configuration installed\",\n        event_type=\"llm_router.config.runtime.installed\",\n        default_provider=config.default_provider.value,\n        default_model=config.default_model.value,\n        provider_count=len(config.catalog.providers),\n        model_count=len(config.models),\n        structured_output_max_attempts=int(config.structured_output_max_attempts),\n    )\n    return config\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-72ea0d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "3f05097deac691421c5447aa44af84177f45409bc4d8ccd3f981675d8a4cf605",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-F91AFA31",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/config/state.py::install_config",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Adapter caches are cleared before the new config is installed, so anything rebuilt between clearing and installation (or concurrently) captures the old snapshot; the ordering of invalidation vs. install is broken.",
+   "original_sha256": "884dae0cbfe609babd106618fea28b429508e9fec5895930245191715efe93c3",
+   "context_sha256": "ba4578fa7d03980a22d9579f4843fcb5101d5e2d5e0eacff6a9e3f5f5f19ecd9",
+   "prompt_sha256": "040558adc72140250e71b8aa76a3749bc9cf0d78cd4999aaa1c2396916f0f892",
+   "replacement": "def install_config(config: object) -> LLMRouterConfig:\n    \"\"\"Install a validated config snapshot.\"\"\"\n    if not isinstance(config, LLMRouterConfig):\n        msg = \"install_config() expects an LLMRouterConfig instance.\"\n        raise TypeError(msg)\n\n    validate_config(config)\n    global _installed_config  # noqa: PLW0603\n\n    from llm_router._internal.providers.registry import clear_adapter_caches\n\n    # @impl Config cache invalidation, IMPL_CONFIG_CACHE_INVALIDATION, [TREQ_CONFIG_CACHE_INVALIDATION[revision==1]]\n    clear_adapter_caches()\n    with _config_lock:\n        _installed_config = config\n\n    logger.info(\n        \"Configuration installed\",\n        event_type=\"llm_router.config.runtime.installed\",\n        default_provider=config.default_provider.value,\n        default_model=config.default_model.value,\n        provider_count=len(config.catalog.providers),\n        model_count=len(config.models),\n        structured_output_max_attempts=int(config.structured_output_max_attempts),\n    )\n    return config\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-f2957d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b11b171940ef6ad77b9c7ac7ebfc1b4a2dda491d7fd3c5234e3dd0fb78fa105c",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-D56D5CD1",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/config/state.py::install_config",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Installation validates and returns the new config but only assigns the global when no config is already installed, so a subsequent public get returns the old snapshot and runtime keeps using the previous config.",
+   "original_sha256": "884dae0cbfe609babd106618fea28b429508e9fec5895930245191715efe93c3",
+   "context_sha256": "ba4578fa7d03980a22d9579f4843fcb5101d5e2d5e0eacff6a9e3f5f5f19ecd9",
+   "prompt_sha256": "040558adc72140250e71b8aa76a3749bc9cf0d78cd4999aaa1c2396916f0f892",
+   "replacement": "def install_config(config: object) -> LLMRouterConfig:\n    \"\"\"Install a validated config snapshot.\"\"\"\n    if not isinstance(config, LLMRouterConfig):\n        msg = \"install_config() expects an LLMRouterConfig instance.\"\n        raise TypeError(msg)\n\n    validate_config(config)\n    global _installed_config  # noqa: PLW0603\n    with _config_lock:\n        if _installed_config is None:\n            _installed_config = config\n\n    from llm_router._internal.providers.registry import clear_adapter_caches\n\n    # @impl Config cache invalidation, IMPL_CONFIG_CACHE_INVALIDATION, [TREQ_CONFIG_CACHE_INVALIDATION[revision==1]]\n    clear_adapter_caches()\n    logger.info(\n        \"Configuration installed\",\n        event_type=\"llm_router.config.runtime.installed\",\n        default_provider=config.default_provider.value,\n        default_model=config.default_model.value,\n        provider_count=len(config.catalog.providers),\n        model_count=len(config.models),\n        structured_output_max_attempts=int(config.structured_output_max_attempts),\n    )\n    return config\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-f2957d",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b11b171940ef6ad77b9c7ac7ebfc1b4a2dda491d7fd3c5234e3dd0fb78fa105c",
+    "index": 1
+   }
+  }
+ ]
+}

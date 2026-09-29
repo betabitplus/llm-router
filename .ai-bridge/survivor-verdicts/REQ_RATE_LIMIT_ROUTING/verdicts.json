@@ -1,0 +1,87 @@
+{
+ "SM-04F10964": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-8f9771",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant narrows the preferred keys to the lowest-numbered free key. When both automatic credentials are free, every request goes to that same key until its limit blocks it. This breaks the requirement that credentials rotate before reuse requires waiting. Existing tests likely allow one request per key per window, which forces the switch and hides the change.",
+   "response_sha256": "0837b851c79c25bd419a0c7109d1b0d7c7cbe05dfe2b57020c6fdf2c8552c109",
+   "sources": [
+    "Available credentials shall rotate before reuse requires waiting.",
+    "With two available automatic credentials, consecutive requests rotate across them before reuse requires waiting.",
+    "                preferred_key_ids = {min(available_key_ids)}",
+    "                preferred_key_ids = available_key_ids"
+   ],
+   "test_focus": "Set up two auto keys whose limit allows several requests per window. Check that two requests in a row use different key_ids even though the first key is still free.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T17:30:20.394473Z",
+   "answer_sha256": "77ec6c9fcbeb3965661ca1adbdd0f4088beb0f617560996da103f8b063e97705",
+   "call_id": "20260929T172801Z-cbe460",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "77ec6c9fcbeb3965661ca1adbdd0f4088beb0f617560996da103f8b063e97705",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_rate_limit_routing_sm_04f10964.py",
+   "response_sha256": "23cb440b3260d030dae98fb8730b533635ec7ec0f903816e91e78e83a0814cac",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  "prompt_sha256": "69d89ab52d43d22a605906bd203fa4f01f2588a5e2a6d724a45cb7241ccf8111"
+ },
+ "SM-518AB7BA": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T171641Z-24d8f0",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes which exception type is raised when the provider is unknown (ValueError becomes TypeError). The requirement covers skipping blocked routes, the all-blocked fail-or-wait policy, and credential rotation, and none of that depends on how an invalid provider is rejected.",
+   "response_sha256": "42fc984c5fc7831dbb8207634a679a855558b69ee13ee91b29386ceca2ee0c79",
+   "sources": [
+    "raise ValueError(msg)  # noqa: TRY004",
+    "raise TypeError(msg)",
+    "Blocked routes shall be skipped when another route is available. When all routes are blocked, the router shall fail immediately or wait according to configured policy. Available credentials shall rotate before reuse requires waiting."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "e24f9dc9506c5b24f2ef016b005c2f345c5a6d67b749df74b2293faf5ea5a1a3",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T194428Z-0be1b1",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "e24f9dc9506c5b24f2ef016b005c2f345c5a6d67b749df74b2293faf5ea5a1a3",
+   "reason": "The change only alters the exception type from ValueError to TypeError when an incorrectly typed provider argument is passed. This is an implementation detail for input validation that does not affect the rate-limit-aware routing or key selection behavior specified by the requirement.",
+   "response_sha256": "a268b2a36a52812c9074383a2e0ad4464f78e1befa9acb127bc86c844e226d64",
+   "sources": [
+    "raise ValueError(msg)  # noqa: TRY004",
+    "raise TypeError(msg)",
+    "Blocked routes shall be skipped when another route is available. When all routes are blocked, the router shall fail immediately or wait according to configured policy. Available credentials shall rotate before reuse requires waiting."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ }
+}

@@ -1,0 +1,126 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_RESPONSE_NORMALIZATION",
+ "proposals": [
+  {
+   "id": "SM-7211CDB1",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/output.py::build_public_response",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Explicit empty output_text or tool_calls overrides are treated as missing (falsy check instead of None check), so a normalized empty text/tool list falls back to provider-specific raw result values.",
+   "original_sha256": "886fb1597e06b47315d823739acc30e0aa15aab9d9a9943ff59e18ddfea3e539",
+   "context_sha256": "445fc8003b00e09c5b16d0b0c82d15110e49b72f73072d53c82ff5cd5913c41a",
+   "prompt_sha256": "8bf93098e3aa869c6239cb46639c157c1fda55b576e45eb7a8885cc3dfa3e7f7",
+   "replacement": "def build_public_response(\n    result: ProviderResult,\n    *,\n    output_text: str | None = None,\n    tool_calls: Sequence[ToolCall] | None = None,\n    tool_trace: Sequence[ToolStep] = (),\n    structured_data: object | None = None,\n) -> LLMRouterResponse:\n    \"\"\"Build the public success DTO from one normalized provider result.\"\"\"\n    data = _json_safe_value(result.data)\n    if structured_data is not None and isinstance(data, dict) and \"parsed\" not in data:\n        data = {**data, \"parsed\": _json_safe_value(structured_data)}\n    return LLMRouterResponse(\n        data=data,\n        usage=result.usage,\n        provider=result.provider.value,\n        model=result.model.value,\n        output_text=output_text or result.output_text,\n        tool_calls=list(tool_calls or result.tool_calls),\n        tool_trace=list(tool_trace),\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-68ca19",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "58cc6c0baecbd1f751d087b251709ab0ee8eef569277097a9bcad6f6de25b156",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-2265B496",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/output.py::build_public_response",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Structured parsed data is only attached when the provider data is not a dict-with-parsed check; the guard is inverted for existing 'parsed' and the value stored is the raw (not JSON-safe) structured data, and non-baseline provider data lacking 'parsed' is overwritten inconsistently: parsed always overrides provider-supplied 'parsed' value.",
+   "original_sha256": "886fb1597e06b47315d823739acc30e0aa15aab9d9a9943ff59e18ddfea3e539",
+   "context_sha256": "445fc8003b00e09c5b16d0b0c82d15110e49b72f73072d53c82ff5cd5913c41a",
+   "prompt_sha256": "8bf93098e3aa869c6239cb46639c157c1fda55b576e45eb7a8885cc3dfa3e7f7",
+   "replacement": "def build_public_response(\n    result: ProviderResult,\n    *,\n    output_text: str | None = None,\n    tool_calls: Sequence[ToolCall] | None = None,\n    tool_trace: Sequence[ToolStep] = (),\n    structured_data: object | None = None,\n) -> LLMRouterResponse:\n    \"\"\"Build the public success DTO from one normalized provider result.\"\"\"\n    data = _json_safe_value(result.data)\n    if structured_data is not None and isinstance(data, dict):\n        data = {**data, \"parsed\": structured_data}\n    return LLMRouterResponse(\n        data=data,\n        usage=result.usage,\n        provider=result.provider.value,\n        model=result.model.value,\n        output_text=result.output_text if output_text is None else output_text,\n        tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),\n        tool_trace=list(tool_trace),\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-68ca19",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "58cc6c0baecbd1f751d087b251709ab0ee8eef569277097a9bcad6f6de25b156",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-2A89BC91",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/output.py::build_public_response",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Ignores the `output_text` override, passing raw provider output text to the public response. This bypasses text normalization and may leak provider-specific anomalies.",
+   "original_sha256": "886fb1597e06b47315d823739acc30e0aa15aab9d9a9943ff59e18ddfea3e539",
+   "context_sha256": "4a94c430861a92d265e66d85e6f2b8c065ced8089c1d52cc0fcd438aa19c9d5a",
+   "prompt_sha256": "4ee0e51da3427819a53a2050fbd7e566e0de218f32716b635c453e41fe57bb4a",
+   "replacement": "def build_public_response(\n    result: ProviderResult,\n    *,\n    output_text: str | None = None,\n    tool_calls: Sequence[ToolCall] | None = None,\n    tool_trace: Sequence[ToolStep] = (),\n    structured_data: object | None = None,\n) -> LLMRouterResponse:\n    \"\"\"Build the public success DTO from one normalized provider result.\"\"\"\n    data = _json_safe_value(result.data)\n    if structured_data is not None and isinstance(data, dict) and \"parsed\" not in data:\n        data = {**data, \"parsed\": _json_safe_value(structured_data)}\n    return LLMRouterResponse(\n        data=data,\n        usage=result.usage,\n        provider=result.provider.value,\n        model=result.model.value,\n        output_text=result.output_text,\n        tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),\n        tool_trace=list(tool_trace),\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-e7a406",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "7846e503eaee175e21e4160a302ae2bd1b907620b15def6272adbac726a02601",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-2DBB5B58",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/output.py::build_public_response",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Ignores the `tool_calls` override, passing raw provider tool calls directly to the public response. This bypasses normalization and leaks provider-specific tool call formats.",
+   "original_sha256": "886fb1597e06b47315d823739acc30e0aa15aab9d9a9943ff59e18ddfea3e539",
+   "context_sha256": "4a94c430861a92d265e66d85e6f2b8c065ced8089c1d52cc0fcd438aa19c9d5a",
+   "prompt_sha256": "4ee0e51da3427819a53a2050fbd7e566e0de218f32716b635c453e41fe57bb4a",
+   "replacement": "def build_public_response(\n    result: ProviderResult,\n    *,\n    output_text: str | None = None,\n    tool_calls: Sequence[ToolCall] | None = None,\n    tool_trace: Sequence[ToolStep] = (),\n    structured_data: object | None = None,\n) -> LLMRouterResponse:\n    \"\"\"Build the public success DTO from one normalized provider result.\"\"\"\n    data = _json_safe_value(result.data)\n    if structured_data is not None and isinstance(data, dict) and \"parsed\" not in data:\n        data = {**data, \"parsed\": _json_safe_value(structured_data)}\n    return LLMRouterResponse(\n        data=data,\n        usage=result.usage,\n        provider=result.provider.value,\n        model=result.model.value,\n        output_text=result.output_text if output_text is None else output_text,\n        tool_calls=list(result.tool_calls),\n        tool_trace=list(tool_trace),\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-e7a406",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "7846e503eaee175e21e4160a302ae2bd1b907620b15def6272adbac726a02601",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-B9EE9F1F",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/runtime/output.py::build_public_response",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Tool calls passed explicitly are dropped when empty-ish/falsy handling is used: the override is ignored via truthiness, so an explicit empty or provided list falls back to provider result's tool_calls, leaking provider-specific tool calls.",
+   "original_sha256": "886fb1597e06b47315d823739acc30e0aa15aab9d9a9943ff59e18ddfea3e539",
+   "context_sha256": "1542d0b96effdec73843d2442ac21dd2ff8c46a0bffcc0f3a02f3fd21f188515",
+   "prompt_sha256": "f908583cb8efdf0e0ae74d4130a6d7bc82eb3f06c3774853359dbbe38ba4bb5f",
+   "replacement": "def build_public_response(\n    result: ProviderResult,\n    *,\n    output_text: str | None = None,\n    tool_calls: Sequence[ToolCall] | None = None,\n    tool_trace: Sequence[ToolStep] = (),\n    structured_data: object | None = None,\n) -> LLMRouterResponse:\n    \"\"\"Build the public success DTO from one normalized provider result.\"\"\"\n    data = _json_safe_value(result.data)\n    if structured_data is not None and isinstance(data, dict) and \"parsed\" not in data:\n        data = {**data, \"parsed\": _json_safe_value(structured_data)}\n    return LLMRouterResponse(\n        data=data,\n        usage=result.usage,\n        provider=result.provider.value,\n        model=result.model.value,\n        output_text=result.output_text if not output_text else output_text,\n        tool_calls=list(tool_calls or result.tool_calls),\n        tool_trace=list(tool_trace),\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-1955ca",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "91dc5567b874db4784686be5d9bb43c7cff9ee0189ca4c6d0a0daaa7bb6ed81a",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-44C084CF",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/runtime/output.py::build_public_response",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Structured data is attached to the response's data only from the raw result, and the json-safe conversion is skipped for the parsed value, so non-JSON-serializable parsed payloads (e.g. models) leak into the public data; also the provider field uses the enum object instead of its value.",
+   "original_sha256": "886fb1597e06b47315d823739acc30e0aa15aab9d9a9943ff59e18ddfea3e539",
+   "context_sha256": "1542d0b96effdec73843d2442ac21dd2ff8c46a0bffcc0f3a02f3fd21f188515",
+   "prompt_sha256": "f908583cb8efdf0e0ae74d4130a6d7bc82eb3f06c3774853359dbbe38ba4bb5f",
+   "replacement": "def build_public_response(\n    result: ProviderResult,\n    *,\n    output_text: str | None = None,\n    tool_calls: Sequence[ToolCall] | None = None,\n    tool_trace: Sequence[ToolStep] = (),\n    structured_data: object | None = None,\n) -> LLMRouterResponse:\n    \"\"\"Build the public success DTO from one normalized provider result.\"\"\"\n    data = _json_safe_value(result.data)\n    if structured_data is not None and isinstance(data, dict) and \"parsed\" not in data:\n        data = {**data, \"parsed\": structured_data}\n    return LLMRouterResponse(\n        data=data,\n        usage=result.usage,\n        provider=result.provider,\n        model=result.model.value,\n        output_text=result.output_text if output_text is None else output_text,\n        tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),\n        tool_trace=list(tool_trace),\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153519Z-1955ca",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "91dc5567b874db4784686be5d9bb43c7cff9ee0189ca4c6d0a0daaa7bb6ed81a",
+    "index": 1
+   }
+  }
+ ]
+}

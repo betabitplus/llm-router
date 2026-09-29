@@ -1,4 +1,70 @@
 {
+ "3d767806f2945e38": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T094309Z-dd23d3",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops max_chars=300 but relies on preview_text's default, which two reviewers report is also 300. If so, the validation detail is still capped at 300 characters. The single f-string builds the same text as the original, and no input that tells the versions apart was confirmed.",
+   "response_sha256": "f66dd971203dbb1d9b44fa23c85c00a3639279adb3618e0c0c8381b911c58d03",
+   "sources": [
+    "Repair prompts shall bound every incorporated dynamic component, including schema identity and preview, invalid output, and validation details.",
+    "error_preview = preview_text(error_message, max_chars=300)",
+    "error_preview = preview_text(error_message)",
+    "Both versions behave identically because preview_text defaults to max_chars=300"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.616755Z",
+   "answer_sha256": "459f0a29c1527459f5716ba27dddbe8f78eb7597289a8e5c8fa1af201701c243",
+   "call_id": "20260929T120217Z-c2f741",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "7e5951026873f7074827cdfd3a3e23a48bc21025367c3cdf8e3b00c314c18d74",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_3d767806f2945e38.py",
+   "response_sha256": "f8181114c7e5adfba13415ad095bd987657da1b0cb4c7f10260051b696779d62",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  "prompt_sha256": "2228450e6e1a29c0475271bd4878c7e758189aa5471e03412106db30668215a8",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T094322Z-cedd24",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "2228450e6e1a29c0475271bd4878c7e758189aa5471e03412106db30668215a8",
+   "reason": "The mutant drops the explicit character limit when previewing the error message, potentially leaving the validation detail unbounded. This violates the requirement that every dynamic component must be bounded to prevent expanding the prompt beyond its cap.",
+   "response_sha256": "e9910ddb9f7910de2d6d355968668bedcb13137ebd740f25a00be846de511644",
+   "sources": [
+    "Repair prompts shall bound every incorporated dynamic component, including schema identity and preview, invalid output, and validation details.",
+    "Property-generated schema identity, invalid output, and validation detail cannot expand the repair prompt beyond its cap.",
+    "error_preview = preview_text(error_message, max_chars=300)",
+    "error_preview = preview_text(error_message)"
+   ],
+   "test_focus": "The test must provide a validation error message that exceeds the intended maximum character limit and verify that it is properly truncated in the resulting repair prompt.",
+   "verdict": "pin"
+  }
+ },
  "53c4293e1a144b74": {
   "answer": {
    "backend": "claude-cli",
@@ -13,6 +79,100 @@
   },
   "operator": "boolean",
   "prompt_sha256": "8e2f8dc2e01914c7dbdf498eb51c2cb9880f30d89b358a0a8b3621ede764f1ce"
+ },
+ "65a49b2023696bc9": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T094410Z-f76b35",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant removes the explicit 120-character cap on the schema name and relies on preview_text's default instead. That default may be larger or unbounded, so the schema identity may no longer be capped, which is exactly what TREQ_REPAIR_PROMPT_BOUNDS requires. No existing test checks the cap on the schema name, so a test must pin it.",
+   "response_sha256": "b11966857e5dfaa4bca7161a43e11dc3c37fd9b27ccf2fd15bf3c6da0499e12c",
+   "sources": [
+    "Repair prompts shall bound every incorporated dynamic component, including schema identity and preview, invalid output, and validation details.",
+    "Property-generated schema identity, invalid output, and validation detail cannot expand the repair prompt beyond its cap.",
+    "schema_name = preview_text(spec.name, max_chars=120)",
+    "schema_name = preview_text(spec.name)"
+   ],
+   "test_focus": "Generate very long schema names (e.g. by property-based testing) and check that the schema name in the repair prompt is cut to at most 120 characters and that the whole prompt stays within its cap.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.618139Z",
+   "answer_sha256": "dffbe08e674c0dc5239f9a28c3ba6f0018e6b40691c008cc455865d8cb5508d1",
+   "call_id": "20260929T120217Z-b0b9d4",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "dffbe08e674c0dc5239f9a28c3ba6f0018e6b40691c008cc455865d8cb5508d1",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_65a49b2023696bc9.py",
+   "response_sha256": "3125738d06cb41cc2a34f422c3d73823fab802b6bfab4954603d1abbb4ed9096",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  "prompt_sha256": "c8735336f7eceb971f720e15f998c23fb30c707fa74fa60091ab84b6b3005e6e"
+ },
+ "7ddc0005bc330ecf": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T094410Z-b5cddc",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant removes the explicit 500-character bound on the invalid-output preview and relies on preview_value's default, which isn't shown and may be larger or unbounded. If so, a long invalid output can push the repair prompt past its cap, which breaks the rule that every incorporated dynamic component is bounded.",
+   "response_sha256": "bc011a38e72ca1ee227fc4dd8ef14bee029d24158d2d84834ea9627786e79d9c",
+   "sources": [
+    "Repair prompts shall bound every incorporated dynamic component, including schema identity and preview, invalid output, and validation details.",
+    "Property-generated schema identity, invalid output, and validation detail cannot expand the repair prompt beyond its cap.",
+    "output_preview = preview_value(invalid_output, max_chars=500)",
+    "output_preview = preview_value(invalid_output)"
+   ],
+   "test_focus": "Pass a very long invalid_output, for example a 10,000-character string. Check that the 'Previous response preview' section holds at most 500 characters and that the whole prompt stays within the expected cap.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.618980Z",
+   "answer_sha256": "c56f884ac8495ff7f774b88a4e4098a42e1b0b1e80daa638992ac1d9123b5202",
+   "call_id": "20260929T120217Z-0de944",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "c56f884ac8495ff7f774b88a4e4098a42e1b0b1e80daa638992ac1d9123b5202",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_7ddc0005bc330ecf.py",
+   "response_sha256": "98761897aa7bf46bdd6d8a9f181202a67a838e9b8d0606be2f2642fba62a73a9",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  "prompt_sha256": "fb1debc0e206ec0b484d665a19def3a8c61d46f844cdac8d88c28380bab3df5d"
  },
  "9341379044dfc2f2": {
   "answer": {

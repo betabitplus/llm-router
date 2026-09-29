@@ -1,0 +1,94 @@
+{
+ "6a19c74173ddbaf9": [
+  {
+   "at": "2026-09-29T00:24:30.359429Z",
+   "call_id": "20260929T001300Z-60e9ee",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "28f074cd24c2a8b83c6a8827956dd8f2010fe281b61b0835bae84d903a1a5ccf",
+   "reason": "",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.runtime.limiter.KeyResolver.candidates",
+    "llm_router._internal.runtime.limiter.ResolvedKey"
+   ]
+  },
+  {
+   "at": "2026-09-29T22:33:18.679269Z",
+   "call_id": "20260929T223252Z-f99ce0",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5f50984fff0cc791d02575b8afa9d079896a5261738ba5306fc9ba50bf6dc563",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.runtime.limiter.ResolvedKey"
+   ]
+  }
+ ],
+ "e917251d85f56c41": [
+  {
+   "at": "2026-09-29T00:24:30.359454Z",
+   "call_id": "20260929T001300Z-097bda",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5",
+   "question_sha256": "7f02732e80f430fa43d331670c11ffedfadad3687d0bd4997784f247a52b6418",
+   "reason": "it uses os",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.runtime.limiter.KeyResolver.resolve"
+   ]
+  },
+  {
+   "at": "2026-09-29T10:38:22.576035Z",
+   "call_id": "20260929T094858Z-9f4d0a",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "abaa51c60aa1001da94ecfaa92d5e49e2c388632ec2b4a52d1425c53cd5c4719",
+   "reason": "it uses os",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config"
+   ]
+  },
+  {
+   "at": "2026-09-29T12:02:08.881705Z",
+   "call_id": "20260929T114718Z-344494",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0a0f6a2421feef95799ac421fae7695cc0bbfdf2f45b22e7601b642886fabff3",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.assembly.build_default_config"
+   ]
+  }
+ ]
+}

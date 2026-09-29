@@ -1,0 +1,96 @@
+{
+ "19ce8cfa2ea55f04": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092709Z-67e62b",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement allows a maximum wait equal to the minimum (\"greater than or equal to\"). The mutant rejects max == min, so a valid config now raises ConfigurationError, and the confirmed input shows this.",
+   "response_sha256": "0288b74cc218a1267b8653c0702c491fd5d02f8b516576ecff282dede3d79d48",
+   "sources": [
+    "The configured provider retry minimum wait shall be greater than zero, and the maximum wait shall be greater than or equal to that minimum.",
+    "condition=retry.max_wait_seconds >= retry.min_wait_seconds,",
+    "_require(condition=retry.max_wait_seconds > retry.min_wait_seconds, message='retry max wait is invalid.')"
+   ],
+   "test_focus": "Check that validate_config accepts a retry policy with min_wait_seconds == max_wait_seconds (e.g. 1.0 and 1.0) without raising, while max < min is still rejected.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.616556Z",
+   "answer_sha256": "c9fd285106f233da6e8fefd4015db8b675212b27515564090dea113dc1442b60",
+   "call_id": "20260929T100604Z-b83121",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "c9fd285106f233da6e8fefd4015db8b675212b27515564090dea113dc1442b60",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_retry_wait_bounds_19ce8cfa2ea55f04.py",
+   "response_sha256": "beda132fdbeba0eb3e249c7f95ea87917eb5f373f07ff8dae716ecdd3dafd070",
+   "source": "draft author",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.config.models.BehaviorDefaults"
+   ]
+  },
+  "prompt_sha256": "8741e114c4758a9a5a518ec40747653add313be7d33ef4feee4ad1ff5fba9437"
+ },
+ "e303da2411404c79": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092709Z-79cdaa",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement only says the minimum wait must be greater than zero. The mutant rejects any positive minimum up to 1 second, such as 0.5, which is a valid configuration, so it breaks the stated boundary.",
+   "response_sha256": "fd83e56fac298ba273ed2331b251193be4f6e013bf1375fc517222b4786c13bb",
+   "sources": [
+    "The configured provider retry minimum wait shall be greater than zero, and the maximum wait shall be greater than or equal to that minimum.",
+    "_require(condition=retry.min_wait_seconds > 1, message='retry min wait must be greater than 0.')",
+    "condition=retry.min_wait_seconds > 0,"
+   ],
+   "test_focus": "Check that a retry policy with min_wait_seconds=0.5 and max_wait_seconds=1.0 passes validate_config without an error, and that min_wait_seconds=0 is rejected.",
+   "verdict": "pin"
+  },
+  "operator": "boundary",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.616975Z",
+   "answer_sha256": "85117f2a8e709db3de3a85e5d0cc013acde1fdb8852549fcdc222604972f3294",
+   "call_id": "20260929T100622Z-e783d8",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "85117f2a8e709db3de3a85e5d0cc013acde1fdb8852549fcdc222604972f3294",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_retry_wait_bounds_e303da2411404c79.py",
+   "response_sha256": "6bb7e7a071e0f471105818c61db41ad045704a01b8e2b6a69338fba491471b8c",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config",
+    "llm_router._internal.config.models.RetryPolicy"
+   ]
+  },
+  "prompt_sha256": "7a82e10e22ca2fc1e0485ec4fa57cb2d432d75e94c3803734da9a6d0b7466ff1"
+ }
+}

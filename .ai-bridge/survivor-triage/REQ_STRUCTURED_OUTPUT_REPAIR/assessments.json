@@ -1,64 +1,311 @@
 {
- "9a81553c4311e34e": {
+ "41a277a968c393aa": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=1, structured_output_max_attempts=2, provider_limits=None), catalog=ProviderCatalog())",
-     "plan": "_ExecutionPlan(schema={\"type\": \"integer\"}, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
-     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini', credential=ProviderCredential(key_id=1, env_var='K', value='V'), messages=())",
-     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini', output_text='{}')",
-     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
-    },
+    "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260928T194739Z-04b309",
+    "call_id": "20260928T224354Z-0c4882",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The change replaces `or` with `and`, which causes a truthy `validated.error_message` to evaluate to `'Validation failed.'` instead of its original value, altering the `error_message` passed to `append_repair_message` and returning a different state.",
-    "response_sha256": "6cc9385371298efa0674fdfb078aae6acf214d0ba3219a61a99c883748d8a5c9",
+    "reason": "The fallback string \"Validation failed.\" is unreachable dead code because `_validate_structured_result` always provides a truthy error message when validation fails, ensuring both versions behave identically on all inputs.",
+    "response_sha256": "c472499201c8e1d566c122f49c639d522fb659164921e0a09697bc9e4c6d0765",
     "sources": [
      "    error_message = validated.error_message or \"Validation failed.\"",
-     "    error_message = validated.error_message and 'Validation failed.'",
-     "                error_message=error_message,"
+     "    error_message = validated.error_message"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224915Z-9feb44",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Whenever structured output validation fails, validated.error_message is already populated with a non-empty error string, so the fallback 'Validation failed.' is never used and both versions behave identically.",
+    "response_sha256": "e60781325445ee102e06d3006d85a59b013b5861b57282dbfd775adc60948151",
+    "sources": [
+     "    error_message = validated.error_message or \"Validation failed.\"",
+     "    error_message = validated.error_message"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260928T231156Z-06d6c3",
+    "confidence": 0.45,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The only change is dropping the `or \"Validation failed.\"` fallback, so the two versions diverge only if `_validate_structured_result` can return `valid=False` together with a falsy `error_message`; since that helper's internals aren't shown here, I can't construct a concrete `result`/`plan`/`provider_request` combination that is guaranteed to trigger this (its contract of explaining *why* validation failed suggests it always supplies a message), so I cannot confidently produce a distinguishing input nor rule one out.",
+    "response_sha256": "4706da30e34fe769816ba553ee33618a767db61aa3b16680ef6bf16696b37af9",
+    "sources": [
+     "error_message = validated.error_message or \"Validation failed.\"",
+     "error_message = validated.error_message"
+    ],
+    "verdict": "unsure"
+   }
+  },
+  "prompt_sha256": "37e4ae2053da249731bcd954f0fe6e7044efd71b18770f1609a6e9fa83e2cc37"
+ },
+ "63b7393727f5c29f": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=0, structured_output_max_attempts=0, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=0)",
+     "provider_request": "ProviderRequest(request_id=\"req-1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", credential=ProviderCredential(key_id=1, env_var=\"KEY\", value=\"\"), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", output_text=\"\")",
+     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224354Z-e4ef7d",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version checks the truthiness of `validated.value` instead of the boolean `validated.valid`, which incorrectly triggers the schema repair loop (or an error) when the validation succeeds but the resulting value is falsy (e.g. an empty dictionary, or `None` when no schema is active).",
+    "response_sha256": "e4597816312cfbb9ff9f569ddf5f87abc62b1ab232fc6f3a8c9f05dbb8776aec",
+    "sources": [
+     "    if validated.valid:",
+     "        return _ResultStep(",
+     "    if validated.value:",
+     "        return _ResultStep(state=state, response=build_public_response(result, tool_trace=state.tool_state.steps, structured_data=validated.value))"
     ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=2, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",
-     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=0)",
-     "provider_request": "ProviderRequest(request_id='req-1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-1.5-flash', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='test'), messages=())",
-     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-1.5-flash', output_text='invalid')",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id=\"req1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", credential=ProviderCredential(key_id=1, env_var=\"ENV\", value=\"val\"), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", output_text=\"{}\")",
      "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T194739Z-7d0dac",
+    "call_id": "20260928T224354Z-94d162",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When structured output validation succeeds with a falsy value (such as an empty object or boolean False) or when no schema is active, the original version succeeds because validated.valid is True, whereas the changed version checks validated.value, evaluates it as False, and incorrectly triggers schema repair or raises structured_output_error.",
+    "response_sha256": "fdc7a459e3bbc56fb19a701b9009236aef7feb2c81fe3edd575e673cee44b1b3",
+    "sources": [
+     "    if validated.valid:",
+     "    if validated.value:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=5, provider_limits=ProviderLimits(), limits_by_provider={}), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='req-1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='GOOGLE_API_KEY', value='secret'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='hello')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T224354Z-8da8e9",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5",
+    "problems": [
+     "its source \u00abValidate structured output or report that no schema is active.\u00bb is not in the question"
+    ],
+    "reason": "When plan.schema is None, _validate_structured_result ('report that no schema is active') returns valid=True with value=None, so original's `if validated.valid:` returns a success response while changed's `if validated.value:` treats None as falsy and instead enters the repair-loop branch, returning a _ResultStep with response=None.",
+    "response_sha256": "50acfb94323c10bdf1dddd20e3918ecf1f55dca04e6342980304a3bad6c8bb38",
+    "sources": [
+     "if validated.valid:",
+     "if validated.value:",
+     "Validate structured output or report that no schema is active."
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "e105f3a2a0318ff1e7e1ad73c375dadc03c38676ccf6eeb9e6c5a5f4ae4ff32b"
+ },
+ "868533cd04ee427f": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=1, structured_output_max_attempts=2, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema={'type': 'object'}, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='req1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='KEY', value='VAL'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='invalid')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=None, schema={'type': 'object'}, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224354Z-d17aab",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "If validation fails with a specific error message, the original version passes it to `append_repair_message`, while the changed version always overwrites it with 'Validation failed.'.",
+    "response_sha256": "d9382fe289724c28e091a8289456aae0a25f3529fa3e42c564f00091380941dc",
+    "sources": [
+     "error_message = validated.error_message or \"Validation failed.\"",
+     "error_message = 'Validation failed.'"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224354Z-797394",
+    "confidence": 0.9,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When next_attempts is below structured_output_max_attempts, the original version passes validated.error_message (falling back to 'Validation failed.') to append_repair_message, whereas the changed version unconditionally hardcodes 'Validation failed.', but without the active schema specification to trigger validation failure and distinguish them, or if schema validation produces distinct messages, they differ on repair messages.",
+    "response_sha256": "276d2e71018a84c6c85bf6a9d31e838c45e575a3eed43b90e46fe4d5ff21d375",
+    "sources": [
+     "    error_message = validated.error_message or \"Validation failed.\"",
+     "    error_message = 'Validation failed.'"
+    ],
+    "verdict": "unsure"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=5, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=SchemaSpec(name='Out', json_schema={'type': 'object', 'required': ['x'], 'properties': {'x': {'type': 'string'}}}), tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='X', value='v'), messages=(NormalizedMessage(role='user', parts=(), meta={}),))",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='{}')",
+     "state": "_ExecutionLoopState(messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T224354Z-ff7bfa",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "The change replaces `error_message = validated.error_message or \"Validation failed.\"` with a hardcoded `'Validation failed.'`, so whenever `_validate_structured_result` returns a truthy custom `error_message` (e.g. a schema-mismatch description) and the retry path is taken, the two versions feed different `error_message` text into `append_repair_message`, producing different `state.messages` in the returned `_ResultStep`.",
+    "response_sha256": "101b2ce00611fee6bb28d3f77ee383369efd84304ba688fae5edf97d728487e8",
+    "sources": [
+     "error_message = validated.error_message or \"Validation failed.\"",
+     "error_message = 'Validation failed.'",
+     "messages=append_repair_message(state.messages, request=provider_request, schema=plan.schema, result=result, error_message=error_message)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "64ff0f85b9ed2272883b93817b53c9c958cd55bdef5608c2fe101bbd8b16cc8c"
+ },
+ "8d730e921a4ddffa": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", credential=ProviderCredential(key_id=1, env_var=\"x\", value=\"y\"), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", output_text=\"ok\")",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224354Z-658563",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When validation succeeds (e.g., because no schema is active), the original version correctly sets structured_data to the extracted data `validated.value`, whereas the changed version mistakenly sets it to the boolean flag `validated.valid`.",
+    "response_sha256": "0bced81a9c25d3ee8872161ffa0f8493b239fb41c8417e1290bf38ce8d1b5564",
+    "sources": [
+     "    if validated.valid:",
+     "        return _ResultStep(state=state, response=build_public_response(result, tool_trace=state.tool_state.steps, structured_data=validated.valid))"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='req-1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), schema=None)",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='test')",
+     "state": "_ExecutionLoopState(messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_state=ToolLoopState(), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224354Z-ecce5e",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When validation fails with an error message, the changed version replaces validated.error_message with 'Validation failed.' via the logical and operator instead of preserving it with or.",
-    "response_sha256": "b75e81e8f5607a6153e9b936da3a8a4df826f58f69bba40e4f8d7367c34844ad",
+    "reason": "When validation succeeds, the original version passes the validated output value to build_public_response, whereas the changed version incorrectly passes the boolean validation flag.",
+    "response_sha256": "5952d34ada159e72abb45f2f32c8b8225922b35d1df19f5f2949afa6d1ed4b56",
+    "sources": [
+     "                structured_data=validated.value,",
+     "        return _ResultStep(state=state, response=build_public_response(result, tool_trace=state.tool_state.steps, structured_data=validated.valid))"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=ProviderLimits(), limits_by_provider={}), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='X', value='y'), messages=(NormalizedMessage(role='user', parts=(), meta={}),))",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='hello')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T224354Z-8fee98",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "With plan.schema=None, _validate_structured_result reports 'no schema active' i.e. validated.valid=True but validated.value is not the boolean True itself (e.g. None or the raw text); the original builds the response with structured_data=validated.value while the changed code passes structured_data=validated.valid, so the returned LLMRouterResponse.structured_data differs (e.g. None vs True) even though both branches take the 'valid' path.",
+    "response_sha256": "c0f34e9c8b12e5d013efa8e1327c8ee6d6404d9144cf9ad80aacaf09421269dc",
+    "sources": [
+     "structured_data=validated.value",
+     "structured_data=validated.valid"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "c4b51a42db4e817dbab410bf6d3e93b87196cff0994f7228fc9c221d538b5761"
+ },
+ "9a81553c4311e34e": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=0, structured_output_max_attempts=3, provider_limits=None, limits_by_provider={}), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=0)",
+     "provider_request": "ProviderRequest(request_id='1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini', credential=ProviderCredential(key_id=1, env_var='K', value='V'), messages=[])",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini', output_text='bad json')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224915Z-cb52e5",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change replaces `or` with `and` when evaluating `error_message`, which completely alters the logic: it now sets the message to 'Validation failed.' when an actual error message exists, and to a falsy value when it does not.",
+    "response_sha256": "8a01c38d7d45dec53da6c159c07f3f007d135b7887bfd3d1f915f472f182e7be",
     "sources": [
      "error_message = validated.error_message or \"Validation failed.\"",
      "error_message = validated.error_message and 'Validation failed.'"
     ],
     "verdict": "distinct"
    },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224354Z-c01163",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When structured validation fails, validated.error_message is 'Validation failed.', making both the original disjunction and the mutated conjunction evaluate identically to 'Validation failed.' across all inputs.",
+    "response_sha256": "e6fc90c64dec96b2e1670ded4faaeb9abc697e3077254348fcefa7d024e9f50f",
+    "sources": [
+     "    error_message = validated.error_message or \"Validation failed.\"",
+     "    error_message = validated.error_message and 'Validation failed.'"
+    ],
+    "verdict": "equivalent"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.OPENROUTER, default_model=Model.DEEPSEEK_V3, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=5, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",
      "plan": "_ExecutionPlan(schema=SchemaSpec(), tool_registry=None, tool_choice=None, max_tool_rounds=1)",
-     "provider_request": "ProviderRequest(request_id='req-1', provider=Provider.OPENROUTER, model=Model.DEEPSEEK_V3, provider_model='deepseek-v3', credential=ProviderCredential(key_id=1, env_var='OPENROUTER_API_KEY', value='secret'), messages=(NormalizedMessage(role='user', parts=(), meta={}),))",
-     "result": "ProviderResult(data={}, provider=Provider.OPENROUTER, model=Model.DEEPSEEK_V3, provider_model='deepseek-v3', output_text='{}')",
-     "state": "_ExecutionLoopState(messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=SchemaSpec(), structured_attempts=0)"
+     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='X', value='k'), messages=())",
+     "result": "ProviderResult(data={'foo': 'not-an-int'}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='not-an-int')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=SchemaSpec(), structured_attempts=0)"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T155258Z-43562b",
+    "call_id": "20260928T224354Z-9bbfdc",
     "confidence": 0.65,
     "model": "claude-sonnet-5",
     "problems": [],
-    "reason": "Swapping `or` for `and` means: when validation fails with a real non-empty message m != 'Validation failed.', original keeps m for the repair prompt but changed discards m and always substitutes the literal 'Validation failed.', yielding different state.messages/_ResultStep content for the same failing schema result.",
-    "response_sha256": "873e038c676e9b8f45ec5a39c0f93e174b6ab4b03a773a3d50d6d0fa1300412b",
+    "reason": "`or` was changed to `and`: original keeps a truthy validated.error_message, changed discards it and substitutes 'Validation failed.' instead; so whenever validation fails with a real non-empty message (the normal schema-mismatch case), the repair message appended to state.messages differs between versions.",
+    "response_sha256": "8fd29763e8c38d75e21c02f6e2eee93fced38a7c6ad2cd1150ddce7ac1f00f74",
     "sources": [
      "error_message = validated.error_message or \"Validation failed.\"",
      "error_message = validated.error_message and 'Validation failed.'"
@@ -66,6 +313,136 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "b1ae3079ecfd938cb00c895586f669efdb6e2b86b7ccaa345ec2020bb5b3a1dc"
+  "prompt_sha256": "80b2113683df806438af016adf5e1b01a20047eff847623e767dac35b01b200b"
+ },
+ "be77717ccb35232b": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"a\", credential=ProviderCredential(key_id=1, env_var=\"A\", value=\"a\"), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"a\", output_text=\"\")",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=(1,)), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224354Z-5b1b12",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version passes the tool trace to `build_public_response`, but the changed version omits it, leading to a different response when there are tool steps.",
+    "response_sha256": "991b15324725eb8c32d524901baefbfc8c5fdf4d23d14029829e7bb35fe93694",
+    "sources": [
+     "            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),",
+     "        return _ResultStep(state=state, response=build_public_response(result, structured_data=validated.value))"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224354Z-04f637",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "In the structured output success branch, build_public_response defaults tool_trace to an empty sequence matching state.tool_state.steps, so omitting tool_trace produces an identical response.",
+    "response_sha256": "6a9c74cc50ebb679ef0f33bb1b10dd6db3e7eb810e05d5c8cababafde14c1dce",
+    "sources": [
+     "                tool_trace=state.tool_state.steps,",
+     "        return _ResultStep(state=state, response=build_public_response(result, structured_data=validated.value))"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='r1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='GOOGLE_API_KEY', value='k'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='hello')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=(ToolStep(),)), tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T224354Z-38e38b",
+    "confidence": 0.75,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "With plan.schema=None the validation trivially succeeds (validated.valid=True), and the original code calls build_public_response(result, tool_trace=state.tool_state.steps, ...) while the changed code calls build_public_response(result, structured_data=validated.value) without tool_trace, so whenever state.tool_state.steps is non-empty the two versions produce an LLMRouterResponse with a different tool_trace (non-empty vs the default ()).",
+    "response_sha256": "3d4ae1124ca7885a761b6f10a6f3c917abc3985f02beb7cc41952b432227ec89",
+    "sources": [
+     "return _ResultStep(\n            state=state,\n            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),\n        )",
+     "return _ResultStep(state=state, response=build_public_response(result, structured_data=validated.value))"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "2b98b65db569a293fa20262a17e7e8ede88815b775b91ab691ab4ee67943400c"
+ },
+ "ea1a8657cd65d4b1": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=SchemaSpec(), tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", credential=ProviderCredential(key_id=1, env_var=\"x\", value=\"y\"), messages=())",
+     "result": "ProviderResult(data={\"key\": \"value\"}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", output_text='{\"key\": \"value\"}')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(), tool_choice=None, tool_registry=None, schema=SchemaSpec(), structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224915Z-106833",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version drops the `structured_data=validated.value` argument when calling `build_public_response`, causing any successfully parsed structured data to be lost and default to `None`.",
+    "response_sha256": "4b895a99554f7f15d6b6af1e0fc9775ff4785cedf098e741a5473b299b7abe62",
+    "sources": [
+     "            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),",
+     "        return _ResultStep(state=state, response=build_public_response(result, tool_trace=state.tool_state.steps))"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=SchemaSpec(), tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='req', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='{}')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=SchemaSpec(), structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260928T224915Z-f37d4a",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version passes structured_data=validated.value to build_public_response upon successful validation, whereas the changed version omits structured_data, resulting in a response with None instead of the validated data.",
+    "response_sha256": "73fc3a518db01e5d7abea3787412d7d81f1fbedcd432ad5e3e2d25a458f7c4ef",
+    "sources": [
+     "            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),",
+     "        return _ResultStep(state=state, response=build_public_response(result, tool_trace=state.tool_state.steps))"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=3, provider_limits=ProviderLimits()), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=SchemaSpec(name='Answer', json_schema={'type': 'object', 'properties': {'answer': {'type': 'integer'}}, 'required': ['answer']}), tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id='req-1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='secret'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), schema=SchemaSpec(name='Answer', json_schema={'type': 'object', 'properties': {'answer': {'type': 'integer'}}, 'required': ['answer']}))",
+     "result": "ProviderResult(data={'answer': 42}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', output_text='{\"answer\": 42}')",
+     "state": "_ExecutionLoopState(messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_state=ToolLoopState(steps=()), tool_choice=None, tool_registry=None, schema=SchemaSpec(name='Answer', json_schema={'type': 'object', 'properties': {'answer': {'type': 'integer'}}, 'required': ['answer']}), structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260928T224354Z-6b7e6a",
+    "confidence": 0.65,
+    "model": "claude-sonnet-5",
+    "problems": [],
+    "reason": "Original passes structured_data=validated.value to build_public_response on success, attaching the validated schema value; changed version omits that argument, so structured_data silently defaults to None even when validation succeeded with a real extracted value, making the returned LLMRouterResponse differ when a schema is present and validation succeeds.",
+    "response_sha256": "ef4c8f7913f3bbceae87261881a86e1f383b0b14c3898ad79695e2158dba6a12",
+    "sources": [
+     "response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),",
+     "return _ResultStep(state=state, response=build_public_response(result, tool_trace=state.tool_state.steps))"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "228aeefdb9ab47cb990f238f642163cc9d5177abfbc7d1fbd206f267c71ce335"
  }
 }

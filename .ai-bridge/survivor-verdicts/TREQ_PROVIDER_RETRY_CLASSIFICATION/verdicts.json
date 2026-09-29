@@ -1,4 +1,142 @@
 {
+ "103e134c5bae2419": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000310Z-7bfb7d",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant returns the adapter object and never calls adapter.execute. No provider call runs, so a temporary provider failure can never be retried, and the caller gets the wrong object back. That breaks the promise that temporary failures are eligible for retry.",
+   "response_sha256": "38bd0f4358bcf764e6948ef463452de4eabb7f99a49e32ea932ce95dd4e150b6",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "return adapter.execute(request)",
+    "A transport exception type is retryable while an unrelated retry-like exception is rejected."
+   ],
+   "test_focus": "Use a fake adapter that raises a retryable transport error once and then returns a ProviderResult. The test must check that _execute_provider_sync calls execute twice and returns that ProviderResult.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.924441Z",
+   "answer_sha256": "a066182bbfd9b9de26e2e90bb3a824edf0eff03cc67c93a076fb03a31450cc7c",
+   "call_id": "20260929T114737Z-1614c2",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "a066182bbfd9b9de26e2e90bb3a824edf0eff03cc67c93a076fb03a31450cc7c",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_103e134c5bae2419.py",
+   "response_sha256": "39f64c3646229b18ef8678d3fd23360d54cca37e6bdf69f5e3b2c1dacb81b8cf",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor.build_provider_retrying"
+   ]
+  },
+  "prompt_sha256": "2456f4280cea8b6565c335a877f2e1671718db77a8aadc39264b5fce1126d73e"
+ },
+ "1044bf391b06d486": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000310Z-7e50bb",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only makes the retry-exhausted log event fire for permanent failures too. Retry eligibility is still decided by build_provider_retrying, and every failure is still converted and re-raised the same way. The requirement and its criteria cover retry classification, not log events.",
+   "response_sha256": "25243c9ae97d40fde407d7167e184547c96c3afda4ddcc5bf6ad9037657fd4af",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "if is_retryable_provider_error(exc):",
+    "if True:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "1436a493f22f51d8735cf707e384911beac0c4f0cfbb52c08a141e122b889539",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093545Z-b54199",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "1436a493f22f51d8735cf707e384911beac0c4f0cfbb52c08a141e122b889539",
+   "reason": "The mutation only affects whether a telemetry log for exhausted retries is emitted for permanent errors. Because the requirements and verification criteria only govern the execution of retries and the classification logic for determining what to retry, and do not mention observability or logging side-effects, this change does not break what the requirement asks for.",
+   "response_sha256": "c448452a8fb559c8585b62afabc5734597efa371a33c9e197b3eeecaa2c86334",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "if is_retryable_provider_error(exc):",
+    "if True:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "1cb6c482c58e73ea": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000321Z-542a64",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant swallows every provider failure, whether permanent or retry-exhausted, and raises a generic RuntimeError instead of the classified boundary error. Callers can then no longer tell a permanent failure from a transient one by explicit semantics, which the requirement's retry and permanent split depends on.",
+   "response_sha256": "768d19dde2242856b5590f8be68167edee7a323eef8b81a4d2169a08512fb8dd",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "raise _provider_boundary_error(exc, request=request) from exc",
+    "pass"
+   ],
+   "test_focus": "Make the adapter raise a permanent HTTP status error, such as 400, and then a transport error that exhausts retries. In both cases, assert that the call raises the provider boundary error chained from the original exception, keeping its status and type semantics, and not a generic RuntimeError.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.926164Z",
+   "answer_sha256": "cd13370ee904e5da406de338e664d5d40e89c8ae6ca197b2a5a865eac0343692",
+   "call_id": "20260929T114740Z-42c60e",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "cd13370ee904e5da406de338e664d5d40e89c8ae6ca197b2a5a865eac0343692",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_1cb6c482c58e73ea.py",
+   "response_sha256": "69f9410bb441c2d4b973614bc25f812fd1ddc5938fc9ffa94dad548b2258c42c",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor._provider_boundary_error"
+   ]
+  },
+  "prompt_sha256": "d243ada9e5fce7f44d59901441d7f0ce8080482dfebae67093c0187e0006cdac"
+ },
  "2f11d5445216910c": {
   "answer": {
    "backend": "claude-cli",
@@ -33,6 +171,151 @@
   },
   "prompt_sha256": "6edef6d97783ef3b085a649e8a33b75f69eff19ee18a5160f2854f20dfc599bc"
  },
+ "307acf14e91902cf": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000321Z-57934e",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "This line runs only if the retry loop ends without returning and without raising. A tenacity-style retry loop either returns `adapter.execute(request)` or raises once it stops retrying, so the guard can't be reached and no input tells the versions apart. This assumes `build_provider_retrying` (not shown) returns a standard tenacity-style retrier. Retry classification is untouched.",
+   "response_sha256": "96f65d645612fc771a8431645d3ad0e603a5525cec2d7e5a2f387b286686708e",
+   "sources": [
+    "msg = \"Provider retry loop ended without a result.\"",
+    "raise RuntimeError(msg)",
+    "Retry classification shall use explicit status and exception semantics rather than message substrings."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "statement",
+  "prompt_sha256": "dfeea60b5280fafea6ca4d01d7a1ca6e660cacdb26bf3b7419762f5815b1f94f",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093627Z-33d9e7",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "dfeea60b5280fafea6ca4d01d7a1ca6e660cacdb26bf3b7419762f5815b1f94f",
+   "reason": "The mutation removes a defensive `RuntimeError` that guards against the retry loop exiting without returning or raising an exception. This fallback behavior is an implementation detail and does not affect how provider failures are classified as temporary or permanent according to the requirements.",
+   "response_sha256": "f42f58004b2c021d206e985eaa71f56cec33f5c8be3bc36ce5da3567e5c40e4f",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "msg = \"Provider retry loop ended without a result.\"",
+    "raise RuntimeError(msg)",
+    "pass"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
+ "3c58e8e9e5eaec8a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000321Z-9bb38e",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only flips which errors trigger the diagnostic log_retry_exhausted event. Retry eligibility is still decided by build_provider_retrying, and the same boundary error is raised in both versions. Neither the requirement nor its verification criteria ask about log events, so the difference is outside what they check.",
+   "response_sha256": "9e78aba2fd575c9773cc86fc34b06ca5449c5889f7a20b09e4cab10396952269",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "if not is_retryable_provider_error(exc):",
+    "raise _provider_boundary_error(exc, request=request) from exc"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "negation",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.927349Z",
+   "answer_sha256": "5e6cc63a553c1c64ffdb2d8cdbb7b375d34ee1fe4006d6870532acd0c7a0a97e",
+   "call_id": "20260929T114741Z-e506d6",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "5e6cc63a553c1c64ffdb2d8cdbb7b375d34ee1fe4006d6870532acd0c7a0a97e",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_3c58e8e9e5eaec8a.py",
+   "response_sha256": "5b2472ac2f25bef66cce26226fd477285a2d6e8bfc506a17a7dada14c9e13375",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor"
+   ]
+  },
+  "prompt_sha256": "5d179c481661ccdb124d53a37afa82bf277dce3d84d64eada0385d8b9789250f",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093627Z-c18ea9",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "5d179c481661ccdb124d53a37afa82bf277dce3d84d64eada0385d8b9789250f",
+   "reason": "The mutation inverts the error check for logging, causing permanent errors to erroneously emit a retry exhausted event while ignoring actual exhausted transient errors. This breaks the observable distinction between temporary and permanent failures as required by the feature.",
+   "response_sha256": "6494f267ebcab76d66910a33009d760e7fccf5af7f08e5a73a470e427cdbcfa3",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "if is_retryable_provider_error(exc):",
+    "if not is_retryable_provider_error(exc):"
+   ],
+   "test_focus": "A test must simulate a permanent provider failure and verify that no retry exhausted event is logged, and conversely simulate an exhausted transient failure to verify the event is emitted.",
+   "verdict": "pin"
+  }
+ },
+ "4bcf2fc831eaf45c": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T145640Z-be2ca6",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the context_getter, so per-attempt retry log records lose their request context. Retry eligibility, attempts, results and raised errors stay the same. None of the listed requirements or criteria asks for log context, and the requirement only covers how failures are classified for retry.",
+   "response_sha256": "c211db59b8f7e3ec162547054eca70ca24edb89bd3fdf3ccfe8382a57218ba1f",
+   "sources": [
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "context_getter=lambda: _retry_context(request),",
+    "retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "d3f2a1db47d220d7c86a61a1594e0e0c90dfc030bf728f8a1e64548e5613a438",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T145648Z-fe2c09",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "d3f2a1db47d220d7c86a61a1594e0e0c90dfc030bf728f8a1e64548e5613a438",
+   "reason": "The mutation removes the context getter for retry logging, altering the logging metadata, but this does not affect how failures are classified as temporary or permanent, which is the sole focus of the requirement.",
+   "response_sha256": "ce3c67f64ce1cd8d6368856127feea2ec1d7544561a509bd069cf005463afb8e",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
  "5a829211adec3347": {
   "answer": {
    "backend": "claude-cli",
@@ -66,6 +349,236 @@
    "source": "draft author"
   },
   "prompt_sha256": "8542f848fc6362012c32cc80adfac16406d092a64768aa2b71c77f4e8b582e90"
+ },
+ "77d6a6e9eef042e8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000619Z-cc6621",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Retryable statuses such as 429 now produce a decision with status_code None. The decision no longer records the explicit status it was classified from, and it is inconsistent with every other branch. The classification is the same, but the evidence the technical requirement relies on is lost.",
+   "response_sha256": "e92401e8fcdc24a87798db8181f3dff97088851e1bbbe038baf0ef8b0a06ec91",
+   "sources": [
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
+    "return RetryDecision(classification=RetryClassification.RETRYABLE, reason='retryable_status')"
+   ],
+   "test_focus": "For a retryable status such as 429, assert that the decision is RETRYABLE with reason 'retryable_status' and that status_code equals the input status.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.558320Z",
+   "answer_sha256": "6ff9e90cd084dab3746998aae4922df130ae275a5e8c6be18019ade9baa51166",
+   "call_id": "20260929T105808Z-f0646d",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "6ff9e90cd084dab3746998aae4922df130ae275a5e8c6be18019ade9baa51166",
+   "effort": "",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_77d6a6e9eef042e8.py",
+   "response_sha256": "dc07370ef013ac5707eb827ccc8d5b4090aea0957dadf434508416617594394a",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.providers.retry.classify_status_code",
+    "llm_router._internal.providers.retry.RetryDecision",
+    "llm_router._internal.providers.retry.RetryClassification"
+   ]
+  },
+  "prompt_sha256": "3c7f162445b8804ec1d119b31b5f33845473e731b1a9a55895a27c0748fc2c9f"
+ },
+ "SM-11502F33": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191216Z-61a51f",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant makes retry decisions depend on the exception's exact class name. Transport exception subclasses, such as ConnectionResetError or ConnectionRefusedError, which the helper most likely accepts, would become NON_RETRYABLE, so temporary provider failures would stop being retried. The requirement forbids this: retry classification must use explicit exception semantics. The candidate inputs were rejected only because they are constructor calls, not plain values; no one showed the versions behave the same on them.",
+   "response_sha256": "650b5fa83f67ac6f965522377e38fb7a9745eb9c6439878079ece00c099651c9",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "A transport exception type is retryable while an unrelated retry-like exception is rejected.",
+    "if type(exc).__name__ in {\"TimeoutError\", \"ConnectionError\"} and _is_retryable_transport_exception(exc):"
+   ],
+   "test_focus": "Check that a transport exception subclass, such as ConnectionResetError(), is classified RETRYABLE with reason \"transport_exception\".",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:15:34.168096Z",
+   "answer_sha256": "be0d4e60737bb973f9a8b6e28823f29536842a49d1a684f296da04c7804c3c65",
+   "call_id": "20260929T191342Z-600f10",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "be0d4e60737bb973f9a8b6e28823f29536842a49d1a684f296da04c7804c3c65",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_11502f33.py",
+   "response_sha256": "14fb7f9558dd3e5e54bf69cfb467518811cd701a439f9fc62877b2c03a20aeaf",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.providers.retry.classify_exception",
+    "llm_router._internal.providers.retry.RetryClassification"
+   ]
+  },
+  "prompt_sha256": "a142ff530b281e5b519704b358611abc424ea059343b017504c72adf1151e91b"
+ },
+ "SM-AD46F34B": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191216Z-a88f9b",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Moving the checks around only changes a result if a status code is in _NON_RETRYABLE_STATUS_CODES and is also >= _SERVER_ERROR_STATUS_MIN. The non-retryable set is labelled \"caller_or_auth_status\", which points to 4xx codes only, and a symbolic search of 298 paths found no input where the two versions differ. So every status code still gets the same classification and reason.",
+   "response_sha256": "dd7cfaa0ee2c72299a6be8366418d3f0ef7cc11c5545608ed1775e229d8d3fb3",
+   "sources": [
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
+    "if status_code >= _SERVER_ERROR_STATUS_MIN:",
+    "reason=\"caller_or_auth_status\","
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "08a04f5add75e21ce5ae6527649c7732ab3b25fc43bd6ac0294884373ba290de",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T201201Z-2b4718",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "08a04f5add75e21ce5ae6527649c7732ab3b25fc43bd6ac0294884373ba290de",
+   "reason": "The sets of non-retryable and server error HTTP statuses are mutually exclusive, so swapping the order of these conditionals does not alter the output for any input, fulfilling the requirement for status classification identically.",
+   "response_sha256": "6f9d000b8a6efd98c603ca1a19744a699d274cd5d133df4ddb29bffb67529e89",
+   "sources": [
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
+    "if status_code >= _SERVER_ERROR_STATUS_MIN:",
+    "if status_code in _NON_RETRYABLE_STATUS_CODES:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "SM-F4AC62D8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191216Z-a9cc53",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant makes the retry-exhausted decision depend on message text, which the requirement forbids. An unrelated exception whose message says \"retry\" or \"timeout\" now emits the llm_router.provider.retry.exhausted event, so a permanent failure is reported as a transient one that ran out of retries. The log output differs even though the raised error is the same.",
+   "response_sha256": "f12d48c1e270acf9ce5c408cee4261da3fc900e7c0e21e6d2486d27714ba0eb9",
+   "sources": [
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "A transport exception type is retryable while an unrelated retry-like exception is rejected.",
+    "permanent failures shall not be retried as if they were transient.",
+    "or \"retry\" in message",
+    "or \"timeout\" in message",
+    "message = str(exc).lower()"
+   ],
+   "test_focus": "Have the adapter raise an unrelated non-transport exception whose message contains \"retry\" or \"timeout\", and assert that no llm_router.provider.retry.exhausted event is logged while the boundary error is still raised.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:15:34.168888Z",
+   "answer_sha256": "19771ee29edd4689352eed48b45500d71037f209608317502ebb1b99a67212c7",
+   "call_id": "20260929T191342Z-b0aa84",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "19771ee29edd4689352eed48b45500d71037f209608317502ebb1b99a67212c7",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_f4ac62d8.py",
+   "response_sha256": "b122b12140d0fbe39a7ee51299600a07fdd7be31b34497195fe6e06dd40ba162",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor"
+   ]
+  },
+  "prompt_sha256": "f8ce6b3fc479f14533167f9d06470b99a5e7ce58156294595471633de1caa293"
+ },
+ "bc22a7f5ad518a96": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000619Z-1f6701",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant never calls the adapter and returns None, so a provider failure can never occur or be retried. That removes the retry behaviour the requirement asks for, and it also swallows the real provider result.",
+   "response_sha256": "66801cfc0a1dd8f6e4e31f2dfd9b0a28a15795488342616de70408e6eb0bc50c",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "return adapter.execute(request)",
+    "return None"
+   ],
+   "test_focus": "Use an adapter that raises a retryable transport error once and then succeeds. Check that `_execute_provider_sync` calls the adapter twice and returns the adapter's result, not None.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.928067Z",
+   "answer_sha256": "dba56eab31aa8d165b460523ebdff7477759a3c3d4c9c491da0ed2a7f47b7f65",
+   "call_id": "20260929T114742Z-95c5d9",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "dba56eab31aa8d165b460523ebdff7477759a3c3d4c9c491da0ed2a7f47b7f65",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_bc22a7f5ad518a96.py",
+   "response_sha256": "52050d2311a1e05e7066a5b634f2c5bd77b04197dc93eee1c1e688b171226cdb",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ]
+  },
+  "prompt_sha256": "032b87f8fe96610f97273fcd4afafb0da840ad2958848d7af5b82cf0d49031b1"
  },
  "d8f7199ce8dc26c9": {
   "answer": {
@@ -105,6 +618,97 @@
    ],
    "test_focus": "",
    "verdict": "equivalent"
+  }
+ },
+ "dad9cc03506dec74": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000619Z-f02d23",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant calls self.execute instead of the resolved provider adapter, so the adapter is never invoked. Temporary provider failures from the adapter are never retried, and every call fails through the boundary error path. This breaks the requirement that temporary failures be eligible for retry.",
+   "response_sha256": "c82c37686152e3165fed1aab568a6d85c510fc5c03d4f87e6498a81d3d871c98",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "adapter = self._adapter_for(request)",
+    "adapter = self",
+    "A transport exception type is retryable while an unrelated retry-like exception is rejected."
+   ],
+   "test_focus": "Run _execute_provider_sync with a stub adapter that first raises a retryable transport exception and then returns a result; assert the adapter is called again and its result is returned.",
+   "verdict": "pin"
+  },
+  "operator": "method",
+  "pin": {
+   "adopted_at": "2026-09-29T12:02:08.929099Z",
+   "answer_sha256": "b5ac16a5ba65b5cf4e45f31c55dddbd20ec73cdc4615770fbe2b60b6b70a3fea",
+   "call_id": "20260929T114745Z-a610e1",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "d4367ff84e26582e1a1098fe95cd1978148a4d6d2c5655bbe27c2fa7a90f309c",
+   "effort": "medium",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_dad9cc03506dec74.py",
+   "response_sha256": "6c37db5ba05b6d0b894f837126618d0441f087170a777d805c5797903ae362b6",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.executor",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model"
+   ]
+  },
+  "prompt_sha256": "22a849b7e8f0d812732a8eda94603d7d5435111502e7aeee5470bbb98341bbae"
+ },
+ "f0760cfe8c668b1a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000642Z-d12b58",
+   "confirmed": true,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For status 400, the mutant still classifies the status as NON_RETRYABLE and gives the same reason. The only difference is that the decision no longer records the diagnostic status_code, and no requirement or criterion asks for that metadata.",
+   "response_sha256": "d38b55247c9cf04863111b39993ad4601ddc27c2f6ca299a0c6cb6dfdbd9ac4b",
+   "sources": [
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "return RetryDecision(classification=RetryClassification.NON_RETRYABLE, reason='caller_or_auth_status')"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "2e2801e9abbed5d1652c7bce8740106a19d03431962d4437e56bd5c865e94f57",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T093656Z-705305",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "2e2801e9abbed5d1652c7bce8740106a19d03431962d4437e56bd5c865e94f57",
+   "reason": "The requirement specifies that the classification logic must use status semantics, which the mutant still accomplishes. Omitting the exact status code from the returned decision object for non-retryable errors is an implementation detail not governed by the stated requirements.",
+   "response_sha256": "e07d97e4406935dbfce2184203c8f209533e1cf43e38f943e2b5b94c458d4c83",
+   "sources": [
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
+    "return RetryDecision(classification=RetryClassification.NON_RETRYABLE, reason='caller_or_auth_status')",
+    "status_code=status_code,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
   }
  },
  "f49ab970d70faf89": {

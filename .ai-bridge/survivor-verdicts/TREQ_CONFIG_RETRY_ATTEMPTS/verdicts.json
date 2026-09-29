@@ -1,0 +1,97 @@
+{
+ "a02b9c41521c0e84": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092631Z-6d2a34",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement only asks for at least one retry attempt, so max_attempts=1 is a valid value. The mutant rejects it with a ConfigurationError, which execution confirmed, so a valid configuration now fails. The existing tests only check that counts below one are rejected, so nothing catches this boundary.",
+   "response_sha256": "ddc77d5cb994029f060483666ef7532b19762de54b42c1f4aba1ae6d0307f04c",
+   "sources": [
+    "The effective retry maximum-attempt count shall be at least one.",
+    "A provider-retry maximum-attempt count below one is rejected.",
+    "_require(condition=retry.max_attempts > 1, message='retry max attempts must be at least 1.')",
+    "condition=retry.max_attempts >= 1,"
+   ],
+   "test_focus": "Check that validate_config accepts a config with retry_policy.max_attempts=1 without raising, and still raises ConfigurationError when it is 0.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.615516Z",
+   "answer_sha256": "94b21631cbf220e0bb8d8be7d747879bc381d93586d56d6a3234b4e0c1fff082",
+   "call_id": "20260929T100528Z-7a1f97",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "94b21631cbf220e0bb8d8be7d747879bc381d93586d56d6a3234b4e0c1fff082",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_retry_attempts_a02b9c41521c0e84.py",
+   "response_sha256": "0d6a82fb48913374078b5f7927932ca1b81c0cdeaaa5df32531f12b385d698f0",
+   "source": "draft author",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.config.models.RetryPolicy"
+   ]
+  },
+  "prompt_sha256": "395ba4f39682dcc57420cc6e6892bae43f2a3979931d29f022d7f603d5a8186c"
+ },
+ "a6c77976ba2d4065": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092709Z-bc172d",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement makes one the smallest allowed retry maximum-attempt count, so a config with max_attempts=1 is valid. The mutant rejects it with a ConfigurationError, and execution confirmed this. Current tests only check that values below one are rejected, so nothing catches a valid boundary value being rejected.",
+   "response_sha256": "298582cc55304e4c246e43f55a46fef3bc217f17b500de011b2a9933289dfd31",
+   "sources": [
+    "The effective retry maximum-attempt count shall be at least one.",
+    "A provider-retry maximum-attempt count below one is rejected.",
+    "_require(condition=retry.max_attempts >= 2, message='retry max attempts must be at least 1.')",
+    "condition=retry.max_attempts >= 1,"
+   ],
+   "test_focus": "Check that validate_config accepts an otherwise valid config with retry max_attempts=1 without raising, and rejects max_attempts=0 with a ConfigurationError.",
+   "verdict": "pin"
+  },
+  "operator": "boundary",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.615949Z",
+   "answer_sha256": "b098b4d8bf5e53d2ba95d5e0d4e7318103b12e794ffd98bc7b237da53ad22542",
+   "call_id": "20260929T100553Z-356f92",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "b098b4d8bf5e53d2ba95d5e0d4e7318103b12e794ffd98bc7b237da53ad22542",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_retry_attempts_a6c77976ba2d4065.py",
+   "response_sha256": "9b976c94311f414c384fb71f5e730822e8f67d5948b9af6e78048c4d3d076027",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  },
+  "prompt_sha256": "722b9c64bce16146d86a007d074bffc1a9ae0eddefa2f308080469a2de6a524f"
+ }
+}

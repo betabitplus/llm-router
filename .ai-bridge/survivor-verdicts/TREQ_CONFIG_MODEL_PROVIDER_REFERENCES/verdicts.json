@@ -1,0 +1,41 @@
+{
+ "de2cbbbd9acd877b": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092631Z-fd8362",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The only change is passing the mapping itself where `bool(provider_models)` was passed. `_require` treats its condition as raise-if-falsy, so an empty mapping is still rejected and a non-empty one still passes. No config can tell the two versions apart.",
+   "response_sha256": "2f4e58c722514fcc6bd5ccf5ec72f95c30c62bb4b704f0c3441af8d87b46b651",
+   "sources": [
+    "condition=bool(provider_models),",
+    "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")",
+    "Empty mappings and references to undeclared providers are both rejected."
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "conversion",
+  "prompt_sha256": "5c6ae86213af886b02c2e1e79f89c76f63adbec4560ece0ae8e1460e340083c7",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092656Z-ec71e3",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "5c6ae86213af886b02c2e1e79f89c76f63adbec4560ece0ae8e1460e340083c7",
+   "reason": "Passing a mapping directly to a condition check evaluates its truth value identically to passing its explicit boolean conversion `bool()`, making the two versions behaviorally indistinguishable.",
+   "response_sha256": "89308ca31dd7a581332743169a48509cbcf12102fab0f441baaa5a0f89c72231",
+   "sources": [
+    "Every declared model shall map to at least one provider, and every provider referenced by a model mapping shall be present in the effective provider catalog.",
+    "condition=bool(provider_models),",
+    "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ }
+}

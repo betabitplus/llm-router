@@ -1,4 +1,44 @@
 {
+ "0912db8ce4b47a9a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092235Z-1b2dc5",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For an Enum, calling Model(member) returns that same member. So when the mutant skips the isinstance shortcut, it still resolves to the same value, and the declaration check that follows sees the same result. Strings and invalid inputs take the same try/except path in both versions, so undeclared models are still rejected before provider execution.",
+   "response_sha256": "5bbe82ba448a85a847415b05f1c6166e71dc0a69cd2918f5d8508e6a6e3d3a36",
+   "sources": [
+    "A requested model shall be accepted only when it is declared by the effective configuration.",
+    "if isinstance(model, Model):",
+    "if False:",
+    "resolved = Model(model)"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "a86829039363ec94c9cadf529aa9dd1fd0c7350c7bd467df6c00af4e2e5c7455",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T092618Z-526602",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "a86829039363ec94c9cadf529aa9dd1fd0c7350c7bd467df6c00af4e2e5c7455",
+   "reason": "Passing an Enum member to its own constructor returns the member itself, so bypassing the explicit type check and always calling the constructor produces identical output for all inputs.",
+   "response_sha256": "30537305dd9e7e939be5c55330779536f202ef8ebff6b7ddab1eeab15224b1fd",
+   "sources": [
+    "Technical requirement TREQ_CONFIG_MODEL_DECLARATION (Requested model is declared by the effective configuration): A requested model shall be accepted only when it is declared by the effective configuration.",
+    "if isinstance(model, Model):",
+    "if False:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
  "3cc16a6300b216ed": {
   "answer": {
    "backend": "claude-cli",
@@ -66,5 +106,189 @@
    "source": "draft author"
   },
   "prompt_sha256": "fc6fa4b264e56b76b06d7062ebf466c5881c7cc0104bc3b5482635b0eca0ce75"
+ },
+ "SM-87B84725": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191216Z-deccd8",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The versions differ only for valid string input: the mutant checks the raw string instead of the resolved enum member. For a string-based Model enum, which the Model | str API and the clean 298-path symbolic search both suggest, the value string hashes and compares equal to its member. Declared and undeclared models then get the same accept/reject result in both versions.",
+   "response_sha256": "5e4b7aee77bb0155262706cb9117fb62df059e63205aff304a9138f1ae206073",
+   "sources": [
+    "A requested model shall be accepted only when it is declared by the effective configuration.",
+    "An undeclared requested model is rejected before provider execution.",
+    "if model not in config.models:",
+    "if resolved not in config.models:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T20:22:27.993166Z",
+   "answer_sha256": "6c87a783c91bd15a01e9ef5b59b12e16b5f57be65771ec19c077610080131bcb",
+   "call_id": "20260929T202107Z-dc6a63",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "6c87a783c91bd15a01e9ef5b59b12e16b5f57be65771ec19c077610080131bcb",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py",
+   "response_sha256": "73184fe45dbdd0759f7c657e78fae42d60a0f56305044461aa88f9bcfd12e2bd",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model"
+   ]
+  },
+  "prompt_sha256": "abd1625c1a17b7b062fcdd9cb608982c3a192def03a11044aec33aeb945c5a08",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T201120Z-be2ac2",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "abd1625c1a17b7b062fcdd9cb608982c3a192def03a11044aec33aeb945c5a08",
+   "reason": "The mutant checks the raw string input against the configuration's models instead of the resolved enum member. This causes valid, declared models provided as strings to be incorrectly rejected, which violates the condition for accepting requested models.",
+   "response_sha256": "683924c461c5f63b58d324c38efe0879334fbac3dfcfd31e82d41568bc4b6e15",
+   "sources": [
+    "A requested model shall be accepted only when it is declared by the effective configuration.",
+    "if resolved not in config.models:",
+    "if model not in config.models:"
+   ],
+   "test_focus": "The test must verify that a valid, declared model provided as a string is accepted rather than incorrectly rejected.",
+   "verdict": "pin"
+  }
+ },
+ "SM-8D7935BF": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T191216Z-06685a",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For string input, the mutant never checks membership in config.models. A string that names a real Model but is not declared in the effective configuration would be accepted and reach provider execution. That breaks the technical requirement that a requested model be accepted only when the effective configuration declares it. The refuted inputs failed only because they were not plain values; the behaviour difference itself is plain.",
+   "response_sha256": "ef75db258c83ffe088caf99432f9a5560be918cfd2576086d312c1c7651885dc",
+   "sources": [
+    "A requested model shall be accepted only when it is declared by the effective configuration.",
+    "An undeclared requested model is rejected before provider execution.",
+    "llm-router shall reject an effective request configuration that violates an applicable configuration constraint with a public configuration error before initiating provider execution.",
+    "    if resolved not in config.models:",
+    "        if resolved not in config.models:"
+   ],
+   "test_focus": "Pass a string that is a valid Model value but is not in config.models. Check that a ConfigurationError is raised before any provider execution.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-09-29T19:15:34.166921Z",
+   "answer_sha256": "cf077aeb6f93718d613c6fe547b5eee9ddfe4160bb98b6eea5f068c84a635879",
+   "call_id": "20260929T191342Z-3b7d9f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "a5bc1672a4aa993ae82a0f94e18414238314228f20c20f64b0be1906b7bedca8",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py",
+   "response_sha256": "8abc5f7565221a2a40133e6a212e17ef62dd7fb1677b37b51340aa6e5d6e06a9",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model",
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  },
+  "prompt_sha256": "0080df57ea1d14722add4876787c725c5668066753e33cd89c16ad42b1749411"
+ },
+ "e1379ec0c0ed9e96": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092631Z-67be8e",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For a string naming a declared model, the mutant skips the `Model(model)` conversion. Depending on the enum type, it then either wrongly rejects the declared model with a ConfigurationError or returns a raw string instead of the Model member. That breaks the accept side of the declared-model rule for the public `Model | str` input. Undeclared inputs are still rejected the same way, which is why the existing tests don't catch it.",
+   "response_sha256": "3890f8b28e4aa65e3a0b79a0d0f3314ed148a88486d61d38710f360e9b3ad54a",
+   "sources": [
+    "A requested model shall be accepted only when it is declared by the effective configuration.",
+    "if True:",
+    "resolved = Model(model)",
+    "if resolved not in config.models:"
+   ],
+   "test_focus": "Pass the string value of a model that the effective configuration declares. Check that it is accepted and resolves to the matching Model enum member, not a ConfigurationError or a plain str.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.614228Z",
+   "answer_sha256": "b4ae34f6aa9a502027635fc67112e5dcbf9a9b2e01d85c8a110c1bd57a34c88a",
+   "call_id": "20260929T100513Z-45d9e1",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "b4ae34f6aa9a502027635fc67112e5dcbf9a9b2e01d85c8a110c1bd57a34c88a",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_e1379ec0c0ed9e96.py",
+   "response_sha256": "d95266a0023f6d3857b63625346a97fb551705ea20766de2486b9a7fd4a69d47",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model"
+   ]
+  },
+  "prompt_sha256": "cab5c65fd9139c45bc3f999785fb33307049923bdf14c1db074cb528d914fc38"
+ },
+ "feb268a2d271b818": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092631Z-3a01eb",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The swapped condition leaves a declared model given as a string unconverted. It either gets rejected with ConfigurationError or passes through as a raw string instead of the Model enum, which can later fail at .value. Either way, the declared-model acceptance that the requirement describes is broken for the string input path.",
+   "response_sha256": "5ce774622faa268783689222d5fa45f5ad9e7d956f8e0c7d3c87edd995c3d756",
+   "sources": [
+    "A requested model shall be accepted only when it is declared by the effective configuration.",
+    "An undeclared requested model is rejected before provider execution.",
+    "if not isinstance(model, Model):",
+    "resolved = Model(model)"
+   ],
+   "test_focus": "Resolving a declared model passed as a plain string must return the corresponding Model enum member without error, and an undeclared string must still raise ConfigurationError before provider execution.",
+   "verdict": "pin"
+  },
+  "operator": "negation",
+  "prompt_sha256": "85bbd7cff8a88fd7241d9cbae4e885780e48ae5e8bb5bca090fd0d076b97e394"
  }
 }

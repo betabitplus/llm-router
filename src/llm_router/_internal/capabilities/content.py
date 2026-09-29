@@ -47,9 +47,6 @@ class NormalizedMessage:
 
 
 # @impl Multimodal content normalization, IMPL_MULTIMODAL_CONTENT_NORMALIZATION, [REQ_MULTIMODAL_CONTENT_NORMALIZATION[revision==2]]
-# @impl Document input normalization, IMPL_DOCUMENT_INPUT, [REQ_DOCUMENT_INPUT[revision==1]]
-# @impl Image input normalization, IMPL_IMAGE_INPUT, [REQ_IMAGE_INPUT[revision==1]]
-# @impl Video input normalization, IMPL_VIDEO_INPUT, [REQ_VIDEO_INPUT[revision==2]]
 def normalize_content(content: object, *, role: ChatRole = "user") -> NormalizedMessage:
     """Normalize role-less public content into one provider-neutral message."""
     return NormalizedMessage(
@@ -59,6 +56,7 @@ def normalize_content(content: object, *, role: ChatRole = "user") -> Normalized
     )
 
 
+# @impl Chat message normalization, IMPL_MULTIMODAL_CHAT_MESSAGE, [REQ_MULTIMODAL_CONTENT_NORMALIZATION[revision==2]]
 def normalize_chat_message(message: ChatMessage) -> NormalizedMessage:
     """Normalize a public chat transcript message."""
     return NormalizedMessage(
@@ -68,6 +66,7 @@ def normalize_chat_message(message: ChatMessage) -> NormalizedMessage:
     )
 
 
+# @impl Part order preservation, IMPL_MULTIMODAL_PART_ORDER, [REQ_MULTIMODAL_CONTENT_NORMALIZATION[revision==2]]
 def normalize_parts(parts: Sequence[ChatPart]) -> tuple[NormalizedPart, ...]:
     """Normalize public message parts while preserving caller order."""
     normalized: list[NormalizedPart] = []
@@ -79,6 +78,7 @@ def normalize_parts(parts: Sequence[ChatPart]) -> tuple[NormalizedPart, ...]:
     return tuple(normalized)
 
 
+# @impl Unsupported content rejection, IMPL_MULTIMODAL_CONTENT_PARTS, [REQ_MULTIMODAL_CONTENT_NORMALIZATION[revision==2]]
 def _content_parts(content: object) -> tuple[ChatPart, ...]:
     """Return public content as ordered parts."""
     if isinstance(content, str):

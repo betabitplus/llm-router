@@ -1,0 +1,95 @@
+{
+ "5fd031363386257e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260928T235027Z-dd1faa",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "If the file cannot be read, the mutant swallows the OSError, so the later use of `text` fails with an UnboundLocalError instead of the documented SessionSerializationError. That breaks the typed failure contract of the public persistence path. No current test reaches this failure branch.",
+   "response_sha256": "bf9e37de7f2de8838d99a0235d31177fb985d871b18a0fcd12e03ff5be448cc6",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "Public Session.save/load preserves each supported embedded-media form through the complete public persistence path.",
+    "raise SessionSerializationError(msg) from exc",
+    "pass"
+   ],
+   "test_focus": "Call SessionStore.load (or Session.load) on a path that does not exist or cannot be read, and check that it raises SessionSerializationError chained from the OSError.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.589306Z",
+   "answer_sha256": "38985e30f90bf096c0a37f46c26f41759b6692a2ca508ed27807310dc59095fe",
+   "call_id": "20260929T120217Z-59643d",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "38985e30f90bf096c0a37f46c26f41759b6692a2ca508ed27807310dc59095fe",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_session_persistence_5fd031363386257e.py",
+   "response_sha256": "7866205bdc8c29a195338e15b741822dc12ffa5e368f125a5544abe042367a46",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.Session",
+    "llm_router._internal.runtime.errors.SessionSerializationError"
+   ]
+  },
+  "prompt_sha256": "c3e20aa7cc78b2d3021f762eed89559d3324be0322548a6a3d129202a2c46c49"
+ },
+ "cfdaa730a0d7b1f8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T090028Z-408cdf",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without encoding=\"utf-8\", load decodes with the locale's preferred encoding. Under a non-UTF-8 locale (Windows cp1252, or a latin-1 locale with UTF-8 mode off), a UTF-8 artifact holding non-ASCII text either loads as garbled text or fails to decode. That breaks the exact round-trip of the system prompt and history that the requirement asks for. The survivor judges only called it equivalent because this macOS host happens to default to UTF-8.",
+   "response_sha256": "c11d0b3d7f354422545b04262c887f51bd9bddc254f8d45147fdc1b3adf47a4c",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "Public Session.save/load preserves the observable system instruction and conversation history exactly.",
+    "text = session_path.read_text(encoding=\"utf-8\")",
+    "text = session_path.read_text()"
+   ],
+   "test_focus": "Save a session whose system prompt and messages contain non-ASCII text. Then load it in a process whose locale encoding is not UTF-8 (for example a subprocess with PYTHONUTF8=0 and a latin-1 or cp1252 locale). Assert the system prompt and history come back exactly.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-09-29T12:16:07.590395Z",
+   "answer_sha256": "01ed3ca6fedf72081990f14f208697936d32e52d7408eafd4be820f853bfcbf5",
+   "call_id": "20260929T120217Z-de7724",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "bada800bdcde2323131530a2d39b3ef56b1be15bfb72a968b19957bc378b401b",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_session_persistence_cfdaa730a0d7b1f8.py",
+   "response_sha256": "dac3ed400ea0ddfe326928c22bb2d4a766aaf9aaa5473acb7a0d3a3a792c1d2f",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._internal.session.SessionStore"
+   ]
+  },
+  "prompt_sha256": "17a313540bf631c4f192c2edd1046fc9e7e09f9c3650229903266304731f1a24"
+ }
+}

@@ -33,6 +33,98 @@
   },
   "prompt_sha256": "2e040fc7dd31033e20c0406e46840c5d9086dcc792041ed4a0601ae3096039aa"
  },
+ "3b9da8b0c2e02991": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T001212Z-726d88",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When usage is missing, the original returns None, but the mutant makes up a UsageStats of all zeros. This turns \"usage unknown\" into \"zero tokens used\", which changes the public usage semantics that normalization must keep stable.",
+   "response_sha256": "8f091b72bd57329ad7321dbdb1b45d3f0646a70d0333d37e2b8191e916a11d3e",
+   "sources": [
+    "Provider-specific usage mappings and objects shall normalize into the common usage statistics model with a consistent total token count.",
+    "Every supported usage shape produces the stable common usage model with a consistent total token count.",
+    "if False:",
+    "def normalize_usage(value: object) -> UsageStats | None:"
+   ],
+   "test_focus": "Assert that normalize_usage(None) returns None and not a UsageStats with zero counts.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.597974Z",
+   "answer_sha256": "e9d110596348208b687bbf3315426afbe8017a07bb68f232b555acecd383eb32",
+   "call_id": "20260929T112259Z-b58558",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "e9d110596348208b687bbf3315426afbe8017a07bb68f232b555acecd383eb32",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_3b9da8b0c2e02991.py",
+   "response_sha256": "6caab6c746032908d63fb35a56b2d27432517682093c111ae184fee5abe4e620",
+   "source": "draft author",
+   "sources": [
+    "llm_router.UsageStats",
+    "llm_router._internal.capabilities.usage.normalize_usage"
+   ]
+  },
+  "prompt_sha256": "3d675e6ae93fbde7c522e01966c13aab75bc563224fc1aab7d0130b2a1b52543"
+ },
+ "516ee0826f5a2224": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T094743Z-b42089",
+   "confirmed": false,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant removes the pass-through for values that are already UsageStats. They now get re-parsed through _first_int, which changes the result: a zero total gets recomputed, or every field drops to zero if attribute extraction fails, and any other fields are lost. That breaks the promise that every supported usage shape produces the stable common usage model.",
+   "response_sha256": "fec07bb508d8c7615d6119ac5312a5c7c838efd5f897588fad3d429f51099057",
+   "sources": [
+    "Every supported usage shape produces the stable common usage model with a consistent total token count.",
+    "Provider-specific usage mappings and objects shall normalize into the common usage statistics model with a consistent total token count.",
+    "    if isinstance(value, UsageStats):\n        return value",
+    "    if False:\n        return value"
+   ],
+   "test_focus": "Check that normalize_usage(UsageStats(input_tokens=5, output_tokens=3, total_tokens=0)) returns the same object, with its fields unchanged.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-29T11:47:11.598592Z",
+   "answer_sha256": "dede06f9987aeb49c62095b79f1754dfdf4a0995020d9bc8d7f782d25db0015d",
+   "call_id": "20260929T112300Z-6f4371",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "dede06f9987aeb49c62095b79f1754dfdf4a0995020d9bc8d7f782d25db0015d",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_516ee0826f5a2224.py",
+   "response_sha256": "23c34fd53d00f9145ad120251da09163c7d661e215cdcf9e17a577d7ce9c2666",
+   "source": "draft author",
+   "sources": [
+    "llm_router.UsageStats",
+    "llm_router._internal.capabilities.usage.normalize_usage"
+   ]
+  },
+  "prompt_sha256": "ce2ae86df62e865c3efc6eb24a0e2c8fdab22c79ffc07a4fbd73e58b5def4953"
+ },
  "58413afa88ad9810": {
   "answer": {
    "backend": "claude-cli",
@@ -66,6 +158,45 @@
    "source": "draft author"
   },
   "prompt_sha256": "e264f3f2cb3dae1a05c02e9087dd396c23e635aa3090f17c304f4edf139bc799"
+ },
+ "8bdbc9dc44639ca0": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T094743Z-391b2a",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For ints, `(input_tokens or output_tokens)` is false only when both are 0. In that case `input_tokens + output_tokens` is also 0, so the dropped guard never changes `total_tokens`. This holds whatever the sign of the values, so no usage shape can tell the two versions apart.",
+   "response_sha256": "43b78fed71bab5a2f911fcc71232d4226206db44755565e00dafe4600c417a12",
+   "sources": [
+    "Provider-specific usage mappings and objects shall normalize into the common usage statistics model with a consistent total token count.",
+    "if total_tokens == 0 and (input_tokens or output_tokens):",
+    "if total_tokens == 0:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "condition",
+  "prompt_sha256": "5957d328349921fb53857368b2f4397f86279e69a16749045d6959186164ce49",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T094754Z-56c38d",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "5957d328349921fb53857368b2f4397f86279e69a16749045d6959186164ce49",
+   "reason": "The mutant removes a check that only skips the assignment when both input and output tokens are 0. When they are 0, the mutant simply computes 0 + 0 = 0, leaving total_tokens unchanged and producing identical output to the original version in all cases.",
+   "response_sha256": "2d8ac2bc91d1d3ae41ab4038d90b7a03039370ca248656b613bf06bafd4c71d6",
+   "sources": [
+    "Every supported usage shape produces the stable common usage model with a consistent total token count.",
+    "if total_tokens == 0 and (input_tokens or output_tokens):",
+    "if total_tokens == 0:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
  },
  "SM-4151C6BB": {
   "answer": {

@@ -1,0 +1,43 @@
+{
+ "02d729b5b4d8836a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T085905Z-489475",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "When max_attempts is None, `routes[:None]` returns the whole list, which is what skipping the guard does. For any integer cap, both versions run the same slice. So no input can tell them apart, and the route-attempt limit behaves the same.",
+   "response_sha256": "9326162507d9973cef498401456bbce538855d0001ef0f54b2ec4fea3fa83ae2",
+   "sources": [
+    "A request shall never attempt more routes than the configured route-attempt limit.",
+    "if options.max_attempts is not None:",
+    "if True:",
+    "routes = routes[:options.max_attempts]"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "06724a17f3ea5bc2bba4120a2dbbb6834ebc7d2d6cb8c8bbd84c6c71de6d6320",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260929T085911Z-76169d",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "06724a17f3ea5bc2bba4120a2dbbb6834ebc7d2d6cb8c8bbd84c6c71de6d6320",
+   "reason": "In Python, slicing a list with a stop index of None evaluates to a copy of the entire list. This means the result passed to tuple() remains completely identical whether the slice is skipped or executed when max_attempts is None, making the mutant functionally equivalent.",
+   "response_sha256": "545699b93603c45218aef218800d34ee5a383bcca5b99a31cb476b9cf97173a5",
+   "sources": [
+    "A request shall never attempt more routes than the configured route-attempt limit.",
+    "if options.max_attempts is not None:",
+    "if True:",
+    "routes = routes[:options.max_attempts]"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ }
+}

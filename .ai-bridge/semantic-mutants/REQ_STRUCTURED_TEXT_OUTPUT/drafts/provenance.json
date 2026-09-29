@@ -1,0 +1,56 @@
+{
+ "SM-1134D975": {
+  "kind": "model",
+  "call_id": "20260929T170729Z-075324",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "7146c4241ad469dced6a8211b1b08f822e3f8aae7b8765cf51975e6f3f3d12e0",
+  "attempt": 2
+ },
+ "SM-2D3D81E7": {
+  "kind": "model",
+  "call_id": "20260929T170713Z-dd6c3e",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "42af555af31285d697595f74b5f417c58ed5b2e1766bbfa0680b836e84806154",
+  "attempt": 2
+ },
+ "SM-943AE866": {
+  "kind": "model",
+  "call_id": "20260929T165733Z-e70081",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "9fa7468ab50ed5006838e3ad54de1696761700bfde6e1a5f6979c6c51abbaccc",
+  "attempt": 1
+ },
+ "SM-A1CB8BE4": {
+  "kind": "model",
+  "call_id": "20260929T185610Z-d6deb7",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "e6f0e77ec372609fbbfe2598b8445c788856d70f7c55095f8857dbe22a4029e4",
+  "attempt": 2
+ },
+ "SM-C1639EC8": {
+  "kind": "model",
+  "call_id": "20260929T170759Z-ebd4ae",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "f0291fedd81bf7031356b8c490ac2c17d1bafe9fba25b874d846a95e551e7dff",
+  "attempt": 2
+ },
+ "SM-FDD8D792": {
+  "kind": "model",
+  "call_id": "20260929T170744Z-586887",
+  "backend": "claude-cli",
+  "backend_version": "2.1.282",
+  "model": "claude-sonnet-5-5",
+  "response_sha256": "dcbfbd187189b2df490d66a975a060731d78631c056bab207bdd30110dc7280c",
+  "attempt": 2
+ }
+}

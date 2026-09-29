@@ -1,0 +1,132 @@
+{
+ "3f852ed18986c20a": [
+  {
+   "at": "2026-09-29T11:47:11.545276Z",
+   "call_id": "20260929T112252Z-ddd6fa",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "22a3183f5c2203459d9f2d12e725784c2effbef3faba968c8d9519a0d2520e5f",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.runtime.routes.ExpandedRoute",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults",
+    "llm_router._internal.runtime.routes.RouteOrderOptions",
+    "llm_router._internal.runtime.routes.RoutePlan",
+    "llm_router._internal.runtime.routes.ordered_routes"
+   ]
+  }
+ ],
+ "73f9e013ae38b43a": [
+  {
+   "at": "2026-09-29T11:47:11.545281Z",
+   "call_id": "20260929T112252Z-a910ea",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "55f28cc08851f18326cd20b63678f7d3ce65f0ee9fdca35fb1cf199dabb08b5d",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.runtime.routes.ExpandedRoute",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults",
+    "llm_router._internal.runtime.routes.RouteOrderOptions",
+    "llm_router._internal.runtime.routes.RoutePlan",
+    "llm_router._internal.runtime.routes.ordered_routes"
+   ]
+  }
+ ],
+ "7f06d09ceb421dcd": [
+  {
+   "at": "2026-09-29T11:47:11.545284Z",
+   "call_id": "20260929T112252Z-2adf4c",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "806718c4f164278b5ca501c00d9c23731f8a3b4a4a43bd93150a7ffe01b17dc1",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.routes.ordered_routes",
+    "llm_router._internal.runtime.routes.RoutePlan",
+    "llm_router._internal.runtime.routes.RouteOrderOptions"
+   ]
+  }
+ ],
+ "93873599753fc994": [
+  {
+   "at": "2026-09-29T11:47:11.545286Z",
+   "call_id": "20260929T112253Z-730f4a",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4a7556612499c0d2f5232d4d77e5c3a2cf301266d1d7b0578742cf4e726d29a0",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.runtime.routes.ExpandedRoute",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults",
+    "llm_router._internal.runtime.routes.RouteOrderOptions",
+    "llm_router._internal.runtime.routes.RoutePlan",
+    "llm_router._internal.runtime.routes.ordered_routes"
+   ]
+  }
+ ],
+ "9aa5ae42eb7bf0e0": [
+  {
+   "at": "2026-09-29T11:47:11.545289Z",
+   "call_id": "20260929T112253Z-3de719",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c7a996893e828d77128e34fb576b0545b16a5e9c551f23384a3c7dd64a8cce6f",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.routes.ordered_routes",
+    "llm_router._internal.runtime.routes.RoutePlan",
+    "llm_router._internal.runtime.routes.RouteOrderOptions"
+   ]
+  }
+ ],
+ "eec518360ab2e988": [
+  {
+   "at": "2026-09-29T11:47:11.545292Z",
+   "call_id": "20260929T112255Z-a04d23",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e4e711e8ba40b377c8f51abdbd2bdede96cce3714be35fd86ab4c06e9a63b46a",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.runtime.routes.ExpandedRoute",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults",
+    "llm_router._internal.runtime.routes.RouteOrderOptions",
+    "llm_router._internal.runtime.routes.RoutePlan",
+    "llm_router._internal.runtime.routes.ordered_routes"
+   ]
+  }
+ ]
+}

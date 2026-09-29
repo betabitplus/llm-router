@@ -1,0 +1,93 @@
+{
+ "43c47ed5eb7d2a63": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T000259Z-9b8b6c",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement says the attempt count must be at least one, so a value of 1 is valid. The mutant rejects 1 with a ConfigurationError, and running the confirmed input shows this. No current test checks that the value 1 is accepted.",
+   "response_sha256": "48d9fe07a5aa8939443e08069ebb51aeec12dc0d81201f21676079ee9662f7cc",
+   "sources": [
+    "The configured structured-output maximum-attempt count shall be at least one.",
+    "_require(condition=config.structured_output_max_attempts >= 2, message='structured output max attempts must be at least 1.')",
+    "condition=config.structured_output_max_attempts >= 1,"
+   ],
+   "test_focus": "Check that validate_config accepts a config whose structured_output_max_attempts is 1 without raising, and rejects a config where it is 0.",
+   "verdict": "pin"
+  },
+  "operator": "boundary",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.618670Z",
+   "answer_sha256": "7b05a6767b74cd00d78ca8c1ff678ba430733482a115a3b9ad374fa8318e17d3",
+   "call_id": "20260929T100649Z-6f8e05",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "7b05a6767b74cd00d78ca8c1ff678ba430733482a115a3b9ad374fa8318e17d3",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_structured_output_attempts_43c47ed5eb7d2a63.py",
+   "response_sha256": "917fd2fae868fae69559b9b72ee919cfe4918e319a593ccaf83af7d08f1e4359",
+   "source": "draft author",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  },
+  "prompt_sha256": "05976a048143d4055867d6bf1fa5f070266ef1d055aa1c897bd0fd90005d3817"
+ },
+ "df61b883b2255611": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260929T092719Z-83a48f",
+   "confirmed": true,
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement says the count \"shall be at least one\", so a count of exactly 1 is valid. The mutant changes `>= 1` to `> 1` and rejects that valid boundary value with a ConfigurationError, which breaks the stated constraint. Running the confirmed input showed this: the original returns None and the mutant raises.",
+   "response_sha256": "402d23be8b23a090dbbfbca75a388165f6d8f1957947334e5a728af56005f60a",
+   "sources": [
+    "The configured structured-output maximum-attempt count shall be at least one.",
+    "A structured-output maximum-attempt count below one is rejected.",
+    "_require(condition=config.structured_output_max_attempts > 1, message='structured output max attempts must be at least 1.')",
+    "condition=config.structured_output_max_attempts >= 1,"
+   ],
+   "test_focus": "Check that validate_config accepts a config whose structured_output_max_attempts is 1 without raising, and rejects one where it is 0 with ConfigurationError.",
+   "verdict": "pin"
+  },
+  "operator": "comparison",
+  "pin": {
+   "adopted_at": "2026-09-29T10:38:22.619075Z",
+   "answer_sha256": "39742f0e3a820d363913b9359ab0548474fe129bbb660b9a53d5db6a16eaec88",
+   "call_id": "20260929T100703Z-54c9f7",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "39742f0e3a820d363913b9359ab0548474fe129bbb660b9a53d5db6a16eaec88",
+   "model": "claude-sonnet-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_structured_output_attempts_df61b883b2255611.py",
+   "response_sha256": "f887698553c5ff5bba0d3eddabec8500e59ce0506f924d0ad66c751e0585620f",
+   "source": "draft author",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  },
+  "prompt_sha256": "a40cf4594d6369eb95b58c8ed9771a19d4a9d7380fac3738aaba3e9aefeb75db"
+ }
+}

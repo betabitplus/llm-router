@@ -1,0 +1,166 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "REQ_REQUEST_OVERRIDE_PRECEDENCE",
+ "proposals": [
+  {
+   "id": "SM-A03AD11C",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Call overrides are filtered by truthiness before being applied, so explicit null, empty collections and zero values are treated as omitted and no longer clear inherited settings.",
+   "original_sha256": "dae7ab3dd53c85d67418ecb4794d6d9cb1c084c678a5a4eb5befa4a7593dbf83",
+   "context_sha256": "2eddfb63c49fd1a83e4aa7c2ee165b3ec3dada9739492cd4c876ddb3e0c155e5",
+   "prompt_sha256": "a5b12eaf50446f6182a3c346efdcd74c8c32353849fbe31220a80d81185a39df",
+   "replacement": "def resolve_effective_settings(\n    *,\n    config: LLMRouterConfig,\n    route_defaults: RouteGenerationDefaults,\n    route_policy_defaults: Mapping[str, object],\n    router_defaults: RouterDefaults,\n    call_overrides: Mapping[str, object],\n) -> EffectiveSettings:\n    \"\"\"Resolve effective route settings with public precedence semantics.\"\"\"\n    values: dict[str, object] = {\n        \"key_id\": route_defaults.key_id,\n        \"temperature\": None,\n        \"seed\": None,\n        \"response_schema\": None,\n        \"tools\": None,\n        \"tool_choice\": None,\n        \"max_tool_rounds\": config.default_max_tool_rounds,\n        \"max_attempts\": config.policy.max_attempts,\n        \"attempt_timeout_seconds\": config.policy.attempt_timeout_seconds,\n        \"wait_for_cooldown_if_all_blocked\": (\n            config.policy.wait_for_cooldown_if_all_blocked\n        ),\n        \"round_robin_start\": config.policy.round_robin_start,\n        \"shuffle_fallbacks\": config.policy.shuffle_fallbacks,\n        \"default_limits\": config.policy.default_limits,\n        \"limits_by_provider\": config.policy.limits_by_provider,\n    }\n    kwargs: dict[str, object] = dict(route_defaults.kwargs)\n\n    _apply_route_generation_defaults(values, route_defaults)\n    _apply_non_null(values, route_policy_defaults)\n    _apply_non_null(values, router_defaults.values)\n    kwargs.update(router_defaults.kwargs)\n\n    call_provider_kwargs = {\n        key: value\n        for key, value in call_overrides.items()\n        if key not in CALL_OVERRIDE_FIELDS\n    }\n    truthy_call_overrides = {\n        key: value for key, value in call_overrides.items() if value\n    }\n    _apply_call_overrides(values, truthy_call_overrides)\n    kwargs.update(call_provider_kwargs)\n\n    return EffectiveSettings(\n        key_id=values[\"key_id\"],\n        temperature=values[\"temperature\"],\n        seed=values[\"seed\"],\n        response_schema=values[\"response_schema\"],\n        tools=values[\"tools\"],\n        tool_choice=values[\"tool_choice\"],\n        max_tool_rounds=values[\"max_tool_rounds\"],\n        kwargs=kwargs,\n        max_attempts=values[\"max_attempts\"],\n        attempt_timeout_seconds=values[\"attempt_timeout_seconds\"],\n        wait_for_cooldown_if_all_blocked=values[\"wait_for_cooldown_if_all_blocked\"],\n        round_robin_start=values[\"round_robin_start\"],\n        shuffle_fallbacks=values[\"shuffle_fallbacks\"],\n        default_limits=values[\"default_limits\"],\n        limits_by_provider=values[\"limits_by_provider\"],\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-479314",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "f2e104668cfbb5955ac7311ff0480708e8f6a25efd49204d8ccc956e8a6a44ac",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-0F21D9F8",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings",
+   "risk": "a result its requirement or criteria name is computed or chosen wrongly",
+   "rationale": "Router default kwargs are merged after the call-level provider kwargs, so router defaults override request-level provider kwargs instead of the reverse.",
+   "original_sha256": "dae7ab3dd53c85d67418ecb4794d6d9cb1c084c678a5a4eb5befa4a7593dbf83",
+   "context_sha256": "2eddfb63c49fd1a83e4aa7c2ee165b3ec3dada9739492cd4c876ddb3e0c155e5",
+   "prompt_sha256": "a5b12eaf50446f6182a3c346efdcd74c8c32353849fbe31220a80d81185a39df",
+   "replacement": "def resolve_effective_settings(\n    *,\n    config: LLMRouterConfig,\n    route_defaults: RouteGenerationDefaults,\n    route_policy_defaults: Mapping[str, object],\n    router_defaults: RouterDefaults,\n    call_overrides: Mapping[str, object],\n) -> EffectiveSettings:\n    \"\"\"Resolve effective route settings with public precedence semantics.\"\"\"\n    values: dict[str, object] = {\n        \"key_id\": route_defaults.key_id,\n        \"temperature\": None,\n        \"seed\": None,\n        \"response_schema\": None,\n        \"tools\": None,\n        \"tool_choice\": None,\n        \"max_tool_rounds\": config.default_max_tool_rounds,\n        \"max_attempts\": config.policy.max_attempts,\n        \"attempt_timeout_seconds\": config.policy.attempt_timeout_seconds,\n        \"wait_for_cooldown_if_all_blocked\": (\n            config.policy.wait_for_cooldown_if_all_blocked\n        ),\n        \"round_robin_start\": config.policy.round_robin_start,\n        \"shuffle_fallbacks\": config.policy.shuffle_fallbacks,\n        \"default_limits\": config.policy.default_limits,\n        \"limits_by_provider\": config.policy.limits_by_provider,\n    }\n    kwargs: dict[str, object] = dict(route_defaults.kwargs)\n\n    _apply_route_generation_defaults(values, route_defaults)\n    _apply_non_null(values, route_policy_defaults)\n    _apply_non_null(values, router_defaults.values)\n\n    call_provider_kwargs = {\n        key: value\n        for key, value in call_overrides.items()\n        if key not in CALL_OVERRIDE_FIELDS\n    }\n    _apply_call_overrides(values, call_overrides)\n    kwargs.update(call_provider_kwargs)\n    kwargs.update(router_defaults.kwargs)\n\n    return EffectiveSettings(\n        key_id=values[\"key_id\"],\n        temperature=values[\"temperature\"],\n        seed=values[\"seed\"],\n        response_schema=values[\"response_schema\"],\n        tools=values[\"tools\"],\n        tool_choice=values[\"tool_choice\"],\n        max_tool_rounds=values[\"max_tool_rounds\"],\n        kwargs=kwargs,\n        max_attempts=values[\"max_attempts\"],\n        attempt_timeout_seconds=values[\"attempt_timeout_seconds\"],\n        wait_for_cooldown_if_all_blocked=values[\"wait_for_cooldown_if_all_blocked\"],\n        round_robin_start=values[\"round_robin_start\"],\n        shuffle_fallbacks=values[\"shuffle_fallbacks\"],\n        default_limits=values[\"default_limits\"],\n        limits_by_provider=values[\"limits_by_provider\"],\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-479314",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "f2e104668cfbb5955ac7311ff0480708e8f6a25efd49204d8ccc956e8a6a44ac",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-59F6C2F2",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Explicit empty-collection call overrides (e.g. tools=[]) are filtered out before being applied, so they no longer clear inherited route/router settings; only null clears them.",
+   "original_sha256": "dae7ab3dd53c85d67418ecb4794d6d9cb1c084c678a5a4eb5befa4a7593dbf83",
+   "context_sha256": "a06f4a80c59ec0579237ce31ebda8ef08a6cf3c8fc2ca9f36ec8b37b7baf4b1a",
+   "prompt_sha256": "251fc56b4eee6cc66e2608fe4d80a693a200082593e5cc8e536735b644cb8d9f",
+   "replacement": "def resolve_effective_settings(\n    *,\n    config: LLMRouterConfig,\n    route_defaults: RouteGenerationDefaults,\n    route_policy_defaults: Mapping[str, object],\n    router_defaults: RouterDefaults,\n    call_overrides: Mapping[str, object],\n) -> EffectiveSettings:\n    \"\"\"Resolve effective route settings with public precedence semantics.\"\"\"\n    values: dict[str, object] = {\n        \"key_id\": route_defaults.key_id,\n        \"temperature\": None,\n        \"seed\": None,\n        \"response_schema\": None,\n        \"tools\": None,\n        \"tool_choice\": None,\n        \"max_tool_rounds\": config.default_max_tool_rounds,\n        \"max_attempts\": config.policy.max_attempts,\n        \"attempt_timeout_seconds\": config.policy.attempt_timeout_seconds,\n        \"wait_for_cooldown_if_all_blocked\": (\n            config.policy.wait_for_cooldown_if_all_blocked\n        ),\n        \"round_robin_start\": config.policy.round_robin_start,\n        \"shuffle_fallbacks\": config.policy.shuffle_fallbacks,\n        \"default_limits\": config.policy.default_limits,\n        \"limits_by_provider\": config.policy.limits_by_provider,\n    }\n    kwargs: dict[str, object] = dict(route_defaults.kwargs)\n\n    _apply_route_generation_defaults(values, route_defaults)\n    _apply_non_null(values, route_policy_defaults)\n    _apply_non_null(values, router_defaults.values)\n    kwargs.update(router_defaults.kwargs)\n\n    call_provider_kwargs = {\n        key: value\n        for key, value in call_overrides.items()\n        if key not in CALL_OVERRIDE_FIELDS\n    }\n    applicable_overrides = {\n        key: value\n        for key, value in call_overrides.items()\n        if not (\n            isinstance(value, (list, tuple, dict, set, frozenset))\n            and len(value) == 0\n        )\n    }\n    _apply_call_overrides(values, applicable_overrides)\n    kwargs.update(call_provider_kwargs)\n\n    return EffectiveSettings(\n        key_id=values[\"key_id\"],\n        temperature=values[\"temperature\"],\n        seed=values[\"seed\"],\n        response_schema=values[\"response_schema\"],\n        tools=values[\"tools\"],\n        tool_choice=values[\"tool_choice\"],\n        max_tool_rounds=values[\"max_tool_rounds\"],\n        kwargs=kwargs,\n        max_attempts=values[\"max_attempts\"],\n        attempt_timeout_seconds=values[\"attempt_timeout_seconds\"],\n        wait_for_cooldown_if_all_blocked=values[\"wait_for_cooldown_if_all_blocked\"],\n        round_robin_start=values[\"round_robin_start\"],\n        shuffle_fallbacks=values[\"shuffle_fallbacks\"],\n        default_limits=values[\"default_limits\"],\n        limits_by_provider=values[\"limits_by_provider\"],\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-43f717",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b6b33e41cf5e59dff4f93699e21f748b31fc72ed0a1d72ac093f0cd24f5d0896",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-A5A4F487",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Call-level overrides for known fields are applied with the non-null helper, so an explicit None (e.g. temperature=None, tools=None) is treated like an omitted override and no longer clears the inherited value.",
+   "original_sha256": "dae7ab3dd53c85d67418ecb4794d6d9cb1c084c678a5a4eb5befa4a7593dbf83",
+   "context_sha256": "a06f4a80c59ec0579237ce31ebda8ef08a6cf3c8fc2ca9f36ec8b37b7baf4b1a",
+   "prompt_sha256": "251fc56b4eee6cc66e2608fe4d80a693a200082593e5cc8e536735b644cb8d9f",
+   "replacement": "def resolve_effective_settings(\n    *,\n    config: LLMRouterConfig,\n    route_defaults: RouteGenerationDefaults,\n    route_policy_defaults: Mapping[str, object],\n    router_defaults: RouterDefaults,\n    call_overrides: Mapping[str, object],\n) -> EffectiveSettings:\n    \"\"\"Resolve effective route settings with public precedence semantics.\"\"\"\n    values: dict[str, object] = {\n        \"key_id\": route_defaults.key_id,\n        \"temperature\": None,\n        \"seed\": None,\n        \"response_schema\": None,\n        \"tools\": None,\n        \"tool_choice\": None,\n        \"max_tool_rounds\": config.default_max_tool_rounds,\n        \"max_attempts\": config.policy.max_attempts,\n        \"attempt_timeout_seconds\": config.policy.attempt_timeout_seconds,\n        \"wait_for_cooldown_if_all_blocked\": (\n            config.policy.wait_for_cooldown_if_all_blocked\n        ),\n        \"round_robin_start\": config.policy.round_robin_start,\n        \"shuffle_fallbacks\": config.policy.shuffle_fallbacks,\n        \"default_limits\": config.policy.default_limits,\n        \"limits_by_provider\": config.policy.limits_by_provider,\n    }\n    kwargs: dict[str, object] = dict(route_defaults.kwargs)\n\n    _apply_route_generation_defaults(values, route_defaults)\n    _apply_non_null(values, route_policy_defaults)\n    _apply_non_null(values, router_defaults.values)\n    kwargs.update(router_defaults.kwargs)\n\n    call_provider_kwargs = {\n        key: value\n        for key, value in call_overrides.items()\n        if key not in CALL_OVERRIDE_FIELDS\n    }\n    known_call_overrides = {\n        key: value\n        for key, value in call_overrides.items()\n        if key in CALL_OVERRIDE_FIELDS\n    }\n    _apply_non_null(values, known_call_overrides)\n    kwargs.update(call_provider_kwargs)\n\n    return EffectiveSettings(\n        key_id=values[\"key_id\"],\n        temperature=values[\"temperature\"],\n        seed=values[\"seed\"],\n        response_schema=values[\"response_schema\"],\n        tools=values[\"tools\"],\n        tool_choice=values[\"tool_choice\"],\n        max_tool_rounds=values[\"max_tool_rounds\"],\n        kwargs=kwargs,\n        max_attempts=values[\"max_attempts\"],\n        attempt_timeout_seconds=values[\"attempt_timeout_seconds\"],\n        wait_for_cooldown_if_all_blocked=values[\"wait_for_cooldown_if_all_blocked\"],\n        round_robin_start=values[\"round_robin_start\"],\n        shuffle_fallbacks=values[\"shuffle_fallbacks\"],\n        default_limits=values[\"default_limits\"],\n        limits_by_provider=values[\"limits_by_provider\"],\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-43f717",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "b6b33e41cf5e59dff4f93699e21f748b31fc72ed0a1d72ac093f0cd24f5d0896",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-F0F68907",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Apply router defaults after call overrides to break precedence",
+   "original_sha256": "dae7ab3dd53c85d67418ecb4794d6d9cb1c084c678a5a4eb5befa4a7593dbf83",
+   "context_sha256": "70c1b454f760a95d2e15afadf0800cba3957c76c160a62de38ca6f21859dde94",
+   "prompt_sha256": "f4fbf81aa6d6cc99e5b830659b49d2c9043e4b3c8f1fa14ca23efd76ed38f6a7",
+   "replacement": "def resolve_effective_settings(\n    *,\n    config: LLMRouterConfig,\n    route_defaults: RouteGenerationDefaults,\n    route_policy_defaults: Mapping[str, object],\n    router_defaults: RouterDefaults,\n    call_overrides: Mapping[str, object],\n) -> EffectiveSettings:\n    \"\"\"Resolve effective route settings with public precedence semantics.\"\"\"\n    values: dict[str, object] = {\n        \"key_id\": route_defaults.key_id,\n        \"temperature\": None,\n        \"seed\": None,\n        \"response_schema\": None,\n        \"tools\": None,\n        \"tool_choice\": None,\n        \"max_tool_rounds\": config.default_max_tool_rounds,\n        \"max_attempts\": config.policy.max_attempts,\n        \"attempt_timeout_seconds\": config.policy.attempt_timeout_seconds,\n        \"wait_for_cooldown_if_all_blocked\": (\n            config.policy.wait_for_cooldown_if_all_blocked\n        ),\n        \"round_robin_start\": config.policy.round_robin_start,\n        \"shuffle_fallbacks\": config.policy.shuffle_fallbacks,\n        \"default_limits\": config.policy.default_limits,\n        \"limits_by_provider\": config.policy.limits_by_provider,\n    }\n    kwargs: dict[str, object] = dict(route_defaults.kwargs)\n\n    _apply_route_generation_defaults(values, route_defaults)\n    _apply_non_null(values, route_policy_defaults)\n    _apply_call_overrides(values, call_overrides)\n    _apply_non_null(values, router_defaults.values)\n    kwargs.update(router_defaults.kwargs)\n\n    call_provider_kwargs = {\n        key: value\n        for key, value in call_overrides.items()\n        if key not in CALL_OVERRIDE_FIELDS\n    }\n    kwargs.update(call_provider_kwargs)\n\n    return EffectiveSettings(\n        key_id=values[\"key_id\"],\n        temperature=values[\"temperature\"],\n        seed=values[\"seed\"],\n        response_schema=values[\"response_schema\"],\n        tools=values[\"tools\"],\n        tool_choice=values[\"tool_choice\"],\n        max_tool_rounds=values[\"max_tool_rounds\"],\n        kwargs=kwargs,\n        max_attempts=values[\"max_attempts\"],\n        attempt_timeout_seconds=values[\"attempt_timeout_seconds\"],\n        wait_for_cooldown_if_all_blocked=values[\"wait_for_cooldown_if_all_blocked\"],\n        round_robin_start=values[\"round_robin_start\"],\n        shuffle_fallbacks=values[\"shuffle_fallbacks\"],\n        default_limits=values[\"default_limits\"],\n        limits_by_provider=values[\"limits_by_provider\"],\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-07dd61",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "344ca9235fa85bef4b6939c982e3f361bf86c5958486dd193fe5e2f96687fd66",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-0F21D9F8",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Apply router defaults kwargs after call overrides kwargs to break precedence",
+   "original_sha256": "dae7ab3dd53c85d67418ecb4794d6d9cb1c084c678a5a4eb5befa4a7593dbf83",
+   "context_sha256": "70c1b454f760a95d2e15afadf0800cba3957c76c160a62de38ca6f21859dde94",
+   "prompt_sha256": "f4fbf81aa6d6cc99e5b830659b49d2c9043e4b3c8f1fa14ca23efd76ed38f6a7",
+   "replacement": "def resolve_effective_settings(\n    *,\n    config: LLMRouterConfig,\n    route_defaults: RouteGenerationDefaults,\n    route_policy_defaults: Mapping[str, object],\n    router_defaults: RouterDefaults,\n    call_overrides: Mapping[str, object],\n) -> EffectiveSettings:\n    \"\"\"Resolve effective route settings with public precedence semantics.\"\"\"\n    values: dict[str, object] = {\n        \"key_id\": route_defaults.key_id,\n        \"temperature\": None,\n        \"seed\": None,\n        \"response_schema\": None,\n        \"tools\": None,\n        \"tool_choice\": None,\n        \"max_tool_rounds\": config.default_max_tool_rounds,\n        \"max_attempts\": config.policy.max_attempts,\n        \"attempt_timeout_seconds\": config.policy.attempt_timeout_seconds,\n        \"wait_for_cooldown_if_all_blocked\": (\n            config.policy.wait_for_cooldown_if_all_blocked\n        ),\n        \"round_robin_start\": config.policy.round_robin_start,\n        \"shuffle_fallbacks\": config.policy.shuffle_fallbacks,\n        \"default_limits\": config.policy.default_limits,\n        \"limits_by_provider\": config.policy.limits_by_provider,\n    }\n    kwargs: dict[str, object] = dict(route_defaults.kwargs)\n\n    _apply_route_generation_defaults(values, route_defaults)\n    _apply_non_null(values, route_policy_defaults)\n    _apply_non_null(values, router_defaults.values)\n\n    call_provider_kwargs = {\n        key: value\n        for key, value in call_overrides.items()\n        if key not in CALL_OVERRIDE_FIELDS\n    }\n    _apply_call_overrides(values, call_overrides)\n    kwargs.update(call_provider_kwargs)\n    kwargs.update(router_defaults.kwargs)\n\n    return EffectiveSettings(\n        key_id=values[\"key_id\"],\n        temperature=values[\"temperature\"],\n        seed=values[\"seed\"],\n        response_schema=values[\"response_schema\"],\n        tools=values[\"tools\"],\n        tool_choice=values[\"tool_choice\"],\n        max_tool_rounds=values[\"max_tool_rounds\"],\n        kwargs=kwargs,\n        max_attempts=values[\"max_attempts\"],\n        attempt_timeout_seconds=values[\"attempt_timeout_seconds\"],\n        wait_for_cooldown_if_all_blocked=values[\"wait_for_cooldown_if_all_blocked\"],\n        round_robin_start=values[\"round_robin_start\"],\n        shuffle_fallbacks=values[\"shuffle_fallbacks\"],\n        default_limits=values[\"default_limits\"],\n        limits_by_provider=values[\"limits_by_provider\"],\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-07dd61",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.13",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "344ca9235fa85bef4b6939c982e3f361bf86c5958486dd193fe5e2f96687fd66",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-4982ECD4",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Explicit null call overrides are filtered out before being applied, so an explicit None no longer clears an inherited optional setting (tools, response_schema, seed, etc.) and is treated like an omitted override.",
+   "original_sha256": "dae7ab3dd53c85d67418ecb4794d6d9cb1c084c678a5a4eb5befa4a7593dbf83",
+   "context_sha256": "2f5829e4762ebe41f50b8961c9f16badf6111fb0ada81d7721dcfe3ec1090b21",
+   "prompt_sha256": "ec9575c13a625fba0e6964f7414c54f4446a5584a827dd76a6ee50986d44534f",
+   "replacement": "def resolve_effective_settings(\n    *,\n    config: LLMRouterConfig,\n    route_defaults: RouteGenerationDefaults,\n    route_policy_defaults: Mapping[str, object],\n    router_defaults: RouterDefaults,\n    call_overrides: Mapping[str, object],\n) -> EffectiveSettings:\n    \"\"\"Resolve effective route settings with public precedence semantics.\"\"\"\n    values: dict[str, object] = {\n        \"key_id\": route_defaults.key_id,\n        \"temperature\": None,\n        \"seed\": None,\n        \"response_schema\": None,\n        \"tools\": None,\n        \"tool_choice\": None,\n        \"max_tool_rounds\": config.default_max_tool_rounds,\n        \"max_attempts\": config.policy.max_attempts,\n        \"attempt_timeout_seconds\": config.policy.attempt_timeout_seconds,\n        \"wait_for_cooldown_if_all_blocked\": (\n            config.policy.wait_for_cooldown_if_all_blocked\n        ),\n        \"round_robin_start\": config.policy.round_robin_start,\n        \"shuffle_fallbacks\": config.policy.shuffle_fallbacks,\n        \"default_limits\": config.policy.default_limits,\n        \"limits_by_provider\": config.policy.limits_by_provider,\n    }\n    kwargs: dict[str, object] = dict(route_defaults.kwargs)\n\n    _apply_route_generation_defaults(values, route_defaults)\n    _apply_non_null(values, route_policy_defaults)\n    _apply_non_null(values, router_defaults.values)\n    kwargs.update(router_defaults.kwargs)\n\n    call_provider_kwargs = {\n        key: value\n        for key, value in call_overrides.items()\n        if key not in CALL_OVERRIDE_FIELDS\n    }\n    non_null_call_overrides = {\n        key: value for key, value in call_overrides.items() if value is not None\n    }\n    _apply_call_overrides(values, non_null_call_overrides)\n    kwargs.update(call_provider_kwargs)\n\n    return EffectiveSettings(\n        key_id=values[\"key_id\"],\n        temperature=values[\"temperature\"],\n        seed=values[\"seed\"],\n        response_schema=values[\"response_schema\"],\n        tools=values[\"tools\"],\n        tool_choice=values[\"tool_choice\"],\n        max_tool_rounds=values[\"max_tool_rounds\"],\n        kwargs=kwargs,\n        max_attempts=values[\"max_attempts\"],\n        attempt_timeout_seconds=values[\"attempt_timeout_seconds\"],\n        wait_for_cooldown_if_all_blocked=values[\"wait_for_cooldown_if_all_blocked\"],\n        round_robin_start=values[\"round_robin_start\"],\n        shuffle_fallbacks=values[\"shuffle_fallbacks\"],\n        default_limits=values[\"default_limits\"],\n        limits_by_provider=values[\"limits_by_provider\"],\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-abadab",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "ad72ff1eaf03d0b7058008371e7dedeb17da367f5557bc08fb1d3c54c9100051",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-4D75202A",
+   "class": "interface.payload-schema",
+   "target": "src/llm_router/_internal/runtime/effective_settings.py::resolve_effective_settings",
+   "risk": "a payload that crosses the interface loses or changes a field its schema requires",
+   "rationale": "Provider kwargs passed at call level are dropped when falsy, so an explicit empty/None/zero/False provider kwarg no longer overrides the inherited route/router kwarg value; it is conflated with omission.",
+   "original_sha256": "dae7ab3dd53c85d67418ecb4794d6d9cb1c084c678a5a4eb5befa4a7593dbf83",
+   "context_sha256": "2f5829e4762ebe41f50b8961c9f16badf6111fb0ada81d7721dcfe3ec1090b21",
+   "prompt_sha256": "ec9575c13a625fba0e6964f7414c54f4446a5584a827dd76a6ee50986d44534f",
+   "replacement": "def resolve_effective_settings(\n    *,\n    config: LLMRouterConfig,\n    route_defaults: RouteGenerationDefaults,\n    route_policy_defaults: Mapping[str, object],\n    router_defaults: RouterDefaults,\n    call_overrides: Mapping[str, object],\n) -> EffectiveSettings:\n    \"\"\"Resolve effective route settings with public precedence semantics.\"\"\"\n    values: dict[str, object] = {\n        \"key_id\": route_defaults.key_id,\n        \"temperature\": None,\n        \"seed\": None,\n        \"response_schema\": None,\n        \"tools\": None,\n        \"tool_choice\": None,\n        \"max_tool_rounds\": config.default_max_tool_rounds,\n        \"max_attempts\": config.policy.max_attempts,\n        \"attempt_timeout_seconds\": config.policy.attempt_timeout_seconds,\n        \"wait_for_cooldown_if_all_blocked\": (\n            config.policy.wait_for_cooldown_if_all_blocked\n        ),\n        \"round_robin_start\": config.policy.round_robin_start,\n        \"shuffle_fallbacks\": config.policy.shuffle_fallbacks,\n        \"default_limits\": config.policy.default_limits,\n        \"limits_by_provider\": config.policy.limits_by_provider,\n    }\n    kwargs: dict[str, object] = dict(route_defaults.kwargs)\n\n    _apply_route_generation_defaults(values, route_defaults)\n    _apply_non_null(values, route_policy_defaults)\n    _apply_non_null(values, router_defaults.values)\n    kwargs.update(router_defaults.kwargs)\n\n    call_provider_kwargs = {\n        key: value\n        for key, value in call_overrides.items()\n        if key not in CALL_OVERRIDE_FIELDS and value\n    }\n    _apply_call_overrides(values, call_overrides)\n    kwargs.update(call_provider_kwargs)\n\n    return EffectiveSettings(\n        key_id=values[\"key_id\"],\n        temperature=values[\"temperature\"],\n        seed=values[\"seed\"],\n        response_schema=values[\"response_schema\"],\n        tools=values[\"tools\"],\n        tool_choice=values[\"tool_choice\"],\n        max_tool_rounds=values[\"max_tool_rounds\"],\n        kwargs=kwargs,\n        max_attempts=values[\"max_attempts\"],\n        attempt_timeout_seconds=values[\"attempt_timeout_seconds\"],\n        wait_for_cooldown_if_all_blocked=values[\"wait_for_cooldown_if_all_blocked\"],\n        round_robin_start=values[\"round_robin_start\"],\n        shuffle_fallbacks=values[\"shuffle_fallbacks\"],\n        default_limits=values[\"default_limits\"],\n        limits_by_provider=values[\"limits_by_provider\"],\n    )\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20260929T153528Z-abadab",
+    "backend": "claude-cli",
+    "backend_version": "2.1.282",
+    "model": "claude-sonnet-5-5",
+    "response_sha256": "ad72ff1eaf03d0b7058008371e7dedeb17da367f5557bc08fb1d3c54c9100051",
+    "index": 1
+   }
+  }
+ ]
+}
