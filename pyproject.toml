@@ -408,6 +408,8 @@ src.exclude = [
   "**/__pycache__/",
   "*.egg-info/",
   ".agents/",
+  # Model-written draft tests and the cascade's calibration project: data, judged by running them.
+  ".ai-bridge/semantic-mutants/",
   ".devcontainer/",
   ".git/",
   ".github/",

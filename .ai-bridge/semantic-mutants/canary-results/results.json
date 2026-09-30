@@ -369,104 +369,104 @@
   "backend": "antigravity-cli",
   "cases": {
    "V-EQUIVALENT": {
-    "call_id": "20260929T222806Z-626f5c",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
-    "passed": false,
-    "response_sha256": ""
+    "call_id": "20260930T002221Z-7466ef",
+    "detail": "expected equivalent, got equivalent",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "daa5d798137d9fddbf96cc2938f6977f9a04c7a01730381c5b453c21883282dd"
    },
    "V-ESCALATE": {
-    "call_id": "20260929T222806Z-c4fea5",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
-    "passed": false,
-    "response_sha256": ""
+    "call_id": "20260930T002234Z-450196",
+    "detail": "expected escalate, got escalate",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "271bf6c4eb789e964ba4b244c520dea36272884cca74a8172077f390d81e9f22"
    },
    "V-PIN": {
-    "call_id": "20260929T222754Z-4f53ca",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
-    "passed": false,
-    "response_sha256": ""
+    "call_id": "20260930T002151Z-ee5ed3",
+    "detail": "expected pin, got pin",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "52e7fd77711cebb736dcab81b28d4023eb9f9cb7f0a636fd2d7da16ca9c926a4"
    },
    "V-REAL-EQUIVALENT": {
-    "call_id": "20260929T222806Z-dba3a9",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
-    "passed": false,
-    "response_sha256": ""
+    "call_id": "20260930T002321Z-4dc4de",
+    "detail": "expected equivalent, got equivalent",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "c212a44e54429bf610cd92ef5f6cadb0acfde5ee92648253f251fc2b077823c3"
    },
    "V-REAL-IRRELEVANT": {
-    "call_id": "20260929T222806Z-9f61ee",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
-    "passed": false,
-    "response_sha256": ""
+    "call_id": "20260930T002304Z-73046f",
+    "detail": "expected irrelevant, got irrelevant",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "6ef24d03148448c347910ff258aa3b4c945198a7fa8bc46b7f3ddaaea4ebd039"
    },
    "V-REAL-PIN": {
-    "call_id": "20260929T222806Z-dcc08b",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
-    "passed": false,
-    "response_sha256": ""
+    "call_id": "20260930T002249Z-ffb7ac",
+    "detail": "expected pin, got pin",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "7ac445a6bccfa6a2a0bb606bb426f831daa893712e6938fd68f0e76a5c52d32e"
    }
   },
   "model": "gemini-3.1-pro-high",
-  "passed": false,
+  "passed": true,
   "questions_sha256": "93cc0380b76e7f8a0ff3c1dfde6b84c8309b58b6097d21b10457ac563557d421",
-  "ran_at": "2026-09-29T22:28:06.534915Z",
+  "ran_at": "2026-09-30T00:23:47.539382Z",
   "role": "verdict_review"
  },
  "verdict_review|antigravity-cli|gemini-3.8-flash-high": {
   "backend": "antigravity-cli",
   "cases": {
    "V-EQUIVALENT": {
-    "call_id": "20260929T222806Z-f2aafa",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
-    "passed": false,
-    "response_sha256": ""
+    "call_id": "20260930T002417Z-925469",
+    "detail": "expected equivalent, got equivalent",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "faca1697d92ee3b0702efa0f9b969d924c946d5d286d8fc3ac8d3fe1a7adea37"
    },
    "V-ESCALATE": {
-    "call_id": "20260929T222806Z-252af8",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
-    "passed": false,
-    "response_sha256": ""
+    "call_id": "20260930T002521Z-38f271",
+    "detail": "expected escalate, got escalate",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "25704d9c9676958e81a4096e110d64d2374580f9d259806c7519044f69d644ed"
    },
    "V-PIN": {
-    "call_id": "20260929T222806Z-0f28ea",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
-    "passed": false,
-    "response_sha256": ""
+    "call_id": "20260930T002347Z-996f55",
+    "detail": "expected pin, got pin",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "05afd325749093ac956659a29224e846613fb8d95561c89b055d222e50fd7b0f"
    },
    "V-REAL-EQUIVALENT": {
-    "call_id": "20260929T222806Z-725dd2",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
-    "passed": false,
-    "response_sha256": ""
+    "call_id": "20260930T002915Z-fa8b62",
+    "detail": "expected equivalent, got equivalent",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "db5aecf723b328466c0636a87d1de8ad1d4fd77c2c40bfd920f01f47bc1da4ba"
    },
    "V-REAL-IRRELEVANT": {
-    "call_id": "20260929T222806Z-333a2d",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
-    "passed": false,
-    "response_sha256": ""
+    "call_id": "20260930T002713Z-69effd",
+    "detail": "expected irrelevant, got irrelevant",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "2929e968f5a2935758acfbf444a700b9c0edfae0ced0271ec97ff7e7d4f0a586"
    },
    "V-REAL-PIN": {
-    "call_id": "20260929T222806Z-269077",
-    "detail": "the Antigravity account cannot be used: Eligibility check failed: Your current account is not eligible for Antigravity. Verify your account to continue.",
-    "outcome": "unavailable",
+    "call_id": "20260930T002620Z-f3307c",
+    "detail": "expected pin, got irrelevant",
+    "outcome": "ok",
     "passed": false,
-    "response_sha256": ""
+    "response_sha256": "75e1374a6a80df21edc794e186f25c89cf0f077960cb08e662041fe051849ecf"
    }
   },
   "model": "gemini-3.8-flash-high",
   "passed": false,
   "questions_sha256": "93cc0380b76e7f8a0ff3c1dfde6b84c8309b58b6097d21b10457ac563557d421",
-  "ran_at": "2026-09-29T22:28:06.539828Z",
+  "ran_at": "2026-09-30T00:29:48.146323Z",
   "role": "verdict_review"
  },
  "verdict|claude-cli|claude-opus-5-5": {

@@ -6272,7 +6272,9 @@ def main() -> None:
     )
     check(
         all(
-            entry.get("engine") == campaign_engine
+            # How a campaign runs (its cache, its workers) is no part of what it judges.
+            {key: value for key, value in (entry.get("engine") or {}).items() if key not in {"incremental_cache", "mutants_at_once"}}
+            == {key: value for key, value in (campaign_engine or {}).items() if key not in {"incremental_cache", "mutants_at_once"}}
             and entry.get("plan_key")
             and entry.get("shared_inputs_sha256") == impl_campaign.get("shared_inputs_sha256")
             and isinstance(entry.get("inputs"), dict)
@@ -7307,6 +7309,8 @@ def main() -> None:
         ".ai-bridge/verification-explorer-local-prototype.md",
         ".ai-bridge/implementation_faults.py",
         ".ai-bridge/semantic_mutants.py",
+        ".ai-bridge/scenario_mutants.py",
+        ".ai-bridge/architecture_mutants.py",
         ".ai-bridge/model_generation.py",
         ".ai-bridge/survivor_equivalence.py",
         ".ai-bridge/survivor-triage/",

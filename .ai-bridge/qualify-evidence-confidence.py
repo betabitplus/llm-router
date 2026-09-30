@@ -1662,6 +1662,21 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and {str(row.get("fingerprint")): row.get("status") for row in isolated} == {str(row.get("fingerprint")): row.get("status") for row in strong}
             and all(str(row.get("file_path") or "").startswith(str(tmp.resolve())) for row in isolated)
         )
+        # Several mutants at once and the engine's incremental cache change no outcome: a run with three
+        # workers, a first run filling the cache and a second one reading it give the strong suite's outcomes.
+        with tempfile.TemporaryDirectory(prefix="ternforge-speed-qualification-") as speed_dir:
+            copy_root = faults["working_tree_copy"](tmp, Path(speed_dir) / "copy")
+            plan = {"tests": suites["strong"], "files": ["control_target.py"], "attributable_lines": {"control_target.py": [1, 2, 3, 4]}}
+            engine_cache = Path(speed_dir) / "engine-cache"
+            speed_outcomes = {}
+            for label, options in (("workers", {"workers": 3}), ("cache filled", {"cache": engine_cache}), ("cache read", {"cache": engine_cache})):
+                speed_raw = Path(speed_dir) / f"{label}.json"
+                speed_run = faults["run_engine_isolated"](tmp, copy_root, plan, speed_raw, project=ROOT, **options)
+                speed_rows = json.loads(speed_raw.read_text()).get("results") or [] if speed_run["report_retained"] else []
+                speed_outcomes[label] = {str(row.get("fingerprint")): row.get("status") for row in speed_rows}
+            expected_outcomes = {str(row.get("fingerprint")): row.get("status") for row in strong}
+            cache_kept = engine_cache.is_dir() and any(engine_cache.rglob("*"))
+        speed_ok = bool(expected_outcomes) and all(outcome == expected_outcomes for outcome in speed_outcomes.values()) and cache_kept
         # A mutant whose tests outrun the first time limit is caught only when a second run with room to spare runs out too.
         (tmp / "slow_target.py").write_text("def double(value: int) -> int:\n    return value * 2\n")
         (tmp / "test_slow_weak.py").write_text("import time\nfrom slow_target import double\n\ndef test_slow():\n    time.sleep(1.5)\n    double(2)\n")
@@ -1682,6 +1697,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and diff_ok
             and nosite_ok
             and isolated_ok
+            and speed_ok
             and timeout_ok
         )
         engine_detail = {
@@ -1711,6 +1727,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             "diff_skips_uncovered": diff_ok,
             "no_site_keeps_extension_facts": nosite_ok,
             "isolated_copy_same_outcomes": isolated_ok,
+            "workers_and_cache_same_outcomes": {"ok": speed_ok, "runs": {label: len(outcome) for label, outcome in speed_outcomes.items()}},
             "slow_suite_no_false_catch": {"ok": timeout_ok, "statuses": sorted({str(row.get("status")) for row in slow})},
             "configuration": faults["engine_configuration"](),
         }
@@ -1721,7 +1738,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         "PRODUCER_PYTEST_GREMLINS": {
             "status": "QUALIFIED" if engine_ok else "NOT QUALIFIED",
             "intended_use": "generate comparison, boundary, arithmetic, boolean, return, statement and body mutants and Python's own (a removed argument, operand, conversion, method call or container element, a swapped attribute, a condition replaced or negated) on the declared target, keep arid code and suppressed mutants out of the run, and report a mutant as caught only when a selected test fails and as not reached when no test covers its line",
-            "false_green_control": "parametrized, fixture-using and pytest-bdd tests that assert nothing must catch no mutant; tests that pin the behavior must catch every planted mutant in every family, Python's own among them, and tests that assert nothing none of them; a keyword the callee requires is never removed, a loop's condition is never made True or negated, a statement, module, class or awaited call is never cut to its receiver; a scoped run must reproduce the full run's mutants on those lines exactly; mutants in logging code must not be planted unless the policy turns the rule off; a suppressed mutant must not run and must carry its category; a generator or dunder body must not be replaced; mutants of uncovered code must be reported not reached, and the diff run must not run them",
+            "false_green_control": "parametrized, fixture-using and pytest-bdd tests that assert nothing must catch no mutant; tests that pin the behavior must catch every planted mutant in every family, Python's own among them, and tests that assert nothing none of them; a keyword the callee requires is never removed, a loop's condition is never made True or negated, a statement, module, class or awaited call is never cut to its receiver; a scoped run must reproduce the full run's mutants on those lines exactly; mutants in logging code must not be planted unless the policy turns the rule off; a suppressed mutant must not run and must carry its category; a generator or dunder body must not be replaced; mutants of uncovered code must be reported not reached, and the diff run must not run them; several mutants at once and the engine's incremental cache, filled and then read, must give exactly the outcomes of a plain run",
             "control": engine_detail,
         },
         "PRODUCER_IMPLEMENTATION_FAULT_ADAPTER": {
@@ -1743,8 +1760,9 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
     # Bounded by paths, as the Test Plan bounds it, so the control repeats on any machine.
     judgement = {"seconds": 60, "paths": 100, "members": ["m1", "m2"], "threshold": 0.5, "calibrated": True, "answers": payload["judgement_answers"]}
 
-    def run(drafts: dict[str, str], proposals: list[dict] | None = None) -> list[dict]:
+    def run(drafts: dict[str, str], proposals: list[dict] | None = None, known: dict[str, dict] | None = None) -> list[dict]:
         request = {
+            "known": known or {},
             "root": str(calibration),
             "contract_id": "CALIBRATION",
             "proposals": payload["proposals"] if proposals is None else proposals,
@@ -1784,6 +1802,20 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
         [(row["class"], row["outcome"]) for row in merged_twins] == [("c1", "caught"), ("c2", "duplicate")]
         and not builder["results_pair"](list(reversed(twin_rows)), twins)
     )
+    # A run given an earlier run's rows for the same mutants keeps their test runs and gets the same outcomes.
+    rerun = run(cascade["load_drafts"]("calibration"), None, {f"{row['class']}|{row['id']}": row for row in results})
+    known_same = (
+        [(row["id"], row["outcome"]) for row in rerun] == [(row["id"], row["outcome"]) for row in results]
+        and any((row.get("tests") or {}).get("reused") for row in rerun)
+    )
+    # A mutant's tests are the contract's tests that ran its target in the retained run, by per-test coverage.
+    double_path = ".ai-bridge/semantic-mutants/calibration/src/calibration_target.py"
+    double_span = cascade["function_span"]((ROOT / double_path).read_text(), "double")
+    body = str(double_span[0] + 1) if double_span else "0"
+    coverage = {"files": {double_path: {"contexts": {body: ["checks/t.py::test_runs|run", "checks/t.py::test_param[2]|run", ""]}}}}
+    selected = builder["covering_tests"](["checks/t.py::test_runs", "checks/t.py::test_param", "checks/t.py::test_other"], coverage, double_path + "::double")
+    unmeasured = builder["covering_tests"](["checks/t.py::test_runs"], {"files": {}}, double_path + "::double")
+    covering_ok = selected == ["checks/t.py::test_runs", "checks/t.py::test_param"] and unmeasured == ["checks/t.py::test_runs"]
     # Draft tests against whole mutated modules, judged in two processes at once, are kept and rejected
     # as the cascade keeps and rejects them, and come back in their order.
     distinguished = next(row for row in payload["proposals"] if row["id"] == "C-DISTINGUISHED")
@@ -2028,6 +2060,8 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
         and chunked_same
         and repeated_together
         and twins_ok
+        and known_same
+        and covering_ok
         and pins_ok
         and not leftover
         and hints_refused
@@ -2066,11 +2100,12 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
         "PRODUCER_SEMANTIC_MUTANT_CASCADE": {
             "status": "QUALIFIED" if ok else "NOT QUALIFIED",
             "intended_use": "judge frozen semantic mutant proposals for a named risk without a model: reject identical, duplicate, invalid and unconfined ones, run the rest against the contract's passing tests in an isolated copy, and look for an input that tells a survivor apart from the original",
-            "false_green_control": "a calibration set with a known outcome for every proposal: an identical, a rule-duplicate, an invalid, a confined one that adds an import, one whose module no longer imports, a caught, an equivalent (must stay undecided, never caught, and only be labelled likely equivalent by unanimous assessors), a distinguishable (must be found), one only the symbolic search finds, one whose assessor input is refuted, a stale, a reviewer-judged equivalent and a mutant an earlier proposal repeats; the set judged in chunks at once, as the builder judges a contract, with the same outcome for every proposal and the repeated mutant in its original's chunk, and the results of one mutant selected for two classes, which carry one id, kept in their places; draft tests against a whole mutated module judged in two processes at once, kept and rejected in their order; a kept draft, a draft that imports beyond the allowed and one that uses exec, both rejected without being run; a selected target without proposals that must keep its class undecided; a scenario pytest-bdd generates, whose example for a draft must be its module's step definitions; a draft failing on the original, rejected with pytest's errors free of the copy's path and memory addresses; a draft in the project's style only, formatted and safely fixed, rejected for a lint rule it still breaks; the imports a draft may use, where `from package import module` imports the module and a Technical requirement's module brings the project modules it imports itself; and a small project on which the grounding check must find exactly the invented member, the two unknown arguments, the misplaced import and the missing module of one draft, the arguments a call leaves out (also through the draft's own subclass and its super().__init__, not for a positional argument or a subclass with fields of its own) in another, and nothing in a third that uses a name from an outside package, a constant, a submodule, a test helper and an inherited constructor, with the API card naming every enum member and field, and a name the draft uses that its question never shows counted as a gap; pytest's reason for a failure without error lines; the async test rule only for pytest-asyncio's strict mode; the callers of a module-level function and the functions of its module it calls or hands on; the path to a changed line read from its function's branches, loops, handlers and early exits; what a weak draft reached of its defect, a statement counted on its first line and a function's def not as a call; and the check a model with tools runs in its copy of the calibration project, refusing a forbidden primitive unrun and telling a weak draft which changed lines it never reached",
+            "false_green_control": "a calibration set with a known outcome for every proposal: an identical, a rule-duplicate, an invalid, a confined one that adds an import, one whose module no longer imports, a caught, an equivalent (must stay undecided, never caught, and only be labelled likely equivalent by unanimous assessors), a distinguishable (must be found), one only the symbolic search finds, one whose assessor input is refuted, a stale, a reviewer-judged equivalent and a mutant an earlier proposal repeats; the set judged in chunks at once, as the builder judges a contract, with the same outcome for every proposal and the repeated mutant in its original's chunk, and the results of one mutant selected for two classes, which carry one id, kept in their places; a second run given the first run's rows keeping their test runs with the same outcomes; a mutant's tests chosen by the retained run's per-test coverage, a parametrized test by its base name, and all of them where coverage measured nothing; draft tests against a whole mutated module judged in two processes at once, kept and rejected in their order; a kept draft, a draft that imports beyond the allowed and one that uses exec, both rejected without being run; a selected target without proposals that must keep its class undecided; a scenario pytest-bdd generates, whose example for a draft must be its module's step definitions; a draft failing on the original, rejected with pytest's errors free of the copy's path and memory addresses; a draft in the project's style only, formatted and safely fixed, rejected for a lint rule it still breaks; the imports a draft may use, where `from package import module` imports the module and a Technical requirement's module brings the project modules it imports itself; and a small project on which the grounding check must find exactly the invented member, the two unknown arguments, the misplaced import and the missing module of one draft, the arguments a call leaves out (also through the draft's own subclass and its super().__init__, not for a positional argument or a subclass with fields of its own) in another, and nothing in a third that uses a name from an outside package, a constant, a submodule, a test helper and an inherited constructor, with the API card naming every enum member and field, and a name the draft uses that its question never shows counted as a gap; pytest's reason for a failure without error lines; the async test rule only for pytest-asyncio's strict mode; the callers of a module-level function and the functions of its module it calls or hands on; the path to a changed line read from its function's branches, loops, handlers and early exits; what a weak draft reached of its defect, a statement counted on its first line and a function's def not as a call; and the check a model with tools runs in its copy of the calibration project, refusing a forbidden primitive unrun and telling a weak draft which changed lines it never reached",
             "control": {
                 "outcomes": outcomes, "expected": expected, "reasons": reasons, "kept_draft": kept, "rejected_draft": rejected,
                 "chunks": [[payload["proposals"][index]["id"] for index in chunk] for chunk in chunks], "chunked_same": chunked_same,
                 "pins_at_once": [(row["key"], row["accepted"]) for row in pinned],
+                "known_runs_same": known_same, "covering_tests": covering_ok,
                 "primitive_draft": primitive, "projection": projection, "target_without_proposals": unchallenged,
                 "judgement": {key: {"status": value.get("status"), "found_by": found_by.get(key)} for key, value in judged.items() if value},
                 "scenario_example_lines": len(scenario_example.splitlines()),
@@ -2495,6 +2530,44 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
                                  ledger_path=temp / "flip.jsonl", backends={"antigravity-cli": flipping_agy})
         _flip_row, flip_answer = flip_run.call("generator", response_dir=temp / "flip", **request)
         flip_refusal = next(row for row in flip_run.rows if row["outcome"] == "rejected")
+        # An account Antigravity does not let in (its owner has yet to verify it) takes no call of the run:
+        # every quota of it counts as spent, and the call is asked again on another account.
+        barred = FakeAgm({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "third": {"gemini-pro": 100, "gemini-flash": 100, "other": 100},
+                          "fifth": {"gemini-pro": 90, "gemini-flash": 90, "other": 100}}, "main")
+        barred_agy = AgyScripted([probe(), invocation("unavailable", models["INELIGIBLE"] + "Eligibility check failed: Your current account is not eligible for Antigravity."), answered()], barred)
+        barred_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
+                                   ledger_path=temp / "barred.jsonl", backends={"antigravity-cli": barred_agy})
+        barred_row, barred_answer = barred_run.call("generator", response_dir=temp / "barred", **request)
+        barred_refusal = next(row for row in barred_run.rows if row["outcome"] == "unavailable")
+        checks["an Antigravity account that is not let in takes no call of the run: its quotas count as spent and another account answers"] = (
+            barred_answer is not None and barred_row["account"] == models["account_label"]("fifth")
+            and barred_refusal["account"] == models["account_label"]("third") and barred_refusal["account_verified"] is True
+            and all(barred_run.quota_left("antigravity-cli", "third", model) == -1 for model in (pro, "gemini-3.8-flash-high", "claude-opus-4-6-thinking"))
+            and barred.switches == ["third", "fifth"]
+        )
+        # The account a person left agy on is not let in from the start: the probe itself moves on to an
+        # account that is, and a later run skips that account without a call for a while.
+        start_barred = FakeAgm({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "third": {"gemini-pro": 100, "gemini-flash": 100, "other": 100},
+                                "fifth": {"gemini-pro": 90, "gemini-flash": 90, "other": 100}}, "third")
+        start_agy = AgyScripted([invocation("unavailable", models["INELIGIBLE"] + "Eligibility check failed."), probe(), answered()], start_barred)
+        start_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
+                                  ledger_path=temp / "start-barred.jsonl", backends={"antigravity-cli": start_agy})
+        start_row, start_answer = start_run.call("generator", response_dir=temp / "start-barred", **request)
+        start_probes = [row for row in start_run.rows if row["role"] == "probe"]
+        later = FakeAgm({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "third": {"gemini-pro": 100, "gemini-flash": 100, "other": 100},
+                         "fifth": {"gemini-pro": 90, "gemini-flash": 90, "other": 100}}, "third")
+        later_agy = AgyScripted([probe(), answered()], later)
+        later_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
+                                  ledger_path=temp / "start-barred.jsonl", backends={"antigravity-cli": later_agy})
+        _later_row, later_answer = later_run.call("generator", response_dir=temp / "start-barred", **request)
+        checks["an account agy was left on that is not let in hands even the probe to another account, and later runs skip it without a call for a while"] = (
+            start_answer is not None and start_row["account"] == models["account_label"]("fifth")
+            and [(row["account"], row["outcome"], row.get("account_verified")) for row in start_probes]
+            == [(models["account_label"]("third"), "unavailable", True), (models["account_label"]("fifth"), "ok", None)]
+            and start_barred.switches == ["fifth"]
+            and later_answer is not None and later_agy.calls == 2 and later.switches == ["fifth"]
+            and all(row["account"] != models["account_label"]("third") for row in later_run.rows)
+        )
         checks["agy's credential store, not agm's list, says which account agy uses: a switch counts once the store holds it, and a refusal the store no longer confirms blames no account"] = (
             {alias: row["agy"] for alias, row in diverged_snapshot.items()} == {"main": True, "second": False}
             and diverged.switch("second") and diverged.cli_address() == "b@example.test"

@@ -296,7 +296,24 @@
    "verdict": "irrelevant"
   },
   "operator": "condition",
-  "prompt_sha256": "3dc4971bb764d30c0bda9e4ef4bdd9046af216a9323bb7e4b99640284516e626"
+  "prompt_sha256": "3dc4971bb764d30c0bda9e4ef4bdd9046af216a9323bb7e4b99640284516e626",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260930T003104Z-d17e5d",
+   "confirmed": false,
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "3dc4971bb764d30c0bda9e4ef4bdd9046af216a9323bb7e4b99640284516e626",
+   "reason": "The change removes the minimum threshold for fallback shuffling, causing fallbacks to be shuffled unconditionally when shuffling is enabled. The requirements only mandate that the selected starting route is never moved away from the first attempt during shuffling, but do not specify any conditions on when shuffling should occur based on route count.",
+   "response_sha256": "49567d58a323ba1b58b92e15532595be65d748a73aba82776d6e5bb03ab6539d",
+   "sources": [
+    "and len(routes) >= options.min_routes_for_fallback_shuffle",
+    "Fallback shuffling never moves the already selected starting route away from the first attempt."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  },
  "93873599753fc994": {
   "answer": {

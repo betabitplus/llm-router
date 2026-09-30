@@ -679,7 +679,7 @@ def isolated_copy(root: Path, destination: Path, extra: tuple[str, ...] = ()) ->
     return destination
 
 
-def run_tests(project: Path, workdir: Path, tests: list[str], timeout: int = 900, measure: Path | None = None) -> dict:
+def run_tests(project: Path, workdir: Path, tests: list[str], timeout: int = 900, measure: Path | None = None, fail_fast: bool = False) -> dict:
     """The contract's passing tests in the isolated copy, with full pytest and the retained run's rules;
     with ``measure``, under coverage of that one file, whose executed lines the result then names."""
     env = {
@@ -691,7 +691,7 @@ def run_tests(project: Path, workdir: Path, tests: list[str], timeout: int = 900
     data_file = workdir / ".draft-coverage"
     runner = ["coverage", "run", f"--data-file={data_file}", f"--include={measure}", "-m", "pytest"] if measure else ["pytest"]
     command = [
-        shutil.which("uv") or "uv", "run", "--project", str(project), *runner, "-q",
+        shutil.which("uv") or "uv", "run", "--project", str(project), *runner, "-q", *(["-x"] if fail_fast else []),
         "-p", "no:randomly", "-p", "no:cacheprovider", *HERMETIC_OPTIONS, "--no-cov", *tests,
     ]
     started = time.monotonic()
@@ -862,7 +862,7 @@ def proposal_inputs(root: Path, proposal: dict, context_sha256: str) -> tuple[bo
     return True, ""
 
 
-def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list[str], context_sha256: dict[str, str], drafts: dict[str, str] | None = None, judgement: dict | None = None, symbolic_cache: dict | None = None, time_limits: list[float] | None = None) -> dict:
+def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list[str], context_sha256: dict[str, str], drafts: dict[str, str] | None = None, judgement: dict | None = None, symbolic_cache: dict | None = None, time_limits: list[float] | None = None, covering: dict[str, list[str]] | None = None, known: dict[str, dict] | None = None) -> dict:
     """Judge every proposal of one contract; nothing here calls a model.
 
     ``root`` is the source tree to copy (the repository, or a calibration project); the tests
@@ -871,12 +871,17 @@ def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list
     ``judgement`` carries the survivor judgement's settings and the assessors' stored answers
     per proposal; without it a survivor the differential run cannot tell apart stays undecided.
     ``symbolic_cache`` holds earlier symbolic results by what they depend on; a found input is
-    still confirmed by execution every time.
+    still confirmed by execution every time. ``covering`` names, per target, the contract's tests
+    that run it in the retained run (the others cannot reach its mutant); ``known`` holds, by class
+    and id, the rows of a run of the same mutants under the same tests and inputs, whose test runs
+    stand, so only the judgement and the drafts are made again.
     """
     drafts = drafts or {}
     symbolic_cache = dict(symbolic_cache or {})
     results = []
     seen_forms: set[str] = set()
+    # The type errors of each original file, counted once.
+    baselines: dict[str, int | None] = {}
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="ternforge-semantic-") as scratch:
         # The tests' own top-level folders are copied too (a calibration project keeps its checks apart).
@@ -919,35 +924,20 @@ def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list
                 results.append({**row, "outcome": "duplicate", "reason": "an earlier proposal is the same mutant"})
                 continue
             seen_forms.add(form)
-            baseline_errors = type_errors(file)
-            file.write_text(mutated_source)
+            row["mutated_sha256"] = sha256_text(mutated_source)
+            known_row = (known or {}).get(f"{proposal['class']}|{proposal['id']}") or {}
             try:
-                ok, detail = importable(workdir, module_name(path))
-                if not ok:
-                    results.append({**row, "outcome": "invalid", "reason": "the mutated module does not import: " + detail.strip()[-200:]})
-                    continue
-                mutant_errors = type_errors(file)
-                if baseline_errors is not None and mutant_errors is not None and mutant_errors > baseline_errors:
-                    results.append({**row, "outcome": "invalid", "reason": f"it adds {mutant_errors - baseline_errors} type error(s)"})
-                    continue
-                # The campaign's time limits (1.25 times the retained run's time for these tests and
-                # 10 s, twice that to confirm): a run that does not finish is run once more at the
-                # confirming limit, so a busy machine is not taken for a hang.
-                limit, confirm = time_limits or (900.0, 900.0)
-                run = run_tests(PROJECT, workdir, tests, timeout=limit)
-                if run["returncode"] is None and confirm > limit:
-                    run = run_tests(PROJECT, workdir, tests, timeout=confirm)
-                row["tests"] = {"count": len(tests), **run}
-                if run["returncode"] == 1:
-                    results.append({**row, "outcome": "caught", "reason": "a test of the contract fails on it"})
-                    continue
-                if run["returncode"] is None:
-                    # A hang the tests expose is caught, as a timeout is in the campaign.
-                    results.append({**row, "outcome": "caught", "reason": f"the tests do not finish on it within {confirm:g} s"})
-                    continue
-                if run["returncode"] != 0:
-                    results.append({**row, "outcome": "invalid", "reason": f"the tests could not run (exit {run['returncode']})"})
-                    continue
+                if known_row.get("mutated_sha256") == row["mutated_sha256"] and known_row.get("tests") is not None:
+                    # The same mutant under the same tests and inputs: its test run stands.
+                    row["tests"] = {**known_row["tests"], "reused": True}
+                    if known_row.get("outcome") in {"caught", "invalid"}:
+                        results.append({**row, "outcome": known_row["outcome"], "reason": known_row.get("reason")})
+                        continue
+                else:
+                    decided = mutant_tests(workdir, file, path, mutated_source, list((covering or {}).get(proposal["target"], tests)), time_limits, baselines, row)
+                    if decided is not None:
+                        results.append(decided)
+                        continue
                 original_copy = Path(scratch) / f"original_{proposal['id']}.py"
                 mutant_copy = Path(scratch) / f"mutant_{proposal['id']}.py"
                 original_copy.write_text(original_source)
@@ -989,6 +979,46 @@ def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list
             finally:
                 file.write_text(original_source)
     return {"results": results, "seconds": round(time.monotonic() - started, 1), "symbolic_cache": symbolic_cache}
+
+
+def mutant_tests(workdir: Path, file: Path, path: str, mutated_source: str, selected: list[str], time_limits: list[float] | None, baselines: dict, row: dict) -> dict | None:
+    """The contract's tests on one mutant, in the copy: its result row when they decide it (caught,
+    or invalid), else None with the run recorded on ``row``. Only the tests that run the target run,
+    and they stop at the first failure, as PIT and Stryker stop; whether the module imports is asked
+    only when a type check or the run fails, for the reason, since a run imports it anyway."""
+    if path not in baselines:
+        baselines[path] = type_errors(file)
+    file.write_text(mutated_source)
+    baseline_errors, mutant_errors = baselines[path], type_errors(file)
+    if baseline_errors is not None and mutant_errors is not None and mutant_errors > baseline_errors:
+        ok, detail = importable(workdir, module_name(path))
+        reason = f"it adds {mutant_errors - baseline_errors} type error(s)" if ok else "the mutated module does not import: " + detail.strip()[-200:]
+        return {**row, "outcome": "invalid", "reason": reason}
+    if not selected:
+        ok, detail = importable(workdir, module_name(path))
+        if not ok:
+            return {**row, "outcome": "invalid", "reason": "the mutated module does not import: " + detail.strip()[-200:]}
+        row["tests"] = {"count": 0, "returncode": 0, "seconds": 0.0, "tail": "", "errors": [], "note": "no test of the contract runs the target"}
+        return None
+    # The campaign's time limits (1.25 times the retained run's time for these tests and 10 s,
+    # twice that to confirm): a run that does not finish is run once more at the confirming limit,
+    # so a busy machine is not taken for a hang.
+    limit, confirm = time_limits or (900.0, 900.0)
+    run = run_tests(PROJECT, workdir, selected, timeout=limit, fail_fast=True)
+    if run["returncode"] is None and confirm > limit:
+        run = run_tests(PROJECT, workdir, selected, timeout=confirm, fail_fast=True)
+    row["tests"] = {"count": len(selected), **run}
+    if run["returncode"] == 1:
+        return {**row, "outcome": "caught", "reason": "a test of the contract fails on it"}
+    if run["returncode"] is None:
+        # A hang the tests expose is caught, as a timeout is in the campaign.
+        return {**row, "outcome": "caught", "reason": f"the tests do not finish on it within {confirm:g} s"}
+    if run["returncode"] != 0:
+        ok, detail = importable(workdir, module_name(path))
+        if not ok:
+            return {**row, "outcome": "invalid", "reason": "the mutated module does not import: " + detail.strip()[-200:]}
+        return {**row, "outcome": "invalid", "reason": f"the tests could not run (exit {run['returncode']})"}
+    return None
 
 
 # A kept draft passes on the original this many times in a row (TestGen-LLM's reliability filter).
@@ -2325,6 +2355,8 @@ def main() -> None:
         request.get("judgement"),
         request.get("symbolic_cache"),
         request.get("time_limits"),
+        request.get("covering"),
+        request.get("known"),
     )
     Path(sys.argv[3]).write_text(json.dumps(outcome, indent=2, sort_keys=True) + "\n")
 

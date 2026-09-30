@@ -652,6 +652,10 @@ def engine_configuration() -> dict:
         "operators": list(OPERATORS),
         "plugin_sha256": plugin_sha256(),
         "hermetic_options": list(HERMETIC_OPTIONS),
+        # The engine's own incremental cache per contract, emptied when the engine, the tests'
+        # shared inputs or any source file changes; the cores shared by the contracts that run.
+        "incremental_cache": "per contract; a mutant keeps its result while its source file and covering test files are unchanged",
+        "mutants_at_once": "the machine's cores less one, shared by the contracts that run at once",
         "time_limits": {
             "factor": TIME_LIMIT_FACTOR,
             "constant_seconds": TIME_LIMIT_CONSTANT_SECONDS,
@@ -669,9 +673,18 @@ def plan_key(plan: dict) -> dict:
     }
 
 
+# How a campaign runs, not what it judges: a result made with other settings of these stands, as a
+# build cache keys an action by its inputs, never by how many workers ran it.
+EXECUTION_KEYS = ("incremental_cache", "mutants_at_once")
+
+
+def judging_configuration(configuration: dict | None) -> dict:
+    return {key: value for key, value in (configuration or {}).items() if key not in EXECUTION_KEYS}
+
+
 def entry_state(entry: dict, plan: dict, shared_sha256: str, own_inputs: dict) -> tuple[str, str]:
     """Is a retained campaign result still the result the engine would produce now?"""
-    if entry.get("engine") != engine_configuration():
+    if judging_configuration(entry.get("engine")) != judging_configuration(engine_configuration()):
         return "stale", "the mutation engine configuration changed"
     if entry.get("plan_key") != plan_key(plan):
         return "stale", "the contract's code scope or its passing tests changed"
@@ -772,13 +785,20 @@ def run_engine(
     skip_uncovered: bool = False,
     project: Path | None = None,
     scratch: Path | None = None,
+    cache: Path | None = None,
+    workers: int = 1,
 ) -> dict:
     """Run pytest-gremlins for one contract in place and retain its JSON report.
 
     The scope defaults to the contract's attributable lines; the pull-request diff
     narrows it to the changed ones and skips the mutants no test covers. A run in a
     copy of the working tree names the project whose environment it uses and a
-    scratch folder of its own.
+    scratch folder of its own. With ``cache``, the engine's own incremental cache
+    (PIT's history, Stryker's incremental mode) is read from that folder and kept
+    there: a mutant whose source file and covering test files are unchanged keeps
+    its result, and one a new or changed test covers runs again; the caller clears
+    the folder when anything else the results depend on changes. ``workers`` runs
+    that many mutants at once.
     """
     report_dir = root / "coverage/gremlins"
     coverage_dir_existed = (root / "coverage").exists()
@@ -791,6 +811,14 @@ def run_engine(
     )
     files = sorted(scope) if scope is not None else plan["files"]
     command = [*engine_command(root, plan["tests"], files, project=project), "--no-cov"]
+    if workers > 1:
+        command.append(f"--gremlin-workers={int(workers)}")
+    engine_cache = root / ".gremlins_cache"
+    if cache is not None:
+        command.append("--gremlin-cache")
+        shutil.rmtree(engine_cache, ignore_errors=True)
+        if cache.is_dir():
+            shutil.copytree(cache, engine_cache)
     started = time.monotonic()
     shutil.rmtree(report_dir, ignore_errors=True)
     try:
@@ -836,6 +864,11 @@ def run_engine(
         )
         retained = True
     shutil.rmtree(report_dir, ignore_errors=True)
+    if cache is not None and engine_cache.is_dir():
+        shutil.rmtree(cache, ignore_errors=True)
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(engine_cache, cache)
+    shutil.rmtree(engine_cache, ignore_errors=True)
     if not coverage_dir_existed:
         shutil.rmtree(root / "coverage", ignore_errors=True)
     (root / ".coveragerc.gremlins").unlink(missing_ok=True)

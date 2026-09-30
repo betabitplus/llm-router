@@ -499,29 +499,29 @@ def annotate(tree: ast.Module, path: str = "", project: Project | None = None) -
     attributes the same code reads on the same object."""
     if getattr(tree, "_tf_annotated", False):
         return tree
-    tree._tf_annotated = True  # ty: ignore[unresolved-attribute]
+    tree._tf_annotated = True
     for parent in ast.walk(tree):
         for child in ast.iter_child_nodes(parent):
-            child._tf_parent = _Link(parent)  # ty: ignore[unresolved-attribute]
+            child._tf_parent = _Link(parent)
         if isinstance(parent, (ast.If, ast.While, ast.IfExp)):
-            parent.test._tf_test = True  # ty: ignore[unresolved-attribute]
+            parent.test._tf_test = True
         # An if without else around one effect statement, read before any mutant rewrites its body.
         if isinstance(parent, ast.If):
-            parent.test._tf_single_effect = (  # ty: ignore[unresolved-attribute]
+            parent.test._tf_single_effect = (
                 not parent.orelse and len(parent.body) == 1 and is_effect_statement(parent.body[0])
             )
     modules = project.modules(tree, path) if project is not None else _imported_modules(tree)
     for node in ast.walk(tree):
         if isinstance(node, ast.Call):
             parent = parent_of(node)
-            node._tf_statement = isinstance(parent, ast.Expr) or (  # ty: ignore[unresolved-attribute]
+            node._tf_statement = isinstance(parent, ast.Expr) or (
                 isinstance(parent, ast.Await) and isinstance(parent_of(parent), ast.Expr)
             )
-            node._tf_awaited = isinstance(parent, ast.Await)  # ty: ignore[unresolved-attribute]
+            node._tf_awaited = isinstance(parent, ast.Await)
             # The first argument as written, before a mutant of it rewrites it.
-            node._tf_first_argument = node.args[0] if node.args else None  # ty: ignore[unresolved-attribute]
+            node._tf_first_argument = node.args[0] if node.args else None
             receiver = node.func.value if isinstance(node.func, ast.Attribute) else None
-            node._tf_module_receiver = isinstance(receiver, ast.Name) and receiver.id in modules  # ty: ignore[unresolved-attribute]
+            node._tf_module_receiver = isinstance(receiver, ast.Name) and receiver.id in modules
             definition = None
             if project is not None and isinstance(node.func, ast.Name):
                 definition = project.definition(tree, path, node.func.id)
@@ -531,7 +531,7 @@ def annotate(tree: ast.Module, path: str = "", project: Project | None = None) -
                     (item for item in getattr(cls, "body", []) if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name == node.func.attr),
                     None,
                 )
-            node._tf_required = required_parameters(definition)  # ty: ignore[unresolved-attribute]
+            node._tf_required = required_parameters(definition)
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             reads: dict[str, set[str]] = {}
             attributes = []
@@ -551,12 +551,12 @@ def annotate(tree: ast.Module, path: str = "", project: Project | None = None) -
             if isinstance(owner, ast.ClassDef):
                 reads["self"] = reads.get("self", set()) | _class_attributes(owner)
             for item, receiver in attributes:
-                item._tf_siblings = sorted(reads.get(receiver, set()) - {item.attr})  # ty: ignore[unresolved-attribute]
+                item._tf_siblings = sorted(reads.get(receiver, set()) - {item.attr})
     return tree
 
 
 def _described(node: ast.AST, text: str) -> ast.AST:
-    node._tf_description = text  # ty: ignore[unresolved-attribute]
+    node._tf_description = text
     return node
 
 

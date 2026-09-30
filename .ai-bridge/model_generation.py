@@ -427,6 +427,15 @@ def parse_claude_stream(stdout: str, stderr: str, returncode: int, schema: dict 
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 
 
+# What Antigravity says of an account it does not let in, such as one whose owner has yet to verify it.
+INELIGIBLE = "the Antigravity account cannot be used: "
+# The quotas agm reports per account.
+QUOTA_FAMILIES = ("gemini-pro", "gemini-flash", "other")
+# How long an account Antigravity did not let in is skipped without a call: long enough to spare a
+# run's calls, short enough that an account its owner has since verified comes back.
+BARRED_FOR = timedelta(hours=6)
+
+
 # When Antigravity says a spent quota resets ("Individual quota reached. … Resets in 94h9m42s").
 QUOTA_RESET = re.compile(r"Resets in (?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?")
 
@@ -611,7 +620,7 @@ def parse_antigravity_json(stdout: str, stderr: str, returncode: int, schema: di
         # The first line only: a sign-in message goes on to a personal verification link.
         reason = _clip(error.strip().splitlines()[0] if error.strip() else f"exit {returncode}")
         if re.search(r"eligib|verify your account|sign ?in|log ?in|authenticate|authentication|credential", error, re.IGNORECASE):
-            return Invocation("unavailable", "the Antigravity account cannot be used: " + reason, **common)
+            return Invocation("unavailable", INELIGIBLE + reason, **common)
         if re.search(r"quota|credits|rate limit|resource.exhausted|429", error, re.IGNORECASE):
             return Invocation("rejected", "the Antigravity quota rejected the call: " + reason, **common)
         return Invocation("error", "the call failed: " + reason, **common)
@@ -997,12 +1006,41 @@ class Run:
             now = datetime.fromisoformat(self.clock())
             labels = {account_label(alias) or alias: alias for alias in snapshot}
             for row in read_ledger(self.ledger_path):
-                if row.get("backend") != name or row.get("outcome") != "rejected" or not row.get("account_verified"):
+                if row.get("backend") != name or not row.get("account_verified"):
+                    continue
+                # An account Antigravity did not let in a little while ago is skipped without a call.
+                if row.get("outcome") == "unavailable" and str(row.get("reason") or "").startswith(INELIGIBLE):
+                    at = datetime.fromisoformat(str(row.get("at")))
+                    alias = labels.get(str(row.get("account") or ""))
+                    if alias and now - at < BARRED_FOR:
+                        self.exhausted.update((name, alias, family) for family in QUOTA_FAMILIES)
+                    continue
+                if row.get("outcome") != "rejected":
                     continue
                 resets = quota_resets_at(str(row.get("reason") or ""), str(row.get("at") or ""))
                 if resets is None or resets <= now:
                     continue
                 self.spend_quota(name, str(row.get("model") or ""), labels.get(str(row.get("account") or "")), str(row.get("reason") or ""), resets)
+
+    def confirm_refusal(self, name: str, used: str, model: str, invocation) -> bool | None:
+        """For an Antigravity call its account refused (``refused_account``): whether agy's credential
+        store still holds the account the call used. If it does, what the account refused counts as
+        spent (the model's quota, or every quota of an account Antigravity does not let in) and the
+        next check moves agy to another account; if the store holds another account (a person moved
+        agy meanwhile), the run follows it and blames none. None where the call was not refused or no
+        agm keeps accounts. The accounts are alike: which one answers is only a matter of which can."""
+        if not (refused_account(invocation) and self.agy_accounts.get(name)):
+            return None
+        accounts = self.accounts(name)
+        actual = accounts.cli_address()
+        verified = actual == accounts.addresses.get(used, used)
+        if actual and not verified:
+            self.backend(name).profile = accounts.alias_of(actual)
+        elif invocation.outcome == "unavailable":
+            self.exhausted.update((name, used, family) for family in QUOTA_FAMILIES)
+        else:
+            self.spend_quota(name, model, used, invocation.reason, quota_resets_at(invocation.reason, self.clock()))
+        return verified
 
     def spend_quota(self, name: str, model: str, alias: str | None, reason: str, resets: datetime | None = None) -> None:
         """Mark a model's quota spent on the account that refused it, with the time it resets when the
@@ -1108,31 +1146,38 @@ class Run:
         if name in self.availability:
             return self.availability[name]
         backend = self.backend(name)
-        # With several Antigravity accounts the probe itself runs on one with quota left.
+        # With several Antigravity accounts the probe itself runs on one with quota left, and an
+        # account Antigravity does not let in hands the probe on to the next, as it hands any call.
         self.read_accounts(name)
-        self.choose_account(name, PROBE_MODELS[name])
         system, prompt = "Answer with one word.", "Reply with OK."
-        invocation = backend.invoke(model=PROBE_MODELS[name], system=system, prompt=prompt, schema=None, usd_cap=0.05, timeout=120)
-        self.versions[name] = invocation.backend_version or backend.version()
-        self.windows[name] = invocation.windows
+        for turn in range(max(1, len(self.agy_accounts.get(name) or {}))):
+            self.choose_account(name, PROBE_MODELS[name])
+            used = str(getattr(backend, "profile", "") or "")
+            invocation = backend.invoke(model=PROBE_MODELS[name], system=system, prompt=prompt, schema=None, usd_cap=0.05, timeout=120)
+            verified = self.confirm_refusal(name, used, PROBE_MODELS[name], invocation) if invocation.outcome == "unavailable" else None
+            self.versions[name] = invocation.backend_version or backend.version()
+            self.windows[name] = invocation.windows
+            self.record({
+                "call_id": new_call_id(), "role": "probe", "purpose": "probe", "contract_id": "", "subject": "",
+                "backend": name, "account": account_label(used), "backend_version": self.versions[name], "model": PROBE_MODELS[name],
+                "outcome": invocation.outcome, "reason": invocation.reason, "prompt_sha256": sha256_text(prompt),
+                "system_sha256": sha256_text(system), "schema_sha256": "", "response_sha256": "",
+                "tokens": invocation.tokens, "list_usd": invocation.list_usd, "seconds": invocation.seconds,
+                "windows": invocation.windows,
+                **({"account_verified": verified} if verified is not None else {}),
+                # What each Antigravity account had left when the run began, each named by a digest.
+                **({"quotas": {
+                    account_label(alias) or alias: {family: row.get(family) for family in ("gemini-pro", "gemini-flash", "other")}
+                    for alias, row in sorted((self.agy_accounts.get(name) or {}).items())
+                }} if self.agy_accounts.get(name) and turn == 0 else {}),
+            })
+            if verified is None:
+                break
         if invocation.outcome == "rejected":
             # A full window is a budget matter, not a missing backend: the guard defers every call.
             self.reject(name, PROBE_MODELS[name], invocation)
         unusable = invocation.outcome not in {"ok", "rejected"}
         self.availability[name] = (invocation.reason or invocation.outcome) if unusable else ""
-        self.record({
-            "call_id": new_call_id(), "role": "probe", "purpose": "probe", "contract_id": "", "subject": "",
-            "backend": name, "account": self.account(name), "backend_version": self.versions[name], "model": PROBE_MODELS[name],
-            "outcome": invocation.outcome, "reason": invocation.reason, "prompt_sha256": sha256_text(prompt),
-            "system_sha256": sha256_text(system), "schema_sha256": "", "response_sha256": "",
-            "tokens": invocation.tokens, "list_usd": invocation.list_usd, "seconds": invocation.seconds,
-            "windows": invocation.windows,
-            # What each Antigravity account had left when the run began, each named by a digest.
-            **({"quotas": {
-                account_label(alias) or alias: {family: row.get(family) for family in ("gemini-pro", "gemini-flash", "other")}
-                for alias, row in sorted((self.agy_accounts.get(name) or {}).items())
-            }} if self.agy_accounts.get(name) else {}),
-        })
         return self.availability[name]
 
     def quota_pool(self, name: str, model: str) -> str:
@@ -1275,23 +1320,11 @@ class Run:
             finally:
                 answered = invocation is not None and invocation.outcome in {"ok", "invalid"}
                 self.leave(pool, epoch, invocation is not None and overloaded(invocation), answered and in_flight == limit)
-            verified = None
             with self.lock:
                 if invocation.windows is not None:
                     self.windows[name] = invocation.windows
-                if invocation.outcome == "rejected" and self.agy_accounts.get(name):
-                    # The account the call used refused it if agy's credential store still holds that
-                    # account: its quota for the model is spent, and the next check moves agy to another
-                    # that has some or defers the call. Where the store holds another account, the run
-                    # follows the store and blames no account.
-                    accounts = self.accounts(name)
-                    actual = accounts.cli_address()
-                    verified = actual == accounts.addresses.get(used, used)
-                    if actual and not verified:
-                        self.backend(name).profile = accounts.alias_of(actual)
-                    else:
-                        self.spend_quota(name, model, used, invocation.reason, quota_resets_at(invocation.reason, self.clock()))
-                elif invocation.outcome == "rejected":
+                verified = self.confirm_refusal(name, used, model, invocation)
+                if verified is None and invocation.outcome == "rejected":
                     self.reject(name, model, invocation)
                 version = invocation.backend_version or self.versions.get(name, "")
             response = None
@@ -1323,7 +1356,7 @@ class Run:
             if invocation.outcome == "capped" and not again:
                 queue.insert(0, (entry, round(2 * usd_cap, 2), True))
                 continue
-            if invocation.outcome == "rejected" and self.agy_accounts.get(name):
+            if refused_account(invocation) and self.agy_accounts.get(name):
                 # The same model on another account, if one has quota left; else the guard defers it.
                 queue.insert(0, (entry, usd_cap, again))
                 continue
@@ -1334,6 +1367,11 @@ class Run:
 
     def summary(self) -> dict:
         return {"run_id": self.run_id, **spend(self.rows)}
+
+
+def refused_account(invocation) -> bool:
+    """An Antigravity call its account refused: its quota spent, or the account not let in at all."""
+    return invocation.outcome == "rejected" or (invocation.outcome == "unavailable" and str(invocation.reason or "").startswith(INELIGIBLE))
 
 
 # What a backend says when it is overloaded rather than out of quota: capacity or rate, not budget.

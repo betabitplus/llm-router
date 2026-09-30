@@ -155,6 +155,7 @@ MAP_PAGES=importlib.util.module_from_spec(MAP_PAGES_SPEC)
 MAP_PAGES_SPEC.loader.exec_module(MAP_PAGES)
 IMPL_FAULT_DIR=ROOT/"test-results/implementation-faults"
 IMPL_FAULT_CAMPAIGN_PATH=IMPL_FAULT_DIR/"campaign.json"
+ENGINE_CACHE_DIR=IMPL_FAULT_DIR/"engine-cache"
 
 
 def utc_now():
@@ -4943,6 +4944,21 @@ def retained_campaign_entry_state(entry,plan,shared_sha256,test_rows):
     return "current",""
 
 
+def engine_cache_for(contract_id,binding):
+    """The folder of the engine's incremental cache for one contract, emptied when anything its results
+    depend on beyond a mutant's source file and covering test files changed (``binding``): the engine
+    and its configuration, the tests' shared inputs, or any source file, since a mutant's tests also
+    run code of other files. So a cached result is reused only where tests alone changed, as when a
+    cycle adds mutation pins."""
+    folder=ENGINE_CACHE_DIR/contract_id
+    marker=ENGINE_CACHE_DIR/f"{contract_id}.binding"
+    if not marker.is_file() or marker.read_text().strip()!=binding:
+        shutil.rmtree(folder,ignore_errors=True)
+        ENGINE_CACHE_DIR.mkdir(parents=True,exist_ok=True)
+        marker.write_text(binding+"\n")
+    return folder
+
+
 def for_each_in_copies(items,work):
     """Run work(item, copy_root) for every item, as many at once as the engine allows, each in a
     copy of the working tree that no other run uses at the same time."""
@@ -5022,15 +5038,21 @@ def refresh_implementation_fault_campaign(contract_ids=None,full=False):
           "contracts":contracts,
         },indent=2,sort_keys=True)+"\n")
 
-    # Several contracts at once, each in its own copy of the working tree; each runs its mutants one by one.
+    # Several contracts at once, each in its own copy of the working tree, and the machine's cores
+    # shared among them: the fewer contracts run, the more mutants each runs at once.
     lock=threading.Lock()
     done=[0]
+    at_once=max(1,((os.cpu_count() or 2)-1)//max(1,min(IMPL_FAULTS.engine_workers(),len(selected))))
+    cache_binding=sha256_text(stable_json({
+      "engine":IMPL_FAULTS.engine_configuration(),"shared_inputs_sha256":shared_sha256,
+      "sources":{str(path.relative_to(ROOT)):sha256_file(path) for path in sorted(ROOT.glob("src/**/*.py"))},
+    }))
 
     def mutate(contract_id,copy_root):
         plan=plans[contract_id]
         raw_path=IMPL_FAULT_DIR/f"{contract_id}.gremlins.json"
         raw_path.unlink(missing_ok=True)
-        run=IMPL_FAULTS.run_engine_isolated(ROOT,copy_root,plan,raw_path)
+        run=IMPL_FAULTS.run_engine_isolated(ROOT,copy_root,plan,raw_path,cache=engine_cache_for(contract_id,cache_binding),workers=at_once)
         entry={
           "engine":IMPL_FAULTS.engine_configuration(),
           "plan_key":IMPL_FAULTS.plan_key(plan),
@@ -5273,7 +5295,7 @@ def refresh_scenario_mutants(full=False):
         print("[SCENARIO] nothing they depend on changed since the retained run: not run again",flush=True)
         return
     started=time.monotonic()
-    results=SCENARIO.run(ROOT,SCENARIO.generate(ROOT,ROOT/".venv/bin/pytest"),ROOT/".venv/bin/pytest")
+    results=SCENARIO.run(ROOT,SCENARIO.generate(ROOT,ROOT/".venv/bin/pytest"),ROOT/".venv/bin/pytest",workers=SEMANTIC_WORKERS)
     SCENARIO_RESULTS_PATH.parent.mkdir(parents=True,exist_ok=True)
     SCENARIO_RESULTS_PATH.write_text(json.dumps({"schema":SCENARIO.SCHEMA,"binding":binding,"ran_at":utc_now(),"results":results},indent=1,sort_keys=True)+"\n")
     counts=Counter(row["outcome"] for row in results)
@@ -5362,6 +5384,22 @@ SEMANTIC_WORKERS=IMPL_FAULTS.engine_workers()
 CASCADE_CHUNK=3
 
 
+def covering_tests(tests,coverage,target):
+    """The contract's tests that run a target function in the retained run, read from its per-test
+    coverage (a test's lines carry its node id); all of them where the run measured the file without
+    test contexts or the function cannot be found. A test the retained run parametrized counts by its
+    base name."""
+    path,qualname=target.split("::",1)
+    contexts=((coverage.get("files") or {}).get(path) or {}).get("contexts") or {}
+    source=ROOT/path
+    span=SEMANTIC.function_span(source.read_text(),qualname) if source.is_file() else None
+    if not contexts or span is None:
+        return list(tests)
+    start,end,_indent=span
+    ran={context.split("|",1)[0] for line in range(start,end+1) for context in contexts.get(str(line)) or [] if context}
+    return [test for test in tests if test in ran or any(name.startswith(test+"[") for name in ran)]
+
+
 def mutant_form(root,proposal):
     """The normal form of a proposal's mutated function, read as the cascade reads it; a proposal whose
     replacement does not apply or parse has its id instead, since the cascade never compares it."""
@@ -5433,6 +5471,8 @@ def refresh_semantic_mutants(contract_ids=None):
     SEMANTIC_RESULTS_DIR.mkdir(parents=True,exist_ok=True)
     cache=load_symbolic_cache()
     cache_lock=threading.Lock()
+    coverage_path=ROOT/"test-results/coverage.json"
+    coverage=json.loads(coverage_path.read_text()) if coverage_path.is_file() else {}
     jobs=[]
     for contract_id,target in sorted(semantic_selections().items()):
         if contract_ids and contract_id not in contract_ids:
@@ -5456,13 +5496,24 @@ def refresh_semantic_mutants(contract_ids=None):
         if retained.get("binding")==binding and results_pair(retained.get("results"),proposals):
             print(f"[SEMANTIC] {contract_id}: inputs unchanged since the retained run, not run again",flush=True)
             return None
+        tests=list(plan.get("tests") or [])
+        time_limits=list(IMPL_FAULTS.time_limits(plan.get("baseline_seconds")))
+        # Where only the judgement or the drafts changed since the retained run, its test runs stand.
+        same_runs=(
+          results_pair(retained.get("results"),proposals) and retained.get("time_limits")==time_limits
+          and {key:value for key,value in (retained.get("binding") or {}).items() if key not in {"judgement_sha256","drafts_sha256"}}
+          ==  {key:value for key,value in binding.items() if key not in {"judgement_sha256","drafts_sha256"}}
+        )
         request={
-          "root":str(ROOT),"contract_id":contract_id,"tests":list(plan.get("tests") or []),
+          "root":str(ROOT),"contract_id":contract_id,"tests":tests,
           "context_sha256":{key:SEMANTIC.context_sha256(context) for key,context in contexts.items()},
           "drafts":SEMANTIC.load_drafts(contract_id),
           "judgement":judgement,
           # A mutant's tests may take what the campaign allows: its time limit and the confirming one.
-          "time_limits":list(IMPL_FAULTS.time_limits(plan.get("baseline_seconds"))),
+          "time_limits":time_limits,
+          # Only the tests that run a target in the retained run can reach its mutant.
+          "covering":{proposal["target"]:covering_tests(tests,coverage,proposal["target"]) for proposal in proposals},
+          "known":{f"{row['class']}|{row['id']}":row for row in retained.get("results") or []} if same_runs else {},
         }
         return {"contract_id":contract_id,"payload":payload,"proposals":proposals,"binding":binding,"request":request}
 
@@ -5497,8 +5548,9 @@ def refresh_semantic_mutants(contract_ids=None):
           "generator":item["payload"].get("generator") or {},
           "binding":item["binding"],
           "results":outcome["results"],
-          # The cascade's own time over the contract's chunks.
+          # The cascade's own time over the contract's chunks, and the time limits its tests ran under.
           "seconds":outcome["seconds"],
+          "time_limits":item["request"]["time_limits"],
           "ran_at":utc_now(),
           "head_sha":git_sha(),
         }
@@ -5980,6 +6032,12 @@ def load_canary_results():
     return json.loads(path.read_text()) if path.exists() else {}
 
 
+def canary_unanswered(record):
+    """Why a canary record has cases no answer judged (a backend or account that could not be used, a
+    deferred call), or an empty string: such a record has not failed, it waits to be asked again."""
+    return next((str(case.get("detail") or case.get("outcome")) for case in (record.get("cases") or {}).values() if case.get("outcome") in SEMANTIC.UNANSWERED),"")
+
+
 def canary_blocks(policy=None):
     """Why each role entry may not answer yet: no current, passed canary record for its model at its
     level, or, up a ladder of levels, for a level at or below it."""
@@ -6008,6 +6066,8 @@ def canary_blocks(policy=None):
                 blocks[key]=f"{name} has not run the {role} canaries yet (--run-canaries)"
             elif record.get("questions_sha256")!=questions[role]:
                 blocks[key]=f"the {role} canaries changed since {name} ran them (--run-canaries)"
+            elif not record.get("passed") and canary_unanswered(record):
+                blocks[key]=f"{name} has not answered the current {role} canaries yet ({canary_unanswered(record)}; --run-canaries)"
             elif not record.get("passed"):
                 failed="; ".join(str(case.get("detail") or "") for case in (record.get("cases") or {}).values() if not case.get("passed"))
                 blocks[key]=f"{name} failed the {role} canaries: {failed}"
@@ -6211,7 +6271,10 @@ def run_canaries(roles=None):
     for key in sorted(canary_key(*entry) for entry in asked_all):
         record=results.get(key) or {}
         note=f" (not answered this time: {standing[key]}; the record of {record.get('ran_at')} stands)" if key in standing else ""
-        print(f"[CANARY] {key}: "+("passed" if record.get("passed") else "FAILED: "+"; ".join(str(case.get("detail")) for case in (record.get("cases") or {}).values() if not case.get("passed")))+note,flush=True)
+        verdict=("passed" if record.get("passed") else
+                 f"not answered: {canary_unanswered(record)}" if canary_unanswered(record) else
+                 "FAILED: "+"; ".join(str(case.get("detail")) for case in (record.get("cases") or {}).values() if not case.get("passed")))
+        print(f"[CANARY] {key}: {verdict}{note}",flush=True)
     return results
 
 
@@ -7259,6 +7322,7 @@ def assess_survivors(contract_ids=None):
     needs=current_needs()
     TRIAGE_RESULTS_DIR.mkdir(parents=True,exist_ok=True)
     cache=load_symbolic_cache()
+    jobs=[]
     for contract_id,entry in sorted((campaign.get("contracts") or {}).items()):
         if contract_ids and contract_id not in contract_ids:
             continue
@@ -7275,40 +7339,69 @@ def assess_survivors(contract_ids=None):
         assessments=load_assessments(answers_path)
         if reread_answers(assessments,TRIAGE_ANSWERS_DIR/contract_id/"responses"):
             save_assessments(answers_path,assessments)
+        jobs.append({"contract_id":contract_id,"report_path":report_path,"records":records,"assessments":assessments,"answers_path":answers_path})
+
+    def judge(job):
+        """The triage of one contract: read back where its retained triage was made from exactly these
+        inputs, else the symbolic search and the confirmation of the assessors' inputs, run again."""
+        request=triage_request(job["contract_id"],job["records"],job["assessments"],needs,policy,state,{})
+        binding=triage_binding(request,job["report_path"],job["records"])
+        retained_path=TRIAGE_RESULTS_DIR/f"{job['contract_id']}.json"
+        retained=json.loads(retained_path.read_text()) if retained_path.is_file() else {}
+        if retained.get("schema")=="ternforge-survivor-triage-1" and retained.get("binding")==binding:
+            return {"rows":retained.get("rows") or [],"reused":True,"binding":binding}
         started=time.monotonic()
-        result=run_triage(triage_request(contract_id,records,assessments,needs,policy,state,cache))
-        cache.update(result.get("symbolic_cache") or {})
-        asked=False
-        if run is not None:
-            by_fingerprint={str(record.get("fingerprint")):record for record in records}
-            questions=[]
+        with cache_lock:
+            snapshot=dict(cache)
+        result=run_triage({**request,"symbolic_cache":snapshot})
+        with cache_lock:
+            cache.update(result.get("symbolic_cache") or {})
+        return {**result,"binding":binding,"seconds":round(time.monotonic()-started,1)}
+
+    def keep(job,result):
+        if result.get("reused"):
+            print(f"[TRIAGE] {job['contract_id']}: inputs unchanged since the retained triage, not run again",flush=True)
+            return
+        retained={
+          "schema":"ternforge-survivor-triage-1","contract_id":job["contract_id"],"binding":result["binding"],
+          "rows":[{key:value for key,value in row.items() if key not in {"original","mutated"}} for row in result["rows"]],
+          "seconds":result["seconds"],"judged_at":utc_now(),
+        }
+        (TRIAGE_RESULTS_DIR/f"{job['contract_id']}.json").write_text(json.dumps(retained,indent=1,sort_keys=True)+"\n")
+        counts=Counter(row.get("status") for row in result["rows"])
+        print(f"[TRIAGE] {job['contract_id']}: "+", ".join(f"{count} {name}" for name,count in sorted(counts.items()))+f" in {retained['seconds']}s",flush=True)
+
+    # Contracts judged at once, as many as the cascade runs; the searches share one cache.
+    cache_lock=threading.Lock()
+    results=parallel_map(judge,jobs,SEMANTIC_WORKERS)
+    asked=[]
+    if run is not None:
+        questions=[]
+        for job,result in zip(jobs,results,strict=True):
+            by_fingerprint={str(record.get("fingerprint")):record for record in job["records"]}
             for row in result["rows"]:
                 # A symbolic search that could not run leaves the harness usable: an assessor's input is still checked by execution.
                 if row.get("status")!="unsure":
                     continue
                 record=by_fingerprint[str(row["fingerprint"])]
-                prompt=rule_assessment_prompt(contract_id,record,needs.get(contract_id) or {})
+                prompt=rule_assessment_prompt(job["contract_id"],record,needs.get(job["contract_id"]) or {})
                 if prompt is None:
                     continue
-                questions.append({"purpose":"survivor-assessment","contract_id":contract_id,"subject":str(row["fingerprint"]),"prompt":prompt,
-                                  "entry":assessments.setdefault(str(row["fingerprint"]),{}),"response_dir":TRIAGE_ANSWERS_DIR/contract_id/"responses"})
-            # The contract's unsure survivors are independent questions, asked at once.
-            asked=bool(ask_assessors_at_once(run,policy,questions,usable=state["usable"])) or asked
-            if asked:
-                save_assessments(answers_path,assessments)
-                result=run_triage(triage_request(contract_id,records,assessments,needs,policy,state,cache))
-                cache.update(result.get("symbolic_cache") or {})
-        request=triage_request(contract_id,records,assessments,needs,policy,state,{})
-        retained={
-          "schema":"ternforge-survivor-triage-1","contract_id":contract_id,
-          "binding":triage_binding(request,report_path,records),
-          "rows":[{key:value for key,value in row.items() if key not in {"original","mutated"}} for row in result["rows"]],
-          "seconds":round(time.monotonic()-started,1),"judged_at":utc_now(),
-        }
-        (TRIAGE_RESULTS_DIR/f"{contract_id}.json").write_text(json.dumps(retained,indent=1,sort_keys=True)+"\n")
-        counts=Counter(row.get("status") for row in result["rows"])
-        print(f"[TRIAGE] {contract_id}: "+", ".join(f"{count} {name}" for name,count in sorted(counts.items()))+f" in {retained['seconds']}s",flush=True)
-        save_symbolic_cache(cache)
+                questions.append({"purpose":"survivor-assessment","contract_id":job["contract_id"],"subject":str(row["fingerprint"]),"prompt":prompt,
+                                  "entry":job["assessments"].setdefault(str(row["fingerprint"]),{}),"response_dir":TRIAGE_ANSWERS_DIR/job["contract_id"]/"responses"})
+        # Every contract's unsure survivors are independent questions, asked at once.
+        answered=ask_assessors_at_once(run,policy,questions,usable=state["usable"])
+        asked=sorted({questions[index]["contract_id"] for index in answered or []})
+        for job in jobs:
+            if job["contract_id"] in asked:
+                save_assessments(job["answers_path"],job["assessments"])
+    # A contract whose assessors answered is judged again with their answers.
+    again=[index for index,job in enumerate(jobs) if job["contract_id"] in asked]
+    for index,result in zip(again,parallel_map(judge,[jobs[index] for index in again],SEMANTIC_WORKERS),strict=True):
+        results[index]=result
+    for job,result in zip(jobs,results,strict=True):
+        keep(job,result)
+    save_symbolic_cache(cache)
     if run is not None:
         summary=run.summary()
         print(f"[TRIAGE] {summary['calls']} assessor calls, {tokens_text(summary['tokens']['total'])} tokens"+(f", ${summary['list_usd']:.3f} at list price" if summary["list_usd"] is not None else ""),flush=True)

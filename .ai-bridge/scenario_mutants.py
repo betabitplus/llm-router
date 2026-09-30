@@ -27,6 +27,7 @@ import shutil
 import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from gherkin.parser import Parser
@@ -87,7 +88,12 @@ def collected_tests(root: Path, pytest: Path) -> dict[tuple[str, str], str]:
     with tempfile.TemporaryDirectory(prefix="ternforge-scenario-map-") as scratch:
         (Path(scratch) / "ternforge_scenario_map.py").write_text(COLLECTOR)
         out = Path(scratch) / "map.json"
-        env = {"PYTHONPATH": f"{scratch}:{root / 'src'}:{root}", "PATH": "/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE": "1", "TERNFORGE_SCENARIO_MAP": str(out)}
+        # The project's own conftest records a test run's inputs at the start of a session: a
+        # collection keeps them in its scratch folder, never over the retained run's record.
+        env = {
+            "PYTHONPATH": f"{scratch}:{root / 'src'}:{root}", "PATH": "/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE": "1", "TERNFORGE_SCENARIO_MAP": str(out),
+            "TERNFORGE_EVIDENCE_RUN_INPUTS": str(Path(scratch) / "run-inputs.json"),
+        }
         subprocess.run(
             [str(pytest), "--collect-only", "-q", "-p", "ternforge_scenario_map", "--no-cov", "-p", "no:cacheprovider", "tests"],
             cwd=root, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=600, check=False,
@@ -180,7 +186,7 @@ def _expectation_nodes(function: ast.AST) -> list[ast.AST]:
                 if isinstance(side, ast.Constant) and not isinstance(side.value, bool) and side.value is not None
             ]
             if not constants:
-                node.test._tf_assert_test = True  # ty: ignore[unresolved-attribute]
+                node.test._tf_assert_test = True
             found.extend(constants or [node.test])
         elif isinstance(node, ast.Call) and ASSERTING.match(_called(node)):
             for argument in node.args[1:]:
@@ -360,8 +366,16 @@ def classify(returncode: int, junit: Path, output: str) -> tuple[str, str]:
     return "invalid", text[:200] or f"pytest exited {returncode}"
 
 
-def run(root: Path, mutants: list[dict], pytest: Path, timeout: int = 300) -> list[dict]:
-    """Run every mutant in one copy of the project, restoring each module after its mutant."""
+def run(root: Path, mutants: list[dict], pytest: Path, timeout: int = 300, workers: int = 1) -> list[dict]:
+    """Run every mutant in a copy of the project, restoring each module after its mutant; up to
+    ``workers`` copies at once, each running its share one by one, the results in the mutants' order."""
+    lanes = max(1, min(int(workers), len(mutants)))
+    with ThreadPoolExecutor(max_workers=lanes) as pool:
+        parts = list(pool.map(lambda lane: _run_lane(root, mutants[lane::lanes], pytest, timeout), range(lanes)))
+    return [parts[index % lanes][index // lanes] for index in range(len(mutants))]
+
+
+def _run_lane(root: Path, mutants: list[dict], pytest: Path, timeout: int) -> list[dict]:
     results = []
     with tempfile.TemporaryDirectory(prefix="ternforge-scenario-mutants-") as scratch:
         work = Path(scratch) / "copy"
@@ -370,7 +384,10 @@ def run(root: Path, mutants: list[dict], pytest: Path, timeout: int = 300) -> li
             if (root / name).exists():
                 shutil.copytree(root / name, work / name, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"))
         shutil.copy2(root / "pyproject.toml", work / "pyproject.toml")
-        env = {"PYTHONPATH": f"{work / 'src'}:{work}", "PYTHONDONTWRITEBYTECODE": "1", "PATH": "/usr/bin:/bin"}
+        env = {
+            "PYTHONPATH": f"{work / 'src'}:{work}", "PYTHONDONTWRITEBYTECODE": "1", "PATH": "/usr/bin:/bin",
+            "TERNFORGE_EVIDENCE_RUN_INPUTS": str(Path(scratch) / "run-inputs.json"),
+        }
         for mutant in mutants:
             if mutant.get("unchecked"):
                 results.append({**mutant, "outcome": "unchecked", "reason": "the step names an outcome and checks none"})

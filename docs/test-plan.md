@@ -451,7 +451,13 @@ what they do: a tool by its syntax tree, code under test by its tokens at their 
 its `# mutation:` pragmas, so an edited comment or a reformatting reruns nothing. A mutant's
 time limit is 1.25 times its tests' time in the retained run plus 10 s, as in PIT, and a
 mutant that outruns it counts as caught only when a second run with twice the limit runs out
-of time too: a slow suite is no hang. No mutation percentage gates a contract or the project.
+of time too: a slow suite is no hang. Within a contract the engine runs mutants at once on the
+machine's cores the contracts running beside it leave, and keeps its own incremental cache per
+contract, as PIT's history and Stryker's incremental mode do: where only tests changed, as when a
+cycle adds mutation pins, a mutant whose source file and covering test files are unchanged keeps
+its result and one a new or changed test covers runs again; a change of the engine, of the tests'
+shared inputs or of any source file empties the cache. No mutation percentage gates a contract or
+the project.
 
 ##### Scenario oracle mutants
 
@@ -515,7 +521,12 @@ contracts, the largest contracts first, so no single contract sets the length of
 Proposals whose mutated function reads the same stay in one chunk, so a repeated mutant is
 still named a duplicate of the first; judged in chunks, the calibration set must get the same
 outcome for every proposal. A contract whose retained result was made from exactly its
-current inputs is not run again. Draft tests are judged in as many isolated copies at once. A selected target
+current inputs is not run again, and where only the assessors' answers or the drafts changed
+its mutants' test runs stand. A mutant's tests are the contract's tests that run its target in
+the retained run's per-test coverage, stopped at the first failure as PIT and Stryker stop; the
+test run imports the module anyway, so whether it imports is asked only when a type check or the
+run fails. Draft tests are judged in as many isolated copies at once, and scenario oracle
+mutants run in as many copies. A selected target
 without a current proposal keeps its class UNKNOWN: it was never generated, its
 generation was deferred or failed, or its proposals went stale. A draft test for a
 survivor is judged in the project's style: it is formatted and given ruff's safe fixes by
@@ -699,7 +710,12 @@ on 2026-09-29 named the second account while the store still held the first: a s
 the store holds the new account, and a refusal counts against the account the store confirms.
 agm reads an account's short window, not its week: a confirmed refusal that says when its quota
 resets keeps that quota spent on its account until then, in the next runs too. Every account has
-a weekly quota of its own. A ledger row
+a weekly quota of its own. The accounts are alike: a run works on the one agy was left on and
+moves only when that one cannot answer. An account Antigravity does not let in, such as one its
+owner has yet to verify, takes no call of the run, not even the probe that starts it: every quota
+of it counts as spent, the call goes to another account, and the next runs skip it without a call
+for six hours. A canary no answer judged (an account or backend that could not be used) has not
+failed: the model waits for its canaries to be asked again. A ledger row
 names the account by a digest, and the probe's row records what each account had left. Without
 agm the CLI reports neither quota, so the smaller pool is bounded by its calls in the last seven
 days, counted from the ledger's calls actually made: 30 is about half of that pool's week and
@@ -731,7 +747,10 @@ produced it, and the gate recomputes it from the stored response.
 A survivor is a mutant that every passing test of its contract lets through, rule or
 semantic (ADR_0005). A symbolic search (CrossHair) over a typed harness of the original and
 the mutant looks for an input that tells them apart, then every assessor of the table
-answers distinct (with an input), equivalent or unsure, with its confidence. An assessor
+answers distinct (with an input), equivalent or unsure, with its confidence. The triage of a
+contract whose survivors, answers and judgement settings are those of its retained triage is
+read back; the others are judged at once, as many as the cascade runs, and the questions of every
+contract go to the assessors at once. An assessor
 answers through its first model that can, as a role does: a later one only when the ones
 before it are deferred, unavailable or not calibrated yet. A model whose Effort is a ladder of
 levels is the search for its lowest level that meets the calibration floors: each level answers
