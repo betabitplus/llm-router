@@ -7570,9 +7570,13 @@ def run_triage(request):
         request_path=Path(scratch)/"request.json"
         result_path=Path(scratch)/"result.json"
         request_path.write_text(json.dumps(request))
+        # The triage keeps its working files in the temporary folder it is given, and leaves them: it
+        # is given one inside this folder, removed with the request when the call returns.
+        temporary=Path(scratch)/"tmp"
+        temporary.mkdir()
         completed=subprocess.run(
           [shutil.which("uv") or "uv","run","--with",CROSSHAIR_REQUIREMENT,"python",str(ROOT/".ai-bridge/survivor_equivalence.py"),"triage",str(request_path),str(result_path)],
-          cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,env={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"},
+          cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,env={**os.environ,"PYTHONDONTWRITEBYTECODE":"1","TMPDIR":str(temporary)},
         )
         if completed.returncode!=0 or not result_path.exists():
             raise RuntimeError("the survivor triage failed:\n"+"\n".join((completed.stdout or "").splitlines()[-20:]))
