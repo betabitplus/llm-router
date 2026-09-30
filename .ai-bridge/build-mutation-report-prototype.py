@@ -173,14 +173,64 @@ def memo_key(*parts):
     """A key for a fact a run reads back instead of computing again: its inputs, as text."""
     return json.dumps(parts,sort_keys=True,separators=(",",":"),default=str)
 
+
+class KeptResults:
+    """Results kept across runs by everything they are built from, as ccache keeps a compilation by
+    its input and its compiler: read back while the inputs they all share (``inputs``, read once per
+    run) and a result's own key are unchanged, built otherwise; a run writes back what it added when
+    it ends. No stage of the builder changes product code (the cascade and the engine mutate copies)."""
+
+    def __init__(self,path,inputs,field="results"):
+        self.path,self.inputs,self.field=path,inputs,field
+        self.lock=threading.Lock()
+        self.results=None
+        self.read=0
+        self.digest=None
+
+    def get(self,key,build):
+        with self.lock:
+            if self.results is None:
+                self.digest=self.inputs()
+                try:
+                    kept=json.loads(self.path.read_text())
+                except Exception:
+                    kept={}
+                self.results=dict(kept.get(self.field) or {}) if kept.get("inputs")==self.digest else {}
+                self.read=len(self.results)
+                atexit.register(self.save)
+            if key in self.results:
+                return self.results[key]
+        value=build()
+        with self.lock:
+            self.results[key]=value
+        return value
+
+    def save(self):
+        if self.results is None or len(self.results)==self.read:
+            return
+        self.path.parent.mkdir(parents=True,exist_ok=True)
+        self.path.write_text(json.dumps({"inputs":self.digest,self.field:self.results},sort_keys=True)+"\n")
+
 def sha256_bytes(value):
     return hashlib.sha256(value).hexdigest()
 
 def sha256_text(value):
     return sha256_bytes(value.encode())
 
+# A file's digest stays with it until its size or modification time changes: a refresh asks for the
+# same files' digests thousands of times, a coverage report of 600 MB among them.
+_FILE_SHA256={}
+
+
 def sha256_file(path):
-    return sha256_bytes(path.read_bytes()) if path.exists() else None
+    try:
+        stat=path.stat()
+    except OSError:
+        return None
+    key=(str(path),stat.st_size,stat.st_mtime_ns)
+    if key not in _FILE_SHA256:
+        _FILE_SHA256[key]=sha256_bytes(path.read_bytes())
+    return _FILE_SHA256[key]
 
 @functools.cache
 def git_sha(ref="HEAD"):
@@ -2798,10 +2848,21 @@ def markdown_table_after(text, heading):
     return rows
 
 
+PROFILE_TEXTS={}
+
+
+def profile_texts():
+    """Every Verification Profile document and its text, read once per state of them."""
+    state=files_state("docs/verification-profiles/**/*.md")
+    if PROFILE_TEXTS.get("state")!=state:
+        PROFILE_TEXTS.clear()
+        PROFILE_TEXTS.update({"state":state,"texts":[(path,path.read_text()) for path in sorted((ROOT/"docs/verification-profiles").glob("**/*.md"))]})
+    return PROFILE_TEXTS["texts"]
+
+
 def verification_profile_source(contract_id):
     marker=f"## Profile · {contract_id}"
-    for path in sorted((ROOT/"docs/verification-profiles").glob("**/*.md")):
-        text=path.read_text()
+    for path,text in profile_texts():
         start=text.find(marker)
         if start<0:
             continue
@@ -2820,7 +2881,20 @@ def verification_profile_contract_ids():
     return sorted(set(result))
 
 
+# The requirement documents are read once per state of them: the pages ask for the registry hundreds
+# of times in a run.
+REGISTRY_READ={}
+
+
 def normative_contract_registry():
+    state=files_state("docs/requirements/*.md")
+    if REGISTRY_READ.get("state")!=state:
+        REGISTRY_READ.clear()
+        REGISTRY_READ.update({"state":state,"registry":_normative_contract_registry()})
+    return copy.deepcopy(REGISTRY_READ["registry"])
+
+
+def _normative_contract_registry():
     result={}
     pattern=re.compile(
       r"\x60\x60\x60\{(?:req|treq)\}.*?\n(?P<body>.*?)\n\x60\x60\x60",
@@ -2958,7 +3032,19 @@ def project_monitor_policy():
     }
 
 
+MONITOR_TARGETS={}
+
+
 def requirement_monitor_target(contract_id, policy):
+    """A contract's monitor target: built from its Verification Profile, the requirements and the
+    Test Plan's policy, once per state of them."""
+    key=memo_key(contract_id,policy,files_state("docs/verification-profiles/**/*.md","docs/requirements/*.md"))
+    if key not in MONITOR_TARGETS:
+        MONITOR_TARGETS[key]=_requirement_monitor_target(contract_id,policy)
+    return copy.deepcopy(MONITOR_TARGETS[key])
+
+
+def _requirement_monitor_target(contract_id, policy):
     path,section=verification_profile_source(contract_id)
     if not section:
         return None
@@ -3465,21 +3551,32 @@ def current_evidence_qualification_environment():
     }
 
 
+# A folder's digest stays with it until one of its files changes: the qualification environment is
+# compared hundreds of times in a run.
+FOLDER_DIGESTS={}
+
+
+def folder_digest(folder,files):
+    """One digest over ``files`` of ``folder``, their paths and bytes."""
+    if not files:
+        return None
+    key=(str(folder),tuple((str(path),stat.st_size,stat.st_mtime_ns) for path in files for stat in (path.stat(),)))
+    if key not in FOLDER_DIGESTS:
+        FOLDER_DIGESTS[key]=hashlib.sha256(b"".join(str(path.relative_to(folder)).encode()+b"\0"+path.read_bytes() for path in files)).hexdigest()
+    return FOLDER_DIGESTS[key]
+
+
 def assessor_calibration_sha256():
     """One digest over the assessors' frozen calibration answers and their record."""
     files=sorted(path for path in ASSESSOR_CALIBRATION_DIR.rglob("*") if path.is_file()) if ASSESSOR_CALIBRATION_DIR.is_dir() else []
-    if not files:
-        return None
-    return hashlib.sha256(b"".join(str(path.relative_to(ASSESSOR_CALIBRATION_DIR)).encode()+b"\0"+path.read_bytes() for path in files)).hexdigest()
+    return folder_digest(ASSESSOR_CALIBRATION_DIR,files)
 
 
 def semantic_calibration_sha256():
     """One digest over the calibration set that qualifies the semantic mutant cascade."""
     folder=ROOT/".ai-bridge/semantic-mutants/calibration"
     files=sorted(path for path in folder.rglob("*") if path.is_file() and "__pycache__" not in path.parts)
-    if not files:
-        return None
-    return hashlib.sha256(b"".join(str(path.relative_to(folder)).encode()+b"\0"+path.read_bytes() for path in files)).hexdigest()
+    return folder_digest(folder,files)
 
 
 def load_evidence_qualification():
@@ -4339,8 +4436,7 @@ def refresh_verification_depth_facts():
         tests.append(depth_test_fact(junit_row,allure_row,model_records))
     universe=depth_contract_universe(needs)
     contracts=depth_contract_rows(tests,needs,universe)
-    coverage_payload=json.loads(COVERAGE_JSON_PATH.read_text()) if COVERAGE_JSON_PATH.exists() else {}
-    coverage_total=float((coverage_payload.get("totals") or {}).get("percent_covered") or 0.0)
+    coverage_total=float((coverage_json_totals() or {}).get("percent_covered") or 0.0)
     passed=sum(row.get("result")=="passed" for row in tests)
     coverage_contexts=sum(bool(row.get("production_run_files")) for row in tests)
     bdd_errors=sum(
@@ -4931,6 +5027,25 @@ def junit_fault_actual(policy):
     return result
 
 
+def coverage_json_totals():
+    """The retained coverage report's totals, read from its end, where coverage.py writes them after
+    the per-file and per-test data that make the report hundreds of MB; the whole report only when
+    its end does not read as expected."""
+    if not COVERAGE_JSON_PATH.is_file():
+        return {}
+    with COVERAGE_JSON_PATH.open("rb") as handle:
+        handle.seek(0,os.SEEK_END)
+        handle.seek(max(0,handle.tell()-65536))
+        tail=handle.read().decode("utf-8","replace")
+    match=re.search(r'"totals":\s*(\{[^{}]*\})\s*\}\s*$',tail)
+    if match:
+        try:
+            return json.loads(match.group(1))
+        except ValueError:
+            pass
+    return json.loads(COVERAGE_JSON_PATH.read_text()).get("totals") or {}
+
+
 def files_state(*patterns):
     """Where each file ``patterns`` match stands now (size and modification time): a fact built from
     them is read back while this is unchanged."""
@@ -5016,7 +5131,9 @@ def for_each_in_copies(items,work):
     if not workers:
         return
     with tempfile.TemporaryDirectory(prefix="ternforge-mutation-copies-") as scratch:
-        free=[IMPL_FAULTS.working_tree_copy(ROOT,Path(scratch)/f"copy-{index}") for index in range(workers)]
+        # The copies are made at once: each is thousands of small files, and disks serve them in parallel.
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            free=list(pool.map(lambda index:IMPL_FAULTS.working_tree_copy(ROOT,Path(scratch)/f"copy-{index}"),range(workers)))
         lock=threading.Lock()
 
         def run(item):
@@ -5135,17 +5252,20 @@ def need_statement(need):
     return " ".join(match.group(1).split()) if match else ""
 
 
-# The generator's contexts read product code and the git history, which no stage of the builder
-# changes: a contract's contexts built once are read back for the rest of the run.
-SEMANTIC_CONTEXTS={}
+# The generator's contexts are built from the cascade module's code, the requirement, the profile's
+# selection, the targets' files and the fixes the git history names for them; each is read back while
+# these are unchanged, so the history is asked once per commit, not once per stage.
+SEMANTIC_CONTEXTS=KeptResults(
+  ROOT/"test-results/semantic-mutants/generator-contexts.json",
+  lambda:sha256_text(stable_json({"cascade":SEMANTIC.module_sha256(),"history":git_sha()})),
+)
 
 
 def semantic_contexts(contract_id,target,needs):
     """What the generator is given for every selected target, and the digest each proposal is bound to."""
-    key=memo_key(contract_id,target,needs.get(contract_id) or {})
-    if key not in SEMANTIC_CONTEXTS:
-        SEMANTIC_CONTEXTS[key]=_semantic_contexts(contract_id,target,needs)
-    return copy.deepcopy(SEMANTIC_CONTEXTS[key])
+    files=sorted({str(selection["target"]).split("::",1)[0] for selection in target.get("semantic_mutants") or []})
+    key=memo_key(contract_id,target,needs.get(contract_id) or {},{path:sha256_file(ROOT/path) for path in files})
+    return copy.deepcopy(SEMANTIC_CONTEXTS.get(key,lambda:_semantic_contexts(contract_id,target,needs)))
 
 
 def _semantic_contexts(contract_id,target,needs):
@@ -5202,55 +5322,26 @@ def save_assessments(path,assessments):
     path.write_text(json.dumps(dict(sorted(assessments.items())),indent=1,sort_keys=True)+"\n")
 
 
-# A question to the assessors is kept across runs by everything it is built from, as ccache keeps a
-# compilation by its input and its compiler: the equivalence module's code, the code here that builds
+# A question to the assessors is built from the equivalence module's code, the code here that builds
 # it, every product source file (a question shows the target's callees and constructors) and the
-# survivor itself. No stage of the builder changes product code (the cascade and the engine mutate
-# copies), so what these add up to is read once per run.
-ASSESSMENT_PROMPTS_PATH=ROOT/"test-results/survivor-judgement/assessor-questions.json"
-ASSESSMENT_PROMPTS={}
-ASSESSMENT_PROMPTS_STATE={}
-
-
-@functools.cache
-def assessment_prompt_inputs():
-    return sha256_text(stable_json({
-      "equivalence":IMPL_FAULTS.code_digest(ROOT/".ai-bridge/survivor_equivalence.py"),
-      "builder":sha256_text("\n".join(inspect.getsource(function) for function in (_semantic_assessment_prompt,_rule_assessment_prompt))),
-      "tried":[SURVIVOR_TRIED,RULE_SURVIVOR_TRIED],
-      "product":{str(path.relative_to(ROOT)):sha256_file(path) for path in sorted(ROOT.glob("src/**/*.py")) if "__pycache__" not in path.parts},
-    }))
-
-
-def assessment_prompt(key,build):
-    """The question under ``key``: read back when a run with the same inputs built it, built otherwise."""
-    if not ASSESSMENT_PROMPTS_STATE:
-        ASSESSMENT_PROMPTS_STATE["inputs"]=assessment_prompt_inputs()
-        try:
-            kept=json.loads(ASSESSMENT_PROMPTS_PATH.read_text())
-        except Exception:
-            kept={}
-        if kept.get("inputs")==ASSESSMENT_PROMPTS_STATE["inputs"]:
-            ASSESSMENT_PROMPTS.update(kept.get("questions") or {})
-        ASSESSMENT_PROMPTS_STATE["read"]=len(ASSESSMENT_PROMPTS)
-        atexit.register(save_assessment_prompts)
-    if key not in ASSESSMENT_PROMPTS:
-        ASSESSMENT_PROMPTS[key]=build()
-    return ASSESSMENT_PROMPTS[key]
-
-
-def save_assessment_prompts():
-    if len(ASSESSMENT_PROMPTS)==ASSESSMENT_PROMPTS_STATE.get("read"):
-        return
-    ASSESSMENT_PROMPTS_PATH.parent.mkdir(parents=True,exist_ok=True)
-    ASSESSMENT_PROMPTS_PATH.write_text(json.dumps({"inputs":ASSESSMENT_PROMPTS_STATE["inputs"],"questions":ASSESSMENT_PROMPTS},sort_keys=True)+"\n")
+# survivor itself.
+ASSESSMENT_PROMPTS=KeptResults(
+  ROOT/"test-results/survivor-judgement/assessor-questions.json",
+  lambda:sha256_text(stable_json({
+    "equivalence":IMPL_FAULTS.code_digest(ROOT/".ai-bridge/survivor_equivalence.py"),
+    "builder":sha256_text("\n".join(inspect.getsource(function) for function in (_semantic_assessment_prompt,_rule_assessment_prompt))),
+    "tried":[SURVIVOR_TRIED,RULE_SURVIVOR_TRIED],
+    "product":{str(path.relative_to(ROOT)):sha256_file(path) for path in sorted(ROOT.glob("src/**/*.py")) if "__pycache__" not in path.parts},
+  })),
+  field="questions",
+)
 
 
 def semantic_assessment_prompt(_contract_id,proposal,_need):
     """What the assessors are asked about one semantic survivor, or None when it has no harness. The
     requirement is not in it: whether two versions behave the same does not depend on it."""
     key=memo_key("semantic",{name:proposal.get(name) for name in ("target","replacement","risk")})
-    return assessment_prompt(key,lambda:_semantic_assessment_prompt(proposal))
+    return ASSESSMENT_PROMPTS.get(key,lambda:_semantic_assessment_prompt(proposal))
 
 
 def _semantic_assessment_prompt(proposal):
@@ -5590,8 +5681,17 @@ def refresh_semantic_mutants(contract_ids=None):
     SEMANTIC_RESULTS_DIR.mkdir(parents=True,exist_ok=True)
     cache=load_symbolic_cache()
     cache_lock=threading.Lock()
-    coverage_path=ROOT/"test-results/coverage.json"
-    coverage=json.loads(coverage_path.read_text()) if coverage_path.is_file() else {}
+    # The retained run's per-test coverage is large (hundreds of MB), and only a contract that runs
+    # needs it: it is read when the first one does.
+    coverage_read={}
+    coverage_lock=threading.Lock()
+
+    def coverage():
+        with coverage_lock:
+            if "payload" not in coverage_read:
+                coverage_read["payload"]=json.loads(COVERAGE_JSON_PATH.read_text()) if COVERAGE_JSON_PATH.is_file() else {}
+            return coverage_read["payload"]
+
     jobs=[]
     for contract_id,target in sorted(semantic_selections().items()):
         if contract_ids and contract_id not in contract_ids:
@@ -5631,7 +5731,7 @@ def refresh_semantic_mutants(contract_ids=None):
           # A mutant's tests may take what the campaign allows: its time limit and the confirming one.
           "time_limits":time_limits,
           # Only the tests that run a target in the retained run can reach its mutant.
-          "covering":{proposal["target"]:covering_tests(tests,coverage,proposal["target"]) for proposal in proposals},
+          "covering":{proposal["target"]:covering_tests(tests,coverage(),proposal["target"]) for proposal in proposals},
           "known":{f"{row['class']}|{row['id']}":row for row in retained.get("results") or []} if same_runs else {},
         }
         return {"contract_id":contract_id,"payload":payload,"proposals":proposals,"binding":binding,"request":request}
@@ -6290,6 +6390,29 @@ def judge_pin_drafts(root,items,inputs=None):
     return [{**cache[key],"key":item["key"]} for item,key in zip(items,keys)]
 
 
+WITHDRAWN_ANSWERS_PATH=ROOT/".ai-bridge/semantic-mutants/withdrawn-answers.json"
+
+
+def stored_canary_answers():
+    """Every stored canary answer the ledger accepted and no one withdrew, by what it answered: the
+    backend, the model at its level, the case and the digests of its system prompt, question and
+    schema; the latest one where a question was answered more than once."""
+    ledger={row["call_id"]:row for row in MODELS.read_ledger()}
+    withdrawn=set(json.loads(WITHDRAWN_ANSWERS_PATH.read_text())) if WITHDRAWN_ANSWERS_PATH.is_file() else set()
+    folder=CANARY_RESULTS_DIR/"responses"
+    found={}
+    for path in sorted(folder.glob("*.json")) if folder.is_dir() else []:
+        response=json.loads(path.read_text())
+        row=ledger.get(response.get("call_id")) or {}
+        if (
+          response.get("purpose")=="canary" and response.get("call_id") not in withdrawn and not MODELS.verify_response(response)
+          and row.get("outcome")=="ok" and row.get("response_sha256")==MODELS.response_sha256(response)
+        ):
+            found[(response.get("backend"),response.get("model"),str(response.get("effort") or ""),response.get("subject"),
+                   response.get("system_sha256"),response.get("prompt_sha256"),response.get("schema_sha256"))]=(row,response)
+    return found
+
+
 def run_canaries(roles=None):
     """Ask its canaries of every model the Test Plan lists for a role and has not passed them for the
     current questions, and record what it answered and whether it passed. A ladder of levels is asked
@@ -6329,11 +6452,24 @@ def run_canaries(roles=None):
             drafts=[]
             # Every canary question of the round is asked at once, as the assessors' questions are:
             # the questions are independent, and each backend still takes its parallel calls at a time.
-            asks,requests,scratches=[],[],[]
+            # A question the model already answered at this level is judged again from that stored
+            # answer, as a stored pin draft is: asking it again would only spend quota, and could turn a
+            # failing model into a passing one by chance. Only new and changed questions are asked.
+            stored=stored_canary_answers()
+            asks,requests,scratches,replayed=[],[],[],{}
             try:
                 for entry in entries:
                     role,backend,model,level=entry
                     for question in SEMANTIC.canary_questions(CALIBRATION_PROJECT,canaries,role):
+                        found=stored.get((
+                          backend,model,str(level or ""),f"{role}:{question['id']}",MODELS.sha256_text(question["system"]),
+                          MODELS.sha256_text(question["prompt"]),MODELS.sha256_text(MODELS.stable_json(question["schema"])),
+                        ))
+                        if found:
+                            row,response=found
+                            replayed[(entry,question["id"])]=(row,response,None)
+                            asks.append((entry,question))
+                            continue
                         # A rung with tools answers the draft author's canary in a copy of the calibration project.
                         workspace=None
                         if question.get("tools"):
@@ -6350,20 +6486,21 @@ def run_canaries(roles=None):
                           "system":question["system"],"prompt":question["prompt"],"schema":question["schema"],"response_dir":CANARY_RESULTS_DIR/"responses",
                           "workspace":workspace,
                         })
-                answered=run.call_many(requests)
+                answered=iter(run.call_many(requests))
+                answers_of={}
+                for entry,question in asks:
+                    answers_of.setdefault(entry,[]).append((question,replayed.get((entry,question["id"])) or next(answered)))
             finally:
                 for scratch in scratches:
                     scratch.cleanup()
-            answers_of={}
-            for (entry,question),answer in zip(asks,answered):
-                answers_of.setdefault(entry,[]).append((question,answer))
             for entry in entries:
                 role,backend,model,level=entry
                 questions=SEMANTIC.canary_questions(CALIBRATION_PROJECT,canaries,role)
                 key=canary_key(role,backend,model,level)
                 cases,asked={},[]
                 for question,(row,response,attempts) in answers_of.get(entry,[]):
-                    print(f"[CANARY] {role} · {model}"+(f"@{level}" if level else "")+f" · {question['id']}: "+attempts_text(attempts),flush=True)
+                    print(f"[CANARY] {role} · {model}"+(f"@{level}" if level else "")+f" · {question['id']}: "
+                          +(f"the stored answer {row.get('call_id')} answers this question" if attempts is None else attempts_text(attempts)),flush=True)
                     case={"call_id":row.get("call_id"),"outcome":row.get("outcome"),"response_sha256":row.get("response_sha256") or "","passed":False,"detail":str(row.get("reason") or row.get("outcome"))}
                     if response is not None:
                         structured=response["structured"]
@@ -7384,7 +7521,7 @@ def rule_assessment_prompt(_contract_id,record,_need):
     """What the assessors are asked about one surviving rule mutant, or None when it has no harness.
     The requirement is not in it: whether two versions behave the same does not depend on it."""
     key=memo_key("rule",sha256_file(Path(record["file_path"])),record)
-    return assessment_prompt(key,lambda:_rule_assessment_prompt(record))
+    return ASSESSMENT_PROMPTS.get(key,lambda:_rule_assessment_prompt(record))
 
 
 def _rule_assessment_prompt(record):
@@ -8048,7 +8185,7 @@ def patch_traceability_contract_evidence_links():
         return
     text=path.read_text()
     text=re.sub(
-      r"<!-- TERNFORGE-P27-TRACE-EVIDENCE-START -->.*?<!-- TERNFORGE-P27-TRACE-EVIDENCE-END -->",
+      r"<!-- TERNFORGE-P27-TRACE-EVIDENCE-START -->.*?<!-- TERNFORGE-P27-TRACE-EVIDENCE-END -->\n?",
       "",text,flags=re.DOTALL
     )
     text=text.replace(
@@ -8277,7 +8414,7 @@ def patch_living_semantic_pages():
     for path in pages:
         text=path.read_text()
         text=re.sub(
-          r"<!-- TERNFORGE-P28-LIVING-SEMANTICS-START -->.*?<!-- TERNFORGE-P28-LIVING-SEMANTICS-END -->",
+          r"<!-- TERNFORGE-P28-LIVING-SEMANTICS-START -->.*?<!-- TERNFORGE-P28-LIVING-SEMANTICS-END -->\n?",
           "",text,flags=re.DOTALL
         )
         text=text.replace("</body>",block+"\n</body>",1)
@@ -8905,7 +9042,7 @@ def diff_cache_key(plan,scope,test_rows,shared):
     engine, the shared and the contract's own inputs, its plan without the measured test time, and
     the lines it mutates. The report names files under the working tree, so its root counts too."""
     return sha256_text(stable_json({
-      "root":str(ROOT.resolve()),"engine":IMPL_FAULTS.engine_configuration(),"shared":shared,
+      "root":str(ROOT.resolve()),"engine":IMPL_FAULTS.judging_configuration(IMPL_FAULTS.engine_configuration()),"shared":shared,
       "inputs":IMPL_FAULTS.contract_inputs(ROOT,plan,test_rows),
       "plan":{name:value for name,value in plan.items() if name!="baseline_seconds"},"scope":scope,
     }))

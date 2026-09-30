@@ -938,14 +938,23 @@ def engine_workers() -> int:
     return max(1, min(8, (os.cpu_count() or 2) - 1))
 
 
+# What no test reads: the model answers and records the pilot keeps, and the experiment capsules. They
+# are most of the working tree's files (and grow with every judged survivor), while the campaign copies
+# the tree once per worker; the engine loads its extension from the real tree.
+COPY_SKIPS = (".ai-bridge/semantic-mutants/", ".ai-bridge/survivor-triage/", ".ai-bridge/survivor-verdicts/", "experiments/")
+
+
 def working_tree_copy(root: Path, destination: Path) -> Path:
     """A copy of the working tree as the tests see it: the files git tracks or would track,
-    changes included, or the whole folder outside a repository."""
+    changes included, without what no test reads (COPY_SKIPS); or the whole folder outside a
+    repository."""
     listed = subprocess.run(["git", "ls-files", "-co", "--exclude-standard", "-z"], cwd=root, capture_output=True, check=False)
     if listed.returncode != 0:
         shutil.copytree(root, destination, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache", "coverage"))
         return destination
     for name in filter(None, listed.stdout.decode().split("\0")):
+        if name.startswith(COPY_SKIPS):
+            continue
         source = root / name
         if source.is_file():
             target = destination / name

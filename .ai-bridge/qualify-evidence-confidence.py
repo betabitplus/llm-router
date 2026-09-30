@@ -1293,6 +1293,16 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and ty_view["layout"] == ty_view["base"] == ty_view["linter"] != ty_view["checker"]
             and ruff_view["layout"] == ruff_view["base"] == ruff_view["checker"] != ruff_view["linter"]
         )
+        # A copy of a repository's working tree leaves out what no test reads (the pilot's records,
+        # the experiments) and keeps the code, the tests and the engine's extension.
+        repository = tmp / "copy-repository"
+        for name in ("src/m.py", "tests/test_m.py", ".ai-bridge/pytest_plugins/p.py", ".ai-bridge/survivor-verdicts/R/x.json", "experiments/e/report.ipynb"):
+            (repository / name).parent.mkdir(parents=True, exist_ok=True)
+            (repository / name).write_text("x = 1\n")
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        copied_to = faults["working_tree_copy"](repository, tmp / "copy-of-repository")
+        copied = {str(path.relative_to(copied_to)) for path in copied_to.rglob("*") if path.is_file()}
+        reuse_ok = reuse_ok and copied == {"src/m.py", "tests/test_m.py", ".ai-bridge/pytest_plugins/p.py"}
         # Product code counts per contract, as PIT counts it: the file that holds the contract's
         # mutants is its own input, other product code is no one's shared input.
         (tmp / "src/llm_router").mkdir(parents=True)
@@ -1499,46 +1509,115 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
 
         sidecars: dict[str, dict] = {}
 
-        def engine_run(name: str, tests: list[str], target_file: str, **env_options: object) -> tuple[int, dict]:
+        # Every engine run of the controls works in a copy of the control project of its own, so the
+        # runs go at once, as the campaign runs its contracts; a report names the project's own paths,
+        # as run_engine_isolated leaves a campaign's.
+        runs_root = Path(tempfile.mkdtemp(prefix="ternforge-gremlins-qualification-runs-"))
+
+        def as_project(text: str, copy: Path) -> str:
+            for found, own in sorted({(str(copy.resolve()), str(tmp.resolve())), (str(copy), str(tmp))}, key=lambda pair: len(pair[0]), reverse=True):
+                text = text.replace(found, own)
+            return text
+
+        def engine_run(name: str, tests: list[str], target_file: str, copy: Path | None = None, **env_options: object) -> tuple[int, dict]:
+            copy = copy or faults["working_tree_copy"](tmp, runs_root / name)
             completed = subprocess.run(
-                faults["engine_command"](tmp, tests, [target_file], project=ROOT, config="pytest.ini"),
-                cwd=tmp,
+                faults["engine_command"](copy, tests, [target_file], project=ROOT, config="pytest.ini"),
+                cwd=copy,
                 text=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 timeout=900,
-                env=faults["engine_env"](tmp / "scratch", **env_options),
+                env=faults["engine_env"](copy / "scratch", **env_options),
             )
-            report_path = tmp / "coverage/gremlins/gremlins.json"
-            payload = json.loads(report_path.read_text()) if report_path.exists() else {}
-            if report_path.exists():
-                report_path.unlink()
-            sidecar_path = tmp / "coverage/gremlins/ternforge-extension.json"
-            sidecars[name] = json.loads(sidecar_path.read_text()) if sidecar_path.exists() else {}
-            if sidecar_path.exists():
-                sidecar_path.unlink()
+            report_path = copy / "coverage/gremlins/gremlins.json"
+            payload = json.loads(as_project(report_path.read_text(), copy)) if report_path.exists() else {}
+            report_path.unlink(missing_ok=True)
+            sidecar_path = copy / "coverage/gremlins/ternforge-extension.json"
+            sidecars[name] = json.loads(as_project(sidecar_path.read_text(), copy)) if sidecar_path.exists() else {}
+            sidecar_path.unlink(missing_ok=True)
             tails[name] = completed.stdout[-1500:]
             return completed.returncode, payload
 
-        strong_code, strong_report = engine_run("strong", suites["strong"], "control_target.py")
-        weak_code, weak_report = engine_run("weak", suites["weak"], "control_target.py")
-        # Scope filter: only mutants on line 2 may run, each exactly as in the full run.
-        scoped_code, scoped_report = engine_run("scoped", suites["strong"], "control_target.py", scope={"control_target.py": [2]})
-        effects_code, effects_report = engine_run("effects", effect_tests, "control_effects.py")
+        def runs_in_one_copy(names: tuple[str, ...]) -> dict[str, tuple[int, dict]]:
+            """Runs whose mutants are compared by their engine ids, which name the files they mutate:
+            one after another in one copy, as they would run in the project itself."""
+            copy = faults["working_tree_copy"](tmp, runs_root / names[0])
+            return {name: engine_run(name, engine_runs[name][0], engine_runs[name][1], copy=copy, **engine_runs[name][2]) for name in names}
+
         log_line = line_of("logger.debug")
-        rule_off_code, rule_off_report = engine_run(
-            "rule_off", effect_tests, "control_effects.py", scope={"control_effects.py": [log_line]}, arid_rules=[]
-        )
-        # A target with no mutation site: the engine writes no report, the extension's facts stay beside it.
-        nosite_code, nosite_report = engine_run("nosite", effect_tests, "control_nosite.py")
         unused_lines = [line_of("def unused"), line_of("return value > 3")]
         total_line = line_of("self.total += value")
-        diff_code, diff_report = engine_run(
-            "diff", effect_tests, "control_effects.py",
-            scope={"control_effects.py": [*unused_lines, total_line]}, skip_uncovered=True,
-        )
-        python_code, python_report = engine_run("python", ["test_python_strong.py"], "control_python.py")
-        python_weak_code, python_weak_report = engine_run("python_weak", ["test_python_weak.py"], "control_python.py")
+        engine_runs: dict[str, tuple[list[str], str, dict[str, Any]]] = {
+            "strong": (suites["strong"], "control_target.py", {}),
+            "weak": (suites["weak"], "control_target.py", {}),
+            # Scope filter: only mutants on line 2 may run, each exactly as in the full run.
+            "scoped": (suites["strong"], "control_target.py", {"scope": {"control_target.py": [2]}}),
+            "effects": (effect_tests, "control_effects.py", {}),
+            "rule_off": (effect_tests, "control_effects.py", {"scope": {"control_effects.py": [log_line]}, "arid_rules": []}),
+            # A target with no mutation site: the engine writes no report, the extension's facts stay beside it.
+            "nosite": (effect_tests, "control_nosite.py", {}),
+            "diff": (effect_tests, "control_effects.py", {"scope": {"control_effects.py": [*unused_lines, total_line]}, "skip_uncovered": True}),
+            "python": (["test_python_strong.py"], "control_python.py", {}),
+            "python_weak": (["test_python_weak.py"], "control_python.py", {}),
+        }
+
+        def isolated_block() -> list[dict]:
+            """The campaign runs several contracts at once, each in a copy: a copy must change no outcome."""
+            with tempfile.TemporaryDirectory(prefix="ternforge-isolated-qualification-") as copy_dir:
+                copy_root = faults["working_tree_copy"](tmp, Path(copy_dir) / "copy")
+                plan = {"tests": suites["strong"], "files": ["control_target.py"], "attributable_lines": {"control_target.py": [1, 2, 3, 4]}}
+                isolated_raw = Path(copy_dir) / "isolated.json"
+                isolated_run = faults["run_engine_isolated"](tmp, copy_root, plan, isolated_raw, project=ROOT)
+                return json.loads(isolated_raw.read_text()).get("results") or [] if isolated_run["report_retained"] else []
+
+        def speed_block() -> tuple[dict[str, dict[str, object]], bool]:
+            """Several mutants at once and the engine's incremental cache change no outcome: a run with
+            three workers, a first run filling the cache and a second one reading it."""
+            with tempfile.TemporaryDirectory(prefix="ternforge-speed-qualification-") as speed_dir:
+                copy_root = faults["working_tree_copy"](tmp, Path(speed_dir) / "copy")
+                plan = {"tests": suites["strong"], "files": ["control_target.py"], "attributable_lines": {"control_target.py": [1, 2, 3, 4]}}
+                engine_cache = Path(speed_dir) / "engine-cache"
+                outcomes: dict[str, dict[str, object]] = {}
+                for label, options in (("workers", {"workers": 3}), ("cache filled", {"cache": engine_cache}), ("cache read", {"cache": engine_cache})):
+                    speed_raw = Path(speed_dir) / f"{label}.json"
+                    speed_run = faults["run_engine_isolated"](tmp, copy_root, plan, speed_raw, project=ROOT, **options)
+                    speed_rows = json.loads(speed_raw.read_text()).get("results") or [] if speed_run["report_retained"] else []
+                    outcomes[label] = {str(row.get("fingerprint")): row.get("status") for row in speed_rows}
+                return outcomes, engine_cache.is_dir() and any(engine_cache.rglob("*"))
+
+        def slow_block() -> list[dict]:
+            """A mutant whose tests outrun the first time limit is caught only when a second run with room
+            to spare runs out too."""
+            copy = faults["working_tree_copy"](tmp, runs_root / "slow")
+            (copy / "slow_target.py").write_text("def double(value: int) -> int:\n    return value * 2\n")
+            (copy / "test_slow_weak.py").write_text("import time\nfrom slow_target import double\n\ndef test_slow():\n    time.sleep(1.5)\n    double(2)\n")
+            slow_env = {**faults["engine_env"](copy / "scratch-slow"), "TERNFORGE_GREMLIN_TIMEOUT": "1", "TERNFORGE_GREMLIN_CONFIRM_TIMEOUT": "30"}
+            subprocess.run(faults["engine_command"](copy, ["test_slow_weak.py"], ["slow_target.py"], project=ROOT, config="pytest.ini"), cwd=copy, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=900, env=slow_env)
+            slow_path = copy / "coverage/gremlins/gremlins.json"
+            return list((json.loads(slow_path.read_text()).get("results") or []) if slow_path.exists() else [])
+
+        try:
+            # The scoped run is compared with the full run mutant by mutant.
+            together = (("strong", "scoped"),)
+            alone = [name for name in engine_runs if not any(name in group for group in together)]
+            with ThreadPoolExecutor(max_workers=len(alone) + len(together) + 3) as pool:
+                pending_runs = [pool.submit(runs_in_one_copy, group) for group in together]
+                pending_runs += [pool.submit(runs_in_one_copy, (name,)) for name in alone]
+                pending_isolated, pending_speed, pending_slow = pool.submit(isolated_block), pool.submit(speed_block), pool.submit(slow_block)
+                done = {name: result for future in pending_runs for name, result in future.result().items()}
+                isolated, (speed_outcomes, cache_kept), slow = pending_isolated.result(), pending_speed.result(), pending_slow.result()
+        finally:
+            shutil.rmtree(runs_root, ignore_errors=True)
+        strong_code, strong_report = done["strong"]
+        weak_code, weak_report = done["weak"]
+        scoped_code, scoped_report = done["scoped"]
+        effects_code, effects_report = done["effects"]
+        rule_off_code, rule_off_report = done["rule_off"]
+        nosite_code, nosite_report = done["nosite"]
+        diff_code, diff_report = done["diff"]
+        python_code, python_report = done["python"]
+        python_weak_code, python_weak_report = done["python_weak"]
 
         strong = list(strong_report.get("results") or [])
         weak = list(weak_report.get("results") or [])
@@ -1680,39 +1759,16 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and (sidecars.get("effects", {}).get("ternforge") or {}) == (effects_report.get("ternforge") or {})
         )
         # The campaign runs several contracts at once, each in a copy: a copy must change no outcome.
-        with tempfile.TemporaryDirectory(prefix="ternforge-isolated-qualification-") as copy_dir:
-            copy_root = faults["working_tree_copy"](tmp, Path(copy_dir) / "copy")
-            plan = {"tests": suites["strong"], "files": ["control_target.py"], "attributable_lines": {"control_target.py": [1, 2, 3, 4]}}
-            isolated_raw = Path(copy_dir) / "isolated.json"
-            isolated_run = faults["run_engine_isolated"](tmp, copy_root, plan, isolated_raw, project=ROOT)
-            isolated = json.loads(isolated_raw.read_text()).get("results") or [] if isolated_run["report_retained"] else []
         isolated_ok = (
             bool(isolated)
             and {str(row.get("fingerprint")): row.get("status") for row in isolated} == {str(row.get("fingerprint")): row.get("status") for row in strong}
             and all(str(row.get("file_path") or "").startswith(str(tmp.resolve())) for row in isolated)
         )
-        # Several mutants at once and the engine's incremental cache change no outcome: a run with three
-        # workers, a first run filling the cache and a second one reading it give the strong suite's outcomes.
-        with tempfile.TemporaryDirectory(prefix="ternforge-speed-qualification-") as speed_dir:
-            copy_root = faults["working_tree_copy"](tmp, Path(speed_dir) / "copy")
-            plan = {"tests": suites["strong"], "files": ["control_target.py"], "attributable_lines": {"control_target.py": [1, 2, 3, 4]}}
-            engine_cache = Path(speed_dir) / "engine-cache"
-            speed_outcomes = {}
-            for label, options in (("workers", {"workers": 3}), ("cache filled", {"cache": engine_cache}), ("cache read", {"cache": engine_cache})):
-                speed_raw = Path(speed_dir) / f"{label}.json"
-                speed_run = faults["run_engine_isolated"](tmp, copy_root, plan, speed_raw, project=ROOT, **options)
-                speed_rows = json.loads(speed_raw.read_text()).get("results") or [] if speed_run["report_retained"] else []
-                speed_outcomes[label] = {str(row.get("fingerprint")): row.get("status") for row in speed_rows}
-            expected_outcomes = {str(row.get("fingerprint")): row.get("status") for row in strong}
-            cache_kept = engine_cache.is_dir() and any(engine_cache.rglob("*"))
+        # Several mutants at once and the engine's incremental cache change no outcome: they give the
+        # strong suite's outcomes.
+        expected_outcomes = {str(row.get("fingerprint")): row.get("status") for row in strong}
         speed_ok = bool(expected_outcomes) and all(outcome == expected_outcomes for outcome in speed_outcomes.values()) and cache_kept
         # A mutant whose tests outrun the first time limit is caught only when a second run with room to spare runs out too.
-        (tmp / "slow_target.py").write_text("def double(value: int) -> int:\n    return value * 2\n")
-        (tmp / "test_slow_weak.py").write_text("import time\nfrom slow_target import double\n\ndef test_slow():\n    time.sleep(1.5)\n    double(2)\n")
-        slow_env = {**faults["engine_env"](tmp / "scratch-slow"), "TERNFORGE_GREMLIN_TIMEOUT": "1", "TERNFORGE_GREMLIN_CONFIRM_TIMEOUT": "30"}
-        subprocess.run(faults["engine_command"](tmp, ["test_slow_weak.py"], ["slow_target.py"], project=ROOT, config="pytest.ini"), cwd=tmp, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=900, env=slow_env)
-        slow_path = tmp / "coverage/gremlins/gremlins.json"
-        slow = list((json.loads(slow_path.read_text()).get("results") or []) if slow_path.exists() else [])
         timeout_ok = bool(slow) and all(row.get("status") == "survived" for row in slow)
         families = {str(row.get("operator")) for row in [*strong, *effects, *python_rows]}
         engine_ok = (

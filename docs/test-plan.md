@@ -444,7 +444,8 @@ return, boundary, body) while few verdicts are recorded, as Google ranks its ope
 useful their mutants were. A survivor whose recorded verdict is equivalent or irrelevant is
 no finding: the summary lists it apart with the verdict and its reason. The retained
 campaign reruns every contract whose inputs changed since its last run, and every contract
-on request, several contracts at once, each in its own copy of the working tree. Its inputs
+on request, several contracts at once, each in its own copy of the working tree, made at once
+and without the pilot's model records and the experiments, which no test reads. Its inputs
 are the product files that hold its mutants, its tests with their Gherkin and cassettes, the
 shared test support and the dependencies, as PIT and Stryker count them. Python files count by
 what they do: a tool by its syntax tree, code under test by its tokens at their positions with
@@ -871,7 +872,8 @@ the calibration asks the next level. A ladder of levels answers its role's canar
 lowest level up until one passes; the next level is asked only after the one below answered
 every case and failed. The canary questions of a round are asked at once, as the assessors'
 are; each backend still takes its parallel calls at a time. A change of model, level, question or canary set asks for the canaries
-again; until they pass, the role skips that model at that level and the levels above it. A canary the backend did not answer (its quota, its capacity, the time
+again: a question the model already answered at that level is judged again from its stored
+answer, as a stored pin draft is, and only new and changed questions are asked; until they pass, the role skips that model at that level and the levels above it. A canary the backend did not answer (its quota, its capacity, the time
 limit) leaves the model's record for the same questions as it was.
 
 **Completion:** required fault-class coverage = **100%** · required deterministic fault detection = **100%**

@@ -410,14 +410,16 @@ def render_monitor_shell(
         source,
         flags=re.DOTALL,
     )
+    # The style and the script go in with a line break of their own (below), and leave with it, so a
+    # page patched again reads as a page patched once.
     source = re.sub(
-        r'<style id="tf-requirement-monitor-style">.*?</style>',
+        r'<style id="tf-requirement-monitor-style">.*?</style>\n?',
         "",
         source,
         flags=re.DOTALL,
     )
     source = re.sub(
-        r'<script id="tf-requirement-monitor-script">.*?</script>',
+        r'<script id="tf-requirement-monitor-script">.*?</script>\n?',
         "",
         source,
         flags=re.DOTALL,
