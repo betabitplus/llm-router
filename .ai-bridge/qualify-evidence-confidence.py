@@ -4,6 +4,7 @@ import ast
 import enum
 import hashlib
 import json
+import multiprocessing
 import os
 import runpy
 import shutil
@@ -15,10 +16,11 @@ import time
 import urllib.request
 import xml.etree.ElementTree as ET
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from importlib.metadata import version as package_version
 from pathlib import Path
+from typing import Any
 
 import vcr
 from vcr.errors import CannotOverwriteExistingCassetteException
@@ -1263,6 +1265,33 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and source["comment"] == source["base"]
             and len({source[name] for name in ("base", "moved", "pragma", "code")}) == 4
             and faults["input_digest"](tmp / "tests/x/cassettes/test_a/one.yaml") == faults["sha256_bytes"](b"interactions: []\n")
+        )
+        # pyproject.toml by the tables a run reads, as Bazel keys an action by its inputs: its
+        # layout, its comments and the tables of tools the run does not start leave a result
+        # current; a test setting, a dependency, an unknown table or a table of a tool the run
+        # does start (``reads``) do not.
+        base = '[project]\nname = "x"\ndependencies = ["a"]\n\n[tool.pytest.ini_options]\naddopts = "-q"\n\n[tool.ruff]\nline-length = 100\n\n[tool.ty.src]\nexclude = ["a/"]\n'
+        settings_variants = {
+            "base": base,
+            "layout": '# settings\n[project]\ndependencies = [ "a" ]\nname = "x"\n\n[tool.ty.src]\nexclude = [\n  "a/",\n]\n\n[tool.ruff]\nline-length = 100\n\n[tool.pytest.ini_options]\naddopts = "-q"\n',
+            "linter": base.replace("line-length = 100", "line-length = 120"),
+            "checker": base.replace('exclude = ["a/"]', 'exclude = ["a/", "b/"]'),
+            "pytest": base.replace('addopts = "-q"', 'addopts = "-x"'),
+            "dependency": base.replace('dependencies = ["a"]', 'dependencies = ["a", "b"]'),
+            "unknown": base + "\n[tool.newtool]\nflag = true\n",
+        }
+        tests_view, ty_view, ruff_view = {}, {}, {}
+        for name, text in settings_variants.items():
+            (tmp / f"settings_{name}").mkdir()
+            (tmp / f"settings_{name}/pyproject.toml").write_text(text)
+            tests_view[name] = faults["input_digest"](tmp / f"settings_{name}/pyproject.toml")
+            ty_view[name] = faults["input_digest"](tmp / f"settings_{name}/pyproject.toml", ("ty",))
+            ruff_view[name] = faults["pyproject_digest"](tmp / f"settings_{name}/pyproject.toml", ("ruff",))
+        reuse_ok = reuse_ok and (
+            len({tests_view[name] for name in ("base", "layout", "linter", "checker")}) == 1
+            and len({tests_view[name] for name in ("base", "pytest", "dependency", "unknown")}) == 4
+            and ty_view["layout"] == ty_view["base"] == ty_view["linter"] != ty_view["checker"]
+            and ruff_view["layout"] == ruff_view["base"] == ruff_view["checker"] != ruff_view["linter"]
         )
         # Product code counts per contract, as PIT counts it: the file that holds the contract's
         # mutants is its own input, other product code is no one's shared input.
@@ -3508,44 +3537,69 @@ def control_code_digest(name: str) -> str:
     return hashlib.sha256("\n".join(ast.dump(definitions[current]) for current in sorted(seen)).encode()).hexdigest()
 
 
-def cached_controls(controls) -> dict[str, dict[str, object]]:
-    """Run a heavy control group, or read back its last result when it qualified and nothing it
-    depends on has changed since."""
-    name = controls.__name__
+def control_key(name: str) -> str:
+    """What a heavy control group's result depends on: its code and its inputs."""
     files = sorted({path for pattern in (*CONTROL_INPUTS[name], "pyproject.toml", "uv.lock") for path in ROOT.glob(pattern) if path.is_file() and "__pycache__" not in path.parts})
-    key = hashlib.sha256(json.dumps({
+    return hashlib.sha256(json.dumps({
         "code": control_code_digest(name),
-        "inputs": {str(path.relative_to(ROOT)): FINGERPRINTS["input_digest"](path) for path in files},
+        # A control may start any of the project's tools: pyproject.toml counts with all their tables.
+        "inputs": {str(path.relative_to(ROOT)): FINGERPRINTS["input_digest"](path, FINGERPRINTS["PYTEST_UNREAD_TOOLS"]) for path in files},
         "python": sys.version,
     }, sort_keys=True).encode()).hexdigest()
+
+
+def cached_result(name: str, key: str) -> dict[str, dict[str, object]] | None:
+    """A heavy control group's last result, when it qualified and nothing it depends on changed since."""
     cache = json.loads(CONTROL_CACHE.read_text()) if CONTROL_CACHE.exists() else {}
     entry = cache.get(name) or {}
     if entry.get("key") == key and entry.get("producers") and all(row.get("status") == "QUALIFIED" for row in entry["producers"].values()):
         print(f"[QUALIFY] {name}: nothing it depends on changed since {entry.get('ran_at')}, its result read back", flush=True)
         return entry["producers"]
-    producers = controls()
-    cache[name] = {"key": key, "producers": producers, "ran_at": datetime.now(UTC).isoformat().replace("+00:00", "Z")}
-    CONTROL_CACHE.parent.mkdir(parents=True, exist_ok=True)
-    CONTROL_CACHE.write_text(json.dumps(cache, indent=1, sort_keys=True, default=str) + "\n")
-    return producers
+    return None
+
+
+# The control groups, heaviest first. Each is independent of the others: it builds its own
+# temporary projects and restores what it changes, so the groups run at once in processes (they
+# change environment variables, which threads would share), as pytest-xdist runs tests.
+CONTROL_GROUPS = (
+    "implementation_fault_controls", "semantic_mutant_controls", "survivor_judgement_controls", "external_controls",
+    "scenario_mutant_controls", "architecture_mutant_controls", "internal_controls", "project_sdk_controls",
+    "model_generation_controls", "assessor_ensemble_controls", "model_canary_controls",
+)
+CACHED_GROUPS = {"implementation_fault_controls", "semantic_mutant_controls", "survivor_judgement_controls", "scenario_mutant_controls", "architecture_mutant_controls"}
+# Groups at once: enough to overlap the heavy ones, few enough that their own time limits hold.
+CONTROL_PROCESSES = 4
+
+
+def run_group(name: str):
+    started = time.monotonic()
+    result = globals()[name]()
+    print(f"[QUALIFY] {name}: ran in {time.monotonic() - started:.0f}s", flush=True)
+    return result
 
 
 def main() -> None:
-    external, details = external_controls()
-    internal = internal_controls()
-    project_sdk = project_sdk_controls()
-    implementation = cached_controls(implementation_fault_controls)
-    semantic = cached_controls(semantic_mutant_controls)
-    generation = model_generation_controls()
-    judgement = cached_controls(survivor_judgement_controls)
-    ensemble = assessor_ensemble_controls()
-    canaries = model_canary_controls()
-    scenario = cached_controls(scenario_mutant_controls)
-    architecture = cached_controls(architecture_mutant_controls)
-    producers = {
-        **external, **internal, **project_sdk, **implementation, **semantic, **generation, **judgement, **ensemble, **canaries,
-        **scenario, **architecture,
-    }
+    results: dict[str, Any] = {}
+    keys = {name: control_key(name) for name in CACHED_GROUPS}
+    for name in CACHED_GROUPS:
+        cached = cached_result(name, keys[name])
+        if cached is not None:
+            results[name] = cached
+    pending = [name for name in CONTROL_GROUPS if name not in results]
+    with ProcessPoolExecutor(max_workers=min(CONTROL_PROCESSES, len(pending) or 1), mp_context=multiprocessing.get_context("spawn")) as pool:
+        for name, result in zip(pending, pool.map(run_group, pending)):
+            results[name] = result
+    cache = json.loads(CONTROL_CACHE.read_text()) if CONTROL_CACHE.exists() else {}
+    ran_at = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+    for name in CACHED_GROUPS & set(pending):
+        cache[name] = {"key": keys[name], "producers": results[name], "ran_at": ran_at}
+    CONTROL_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    CONTROL_CACHE.write_text(json.dumps(cache, indent=1, sort_keys=True, default=str) + "\n")
+    external, details = results["external_controls"]
+    producers: dict[str, dict[str, object]] = {**external}
+    for name in CONTROL_GROUPS:
+        if name != "external_controls":
+            producers.update(results[name])
     payload = {
         "schema": "ternforge-evidence-producer-qualification-1",
         "qualified_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),

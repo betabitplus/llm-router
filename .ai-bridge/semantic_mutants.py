@@ -104,8 +104,21 @@ def stable_json(value) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
 
 
+_MODULE_DIGEST: list[str] = []
+
+
 def module_sha256() -> str:
-    return sha256_file(Path(__file__)) or ""
+    """What the cascade does, not how its source reads: its syntax tree without comments,
+    docstrings or positions. A comment or a docstring edited here leaves retained results current."""
+    if not _MODULE_DIGEST:
+        tree = ast.parse(Path(__file__).read_bytes())
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+                first = node.body[0]
+                if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
+                    node.body = node.body[1:] or [ast.Pass()]
+        _MODULE_DIGEST.append(sha256_text(ast.dump(tree, include_attributes=False)))
+    return _MODULE_DIGEST[0]
 
 
 # --- the target and its normal form --------------------------------------------------

@@ -23,6 +23,7 @@ import shutil
 import subprocess
 import time
 import tokenize
+import tomllib
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -151,6 +152,29 @@ def _source_digest(path: Path) -> str:
 
 def stable_json(value) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
+# pyproject.toml configures more tools than a test run reads. A result is keyed by the tables its
+# run reads, never by the file's layout, comments or the tables of tools it does not run, as Bazel
+# keys an action by its declared inputs alone. These tools' tables no pytest run reads; a result
+# whose run does start one of them names it in ``reads``. A table not listed here always counts.
+PYTEST_UNREAD_TOOLS = ("bandit", "check-manifest", "commitizen", "deptry", "importlinter", "interrogate", "pyright", "ruff", "ty")
+
+
+def pyproject_digest(path: Path, reads: tuple[str, ...] = ()) -> str | None:
+    """pyproject.toml by the settings a run reads: its parsed tables without the tables of the
+    tools in PYTEST_UNREAD_TOOLS that ``reads`` does not name. A file that does not parse counts
+    by its bytes."""
+    if not path.is_file():
+        return None
+    source = path.read_bytes()
+    try:
+        settings = tomllib.loads(source.decode())
+    except (UnicodeDecodeError, tomllib.TOMLDecodeError):
+        return sha256_bytes(source)
+    tools = settings.get("tool") or {}
+    settings["tool"] = {name: table for name, table in tools.items() if name not in PYTEST_UNREAD_TOOLS or name in reads}
+    return sha256_bytes(json.dumps(settings, sort_keys=True, separators=(",", ":"), default=str).encode())
 
 
 # --- scope attribution -------------------------------------------------------------
@@ -542,18 +566,22 @@ def _files(root: Path, pattern: str) -> set[Path]:
     }
 
 
-def input_digest(path: Path) -> str | None:
-    """A Python input by what the engine runs (``source_digest``), any other file by its bytes."""
+def input_digest(path: Path, reads: tuple[str, ...] = ()) -> str | None:
+    """A Python input by what the engine runs (``source_digest``), pyproject.toml by the settings a
+    test run reads (``pyproject_digest``, with the tools ``reads`` names), any other file by its bytes."""
     if path.suffix == ".py":
         return source_digest(path)
+    if path.name == "pyproject.toml":
+        return pyproject_digest(path, reads)
     return sha256_bytes(path.read_bytes()) if path.is_file() else None
 
 
-def digest_map(root: Path, paths: set[str]) -> dict[str, str | None]:
-    return {relative: input_digest(root / relative) for relative in sorted(paths)}
+def digest_map(root: Path, paths: set[str], reads: tuple[str, ...] = ()) -> dict[str, str | None]:
+    return {relative: input_digest(root / relative, reads) for relative in sorted(paths)}
 
 
-def shared_inputs(root: Path) -> dict[str, str | None]:
+def shared_inputs(root: Path, reads: tuple[str, ...] = ()) -> dict[str, str | None]:
+    """The inputs every contract's tests share; pyproject.toml with the tools ``reads`` names."""
     paths: set[Path] = set()
     for pattern in SHARED_INPUT_SCOPE:
         paths |= _files(root, pattern)
@@ -563,7 +591,7 @@ def shared_inputs(root: Path) -> dict[str, str | None]:
     for relative in SHARED_EXPLICIT_INPUTS:
         if (root / relative).is_file():
             paths.add(root / relative)
-    return digest_map(root, {str(path.relative_to(root)) for path in paths})
+    return digest_map(root, {str(path.relative_to(root)) for path in paths}, reads)
 
 
 def _imported_test_modules(root: Path, test_file: str) -> set[str]:
@@ -575,27 +603,47 @@ def _imported_test_modules(root: Path, test_file: str) -> set[str]:
         if current in found or not (root / current).is_file():
             continue
         found.add(current)
-        tree = ast.parse((root / current).read_text())
-        package = Path(current).parent
-        for node in ast.walk(tree):
-            names: list[str] = []
-            if isinstance(node, ast.Import):
-                names = [alias.name for alias in node.names]
-            elif isinstance(node, ast.ImportFrom):
-                if node.level:
-                    base = package
-                    for _ in range(node.level - 1):
-                        base = base.parent
-                    prefix = ".".join(base.parts)
-                    names = [f"{prefix}.{node.module}" if node.module else prefix]
-                    names += [f"{names[0]}.{alias.name}" for alias in node.names]
-                elif node.module:
-                    names = [node.module, *[f"{node.module}.{alias.name}" for alias in node.names]]
-            for name in names:
-                candidate = Path(*name.split(".")).with_suffix(".py")
-                if candidate.parts and candidate.parts[0] == "tests" and candidate.name.startswith("test_"):
-                    pending.append(str(candidate))
+        pending.extend(_test_imports(root, current))
     return found
+
+
+# A module's imports stay with it until it changes: every contract that runs a module asks again.
+_TEST_IMPORTS: dict[tuple[str, str, int, int], tuple[str, ...]] = {}
+
+
+def _test_imports(root: Path, current: str) -> tuple[str, ...]:
+    """The test modules one test module imports directly."""
+    stat = (root / current).stat()
+    key = (str(root.resolve()), current, stat.st_size, stat.st_mtime_ns)
+    if key not in _TEST_IMPORTS:
+        _TEST_IMPORTS[key] = tuple(_parse_test_imports(root, current))
+    return _TEST_IMPORTS[key]
+
+
+def _parse_test_imports(root: Path, current: str) -> list[str]:
+    """The test modules one test module's source imports."""
+    pending: list[str] = []
+    tree = ast.parse((root / current).read_text())
+    package = Path(current).parent
+    for node in ast.walk(tree):
+        names: list[str] = []
+        if isinstance(node, ast.Import):
+            names = [alias.name for alias in node.names]
+        elif isinstance(node, ast.ImportFrom):
+            if node.level:
+                base = package
+                for _ in range(node.level - 1):
+                    base = base.parent
+                prefix = ".".join(base.parts)
+                names = [f"{prefix}.{node.module}" if node.module else prefix]
+                names += [f"{names[0]}.{alias.name}" for alias in node.names]
+            elif node.module:
+                names = [node.module, *[f"{node.module}.{alias.name}" for alias in node.names]]
+        for name in names:
+            candidate = Path(*name.split(".")).with_suffix(".py")
+            if candidate.parts and candidate.parts[0] == "tests" and candidate.name.startswith("test_"):
+                pending.append(str(candidate))
+    return pending
 
 
 def contract_inputs(root: Path, plan: dict, test_rows: list[dict]) -> dict[str, str | None]:

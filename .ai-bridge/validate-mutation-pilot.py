@@ -1369,6 +1369,41 @@ def effective_verdict(entry: dict, decided: dict | None = None) -> str | None:
     return answer["verdict"] if review["verdict"] in SUPPRESSING else "pin"
 
 
+# A draft normalized by ruff is kept by everything its result depends on: the draft, the file it is
+# normalized as, ruff's version and the project's settings ruff reads, as ruff's own cache keeps a
+# file's result by its content, settings and version. The gate normalizes again only what changed.
+NORMALIZED_DRAFTS = ROOT / "test-results/survivor-judgement/normalized-drafts.json"
+_NORMALIZED: dict = {}
+
+
+def normalizer_context(semantic) -> list:
+    """Ruff's version and the project's settings it reads, asked once."""
+    if not _NORMALIZED:
+        context = [semantic.ruff_version(), load_fingerprints().pyproject_digest(ROOT / "pyproject.toml", ("ruff",))]
+        try:
+            kept = load(NORMALIZED_DRAFTS)
+        except (OSError, ValueError):
+            kept = {}
+        _NORMALIZED.update({"context": context, "results": dict(kept.get("results") or {}) if kept.get("context") == context else {}})
+        _NORMALIZED["read"] = len(_NORMALIZED["results"])
+    return _NORMALIZED["context"]
+
+
+def normalized_draft(semantic, draft: str, as_path: str) -> tuple[str, list[str]]:
+    normalizer_context(semantic)
+    key = hashlib.sha256(json.dumps([draft, as_path]).encode()).hexdigest()
+    if key not in _NORMALIZED["results"]:
+        _NORMALIZED["results"][key] = list(semantic.normalize_draft(draft, as_path))
+    normalized, lint = _NORMALIZED["results"][key]
+    return normalized, list(lint)
+
+
+def save_normalized_drafts() -> None:
+    if _NORMALIZED and len(_NORMALIZED["results"]) != _NORMALIZED["read"]:
+        NORMALIZED_DRAFTS.parent.mkdir(parents=True, exist_ok=True)
+        NORMALIZED_DRAFTS.write_text(json.dumps({"context": _NORMALIZED["context"], "results": _NORMALIZED["results"]}, sort_keys=True) + "\n")
+
+
 def pin_origin_holds(models, by_call: dict, folder: Path, key: str, pin: dict) -> bool:
     """A pin's test is what its origin wrote, in the project's style: the draft author's stored,
     ledgered answer, or the semantic draft the cascade kept, normalized again by the same ruff into
@@ -1397,9 +1432,9 @@ def pin_origin_holds(models, by_call: dict, folder: Path, key: str, pin: dict) -
         draft = kept[0]
     else:
         return False
-    if hashlib.sha256(pin_body(draft).encode()).hexdigest() != pin.get("answer_sha256") or pin.get("normalizer") != semantic.ruff_version():
+    if hashlib.sha256(pin_body(draft).encode()).hexdigest() != pin.get("answer_sha256") or pin.get("normalizer") != normalizer_context(semantic)[0]:
         return False
-    normalized, lint = semantic.normalize_draft(draft, str(pin.get("path")))
+    normalized, lint = normalized_draft(semantic, draft, str(pin.get("path")))
     return not lint and hashlib.sha256(pin_body(normalized).encode()).hexdigest() == pin.get("draft_sha256")
 
 
@@ -7458,4 +7493,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    finally:
+        save_normalized_drafts()

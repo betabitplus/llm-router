@@ -448,7 +448,12 @@ on request, several contracts at once, each in its own copy of the working tree.
 are the product files that hold its mutants, its tests with their Gherkin and cassettes, the
 shared test support and the dependencies, as PIT and Stryker count them. Python files count by
 what they do: a tool by its syntax tree, code under test by its tokens at their positions with
-its `# mutation:` pragmas, so an edited comment or a reformatting reruns nothing. A mutant's
+its `# mutation:` pragmas, so an edited comment or a reformatting reruns nothing.
+`pyproject.toml` counts by the tables its run reads, as Bazel keys an action by its declared
+inputs: its layout, its comments and the tables of tools the run does not start (linters, type
+checkers, release tools) rerun nothing, while a test setting, a dependency or an unknown table
+does; the semantic cascade also counts ty's table, since it type-checks each mutant, a draft's
+judgement ruff's, since it formats the draft, and the architecture mutants import-linter's. A mutant's
 time limit is 1.25 times its tests' time in the retained run plus 10 s, as in PIT, and a
 mutant that outruns it counts as caught only when a second run with twice the limit runs out
 of time too: a slow suite is no hang. Within a contract the engine runs mutants at once on the
@@ -522,7 +527,9 @@ Proposals whose mutated function reads the same stay in one chunk, so a repeated
 still named a duplicate of the first; judged in chunks, the calibration set must get the same
 outcome for every proposal. A contract whose retained result was made from exactly its
 current inputs is not run again, and where only the assessors' answers or the drafts changed
-its mutants' test runs stand. A mutant's tests are the contract's tests that run its target in
+its mutants' test runs stand. The cascade runs only while the evidence producers are qualified
+for the current code: a run before the qualification catches up would judge every contract
+without the assessors' labels and put those results in place of calibrated ones. A mutant's tests are the contract's tests that run its target in
 the retained run's per-test coverage, stopped at the first failure as PIT and Stryker stop; the
 test run imports the module anyway, so whether it imports is asked only when a type check or the
 run fails. Draft tests are judged in as many isolated copies at once, and scenario oracle
@@ -862,7 +869,8 @@ at most the false-equivalent rate of all distinct pairs, labelled or observed, j
 equivalent; an assessor model that misses them does not answer, and at a level of a ladder
 the calibration asks the next level. A ladder of levels answers its role's canaries from its
 lowest level up until one passes; the next level is asked only after the one below answered
-every case and failed. A change of model, level, question or canary set asks for the canaries
+every case and failed. The canary questions of a round are asked at once, as the assessors'
+are; each backend still takes its parallel calls at a time. A change of model, level, question or canary set asks for the canaries
 again; until they pass, the role skips that model at that level and the levels above it. A canary the backend did not answer (its quota, its capacity, the time
 limit) leaves the model's record for the same questions as it was.
 
