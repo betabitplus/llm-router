@@ -2,34 +2,35 @@
  "02d729b5b4d8836a": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T094410Z-b4315e",
+   "call_id": "20260930T200026Z-56380b",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "When max_attempts is None, `routes[:None]` keeps every element, so the returned tuple is the same as in the guarded original. For any other value, both versions run the same slice. No input can tell the two versions apart.",
-   "response_sha256": "6e07eeccf36162b43e4476c41b300ace3ca171464d1c375ea032359efab25b64",
+   "reason": "When max_attempts is None, `routes[:None]` returns the whole list, so the tuple comes out the same as when the slice is skipped. For every other value, both versions run the same slice. No input can tell them apart, so route order and the first route stay the same.",
+   "response_sha256": "dc386c0ed1fae4e085a2ef48813186796ec99c016940cb48a683b508f06cb95a",
    "sources": [
-    "if options.max_attempts is not None:",
-    "if True:",
-    "routes = routes[:options.max_attempts]",
+    "if True:\n        routes = routes[:options.max_attempts]",
+    "if options.max_attempts is not None:\n        routes = routes[: options.max_attempts]",
     "An explicit successful starting-route identity remains first after fallback shuffle and attempt capping."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "conditional",
-  "prompt_sha256": "bf65c78c3911dd207ffe81b9c80ec945430e7b4b1fd47d220474e21de13e934f",
+  "prompt_sha256": "0130175050c69df6245f29541f3228a5b70712f00ddc609e8083670d8c0a977d",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T094435Z-5eef0a",
+   "call_id": "20260930T201403Z-4c8ae7",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "bf65c78c3911dd207ffe81b9c80ec945430e7b4b1fd47d220474e21de13e934f",
-   "reason": "In Python, slicing a list with a bound of None (e.g. routes[:None]) produces a shallow copy of the entire list. Consequently, the unconditional slice in the mutant produces the exact same final tuple as the original conditional logic for all possible inputs, preserving the exact same behavior.",
-   "response_sha256": "11cfacc47479fe3868ff2fa58976ff137d5ac885c27610cf5563b30be65029f4",
+   "prompt_sha256": "0130175050c69df6245f29541f3228a5b70712f00ddc609e8083670d8c0a977d",
+   "reason": "Slicing a list with [:None] returns a shallow copy containing all original elements. The subsequent conversion to a tuple produces identical output in both versions, making the conditional check redundant.",
+   "response_sha256": "4caea5897f42399f8dbbe4c529a940bca0efa81bf2362435d621b6fec20eed6e",
    "sources": [
     "An explicit successful starting-route identity remains first after fallback shuffle and attempt capping.",
     "if options.max_attempts is not None:",
@@ -42,34 +43,36 @@
  "14045e0aa1675aec": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T094410Z-c10841",
+   "call_id": "20260930T200026Z-3ec0bc",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant returns the same routes in the same order, but as a list instead of a tuple. The requirement and its criteria only cover attempt order and keeping the starting route's identity first, not which container type is returned.",
-   "response_sha256": "9db152a3ce136d87538e171228d466cb64e851b4d9276590e8b3194f1a9d3a24",
+   "reason": "The mutant returns the same routes in the same order as a list instead of a tuple, so the starting-route identity, rotation, shuffle and cap behave the same. Only the container type changes, and no requirement or criterion asks for a particular one.",
+   "response_sha256": "4b24efd4112e4bc900a6a645ac52ff6d5f0d4a476759bce6ef07c86de7d6b711",
    "sources": [
     "Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
     "An explicit successful starting-route identity remains first after fallback shuffle and attempt capping.",
-    "return tuple(routes)",
-    "return routes"
+    "    return tuple(routes)",
+    "    return routes"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "conversion",
-  "prompt_sha256": "b4d2e23e91a166d5ac3b827b01bfdb46050876eab2912494d3ddeef8932afdd0",
+  "prompt_sha256": "dae2c48116d93cafc0cb81496448394e9cd00bf51232237ae38caba09bd8a52c",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T094420Z-22f895",
+   "call_id": "20260930T201343Z-3b8163",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "b4d2e23e91a166d5ac3b827b01bfdb46050876eab2912494d3ddeef8932afdd0",
-   "reason": "The changed version returns a list instead of a tuple, altering the output type. This collection type difference is irrelevant to the requirement, which only dictates that the route attempt order is properly rotated or shuffled without losing the selected starting-route identity.",
-   "response_sha256": "89b9d1517abc25d5dca6c2e0ce02b42061d863d5ad85aa5b5d7c34ff683d9345",
+   "prompt_sha256": "dae2c48116d93cafc0cb81496448394e9cd00bf51232237ae38caba09bd8a52c",
+   "reason": "Returning a list instead of a tuple is a difference in return type that does not alter the attempt order or the starting-route identity required by the specification.",
+   "response_sha256": "30359df63e52ca285f3ecfaa082f09204ef1f7e54a9f7122566f6765c8d39f13",
    "sources": [
     "Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
     "return tuple(routes)",
@@ -277,39 +280,41 @@
  "896165f2ae8f1610": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T224035Z-2573e4",
-   "confirmed": false,
+   "call_id": "20260930T200026Z-728d93",
+   "confirmed": true,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant drops the `min_routes_for_fallback_shuffle` threshold, so fallbacks also get shuffled when there are only a few routes. It still keeps `routes[0]`, the selected starting route, first and still applies the attempt cap. None of the stated requirements, criteria, the Feature or the Goal mention a minimum route count for shuffling, so the difference falls outside what they ask for.",
-   "response_sha256": "fd332e207a63b2c1bd2ac86c45854f98736e32a8113a637ed1a513a05463c5b2",
+   "reason": "The mutant drops the minimum-route threshold, so it shuffles fallbacks even when there are too few routes. It still keeps routes[0], the selected starting route, in first place. The requirement and its criteria only ask that the starting-route identity stays first and that stable identities are kept. None of them sets when shuffling should apply or what order the fallback routes after the first should take.",
+   "response_sha256": "9f682662d26ecbafe5e058c00fc899f11a11be3bd01fda624e9fc2c3ff3f142a",
    "sources": [
     "Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
     "Fallback shuffling never moves the already selected starting route away from the first attempt.",
     "An explicit successful starting-route identity remains first after fallback shuffle and attempt capping.",
     "and len(routes) >= options.min_routes_for_fallback_shuffle",
-    "if options.shuffle_fallbacks:",
-    "routes = [routes[0], *fallbacks]"
+    "if options.shuffle_fallbacks:"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "condition",
-  "prompt_sha256": "3dc4971bb764d30c0bda9e4ef4bdd9046af216a9323bb7e4b99640284516e626",
+  "prompt_sha256": "fda54dfe40763e52945fc1ed337a1a472674c79177d9b9f7835397e45a1f3c82",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T003104Z-d17e5d",
-   "confirmed": false,
+   "call_id": "20260930T200048Z-e9feac",
+   "confirmed": true,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "3dc4971bb764d30c0bda9e4ef4bdd9046af216a9323bb7e4b99640284516e626",
-   "reason": "The change removes the minimum threshold for fallback shuffling, causing fallbacks to be shuffled unconditionally when shuffling is enabled. The requirements only mandate that the selected starting route is never moved away from the first attempt during shuffling, but do not specify any conditions on when shuffling should occur based on route count.",
-   "response_sha256": "49567d58a323ba1b58b92e15532595be65d748a73aba82776d6e5bb03ab6539d",
+   "prompt_sha256": "fda54dfe40763e52945fc1ed337a1a472674c79177d9b9f7835397e45a1f3c82",
+   "reason": "The mutant omits the minimum route count check for fallback shuffling, shuffling fallbacks even if the route count is below the threshold. Since no requirement mandates a minimum threshold for fallback shuffling and the mutant still preserves the starting-route identity, this change does not break any requirements.",
+   "response_sha256": "3ec71e3ce4b2158bb41111204004492bd2a933cf31192ee647bc29ba202d99cb",
    "sources": [
+    "Technical requirement TREQ_ROUTE_ORDER (Stable route ordering): Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
     "and len(routes) >= options.min_routes_for_fallback_shuffle",
-    "Fallback shuffling never moves the already selected starting route away from the first attempt."
+    "if options.shuffle_fallbacks:"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -387,65 +392,75 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.595984Z",
-   "answer_sha256": "87e79acb8890bf3237f255a7933510eeb127b2ab53c9cfd4d93ad583e7b42646",
-   "call_id": "20260929T112253Z-3de719",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "87e79acb8890bf3237f255a7933510eeb127b2ab53c9cfd4d93ad583e7b42646",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_route_order_9aa5ae42eb7bf0e0.py",
-   "response_sha256": "4d920d471442e304d978be4d984c2c5bdb77abf5adbca09dbbea624ab5ebea21",
-   "source": "draft author",
-   "sources": [
-    "llm_router._internal.runtime.routes.ordered_routes",
-    "llm_router._internal.runtime.routes.RoutePlan",
-    "llm_router._internal.runtime.routes.RouteOrderOptions"
-   ]
-  },
-  "prompt_sha256": "a0b44e89f1e86ad7a97ea4d758916d25711ed7c9d99a8f5b97f5095d70a53cd6"
+  "prompt_sha256": "a0b44e89f1e86ad7a97ea4d758916d25711ed7c9d99a8f5b97f5095d70a53cd6",
+  "subsumed": {
+   "at": "2026-09-30T13:47:53.373265Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_route_order_7f06d09ceb421dcd.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.595984Z",
+    "answer_sha256": "87e79acb8890bf3237f255a7933510eeb127b2ab53c9cfd4d93ad583e7b42646",
+    "call_id": "20260929T112253Z-3de719",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "87e79acb8890bf3237f255a7933510eeb127b2ab53c9cfd4d93ad583e7b42646",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_route_order_9aa5ae42eb7bf0e0.py",
+    "response_sha256": "4d920d471442e304d978be4d984c2c5bdb77abf5adbca09dbbea624ab5ebea21",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.runtime.routes.ordered_routes",
+     "llm_router._internal.runtime.routes.RoutePlan",
+     "llm_router._internal.runtime.routes.RouteOrderOptions"
+    ]
+   }
+  }
  },
  "a27e03f14aab8822": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T094643Z-b6f998",
+   "call_id": "20260930T200026Z-f6dfbc",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant changes only the route count at which fallbacks start being shuffled. It still shuffles only routes[1:], keeps routes[0] first and caps afterwards, so the starting route and route identities are preserved as the requirement asks. No listed requirement covers the shuffle threshold.",
-   "response_sha256": "a3fa041d4283f7d0b5252c94ce259b69f3130ef5f009d6149bf6dc1e8a3f8873",
+   "reason": "The mutant compares the route count with the shuffle flag instead of the configured minimum, so it can shuffle fallbacks when the original would not. It still keeps routes[0] first, both before and after the attempt cap, so the starting route that succeeded stays first. The requirement and its criteria only protect the starting route's identity, not the fallback order or when shuffling kicks in.",
+   "response_sha256": "aada3a58e4a2d6f7061b186f67e179a734d26c2c200fabb2f50a3c54d4c7f74c",
    "sources": [
-    "Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
     "Fallback shuffling never moves the already selected starting route away from the first attempt.",
-    "if options.shuffle_fallbacks and len(routes) >= options.shuffle_fallbacks:"
+    "Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
+    "After fallback succeeds, the next request through the same router shall begin from the route that most recently succeeded.",
+    "if options.shuffle_fallbacks and len(routes) >= options.shuffle_fallbacks:",
+    "routes = [routes[0], *fallbacks]"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "attribute",
-  "prompt_sha256": "69978f9061d10cfd1404ba7388df8ee7ac705fe3eec756381992f421fcf19153",
+  "prompt_sha256": "28fb8941912312ddef59515a71127a2f420412b0f5769079714e3dc103c79128",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T094654Z-6183fa",
+   "call_id": "20260930T200048Z-d17eb9",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "69978f9061d10cfd1404ba7388df8ee7ac705fe3eec756381992f421fcf19153",
-   "reason": "The requirement demands that fallback shuffling preserve the selected starting route identity, which the mutant still correctly accomplishes. No requirement mandates a specific minimum threshold of routes before shuffling can occur.",
-   "response_sha256": "756e2e6036b3c8fe8925a111e794416c07ed26bc45cd7f4ceb8801a90e2d7120",
+   "prompt_sha256": "28fb8941912312ddef59515a71127a2f420412b0f5769079714e3dc103c79128",
+   "reason": "The mutant replaces the minimum route threshold check for shuffling with a comparison against the boolean flag itself, which changes when shuffling occurs. However, the requirements do not dictate any minimum threshold for shuffling, only that shuffling must not displace the starting route, a property both versions maintain.",
+   "response_sha256": "6f433f48244197f66dfb4c628fc55b1830da67ec97b983686d949573cafb1c88",
    "sources": [
-    "Fallback shuffling never moves the already selected starting route away from the first attempt.",
+    "Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
     "and len(routes) >= options.min_routes_for_fallback_shuffle",
     "if options.shuffle_fallbacks and len(routes) >= options.shuffle_fallbacks:"
    ],
@@ -472,35 +487,41 @@
    "verdict": "pin"
   },
   "operator": "attribute",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.596519Z",
-   "answer_sha256": "7ed688937e6394ac6989f2ba39c28b2ab089504fa2c880aafc6f7936b956cd1a",
-   "call_id": "20260929T112255Z-a04d23",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "7ed688937e6394ac6989f2ba39c28b2ab089504fa2c880aafc6f7936b956cd1a",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_route_order_eec518360ab2e988.py",
-   "response_sha256": "a5ed7379c0042f3be132403f764556b9a4708a5c0f205846f0dd6332e09055dc",
-   "source": "draft author",
-   "sources": [
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router._internal.runtime.routes.ExpandedRoute",
-    "llm_router._internal.runtime.routes.RouteGenerationDefaults",
-    "llm_router._internal.runtime.routes.RouteOrderOptions",
-    "llm_router._internal.runtime.routes.RoutePlan",
-    "llm_router._internal.runtime.routes.ordered_routes"
-   ]
-  },
-  "prompt_sha256": "a2d7c4dcb9164c625a9d1b5ffe146e3cb3928bc6933e030ead6e33de16fb08cb"
+  "prompt_sha256": "a2d7c4dcb9164c625a9d1b5ffe146e3cb3928bc6933e030ead6e33de16fb08cb",
+  "subsumed": {
+   "at": "2026-09-30T13:47:53.373582Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_route_order_73f9e013ae38b43a.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.596519Z",
+    "answer_sha256": "7ed688937e6394ac6989f2ba39c28b2ab089504fa2c880aafc6f7936b956cd1a",
+    "call_id": "20260929T112255Z-a04d23",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "7ed688937e6394ac6989f2ba39c28b2ab089504fa2c880aafc6f7936b956cd1a",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_route_order_eec518360ab2e988.py",
+    "response_sha256": "a5ed7379c0042f3be132403f764556b9a4708a5c0f205846f0dd6332e09055dc",
+    "source": "draft author",
+    "sources": [
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router._internal.runtime.routes.ExpandedRoute",
+     "llm_router._internal.runtime.routes.RouteGenerationDefaults",
+     "llm_router._internal.runtime.routes.RouteOrderOptions",
+     "llm_router._internal.runtime.routes.RoutePlan",
+     "llm_router._internal.runtime.routes.ordered_routes"
+    ]
+   }
+  }
  }
 }

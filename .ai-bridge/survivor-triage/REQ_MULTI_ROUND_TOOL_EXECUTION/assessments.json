@@ -55,6 +55,27 @@
      "return _ResultStep(state=state, response=build_public_response(result))"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "any valid ProviderRequest",
+     "result": "a ProviderResult with a non-empty tool_calls tuple",
+     "state": "an _ExecutionLoopState whose tool_state.steps is non-empty, e.g. a ToolLoopState holding one ToolStep"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-dd477c",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "When plan.tool_registry is None and state.tool_state.steps is non-empty, the original passes those steps as tool_trace and the changed version drops them, so the responses differ.",
+    "response_sha256": "3d8a982c86438e232a91627e1ae86e779d2431c0c85ea06ea2acb4b29b2b476e",
+    "sources": [
+     "tool_trace=state.tool_state.steps,",
+     "response=build_public_response(result))",
+     "if plan.tool_registry is None:"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "89a0cdb0419a46bb9aeeb730c48e0c6befd7bf4b3451408f93e02af69803b058"
@@ -348,6 +369,21 @@
      "return _ResultStep(state=state, response=build_public_response(result, output_text='', tool_trace=next_tool_state.steps))"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T201915Z-9e7535",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only change drops tool_calls=result.tool_calls in the limit branch, and build_public_response very likely falls back to result.tool_calls when tool_calls is None, so the outputs match.",
+    "response_sha256": "c16a0a259333e292afa677a381bb4c9eb434b8207ce1544739780262bb6c5055",
+    "sources": [
+     "output_text=\"\",\n                tool_calls=result.tool_calls,\n                tool_trace=next_tool_state.steps,",
+     "return _ResultStep(state=state, response=build_public_response(result, output_text='', tool_trace=next_tool_state.steps))"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "e7a32801005e5375269de681629ee705f3a27cfb789cbdec64708e584dde888c"

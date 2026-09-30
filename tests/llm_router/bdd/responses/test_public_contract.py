@@ -77,7 +77,19 @@ for _test_name in (
         "REQ_PROVIDER_ERROR_BOUNDARY",
         "interface.error-status",
     )(globals()[_test_name])
-del _criterion, _normalization_test_name, _test_name
+
+for _test_name, _fault_class in (
+    ("test_a_provider_timeout_surfaces_as_a_provider_error", "runtime.latency-timeout"),
+    (
+        "test_a_provider_disconnect_surfaces_as_a_provider_error",
+        "runtime.unavailable-disconnect",
+    ),
+):
+    globals()[_test_name] = pytest.mark.fault_item(
+        "REQ_PROVIDER_ERROR_BOUNDARY",
+        _fault_class,
+    )(globals()[_test_name])
+del _criterion, _fault_class, _normalization_test_name, _test_name
 
 _OPENAI_PATH = openai_chat_path()
 _GOOGLE_PATH = google_generate_path(model=Model.GEMINI_FLASH)
@@ -211,6 +223,33 @@ def provider_sdk_error_case() -> dict[str, Any]:
     }
 
 
+@given("a provider does not answer before its transport timeout", target_fixture="case")
+def provider_timeout_case() -> dict[str, Any]:
+    return {
+        "scenario": "provider_transport_failure",
+        "fault_class": "runtime.latency-timeout",
+        "mechanism": (
+            "scripted provider answers only after the adapter's transport timeout"
+        ),
+        "response": ScriptedResponse(
+            status_code=200,
+            headers={"Content-Type": "application/json"},
+            body=openai_success_response(text="too late"),
+            delay_seconds=1.0,
+        ),
+    }
+
+
+@given("a provider closes the connection before answering", target_fixture="case")
+def provider_disconnect_case() -> dict[str, Any]:
+    return {
+        "scenario": "provider_transport_failure",
+        "fault_class": "runtime.unavailable-disconnect",
+        "mechanism": "scripted provider closes the connection before any response",
+        "response": ScriptedResponse(status_code=200, disconnect=True),
+    }
+
+
 @when("it reaches the public router boundary")
 @when("the failure reaches the public router boundary")
 def execute_public_error_case(case: dict[str, Any]) -> None:
@@ -252,6 +291,23 @@ def execute_public_error_case(case: dict[str, Any]) -> None:
                     ),
                 },
             )
+        return
+
+    if case["scenario"] == "provider_transport_failure":
+        with ScriptedHTTPServer(
+            port=0,
+            routes={("POST", _OPENAI_PATH): [case["response"]]},
+        ) as server:
+            retain_fault_injection(
+                contract_id="REQ_PROVIDER_ERROR_BOUNDARY",
+                fault_class=case["fault_class"],
+                mechanism=case["mechanism"],
+            )
+            case["result"] = run_error_boundary_inprocess(
+                scenario=case["scenario"],
+                server_base_url=server.base_url,
+            )
+            case["provider_requests"] = server.request_count("POST", _OPENAI_PATH)
         return
 
     if case["scenario"] == "provider_sdk_error":
@@ -335,6 +391,12 @@ def configuration_error_is_public(case: dict[str, Any]) -> None:
 @then("no provider request is sent")
 def invalid_configuration_stops_before_provider(case: dict[str, Any]) -> None:
     assert case["provider_requests"] == 0
+
+
+@then("it fails with a provider error instead of the transport's own exception")
+def transport_failure_is_public(case: dict[str, Any]) -> None:
+    _assert_error_type(case, ProviderError.__name__)
+    assert case["provider_requests"] == 1
 
 
 @then("it fails with a provider error")

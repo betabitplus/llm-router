@@ -12,6 +12,7 @@ from llm_router._api.errors import ConfigurationError
 from llm_router._internal.config.models import LLMRouterConfig
 
 
+# @impl Public configuration error, IMPL_CONFIG_REQUIRE, [REQ_INVALID_CONFIGURATION_ERRORS[revision==2]]
 def _require(*, condition: bool, message: str) -> None:
     """Raise a public config error when a config invariant fails."""
     if not condition:

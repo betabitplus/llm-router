@@ -44,6 +44,7 @@ def encode_session(*, system: str | None, history: tuple[ChatMessage, ...]) -> s
     return json.dumps(payload, indent=2, sort_keys=True)
 
 
+# @impl Incompatible session rejection, IMPL_SESSION_DESERIALIZATION, [TREQ_SESSION_SERIALIZATION[revision==1]]
 def decode_session(text: str) -> tuple[str | None, tuple[ChatMessage, ...]]:
     """Decode a JSON session artifact into provider-neutral chat messages."""
     try:

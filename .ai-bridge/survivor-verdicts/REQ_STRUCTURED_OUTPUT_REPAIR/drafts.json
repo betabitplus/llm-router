@@ -194,6 +194,77 @@
    ]
   }
  ],
+ "be77717ccb35232b": [
+  {
+   "at": "2026-09-30T14:21:49.311087Z",
+   "call_id": "20260930T142109Z-1f0625",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5a3fe94b65b7d7554e2adc12d57047fd091b21154ca63b8c0529ead514a1dbfe",
+   "reason": "it does not pass on the original 5 times in a row (pytest: Failed: Cannot drive the executor: no public runtime API for tool steps and scripted provider responses was available to build this scenario.)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:23:24.248605Z",
+   "call_id": "20260930T142149Z-3a1aff",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "458a0b714fdd44b119fad32fa5ede6dde9de079bf2040bb2bdb9bab32b7b6c32",
+   "reason": "it does not fail on the mutant: of the changed lines 445\u2013456 it runs line 445 but never lines 447, 449, 451 and 455\u2013456",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:26:33.275351Z",
+   "call_id": "20260930T142324Z-5fc9d3",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4aa640bc209273d26c4454d9d9b69ab8a3d5a575b3fb7729277818dd71a1e5a6",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
  "ea1a8657cd65d4b1": [
   {
    "at": "2026-09-29T10:38:22.577412Z",

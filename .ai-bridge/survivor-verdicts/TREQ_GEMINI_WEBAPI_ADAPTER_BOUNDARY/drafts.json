@@ -1,0 +1,70 @@
+{
+ "f0eefabee6b35a0a": [
+  {
+   "at": "2026-09-30T14:22:21.189469Z",
+   "call_id": "20260930T142109Z-dffd82",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7fa65c7a40c56aae078a1277bc02d558d2ae0a3eef45b026a238856fe8d49ac1",
+   "reason": "it does not pass on the original 5 times in a row (pytest: Failed: DID NOT RAISE Exception)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.providers.registry.register_adapter_factory",
+    "llm_router._internal.providers.base.ProviderCredential"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:23:05.596203Z",
+   "call_id": "20260930T142221Z-047c64",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router._internal.providers.gemini_webapi has no gemini_webapi_adapter_from_config"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "51768cc06931c95547dc335a1b7d9682f09792fa8e437aeb8a112bdde3d85514",
+   "reason": "it does not fit the project's code as written: llm_router._internal.providers.gemini_webapi has no gemini_webapi_adapter_from_config",
+   "sources": [
+    "llm_router.Provider"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:24:12.531130Z",
+   "call_id": "20260930T142305Z-d215d9",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.providers.registry.get_adapter"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "de720ccef83dd46c9126a8711953d9179bce08a06e1f12d5f644bbea701bcecc",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.providers.gemini_webapi.GeminiWebAPIAdapter",
+    "llm_router._internal.providers.registry.get_adapter"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,69 @@
+{
+ "at": "2026-09-30T13:45:09.896315Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_62fc1baca32629b1.py",
+  "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0468831e.py",
+  "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0c2c0162.py",
+  "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_5dfdf438.py",
+  "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_eea8fd67.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0468831e.py",
+  "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0c2c0162.py",
+  "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_5dfdf438.py"
+ ],
+ "restored": [],
+ "removed": {
+  "62fc1baca32629b1": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_62fc1baca32629b1.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0468831e.py",
+    "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0c2c0162.py",
+    "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_5dfdf438.py"
+   ]
+  },
+  "SM-EEA8FD67": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_eea8fd67.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0468831e.py"
+   ]
+  }
+ },
+ "matrix": {
+  "62fc1baca32629b1": [
+   "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_62fc1baca32629b1.py",
+   "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0468831e.py",
+   "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0c2c0162.py",
+   "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_5dfdf438.py",
+   "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_eea8fd67.py"
+  ],
+  "SM-0468831E": [
+   "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0468831e.py",
+   "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_eea8fd67.py"
+  ],
+  "SM-0C2C0162": [
+   "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0c2c0162.py"
+  ],
+  "SM-5DFDF438": [
+   "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_5dfdf438.py"
+  ],
+  "SM-EEA8FD67": [
+   "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0468831e.py",
+   "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_eea8fd67.py"
+  ]
+ },
+ "caught_before": [
+  "1cb6c482c58e73ea",
+  "511075ff59b8c60b",
+  "62fc1baca32629b1",
+  "6b5c52d87edda48d",
+  "9b71cf7aca1ff696",
+  "SM-0468831E",
+  "SM-0C2C0162",
+  "SM-5BF81D81",
+  "SM-5DFDF438",
+  "SM-EEA8FD67",
+  "e948e3510d2940bc",
+  "eff4e8a19a31c312"
+ ]
+}

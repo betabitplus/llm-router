@@ -66,33 +66,39 @@
    "verdict": "pin"
   },
   "operator": "boundary",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.562078Z",
-   "answer_sha256": "23efdf2e7f9d2fb9cedb8ee4a6f184b2a56d850401bc5b2f913e65b3cd6362f7",
-   "call_id": "20260929T112151Z-03e4df",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "23efdf2e7f9d2fb9cedb8ee4a6f184b2a56d850401bc5b2f913e65b3cd6362f7",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_tool_round_limit_c37a776247b2f0eb.py",
-   "response_sha256": "cfc8c5310b5ac7722d981d86843d34700f464e601cdc62c4ede2cf2fd1840ca3",
-   "source": "draft author",
-   "sources": [
-    "llm_router._api.errors.ConfigurationError",
-    "llm_router._internal.config.assembly.build_default_config",
-    "llm_router._internal.config.validation.validate_config",
-    "llm_router._internal.config.models.LLMRouterConfig",
-    "llm_router._internal.config.models.BehaviorDefaults"
-   ]
-  },
-  "prompt_sha256": "7b08db9586b2ce4385581104c1ad31101932ff1e845b8d77e5c57a03edeaea31"
+  "prompt_sha256": "7b08db9586b2ce4385581104c1ad31101932ff1e845b8d77e5c57a03edeaea31",
+  "subsumed": {
+   "at": "2026-09-30T13:46:31.250027Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_tool_round_limit_c18833e1526efa72.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.562078Z",
+    "answer_sha256": "23efdf2e7f9d2fb9cedb8ee4a6f184b2a56d850401bc5b2f913e65b3cd6362f7",
+    "call_id": "20260929T112151Z-03e4df",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "23efdf2e7f9d2fb9cedb8ee4a6f184b2a56d850401bc5b2f913e65b3cd6362f7",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_config_tool_round_limit_c37a776247b2f0eb.py",
+    "response_sha256": "cfc8c5310b5ac7722d981d86843d34700f464e601cdc62c4ede2cf2fd1840ca3",
+    "source": "draft author",
+    "sources": [
+     "llm_router._api.errors.ConfigurationError",
+     "llm_router._internal.config.assembly.build_default_config",
+     "llm_router._internal.config.validation.validate_config",
+     "llm_router._internal.config.models.LLMRouterConfig",
+     "llm_router._internal.config.models.BehaviorDefaults"
+    ]
+   }
+  }
  }
 }

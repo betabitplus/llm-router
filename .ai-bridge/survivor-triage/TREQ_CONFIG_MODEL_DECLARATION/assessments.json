@@ -45,6 +45,22 @@
      "if False:\n        resolved = model"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-c417ae",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "Model(member) returns the same member, so routing Model instances through Model(model) gives the same result as the removed isinstance branch.",
+    "response_sha256": "3a80550077947c90aba2899ab03464c933a30b1dd2a80b902dfddffd698261ad",
+    "sources": [
+     "if False:",
+     "resolved = Model(model)",
+     "if resolved not in config.models:"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "ed78e7660bbf2f4567855a02ec9d37c43d0b4754c579dad7c7b34167311f4681"

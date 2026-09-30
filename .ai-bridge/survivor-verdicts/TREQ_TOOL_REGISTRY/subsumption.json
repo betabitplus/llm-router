@@ -1,0 +1,68 @@
+{
+ "at": "2026-09-30T15:35:57.826167Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77252785424d95f7.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77986b22a0ac6322.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_7ebb796581f85dea.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_9f60c66b56e11a2f.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_e9c1165894dd60d7.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77252785424d95f7.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77986b22a0ac6322.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_9f60c66b56e11a2f.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_e9c1165894dd60d7.py"
+ ],
+ "restored": [],
+ "removed": {
+  "7ebb796581f85dea": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_7ebb796581f85dea.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_9f60c66b56e11a2f.py"
+   ]
+  }
+ },
+ "matrix": {
+  "77252785424d95f7": [
+   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77252785424d95f7.py"
+  ],
+  "77986b22a0ac6322": [
+   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77986b22a0ac6322.py"
+  ],
+  "7ebb796581f85dea": [
+   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_7ebb796581f85dea.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_9f60c66b56e11a2f.py"
+  ],
+  "9f60c66b56e11a2f": [
+   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_9f60c66b56e11a2f.py"
+  ],
+  "e9c1165894dd60d7": [
+   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_e9c1165894dd60d7.py"
+  ]
+ },
+ "caught_before": [
+  "0aa5a83f35075ffd",
+  "0ececf49a6161d31",
+  "1a17262b5773e522",
+  "1e4316986d693194",
+  "2fd9d0516670a172",
+  "386efae0bee86681",
+  "66191101f18c595a",
+  "741e991cd5cb55c2",
+  "77252785424d95f7",
+  "77986b22a0ac6322",
+  "7ebb796581f85dea",
+  "8ca6441d913e8f88",
+  "9f60c66b56e11a2f",
+  "b3bc740fd8a841e6",
+  "bb90ace5d0dbe5b9",
+  "d455955cf1f1a650",
+  "d51c2c97c1dd4257",
+  "e967338839c60845",
+  "e9c1165894dd60d7",
+  "eaec01fcfcd05a9d",
+  "f4586bba8d50f90a",
+  "f57a5b54d0dae687",
+  "fd1e73e27131e06a"
+ ]
+}

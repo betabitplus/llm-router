@@ -1,4 +1,268 @@
 {
+ "1c6b745faa58a462": [
+  {
+   "at": "2026-09-30T19:02:19.560139Z",
+   "call_id": "20260930T190124Z-cdb2eb",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d9cf2d4684cfa7d46c7edec3d4d33f796841b057afdde58d86d2919babc362bc",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ModelNotFoundError: Model 'gemini-3.6-flash' not configured for provider 'openrouter'.)",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._api.errors.ApiKeyNotFoundError"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:03:41.025612Z",
+   "call_id": "20260930T190219Z-41f236",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d8982650f3339808e71d9d16986d1b54453d2459fa6962595954c1ce745d00f9",
+   "reason": "it does not fail on the mutant: of the changed lines 68\u201378 it runs lines 68, 70 and 76\u201377 but never lines 74 and 78",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:07:22.313994Z",
+   "call_id": "20260930T190344Z-6f67ab",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "53ed84496b8e8380f8c58f678902cbbeb586d1c07d8eebb79de1f9ee9e327e71",
+   "reason": "it does not fail on the mutant: of the changed lines 68\u201378 it runs lines 68, 70 and 76\u201377 but never lines 74 and 78",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.ApiKeyNotFoundError"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:13:10.503824Z",
+   "call_id": "20260930T190722Z-5506ca",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "f5c9ebb616d309767e3670c8a8e752c05d0bd43ff4e337f971b8d594eb5d9459",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ApiKeyNotFoundError",
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
+  }
+ ],
+ "53bdcf1990f4aaa4": [
+  {
+   "at": "2026-09-30T16:39:53.963016Z",
+   "call_id": "20260930T163932Z-f20054",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e79b793bd11175337a62f54dbf9786642d475b94143cc5dfc8f75291b82a8d70",
+   "reason": "it imports llm_router._internal.config.assembly, llm_router._internal.runtime.limiter",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.Provider",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:13.349705Z",
+   "call_id": "20260930T164008Z-ba75bd",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3bf8341ab7ce6a2c949ae5bc161d74d55fc9e3db1273ba3ce4759cdb37013b08",
+   "reason": "it does not fit the project's code as written: llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.Provider",
+    "llm_router.build_default_config",
+    "llm_router.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:07:21.792483Z",
+   "call_id": "20260930T180431Z-1e111c",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d4812e4c92ced05aaac86d190046baf3272b30cf2f322feb63615e080e9ae69f",
+   "reason": "it does not fail on the mutant: of the changed lines 105\u2013118 it runs line 105 but never lines 109, 111\u2013112 and 118",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:20:24.199714Z",
+   "call_id": "20260930T180731Z-662c6f",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "e6d82e12f28233dfa8486e7ed13a148a4e45393b4233cd4b109e178609f36b7e",
+   "reason": "",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  }
+ ],
+ "5ef3f33a9ec29e3d": [
+  {
+   "at": "2026-09-30T13:54:44.806036Z",
+   "call_id": "20260930T135336Z-e01cca",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f05c1f405fafd5486eef188baca745bb004ecffd48033e2174f5097ff1e8fb66",
+   "reason": "it uses os",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:55:56.336232Z",
+   "call_id": "20260930T135445Z-5dc722",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "21bdc4316b683c3e095cbfb81ad1b36efb3e13a301c76359a44c88a23b69b71d",
+   "reason": "",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:28.026648Z",
+   "call_id": "20260930T163932Z-f8e6d2",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "194c70b03e7d8dc11941c09877c11d98380b046e8711c6e7b67ff426014353f7",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: module 'llm_router' has no attribute 'generate')",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.Provider",
+    "llm_router.Model"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:50.625694Z",
+   "call_id": "20260930T164028Z-95dda1",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "745649b491d8667a6cc9db8ba9abef4012545007966e6796a4dce696fc4872ed",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:07:51.147388Z",
+   "call_id": "20260930T180430Z-580671",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6719525345e69a74acc112fac852a0878cd6e4f20d0faadff3edc6e57503d9cf",
+   "reason": "",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  }
+ ],
  "6a19c74173ddbaf9": [
   {
    "at": "2026-09-29T00:24:30.359429Z",
@@ -34,6 +298,872 @@
     "llm_router._internal.config.build_default_config",
     "llm_router._internal.runtime.limiter.KeyResolver",
     "llm_router._internal.runtime.limiter.ResolvedKey"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:15.019194Z",
+   "call_id": "20260930T163937Z-06cac7",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no ResolvedKey (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7c6d7858ba0ac2fd128314c363a12b8f51fa889b0d1ab0d058f8210278750820",
+   "reason": "it does not fit the project's code as written: llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter) | llm_router has no ResolvedKey (it lives in llm_router._internal.runtime.limiter) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.KeyResolver",
+    "llm_router.ResolvedKey",
+    "llm_router.build_default_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:39.438263Z",
+   "call_id": "20260930T164016Z-7aab51",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "361b71267943f99a775513ea95597bfc78f24f7a63d15f5972002d8358528d04",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.runtime.limiter.ResolvedKey"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:43:35.753360Z",
+   "call_id": "20260930T164053Z-678bb0",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f3557040a5577684c43ce4682d7ff1bd34ae7eb91fef29207e4ee73e7de32a4d",
+   "reason": "it does not fail on the mutant: of the changed lines 68\u201378 it runs lines 68, 70 and 74 but never lines 77\u201378",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:15:39.093525Z",
+   "call_id": "20260930T180455Z-5e8680",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "3d402c7de9dccce556f254092053b62436bb80c8a2c3ab7a5f9428249c871bba",
+   "reason": "",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.ProviderCatalog"
+   ]
+  }
+ ],
+ "779116a1f28d187b": [
+  {
+   "at": "2026-09-30T13:54:40.474137Z",
+   "call_id": "20260930T135336Z-1b40b4",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e683671d5749d59705fbd8576891c3893cefbd5cf96987957be0a45e1d45a9af",
+   "reason": "",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:39:52.128209Z",
+   "call_id": "20260930T163937Z-60d358",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "01ef5f9d8c75664337363d6c959028ba1d1c26a0017b01130605d20e247aeb0c",
+   "reason": "it does not fit the project's code as written: llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+   "sources": [
+    "llm_router.KeyResolver",
+    "llm_router.Provider",
+    "llm_router.build_default_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:40.151089Z",
+   "call_id": "20260930T164008Z-8d1df5",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "301cabaa0edd65be9d82eb4ba66df3a8a06cfd417fe22740b6d2c467a34965e4",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:07:49.771710Z",
+   "call_id": "20260930T180432Z-f6cd54",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "328ea7a8a2a7b9a9a4b793c57029657bcb9abeb3baad4414090e0e9825d124fa",
+   "reason": "",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ApiKeyNotFoundError"
+   ]
+  }
+ ],
+ "8bf6ec5f1367a5d6": [
+  {
+   "at": "2026-09-30T16:39:52.283461Z",
+   "call_id": "20260930T163937Z-1dccd4",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no ResolvedKey (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e135e0d95f008623a8b073efaf99a41ad751e3d9f61a074f0858c84222c7846c",
+   "reason": "it does not fit the project's code as written: llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter) | llm_router has no ResolvedKey (it lives in llm_router._internal.runtime.limiter) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.build_default_config",
+    "llm_router.KeyResolver",
+    "llm_router.ResolvedKey"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:37.440573Z",
+   "call_id": "20260930T164008Z-baa1a1",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4b9de4a555b5f27cfb2012eb478a114cb91065e4bff84d5b33679829a35baf49",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.runtime.limiter.ResolvedKey"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:46.098444Z",
+   "call_id": "20260930T164053Z-fb798f",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2099d84dc393beb91d1a771e48c18b06269e201b33e313da8652e62275bf944b",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.runtime.limiter.ResolvedKey"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:25:38.128057Z",
+   "call_id": "20260930T180455Z-7bf1d6",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "d460cce20e9fa9203d27ade4c06f6961e614d2bb801e39fde35209a952613e81",
+   "reason": "it does not fail on the mutant: of the changed lines 68\u201378 it runs line 68 but never lines 70\u201371, 74 and 77\u201378",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router.LLMRouterResponse",
+    "llm_router.RoutingAttempt",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "8f5b0ab9c609f9d1": [
+  {
+   "at": "2026-09-30T15:27:30.531854Z",
+   "call_id": "20260930T152720Z-f0a779",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "53bfa90f42b1a589e77d440dc277385a5affe0967f895c6e886d8272e6f64b60",
+   "reason": "it uses os",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router.Provider"
+   ]
+  },
+  {
+   "at": "2026-09-30T15:28:10.794170Z",
+   "call_id": "20260930T152730Z-67f6bd",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7c77a3f388b44c7c1d687450b93383c3afe1405c23f7fa8f02ba9fa18e50dbb9",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.runtime.limiter.ResolvedKey"
+   ]
+  }
+ ],
+ "9b07dce1d69c1bc9": [
+  {
+   "at": "2026-09-30T19:01:39.594570Z",
+   "call_id": "20260930T190124Z-c52128",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0ad82617ada5a044ef8c606aa149e55fb0842d979161a812e8f933bd103ff81b",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter; it uses os",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:11.266379Z",
+   "call_id": "20260930T190141Z-e55f59",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "eb1571e83ff016c52d6c7138351ef6f5b80771d8cf74b65c697c9a650f6ea3bf",
+   "reason": "it does not fit the project's code as written: llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.runtime.limiter.ResolvedKey"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:06:21.365093Z",
+   "call_id": "20260930T190215Z-8b8597",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "52d3b6789f7193687d37955155556a30782b126bda6de38b445e2f453c9ec54f",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ]
+  }
+ ],
+ "adb0de8f41da4f7e": [
+  {
+   "at": "2026-09-30T13:56:12.156024Z",
+   "call_id": "20260930T135348Z-4d14bf",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "561f80bb183cb1de939e4001919e024e9c0b93501c74958374669884cb47e65b",
+   "reason": "it uses os",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.runtime.limiter.ResolvedKey"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:59:30.702192Z",
+   "call_id": "20260930T135612Z-53c218",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9a185f80b5f61a806a836fb23c0a5641cc9fae111e4f37b2c3928800b84e8933",
+   "reason": "",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:39:52.660847Z",
+   "call_id": "20260930T163937Z-ce543b",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9cf92131d137237fe5c078b9224579af49a600295904402a4023da416d165158",
+   "reason": "it does not fit the project's code as written: llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.build_default_config",
+    "llm_router.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:42:12.495858Z",
+   "call_id": "20260930T164009Z-e69732",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "b367809a538f3f5d97d2f319f9aac8b38ce97afe029316a5563d14a78759993f",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:07:51.751325Z",
+   "call_id": "20260930T180431Z-dd662d",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.ProviderError",
+    "llm_router.RouterProfile"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1c37fcc3dff6a93f86f900139f7956cd6318a783f1b2123bb4b9f4bc93297d60",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T21:56:16.173581Z",
+   "call_id": "20260930T180431Z-dd662d",
+   "cause": "suite",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1c37fcc3dff6a93f86f900139f7956cd6318a783f1b2123bb4b9f4bc93297d60",
+   "reason": "it expects the provider request to fail, which holds only while the test run blocks the network; without --block-network the original reaches the real provider and passes",
+   "sources": []
+  }
+ ],
+ "afe2fe11b15a368c": [
+  {
+   "at": "2026-09-30T19:02:28.207563Z",
+   "call_id": "20260930T190124Z-cc9cd9",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7aacbdb31ee72dfb2bb5c14ba16a2022522ffab0cee3dab05d212250bfafa1b0",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ModelNotFoundError: Model 'llama-3.1-8b-instruct' not configured for provider 'groq'.)",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._api.errors.ApiKeyNotFoundError"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:04:46.278820Z",
+   "call_id": "20260930T190229Z-35c498",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "34abb524c3fe85d0304bdc5f30cdb37b9b73c6655532801a9861f7edd47ed27c",
+   "reason": "it does not fail on the mutant: of the changed lines 68\u201378 it runs line 68 but never lines 70, 74 and 77\u201378",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._api.errors.ApiKeyNotFoundError"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:06:54.152696Z",
+   "call_id": "20260930T190447Z-339ed3",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "025de39168e8413b37c50cbdc012bf29ecd4ba673246e831b6c92b1371f3cddd",
+   "reason": "it does not fail on the mutant: of the changed lines 68\u201378 it runs lines 68, 70 and 78 but never lines 74 and 77",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.ApiKeyNotFoundError"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:10:34.631567Z",
+   "call_id": "20260930T190654Z-6453e1",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "0c63aa918de9f282efaf85c562613ebff9a0a71b812425d8a9bb5859d1be8861",
+   "reason": "",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._api.errors.ApiKeyNotFoundError",
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile"
+   ]
+  }
+ ],
+ "b249b8ff900bff0b": [
+  {
+   "at": "2026-09-30T16:39:53.172792Z",
+   "call_id": "20260930T163937Z-3aaf67",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "46dca08a96e948112a2941d4e4c018ac5ba348e5251ad6d1a502f5738862c240",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter; it uses os",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:18.191979Z",
+   "call_id": "20260930T164008Z-c76f1a",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4a79f91d5230ce3ee6202d4b8ba52a4d2fe8c72cdda2a650df830bb935c67d59",
+   "reason": "it uses os; it does not fit the project's code as written: llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.KeyResolver",
+    "llm_router.build_default_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:05:04.760232Z",
+   "call_id": "20260930T180432Z-8293d4",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7f358571ae1a61877d8d32f7cc14df114e659c41611454d622af4914a38723c8",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter; it uses os",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:20:13.075872Z",
+   "call_id": "20260930T180512Z-303063",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "da1cbd8ec935585198d4220d7de59c997ef81b520782c8c00f182efaa5b3d1c4",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "b30cea8391ac9160": [
+  {
+   "at": "2026-09-30T13:55:13.399693Z",
+   "call_id": "20260930T135348Z-fd205b",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8cc89c2c501df0b89962474ce481b1fc721448fcf6551711a8a6f20d6999c397",
+   "reason": "",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:00.658937Z",
+   "call_id": "20260930T190126Z-19e575",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8a469c25b812163246fa3e844c629536215aebd8c3fec28550d59a30776d7cfb",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter; it uses os",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.runtime.limiter.ResolvedKey"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:26.187984Z",
+   "call_id": "20260930T190202Z-52f8ef",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ae12a37dd224c8beb10ac0cf0b1714cb81b3273ccce8474a7e3df2cb3aca0631",
+   "reason": "it uses os; it does not fit the project's code as written: llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.KeyResolver",
+    "llm_router.build_default_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:03:14.096198Z",
+   "call_id": "20260930T190228Z-8ddc01",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7689b47abfbc9215aa84354b46c088e8e06913c929e2be45843c8fe4b01330ad",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter; it uses os",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:06:47.238983Z",
+   "call_id": "20260930T190316Z-c1fa3e",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "1fd50f9d2da85a567b32a83a077f4b97ff01306159882829aab3173730206810",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ]
+  }
+ ],
+ "b424da4f88707d25": [
+  {
+   "at": "2026-09-30T19:02:15.659801Z",
+   "call_id": "20260930T190124Z-297d5e",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "51816283757a1c1658090847121af64fe0cda9f65f6e4f81c776d3dc75c7826a",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ModelNotFoundError: Model 'llama-3.1-8b-instruct' not configured for provider 'groq'.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.ApiKeyNotFoundError"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:03:31.098413Z",
+   "call_id": "20260930T190216Z-d296e4",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4ecfb5d56b5c115692f8eb8b1ea84ca6e696cf0966dc3db5f6cf7e29b4340352",
+   "reason": "it does not fail on the mutant: of the changed lines 68\u201378 it runs line 68 but never lines 70\u201371, 74 and 77\u201378",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._api.errors.ApiKeyNotFoundError"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:06:25.915247Z",
+   "call_id": "20260930T190331Z-8840c4",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "10b74fe22a175bb613d5c6651b3baf36b32d7ea06bfda4d76ac06cdedfda9ef4",
+   "reason": "it does not fail on the mutant: of the changed lines 68\u201378 it runs lines 68, 70 and 77 but never lines 71, 74 and 78",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:09:59.985713Z",
+   "call_id": "20260930T190626Z-f8c8cb",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "98db080bf5963a994dab57335998c1bc38485c326c7eb98f658ce1cae453628d",
+   "reason": "",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._api.errors.ApiKeyNotFoundError",
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.RouterProfile"
    ]
   }
  ],
@@ -88,6 +1218,182 @@
     "llm_router._internal.runtime.limiter.KeyResolver",
     "llm_router._api.types.Provider",
     "llm_router._internal.config.assembly.build_default_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:39:51.897986Z",
+   "call_id": "20260930T163937Z-f88aef",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2c6bef368408500a8b6911653cd5b7067ffd4c29f847ba6271abde0e9d034b67",
+   "reason": "it uses os; it does not fit the project's code as written: llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.KeyResolver",
+    "llm_router.build_default_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:29.464441Z",
+   "call_id": "20260930T164008Z-ddc20d",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "823808a63378ab90c8d31c8bb061211d6044ad2fa61272409464c9349e978d8a",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:12:25.288484Z",
+   "call_id": "20260930T180430Z-ff767b",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9f8139134c74cd9b80939c913725d04121635ea7f3ce375a9e4ca54aa73fde4f",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.patched_openai_sdk"
+   ]
+  }
+ ],
+ "f6c26fefc186db93": [
+  {
+   "at": "2026-09-30T16:39:52.021021Z",
+   "call_id": "20260930T163937Z-900120",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "412eb972f086d59cec9b810c09379e3f19312f6564d18a9d35df2ce954f6bb43",
+   "reason": "it uses os; it does not fit the project's code as written: llm_router has no KeyResolver (it lives in llm_router._internal.runtime.limiter) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.KeyResolver",
+    "llm_router.build_default_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:27.228010Z",
+   "call_id": "20260930T164011Z-555383",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "a7f60ecde40500f9c00845534b3b82c7928ff3376f0bf98e3f6e07431ca232a0",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.limiter",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:07:42.885003Z",
+   "call_id": "20260930T180431Z-81b82b",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3ce63e47cde4472431aab242dbb9aca27f7028e0ce2d15632d60f129005b0df7",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "fb57ee54d6bd1fa0": [
+  {
+   "at": "2026-09-30T15:27:31.018525Z",
+   "call_id": "20260930T152720Z-e0235c",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4f6c6e8acef614934c3ca41131247063738772a597cdddd5b509760e057ce5bb",
+   "reason": "it uses os",
+   "sources": [
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "llm_router._internal.config.build_default_config",
+    "llm_router.Provider"
+   ]
+  },
+  {
+   "at": "2026-09-30T15:28:10.935254Z",
+   "call_id": "20260930T152731Z-05db46",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6a04dd521f58a27b2c723ce1d37f66473cebe468a68679ae63fe1be6c6353047",
+   "reason": "",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.limiter.KeyResolver"
    ]
   }
  ]

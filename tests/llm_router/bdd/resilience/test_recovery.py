@@ -126,6 +126,13 @@ for _test_name in (
         "runtime.unavailable-disconnect",
     )(globals()[_test_name])
 
+globals()["test_a_temporary_provider_timeout_succeeds_on_retry"] = (
+    pytest.mark.fault_item(
+        "REQ_PROVIDER_RETRY",
+        "runtime.latency-timeout",
+    )(globals()["test_a_temporary_provider_timeout_succeeds_on_retry"])
+)
+
 for _test_name in (
     "test_synchronous_provider_retry_stops_at_the_configured_attempt_limit",
     "test_asynchronous_provider_retry_stops_at_the_configured_attempt_limit",
@@ -261,6 +268,50 @@ def retry_after_disconnect(case: dict[str, Any]) -> None:
 @then("the request succeeds after one transport retry")
 def retry_after_disconnect_succeeds(case: dict[str, Any]) -> None:
     retry_stays_on_route(case)
+
+
+@given(
+    "a provider does not answer before its transport timeout once",
+    target_fixture="case",
+)
+def provider_times_out_once() -> dict[str, Any]:
+    return {
+        "routes": {
+            ("POST", _OPENAI_PATH): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text="too late"),
+                    delay_seconds=1.0,
+                ),
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text=_RETRY_TEXT),
+                ),
+            ]
+        }
+    }
+
+
+@when("the same provider answers in time on a later attempt")
+def retry_after_timeout(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_PROVIDER_RETRY",
+        fault_class="runtime.latency-timeout",
+        mechanism=(
+            "scripted provider delays its first response past the transport timeout "
+            "while the route's own attempt timeout leaves room"
+        ),
+        details={"delay_seconds": 1.0, "transport_timeout_seconds": 0.2},
+    )
+    with ScriptedHTTPServer(port=0, routes=case["routes"]) as server:
+        case["result"] = run_retry_worker(
+            case="openai",
+            scenario="retryable_timeout",
+            server_base_url=server.base_url,
+        )
+        case["request_count"] = server.request_count("POST", _OPENAI_PATH)
 
 
 @given(

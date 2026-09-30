@@ -75,7 +75,21 @@ globals()[
     ]
 )
 
-del _criterion, _test_name
+for _test_name, _fault_class in (
+    (
+        "test_malformed_provider_response_diagnostics_exclude_providercontrolled_protected_text",
+        "runtime.malformed-response",
+    ),
+    (
+        "test_provider_disconnect_diagnostics_exclude_protected_caller_values",
+        "runtime.unavailable-disconnect",
+    ),
+):
+    globals()[_test_name] = pytest.mark.fault_item(
+        "TREQ_RUNTIME_LOG_SAFETY", _fault_class
+    )(globals()[_test_name])
+
+del _criterion, _fault_class, _test_name
 
 _OPENAI_PATH = openai_chat_path()
 
@@ -235,6 +249,116 @@ def provider_failure_diagnostics_are_safe(case: dict[str, Any]) -> None:
     ]
     assert failure_events
     assert failure_events[-1]["result_status"] == 400
+    assert failure_events[-1]["error_type"] == "ProviderFailure"
+
+
+@given(
+    "a malformed provider response contains protected text and a protected credential",
+    target_fixture="case",
+)
+def malformed_response_with_protected_values(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> dict[str, Any]:
+    case = provider_error_with_protected_values(monkeypatch, caplog)
+    case["provider_text"] = _marker("malformed-provider-body")
+    return case
+
+
+@when("the malformed provider response crosses the public router boundary")
+def malformed_response_crosses_public_boundary(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="TREQ_RUNTIME_LOG_SAFETY",
+        fault_class="runtime.malformed-response",
+        mechanism=(
+            "scripted provider returns HTTP 200 with a non-JSON body "
+            "carrying protected text"
+        ),
+    )
+    _run_protected_failure(
+        case,
+        ScriptedResponse(
+            status_code=200,
+            headers={"Content-Type": "application/json"},
+            body=("{not-json " + case["provider_text"]).encode(),
+        ),
+    )
+
+
+@then("malformed-response diagnostics contain only safe failure metadata")
+def malformed_response_diagnostics_are_safe(case: dict[str, Any]) -> None:
+    _assert_failure_diagnostics_are_safe(
+        case, ("provider_text", "credential", "prompt")
+    )
+
+
+@given(
+    "a provider disconnects while the request carries "
+    "a protected prompt and credential",
+    target_fixture="case",
+)
+def disconnect_with_protected_values(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    request: pytest.FixtureRequest,
+) -> dict[str, Any]:
+    original = get_config()
+    request.addfinalizer(lambda: install_config(original))
+    # One attempt: a disconnect is retryable, and the default waits only slow the test.
+    install_fast_worker_runtime_config(retry_max_attempts=1)
+    return provider_error_with_protected_values(monkeypatch, caplog)
+
+
+@when("the disconnect crosses the public router boundary")
+def disconnect_crosses_public_boundary(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="TREQ_RUNTIME_LOG_SAFETY",
+        fault_class="runtime.unavailable-disconnect",
+        mechanism="scripted provider closes the connection before any response",
+    )
+    _run_protected_failure(case, ScriptedResponse(status_code=200, disconnect=True))
+
+
+@then("disconnect diagnostics contain only safe failure metadata")
+def disconnect_diagnostics_are_safe(case: dict[str, Any]) -> None:
+    _assert_failure_diagnostics_are_safe(case, ("credential", "prompt"))
+
+
+def _run_protected_failure(case: dict[str, Any], response: ScriptedResponse) -> None:
+    with ScriptedHTTPServer(
+        port=0, routes={("POST", _OPENAI_PATH): [response]}
+    ) as server:
+        with (
+            patched_openai_sdk(
+                forced_base_url=f"{server.base_url}/v1",
+                disable_sdk_retries=True,
+            ),
+            pytest.raises(ProviderError) as exc_info,
+        ):
+            LLMRouter(
+                RouterProfile(
+                    model=Model.DEEPSEEK_V3,
+                    provider=Provider.OPENROUTER,
+                )
+            ).query(case["prompt"])
+        case["public_error"] = str(exc_info.value)
+        case["request_count"] = server.request_count("POST", _OPENAI_PATH)
+
+
+def _assert_failure_diagnostics_are_safe(
+    case: dict[str, Any], protected_keys: tuple[str, ...]
+) -> None:
+    rendered = _render_logs(case["caplog"])
+    assert case["request_count"] == 1
+    for key in protected_keys:
+        assert case[key] not in case["public_error"]
+        assert case[key] not in rendered
+    failure_events = [
+        event
+        for event in _event_dicts(case["caplog"])
+        if event.get("event_type") == "llm_router.provider.request.failed"
+    ]
+    assert failure_events
     assert failure_events[-1]["error_type"] == "ProviderFailure"
 
 

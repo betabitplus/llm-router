@@ -34,7 +34,7 @@ def _prepare_case(*, case: str, server_base_url: str) -> None:
     prepare_fault_case(case=case, server_base_url=server_base_url)
 
 
-def _build_router(case: str) -> Any:
+def _build_router(case: str, **defaults: Any) -> Any:
     from llm_router import LLMRouter, Model, Provider, RouterProfile, VideoSchema
 
     if case == "openai":
@@ -42,6 +42,7 @@ def _build_router(case: str) -> Any:
             RouterProfile(model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER),
             temperature=0.0,
             seed=1,
+            **defaults,
         )
 
     if case == "google":
@@ -111,7 +112,12 @@ def _build_query_args(case: str, scenario: str) -> tuple[object, dict[str, Any]]
 
 
 def _run_case(*, case: str, scenario: str) -> dict[str, Any]:
-    router = _build_router(case)
+    # A provider timeout is retried on the same route only while the route's own attempt
+    # timeout leaves room: the route keeps 30 s, the provider's transport far less.
+    defaults = (
+        {"attempt_timeout_seconds": 30.0} if scenario.endswith("_timeout") else {}
+    )
+    router = _build_router(case, **defaults)
     content, kwargs = _build_query_args(case, scenario)
 
     try:

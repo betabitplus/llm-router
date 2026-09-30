@@ -50,6 +50,21 @@
      "payload.update(request.kwargs)"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-b78709",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only change is dropping the dict() copy in payload.update(request.kwargs), which gives the same result for any Mapping kwargs.",
+    "response_sha256": "cc6f67f5a5e4ec3619e996401cfcdea16fa3caa1b54cccb5ad0d7a155b3d2633",
+    "sources": [
+     "payload.update(dict(request.kwargs))",
+     "payload.update(request.kwargs)"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "de3d3cb0cc5874b9aaa1c54a423db995014af2f37c50ac078585dd31dd8f39f7"

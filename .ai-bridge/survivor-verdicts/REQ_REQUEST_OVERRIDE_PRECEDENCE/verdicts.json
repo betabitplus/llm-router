@@ -1,21 +1,29 @@
 {
- "39cd06b3a9c8bc51": {
+ "02b906cf3d4b778c": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260926T214959Z-73fa28",
+   "call_id": "20260930T141431Z-2ad846",
+   "confirmed": false,
+   "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant skips applying route policy defaults. A route-level max_attempts=5 is silently dropped and falls back to the config value 3, even though no request override touched it. That breaks the criterion that request overrides take precedence over router and route defaults while unrelated defaults survive.",
-   "response_sha256": "4e1abcdb30bc58b3ea718c0f8581bbcefb7c257494f21f1b12d7474346db2f55",
-   "test_focus": "With route_policy_defaults={\"max_attempts\": 5} and no call or router override for that field, the test must check that the effective max_attempts is 5, not the config default. It must also check that a call override for a different field leaves this route policy default unchanged.",
+   "reason": "The original skips route fields that are `None`. The mutant writes `values[field_name] = None` for every field the route leaves unset, which erases an inherited router default or makes an omitted setting look like an explicit null. That breaks the rule that unrelated defaults survive and that omission stays distinct from explicit null.",
+   "response_sha256": "aef0be5965dc9f57488153e07711a27d5b0251a1569b500754d5317c8120f76d",
+   "sources": [
+    "Request settings override router and route defaults while unrelated defaults survive.",
+    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
+    "        if value is not None:",
+    "        if True:"
+   ],
+   "test_focus": "Set a router default for a generation field and give the route a default only for a different field. Check that the effective request configuration keeps the router's value for the first field, and doesn't treat it as null or cleared.",
    "verdict": "pin"
   },
-  "operator": "statement",
+  "operator": "conditional",
   "pin": {
-   "adopted_at": "2026-09-27T20:11:01.943376Z",
-   "answer_sha256": "ba78323933a9ce7f8a8040d2191558b1df895ff2d3d8c68a4d32c97e07657186",
-   "call_id": "20260927T200323Z-2a30ba",
+   "adopted_at": "2026-09-30T19:05:58.349133Z",
+   "answer_sha256": "9bc7c858e96085b9e1d40498ed35301ca4e657458e2414d09cb1b58f3cbe516e",
+   "call_id": "20260930T190225Z-ef6662",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -24,14 +32,204 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "ba78323933a9ce7f8a8040d2191558b1df895ff2d3d8c68a4d32c97e07657186",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "9bc7c858e96085b9e1d40498ed35301ca4e657458e2414d09cb1b58f3cbe516e",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_02b906cf3d4b778c.py",
+   "response_sha256": "9602a04db257ab19de09af0ab349ffdd3165222e90a80a96f943e2a877956ebe",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "8c281120c0c0e35623c4486ec1d0f8b2873b8e8029a3aeb6713d32cb65d80329"
+ },
+ "2a31133556a5dacb": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141435Z-3de005",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant lets a None in a default layer (for example a route default left unset) overwrite a value an earlier layer set, such as a router default. That wipes out inherited defaults which should survive, and it blurs \"omitted\" with \"explicitly cleared\". Clearing a setting with null is meant only for an explicit request-level value.",
+   "response_sha256": "7a088a9e4f9983bc3324e39fa9d170b87c5ff2246e106e67e6f25c85eea8f75e",
+   "sources": [
+    "Request settings override router and route defaults while unrelated defaults survive.",
+    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
+    "if key in values and value is not None:",
+    "if key in values:"
+   ],
+   "test_focus": "Set a router default (e.g. timeout=5), give the route defaults None for that key, and leave it out of the request. The effective config must still have timeout=5. An explicit null in the request must still clear it.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "prompt_sha256": "69a6da4bad9b170304c7a02d09c9066e893728ac966a5407442f061895c85a07"
+ },
+ "39cd06b3a9c8bc51": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T190020Z-28e579",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the step that applies route-level policy defaults. As the confirmed input shows, a route default temperature of 0.5 comes out as None even though the request does not override it. This breaks the criterion that unrelated defaults survive and makes the precedence of route defaults meaningless.",
+   "response_sha256": "df79fb142e5217079c2ef8f0cc2159f4a8513fbe5c0aea8041f0658b4c7a273e",
+   "sources": [
+    "Request settings override router and route defaults while unrelated defaults survive.",
+    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
+    "_apply_non_null(values, route_policy_defaults)",
+    "pass"
+   ],
+   "test_focus": "Give a route_policy_defaults value such as temperature=0.5 and no call override for it. Check that the effective settings keep 0.5, and that a request value for that same field replaces it.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-30T19:06:09.007462Z",
+   "answer_sha256": "47a4cb416f351e8580693dfb86bf6fb4c2081805f071ee0649ae42fb3eb26979",
+   "call_id": "20260930T190225Z-53a764",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "47a4cb416f351e8580693dfb86bf6fb4c2081805f071ee0649ae42fb3eb26979",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_39cd06b3a9c8bc51.py",
-   "response_sha256": "7f2739f39d7dfd3b6f8d827b5aa67f13e49314f9268a35bdfa873fe80e837afb",
-   "source": "draft author"
+   "response_sha256": "da08462efcfb51cdbda5772c3fe91942202bbf2a950f89a5325d8529c7c7b15c",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.LLMRouterError",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   },
-  "prompt_sha256": "f6aa8580973a5dfba265d40255669bb2641b86f479b8c5f47cf274c357d6ebaa"
+  "prompt_sha256": "bac76f72ac56652a3ebac973789bf0920728694e7564809b5d3cf64faa90c0b6"
+ },
+ "3db6d2968629906a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141435Z-bf923d",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without the guards, a null in the route default layer replaces a router default that should survive, and unknown keys get added to the effective values. That breaks \"unrelated defaults survive\" and blurs the difference between an omitted value and an explicit null, which should be decided only at the request layer.",
+   "response_sha256": "752f688ba8b109f9da467dfeae316e288d2872f994415a9394b44e8187d7f069",
+   "sources": [
+    "Request settings override router and route defaults while unrelated defaults survive.",
+    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
+    "if key in values and value is not None:",
+    "if True:"
+   ],
+   "test_focus": "Set a router default, then apply a route default layer that has None for that key and an unknown extra key. Check that the effective config keeps the router default and does not gain the extra key. Also check that an explicit request-level null still clears the setting.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "0282ebec242b0060b3e1b3f1407a2c3f3e71cad5e788192cf1d69c185ae7a182",
+  "subsumed": {
+   "at": "2026-09-30T15:35:42.537994Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_fddcece2c3ce55c2.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T14:22:22.972185Z",
+    "answer_sha256": "268896b046426c58c6a3ea25c556537cf7b268f76b8abefd9e7593520380ad9e",
+    "call_id": "20260930T142110Z-846e27",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "268896b046426c58c6a3ea25c556537cf7b268f76b8abefd9e7593520380ad9e",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_3db6d2968629906a.py",
+    "response_sha256": "e067c09443fdac43e34f92bc1a648d03f5f30a4d2732bc569cbe54f7da0066e1",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.config.build_default_config",
+     "llm_router._internal.runtime.effective_settings.RouterDefaults",
+     "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+     "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+    ]
+   }
+  }
+ },
+ "4e2d2eb9f2ba8e75": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141435Z-19fb5b",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only changes what happens to keys not already in `values`: it adds them, where the original skipped them. For keys already present, non-null defaults still overwrite and nulls are still skipped, so request-over-default precedence and the survival of unrelated defaults are unchanged. No requirement or criterion covers unknown keys in a default layer, and both inputs offered to tell the versions apart were refuted.",
+   "response_sha256": "b4c513e1b9f823fd69f2d5357c785dde3a60f09e243e6ff7e8f80ac2513a2a3f",
+   "sources": [
+    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
+    "Request settings override router and route defaults while unrelated defaults survive.",
+    "        if key in values and value is not None:",
+    "        if value is not None:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "condition",
+  "prompt_sha256": "b4cd5385a7198e75facccd46fb21f8e71e1d4af8605177a6311eb2e35f3cafed",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260930T141458Z-4f296f",
+   "confirmed": false,
+   "effort": "",
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "b4cd5385a7198e75facccd46fb21f8e71e1d4af8605177a6311eb2e35f3cafed",
+   "reason": "The requirement specifies that request settings override defaults and that explicit values remain distinct from omissions, but it does not dictate whether unknown keys present in the overrides should be skipped or inserted into the values dictionary. Therefore, the removal of the dictionary key membership check is irrelevant to this specific requirement.",
+   "response_sha256": "c6d0885f479ae7795f1d6813703f2b9a3f41b9757d734df1f0d6c79e7a34d4b5",
+   "sources": [
+    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
+    "if key in values and value is not None:",
+    "if value is not None:"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  },
  "SM-4D75202A": {
   "answer": {
@@ -53,8 +251,9 @@
   },
   "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-29T19:13:36.455614Z",
-   "answer_sha256": "3aa96e62662746275b815a74e521b9cc70b54aec0abc391eb5893c57ad251a6f",
+   "adopted_at": "2026-09-30T18:12:00.831749Z",
+   "answer_sha256": "54c7031a4f01ae1f2276629d8e677174cca6ded5ec74b58107540fff5feb4c51",
+   "call_id": "20260930T180455Z-84780b",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -63,10 +262,25 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "3aa96e62662746275b815a74e521b9cc70b54aec0abc391eb5893c57ad251a6f",
+   "draft_sha256": "54c7031a4f01ae1f2276629d8e677174cca6ded5ec74b58107540fff5feb4c51",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_sm_4d75202a.py",
-   "source": "kept semantic draft"
+   "response_sha256": "3c194f09b10440a095541085cfad2ac028ac1ed3f1c2249e202d04bce8529558",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   },
   "prompt_sha256": "1f077c68f6c7336ecd77787ec0ec66b772d1823f518336057211a768a12d3fc3"
  },
@@ -84,9 +298,9 @@
   },
   "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-27T19:54:19.550745Z",
-   "answer_sha256": "a88210ec78bb9cefb67c3257edc547bd840151968ee47d5bb293c14114060f83",
-   "call_id": "20260926T230019Z-ebff45",
+   "adopted_at": "2026-09-30T19:49:13.099340Z",
+   "answer_sha256": "069d7f67cf23c3547f41061e554785eeeffab4d5062d1a2540cc8c5a064b5bd2",
+   "call_id": "20260930T194721Z-b1ff76",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -95,32 +309,53 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "a88210ec78bb9cefb67c3257edc547bd840151968ee47d5bb293c14114060f83",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "069d7f67cf23c3547f41061e554785eeeffab4d5062d1a2540cc8c5a064b5bd2",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_bf8a96501e88d45d.py",
-   "response_sha256": "d77c96f10e31a8d3420cf4de376a80ec162326e30ee04d358e5fe446293b74d5",
-   "source": "draft author"
+   "response_sha256": "08bae1d0c8acfed01c4db7b32cc01e3fe2e312cf67c5da09705d4755ebfc10b6",
+   "source": "last resort",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   },
   "prompt_sha256": "2445fa660eb97bb8321095ecb1abe94231b770f57f396470bb7917534095a7cc"
  },
  "e238ff65d72c6c1f": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260926T215011Z-c70327",
+   "call_id": "20260930T190020Z-2023f4",
+   "confirmed": true,
+   "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant never merges router-level provider kwargs into the effective kwargs, so router defaults are silently lost. The confirmed input shows this: with no request override, {'custom_kwarg': 'test_val'} disappears. That breaks the precedence chain (route < router < request) and the criterion that unrelated defaults survive.",
-   "response_sha256": "3f2a2fbb4a9ed3149a950b83a681b8d62ff44e406b5209f2185ed85145adc79a",
-   "test_focus": "Check that router-default kwargs appear in the effective kwargs and override route-default kwargs with the same key. Also check that request kwargs override them while unrelated router kwargs survive.",
+   "reason": "The mutant drops router-default provider kwargs, so a router default that no request override touches is lost (confirmed: {'a': 1} becomes {}). That breaks the promise that request settings override router and route defaults while unrelated defaults survive. It also breaks the router-over-route precedence order.",
+   "response_sha256": "efeccb0cc9d5e0cf64ef01c79b6d5495cc0ad669aa5fd3199302df541ffff850",
+   "sources": [
+    "Request settings override router and route defaults while unrelated defaults survive.",
+    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
+    "kwargs.update(router_defaults.kwargs)",
+    "_apply_non_null(values, router_defaults.values)\n    pass"
+   ],
+   "test_focus": "With router_defaults kwargs {'a': 1} and no request override of 'a', the effective kwargs must contain 'a': 1. When route and router defaults share a key, the router value must win, and a request override of that key must win over both.",
    "verdict": "pin"
   },
   "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-27T19:54:19.551497Z",
-   "answer_sha256": "f76b9ba234f72d1e2e789acc6a2f993cde503b2a1ffb0b3fc3d439a8fd37f0d0",
-   "call_id": "20260926T230043Z-f14076",
+   "adopted_at": "2026-09-30T19:06:41.732492Z",
+   "answer_sha256": "bd21875b24f1197f11c86cb9c155a8e42a409e04aaf0b1f56d2234cfbfef12e3",
+   "call_id": "20260930T190215Z-6ea460",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -129,13 +364,50 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "f76b9ba234f72d1e2e789acc6a2f993cde503b2a1ffb0b3fc3d439a8fd37f0d0",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "bd21875b24f1197f11c86cb9c155a8e42a409e04aaf0b1f56d2234cfbfef12e3",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_e238ff65d72c6c1f.py",
-   "response_sha256": "b3e096e302bbd1fdce602b63b08c3d1009a78cc53d5d6a6c786091552d98a64e",
-   "source": "draft author"
+   "response_sha256": "f4f831e31eea0f8bf9a3c16319184a8da1af3f4e50033737bd04a331cf911373",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+   ]
   },
-  "prompt_sha256": "424ff2bf2ae710e10067fc5b902acde851fb6ceb106a5bf706892a9d8b6e40a4"
+  "prompt_sha256": "d6bb5937430c018e280dd8cfff9a5f3ffa876d9808d4264d983a4be434c655fc"
+ },
+ "fddcece2c3ce55c2": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141435Z-679862",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With the `or` condition, a `None` for a key that already exists in a default layer now overwrites the value, so a route layer can wipe a router default it never set. The original skips `None` in default layers, and the requirement says unrelated defaults must survive. The mutant can also add keys that weren't in `values`, but all three inputs showing that were refuted.",
+   "response_sha256": "e06365f376fcffa6be6e043da96c1f59719e4f6b6122262c0c5f3eef2937ddb8",
+   "sources": [
+    "Request settings override router and route defaults while unrelated defaults survive.",
+    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
+    "if key in values and value is not None:",
+    "if key in values or value is not None:",
+    "\"\"\"Apply only non-null overrides for default layers.\"\"\""
+   ],
+   "test_focus": "Resolve a config where the route default layer has `None` for a key the router default sets. Check that the router's value survives unless the request explicitly overrides it, and that the route layer adds no unknown keys.",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "286d7944ab6eb2bbb10a153fd38ab4eb39df5c538b8c8d762ac49958d1bfa9ae"
  }
 }

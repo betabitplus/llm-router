@@ -1,24 +1,45 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS 43c47ed5eb7d2a63
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
-from dataclasses import replace
+import dataclasses
+from typing import Any
 
 import pytest
 
-from llm_router import ConfigurationError
-from llm_router._internal.config import build_default_config, validate_config
+import llm_router as package
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
+@pytest.fixture
+def restore_config() -> Any:
+    original = package.get_config()
+    yield original
+    package.install_config(original)
+
+
 @pytest.mark.verifies("REQ_INVALID_CONFIGURATION_ERRORS[revision==2]")
-def test_structured_output_max_attempts_boundary() -> None:
-    config = build_default_config()
+def test_structured_output_max_attempts_boundary(restore_config: Any) -> None:
+    original = restore_config
+    valid = dataclasses.replace(
+        original,
+        defaults=dataclasses.replace(
+            original.defaults, structured_output_max_attempts=1
+        ),
+    )
+    invalid = dataclasses.replace(
+        original,
+        defaults=dataclasses.replace(
+            original.defaults, structured_output_max_attempts=0
+        ),
+    )
 
-    valid_defaults = replace(config.defaults, structured_output_max_attempts=1)
-    validate_config(replace(config, defaults=valid_defaults))
-
-    invalid_defaults = replace(config.defaults, structured_output_max_attempts=0)
-    with pytest.raises(ConfigurationError, match="structured output max attempts"):
-        validate_config(replace(config, defaults=invalid_defaults))
+    assert package.install_config(valid) is valid
+    with pytest.raises(
+        package.ConfigurationError,
+        match=r"^structured output max attempts must be at least 1\.$",
+    ):
+        package.install_config(invalid)
+    assert package.get_config() is valid

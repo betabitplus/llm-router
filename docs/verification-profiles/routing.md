@@ -130,20 +130,20 @@ external provider fidelity.
 
 ### Fault applicability
 
-| REQUIRED                                                                                                              | OPTIONAL | N/A                                                                                                                 |
-| --------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
-| `impl.boundary` · `impl.control-flow` · `impl.effect` · `runtime.latency-timeout`                                     | —        | `impl.comparison` · `impl.arithmetic` · `runtime.unavailable-disconnect` · `runtime.malformed-response`             |
-| `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` |
+| REQUIRED                                                                                                              | OPTIONAL | N/A                                                                                                                       |
+| --------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `impl.effect` · `runtime.latency-timeout`                                                       | —        | `impl.comparison` · `impl.boundary` · `impl.arithmetic` · `runtime.unavailable-disconnect` · `runtime.malformed-response` |
+| `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.missing-partition` · `spec.wrong-ordering-boundary` | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass`       |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                                                               |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | The configured timeout boundary and branch from timeout to fallback/terminal outcome are the implementation mechanisms under test. A dropped timeout raise or attempt record changes the outcome. |
-| Runtime / dependency  | Delayed dependency behavior is the defining runtime fault; disconnect and malformed-response behavior belong to the generic fallback contract.                                                    |
-| Interface / protocol  | Timeout must not create an extra route interaction beyond the declared fallback/terminal topology.                                                                                                |
-| Architecture          | The contract does not prescribe a particular timeout implementation layer.                                                                                                                        |
-| Specification / model | Fallback-vs-terminal and sync-vs-async partitions plus timeout-before-next-attempt ordering are normative.                                                                                        |
+| Group                 | Why                                                                                                                                                                                                                                                                                                                                                 |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The configured timeout boundary and branch from timeout to fallback/terminal outcome are the implementation mechanisms under test. A dropped timeout raise or attempt record changes the outcome. The attempt's time limit is enforced by `Future.result(timeout=…)` and the router compares no time of its own, so `impl.boundary` does not apply. |
+| Runtime / dependency  | Delayed dependency behavior is the defining runtime fault; disconnect and malformed-response behavior belong to the generic fallback contract.                                                                                                                                                                                                      |
+| Interface / protocol  | Timeout must not create an extra route interaction beyond the declared fallback/terminal topology.                                                                                                                                                                                                                                                  |
+| Architecture          | The contract does not prescribe a particular timeout implementation layer.                                                                                                                                                                                                                                                                          |
+| Specification / model | Fallback-vs-terminal and sync-vs-async partitions plus timeout-before-next-attempt ordering are normative.                                                                                                                                                                                                                                          |
 
 ### Semantic mutants
 
@@ -206,18 +206,18 @@ is sufficient.
 
 | REQUIRED                                                                             | OPTIONAL | N/A                                                                                                                                                  |
 | ------------------------------------------------------------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `impl.comparison` · `impl.boundary` · `impl.control-flow` · `impl.effect`            | —        | `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                                      |
+| `impl.comparison` · `impl.boundary` · `impl.control-flow`                            | —        | `impl.arithmetic` · `impl.effect` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response`                      |
 | `interface.unexpected-interaction` · `spec.wrong-outcome` · `spec.missing-partition` | —        | `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-ordering-boundary` |
 
 #### Fault-group rationale
 
-| Group                 | Why                                                                                                                                                       |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementation        | The contract is a numeric boundary implemented by truncation/comparison/control-flow decisions. A dropped attempt update or truncation removes the limit. |
-| Runtime / dependency  | Provider failure is useful to expose multiple attempts, but dependency failure modes do not define the cap itself.                                        |
-| Interface / protocol  | Any provider request beyond the configured limit is directly forbidden by the contract.                                                                   |
-| Architecture          | No internal layering topology is part of the route-attempt-count claim.                                                                                   |
-| Specification / model | Minimum/intermediate limit partitions and the observable capped outcome are normative; route ordering itself belongs elsewhere.                           |
+| Group                 | Why                                                                                                                                                                                                                                                                                                                   |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The contract is a numeric boundary implemented by truncation/comparison/control-flow decisions. A dropped attempt update or truncation removes the limit. The cap's only effect is the slice that cuts the candidate routes; losing it is the slice bound removed (`impl.boundary`), so `impl.effect` does not apply. |
+| Runtime / dependency  | Provider failure is useful to expose multiple attempts, but dependency failure modes do not define the cap itself.                                                                                                                                                                                                    |
+| Interface / protocol  | Any provider request beyond the configured limit is directly forbidden by the contract.                                                                                                                                                                                                                               |
+| Architecture          | No internal layering topology is part of the route-attempt-count claim.                                                                                                                                                                                                                                               |
+| Specification / model | Minimum/intermediate limit partitions and the observable capped outcome are normative; route ordering itself belongs elsewhere.                                                                                                                                                                                       |
 
 (verification-profile-req-route-sticky-start)=
 

@@ -33,6 +33,77 @@
     "llm_router.ProviderLimits",
     "llm_router._internal.runtime.limiter.LimiterState"
    ]
+  },
+  {
+   "at": "2026-09-30T13:55:25.740969Z",
+   "call_id": "20260930T135348Z-b4339d",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "06f64be8f75af4580dd2b2524e4d8ffbb4fdc6c54da7aed7e051a341de6ccbdd",
+   "reason": "it does not fail on the mutant: it runs the changed line 251, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:58:40.745262Z",
+   "call_id": "20260930T135525Z-41605d",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "504440d3d18d6704addf61c292694b8b8cc5b845240a60ee787024eed5ea2d09",
+   "reason": "it does not fail on the mutant: it runs the changed line 251, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:03:18.962776Z",
+   "call_id": "20260930T135841Z-542379",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4f730a7a6e95c0aa9f14b51e7ebf300ad86a2b792b6a6bbd7ed72ae7cb9b341c",
+   "reason": "it does not fail on the mutant: it runs the changed line 251, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:07:23.920423Z",
+   "call_id": "20260930T140320Z-de5242",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "290b3f088c492abe35851889d763fb063645a6c61599baa282ea61407de6d954",
+   "reason": "",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState",
+    "llm_router._internal.runtime.limiter.LimiterState.record_failure",
+    "llm_router._internal.runtime.limiter.LimiterState.record_success",
+    "llm_router._internal.runtime.limiter.LimiterState.wait_seconds"
+   ]
   }
  ],
  "7ac50aa440bca50f": [

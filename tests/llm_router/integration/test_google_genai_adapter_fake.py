@@ -9,6 +9,7 @@ from llm_router import Model, Provider, ProviderError
 from llm_router._internal.capabilities.content import normalize_content
 from llm_router._internal.providers.base import ProviderCredential, ProviderRequest
 from llm_router._internal.providers.google_genai import GoogleGenAIAdapter
+from tests.llm_router.support.fault_observation import retain_local_fault_injection
 
 
 class FakeAPIError(Exception):
@@ -125,8 +126,15 @@ async def test_async_google_adapter_uses_sdk_async_boundary() -> None:
 
 
 @pytest.mark.coverage_path("retryable-sdk-status")
+@pytest.mark.fault_item("TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY", "interface.error-status")
 def test_google_sdk_retryable_status_is_translated_to_provider_error() -> None:
     client = FakeClient([FakeAPIError(503, "provider said no")])
+    retain_local_fault_injection(
+        contract_id="TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY",
+        fault_class="interface.error-status",
+        mechanism="fake Google GenAI client raises an API error 503",
+        details={"status_code": 503},
+    )
 
     with pytest.raises(ProviderError) as exc_info:
         GoogleGenAIAdapter(client=client).execute(_request())

@@ -48,6 +48,21 @@
      "should_log_cleared = bool(bucket.failure_count and bucket.cooldown_until > current)"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195646Z-1a40c8",
+    "confidence": 0.4,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "Only the log condition changes (or to and); return value and bucket state are identical, and a fresh state can't distinguish them, though a prior failure would change whether the log is emitted.",
+    "response_sha256": "7e2c2cd99d26327ddcbef7365bb3de44b2e3f84881cbc326f423134228a29862",
+    "sources": [
+     "bucket.failure_count or bucket.cooldown_until > current",
+     "bucket.failure_count = 0"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "9fd499e4cbafc6dc113188877c2c63d40eea135322a7e3ec134f830fd3c71848"
@@ -104,6 +119,22 @@
      "bucket.failure_count = 0"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195646Z-3c9b11",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only change is `>` to `>=`, which affects only whether the \"cooldown cleared\" log line is emitted when cooldown_until equals now; the return value (None), bucket state and exceptions are identical.",
+    "response_sha256": "0acee8f7ff6a948623e89fbd77169bab4214a9ae9a7f1fc5d211874bb409846f",
+    "sources": [
+     "bucket.failure_count or bucket.cooldown_until > current",
+     "bucket.failure_count = 0",
+     "bucket.next_available_at = current + limits.min_interval_seconds()"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "4ba6fa42da62add071937169dbb7bb6ee65478d979fb576c5610e72dcc90e5b2"
@@ -156,6 +187,27 @@
      "bucket.cooldown_until = current + limits.cooldown_seconds"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=3)",
+     "now": "0.0",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-8f24ba",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version logs \"Route cooldown opened\" on every failure, even below the threshold, while the original logs only when a cooldown opens; state and return value are identical.",
+    "response_sha256": "080789365dace8972af8d04e602d9d95efccd779168dd9231ff3768f0965bffc",
+    "sources": [
+     "if should_log_opened:",
+     "if True:",
+     "should_log_opened = True"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "969aceb967f68cb62bc84816b6b5602e1de34df256ea2e625d8ac8b02b606558"
@@ -211,6 +263,21 @@
      "if should_log_cleared:"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-c5f220",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "Removing bool() only changes the local's type; it is used solely in an if test, so truthiness, state and logging are identical.",
+    "response_sha256": "6ef681288de6ff0b74af2ee6c10f4472a4de522cf0b884cbf218c5a25f95d695",
+    "sources": [
+     "should_log_cleared = bucket.failure_count or bucket.cooldown_until > current",
+     "if should_log_cleared:"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "141ac3fd26d55be0e3fd233deb567162509601d8ac7c9265339bd086c5739047"
@@ -263,6 +330,26 @@
      "if not should_log_cleared:"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "key_id": "1",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=3)",
+     "now": "1.0",
+     "provider": "Provider.GOOGLE"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-1fb53d",
+    "confidence": 0.7,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version inverts the log condition, so a fresh bucket with no failures or cooldown logs \"Route cooldown cleared\" only in the changed version, while a bucket with failures or a cooldown logs only in the original; bucket state is identical.",
+    "response_sha256": "3c354f73bbcca11c59c863f94408074c3b56ed4f57fa30b683355b8daad083f4",
+    "sources": [
+     "if not should_log_cleared:",
+     "if should_log_cleared:"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "cb926fe961756de9e82a20e79430c9610f31ba9933284b8b0ab149e57e22acdf"
@@ -316,6 +403,26 @@
      "should_log_opened = True"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "key_id": "0",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=2)",
+     "now": "100.0",
+     "provider": "\"groq\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-2dbbdf",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version inverts the log condition, so a first failure with a threshold of 2 logs \"cooldown opened\" in the changed version and not in the original, though state and return value match.",
+    "response_sha256": "2716081a478bbba7a372dd374d04c2240cb4bfdddbe1b307fb9d483c4381fef3",
+    "sources": [
+     "if not should_log_opened:",
+     "if should_log_opened:"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "be86fd5e76fd433351a2faa57be23b2c69591327a8493a8c72bdda7e6e74e7a9"
@@ -365,6 +472,21 @@
     "sources": [
      "should_log_cleared = bool(\n                bucket.failure_count or bucket.cooldown_until > current\n            )",
      "should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until < current)",
+     "bucket.failure_count = 0"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-ab29a2",
+    "confidence": 0.55,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The flipped comparison only changes whether the \"cleared\" log is emitted; the return value, bucket state and exceptions are identical, and logging is outside the stated definition of behavior.",
+    "response_sha256": "550cd63ac3f7137be0566c796b911564caa49ddcd673183fa4f4004a2d2da962",
+    "sources": [
+     "bucket.failure_count or bucket.cooldown_until > current",
      "bucket.failure_count = 0"
     ],
     "verdict": "equivalent"
@@ -421,6 +543,21 @@
      "bucket.failure_count += 1"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-61d98b",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only change is that should_log_opened starts True, so the changed version also logs when no cooldown opens, but bucket state, return value and exceptions stay identical.",
+    "response_sha256": "937118b46730af8c9244970e0040ec88b0534017bef27f46e8b9e412617af00a",
+    "sources": [
+     "should_log_opened = False",
+     "if should_log_opened:"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "f608aae4b1ec63b76f4b104d581f72a9252a7a708e966c1b98219cbb01c5a648"
@@ -468,6 +605,22 @@
     "problems": [],
     "reason": "The only difference is the condition for `should_log_cleared`, which only controls whether a logger.info call is emitted; the returned value (None) and the bucket's resulting state (`next_available_at` and `failure_count = 0`) are identical in both versions for any input, so no test of return value, object state, or exception type can distinguish them.",
     "response_sha256": "0dcb01238c937eec41999affd11c1420787378084af62971cc0da413c4c53ba5",
+    "sources": [
+     "should_log_cleared = bool(\n                bucket.failure_count or bucket.cooldown_until > current\n            )",
+     "should_log_cleared = bool(bucket.failure_count)",
+     "bucket.failure_count = 0"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-1d468c",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only change is that the \"cooldown cleared\" log no longer fires when failure_count is 0 and cooldown_until > current. Bucket state (next_available_at, failure_count, cooldown_until) and the None return are identical, so the difference is log output only, which is outside the defined behaviour.",
+    "response_sha256": "324d15c7ba590aa557eddf75038360f32369b61555b5b278e7b905868d3a40dd",
     "sources": [
      "should_log_cleared = bool(\n                bucket.failure_count or bucket.cooldown_until > current\n            )",
      "should_log_cleared = bool(bucket.failure_count)",
@@ -646,6 +799,27 @@
      "if True:"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "key_id": "0",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=3)",
+     "now": "1.0",
+     "provider": "Provider.GROQ"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-080dba",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "On a fresh bucket with no failures and no cooldown, the original skips the \"Route cooldown cleared\" log while the changed version always logs it.",
+    "response_sha256": "5dcd463f76264d87ac2c14d096832b72d7319129128908a15e3ec1c056e5299d",
+    "sources": [
+     "if should_log_cleared:",
+     "if True:",
+     "bucket.failure_count or bucket.cooldown_until > current"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "52735f223b37c014728ec04d30ee6c6f56c378a25b13f4f93fd6db0d8fe2745e"
@@ -704,6 +878,22 @@
      "should_log_cleared = bool(bucket.cooldown_until > current)"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195646Z-33bcec",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only difference is that the original also logs when failure_count is nonzero without an active cooldown; returned value, bucket state and exceptions are identical, and logging is outside the defined behaviour.",
+    "response_sha256": "1472b038fbf09494ca1a3bc32b34f566bf06717769efe8a241c511329bcffda5",
+    "sources": [
+     "bucket.failure_count or bucket.cooldown_until > current",
+     "should_log_cleared = bool(bucket.cooldown_until > current)",
+     "bucket.failure_count = 0"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "f2bf9fd9bc82ec44627050f7dbed81606e592f044f3a39bf35e7403ea7bb8700"
@@ -850,6 +1040,21 @@
      "bucket.failure_count = 0",
      "should_log_opened = True",
      "should_log_opened = False"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-4b7110",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only change sets should_log_opened to False, which suppresses the log line; the return value, bucket state and exceptions are identical, and logging is outside the defined behaviour.",
+    "response_sha256": "55ae6f880698f9d0d8eeabd180c622d4474eadef7d9c6f65796a476d86c27c38",
+    "sources": [
+     "                should_log_opened = True",
+     "            bucket.cooldown_until = current + limits.cooldown_seconds"
     ],
     "verdict": "equivalent"
    }

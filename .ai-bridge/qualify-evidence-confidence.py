@@ -86,6 +86,7 @@ def environment() -> dict[str, str | None]:
         "semantic_calibration_sha256": semantic_calibration_sha256(),
         "model_generation_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/model_generation.py"),
         "survivor_equivalence_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/survivor_equivalence.py"),
+        "pin_subsumption_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/pin_subsumption.py"),
         "qualification_harness_sha256": FINGERPRINTS["code_digest"](Path(__file__)),
         "trace_bridge_sha256": FINGERPRINTS["code_digest"](ROOT / "tests/conftest.py"),
     }
@@ -1165,9 +1166,18 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         and classes["impl.comparison"]["detected"] is True
         and classes["impl.comparison"]["judged"] == 1
         and classes["impl.comparison"]["invalid"] == 1
-        and classes["impl.boundary"]["exercised"] is False
+        # A strict comparison made inclusive (g1, "> to >=") moves a boundary as well: it counts for
+        # impl.boundary too, beside the unreached constant shift.
+        and classes["impl.boundary"]["exercised"] is True
         and classes["impl.boundary"]["detected"] is False
         and classes["impl.boundary"]["unreached"] == 1
+        and classes["impl.boundary"]["judged"] == 2
+        and classes["impl.boundary"]["caught"] == 1
+        and faults["fault_classes"]("comparison", "> to >=") == ("impl.comparison", "impl.boundary")
+        and faults["fault_classes"]("comparison", "> to <") == ("impl.comparison",)
+        and faults["fault_classes"]("identity", "is to is not") == ("impl.comparison",)
+        and faults["fault_classes"]("slice", "removed the upper bound of [:n]") == ("impl.boundary",)
+        and faults["fault_classes"]("unmapped", "x to y") == ()
         and classes["impl.control-flow"]["exercised"] is True
         and classes["impl.control-flow"]["detected"] is False
         and classes["impl.control-flow"]["judged"] == 2
@@ -1374,7 +1384,14 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             "def checked(value: int) -> int:  # mutation: bogus without a known category\n"
             "    if value < 0:\n"
             "        raise ValueError('negative')\n"
-            "    return value\n"
+            "    return value\n\n\n"
+            "_CURRENT = None\n\n\n"
+            "def install(value: int) -> int:\n"
+            "    global _CURRENT\n"
+            "    _CURRENT = value\n"
+            "    return value\n\n\n"
+            "def current() -> int | None:\n"
+            "    return _CURRENT\n"
         )
         (tmp / "control_effects.py").write_text(effects_source)
         (tmp / "control_nosite.py").write_text("VALUE = 'a'\n")
@@ -1382,6 +1399,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         # target with a site for each, a strong suite that pins every one and a weak one that
         # asserts nothing.
         (tmp / "control_python.py").write_text(
+            "from collections.abc import Callable\n"
             "from dataclasses import dataclass\n\n\n"
             "@dataclass\n"
             "class Window:\n"
@@ -1403,23 +1421,33 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             "def gate(ready: bool, level: int) -> str:\n"
             "    if ready:\n"
             "        return 'open'\n"
-            "    return 'closed' if level > 1 else 'shut'\n"
+            "    return 'closed' if level > 1 else 'shut'\n\n\n"
+            "def known(code: str, table: dict) -> str:\n"
+            "    return 'known' if code in table else 'unknown'\n\n\n"
+            "def pick(value: int | None, default: int) -> int:\n"
+            "    return default if value is None else value\n\n\n"
+            "def middle(items: list, limit: int) -> list:\n"
+            "    return items[1:limit]\n\n\n"
+            "def apply(function: Callable[[int], int], value: int) -> int:\n"
+            "    return function(value)\n"
         )
         python_calls = (
             "make(1, 2, label='x'), make(1, 2), named(1, 2), span(Window(1, 5)), shout(' ab '), as_number('7'), "
             "allowed('a', True), allowed('b', True), allowed('z', True), allowed('z', False), "
-            "gate(True, 0), gate(False, 2), gate(False, 1), gate(False, 0)"
+            "gate(True, 0), gate(False, 2), gate(False, 1), gate(False, 0), "
+            "known('a', {'a': 1}), known('b', {'a': 1}), pick(None, 5), pick(3, 5), middle([1, 2, 3, 4], 3), apply(abs, -3)"
         )
         (tmp / "test_python_strong.py").write_text(
-            "from control_python import Window, allowed, as_number, gate, make, named, shout, span\n\n"
+            "from control_python import Window, allowed, apply, as_number, gate, known, make, middle, named, pick, shout, span\n\n"
             "def test_python_strong():\n"
             f"    assert [{python_calls}] == [\n"
             "        Window(1, 2, 'x'), Window(1, 2, 'w'), Window(1, 2, 'named'), 4, 'AB', 7,\n"
             "        True, True, False, True, 'open', 'closed', 'shut', 'shut',\n"
+            "        'known', 'unknown', 5, 3, [2, 3], 3,\n"
             "    ]\n"
         )
         (tmp / "test_python_weak.py").write_text(
-            "from control_python import Window, allowed, as_number, gate, make, named, shout, span\n\n"
+            "from control_python import Window, allowed, apply, as_number, gate, known, make, middle, named, pick, shout, span\n\n"
             "def test_python_weak():\n"
             f"    [{python_calls}]\n"
         )
@@ -1430,7 +1458,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
 
         (tmp / "test_effects_strong.py").write_text(
             "import pytest\n"
-            "from control_effects import Ledger, checked, pinned\n\n"
+            "from control_effects import Ledger, checked, current, install, pinned\n\n"
             "def test_record_and_reset():\n"
             "    ledger = Ledger()\n"
             "    ledger.record(2)\n"
@@ -1448,7 +1476,32 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             "    assert checked(4) == 4\n"
             "    assert checked(0) == 0\n"
             "    with pytest.raises(ValueError):\n"
-            "        checked(-1)\n"
+            "        checked(-1)\n\n"
+            "def test_install():\n"
+            "    assert install(3) == 3\n"
+            "    assert current() == 3\n"
+        )
+        # Import-time code: a module-level call registers what a function reads later. Coverage names
+        # no test for it; the engine runs every selected test, and it counts as reached once a test
+        # runs any line of its module: caught by a test that reads the registration, survived by one
+        # that only registers something else.
+        (tmp / "control_static.py").write_text(
+            "REGISTRY = {}\n\n\n"
+            "def register(name: str, value: int) -> None:\n"
+            "    REGISTRY[name] = value\n\n\n"
+            "register('answer', 42)\n\n\n"
+            "def lookup(name: str) -> int:\n"
+            "    return REGISTRY[name]\n"
+        )
+        (tmp / "test_static_strong.py").write_text(
+            "from control_static import lookup\n\n"
+            "def test_lookup():\n"
+            "    assert lookup('answer') == 42\n"
+        )
+        (tmp / "test_static_weak.py").write_text(
+            "from control_static import register\n\n"
+            "def test_register():\n"
+            "    register('other', 1)\n"
         )
         feature = (
             "Feature: Control\n"
@@ -1560,6 +1613,8 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             "diff": (effect_tests, "control_effects.py", {"scope": {"control_effects.py": [*unused_lines, total_line]}, "skip_uncovered": True}),
             "python": (["test_python_strong.py"], "control_python.py", {}),
             "python_weak": (["test_python_weak.py"], "control_python.py", {}),
+            "static": (["test_static_strong.py"], "control_static.py", {}),
+            "static_weak": (["test_static_weak.py"], "control_static.py", {}),
         }
 
         def isolated_block() -> list[dict]:
@@ -1618,6 +1673,8 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         diff_code, diff_report = done["diff"]
         python_code, python_report = done["python"]
         python_weak_code, python_weak_report = done["python_weak"]
+        static_code, static_report = done["static"]
+        static_weak_code, static_weak_report = done["static_weak"]
 
         strong = list(strong_report.get("results") or [])
         weak = list(weak_report.get("results") or [])
@@ -1679,6 +1736,8 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and any(item.get("category") == "bogus" and item.get("error") for item in pragmas)
             and all(row.get("fingerprint") and row.get("location") and row.get("replacement") for row in effects)
             and len({row.get("fingerprint") for row in effects}) == len(effects)
+            # A write to a name the function declares global is an effect; a plain local binding is not.
+            and any(row.get("operator") == "statement" and int(row.get("line_number") or -1) == line_of("    _CURRENT = value") and row.get("status") == "zapped" for row in effects)
         )
         rule_off = list(rule_off_report.get("results") or [])
         rule_off_ok = (
@@ -1698,7 +1757,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         )
         python_rows = list(python_report.get("results") or [])
         python_weak_rows = list(python_weak_report.get("results") or [])
-        python_operators = {"argument", "condition", "conditional", "negation", "container", "conversion", "method", "attribute"}
+        python_operators = {"argument", "condition", "conditional", "negation", "container", "conversion", "method", "attribute", "identity", "slice"}
         python_ok = (
             python_code == 0 and python_weak_code == 0
             and python_operators <= {str(row.get("operator")) for row in python_rows}
@@ -1707,6 +1766,8 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and not any(row.get("status") in faults["KILLED"] for row in python_weak_rows)
             # The dataclass requires min_size and max_size: those keywords are never removed.
             and ((python_report.get("ternforge") or {}).get("filtered") or {}).get("argument: required parameter") == 2
+            # The list inside the Callable annotation is never mutated: an annotation changes no call.
+            and ((python_report.get("ternforge") or {}).get("filtered") or {}).get("annotation: changes no call") == 1
             and all(row.get("replacement") and row.get("fingerprint") for row in python_rows)
         )
         # What the Python operators leave alone, straight from the operators: a loop's condition
@@ -1752,6 +1813,49 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and not conversion.can_mutate(found["Call:str('x')"]) and conversion.can_mutate(found["Call:str(p)"])
             and len(swapped) == 1 and swapped[0].attr == "min_wait" and not attribute.can_mutate(found["Attribute:p.label"])
         )
+        # mutmut's identity and membership swaps, one per operator of a chain; MutPy's slice index
+        # removal only on a slice that is read; a global write is an effect and a local binding is
+        # not; annotations are located whole; a call that only builds a logging hook is arid.
+        more = ast.parse(
+            "X = None\n"
+            "def f(a, b, items, log) -> list[int]:\n"
+            "    global X\n"
+            "    X = a\n"
+            "    y = b\n"
+            "    items[1:2] = []\n"
+            "    hook = build_retry_before_sleep_logger(log, event_type='e')\n"
+            "    return items[1:y] if a is None and b not in items else []\n"
+        )
+        extension["annotate"](more)
+        identity, slicer = extension["IdentitySwap"](), extension["SliceIndexRemoval"]()
+        chain = ast.parse("a is None and b not in c").body[0].value
+        swapped_ops = [type(mutant.ops[0]).__name__ for compare in chain.values for mutant in identity.mutate(compare)]
+        subscripts = [node for node in ast.walk(more) if isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Slice)]
+        writes = {ast.unparse(node): extension["is_effect_statement"](node) for node in ast.walk(more) if isinstance(node, ast.Assign)}
+        hook_regions = extension["arid_regions"](more, {"arid.logging"})
+        spans = extension["annotation_spans"](more)
+        operators_ok = operators_ok and (
+            swapped_ops == ["IsNot", "In"]
+            and [bool(slicer.mutate(node)) for node in subscripts] == [False, True]
+            and [ast.unparse(node) for node in slicer.mutate(subscripts[1])] == ["items[:y]", "items[1:]"]
+            and writes.get("X = a") is True and writes.get("y = b") is False and writes.get("X = None") is False
+            and len(hook_regions) == 1 and hook_regions[0].rule == "arid.logging"
+            and len(spans) == 1 and spans[0][0][0] == 2
+        )
+        # Import-time code counts as reached and runs every selected test (Stryker's static mutants):
+        # the module-level registration's removal is caught by a test that reads it, and survives one
+        # that does not, reached all the same.
+        static_line = next(index for index, line in enumerate((tmp / "control_static.py").read_text().splitlines(), 1) if line.startswith("register('answer'"))
+        static_rows = [row for row in static_report.get("results") or [] if int(row.get("line_number") or -1) == static_line]
+        static_weak_rows = [row for row in static_weak_report.get("results") or [] if int(row.get("line_number") or -1) == static_line]
+        static_ok = (
+            static_code == 0 and static_weak_code == 0
+            and len(static_rows) == 1 and len(static_weak_rows) == 1
+            and static_rows[0].get("operator") == "statement" and static_rows[0].get("status") == "zapped"
+            and static_rows[0].get("covered") is True and static_rows[0].get("static") is True
+            and static_weak_rows[0].get("status") == "survived" and static_weak_rows[0].get("covered") is True
+            and faults["mutant_outcome"](static_weak_rows[0]) == "survived"
+        )
         nosite_ok = (
             nosite_code == 0
             and not nosite_report
@@ -1781,6 +1885,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             and rule_off_ok
             and diff_ok
             and nosite_ok
+            and static_ok
             and isolated_ok
             and speed_ok
             and timeout_ok
@@ -1811,6 +1916,7 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
             "rule_turned_off": rule_off_ok,
             "diff_skips_uncovered": diff_ok,
             "no_site_keeps_extension_facts": nosite_ok,
+            "import_time_code_reached": {"ok": static_ok, "strong": [row.get("status") for row in static_rows], "weak": [row.get("status") for row in static_weak_rows]},
             "isolated_copy_same_outcomes": isolated_ok,
             "workers_and_cache_same_outcomes": {"ok": speed_ok, "runs": {label: len(outcome) for label, outcome in speed_outcomes.items()}},
             "slow_suite_no_false_catch": {"ok": timeout_ok, "statuses": sorted({str(row.get("status")) for row in slow})},
@@ -1822,8 +1928,8 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
     return {
         "PRODUCER_PYTEST_GREMLINS": {
             "status": "QUALIFIED" if engine_ok else "NOT QUALIFIED",
-            "intended_use": "generate comparison, boundary, arithmetic, boolean, return, statement and body mutants and Python's own (a removed argument, operand, conversion, method call or container element, a swapped attribute, a condition replaced or negated) on the declared target, keep arid code and suppressed mutants out of the run, and report a mutant as caught only when a selected test fails and as not reached when no test covers its line",
-            "false_green_control": "parametrized, fixture-using and pytest-bdd tests that assert nothing must catch no mutant; tests that pin the behavior must catch every planted mutant in every family, Python's own among them, and tests that assert nothing none of them; a keyword the callee requires is never removed, a loop's condition is never made True or negated, a statement, module, class or awaited call is never cut to its receiver; a scoped run must reproduce the full run's mutants on those lines exactly; mutants in logging code must not be planted unless the policy turns the rule off; a suppressed mutant must not run and must carry its category; a generator or dunder body must not be replaced; mutants of uncovered code must be reported not reached, and the diff run must not run them; several mutants at once and the engine's incremental cache, filled and then read, must give exactly the outcomes of a plain run",
+            "intended_use": "generate comparison, boundary, arithmetic, boolean, return, statement and body mutants and Python's own (a removed argument, operand, conversion, method call or container element, a swapped attribute, a condition replaced or negated, an identity or membership test inverted, a slice bound removed) on the declared target, keep arid code, annotations and suppressed mutants out of the run, and report a mutant as caught only when a selected test fails, as not reached when no test covers its line, and code that runs when its module is imported as reached once a test runs its module",
+            "false_green_control": "parametrized, fixture-using and pytest-bdd tests that assert nothing must catch no mutant; tests that pin the behavior must catch every planted mutant in every family, Python's own among them, and tests that assert nothing none of them; a keyword the callee requires is never removed, a loop's condition is never made True or negated, a statement, module, class or awaited call is never cut to its receiver, a slice that is written is never cut, a local binding is never removed while a global write is, nothing inside an annotation is mutated, a call that only builds a logging hook is arid; a module-level registration's removal must be caught by a test that reads it and survive, reached, one that does not; a scoped run must reproduce the full run's mutants on those lines exactly; mutants in logging code must not be planted unless the policy turns the rule off; a suppressed mutant must not run and must carry its category; a generator or dunder body must not be replaced; mutants of uncovered code must be reported not reached, and the diff run must not run them; several mutants at once and the engine's incremental cache, filled and then read, must give exactly the outcomes of a plain run",
             "control": engine_detail,
         },
         "PRODUCER_IMPLEMENTATION_FAULT_ADAPTER": {
@@ -1922,6 +2028,69 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
     rejected = next((row.get("draft") or {} for row in rejected_results if row["id"] == "C-DISTINGUISHED"), {})
     primitive_results = run({"C-DISTINGUISHED": (calibration / "rejected-primitive.draft.py").read_text()})
     primitive = next((row.get("draft") or {} for row in primitive_results if row["id"] == "C-DISTINGUISHED"), {})
+    # A draft that replaces a private name of the project is rejected before it runs, though it
+    # would pass and catch the mutant: a pin observes behaviour through what the code offers callers.
+    private_results = run({"C-DISTINGUISHED": (calibration / "rejected-private.draft.py").read_text()})
+    private = next((row.get("draft") or {} for row in private_results if row["id"] == "C-DISTINGUISHED"), {})
+    private_samples = cascade["draft_private_access"](
+        "from calibration_target import _hidden, Record\nimport calibration_target\nvalue = calibration_target._hidden\n"
+        "class Fake:\n    def __init__(self):\n        self._calls = 0\n",
+        calibration,
+    )
+    # Pin subsumption: the kill matrix of two pins against three mutants of the calibration target
+    # (one both kill, one only the first kills, one that breaks the module and so tells nothing), the
+    # target put back after each, and the greedy cover a matrix gives.
+    subsume = runpy.run_path(str(ROOT / ".ai-bridge/pin_subsumption.py"), run_name="evidence_confidence_subsume")
+    with tempfile.TemporaryDirectory(prefix="ternforge-subsume-qualification-") as temp_dir:
+        copy = Path(temp_dir) / "calibration"
+        shutil.copytree(calibration / "src", copy / "src")
+        shutil.copy2(calibration / "pyproject.toml", copy / "pyproject.toml")
+        (copy / "pins").mkdir()
+        header = "from calibration_target import double  # ty: ignore[unresolved-import]\n\n\n"
+        (copy / "pins/test_pin_a.py").write_text(header + "def test_doubles_two_and_zero() -> None:\n    assert double(2) == 4\n    assert double(0) == 0\n")
+        (copy / "pins/test_pin_b.py").write_text(header + "def test_doubles_three() -> None:\n    assert double(3) == 6\n")
+        target_source = (copy / "src/calibration_target.py").read_text()
+        pins = ["pins/test_pin_a.py", "pins/test_pin_b.py"]
+
+        def run_pins(workdir: Path, tests: list[str], timeout: int) -> dict:
+            return cascade["run_tests"](ROOT, workdir, tests, timeout=timeout)
+
+        subsume_original = subsume["pins_failing"](copy, pins, run_pins, 120)
+        subsume_matrix = subsume["kill_matrix"](copy, pins, {
+            "tripled": ("src/calibration_target.py", target_source.replace("return value * 2", "return value * 3")),
+            "zero_to_one": ("src/calibration_target.py", target_source.replace("return value * 2", "return value * 2 if value else 1")),
+            "broken": ("src/calibration_target.py", target_source.replace("return value * 2", "return value *")),
+        }, run_pins, 120)
+        subsume_put_back = (copy / "src/calibration_target.py").read_text() == target_source
+    subsume_kept = subsume["greedy_cover"]({"a": {"t", "z"}, "b": {"t"}, "c": {"x"}}, {"t", "z", "x", "u"}, ["b", "a", "c"])
+    subsume_ok = (
+        subsume_original == set()
+        and subsume_matrix == {"broken": None, "tripled": set(pins), "zero_to_one": {"pins/test_pin_a.py"}}
+        and subsume_put_back
+        and subsume_kept == ["a", "c"]
+    )
+    # A Requirement's pin imports no private module of the project, and a parametrized value with a
+    # bracket needs ids=: the documentation build reads [[ in a test's name as a function call.
+    # Nor does it reach one by attribute or by a dotted name, and no pin passes a private keyword or
+    # reaches a process module as another module's attribute; a project module's own client stays
+    # reachable, since an adapter's test replaces its transport there.
+    reach = "import calibration_target\n\n\ndef test_a(monkeypatch) -> None:\n    assert calibration_target._hidden.value\n    monkeypatch.setattr('calibration_target._hidden.value', 1)\n"
+    public_ok = (
+        cascade["private_module"]("calibration_target._hidden", calibration) is True
+        and cascade["private_module"]("calibration_target", calibration) is False
+        and cascade["private_module"]("pytest", calibration) is False
+        and cascade["draft_private_reach"](reach, calibration) == ["reaches `calibration_target._hidden.value` past the public API"]
+        and cascade["draft_private_reach"]("import calibration_target\n\n\ndef test_a() -> None:\n    assert calibration_target.double(2) == 4\n", calibration) == []
+        and "passes `_fast`" in cascade["draft_private_access"]("from calibration_target import double\n\n\ndef test_a() -> None:\n    assert double(2, _fast=True) == 4\n", calibration)
+        and cascade["draft_primitives"]("import typing\n\n\ndef test_a() -> None:\n    assert typing.sys.modules\n", calibration) == ["typing.sys"]
+        and cascade["draft_primitives"]("import calibration_target\n\n\ndef test_a() -> None:\n    assert calibration_target.httpx\n", calibration) == []
+    )
+    bracket = "import pytest\n\n\n@pytest.mark.parametrize('text', ['[]', 'plain'])\ndef test_a(text: str) -> None:\n    assert text\n"
+    ids_ok = (
+        len(cascade["draft_id_problems"](bracket)) == 1
+        and cascade["draft_id_problems"](bracket.replace("['[]', 'plain'])", "['[]', 'plain'], ids=['empty', 'plain'])")) == []
+        and cascade["draft_id_problems"]("import pytest\n\n\n@pytest.mark.parametrize('n', [1, 2])\ndef test_a(n: int) -> None:\n    assert n\n") == []
+    )
     projection = cascade["class_projection"](results).get("spec.wrong-outcome") or {}
     # A mutant that hangs leaves no test process behind once its time limit stopped the run.
     leftover = subprocess.run(["pgrep", "-f", "checks/calibration_checks.py"], capture_output=True, text=True, check=False).stdout.split()
@@ -2162,6 +2331,10 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
         and primitive.get("accepted") is False
         and primitive.get("ran") is False
         and "exec" in (primitive.get("primitives") or [])
+        and private.get("accepted") is False
+        and private.get("ran") is False
+        and private.get("private") == ["reads or replaces `_masked`"]
+        and private_samples == ["imports `_hidden`", "reads or replaces `_hidden`"]
         and [(row["class"], row["target"]) for row in missing] == [("spec.missing-partition", "src/calibration_target.py::double")]
         and unchallenged.get("undecided") == 1
         and unchallenged.get("not_generated") == 1
@@ -2180,12 +2353,15 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
         and grounding_ok
         and aids_ok
         and agent_ok
+        and subsume_ok
+        and public_ok
+        and ids_ok
     )
     return {
         "PRODUCER_SEMANTIC_MUTANT_CASCADE": {
             "status": "QUALIFIED" if ok else "NOT QUALIFIED",
             "intended_use": "judge frozen semantic mutant proposals for a named risk without a model: reject identical, duplicate, invalid and unconfined ones, run the rest against the contract's passing tests in an isolated copy, and look for an input that tells a survivor apart from the original",
-            "false_green_control": "a calibration set with a known outcome for every proposal: an identical, a rule-duplicate, an invalid, a confined one that adds an import, one whose module no longer imports, a caught, an equivalent (must stay undecided, never caught, and only be labelled likely equivalent by unanimous assessors), a distinguishable (must be found), one only the symbolic search finds, one whose assessor input is refuted, a stale, a reviewer-judged equivalent and a mutant an earlier proposal repeats; the set judged in chunks at once, as the builder judges a contract, with the same outcome for every proposal and the repeated mutant in its original's chunk, and the results of one mutant selected for two classes, which carry one id, kept in their places; a second run given the first run's rows keeping their test runs with the same outcomes; a mutant's tests chosen by the retained run's per-test coverage, a parametrized test by its base name, and all of them where coverage measured nothing; draft tests against a whole mutated module judged in two processes at once, kept and rejected in their order; a kept draft, a draft that imports beyond the allowed and one that uses exec, both rejected without being run; a selected target without proposals that must keep its class undecided; a scenario pytest-bdd generates, whose example for a draft must be its module's step definitions; a draft failing on the original, rejected with pytest's errors free of the copy's path and memory addresses; a draft in the project's style only, formatted and safely fixed, rejected for a lint rule it still breaks; the imports a draft may use, where `from package import module` imports the module and a Technical requirement's module brings the project modules it imports itself; and a small project on which the grounding check must find exactly the invented member, the two unknown arguments, the misplaced import and the missing module of one draft, the arguments a call leaves out (also through the draft's own subclass and its super().__init__, not for a positional argument or a subclass with fields of its own) in another, and nothing in a third that uses a name from an outside package, a constant, a submodule, a test helper and an inherited constructor, with the API card naming every enum member and field, and a name the draft uses that its question never shows counted as a gap; pytest's reason for a failure without error lines; the async test rule only for pytest-asyncio's strict mode; the callers of a module-level function and the functions of its module it calls or hands on; the path to a changed line read from its function's branches, loops, handlers and early exits; what a weak draft reached of its defect, a statement counted on its first line and a function's def not as a call; and the check a model with tools runs in its copy of the calibration project, refusing a forbidden primitive unrun and telling a weak draft which changed lines it never reached",
+            "false_green_control": "a calibration set with a known outcome for every proposal: an identical, a rule-duplicate, an invalid, a confined one that adds an import, one whose module no longer imports, a caught, an equivalent (must stay undecided, never caught, and only be labelled likely equivalent by unanimous assessors), a distinguishable (must be found), one only the symbolic search finds, one whose assessor input is refuted, a stale, a reviewer-judged equivalent and a mutant an earlier proposal repeats; the set judged in chunks at once, as the builder judges a contract, with the same outcome for every proposal and the repeated mutant in its original's chunk, and the results of one mutant selected for two classes, which carry one id, kept in their places; a second run given the first run's rows keeping their test runs with the same outcomes; a mutant's tests chosen by the retained run's per-test coverage, a parametrized test by its base name, and all of them where coverage measured nothing; draft tests against a whole mutated module judged in two processes at once, kept and rejected in their order; a kept draft, a draft that imports beyond the allowed, one that uses exec and one that replaces a private name of the project, all rejected without being run, with a private import or read named and the draft's own private attribute left alone; a selected target without proposals that must keep its class undecided; a scenario pytest-bdd generates, whose example for a draft must be its module's step definitions; a draft failing on the original, rejected with pytest's errors free of the copy's path and memory addresses; a draft in the project's style only, formatted and safely fixed, rejected for a lint rule it still breaks; the imports a draft may use, where `from package import module` imports the module and a Technical requirement's module brings the project modules it imports itself; and a small project on which the grounding check must find exactly the invented member, the two unknown arguments, the misplaced import and the missing module of one draft, the arguments a call leaves out (also through the draft's own subclass and its super().__init__, not for a positional argument or a subclass with fields of its own) in another, and nothing in a third that uses a name from an outside package, a constant, a submodule, a test helper and an inherited constructor, with the API card naming every enum member and field, and a name the draft uses that its question never shows counted as a gap; pytest's reason for a failure without error lines; the async test rule only for pytest-asyncio's strict mode; the callers of a module-level function and the functions of its module it calls or hands on; the path to a changed line read from its function's branches, loops, handlers and early exits; what a weak draft reached of its defect, a statement counted on its first line and a function's def not as a call; and the check a model with tools runs in its copy of the calibration project, refusing a forbidden primitive unrun and telling a weak draft which changed lines it never reached; and the pin subsumption's kill matrix of two pins against three mutants of the calibration target, one both kill, one only the first kills and one that breaks the module and tells nothing, with the target put back after each, and the greedy cover a matrix gives; a private module of the project told apart from its public package, and reached by attribute or dotted name, a private keyword and a process module reached as another module's attribute each flagged while a project module's own client stays reachable, and a parametrized value with a bracket flagged unless ids= name the cases",
             "control": {
                 "outcomes": outcomes, "expected": expected, "reasons": reasons, "kept_draft": kept, "rejected_draft": rejected,
                 "chunks": [[payload["proposals"][index]["id"] for index in chunk] for chunk in chunks], "chunked_same": chunked_same,
@@ -2197,6 +2373,8 @@ def semantic_mutant_controls() -> dict[str, dict[str, object]]:
                 "grounding": {"grounded": grounded, "invented": invented, "unbuilt": unbuilt},
                 "aids": {"path": path_text, "reach_all": reach_all, "reach_none": reach_none},
                 "agent_check": agent_reports,
+                "subsumption": {"original": sorted(subsume_original) if subsume_original is not None else None,
+                                "matrix": {key: sorted(value) if value is not None else None for key, value in subsume_matrix.items()}, "kept": subsume_kept},
             },
         }
     }
@@ -3066,6 +3244,41 @@ def survivor_judgement_controls() -> dict[str, dict[str, object]]:
         checks["a rule mutant is rebuilt exactly, and a location naming other code is refused"] = (
             _ast.dump(_ast.parse(rebuilt.get("mutated") or "")) == _ast.dump(_ast.parse(expected or ""))
             and "reason" in judge["rule_mutant_source"](originals, {**record, "original": "value < 0"})
+            and rebuilt.get("scope") == "function"
+        )
+        # Import-time code: a class attribute and a module-level call are rebuilt in their class and
+        # their statement, shown alone, and named as code that runs when the module is imported; the
+        # triage searches no call for them.
+        static_source = (
+            "import dataclasses\n\n"
+            "REGISTRY = {}\n\n\n"
+            "def register(name, value):\n"
+            "    REGISTRY[name] = value\n\n\n"
+            "register('answer', 42)\n\n\n"
+            "@dataclasses.dataclass(frozen=True)\n"
+            "class Limits:\n"
+            "    retries: int = 3\n"
+            "    strict: bool = True\n"
+        )
+        static_tree = _ast.parse(static_source)
+
+        def static_location(node: _ast.AST) -> dict:
+            return {"start": {"line": node.lineno, "column": node.col_offset + 1}, "end": {"line": node.end_lineno, "column": int(node.end_col_offset or 0) + 1}}
+
+        module_call = next(node for node in static_tree.body if isinstance(node, _ast.Expr))
+        strict_value = next(node for node in _ast.walk(static_tree) if isinstance(node, _ast.Constant) and node.value is True)
+        module_rebuilt = judge["rule_mutant_source"](static_source, {"qualname": "<module>", "operator": "statement", "location": static_location(module_call), "original": "register('answer', 42)", "replacement": "pass"})
+        class_rebuilt = judge["rule_mutant_source"](static_source, {"qualname": "Limits", "operator": "boolean", "location": static_location(strict_value), "original": "True", "replacement": "False"})
+        static_file = Path(temp) / "static_control.py"
+        static_file.write_text(static_source)
+        static_triage = judge["triage"]({"survivors": [{"fingerprint": "s1", "operator": "statement", "qualname": "<module>", "file_path": str(static_file), "location": static_location(module_call), "original": "register('answer', 42)", "replacement": "pass"}]})
+        checks["import-time code is rebuilt in its statement or class, shown alone, and not searched"] = (
+            module_rebuilt.get("scope") == "module" and module_rebuilt.get("mutated") == "pass"
+            and "register('answer', 42)" not in module_rebuilt.get("source", "") and "imported" in module_rebuilt.get("target", "")
+            and class_rebuilt.get("scope") == "class" and class_rebuilt.get("original") == "strict: bool = True"
+            and class_rebuilt.get("mutated") == "strict: bool = False" and "strict: bool = False" in class_rebuilt.get("source", "")
+            and [row.get("status") for row in static_triage.get("rows") or []] == ["not-applicable"]
+            and "imported" in ((static_triage.get("rows") or [{}])[0].get("reason") or "")
         )
         # The judgement: a confirmed assessor input decides; an equivalent only labels, and only calibrated and unanimous.
         share_original, share_mutant = judge["pair_sources"](folder, next(pair for pair in payload["pairs"] if pair["id"] == "D14"))
@@ -3173,6 +3386,32 @@ def survivor_judgement_controls() -> dict[str, dict[str, object]]:
             and pinned == [] and unmoored == ["none of its sources quotes the requirement, Feature, Goal or criterion it turns on"]
             and judge["asked_question"](again) == verdict_question and judge["verdict_problems"]({**pin, "sources": ["x"]}, False, again)[0] == "its source «x» is not in the question"
             and "Requirement R" not in asked_clip
+        )
+        # A pin no rung of the draft ladder could write is asked again with every caller in view (the
+        # target's own recursion aside), a method found by attribute, and its answer may cite them.
+        calls = temp / "callers" / "src" / "tfq_calls"
+        calls.mkdir(parents=True)
+        (calls / "__init__.py").write_text("")
+        (calls / "core.py").write_text(
+            "def clip(value: int) -> str:\n    if value > 100:\n        return clip(100)\n    return str(value) if value > 0 else ''\n\n\n"
+            "def show(count: int) -> str:\n    \"\"\"Show a count.\"\"\"\n    return clip(count)\n"
+        )
+        (calls / "use.py").write_text(
+            "from tfq_calls.core import clip\n\n\nclass Panel:\n    def render(self, size: int) -> str:\n        return clip(size) + '!'\n\n\n"
+            "def main() -> str:\n    return Panel().render(3)\n"
+        )
+        sites = judge["project_call_sites"](temp / "callers", "clip", "src/tfq_calls/core.py")
+        method_sites = judge["project_call_sites"](temp / "callers", "Panel.render", "src/tfq_calls/use.py")
+        reconsidered = judge["reconsider_prompt"](verdict_question, temp / "callers", "clip", "src/tfq_calls/core.py", "- `Panel` (from tfq_calls.use): Panel()")
+        irrelevant = {"verdict": "irrelevant", "level": "requirement", "reason": "no caller hands zero", "test_focus": ""}
+        cited = ["A positive value is shown with its fence.", "if value > 0:", "- `Panel` (from tfq_calls.use): Panel()"]
+        checks["a pin no draft could write is asked again with every caller in view, and its answer may cite them"] = (
+            [site["where"] for site in sites] == ["src/tfq_calls/core.py:9", "src/tfq_calls/use.py:6"]
+            and sites[0]["code"].startswith("def show(count: int) -> str:") and sites[1]["code"].startswith("def render(self, size: int) -> str:")
+            and [site["where"] for site in method_sites] == ["src/tfq_calls/use.py:10"]
+            and reconsidered.startswith(verdict_question) and judge["RECONSIDER_MARK"] in reconsidered and "def show(count: int) -> str:" in reconsidered
+            and judge["verdict_problems"]({**irrelevant, "sources": cited}, False, reconsidered) == []
+            and judge["verdict_problems"]({**irrelevant, "sources": cited}, False, verdict_question) == ["its source «- `Panel` (from tfq_calls.use): Panel()» is not in the question"]
         )
     # A shown outcome never carries the machine it ran on: a found input may make the code read an
     # environment variable, and a witness goes into a model's question and a public record.
@@ -3310,7 +3549,10 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
     for pair_id, pair in observed.items():
         contract_id, key = pair.get("contract_id"), pair.get("fingerprint")
         verdicts_path = ROOT / ".ai-bridge/survivor-verdicts" / str(contract_id) / "verdicts.json"
-        pin = ((json.loads(verdicts_path.read_text()) if verdicts_path.exists() else {}).get(key) or {}).get("pin") or {}
+        entry = (json.loads(verdicts_path.read_text()) if verdicts_path.exists() else {}).get(key) or {}
+        # A pin other pins of its contract made redundant still proves the pair distinct: the cascade kept
+        # it, and the pins kept kill the mutant.
+        pin = entry.get("pin") or (entry.get("subsumed") or {}).get("pin") or {}
         report_path = ROOT / str((((campaign.get("contracts") or {}).get(contract_id) or {}).get("run") or {}).get("report_path") or "")
         rows = {str(row.get("fingerprint")): row for row in (json.loads(report_path.read_text()).get("results") or [])} if report_path.is_file() else {}
         caught = str((rows.get(key) or {}).get("status")) in {"zapped", "timeout"}
@@ -3455,6 +3697,15 @@ def model_canary_controls() -> dict[str, dict[str, object]]:
         and reviewed({"prompt_sha256": "q", "answer": answer, "review": {**agree, "prompt_sha256": "other"}}) is None
         and (reviewed({"prompt_sha256": "q", "answer": {**answer, "verdict": "pin"}}) or {}).get("verdict") == "pin"
     )
+    # A re-check, the role's current model asked the same question again, pins a suppression it does not uphold.
+    recheck = {**disagree, "model": "claude-opus-5-5", "effort": "xhigh"}
+    rechecked = reviewed({"prompt_sha256": "q", "answer": answer, "review": agree, "rechecks": {"verdict": recheck}}) or {}
+    checks["a re-check of the same question that does not uphold a suppression pins its mutant, and only such a re-check"] = (
+        rechecked.get("verdict") == "pin" and "asked again" in str(rechecked.get("reason"))
+        and (reviewed({"prompt_sha256": "q", "answer": answer, "review": agree, "rechecks": {"verdict": {**recheck, "prompt_sha256": "old"}}}) or {}).get("verdict") == "irrelevant"
+        and (reviewed({"prompt_sha256": "q", "answer": answer, "review": agree, "rechecks": {"verdict": {**recheck, "problems": ["x"]}}}) or {}).get("verdict") == "irrelevant"
+        and (reviewed({"prompt_sha256": "q", "answer": answer, "review": agree, "rechecks": {"verdict": {**recheck, "verdict": "equivalent"}}}) or {}).get("verdict") == "irrelevant"
+    )
     after = semantic["canary_record_after"]
     checks["an unanswered canary keeps the record of the same questions, never of other questions or over a wrong answer"] = (
         after(passed_record, unanswered) is passed_record
@@ -3475,7 +3726,7 @@ CONTROL_CACHE = ROOT / "test-results/qualification-controls.json"
 CONTROL_INPUTS = {
     "implementation_fault_controls": (".ai-bridge/implementation_faults.py", ".ai-bridge/pytest_plugins/*.py"),
     "semantic_mutant_controls": (
-        ".ai-bridge/semantic_mutants.py", ".ai-bridge/survivor_equivalence.py", ".ai-bridge/pytest_plugins/*.py",
+        ".ai-bridge/semantic_mutants.py", ".ai-bridge/survivor_equivalence.py", ".ai-bridge/pin_subsumption.py", ".ai-bridge/pytest_plugins/*.py",
         ".ai-bridge/semantic-mutants/calibration/**/*",
     ),
     "survivor_judgement_controls": (".ai-bridge/survivor_equivalence.py", ".ai-bridge/semantic-mutants/calibration/equivalence/**/*"),

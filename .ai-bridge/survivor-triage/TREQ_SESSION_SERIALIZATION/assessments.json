@@ -1,0 +1,240 @@
+{
+ "73af7c5839a73039": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "text": "'{\"version\": 1, \"system\": \"hello\", \"history\": []}'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140913Z-2d56bd",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version incorrectly raises a SessionSerializationError if 'system' is a valid string, whereas the original version correctly allows it and proceeds to return it.",
+    "response_sha256": "cdf215a08c2e02ac59b938bf4db5a721aa370dbdef96f341f34ad4f44e01e75f",
+    "sources": [
+     "    if system is not None and not isinstance(system, str):",
+     "    if system is not None:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "text": "'{\"version\": 1, \"system\": \"hi\", \"history\": []}'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T140926Z-268de0",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version raises SessionSerializationError for any non-null system, including a valid string, where the original accepts strings and returns them.",
+    "response_sha256": "236f38d346e7d05f3ee3b3681e990f507905fe3db62cf2ee77c171bdd5f7f39e",
+    "sources": [
+     "if system is not None and not isinstance(system, str):",
+     "if system is not None:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "68e1f6c001004cb50755e8e1d86047b93b69282e0ca942e25318e288018fc455"
+ },
+ "84e67158176fdd1f": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "text": "'{\"version\": 1, \"system\": 123, \"history\": []}'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140913Z-7ec715",
+    "confidence": 0.9,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version removes the type validation for the 'system' field, allowing non-string values to bypass the SessionSerializationError that the original version would raise.",
+    "response_sha256": "0426e34c4dc7f87c0e442e31fbf4d9c9dd985ed175ddd16ebf93622892598c59",
+    "sources": [
+     "    system = payload.get(\"system\")\n    if system is not None and not isinstance(system, str):\n        msg = \"Session system prompt must be a string or null.\""
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "text": "'{\"version\": 1, \"system\": 5, \"history\": []}'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T140926Z-b2d93a",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version replaces the system type check with `if False`, so a non-string system such as 5 returns (5, ()) instead of raising SessionSerializationError; the version literal 1 is assumed to equal _SESSION_VERSION.",
+    "response_sha256": "ef87b0ccd7b8f455454a32c39beb2008733f30cce89a065e635778736e5855bb",
+    "sources": [
+     "if system is not None and not isinstance(system, str):",
+     "if False:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "3c6a9ef2f3e1ed8b594d82e6390ea3011ae3085132c712adec25a809b56e0a0f"
+ },
+ "9e3d1c41b323b0bb": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "history": "()",
+     "system": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140913Z-5fbf71",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version sorts the dictionary keys alphabetically ('history', 'system', 'version') in the JSON string, whereas the new version outputs them in insertion order ('version', 'system', 'history'), resulting in different output strings.",
+    "response_sha256": "817a8d904963a1306733b2b2a33b461048f434735e6218483fb2c8bfbdd524db",
+    "sources": [
+     "    return json.dumps(payload, indent=2, sort_keys=True)",
+     "    return json.dumps(payload, indent=2)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "history": "()",
+     "system": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T140926Z-28ca52",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops sort_keys=True, so the top-level keys come out as version, system, history instead of sorted order (history, system, version), and the JSON strings differ for any input.",
+    "response_sha256": "8f5e5308038ae1fc97a7c2cfe96f7366696361c9138cf0caf46d15a34d59b86e",
+    "sources": [
+     "return json.dumps(payload, indent=2, sort_keys=True)",
+     "return json.dumps(payload, indent=2)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "ec0f9cfc9b1f6fd17547b197d88e6597d443af63d977fccad952e4ff47279ef9"
+ },
+ "ae9bb16e0f156df0": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "text": "'{\"version\": 1, \"history\": null}'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140913Z-68c529",
+    "confidence": 0.9,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "If the 'history' field in the JSON payload is not a list (e.g., null), the original version explicitly raises a SessionSerializationError, whereas the changed version skips this check and raises a TypeError when attempting to iterate over the non-iterable value.",
+    "response_sha256": "a0d11e495cb146d42715140e1f975bd4f79a57900ed0922a1a28327a504e00b6",
+    "sources": [
+     "    if not isinstance(raw_history, list):",
+     "    if False:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "text": "'{\"version\": 1, \"system\": null}'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T140926Z-4f9886",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version replaces the history list check with `if False`, so a missing or non-list history raises TypeError instead of SessionSerializationError; this assumes _SESSION_VERSION is 1.",
+    "response_sha256": "669555c358e49bedfe4bb8cfdb4d245078aeaaa8ac74d2c5357e246a47c6530e",
+    "sources": [
+     "if False:",
+     "if not isinstance(raw_history, list):",
+     "return (system, tuple((_decode_message(item) for item in raw_history)))"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "ae7382657000fa4746c3b3fbc23a9a3b0e407026768942eddb3da6605fb2cf73"
+ },
+ "f1db3a48e54f5fe2": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "text": "'{\"version\": 1, \"history\": []}'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140913Z-cc37ba",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version returns a tuple for the history items, whereas the changed version returns a generator expression, which is a different type and evaluates lazily.",
+    "response_sha256": "b371b11e59f2daa0510ba244bdc6694a563cae17f584a7d08bc2204e26e62b74",
+    "sources": [
+     "    return system, tuple(_decode_message(item) for item in raw_history)",
+     "    return (system, (_decode_message(item) for item in raw_history))"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "text": "'{\"version\": 1, \"history\": []}'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T140926Z-c87f87",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version returns a lazy generator instead of a tuple, so the return value differs (a generator is not equal to ()) and decode errors are deferred; this assumes _SESSION_VERSION is 1.",
+    "response_sha256": "b540d9c3af2416fb9bcda942fbb0afea43d29d3ed96d07b510e21b044e23bcc4",
+    "sources": [
+     "return system, tuple(_decode_message(item) for item in raw_history)",
+     "return (system, (_decode_message(item) for item in raw_history))"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "214312170c8855592660d719001afb0d83bbfbcb0bb920bdcbdfdaa5065c455a"
+ },
+ "fa88bb3261b0e691": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "text": "'{\"version\": 1, \"system\": \"system prompt\", \"history\": []}'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140926Z-9ff003",
+    "confidence": 0.9,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version incorrectly raises a SessionSerializationError when the system prompt is a string, whereas the original version accepts it.",
+    "response_sha256": "f46ea530982d6c364902ed4b03f3574899b3e4270b2f84d7809109bc1f293562",
+    "sources": [
+     "    system = payload.get('system')",
+     "    if system is not None and isinstance(system, str):",
+     "        msg = 'Session system prompt must be a string or null.'",
+     "        raise SessionSerializationError(msg)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "text": "'{\"version\": 1, \"system\": \"hi\", \"history\": []}'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T140913Z-ab2bb2",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops the `not` from the system-prompt check, so a string system prompt raises SessionSerializationError, while the original returns it. This assumes _SESSION_VERSION is 1.",
+    "response_sha256": "b20a041748e72180979b03cc0f18540e62bc3199182401b7455789380b4f30e8",
+    "sources": [
+     "if system is not None and not isinstance(system, str):",
+     "if system is not None and isinstance(system, str):"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "622cb297124a9bab8691c13a27b8c76eafdc08a499858efc0891bc2c6f9265f0"
+ }
+}

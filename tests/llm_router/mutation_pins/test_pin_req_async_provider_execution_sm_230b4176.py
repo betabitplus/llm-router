@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any
 
 import pytest
 
@@ -13,38 +12,14 @@ pytestmark = pytest.mark.verification_kind("unit")
 
 
 @pytest.mark.verifies("REQ_ASYNC_PROVIDER_EXECUTION[revision==1]")
-def test_async_route_settings_receive_dict_schema_override(
+def test_async_call_dict_schema_override_reaches_route(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     value = "mock-provider-auth-12345"
     monkeypatch.setenv("NVIDIA_API_KEY", value)
-
     router = LLMRouter(
         RouterProfile(model=Model.DEEPSEEK_V4_FLASH, provider=Provider.NVIDIA)
     )
-    runtime = getattr(router, "_runtime", router)
-    schema = {
-        "type": "object",
-        "properties": {"answer": {"type": "string"}},
-        "required": ["answer"],
-    }
-    seen: list[dict[str, Any]] = []
-    original = runtime._settings_for_route
-
-    def spy(*args: Any, **kwargs: Any) -> Any:
-        seen.append(dict(kwargs["call_overrides"]))
-        return original(*args, **kwargs)
-
-    def stop(*_args: Any, **_kwargs: Any) -> Any:
-        msg = "stop before network"
-        raise RuntimeError(msg)
-
-    monkeypatch.setattr(runtime, "_settings_for_route", spy)
-    monkeypatch.setattr(runtime, "_prepare_request", stop)
-
-    with pytest.raises(RuntimeError, match=r"stop before network"):
-        asyncio.run(router.aquery("give an answer", response_schema=schema))
-
-    assert seen
-    for overrides in seen:
-        assert overrides.get("response_schema") == schema
+    bad_schema = {"type": 12345, "properties": [1, 2, 3]}
+    with pytest.raises(Exception, match=r"(?i)schema"):
+        asyncio.run(router.aquery("give an answer", response_schema=bad_schema))

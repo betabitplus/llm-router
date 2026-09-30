@@ -7,28 +7,17 @@ from dataclasses import replace
 import pytest
 
 import llm_router as package
-import llm_router._api.config as api_config
 
 pytestmark = pytest.mark.verification_kind("unit")
-
-ConfigurationError = getattr(
-    package,
-    "ConfigurationError",
-    getattr(api_config, "ConfigurationError", None),
-)
 
 
 @pytest.mark.verifies("REQ_CONFIG_INSTALLATION_COHERENCE[revision==2]")
 def test_install_config_rejects_catalog_missing_defaults() -> None:
-    initial_config = package.get_config()
+    current = package.get_config()
+    empty_catalog = replace(current.catalog, providers={}, models={})
+    invalid_config = replace(current, catalog=empty_catalog)
 
-    invalid_catalog = replace(initial_config.catalog, providers={}, models={})
-    invalid_config = replace(initial_config, catalog=invalid_catalog)
-
-    assert invalid_config.default_provider not in invalid_config.catalog.providers
-    assert invalid_config.default_model not in invalid_config.catalog.models
-
-    with pytest.raises(ConfigurationError):
+    with pytest.raises(package.ConfigurationError, match=r".+"):
         package.install_config(invalid_config)
 
-    assert package.get_config() is initial_config
+    assert package.get_config() is current

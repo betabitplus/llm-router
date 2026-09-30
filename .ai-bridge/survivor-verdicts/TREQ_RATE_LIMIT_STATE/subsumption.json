@@ -1,0 +1,164 @@
+{
+ "at": "2026-09-30T13:48:09.799041Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_6a97bd579b2777e7.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7ac50aa440bca50f.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7cfc3f8477b3a2b8.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_8f336828c0f9c375.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_96a28c868f99fb34.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_99d124741e83ae13.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9abb29c158374ba9.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9e482cdffda9da5c.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9f72abc51a357f38.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_cd5c3873436c0d0c.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_cfccb967b6b28523.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_6a97bd579b2777e7.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7ac50aa440bca50f.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7cfc3f8477b3a2b8.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_96a28c868f99fb34.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_99d124741e83ae13.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_cfccb967b6b28523.py"
+ ],
+ "restored": [],
+ "removed": {
+  "8f336828c0f9c375": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_8f336828c0f9c375.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7cfc3f8477b3a2b8.py"
+   ]
+  },
+  "9abb29c158374ba9": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9abb29c158374ba9.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7ac50aa440bca50f.py"
+   ]
+  },
+  "9e482cdffda9da5c": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9e482cdffda9da5c.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_99d124741e83ae13.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_cfccb967b6b28523.py"
+   ]
+  },
+  "9f72abc51a357f38": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9f72abc51a357f38.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7cfc3f8477b3a2b8.py"
+   ]
+  },
+  "cd5c3873436c0d0c": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_cd5c3873436c0d0c.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7cfc3f8477b3a2b8.py"
+   ]
+  }
+ },
+ "matrix": {
+  "6a97bd579b2777e7": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_6a97bd579b2777e7.py"
+  ],
+  "7ac50aa440bca50f": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_6a97bd579b2777e7.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7ac50aa440bca50f.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9abb29c158374ba9.py"
+  ],
+  "7cfc3f8477b3a2b8": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7cfc3f8477b3a2b8.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_8f336828c0f9c375.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9f72abc51a357f38.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_cd5c3873436c0d0c.py"
+  ],
+  "8f336828c0f9c375": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7cfc3f8477b3a2b8.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_8f336828c0f9c375.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9f72abc51a357f38.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_cd5c3873436c0d0c.py"
+  ],
+  "96a28c868f99fb34": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_96a28c868f99fb34.py"
+  ],
+  "99d124741e83ae13": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_99d124741e83ae13.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9e482cdffda9da5c.py"
+  ],
+  "9abb29c158374ba9": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_6a97bd579b2777e7.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7ac50aa440bca50f.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9abb29c158374ba9.py"
+  ],
+  "9e482cdffda9da5c": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_99d124741e83ae13.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9e482cdffda9da5c.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_cfccb967b6b28523.py"
+  ],
+  "9f72abc51a357f38": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7cfc3f8477b3a2b8.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_8f336828c0f9c375.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9f72abc51a357f38.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_cd5c3873436c0d0c.py"
+  ],
+  "cd5c3873436c0d0c": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7cfc3f8477b3a2b8.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_8f336828c0f9c375.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_9f72abc51a357f38.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_cd5c3873436c0d0c.py"
+  ],
+  "cfccb967b6b28523": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_cfccb967b6b28523.py"
+  ]
+ },
+ "caught_before": [
+  "074763c23704110e",
+  "0aace4319199f8e4",
+  "11b857a12dccae61",
+  "184420df6f22c895",
+  "1887c57638d306c5",
+  "207cce703c91f4fc",
+  "2234e618573d7939",
+  "25f1c3c437588eb1",
+  "282d49c09514974e",
+  "294dafb95fb9ed23",
+  "4897d3ea9a6cc371",
+  "4afb490053fa433e",
+  "4c80265ba8c8ad7a",
+  "5046c79860ed3bf2",
+  "57804ed5031a735e",
+  "57bada9f1b07ccd6",
+  "5a7ef77878946d20",
+  "64f55757cab24ba3",
+  "650faaa02a882ee6",
+  "69937bfa4b434fae",
+  "6a97bd579b2777e7",
+  "7ac50aa440bca50f",
+  "7cfc3f8477b3a2b8",
+  "8290dc2bfe83f575",
+  "84ce0cafa9dd97ec",
+  "8f336828c0f9c375",
+  "96a28c868f99fb34",
+  "99d124741e83ae13",
+  "9abb29c158374ba9",
+  "9e482cdffda9da5c",
+  "9f107933887a3fa0",
+  "9f72abc51a357f38",
+  "aec55f2c0dd6d350",
+  "b4db9e41b8d9fc80",
+  "b58fd8748230145e",
+  "b6048d5a9a68d0fe",
+  "c0528579e88379d9",
+  "cc150d21638a2f8a",
+  "cd5c3873436c0d0c",
+  "ce1edea4ab7fbe58",
+  "cfccb967b6b28523",
+  "d16d8affa7f126fd",
+  "d87eb881b6d0bccd",
+  "d8c3f0e935ab28ec",
+  "d9ca1b7064f9b0bc",
+  "e0d5153f3a14a12e",
+  "e38867ec649bb4f6",
+  "f2f9dc6028cbf9f7",
+  "f74091c85317073a",
+  "fc9e527b66ef08bd"
+ ]
+}

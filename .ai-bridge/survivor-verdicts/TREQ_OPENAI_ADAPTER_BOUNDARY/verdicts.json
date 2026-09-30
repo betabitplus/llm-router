@@ -1,0 +1,66 @@
+{
+ "bc8864eb8ffc0616": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141739Z-fdeec4",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With the registration loop emptied, no OpenAI-compatible provider has an adapter factory in the registry. Resolving those supported providers through the normal config path then fails, so the requirement that every supported provider adapter preserves normalized request and response semantics is broken. The tests survive only because they build the adapter directly and never go through registration.",
+   "response_sha256": "9d425aff6fba1a628cacaaba171b2b0db0501f059fe793963ae7a5a0956c16c1",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "Provider-specific transport selection and boundary behavior shall conform to the derived adapter technical requirements",
+    "    register_adapter_factory(_provider, adapter_from_config)",
+    "    pass"
+   ],
+   "test_focus": "For each provider in OPENAI_COMPATIBLE_PROVIDERS, the test must build a client or adapter from config through the public registry path and check that it resolves to the OpenAI-compatible adapter and completes a normalized request over HTTP.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-30T14:47:19.638051Z",
+   "answer_sha256": "22bbc410aa450b1a9be17a28ad2be04e55fe619178048d232d272212c5c5a3a2",
+   "call_id": "20260930T144529Z-d4b071",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "22bbc410aa450b1a9be17a28ad2be04e55fe619178048d232d272212c5c5a3a2",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_openai_adapter_boundary_bc8864eb8ffc0616.py",
+   "response_sha256": "5d6b9ca4817a74bfe06a2a8778a054dabebeab1d69f134ef849d1f6b6301d134",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.openai_compatible.OPENAI_COMPATIBLE_PROVIDERS",
+    "llm_router._internal.providers.openai_compatible.OpenAICompatibleAdapter",
+    "llm_router._internal.providers.registry.get_adapter",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ]
+  },
+  "prompt_sha256": "448fdef89519c41ead3416ab68ad5d10c163d2f1fae8eac6641f5114d606fc59"
+ }
+}

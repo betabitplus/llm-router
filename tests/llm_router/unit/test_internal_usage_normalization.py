@@ -6,6 +6,7 @@ import pytest
 
 from llm_router import UsageStats
 from llm_router._internal.capabilities.usage import normalize_usage
+from tests.llm_router.support.fault_observation import retain_local_fault_injection
 
 pytestmark = [
     pytest.mark.verifies("TREQ_USAGE_NORMALIZATION[revision==1]"),
@@ -47,3 +48,18 @@ for _test_name in (
         "VC_PROVIDER_USAGE_NORMALIZATION"
     )(globals()[_test_name])
 del _test_name
+
+
+@pytest.mark.fault_item("TREQ_USAGE_NORMALIZATION", "interface.payload-schema")
+def test_usage_counts_a_payload_garbles_or_leaves_out_normalize_consistently() -> None:
+    retain_local_fault_injection(
+        contract_id="TREQ_USAGE_NORMALIZATION",
+        fault_class="interface.payload-schema",
+        mechanism=(
+            "a provider usage mapping with a count that is not a number, a null "
+            "count and no total"
+        ),
+    )
+    assert normalize_usage(
+        {"prompt_tokens": 9, "completion_tokens": "many", "total_tokens": None}
+    ) == UsageStats(input_tokens=9, output_tokens=0, total_tokens=9)

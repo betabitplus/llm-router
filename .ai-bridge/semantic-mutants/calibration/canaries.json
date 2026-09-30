@@ -116,6 +116,46 @@
     "review_model": "gemini-3.1-pro-high",
     "pin": null
    }
+  },
+  {
+   "id": "V-RECONSIDER-IRRELEVANT",
+   "expected": "irrelevant",
+   "context": "Technical requirement CALIBRATION_COUNT (Counts are read from text): A count read from a line of text is the whole number the line holds.\nIts verification criteria: the line '3' gives 3; a line that holds no whole number is rejected",
+   "target": "parse_count",
+   "original": "def parse_count(value: object) -> int:\n    text = str(value).strip()\n    if not text.isdigit():\n        raise ValueError('not a count')\n    return int(text)",
+   "mutant": "def parse_count(value: object) -> int:\n    if isinstance(value, float):\n        return round(value)\n    text = str(value).strip()\n    if not text.isdigit():\n        raise ValueError('not a count')\n    return int(text)",
+   "judgement": "the symbolic search found an input: value=2.6: the original raises ValueError; the mutant returns 3; confirmed by execution.",
+   "reconsider": {
+    "sites": [
+     {
+      "where": "src/counts.py:14",
+      "code": "def read_counts(lines: list[str]) -> list[int]:\n    \"\"\"Read one count from every line of a file.\"\"\"\n    return [parse_count(line) for line in lines]"
+     }
+    ],
+    "card": "Where the names it needs live and how they are built (use only these members and arguments):\n- `read_counts` (from counts): read_counts(lines: list[str]) -> list[int]"
+   }
+  },
+  {
+   "id": "V-RECONSIDER-PIN",
+   "expected": "pin",
+   "context": "Technical requirement CALIBRATION_COUNT (Counts are read from lines and cells): A count read from a line of text or from a spreadsheet cell is the whole number it holds.\nIts verification criteria: the line '3' gives 3; a value that holds no whole number, text or number, is rejected",
+   "target": "parse_count",
+   "original": "def parse_count(value: object) -> int:\n    text = str(value).strip()\n    if not text.isdigit():\n        raise ValueError('not a count')\n    return int(text)",
+   "mutant": "def parse_count(value: object) -> int:\n    if isinstance(value, float):\n        return round(value)\n    text = str(value).strip()\n    if not text.isdigit():\n        raise ValueError('not a count')\n    return int(text)",
+   "judgement": "the symbolic search found an input: value=2.6: the original raises ValueError; the mutant returns 3; confirmed by execution.",
+   "reconsider": {
+    "sites": [
+     {
+      "where": "src/counts.py:14",
+      "code": "def read_counts(lines: list[str]) -> list[int]:\n    \"\"\"Read one count from every line of a file.\"\"\"\n    return [parse_count(line) for line in lines]"
+     },
+     {
+      "where": "src/counts.py:21",
+      "code": "def count_from_cell(cell: str | float) -> int:\n    \"\"\"Read the count a spreadsheet cell holds: its text, or the number the sheet stored.\"\"\"\n    return parse_count(cell)"
+     }
+    ],
+    "card": "Where the names it needs live and how they are built (use only these members and arguments):\n- `read_counts` (from counts): read_counts(lines: list[str]) -> list[int]\n- `count_from_cell` (from counts): count_from_cell(cell: str | float) -> int"
+   }
   }
  ]
 }

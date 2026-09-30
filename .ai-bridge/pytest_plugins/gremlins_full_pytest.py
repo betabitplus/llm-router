@@ -16,15 +16,22 @@ The plugin also adds what the engine lacks (see ``ternforge_mutation``):
 
 * the ``statement`` and ``body`` operators, planted by the engine's own switching
   transformer, and the Python operators (``argument``, ``condition``, ``conditional``,
-  ``negation``, ``container``, ``conversion``, ``method``, ``attribute``), planted the
-  same way on the calls, attributes, literals and conditions the engine does not visit;
+  ``negation``, ``container``, ``conversion``, ``method``, ``attribute``, ``identity``,
+  ``slice``), planted the same way on the calls, attributes, literals, comparisons,
+  subscripts and conditions the engine does not reach;
 * the arid-code rules of TERNFORGE_MUTATION_POLICY: a mutant in arid code is not
   planted and the report lists it under its rule;
+* no mutant inside a type annotation, as mutmut leaves annotations alone: an
+  annotation changes no call;
 * the ``# mutation:`` pragma: a covered mutant is pardoned, so it never runs, and the
   report carries its category and reason;
 * reach: every report entry says whether the contract's tests cover the mutated line.
-  With TERNFORGE_GREMLIN_SKIP_UNCOVERED=1 (the pull-request diff) an uncovered mutant
-  is not run and is reported as not covered;
+  Code outside every function body (a module or class body, a decorator, a default
+  value) runs when its module is imported, before any test: coverage records it for
+  no test, the engine then runs every selected test for the mutant, as Stryker runs
+  its static mutants, and the mutant counts as reached (``static``) when the tests
+  import its module at all. With TERNFORGE_GREMLIN_SKIP_UNCOVERED=1 (the pull-request
+  diff) an uncovered mutant is not run and is reported as not covered;
 * for each mutant a stable fingerprint, its enclosing function or class, its exact
   location, the original code and the replacement;
 * a confirmed time limit: the engine waits TERNFORGE_GREMLIN_TIMEOUT seconds for a
@@ -69,6 +76,8 @@ STATE: dict = {
     "meta": {},
     "body_spans": {},
     "reach": {},
+    "static": set(),
+    "files_reached": {},
     "skipped": set(),
     "not_planted": [],
     "filtered": Counter(),
@@ -240,7 +249,7 @@ for _name in ("visit_Expr", "visit_Assign", "visit_AnnAssign", "visit_AugAssign"
 _Transformer.visit_FunctionDef = _visit_function
 _Transformer.visit_AsyncFunctionDef = _visit_function
 _Transformer.visit_Module = _visit_module
-for _name in ("visit_Call", "visit_Attribute", "visit_List", "visit_Tuple", "visit_Set", "visit_Dict"):
+for _name in ("visit_Call", "visit_Attribute", "visit_List", "visit_Tuple", "visit_Set", "visit_Dict", "visit_Subscript"):
     setattr(_Transformer, _name, _visit_expression)
 for _name in ("visit_If", "visit_While", "visit_IfExp"):
     setattr(_Transformer, _name, _visit_condition_owner)
@@ -285,7 +294,7 @@ def _generate_gremlins_in_scope(gremlin_session, source_files, rootdir) -> None:
     policy = _policy()
     STATE["policy"] = policy
     operators = {operator.name for operator in gremlin_session.operators}
-    trees, lines, regions, pragmas, qualnames = {}, {}, {}, {}, {}
+    trees, lines, regions, pragmas, qualnames, annotations, bodies = {}, {}, {}, {}, {}, {}, {}
     for path, source in source_files.items():
         try:
             trees[path] = ast.parse(source)
@@ -295,6 +304,8 @@ def _generate_gremlins_in_scope(gremlin_session, source_files, rootdir) -> None:
         regions[path] = tm.arid_regions(trees[path], set(policy["arid_rules"]))
         pragmas[path] = tm.parse_pragmas(source, trees[path])
         qualnames[path] = tm.qualname_index(trees[path])
+        annotations[path] = tm.annotation_spans(trees[path])
+        bodies[path] = tm.function_body_spans(trees[path])
 
     def in_scope(path: str, line: int) -> bool:
         return scope is None or (str(Path(path).resolve()), int(line)) in scope
@@ -319,6 +330,13 @@ def _generate_gremlins_in_scope(gremlin_session, source_files, rootdir) -> None:
             "original": original,
             "replacement": _replacement(gremlin),
         }
+        # An annotation changes no call: its mutants are dropped, after they were counted, so every
+        # other mutant keeps the fingerprint it had.
+        if gremlin.operator_name != "body" and tm.within(annotations[path], start, end):
+            STATE["filtered"]["annotation: changes no call"] += 1
+            continue
+        if gremlin.operator_name != "body" and not tm.within(bodies[path], start, end):
+            STATE["static"].add(gremlin.gremlin_id)
         rule = next((region.rule for region in regions[path] if region.contains(start, end)), None)
         if rule:
             STATE["not_planted"].append(
@@ -387,10 +405,23 @@ def _generate_gremlins_in_scope(gremlin_session, source_files, rootdir) -> None:
 _select_tests = _gremlins_plugin._select_tests_for_gremlin_prioritized
 
 
+def _file_reached(selector, file_path: str) -> bool:  # noqa: ANN001
+    """Whether any selected test runs a line of the file, so the tests import its module."""
+    reached = STATE["files_reached"].get(file_path)
+    if reached is None:
+        reached = any(path == file_path for path, _line in selector.coverage_map.locations())
+        STATE["files_reached"][file_path] = reached
+    return reached
+
+
 def _select_tests_recording_reach(gremlin, gremlin_session):  # noqa: ANN001
     selector = gremlin_session.prioritized_selector
     if selector is not None and not gremlin_session.no_coverage_filter:
-        STATE["reach"][gremlin.gremlin_id] = bool(selector.select_tests_prioritized(gremlin))
+        reached = bool(selector.select_tests_prioritized(gremlin))
+        # Import-time code: coverage names no test for it, the engine runs every selected test.
+        if not reached and gremlin.gremlin_id in STATE["static"]:
+            reached = _file_reached(selector, gremlin.file_path)
+        STATE["reach"][gremlin.gremlin_id] = reached
     return _select_tests(gremlin, gremlin_session)
 
 
@@ -462,6 +493,8 @@ def _build_result_enriched(self, result):  # noqa: ANN001
             entry["suppression"] = meta["suppression"]
     entry["origin"] = "rule"
     entry["covered"] = STATE["reach"].get(gremlin_id)
+    if gremlin_id in STATE["static"]:
+        entry["static"] = True
     if gremlin_id in STATE["skipped"]:
         entry["run_skipped"] = "not covered"
     return entry

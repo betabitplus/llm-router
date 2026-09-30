@@ -19,9 +19,9 @@
   },
   "operator": "negation",
   "pin": {
-   "adopted_at": "2026-09-29T12:02:08.936099Z",
-   "answer_sha256": "d411652ff6f1aab342535a93e74d267c25e47ca5e8d6dde9a2c5c4da04e19791",
-   "call_id": "20260929T114749Z-7995f1",
+   "adopted_at": "2026-09-30T14:07:06.674815Z",
+   "answer_sha256": "6c65d9a79ff0f56a0d96f898c2370189b99df8335453160df6c4e7976ee6b033",
+   "call_id": "20260930T135932Z-7e97e5",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -30,18 +30,27 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "c317921e6bf250777a3e8dcc9b7a46c8b9654bb829381320bd65f2c70e984d80",
-   "effort": "medium",
-   "model": "claude-sonnet-5-5",
+   "draft_sha256": "6c65d9a79ff0f56a0d96f898c2370189b99df8335453160df6c4e7976ee6b033",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0c99e43a9ccfd476.py",
-   "response_sha256": "aa7a6726617b719e5535e8bbb2057790496f63faf1617f34ea93f1af19449953",
-   "source": "draft author",
+   "response_sha256": "c8099f00fe32c893b932dc3a5a7bfab81fb5c3f8d30618d20be4b9da1f8c5e61",
+   "source": "last resort",
    "sources": [
+    "llm_router.LLMRouter",
     "llm_router.Model",
     "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.ProviderLimits",
     "llm_router.RouterProfile",
-    "llm_router._internal.runtime.router.RouterRuntime"
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   },
   "prompt_sha256": "dbbcbbce567ba0fdc39e81c8a6e1d974f35afec628c2d53d79bc06da0df2d036"
@@ -67,6 +76,29 @@
   },
   "operator": "comparison",
   "prompt_sha256": "b4d777cffe1fcb7d10b6f7371913d33ad5b5cbf32ce81b577684a8c259a088dc",
+  "rechecks": {
+   "verdict": {
+    "asked_at": "2026-09-30T14:21:01.054522Z",
+    "backend": "claude-cli",
+    "call_id": "20260930T142038Z-b82812",
+    "confirmed": false,
+    "effort": "xhigh",
+    "level": "implementation",
+    "model": "claude-opus-5-5",
+    "problems": [],
+    "prompt_sha256": "b4d777cffe1fcb7d10b6f7371913d33ad5b5cbf32ce81b577684a8c259a088dc",
+    "reason": "The change is only visible if the limiter returns a negative wait, which it should not. Normally an unblocked key reports 0.0, so the mutant finds no \"available\" keys and uses the fallback. The fallback takes the minimum wait, which is 0.0, and keeps exactly the zero-wait keys, the same set the original prefers. When every key is blocked, both versions take the same path, so key selection and rotation come out the same. I could not check the limiter code, so the no-negative-wait point is an assumption.",
+    "response_sha256": "b5843b1243b01684183eb59da1a5b01a132fa89c8fb94eed52c4e4de1a35d434",
+    "sources": [
+     "Automatic key selection shall choose an unblocked credential before a blocked credential.",
+     "if candidate_wait <= 0.0",
+     "available_key_ids = {key_id for key_id, candidate_wait in candidate_waits.items() if candidate_wait < 0.0}",
+     "preferred_key_ids = {key_id for key_id, candidate_wait in candidate_waits.items() if candidate_wait == earliest_wait}"
+    ],
+    "test_focus": "",
+    "verdict": "equivalent"
+   }
+  },
   "review": {
    "backend": "antigravity-cli",
    "call_id": "20260929T093816Z-d9dcee",
@@ -159,9 +191,9 @@
   },
   "operator": "conditional",
   "pin": {
-   "adopted_at": "2026-09-29T12:02:08.937374Z",
-   "answer_sha256": "200af2c83bd5bb953d0809af15e0ad0a695c5f6f722380bd87964938d3c175af",
-   "call_id": "20260929T114752Z-b9806f",
+   "adopted_at": "2026-09-30T14:06:04.804001Z",
+   "answer_sha256": "1374fac97727d0de63cc904d85c12bd28c6e2035e0b6becae79c4ba55a033013",
+   "call_id": "20260930T140114Z-678cf4",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -170,16 +202,27 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "200af2c83bd5bb953d0809af15e0ad0a695c5f6f722380bd87964938d3c175af",
+   "draft_sha256": "05072d6a797be4f371c5e794b527193d8783a6d976322168ce295a0fe3bca8ba",
    "effort": "medium",
+   "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_2028da967c88aa09.py",
-   "response_sha256": "9d7730054411a004b613fbc9efd1b832572af8b85b3c2594e4e79371a6ed3b27",
-   "source": "draft author",
+   "response_sha256": "02b8a4da4d4b86c6e1b0182466e598026622055ac361e7487ab0786f61da9547",
+   "source": "draft author with tools",
    "sources": [
-    "llm_router._api.types.Provider",
-    "llm_router._internal.runtime.router.RouterRuntime"
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   },
   "prompt_sha256": "0aaf136ab083302d7fad77c0a37f23f1b200a482171bfcfb41a8fbf5451b1bca"
@@ -205,9 +248,9 @@
   },
   "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-29T11:47:11.579657Z",
-   "answer_sha256": "1dbf5d9ab453a3ead4049a2b66672b39e661fa031bf4b974f3a16181016abefa",
-   "call_id": "20260929T112222Z-a41621",
+   "adopted_at": "2026-09-30T14:07:39.564165Z",
+   "answer_sha256": "1d8f45c5c8ea7391ad02636d18e5ac245ec7dddb2e726a5b807b91d14476632a",
+   "call_id": "20260930T140322Z-5692ec",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -216,18 +259,25 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "1dbf5d9ab453a3ead4049a2b66672b39e661fa031bf4b974f3a16181016abefa",
-   "effort": "low",
+   "draft_sha256": "1d8f45c5c8ea7391ad02636d18e5ac245ec7dddb2e726a5b807b91d14476632a",
+   "effort": "medium",
+   "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_87ecdb53561b826d.py",
-   "response_sha256": "070be9b29511ef719ef45d0c6243cce35533d36ae470e5e8db4e4e8fff983665",
-   "source": "draft author",
+   "response_sha256": "1f995b29ca8501c517d2aeb099f875027e1917bd5637d57cf1fea018182c4214",
+   "source": "draft author with tools",
    "sources": [
-    "llm_router._internal.runtime.router.RouterRuntime",
-    "llm_router._api.types.Model",
-    "llm_router._api.types.Provider",
-    "llm_router._api.types.RouterProfile"
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   },
   "prompt_sha256": "358dbe3fa1fd304476fc8d0a937479aa9e0a865bd9bcc6547582be04baca427e"
@@ -292,9 +342,9 @@
   },
   "operator": "conditional",
   "pin": {
-   "adopted_at": "2026-09-29T12:16:07.615130Z",
-   "answer_sha256": "1a87f695648c4a748e84603bb03ff9d6c23bab8f5c60ff47f510bef5fec5a1fe",
-   "call_id": "20260929T120217Z-675bcb",
+   "adopted_at": "2026-09-30T14:11:38.308719Z",
+   "answer_sha256": "0baceda07c05a82f6d1de02044cbaa2f8781b76ac595f382a938edef4daad287",
+   "call_id": "20260930T140707Z-4d263a",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -303,20 +353,29 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "1a87f695648c4a748e84603bb03ff9d6c23bab8f5c60ff47f510bef5fec5a1fe",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
+   "draft_sha256": "0baceda07c05a82f6d1de02044cbaa2f8781b76ac595f382a938edef4daad287",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_e92263fea0939fa2.py",
-   "response_sha256": "edc6af50c676a5c53ae770affd865c737503a07953d666da34ec55deaf18ee53",
-   "source": "draft author with tools",
+   "response_sha256": "55d4dacf8a0b233be45c209aa9b8d1f98c74434c0360ac2da858d45ffe580df2",
+   "source": "last resort",
    "sources": [
+    "llm_router.LLMRouter",
     "llm_router.Model",
     "llm_router.Provider",
     "llm_router.ProviderLimits",
     "llm_router.RouterProfile",
-    "llm_router._internal.runtime.router.RouterRuntime"
+    "llm_router.KeyId",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._api.types.RoutingAttempt"
    ]
   },
   "prompt_sha256": "09c800cf9e53a94f7c62b57ecfe6853a56e10f9b9aca1da7650d362161170bfa"
@@ -342,9 +401,9 @@
   },
   "operator": "method",
   "pin": {
-   "adopted_at": "2026-09-29T11:47:11.580245Z",
-   "answer_sha256": "7c208042116685f6040dd4a7f6286c7b1e4772605923d79ee157a6e0743ef69f",
-   "call_id": "20260929T112225Z-8421e8",
+   "adopted_at": "2026-09-30T21:03:38.813950Z",
+   "answer_sha256": "fd4d85b4842498ddbadcb51f5f95e6b15f834fbecd2f6dac14ebdccceecdb8ff",
+   "call_id": "20260930T210019Z-1af323",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -353,18 +412,27 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "7c208042116685f6040dd4a7f6286c7b1e4772605923d79ee157a6e0743ef69f",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
+   "draft_sha256": "fd4d85b4842498ddbadcb51f5f95e6b15f834fbecd2f6dac14ebdccceecdb8ff",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py",
-   "response_sha256": "e23bb04b4b637c04d993888e035dfcccc86f28f6604c9f1d72c400f7de2e891a",
-   "source": "draft author",
+   "response_sha256": "c3858b1ebe70c81f20c94682c21a3011dc75c6f3b17e8a078ff678b83014510c",
+   "source": "last resort",
    "sources": [
-    "llm_router._internal.runtime.router.RouterRuntime",
-    "llm_router._api.types.Provider",
-    "llm_router._api.types.Model",
-    "llm_router._api.types.RouterProfile"
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._api.types.RoutingAttempt",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   },
   "prompt_sha256": "4affebc7dd13d5aa7997dd954a4fea592aafccb5a193a55992f111e0404634f3"

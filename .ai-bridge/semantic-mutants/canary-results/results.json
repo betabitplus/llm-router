@@ -58,7 +58,7 @@
   "backend": "claude-cli",
   "cases": {
    "D-SECRET": {
-    "call_id": "20260929T201431Z-b55096",
+    "call_id": "20260930T163748Z-81be4e",
     "cascade": {
      "accepted": true,
      "context_gaps": [],
@@ -69,17 +69,17 @@
      "primitives": []
     },
     "detail": "the cascade keeps the draft",
-    "draft_sha256": "83bc6f6c01170622bc64f84ed2ba207faeb06e49373b3869bcf6712997cc7e96",
+    "draft_sha256": "a57de7ac73ff3034af188be4583dc099d6169f8baa93676ab9e61255ff8c433f",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "c51e0991cba87bfe8f9bb8593ecc5ffbd7a1605a211c8e7c030d6705071baf53"
+    "response_sha256": "70ce13fb1fcd82ad7852afb609da6e6d1ed6600432f94b28662af50d6864db77"
    }
   },
   "effort": "xhigh",
   "model": "claude-opus-5-5",
   "passed": true,
-  "questions_sha256": "27000dcb24a8b7a7480a11071d50da8c7eeb2c58251d7d208e4ab356cd82ee3f",
-  "ran_at": "2026-09-29T20:15:03.659102Z",
+  "questions_sha256": "4cd6efeaab813ff1c9623015af18d64d8fa80319a11a31c23f6d1798fd4e9fed",
+  "ran_at": "2026-09-30T16:38:18.074207Z",
   "role": "draft_author_last"
  },
  "draft_author_tools|claude-cli|claude-sonnet-5": {
@@ -113,7 +113,7 @@
   "backend": "claude-cli",
   "cases": {
    "D-SECRET": {
-    "call_id": "20260929T110510Z-ddfc2a",
+    "call_id": "20260930T163748Z-ff0815",
     "cascade": {
      "accepted": true,
      "context_gaps": [],
@@ -124,17 +124,17 @@
      "primitives": []
     },
     "detail": "the cascade keeps the draft",
-    "draft_sha256": "47e402886870b4bed0ca87a4fb561953209a1ca56632730ab5da07fc3cfaedbc",
+    "draft_sha256": "da4c2b33e2a60db870379ba32507c18bf774080a51930c70ec5c61cb774996aa",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "bdcc8efb34b77e0df6a2847eddc91da0dcda59023300169779051ccbb248dc31"
+    "response_sha256": "2a4dd54c3ffb3f3e9872317990ad3c8c7e849fe2ba85f4441568dcfe39fd6c5a"
    }
   },
   "effort": "medium",
   "model": "claude-sonnet-5-5",
   "passed": true,
-  "questions_sha256": "27000dcb24a8b7a7480a11071d50da8c7eeb2c58251d7d208e4ab356cd82ee3f",
-  "ran_at": "2026-09-29T11:05:27.753675Z",
+  "questions_sha256": "4cd6efeaab813ff1c9623015af18d64d8fa80319a11a31c23f6d1798fd4e9fed",
+  "ran_at": "2026-09-30T16:38:18.073301Z",
   "role": "draft_author_tools"
  },
  "draft_author|antigravity-cli|claude-sonnet-4-6": {
@@ -166,7 +166,7 @@
   "backend": "antigravity-cli",
   "cases": {
    "D-SECRET": {
-    "call_id": "20260928T105529Z-8ac1c2",
+    "call_id": "20260930T163732Z-cab5cd",
     "cascade": {
      "accepted": true,
      "context_gaps": [],
@@ -177,16 +177,16 @@
      "primitives": []
     },
     "detail": "the cascade keeps the draft",
-    "draft_sha256": "19e61fa4e89d9abf92a5045c5fde460c543e157d22ea9910a2f4fa01ae92b438",
+    "draft_sha256": "5a155365be847c0ea27fdc913e784c5d8be355bcfb2f6c1760743f3805d999be",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "be406642cc65fb2b938a429d489a03a0440a95bfd8f66961cd993cc4d0be5755"
+    "response_sha256": "24187e500792685cebf1989d96ba52c3315a51ef4df12adb43b511d01d06ef9d"
    }
   },
   "model": "gemini-3.1-pro-high",
   "passed": true,
-  "questions_sha256": "f028da4aff02fc881cb978466dbc630038f744d6cb4d734f4b564ea09d6bde18",
-  "ran_at": "2026-09-28T10:55:51.521520Z",
+  "questions_sha256": "f1e401bf13722cb8942181504c8b48626a8974074ea1d06aa49d428e78b01b2b",
+  "ran_at": "2026-09-30T16:38:18.072240Z",
   "role": "draft_author"
  },
  "draft_author|antigravity-cli|gemini-3.8-flash-high": {
@@ -218,7 +218,7 @@
   "backend": "antigravity-cli",
   "cases": {
    "D-SECRET": {
-    "call_id": "20260928T105504Z-de83d0",
+    "call_id": "20260930T163732Z-229310",
     "cascade": {
      "accepted": true,
      "context_gaps": [],
@@ -229,16 +229,16 @@
      "primitives": []
     },
     "detail": "the cascade keeps the draft",
-    "draft_sha256": "37b5fc6e9002e63f0d2b82d2c3892057b4a4d4228339f270d27cb8cb258b81d9",
+    "draft_sha256": "01e90177e8c046ed0dc19d1e341729f8d147f89ca442f5288811af447df66178",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "f74e5f88d76270466397b755540195448a0c8a6946fbcba1cce4f88539f5b470"
+    "response_sha256": "916dd46a158cf82ccf9bc75f2adbd5008f3b6bbbf0a1f4476d8f7b71e46b7ee2"
    }
   },
   "model": "gemini-3.8-flash-medium",
   "passed": true,
-  "questions_sha256": "f028da4aff02fc881cb978466dbc630038f744d6cb4d734f4b564ea09d6bde18",
-  "ran_at": "2026-09-28T10:55:29.479866Z",
+  "questions_sha256": "f1e401bf13722cb8942181504c8b48626a8974074ea1d06aa49d428e78b01b2b",
+  "ran_at": "2026-09-30T16:38:18.070629Z",
   "role": "draft_author"
  },
  "draft_author|claude-cli|claude-sonnet-5": {
@@ -272,7 +272,7 @@
   "backend": "claude-cli",
   "cases": {
    "D-SECRET": {
-    "call_id": "20260929T110506Z-cfa627",
+    "call_id": "20260930T163752Z-56301e",
     "cascade": {
      "accepted": true,
      "context_gaps": [],
@@ -283,17 +283,17 @@
      "primitives": []
     },
     "detail": "the cascade keeps the draft",
-    "draft_sha256": "01e3311ea364f94c561bda0d04a7813c916d6687c9eea8a9c2e0b5a1c745bb32",
+    "draft_sha256": "7f446822caa69815feee2e5e34f4524df0a1c677e8452fb91c08c8f45e22da21",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "ded97bbdb85f03ce0772c362bce0cee268dd0458392f1d1d7fe49e80bdc551d3"
+    "response_sha256": "5692e983a0134d3e0d7a63dc23d1f078662cbc7b45dd70dcc86ffdb3997c53c4"
    }
   },
   "effort": "low",
   "model": "claude-sonnet-5-5",
   "passed": true,
-  "questions_sha256": "f028da4aff02fc881cb978466dbc630038f744d6cb4d734f4b564ea09d6bde18",
-  "ran_at": "2026-09-29T11:05:10.834357Z",
+  "questions_sha256": "f1e401bf13722cb8942181504c8b48626a8974074ea1d06aa49d428e78b01b2b",
+  "ran_at": "2026-09-30T16:38:18.069168Z",
   "role": "draft_author"
  },
  "generator|antigravity-cli|gemini-3.1-pro-high": {
@@ -409,12 +409,26 @@
     "outcome": "ok",
     "passed": true,
     "response_sha256": "7ac445a6bccfa6a2a0bb606bb426f831daa893712e6938fd68f0e76a5c52d32e"
+   },
+   "V-RECONSIDER-IRRELEVANT": {
+    "call_id": "20260930T135230Z-787ba9",
+    "detail": "expected irrelevant, got irrelevant",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "3af3a02cf588cd5e722a23c582ddb1f1b7c903e4479893282681ca54d98fb5ba"
+   },
+   "V-RECONSIDER-PIN": {
+    "call_id": "20260930T135234Z-a523c9",
+    "detail": "expected pin, got pin",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "368b504c5df9d044d7e86e8620b5e40b9bc0dc31bf148f4197509ea1fcdd1d36"
    }
   },
   "model": "gemini-3.1-pro-high",
   "passed": true,
-  "questions_sha256": "93cc0380b76e7f8a0ff3c1dfde6b84c8309b58b6097d21b10457ac563557d421",
-  "ran_at": "2026-09-30T00:23:47.539382Z",
+  "questions_sha256": "50339395f703cf8656db80ada4b86674db97fb87cb2c7c13b1d92976b0182465",
+  "ran_at": "2026-09-30T13:55:47.767075Z",
   "role": "verdict_review"
  },
  "verdict_review|antigravity-cli|gemini-3.8-flash-high": {
@@ -461,12 +475,26 @@
     "outcome": "ok",
     "passed": false,
     "response_sha256": "75e1374a6a80df21edc794e186f25c89cf0f077960cb08e662041fe051849ecf"
+   },
+   "V-RECONSIDER-IRRELEVANT": {
+    "call_id": "20260930T135250Z-22ea9b",
+    "detail": "expected irrelevant, got irrelevant",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "d91376847b62cbde4186f039237cf734883879db9bfd4ea26976cae9cbe7278d"
+   },
+   "V-RECONSIDER-PIN": {
+    "call_id": "20260930T135234Z-e8de4f",
+    "detail": "expected pin, got pin",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "616570ba29d3fa7afcd5a672805969c77696929a5028408fe7f6208a3006e853"
    }
   },
   "model": "gemini-3.8-flash-high",
   "passed": false,
-  "questions_sha256": "93cc0380b76e7f8a0ff3c1dfde6b84c8309b58b6097d21b10457ac563557d421",
-  "ran_at": "2026-09-30T00:29:48.146323Z",
+  "questions_sha256": "50339395f703cf8656db80ada4b86674db97fb87cb2c7c13b1d92976b0182465",
+  "ran_at": "2026-09-30T13:55:47.772614Z",
   "role": "verdict_review"
  },
  "verdict|claude-cli|claude-opus-5-5": {
@@ -544,13 +572,27 @@
     "outcome": "ok",
     "passed": true,
     "response_sha256": "60d819f6f874ace7c6cea5e290bd8c4d837da938e08d86a6e58c4096a840a719"
+   },
+   "V-RECONSIDER-IRRELEVANT": {
+    "call_id": "20260930T135230Z-ddb943",
+    "detail": "expected irrelevant, got irrelevant",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "811174c45e20369453d0fd3459824eb6bcfb855149f5513e50ee180f92cf6f60"
+   },
+   "V-RECONSIDER-PIN": {
+    "call_id": "20260930T135234Z-c6e529",
+    "detail": "expected pin, got pin",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "84804b3792f6672c2705b75cd62270cdd7643aa0f02a7492f7bd5f2685743bb6"
    }
   },
   "effort": "xhigh",
   "model": "claude-opus-5-5",
   "passed": true,
-  "questions_sha256": "93cc0380b76e7f8a0ff3c1dfde6b84c8309b58b6097d21b10457ac563557d421",
-  "ran_at": "2026-09-29T22:27:54.089778Z",
+  "questions_sha256": "50339395f703cf8656db80ada4b86674db97fb87cb2c7c13b1d92976b0182465",
+  "ran_at": "2026-09-30T13:55:47.760093Z",
   "role": "verdict"
  }
 }

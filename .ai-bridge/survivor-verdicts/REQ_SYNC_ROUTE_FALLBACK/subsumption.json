@@ -1,0 +1,66 @@
+{
+ "at": "2026-09-30T13:45:52.583194Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_45f4eab791155bbe.py",
+  "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_45f4eab791155bbe.py",
+  "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py"
+ ],
+ "restored": [],
+ "removed": {},
+ "matrix": {
+  "45f4eab791155bbe": [
+   "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_45f4eab791155bbe.py"
+  ],
+  "b4662840626becac": [
+   "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py"
+  ]
+ },
+ "caught_before": [
+  "0116592a9303f9dd",
+  "0ca62320c3f964fd",
+  "1aa79b46760a7e2b",
+  "1b8f8c5aaac1d5d1",
+  "3d92eef36e4fba16",
+  "44d4d98dab38e632",
+  "45f4eab791155bbe",
+  "50d7fa88a543d6a9",
+  "5291fe8de96afbb2",
+  "5ef947ca1fe08e9c",
+  "64180601219081f3",
+  "744d7ea10089955d",
+  "80df5312d68d38ac",
+  "8613b14e092b94c6",
+  "95030989fcc07ef2",
+  "97a2a8c61578b833",
+  "SM-340D9077",
+  "SM-3596574E",
+  "SM-3CB0C30A",
+  "SM-3F7FAA63",
+  "SM-6036F39E",
+  "SM-6739F306",
+  "SM-9C05A89F",
+  "SM-D9BAE9D7",
+  "a812b27029a4597d",
+  "aae5902e4854d874",
+  "ab2637fce3efef15",
+  "ac321feb5c2a1853",
+  "ae910ab691bedb04",
+  "b2540c66aa62e160",
+  "b4662840626becac",
+  "b9556ad8017c3aa0",
+  "b99e25ba5ee025ff",
+  "b9c20a38b4b7e255",
+  "bceb3b4731ec2471",
+  "bf5dfdfc939e071c",
+  "cbc91d36cf64920c",
+  "cc0f94e590b97673",
+  "d04b781cc2f5df01",
+  "d95ba736b961f4d7",
+  "e9032feb24b6b8fb",
+  "fa1ee9c1f7c5e392",
+  "fb427a9ad5155b00"
+ ]
+}

@@ -20,9 +20,9 @@
   },
   "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-29T12:16:07.589306Z",
-   "answer_sha256": "38985e30f90bf096c0a37f46c26f41759b6692a2ca508ed27807310dc59095fe",
-   "call_id": "20260929T120217Z-59643d",
+   "adopted_at": "2026-09-30T16:41:38.558172Z",
+   "answer_sha256": "a436cfdf83bccf4cc81ed579cff56b73bbd61b2064a214f87607a53f07155e22",
+   "call_id": "20260930T163949Z-de99c5",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -31,17 +31,15 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "38985e30f90bf096c0a37f46c26f41759b6692a2ca508ed27807310dc59095fe",
-   "effort": "medium",
-   "level": 2,
+   "draft_sha256": "a436cfdf83bccf4cc81ed579cff56b73bbd61b2064a214f87607a53f07155e22",
+   "effort": "low",
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_session_persistence_5fd031363386257e.py",
-   "response_sha256": "7866205bdc8c29a195338e15b741822dc12ffa5e368f125a5544abe042367a46",
-   "source": "draft author with tools",
+   "response_sha256": "208e08e67bcafe7dc5cbe82bbaa2e9c4a2a4cd608bfe74180519d02b752102fb",
+   "source": "draft author",
    "sources": [
-    "llm_router.Session",
-    "llm_router._internal.runtime.errors.SessionSerializationError"
+    "llm_router.Session"
    ]
   },
   "prompt_sha256": "c3e20aa7cc78b2d3021f762eed89559d3324be0322548a6a3d129202a2c46c49"
@@ -67,9 +65,9 @@
   },
   "operator": "argument",
   "pin": {
-   "adopted_at": "2026-09-29T12:16:07.590395Z",
-   "answer_sha256": "01ed3ca6fedf72081990f14f208697936d32e52d7408eafd4be820f853bfcbf5",
-   "call_id": "20260929T120217Z-de7724",
+   "adopted_at": "2026-09-30T18:24:36.180710Z",
+   "answer_sha256": "c1526d80eea3f7c75efda4f5f9a32c5e6910c8cbcd180d46808edf3d026559d8",
+   "call_id": "20260930T180455Z-9611d9",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -78,16 +76,18 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "bada800bdcde2323131530a2d39b3ef56b1be15bfb72a968b19957bc378b401b",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
+   "draft_sha256": "c1526d80eea3f7c75efda4f5f9a32c5e6910c8cbcd180d46808edf3d026559d8",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_session_persistence_cfdaa730a0d7b1f8.py",
-   "response_sha256": "dac3ed400ea0ddfe326928c22bb2d4a766aaf9aaa5473acb7a0d3a3a792c1d2f",
-   "source": "draft author with tools",
+   "response_sha256": "4a43fc458c2414b107b91f38d2fb37fbdbd97fae54aa0d8a306fad0d55292bb9",
+   "source": "last resort",
    "sources": [
-    "llm_router._internal.session.SessionStore"
+    "llm_router.Session",
+    "llm_router._internal.session.store.SessionStore",
+    "llm_router._api.types.ChatMessage"
    ]
   },
   "prompt_sha256": "17a313540bf631c4f192c2edd1046fc9e7e09f9c3650229903266304731f1a24"

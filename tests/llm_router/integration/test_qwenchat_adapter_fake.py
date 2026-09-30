@@ -13,7 +13,11 @@ from llm_router._internal.capabilities.schema import normalize_schema
 from llm_router._internal.capabilities.tools import ToolRegistry
 from llm_router._internal.providers.base import ProviderCredential, ProviderRequest
 from llm_router._internal.providers.qwenchat import QwenChatAdapter
-from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+    retain_fault_injection,
+)
 from tests.llm_router.support.workers.retry import (
     qwen_chat_path,
     qwen_error_response,
@@ -86,6 +90,47 @@ def test_qwenchat_text_crosses_proxy_http_boundary() -> None:
         assert body["temperature"] == 0.0
         assert body["seed"] == 42
         assert recorded.headers["Authorization"] == "Bearer secret"
+
+
+@pytest.mark.fault_item(
+    "TREQ_QWENCHAT_ADAPTER_BOUNDARY", "interface.unexpected-interaction"
+)
+def test_qwenchat_text_never_reaches_the_upload_endpoint() -> None:
+    path = qwen_chat_path()
+    upload_path = qwen_upload_path()
+    retain_fault_injection(
+        contract_id="TREQ_QWENCHAT_ADAPTER_BOUNDARY",
+        fault_class="interface.unexpected-interaction",
+        mechanism=(
+            "a sentinel upload route detects an upload for a request without media"
+        ),
+    )
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", path): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=qwen_success_response(text="ok"),
+                )
+            ],
+            ("POST", upload_path): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=qwen_upload_success_response(
+                        url="https://upload.test/sentinel"
+                    ),
+                )
+            ],
+        },
+    ) as server:
+        result = _adapter(server).execute(_request())
+
+        assert result.output_text == "ok"
+        assert server.request_count("POST", upload_path) == 0
+        assert server.request_count("POST", path) == 1
 
 
 def test_qwenchat_declares_remote_video_unsupported_and_rejects_url() -> None:
@@ -206,8 +251,15 @@ def test_qwenchat_retries_upload_before_chat() -> None:
 
 
 @pytest.mark.coverage_path("retryable-status")
+@pytest.mark.fault_item("TREQ_QWENCHAT_ADAPTER_BOUNDARY", "interface.error-status")
 def test_qwenchat_retryable_status_is_translated_to_provider_error() -> None:
     path = qwen_chat_path()
+    retain_fault_injection(
+        contract_id="TREQ_QWENCHAT_ADAPTER_BOUNDARY",
+        fault_class="interface.error-status",
+        mechanism="scripted QwenChat proxy returns retryable HTTP 503",
+        details={"status_code": 503},
+    )
     with ScriptedHTTPServer(
         port=0,
         routes={
@@ -229,6 +281,28 @@ def test_qwenchat_retryable_status_is_translated_to_provider_error() -> None:
         assert exc_info.value.cause.status_code == 503
         assert exc_info.value.cause.retryable is True
         assert exc_info.value.cause.retry_reason == "retryable_status"
+
+
+@pytest.mark.fault_item(
+    "TREQ_QWENCHAT_ADAPTER_BOUNDARY", "runtime.unavailable-disconnect"
+)
+def test_qwenchat_proxy_disconnect_is_a_retryable_transport_failure() -> None:
+    path = qwen_chat_path()
+    retain_fault_injection(
+        contract_id="TREQ_QWENCHAT_ADAPTER_BOUNDARY",
+        fault_class="runtime.unavailable-disconnect",
+        mechanism="scripted QwenChat proxy closes the connection before any response",
+    )
+    with ScriptedHTTPServer(
+        port=0,
+        routes={("POST", path): [ScriptedResponse(status_code=200, disconnect=True)]},
+    ) as server:
+        with pytest.raises(ProviderError) as exc_info:
+            _adapter(server).execute(_request())
+
+        assert exc_info.value.cause.retryable is True
+        assert exc_info.value.cause.retry_reason == "transport_exception"
+        assert server.request_count("POST", path) == 1
 
 
 @pytest.mark.coverage_path("tool-normalization")

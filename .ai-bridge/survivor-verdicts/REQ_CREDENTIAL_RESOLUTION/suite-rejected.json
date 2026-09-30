@@ -1,0 +1,7 @@
+{
+ "20260930T180431Z-dd662d": {
+  "at": "2026-09-30T21:56:16.172770Z",
+  "key": "adb0de8f41da4f7e",
+  "reason": "it expects the provider request to fail, which holds only while the test run blocks the network; without --block-network the original reaches the real provider and passes"
+ }
+}

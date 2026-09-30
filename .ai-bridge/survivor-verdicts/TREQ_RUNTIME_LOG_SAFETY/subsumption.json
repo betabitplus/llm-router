@@ -1,0 +1,55 @@
+{
+ "at": "2026-09-30T13:48:20.936696Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_84eb2eb645a09af6.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_01.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_02.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_04.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_84eb2eb645a09af6.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_01.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_02.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_04.py"
+ ],
+ "restored": [],
+ "removed": {},
+ "matrix": {
+  "84eb2eb645a09af6": [
+   "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_84eb2eb645a09af6.py"
+  ],
+  "SM-LOG-01": [
+   "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_01.py"
+  ],
+  "SM-LOG-02": [
+   "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_02.py"
+  ],
+  "SM-LOG-04": [
+   "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_04.py"
+  ]
+ },
+ "caught_before": [
+  "0d416d12b84b7989",
+  "28645eae9d83da0a",
+  "466606532030b51c",
+  "58ee6bb48d930d0c",
+  "629af3df11f77078",
+  "6cdaaa3eff16e8f8",
+  "73c3a7fe586d21fc",
+  "84eb2eb645a09af6",
+  "SM-LOG-01",
+  "SM-LOG-02",
+  "SM-LOG-03",
+  "SM-LOG-04",
+  "SM-LOG-05",
+  "a68f6b6f66866b4a",
+  "a6c34ec8ed0cae74",
+  "c8174b975fc167a6",
+  "d04810c79adac95b",
+  "d8b9a7fa6d7d334a",
+  "db7d7aaccbfc82bb",
+  "edb5415626b15f58",
+  "f3208b83ccc044ca",
+  "fee6bf5c928b448b"
+ ]
+}

@@ -1,26 +1,35 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS 1e7fe255a9f2e635
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
 from dataclasses import replace
 
 import pytest
 
-from llm_router import ConfigurationError
-from llm_router._internal.config import build_default_config, validate_config
+from llm_router import ConfigurationError, get_config, install_config
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
+def _with_min_routes(count: int):
+    config = get_config()
+    policy = replace(config.defaults.policy, min_routes_for_fallback_shuffle=count)
+    return replace(config, defaults=replace(config.defaults, policy=policy))
+
+
 @pytest.mark.verifies("REQ_INVALID_CONFIGURATION_ERRORS[revision==2]")
-def test_validate_config_min_routes_for_fallback_shuffle_boundary() -> None:
-    config = build_default_config()
+def test_min_routes_for_fallback_shuffle_boundary() -> None:
+    original = get_config()
+    valid = _with_min_routes(1)
+    assert install_config(valid) is valid
+    assert get_config() is valid
+    install_config(original)
 
-    valid_policy = replace(config.defaults.policy, min_routes_for_fallback_shuffle=1)
-    valid_defaults = replace(config.defaults, policy=valid_policy)
-    validate_config(replace(config, defaults=valid_defaults))
-
-    invalid_policy = replace(config.defaults.policy, min_routes_for_fallback_shuffle=0)
-    invalid_defaults = replace(config.defaults, policy=invalid_policy)
-    with pytest.raises(ConfigurationError, match="minimum routes for fallback shuffle"):
-        validate_config(replace(config, defaults=invalid_defaults))
+    invalid = _with_min_routes(0)
+    with pytest.raises(
+        ConfigurationError,
+        match=r"^minimum routes for fallback shuffle must be at least 1\.$",
+    ):
+        install_config(invalid)
+    assert get_config() is original

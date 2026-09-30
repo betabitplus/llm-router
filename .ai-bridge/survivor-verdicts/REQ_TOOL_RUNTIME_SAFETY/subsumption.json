@@ -1,0 +1,52 @@
+{
+ "at": "2026-09-30T13:45:55.659951Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_4180d032448ab8db.py",
+  "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_sm_2027036f.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_4180d032448ab8db.py",
+  "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_sm_2027036f.py"
+ ],
+ "restored": [],
+ "removed": {},
+ "matrix": {
+  "4180d032448ab8db": [
+   "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_4180d032448ab8db.py"
+  ],
+  "SM-2027036F": [
+   "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_sm_2027036f.py"
+  ]
+ },
+ "caught_before": [
+  "095abf7bceb7ac98",
+  "0ae6a52dd8aed61a",
+  "134ec2c3cd315b14",
+  "1ae890d46f152bb1",
+  "35b6a9785cd9b36f",
+  "36c7e65c592b6cda",
+  "4180d032448ab8db",
+  "493230809b7403da",
+  "50be5be53a148b20",
+  "67e9ff3ff00a1f8b",
+  "7b6cf5e0ee3c380f",
+  "91ff0ca03d3e580e",
+  "94c9d8f7353b1342",
+  "SM-2027036F",
+  "SM-2548C67D",
+  "SM-B88AB727",
+  "ae99bd5831fb9e5e",
+  "ba037fdebff59d37",
+  "bd0fc8e61c643f03",
+  "c03a7ec6b698e1cd",
+  "de9eba67ad1e867e",
+  "e19e4d3e52b72b70",
+  "e24162d273f57795",
+  "e2fbf16e0262be6f",
+  "e58603d4b9c9ed74",
+  "e8b452d04aed4a0b",
+  "e962f0bf66b3d12f",
+  "e9bb88f2b4f0ae30",
+  "fd23ffa9c66a3500"
+ ]
+}

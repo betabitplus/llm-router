@@ -1,100 +1,123 @@
 # mutation-pin: TREQ_PROVIDER_RETRY_CLASSIFICATION dad9cc03506dec74
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
+from dataclasses import dataclass, replace
 from typing import Any
 
 import pytest
 
+from llm_router._api.errors import ProviderError
 from llm_router._api.types import Model, Provider
-from llm_router._internal.providers.base import (
-    ProviderCredential,
-    ProviderRequest,
-    ProviderResult,
-)
-from llm_router._internal.runtime import executor as executor_module
+from llm_router._internal.config import RetryPolicy, build_default_config
+from llm_router._internal.providers.base import ProviderRequest, ProviderResult
 from llm_router._internal.runtime.executor import ProviderRouteExecutor
+from llm_router._internal.runtime.requests import ResolvedRequest
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
-class _Attempt:
-    def __init__(self) -> None:
-        self.error: BaseException | None = None
-
-    def __enter__(self) -> _Attempt:
-        return self
-
-    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
-        self.error = exc
-        return exc is not None
+@dataclass(frozen=True)
+class _Route:
+    route_index: int
+    model: Model
+    provider: Provider
+    provider_model: str
 
 
-class _FakeRetrying:
-    def __iter__(self) -> Any:
-        last: BaseException | None = None
-        for _ in range(3):
-            attempt = _Attempt()
-            yield attempt
-            last = attempt.error
-        if last is not None:
-            raise last
+@dataclass(frozen=True)
+class _Settings:
+    temperature: float | None
+    seed: int | None
+    response_schema: object | None
+    tools: tuple[object, ...] | None
+    tool_choice: str | None
+    max_tool_rounds: int | None
+    kwargs: dict[str, object]
 
 
-class _Config:
-    retry_policy = None
+@dataclass(frozen=True)
+class _Key:
+    key_id: int
+    env_var: str
+    value: str
 
 
-class _StubAdapter:
+class _TransportFailureError(ConnectionResetError):
+    retryable = True
+
+
+class _FlakyAdapter:
     def __init__(self, result: ProviderResult) -> None:
-        self.seen: list[ProviderRequest] = []
-        self._result = result
+        self.result = result
+        self.calls: list[ProviderRequest] = []
 
     def execute(self, request: ProviderRequest) -> ProviderResult:
-        self.seen.append(request)
-        if len(self.seen) == 1:
-            msg = "transport down"
-            raise ConnectionError(msg)
-        return self._result
+        self.calls.append(request)
+        if len(self.calls) == 1:
+            msg = "reset by peer"
+            raise ProviderError(
+                _TransportFailureError(msg),
+                request.provider,
+                request.model,
+            )
+        return self.result
 
 
 @pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]")
-def test_sync_execution_uses_resolved_adapter_and_retries_transport_error(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    request = ProviderRequest(
-        request_id="req-1",
-        provider=Provider.GOOGLE,
-        model=Model.GEMINI_FLASH,
-        provider_model="gemini-flash",
-        credential=ProviderCredential(key_id=1, env_var="ENV_VAR", value="v"),
-        messages=(),
+def test_transport_exception_is_retried_on_resolved_adapter() -> None:
+    base = build_default_config()
+    config = replace(
+        base,
+        defaults=replace(
+            base.defaults,
+            retry_policy=RetryPolicy(
+                min_wait_seconds=0.0,
+                max_wait_seconds=0.0,
+                max_attempts=3,
+            ),
+        ),
     )
     expected = ProviderResult(
         data={},
-        provider=Provider.GOOGLE,
-        model=Model.GEMINI_FLASH,
-        provider_model="gemini-flash",
-        output_text="ok",
+        provider=Provider.GROQ,
+        model=Model.LLAMA_8B,
+        provider_model="llama-8b",
+        output_text="hello",
     )
-    adapter = _StubAdapter(expected)
-    requested: list[ProviderRequest] = []
+    adapter = _FlakyAdapter(expected)
 
-    class _Executor(ProviderRouteExecutor):
-        def _adapter_for(self, request: ProviderRequest) -> Any:
-            requested.append(request)
-            return adapter
+    def getter(_provider: Provider, _config: Any) -> _FlakyAdapter:
+        return adapter
 
-    monkeypatch.setattr(
-        executor_module,
-        "build_provider_retrying",
-        lambda **_kwargs: _FakeRetrying(),
+    executor = ProviderRouteExecutor(
+        config=config,
+        adapter_getter=getter,  # type: ignore[arg-type]
     )
-    instance = object.__new__(_Executor)
-    instance._config = _Config()  # type: ignore[assignment]
+    request = ResolvedRequest(
+        request_id="req-1",
+        route=_Route(  # type: ignore[arg-type]
+            route_index=0,
+            model=Model.LLAMA_8B,
+            provider=Provider.GROQ,
+            provider_model="llama-8b",
+        ),
+        settings=_Settings(  # type: ignore[arg-type]
+            temperature=None,
+            seed=None,
+            response_schema=None,
+            tools=None,
+            tool_choice=None,
+            max_tool_rounds=None,
+            kwargs={},
+        ),
+        key=_Key(key_id=1, env_var="LLM_ENV", value="value"),  # type: ignore[arg-type]
+        messages=("hello",),
+        content="hello",
+    )
 
-    result = instance._execute_provider_sync(request)
+    response = executor.execute(request)
 
-    assert result is expected
-    assert requested == [request]
-    assert adapter.seen == [request, request]
+    assert len(adapter.calls) == 2
+    assert response.output_text == "hello"

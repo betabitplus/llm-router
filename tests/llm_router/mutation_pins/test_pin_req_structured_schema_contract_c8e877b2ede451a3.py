@@ -2,56 +2,76 @@
 # pinned-by: claude-opus-5-5
 from __future__ import annotations
 
+import json
+
 import pytest
 
-from llm_router._internal.capabilities.schema import SchemaSpec, with_schema_transform
+from llm_router import LLMRouter, Model, Provider, RouterProfile
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+)
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+)
+from tests.llm_router.support.workers.worker_patches import prepare_fault_case
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
-def parse_ticket(value: object) -> object:
-    return value
-
-
-def add_additional_properties_false(
-    schema: dict[str, object],
-) -> dict[str, object]:
-    updated = dict(schema)
-    updated["additionalProperties"] = False
-    return updated
-
-
 @pytest.mark.verifies("REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]")
-def test_with_schema_transform_applies_output_and_keeps_or_sets_name() -> None:
-    original_schema = {
+def test_provider_transformed_schema_is_what_the_provider_receives() -> None:
+    path = openai_chat_path()
+    schema = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "ticket_summary",
         "type": "object",
-        "properties": {
-            "priority": {"type": "integer", "minimum": 1, "maximum": 5},
+        "$defs": {
+            "Ticket": {
+                "type": "object",
+                "properties": {
+                    "count": {"type": "integer", "exclusiveMinimum": 0},
+                    "kind": {"const": "bug"},
+                },
+                "required": ["count", "kind"],
+            }
         },
-        "required": ["priority"],
+        "properties": {
+            "ticket": {"$ref": "#/$defs/Ticket"},
+            "note": {
+                "anyOf": [
+                    {"type": "string", "maxLength": 40},
+                    {"type": "null"},
+                ]
+            },
+        },
+        "required": ["ticket"],
     }
-    spec = SchemaSpec(
-        name="ticket_schema",
-        json_schema=original_schema,
-        parser=parse_ticket,
-    )
+    text = '{"ticket": {"count": 2, "kind": "bug"}, "note": null}'
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", path): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text=text),
+                )
+            ]
+        },
+    ) as server:
+        prepare_fault_case(case="aistudio_video", server_base_url=server.base_url)
+        router = LLMRouter(
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO)
+        )
 
-    overridden = with_schema_transform(
-        spec, add_additional_properties_false, name="strict_ticket_schema"
-    )
+        response = router.query("Summarise the ticket.", response_schema=schema)
 
-    expected_schema = add_additional_properties_false(original_schema)
-    assert overridden.json_schema == expected_schema
-    assert overridden.json_schema != original_schema
-    assert overridden.name == "strict_ticket_schema"
+        body = json.loads(server.recorded_requests("POST", path)[0].body)
 
-    kept_name = with_schema_transform(spec, add_additional_properties_false)
-    assert kept_name.name == "ticket_schema"
-    assert kept_name.json_schema == expected_schema
-
-    nested_properties = overridden.json_schema["properties"]
-    priority_constraints = nested_properties["priority"]
-    assert overridden.json_schema["required"] == ["priority"]
-    assert priority_constraints["minimum"] == 1
-    assert priority_constraints["maximum"] == 5
-    assert overridden.json_schema["additionalProperties"] is False
+    json_schema = body["response_format"]["json_schema"]
+    assert json_schema["name"] == "ticket_summary"
+    assert "ticket" in json_schema["schema"]["required"]
+    assert json_schema["schema"] != schema
+    assert json.loads(response.output_text) == json.loads(text)

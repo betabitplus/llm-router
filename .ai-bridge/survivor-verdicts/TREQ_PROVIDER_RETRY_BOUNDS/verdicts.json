@@ -41,37 +41,41 @@
  "06999e6775471416": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T092726Z-7e04b2",
+   "call_id": "20260930T195903Z-f3cc48",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes the minimum backoff wait. The stop condition (stop_after_attempt(policy.max_attempts)) and the retryable-error check are unchanged, so attempt bounds and transient/permanent classification behave the same. No requirement given here constrains wait durations, and longer waits capped at the maximum don't make the work unbounded.",
-   "response_sha256": "2b0303e64f9aee9c90a4856b633f769f9ca9a47f9bbfefe6281aa91fa9559da2",
+   "reason": "The mutant only changes wait timing between attempts: the minimum becomes max_wait_seconds, and each wait is still capped at max_wait_seconds. Neither REQ_PROVIDER_RETRY (which failures are retried) nor TREQ_PROVIDER_RETRY_BOUNDS (maximum attempt count) says anything about wait duration, and the stop and retry predicates are unchanged, so the Goal's bound still holds.",
+   "response_sha256": "497c6d086d4496cab9f58a882da1aef7aa09890618437163e97fc41e9d52904a",
    "sources": [
     "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
     "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
-    "return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=True)"
+    "min=policy.min_wait_seconds,",
+    "wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "attribute",
-  "prompt_sha256": "7dea3765aaf4f4da969321ae934075a758855ee3a4d7c2dad1783d9252d58a45",
+  "prompt_sha256": "76cf48fa4a36472565b64a546ac4d5a830677eaa35063a35387efa747363fe20",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T092736Z-9e64d1",
+   "call_id": "20260930T195923Z-a39ba1",
    "confirmed": false,
+   "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "7dea3765aaf4f4da969321ae934075a758855ee3a4d7c2dad1783d9252d58a45",
-   "reason": "The change alters the minimum wait time to equal the maximum wait time in the random exponential backoff, making the versions observably different. However, the provided requirements only govern the eligibility of failures and the maximum attempt bounds, not the duration of the backoff between retries.",
-   "response_sha256": "0374f4742c120ec4048b853dabbc360122a194c69e3ee921c0b300225c4763b4",
+   "prompt_sha256": "76cf48fa4a36472565b64a546ac4d5a830677eaa35063a35387efa747363fe20",
+   "reason": "The mutant changes the minimum wait time between retries to equal the maximum wait time, altering the backoff strategy. Because the requirement and its criteria specify only the maximum attempt count and error eligibility, the duration of the wait between attempts is an unconstrained implementation detail.",
+   "response_sha256": "91efd508a52cbb8f86f83f6fe5835020e9b624d04c54b2c562c151177c480250",
    "sources": [
-    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
     "min=policy.min_wait_seconds,",
-    "min=policy.max_wait_seconds, max=policy.max_wait_seconds)"
+    "wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -120,37 +124,42 @@
  "2a4f224cd89c9053": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T092824Z-c22002",
-   "confirmed": false,
+   "call_id": "20260930T195903Z-cbe22a",
+   "confirmed": true,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only lowers the cap on the random exponential backoff wait. The number of attempts and which errors get retried stay exactly the same, and those are the only things the requirement and its criterion constrain. None of the listed requirements says anything about backoff durations.",
-   "response_sha256": "53b6c65d9a1d8fb146f199863965937df3f56439876839ef6fe6c2842d9ba36f",
+   "reason": "The mutant only lowers the backoff ceiling, so the wait is always the minimum. The stop condition (attempt count) and the retry predicate (transient vs permanent) are unchanged. Neither requirement nor the verification criterion says anything about wait durations, and shorter waits can't cause unbounded work.",
+   "response_sha256": "045d88bce4e911cd5bf5ced7e1df188e0ced6037684bfe71b8ee5fa6571be5c8",
    "sources": [
     "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
     "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "max_wait_seconds=100.0",
     "max=policy.max_wait_seconds,",
-    "stop=stop_after_attempt(policy.max_attempts),"
+    "wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "attribute",
-  "prompt_sha256": "aa9bb8accb59f36ff00a103ea56ec722d3916056454c5da569a303b54de168a9",
+  "prompt_sha256": "f844177fa79c5e192ef18fc10af451d16083b1c0be7635c11fe8c60fcc29b53b",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T092832Z-b89581",
-   "confirmed": false,
+   "call_id": "20260930T195923Z-fccb93",
+   "confirmed": true,
+   "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "aa9bb8accb59f36ff00a103ea56ec722d3916056454c5da569a303b54de168a9",
-   "reason": "The mutant modifies the maximum wait time for the backoff strategy, but the requirements only specify the maximum attempt count and which failures are eligible for retry, not the wait duration between attempts.",
-   "response_sha256": "add3aba29e6a4a3a979c9ec9db6d2ded82cdfaa5a24192a290a089ed44e10682",
+   "prompt_sha256": "f844177fa79c5e192ef18fc10af451d16083b1c0be7635c11fe8c60fcc29b53b",
+   "reason": "The mutation changes the exponential backoff configuration by setting the maximum wait time to the minimum wait time. The requirements specify what types of failures to retry and set bounds on the maximum number of attempts, but they do not define the waiting strategy or backoff parameters between retries, making this change an unconstrained implementation detail.",
+   "response_sha256": "e52dc20bf2483e2403cc8afa08e9e28fb831d76cd43418c0905386d780ae2068",
    "sources": [
     "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
-    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
+    "max=policy.max_wait_seconds,",
     "wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds)"
    ],
    "test_focus": "",
@@ -237,37 +246,42 @@
  "44b17fdbcf809c77": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T092824Z-4c7f21",
+   "call_id": "20260930T195903Z-594dca",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only drops the backoff floor (min wait defaults to 0). The stop condition and the retry predicate are unchanged, so the attempt count and which failures get retried stay the same. None of the requirements here say anything about wait durations. The configured minimum wait is ignored, which is a real difference, but no requirement shown here covers it.",
-   "response_sha256": "54495efa7779506f15ace8283c407f639bcae6e5e47246c80c2ce9eb34c12429",
+   "reason": "The mutant only drops the configured minimum backoff wait, so retries can come sooner than the configured minimum. The attempt limit and the retryable-error check are unchanged, so the requirement's attempt bound and temporary-versus-permanent rule still hold. No given requirement asks for a minimum wait, and shorter waits don't create unbounded work.",
+   "response_sha256": "e050587d8ef4ab82fa363c7c6f4e85308916d010bfb7fd55ad7fb1185a6d3d2a",
    "sources": [
     "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
     "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
-    "wait=wait_random_exponential(max=policy.max_wait_seconds)",
-    "min=policy.min_wait_seconds,"
+    "min=policy.min_wait_seconds,",
+    "wait=wait_random_exponential(max=policy.max_wait_seconds)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "e393ea8ec7d9229296242da4652e7037d1fa626bf7745f71c7014c784e2fde9a",
+  "prompt_sha256": "36bf57a99b76901226994e8f19330713ce3ddf4a26b78947d8bbd6a72b6e1b63",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T092832Z-0ea046",
+   "call_id": "20260930T195923Z-74e84c",
    "confirmed": false,
-   "level": "implementation",
+   "effort": "",
+   "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "e393ea8ec7d9229296242da4652e7037d1fa626bf7745f71c7014c784e2fde9a",
-   "reason": "The change removes the minimum wait time configuration for the exponential backoff, altering the delay between retry attempts. This modifies retry timing behavior but does not violate any requirements, as they only dictate the maximum number of attempts and which errors are retried, not the wait intervals.",
-   "response_sha256": "747982efc00b30828fc7358ce2d41571cc2a345bd84269e4cc3777f35c6819a6",
+   "prompt_sha256": "36bf57a99b76901226994e8f19330713ce3ddf4a26b78947d8bbd6a72b6e1b63",
+   "reason": "The mutant removes the minimum wait time configuration for the backoff between retries. This alters the delay between attempts, which is an implementation detail not specified by the requirements that only govern retry counts and error eligibility.",
+   "response_sha256": "f739e9581968f30b6a020f5146703fb56ff265c86a414ad21a856d7671956df5",
    "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
     "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
-    "min=policy.min_wait_seconds,"
+    "min=policy.min_wait_seconds,",
+    "wait=wait_random_exponential(max=policy.max_wait_seconds)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -394,37 +408,39 @@
  "7c23c1115ef38d7b": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T092905Z-07c830",
-   "confirmed": false,
+   "call_id": "20260930T195903Z-8d39cc",
+   "confirmed": true,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant drops only the maximum backoff wait. It still uses the same stop_after_attempt(policy.max_attempts) and the same retry predicate, so the attempt count and which failures get retried do not change. The requirement only bounds attempts and retry eligibility. It says nothing about how long to wait between attempts, and the wait still stays finite because the attempt count is capped.",
-   "response_sha256": "e521cac68b63af74c766ce8657e47c51bfcd37b8690ef8574f389a7d2a0f4448",
+   "reason": "The mutant removes only the max cap on the backoff wait. The stop condition and the retry predicate are unchanged, so the number of attempts on a route is still exactly policy.max_attempts. The requirement and its verification criterion only bound the attempt count and decide which failures are retried; neither says anything about wait duration.",
+   "response_sha256": "0620b39ee5f343f928a6d087c00a86f4494b52af6613765ddc24495994cdc2e2",
    "sources": [
     "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
     "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
     "wait=wait_random_exponential(min=policy.min_wait_seconds)",
-    "max=policy.max_wait_seconds,"
+    "stop=stop_after_attempt(policy.max_attempts)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "4c62f552f2b9d1a40ca4349ccf16b5d2afb2a21a9d716daa0ec30a7c51cf242c",
+  "prompt_sha256": "37f50ae0e62cdd7353118f19ad26b8fd6750a973f15511ac730255903b542f93",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T092914Z-855434",
-   "confirmed": false,
+   "call_id": "20260930T195923Z-724f8b",
+   "confirmed": true,
+   "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "4c62f552f2b9d1a40ca4349ccf16b5d2afb2a21a9d716daa0ec30a7c51cf242c",
-   "reason": "The requirements strictly bound the maximum number of retry attempts to prevent unbounded work, but they do not specify any constraints on the maximum wait duration between attempts. Falling back to a default maximum wait time does not violate the required attempt limits.",
-   "response_sha256": "77409e3428efde148c018fe144c07af5edfa5b1df31a1ddc172a73bddd17ab2a",
+   "prompt_sha256": "37f50ae0e62cdd7353118f19ad26b8fd6750a973f15511ac730255903b542f93",
+   "reason": "The mutant removes the explicit maximum wait time limit, causing it to fall back to a large default. The provided requirements strictly bound the maximum attempt count for retries but do not specify limits on the wait duration between attempts.",
+   "response_sha256": "e78b47bcf97c47b5bb3c149717c91af057f3d9836a6f0310b39cf40e44c2f085",
    "sources": [
-    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
-    "wait=wait_random_exponential(min=policy.min_wait_seconds),"
+    "TREQ_PROVIDER_RETRY_BOUNDS (Same-route provider retry is bounded): For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "            max=policy.max_wait_seconds,"
    ],
    "test_focus": "",
    "verdict": "irrelevant"

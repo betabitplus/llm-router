@@ -1,0 +1,80 @@
+# mutation-pin: REQ_ASYNC_PROVIDER_EXECUTION a73d76c7050e2371
+# pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
+from __future__ import annotations
+
+from dataclasses import replace
+
+import pytest
+
+from llm_router import (
+    LLMRouter,
+    Model,
+    Provider,
+    ProviderLimits,
+    RouterProfile,
+    get_config,
+    install_config,
+)
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+)
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+)
+
+pytestmark = pytest.mark.verification_kind("unit")
+
+
+@pytest.mark.asyncio
+@pytest.mark.verifies("REQ_ASYNC_PROVIDER_EXECUTION[revision==1]")
+async def test_async_success_is_counted_against_usage_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    current = get_config()
+    spec = current.catalog.providers[Provider.OPENROUTER]
+    for env_var in spec.api_key_env_vars.values():
+        monkeypatch.setenv(env_var, "local-test-value")
+    limits = ProviderLimits(
+        rps=1000.0,
+        rpm=1.0,
+        cooldown_seconds=60.0,
+        cooldown_after_failures=1,
+    )
+    path = openai_chat_path()
+    routes = {
+        ("POST", path): [
+            ScriptedResponse(
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                body=openai_success_response(text="pong"),
+            )
+        ]
+    }
+    with ScriptedHTTPServer(port=0, routes=routes) as server:
+        base_urls = dict(current.provider_base_urls)
+        base_urls[Provider.OPENROUTER] = f"{server.base_url}/v1"
+        replacement = replace(
+            current,
+            catalog=replace(current.catalog, provider_base_urls=base_urls),
+        )
+        install_config(replacement)
+        try:
+            router = LLMRouter(
+                RouterProfile(
+                    model=Model.DEEPSEEK_V3,
+                    provider=Provider.OPENROUTER,
+                    wait_for_cooldown_if_all_blocked=False,
+                    max_attempts=1,
+                    attempt_timeout_seconds=5.0,
+                    limits_by_provider={Provider.OPENROUTER: limits},
+                )
+            )
+            first = await router.aquery("ping")
+            assert first.output_text == "pong"
+            with pytest.raises(Exception, match=r"."):
+                await router.aquery("ping again")
+        finally:
+            install_config(current)

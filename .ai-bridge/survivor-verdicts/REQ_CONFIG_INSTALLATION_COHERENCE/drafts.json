@@ -16,6 +16,90 @@
     "llm_router.install_config",
     "llm_router._internal.providers.registry.clear_adapter_caches"
    ]
+  },
+  {
+   "at": "2026-09-30T16:41:47.565034Z",
+   "call_id": "20260930T163948Z-90c622",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "315998483ce14f4570b105dc8f0ed8fb64d8d3743c3650e015902a9cdcc11e55",
+   "reason": "it does not fail on the mutant: it runs the changed lines 38\u201347, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.install_config",
+    "llm_router.get_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:44:46.188517Z",
+   "call_id": "20260930T164227Z-45157e",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "c2f0a3b28c2cf502f813118417722063058f1911cb59d0e244cd024682c5bc53",
+   "reason": "",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._internal.config.state.install_config",
+    "llm_router._internal.providers.registry.clear_adapter_caches"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:55:53.734283Z",
+   "call_id": "20260930T205452Z-5d4b1b",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8cc8feb46e122dd5f9a258860450b906ec3cf3aef462606436094c961546ed7a",
+   "reason": "it does not fail on the mutant: it runs the changed lines 38\u201347, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:56:26.907311Z",
+   "call_id": "20260930T205554Z-db332d",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0318e0d0c50bd47ec599943c76084d54243fced55a5e1a8ffdd5159b64b0a011",
+   "reason": "it uses sys",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:59:18.596091Z",
+   "call_id": "20260930T205628Z-90f267",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d9f4e8a521f8bac44bf604f061b36391e5d86bb2a510ca4683006edca880c8f0",
+   "reason": "",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
   }
  ],
  "SM-48E372DD": [
@@ -89,6 +173,24 @@
     "llm_router.get_config",
     "llm_router._internal.config.models.LLMRouterConfig",
     "llm_router._internal.config.models.BehaviorDefaults"
+   ]
+  }
+ ],
+ "a2e61f2155653e45": [
+  {
+   "at": "2026-09-30T16:41:41.131159Z",
+   "call_id": "20260930T163948Z-c347e9",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "aed264e1d15c9555302c1fcfea0cf03ec5a207de0e61f940146dba6841eb65a8",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.validation.validate_config"
    ]
   }
  ]

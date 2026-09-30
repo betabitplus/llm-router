@@ -1,4 +1,119 @@
 {
+ "3cc16a6300b216ed": [
+  {
+   "at": "2026-09-30T13:55:13.797734Z",
+   "call_id": "20260930T135348Z-d6cabc",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fceb5772775421a167ad285df6b3843651f7c1d14f1312d0832264e7f64efb95",
+   "reason": "it uses vars",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:56:11.152022Z",
+   "call_id": "20260930T135513Z-67a6a5",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "85fca132688d72596a23f16af617fd02c24edec207447ff202ea3d990088380d",
+   "reason": "it imports `_resolve_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:01:23.729856Z",
+   "call_id": "20260930T135611Z-38cf2c",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f1a50e3ad7d0300a15ec130ff8f2b4972719f0f0a8b153ccfd6d7d6d8efe22e0",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
+  }
+ ],
+ "5ed9365a38636da5": [
+  {
+   "at": "2026-09-30T13:56:57.759471Z",
+   "call_id": "20260930T135348Z-a8a76b",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "25c151cf234363b8c5c7fe11bcd996a1c75a194cd0586934b2000483213c2253",
+   "reason": "it imports `_resolve_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:59:36.101620Z",
+   "call_id": "20260930T135657Z-ac4b02",
+   "cause": "grounding",
+   "context_gaps": [
+    "llm_router._internal.runtime.routes.expand_routes"
+   ],
+   "effort": "high",
+   "grounding": [
+    "llm_router._internal.runtime.routes has no expand_routes"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "80359329ed51cb9a51be52c9e9d9d6f67e3a0289ae3e47dd98f58e7fdd4da459",
+   "reason": "it does not fit the project's code as written: llm_router._internal.runtime.routes has no expand_routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.runtime.routes.expand_routes"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:05:11.878345Z",
+   "call_id": "20260930T135938Z-53d7ce",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a1f69dc87e5401a7ae128a6ae8b5ca679723f3a7ebf90c07c02d71bc53caffbe",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
+  }
+ ],
  "SM-87B84725": [
   {
    "at": "2026-09-29T20:13:34.963098Z",
@@ -51,6 +166,64 @@
     "llm_router._internal.runtime.routes._resolve_model",
     "llm_router._api.types.Model"
    ]
+  },
+  {
+   "at": "2026-09-30T14:02:10.420861Z",
+   "call_id": "20260930T135348Z-c5fe75",
+   "cause": "grounding",
+   "context_gaps": [
+    "llm_router._internal.runtime.routes.expand_routes"
+   ],
+   "grounding": [
+    "llm_router._internal.runtime.routes has no expand_routes"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "466014dd9c78e9eee8e2439237ae8bc3ef293e509d9ccd8a4807a8b4c66dea01",
+   "reason": "it does not fit the project's code as written: llm_router._internal.runtime.routes has no expand_routes",
+   "sources": [
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.expand_routes"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:04:08.135906Z",
+   "call_id": "20260930T140210Z-9e2e65",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5b20c217af080f66d122e9cb45e5fbba820e96c11654e6143535df717458bb4c",
+   "reason": "it imports `_resolve_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:08:16.249846Z",
+   "call_id": "20260930T140410Z-12c8cd",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d466380f9064a402cc054c4ccb7f58cd16fee2052411274daf10f80f7dd3966f",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.build_default_config",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderCatalog",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
   }
  ],
  "SM-8D7935BF": [
@@ -72,6 +245,65 @@
     "llm_router._api.errors.ConfigurationError",
     "llm_router._internal.config.models.LLMRouterConfig"
    ]
+  },
+  {
+   "at": "2026-09-30T13:59:35.514717Z",
+   "call_id": "20260930T135348Z-8de08f",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "02334d2167584a42c372c000a26b3147238d838770bec13164ca416b6358a1a1",
+   "reason": "it imports `_resolve_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model",
+    "llm_router._api.errors.ConfigurationError"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:02:45.480458Z",
+   "call_id": "20260930T135936Z-ba1fdc",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "02334d2167584a42c372c000a26b3147238d838770bec13164ca416b6358a1a1",
+   "reason": "it imports `_resolve_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model",
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.ProviderCatalog"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:06:11.190852Z",
+   "call_id": "20260930T140246Z-93cfb3",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4a60c315a368d4bf1614c11a8e2596f40cf526f595b7238e186804ba8c3264d0",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
   }
  ],
  "e1379ec0c0ed9e96": [
@@ -88,6 +320,61 @@
    "sources": [
     "llm_router._internal.config.build_default_config",
     "llm_router._internal.runtime.routes._resolve_model",
+    "llm_router._api.types.Model"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:58:42.361540Z",
+   "call_id": "20260930T135348Z-b68933",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "ebadb9179ff41c0225ff25eb9663663714979e1d013fe4a4ff080889a6d62b5c",
+   "reason": "it imports `_resolve_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes._resolve_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:01:28.168012Z",
+   "call_id": "20260930T135842Z-a7ecf5",
+   "cause": "grounding",
+   "context_gaps": [
+    "llm_router._internal.runtime.routes.expand_routes"
+   ],
+   "effort": "high",
+   "grounding": [
+    "llm_router._internal.runtime.routes has no expand_routes"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "95bb1b6edf3a57cd7d800cb798681a8427870b8b432f0a26760a4d071a3b7a47",
+   "reason": "it does not fit the project's code as written: llm_router._internal.runtime.routes has no expand_routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._api.types.Model"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:06:27.359263Z",
+   "call_id": "20260930T140129Z-e20a4a",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "478b22247476a452a6417e585b3121363093455f2a5d4610e3e6d040fc703015",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.build_default_config",
     "llm_router._api.types.Model"
    ]
   }

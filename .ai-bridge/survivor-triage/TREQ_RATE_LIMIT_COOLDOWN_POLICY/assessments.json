@@ -46,6 +46,22 @@
      "bucket.failure_count += 1"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-de3b00",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "Bucket state updates are identical; the changed version only logs an extra \"cooldown opened\" message when no cooldown opened, which affects neither the return value, the object state nor any exception.",
+    "response_sha256": "1a04561cc2f82cb1ae7977ea15734e089197b8325c4011ebffa0220049a7558c",
+    "sources": [
+     "    if True:",
+     "        if should_log_opened:",
+     "            should_log_opened = True"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "969aceb967f68cb62bc84816b6b5602e1de34df256ea2e625d8ac8b02b606558"
@@ -95,6 +111,22 @@
      "if should_log_opened:",
      "if not should_log_opened:",
      "bucket.failure_count += 1",
+     "bucket.cooldown_until = current + limits.cooldown_seconds"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-de2461",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change only inverts when the log line is emitted (`if not should_log_opened`). The return value (None), the bucket state and any exceptions are identical, and logging is outside the stated notion of behaviour.",
+    "response_sha256": "fa4a512da598c76fbc0c46b1a189327150b0a7ca03593853ecd45f42dc5ac164",
+    "sources": [
+     "if not should_log_opened:",
+     "if should_log_opened:",
      "bucket.cooldown_until = current + limits.cooldown_seconds"
     ],
     "verdict": "equivalent"
@@ -148,6 +180,22 @@
      "should_log_opened = False",
      "bucket.failure_count += 1",
      "if (\n                limits.cooldown_after_failures > 0\n                and bucket.failure_count >= limits.cooldown_after_failures\n            ):"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-495ac4",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version sets should_log_opened = True initially, so it logs \"Route cooldown opened\" on every failure, but the return value and bucket state are identical, and logging is outside the stated behaviour.",
+    "response_sha256": "2f65bd007e8cf5571a8be0ca8162d620b723beab028642561e4f415c0453034f",
+    "sources": [
+     "should_log_opened = False",
+     "if should_log_opened:",
+     "bucket.failure_count = 0"
     ],
     "verdict": "equivalent"
    }
@@ -370,6 +418,21 @@
      "bucket.cooldown_until = current + limits.cooldown_seconds",
      "should_log_opened = True",
      "should_log_opened = False"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-85c81a",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only change is that should_log_opened stays False, which suppresses the log call; the return value, bucket state and exceptions are unchanged.",
+    "response_sha256": "013bf13b9ac309648f839d4df33812993e08ac0b2e8df90de9bc89e71b954de1",
+    "sources": [
+     "                should_log_opened = True",
+     "                bucket.cooldown_until = current + limits.cooldown_seconds"
     ],
     "verdict": "equivalent"
    }

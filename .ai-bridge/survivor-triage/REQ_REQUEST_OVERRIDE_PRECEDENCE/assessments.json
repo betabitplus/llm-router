@@ -1,4 +1,87 @@
 {
+ "02b906cf3d4b778c": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "route_defaults": "RouteGenerationDefaults(key_id='k', temperature=None, seed=None)",
+     "values": "{\"temperature\": 0.5, \"seed\": 42}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140926Z-564f65",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version skips applying fields that are None, while the changed version unconditionally applies all fields, overwriting existing values in the dictionary with None.",
+    "response_sha256": "bd5e4cfb123b22fe3cfea11cfba1212da5b13f8eaa98017ea62b6e2fa371f09b",
+    "sources": [
+     "        if value is not None:",
+     "        if True:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "route_defaults": "RouteGenerationDefaults(key_id=KeyId('k'), temperature=None)",
+     "values": "{'temperature': 0.5}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T140913Z-33fa07",
+    "confidence": 0.88,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version overwrites values[field] with None when a route default is None, while the original leaves the existing entry untouched.",
+    "response_sha256": "ada9b27d5c7ed1d0b22edab85a46eccd9022f63db2e968dad22f37973c477b66",
+    "sources": [
+     "if value is not None:",
+     "if True:",
+     "values[field_name] = value"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "87f15fe78efc5a01bffd04338125e0a97099bcad63baea66ac6341f2ac208d23"
+ },
+ "2a31133556a5dacb": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "overrides": "{\"a\": None}",
+     "values": "{\"a\": 1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140913Z-671540",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When `overrides` contains a `None` value for a key that exists in `values`, the original version skips the update, while the changed version overwrites the existing value with `None`, resulting in different final states for the `values` dictionary.",
+    "response_sha256": "8647d8d8e790bf342b4881b9c8a6a0e38a5178ec9e5f5e94298f1bc75bc7dce0",
+    "sources": [
+     "        if key in values and value is not None:",
+     "        if key in values:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "overrides": "{'a': None}",
+     "values": "{'a': 1}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T140913Z-be1e96",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version removes the None check, so a None override for an existing key overwrites the value, whereas the original leaves it unchanged.",
+    "response_sha256": "2b9f0aedf8705c747c4cbc0b60da703d284acc2bc32b8b0b73c2ab8e96ff0c27",
+    "sources": [
+     "if key in values and value is not None:",
+     "if key in values:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "93017368974fd859a93b78486e600fb1d3003cdfeb3e78ada29726f4a7faf46e"
+ },
  "39cd06b3a9c8bc51": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -86,6 +169,82 @@
    }
   },
   "prompt_sha256": "32381aaec45655c68e97799b0fdaec85fa768472bbf8d2b4cb400dbbe8bacef9"
+ },
+ "3db6d2968629906a": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140913Z-80cc5c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "By the strict definition provided, behavior only includes return values (which are always None) and exception types (which are identical), completely ignoring the differing side effects on the 'values' dictionary.",
+    "response_sha256": "cfb8491847b50946db7db192969aa7ee0726c32b1c23ad1d5af78f825190f4f9",
+    "sources": [
+     "        if key in values and value is not None:",
+     "        if True:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "overrides": "{'a': 1}",
+     "values": "{}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T140913Z-cfc612",
+    "confidence": 0.98,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change removes the `key in values` and `value is not None` guards, so with values={} and overrides={'a': 1} the original leaves values empty while the changed version adds 'a'.",
+    "response_sha256": "d5c989cc8db57005a66a7db93a4d86e8cff2b3a2fbc53d430adb3c41b9c52ee2",
+    "sources": [
+     "if key in values and value is not None:",
+     "if True:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "60d2891feacb5ae7bdc1417d48e8c14ecef959edf69d74472d00fdf01fb210d4"
+ },
+ "4e2d2eb9f2ba8e75": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140926Z-3f360b",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "While the changed version modifies the dictionary differently by adding new keys instead of only updating existing ones, both versions always return None and raise no exceptions for valid dictionary inputs, making them completely equivalent under the provided restricted definition of behaviour.",
+    "response_sha256": "80ae2f5ae1a2b600763ab6ae6c3eac51ba4a7c9f70b36a8c3bc2ae54e69a360b",
+    "sources": [
+     "        if key in values and value is not None:",
+     "        if value is not None:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "overrides": "{'a': 1}",
+     "values": "{}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T140913Z-4a9c0b",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original skips keys absent from values, while the changed version inserts them, so values ends up {'a': 1} instead of {}.",
+    "response_sha256": "97292f87b49903519cd268e6c1bc54fe0a891d1528442ea51419e9bf27a5110f",
+    "sources": [
+     "if key in values and value is not None:",
+     "if value is not None:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "7168f3af1b8f908e27540d1ad934f25afbcd3011b68199f485daaad45b5c0294"
  },
  "bf8a96501e88d45d": {
   "answers": {
@@ -265,5 +424,46 @@
    }
   },
   "prompt_sha256": "f39ade027519c82c9b4b59d2a924f78461dcac4d706860342035ec1dab61acdb"
+ },
+ "fddcece2c3ce55c2": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "overrides": "{\"a\": 1}",
+     "values": "{}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140913Z-a5e91f",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When overrides contains a key not present in values and its value is not None, the modified version adds it to values while the original version ignores it.",
+    "response_sha256": "1e5d848aa9c79dedf6b3c58cfd4cd6e99429b789da6688b93ba442330312372b",
+    "sources": [
+     "        if key in values and value is not None:",
+     "        if key in values or value is not None:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "overrides": "{'a': 1}",
+     "values": "{}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T140910Z-66ec6d",
+    "confidence": 0.98,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With values={} and overrides={'a': 1}, the original leaves values empty, while the changed 'or' condition inserts 'a': 1 into it.",
+    "response_sha256": "5e262ebd641441c79c9dfd1574a4ea29a541988e67fc1c094c774216bde19da2",
+    "sources": [
+     "if key in values and value is not None:",
+     "if key in values or value is not None:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "5c17b5d3d2e7a15617a88c0faae8036851ce39f16ec2b40e4d7fd6c17e227fb3"
  }
 }

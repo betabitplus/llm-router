@@ -20,9 +20,9 @@
   },
   "operator": "condition",
   "pin": {
-   "adopted_at": "2026-09-29T00:24:30.369991Z",
-   "answer_sha256": "a9b5257419e6215b28b1a98d19aace82b7310efbfb35f821e73336ad71b5d8e5",
-   "call_id": "20260929T001300Z-6a4f39",
+   "adopted_at": "2026-09-30T18:17:42.679279Z",
+   "answer_sha256": "14b2e43b0ecff2f662058c5d76f794f93ed7b3ce82416bc844adfd18b6add455",
+   "call_id": "20260930T180501Z-2fe5b4",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -31,19 +31,24 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "a9b5257419e6215b28b1a98d19aace82b7310efbfb35f821e73336ad71b5d8e5",
-   "model": "claude-sonnet-5",
+   "draft_sha256": "14b2e43b0ecff2f662058c5d76f794f93ed7b3ce82416bc844adfd18b6add455",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_03b3464429e96b31.py",
-   "response_sha256": "5e2870076ce56ec3c1fac83649891455cdbab56e76c967ea3f5f8f5549562092",
-   "source": "draft author",
+   "response_sha256": "f20203b44cfaa7274b6a26bd269cdcda4c55bcb840f471043e5a3c64ce61e856",
+   "source": "draft author with tools",
    "sources": [
-    "llm_router._internal.capabilities.content.normalize_content",
-    "PIL.Image.Image",
-    "PIL.Image.new",
-    "pytest.raises",
-    "pytest.mark.verifies",
-    "pytest.mark.verification_kind"
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
    ]
   },
   "prompt_sha256": "1f2900d17421ba34f664637e6d9e100e3f2a1ece11e7bc0eaf8b43dbbb2b467e"
@@ -68,9 +73,9 @@
   },
   "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-29T00:24:30.370737Z",
-   "answer_sha256": "792fae8234de7943ef42c85a54d287ad1e07c7f7bd2383c0fb0ff1badb3fa115",
-   "call_id": "20260929T001300Z-6ad8cc",
+   "adopted_at": "2026-09-30T18:17:44.426020Z",
+   "answer_sha256": "cfb8b921e8c06e994ead6a2ba39319cb5589ab32285fae08aed08dfe55df3114",
+   "call_id": "20260930T180502Z-f58cc7",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -79,19 +84,24 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "35f4d84d4a3c15ca06f88f524efa7492202154e0442c9343ac50d744a74cfdb3",
-   "model": "claude-sonnet-5",
+   "draft_sha256": "cfb8b921e8c06e994ead6a2ba39319cb5589ab32285fae08aed08dfe55df3114",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_0bdce5fb12999eee.py",
-   "response_sha256": "c7a4ad5bb8f4556675864e381fef4cf7e8ec31327e79dfa75c6b86adb628dd4a",
-   "source": "draft author",
+   "response_sha256": "24fdf9a1a6de8e681db048921d0c9509949941f2829c7e565cfcd8010eb07ae8",
+   "source": "draft author with tools",
    "sources": [
-    "llm_router._internal.capabilities.content.normalize_content",
-    "llm_router._internal.capabilities.content.MediaPart",
-    "llm_router._internal.capabilities.media.ImageMedia",
-    "llm_router._internal.capabilities.media._MIN_IMAGE_DIMENSION",
-    "PIL.Image.Image",
-    "PIL.Image.new"
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   },
   "prompt_sha256": "c1694d9d59e112a14980379cd0e590624e0d89d2994fc4441484fc389fd64268"
@@ -99,46 +109,26 @@
  "0c1b36286cf6938e": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T234902Z-04a335",
+   "call_id": "20260930T203027Z-2d94a8",
    "confirmed": true,
+   "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant drops the bytes/bytearray exclusion, so raw bytes content becomes a tuple of ints (empty for b'') instead of being rejected. That breaks the rule that unsupported top-level content fails locally before provider execution.",
-   "response_sha256": "c80d74d3620804d292b862d69fc49717d90f7ef9bc800b56a46fc58c738266d5",
+   "reason": "The caller normalize_content passes any object straight to _content_parts. Under the mutant, bytes content (b\"\", bytearray(b\"\")) is no longer rejected as unsupported top-level content: b\"\" becomes an empty parts tuple instead of a TypeError. That breaks the local rejection the requirement asks for.",
+   "response_sha256": "721c45d4b40dd2f5a7f84642e409a3920a1997f3e204d7f8d84669169507ded4",
    "sources": [
     "Unsupported top-level content or media parts and raw images outside supported mode or dimension bounds shall fail before provider execution.",
     "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
     "if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
-    "if isinstance(content, Sequence):"
+    "if isinstance(content, Sequence):",
+    "parts=normalize_parts(_content_parts(content)),"
    ],
-   "test_focus": "Check that message content given as bytes or bytearray (including b'') raises TypeError locally, with zero provider-boundary interactions.",
+   "test_focus": "Call normalize_content with b\"\", bytearray(b\"\") and b\"x\", and check that each raises TypeError matching \"Unsupported message content: bytes\" (or \"bytearray\"), not an empty message or a part-level error.",
    "verdict": "pin"
   },
   "operator": "condition",
-  "pin": {
-   "adopted_at": "2026-09-29T00:24:30.371298Z",
-   "answer_sha256": "bbb7a46e6b40a033a1272e111058f51aa75e8e93f2dc4a70490562642af27f8a",
-   "call_id": "20260929T001300Z-24b1a3",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "bbb7a46e6b40a033a1272e111058f51aa75e8e93f2dc4a70490562642af27f8a",
-   "model": "claude-sonnet-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_0c1b36286cf6938e.py",
-   "response_sha256": "dee8ca37427556edf334ac49a6a7222355f621ddbd8fdfd07fd65d4f44dfc694",
-   "source": "draft author",
-   "sources": [
-    "llm_router._internal.capabilities.content.normalize_content"
-   ]
-  },
-  "prompt_sha256": "e29776a0267eabc5f5375b94f8ec67b80310edbf962c779686e3250fde811c6b"
+  "prompt_sha256": "f1645085901973ce234ad00eca57d604774bfd3e666e219390db4127d73a5841"
  },
  "4e35b24fc276e4ad": {
   "answer": {
@@ -160,9 +150,9 @@
   },
   "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-29T00:24:30.371816Z",
-   "answer_sha256": "f3f16fd97c377eaf34ad83e866ce7b63b68c98a967f5fb52849b5f97d1abd480",
-   "call_id": "20260929T001300Z-43e481",
+   "adopted_at": "2026-09-30T18:23:01.537152Z",
+   "answer_sha256": "886756a573f9554017c5fdcb52e73495560988692cda7486a86f69f46577ae83",
+   "call_id": "20260930T180501Z-5ac7bf",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -171,16 +161,25 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "f3f16fd97c377eaf34ad83e866ce7b63b68c98a967f5fb52849b5f97d1abd480",
-   "model": "claude-sonnet-5",
+   "draft_sha256": "886756a573f9554017c5fdcb52e73495560988692cda7486a86f69f46577ae83",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_4e35b24fc276e4ad.py",
-   "response_sha256": "8ba44c9fe38df64b5df5baeddd480900f7ad3f67dedff7cf41b2591a32615005",
-   "source": "draft author",
+   "response_sha256": "0aa005cd5e3bd3258260b1952154e1ea00523ba452f5c24fb226a97ce4ed0343",
+   "source": "draft author with tools",
    "sources": [
-    "llm_router._internal.capabilities.content.normalize_content",
-    "llm_router._internal.capabilities.content.MediaPart",
-    "llm_router._internal.capabilities.media.ImageMedia"
+    "llm_router.LLMRouter",
+    "llm_router.LLMRouterError",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
    ]
   },
   "prompt_sha256": "2a0ee902aeb68f10056a3e1febed4a9798a0b443bc0bbe83d65f76807aba9dd9"
@@ -188,33 +187,36 @@
  "85f4bcb339f625ed": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T234908Z-161b4c",
+   "call_id": "20260930T195735Z-632a53",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant returns the caller's sequence as-is rather than copying it into a tuple. Order and elements stay the same, so caller order, roles and part metadata are still preserved. Only the container type differs, and the requirement never asks for a tuple. The passing tests suggest the result is only iterated downstream, which fits.",
-   "response_sha256": "6d081cc6c285b32944cb7843e87055f8f3371981863e563691c287f615c161bf",
+   "reason": "The mutant returns the caller's sequence instead of a tuple copy, which only changes an internal return type. Order and part content stay the same, and every candidate input behaved the same under both versions. The requirement asks only that ordered parts be preserved, and its ownership rule covers only the top-level metadata mapping, not the parts sequence.",
+   "response_sha256": "482500563bb03fe974c72022473dde50871d373870f03c8cf2a800a4f3455eb3",
    "sources": [
     "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
     "Normalizing a ChatMessage preserves role, ordered parts, and metadata values while owning a separate top-level metadata mapping.",
-    "        return tuple(content)"
+    "        return tuple(content)",
+    "        return content"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "equivalent"
   },
   "operator": "conversion",
-  "prompt_sha256": "e38aa51c19bd444061990de332570926b9c134f04008c94824e3e16bb778b550",
+  "prompt_sha256": "9b59307e02c92cdd2f8985be35085a704ccef40ec74ea5bd3631651fc57b428a",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T085834Z-c45be7",
+   "call_id": "20260930T195757Z-3ee8f1",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "e38aa51c19bd444061990de332570926b9c134f04008c94824e3e16bb778b550",
-   "reason": "The requirement mandates preserving caller order and metadata, but does not restrict the exact Python collection type for the returned parts. Returning the sequence directly (e.g., as a list) instead of converting it to a tuple is a type difference that fulfills the requirement equally well.",
-   "response_sha256": "4311f21af427a1a223bd99a4d43d7c3794470329a9432f8809927a53070f85f1",
+   "prompt_sha256": "9b59307e02c92cdd2f8985be35085a704ccef40ec74ea5bd3631651fc57b428a",
+   "reason": "The requirement mandates preserving the caller order of parts, which both returning the original sequence directly and converting it to a tuple achieve. Choosing a specific sequence type like a tuple over another is an implementation detail.",
+   "response_sha256": "4421d8a9a8233a61e4630f6d0de109f4599a153cee252864c4bc2cdfc7170276",
    "sources": [
     "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
     "return tuple(content)",
@@ -246,8 +248,9 @@
   },
   "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-29T17:21:43.469118Z",
-   "answer_sha256": "dedcab0a5ebe2379654da16f2f6eeb1c109ea671cacbf80421cc25b35e461f06",
+   "adopted_at": "2026-09-30T18:11:08.928954Z",
+   "answer_sha256": "fbc936271f6043726abbf885c17b7c3db477bae67eb0fa0d7af9948168ca07da",
+   "call_id": "20260930T180500Z-d1e3e5",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -256,10 +259,25 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "dedcab0a5ebe2379654da16f2f6eeb1c109ea671cacbf80421cc25b35e461f06",
+   "draft_sha256": "fbc936271f6043726abbf885c17b7c3db477bae67eb0fa0d7af9948168ca07da",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_227845e0.py",
-   "source": "kept semantic draft"
+   "response_sha256": "c49ac1d98d7c1974cb5930d003f81f6f9127ef49cf0e129f203eb84b186df8ca",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
+   ]
   },
   "prompt_sha256": "60b278c096d473c059ed5fdc58d566d5d54e125acb7f5019709515a1307582b7"
  },
@@ -325,8 +343,9 @@
   },
   "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-29T17:21:43.470351Z",
-   "answer_sha256": "039dc17a84b575f5e3babfb2220610e9f901b8f46bb8491b4b5154485ee38834",
+   "adopted_at": "2026-09-30T18:15:25.698177Z",
+   "answer_sha256": "bb653fcd62394bb43ca299aa7dbe2cd048ced37bdf741bc1d975a03c792abeb3",
+   "call_id": "20260930T180511Z-b1ad1b",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -335,34 +354,69 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "b1884cbeaaeb20871a6ca423ee87e66c4cdc18ba21ef09be3ce5da5cecae0738",
+   "draft_sha256": "bb653fcd62394bb43ca299aa7dbe2cd048ced37bdf741bc1d975a03c792abeb3",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_e1b20e59.py",
-   "source": "kept semantic draft"
+   "response_sha256": "9ab52a739c160e78a0240a4c07653549f1d1c64062cc7e26bc3d9dde7467e0cc",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
+   ]
   },
   "prompt_sha256": "2e64b63c12c3b8d097c389c3591cce541d71e01cf770ee2814bccf3cb725980b"
  },
  "a9925109311de4d5": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T234908Z-d15316",
+   "call_id": "20260930T195735Z-9838e1",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant returns a list where the original returns a tuple. Both hold the same parts in the same order with the same kinds and descriptors. The requirement asks only that caller order, role, metadata and media kind are preserved, and it does not name a container type. The refuted inputs also show that the contract observes no difference.",
-   "response_sha256": "d8509295c542b1491dd09dc277d126d9ce9f55329d250dcd50528ec7aefaee88",
+   "reason": "The mutant returns a list instead of a tuple. Order, text, media descriptors and kind stay the same, and each call still builds its own fresh list. The requirement asks only that normalization preserve order, role, metadata and media kind, not that the result be a particular immutable container.",
+   "response_sha256": "8246e11cfd0c53265cb5e10bfe010b2db14d5f5415eb1f8570b151c8263a0d1d",
    "sources": [
     "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
     "Mixed text/file/image/local-video/remote-video parts retain caller order and relevant descriptor metadata.",
-    "    return normalized",
-    "    return tuple(normalized)"
+    "    return tuple(normalized)",
+    "    return normalized"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "conversion",
-  "prompt_sha256": "d6195bf72b30d5827948b128d3e9a9748bbdff03b6ef75781ffed2f1d956e217"
+  "prompt_sha256": "78128874d9fab28d9ecb7c9a985bc7dcc801da273291e530fd42ca204d3014ca",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260930T195813Z-d33178",
+   "confirmed": false,
+   "effort": "",
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "78128874d9fab28d9ecb7c9a985bc7dcc801da273291e530fd42ca204d3014ca",
+   "reason": "The mutation returns a list instead of a tuple, altering the exact collection type returned by the function. Since both sequences reliably retain caller order and correctly wrap the normalized parts, this difference is an implementation detail that does not violate any requirement.",
+   "response_sha256": "28f45b7caa92ed0085e26577ebdf86105937d97e082a83f022d566ace7747c8b",
+   "sources": [
+    "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
+    "return tuple(normalized)",
+    "return normalized"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  },
  "ab94f138074323bc": {
   "answer": {
@@ -383,30 +437,45 @@
    "verdict": "pin"
   },
   "operator": "condition",
-  "pin": {
-   "adopted_at": "2026-09-29T00:24:30.372302Z",
-   "answer_sha256": "6788f69c3f31fb6743be8a1455f63927c1e6d7fa97ecce839580a09566bf9425",
-   "call_id": "20260929T001300Z-8cc1f5",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "54af841eb347b70b16bfcc6ad5a48d363c67ac5b6e16360b2a0a2c4d8ca3d76a",
-   "model": "claude-sonnet-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_ab94f138074323bc.py",
-   "response_sha256": "5c51bab69cd696b58780eceb55fe4e4af11cf37b33260423e641e9e9776933c8",
-   "source": "draft author",
-   "sources": [
-    "llm_router._internal.capabilities.content.normalize_content",
-    "PIL.Image.Image"
-   ]
-  },
-  "prompt_sha256": "daf38e8cc262b17cdb72b9ed745013988e78a970702a5e68c9c08e0b937840f3"
+  "prompt_sha256": "daf38e8cc262b17cdb72b9ed745013988e78a970702a5e68c9c08e0b937840f3",
+  "subsumed": {
+   "at": "2026-09-30T18:37:25.640726Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_e9186235c6377e40.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:25:02.141929Z",
+    "answer_sha256": "f190fd9d233810efba99b78244221ca7e414f08489b5c0696be6b2bb347dee0d",
+    "call_id": "20260930T180459Z-426090",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "f190fd9d233810efba99b78244221ca7e414f08489b5c0696be6b2bb347dee0d",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_ab94f138074323bc.py",
+    "response_sha256": "2aa1c022fc97340a08f2f784966c863e606f4abb69e3c1608e9967d29a2c69a7",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "llm_router.get_config",
+     "llm_router.install_config",
+     "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path"
+    ]
+   }
+  }
  },
  "e9186235c6377e40": {
   "answer": {
@@ -428,9 +497,9 @@
   },
   "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-29T00:24:30.373459Z",
-   "answer_sha256": "1e69fc02edc10218cfe3c10513be5686a25654bcfaa90cff9c6cd4f89a5ffb23",
-   "call_id": "20260929T001300Z-19794c",
+   "adopted_at": "2026-09-30T18:25:20.157677Z",
+   "answer_sha256": "a03d80ef8ce7b26f9bc52525260019205cc8484eb8a43972d54f9a521cf16a05",
+   "call_id": "20260930T180459Z-df5507",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -439,17 +508,25 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "d7a9c4a3462ce7607c2d516c0cb9979d91f38bef33717c1bc6c44dfa241aa7d2",
-   "model": "claude-sonnet-5",
+   "draft_sha256": "a03d80ef8ce7b26f9bc52525260019205cc8484eb8a43972d54f9a521cf16a05",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_e9186235c6377e40.py",
-   "response_sha256": "381dfa19906dd620285264f381b3e93b7bf9ba74d157c8fc6f5e02763816b2e0",
-   "source": "draft author",
+   "response_sha256": "6522beedf486bab999c689f56f6b31ddb8c2a3ae73cc9ffe5ffed4e707aecdad",
+   "source": "draft author with tools",
    "sources": [
-    "llm_router._internal.capabilities.content.normalize_content",
-    "llm_router._internal.capabilities.content.MediaPart",
-    "llm_router._internal.capabilities.media.ImageMedia",
-    "llm_router._internal.capabilities.media._MAX_IMAGE_DIMENSION"
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
    ]
   },
   "prompt_sha256": "f56a5372e624a4521b9698eed289a01478a51cc94eccbb0b41ab7fe34483d9af"
@@ -474,9 +551,9 @@
   },
   "operator": "return",
   "pin": {
-   "adopted_at": "2026-09-29T00:24:30.374185Z",
-   "answer_sha256": "bdadadbc845842819fb74a00b227395e225fdbdcbef8ae459a054a6685389868",
-   "call_id": "20260929T001300Z-5e69af",
+   "adopted_at": "2026-09-30T18:25:33.782483Z",
+   "answer_sha256": "f8824ab3ba231457255b0bad568156180f508daa3ef38072a3dd6711870c053d",
+   "call_id": "20260930T182016Z-580e60",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -485,17 +562,24 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "bdadadbc845842819fb74a00b227395e225fdbdcbef8ae459a054a6685389868",
-   "model": "claude-sonnet-5",
+   "draft_sha256": "f8824ab3ba231457255b0bad568156180f508daa3ef38072a3dd6711870c053d",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_f02a96133d01bfce.py",
-   "response_sha256": "fe36afda28b7bf1e77a7d6a710ff9321c6af30a0434eb6479e16bfff0116462c",
-   "source": "draft author",
+   "response_sha256": "5bbf08fce6f2bf43e07ff99df9ff8973bd65e7a631ef72943670f1bef4222eab",
+   "source": "last resort",
    "sources": [
-    "llm_router.ChatMessage",
-    "llm_router._internal.capabilities.content.TextPart",
-    "llm_router._internal.capabilities.content.normalize_chat_message",
-    "llm_router._internal.capabilities.content.normalize_content"
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   },
   "prompt_sha256": "55cd07ebb103cd882b704bcbe6e0ccadc446a22ba636959aeacab27c4df06207"
@@ -520,29 +604,35 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-29T00:24:30.374916Z",
-   "answer_sha256": "85212b1dedb40e01601cd5d0a37eaa5eefad5bf04e020f08362557b96d5454db",
-   "call_id": "20260929T001300Z-d948f8",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "85212b1dedb40e01601cd5d0a37eaa5eefad5bf04e020f08362557b96d5454db",
-   "model": "claude-sonnet-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_fbcda5c66084477c.py",
-   "response_sha256": "f436b5f47736beef5ad2937d67edc59b6ccf40d4ff419bfe752eec4547991608",
-   "source": "draft author",
-   "sources": [
-    "llm_router._internal.capabilities.content.normalize_content",
-    "llm_router._internal.capabilities.content.TextPart"
-   ]
-  },
-  "prompt_sha256": "453bbf6b2424036f144838e6b2b7eef8b106f7796696c4251bf86c9bd2d2a376"
+  "prompt_sha256": "453bbf6b2424036f144838e6b2b7eef8b106f7796696c4251bf86c9bd2d2a376",
+  "subsumed": {
+   "at": "2026-09-30T13:45:02.410777Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_f02a96133d01bfce.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T00:24:30.374916Z",
+    "answer_sha256": "85212b1dedb40e01601cd5d0a37eaa5eefad5bf04e020f08362557b96d5454db",
+    "call_id": "20260929T001300Z-d948f8",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "85212b1dedb40e01601cd5d0a37eaa5eefad5bf04e020f08362557b96d5454db",
+    "model": "claude-sonnet-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_fbcda5c66084477c.py",
+    "response_sha256": "f436b5f47736beef5ad2937d67edc59b6ccf40d4ff419bfe752eec4547991608",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.capabilities.content.normalize_content",
+     "llm_router._internal.capabilities.content.TextPart"
+    ]
+   }
+  }
  }
 }

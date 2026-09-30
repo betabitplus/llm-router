@@ -254,6 +254,22 @@
      "total_tokens = input_tokens + output_tokens"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-9be66e",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "When total is 0 and both input and output are 0, the changed version sets total to 0+0 = 0, the same as the original leaving it at 0; in every other case the two behave identically.",
+    "response_sha256": "9fc088eca4bbd4fe3070dd58ee144a7e13a4d9166dee77000ab661cdc6a9589b",
+    "sources": [
+     "if total_tokens == 0 and (input_tokens or output_tokens):",
+     "if total_tokens == 0:",
+     "total_tokens = input_tokens + output_tokens"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "29f7e569c55b363e1d8d27dcd617f801674d72939a91a1cb77ec887432ad53b8"

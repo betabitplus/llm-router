@@ -2,37 +2,41 @@
  "4ca26f1e4a9fa447": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T234918Z-770c23",
+   "call_id": "20260930T195735Z-38ae69",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Tool steps are only added by _run_logged_tool_round, and that only runs when plan.tool_registry is set. The plan stays the same for the whole loop, so when the registry is None, state.tool_state.steps is always empty. That makes it the same as build_public_response's default tool_trace=(). Both attempts to build an input where the two versions differ failed with a TypeError.",
-   "response_sha256": "ffc975815313bf7a059baaa59d36b6c73dec16dd887c2cc2fae711f9f4924c1b",
+   "reason": "The mutant only drops tool_trace in the no-registry branch. Steps are only added by _run_logged_tool_round, which needs a registry, and the plan is fixed for the loop, so state.tool_state.steps stays empty there. That matches the default tool_trace (reported as an empty tuple). Every attempted counter-input was refuted.",
+   "response_sha256": "a74f6223da860142a2f7e48857a18ed856a0878982cb2cc64bd4873cce69bfbb",
    "sources": [
     "return _ResultStep(state=state, response=build_public_response(result))",
+    "if plan.tool_registry is None:",
     "tool_trace=state.tool_state.steps,",
+    "When plan.tool_registry is None, no tool rounds have executed so state.tool_state.steps is empty, matching the default tool_trace=() of build_public_response.",
     "Supported provider routes shall be able to execute a multi-step local-tool workflow and feed tool results back into subsequent provider turns until a final response is produced."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "argument",
-  "prompt_sha256": "9da5de134937486d9ccdbf241e181080d535ca3de7f444f4ecc75b083afc5f3a",
+  "prompt_sha256": "e541338d7c9b38485523d5735f7b1a899e2f1cc4d4b3c25c543fe6f5ce9f7987",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T085834Z-f04912",
+   "call_id": "20260930T195813Z-47f318",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "9da5de134937486d9ccdbf241e181080d535ca3de7f444f4ecc75b083afc5f3a",
-   "reason": "When plan.tool_registry is None, no tools can be executed for the workflow, so state.tool_state.steps is empty and passing it explicitly matches the default behavior of build_public_response.",
-   "response_sha256": "d71d31b722436b3613c2db9786b85cc6d28adcdfbfcef5445dfb1c12ba53b253",
+   "prompt_sha256": "e541338d7c9b38485523d5735f7b1a899e2f1cc4d4b3c25c543fe6f5ce9f7987",
+   "reason": "When plan.tool_registry is None, no local tools can be executed during the workflow, meaning state.tool_state.steps is always empty. This makes omitting it structurally identical to the original behavior, as it matches the default tool_trace value of build_public_response.",
+   "response_sha256": "647eb20dc1cb302064c455e8019a20f42fb6953b0db98f32ed22a790917b2985",
    "sources": [
-    "execute a multi-step local-tool workflow",
+    "multi-step local-tool workflow",
     "tool_trace=state.tool_state.steps,",
-    "return _ResultStep(state=state, response=build_public_response(result))"
+    "response=build_public_response(result))"
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -215,39 +219,46 @@
    "verdict": "pin"
   },
   "operator": "attribute",
-  "pin": {
-   "adopted_at": "2026-09-29T00:24:30.375858Z",
-   "answer_sha256": "41fd0310819b52ba75d590ef06e330baca08e726c3c7ffc7de67517096effb61",
-   "call_id": "20260929T001300Z-d7eb3e",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "41fd0310819b52ba75d590ef06e330baca08e726c3c7ffc7de67517096effb61",
-   "model": "claude-sonnet-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_bdd04396b959d4fd.py",
-   "response_sha256": "3348a0ef5a288bb01fdca5b002c9183a7702adc98f1f13adffb45cbce1a89f04",
-   "source": "draft author",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
-    "llm_router._api.types.LLMRouterResponse",
-    "llm_router._api.types.ToolStep"
-   ]
-  },
-  "prompt_sha256": "c0ccb0ba4072ae45dd22164c0d17bf0900ded03c5e9bc6fdd0f39d9350837e89"
+  "prompt_sha256": "c0ccb0ba4072ae45dd22164c0d17bf0900ded03c5e9bc6fdd0f39d9350837e89",
+  "subsumed": {
+   "at": "2026-09-30T13:45:05.699798Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_99b5ebcc.py",
+    "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_f43ca330.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T00:24:30.375858Z",
+    "answer_sha256": "41fd0310819b52ba75d590ef06e330baca08e726c3c7ffc7de67517096effb61",
+    "call_id": "20260929T001300Z-d7eb3e",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "41fd0310819b52ba75d590ef06e330baca08e726c3c7ffc7de67517096effb61",
+    "model": "claude-sonnet-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_bdd04396b959d4fd.py",
+    "response_sha256": "3348a0ef5a288bb01fdca5b002c9183a7702adc98f1f13adffb45cbce1a89f04",
+    "source": "draft author",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+     "llm_router._api.types.LLMRouterResponse",
+     "llm_router._api.types.ToolStep"
+    ]
+   }
+  }
  },
  "c64b7deb7394ba40": {
   "answer": {
@@ -286,16 +297,17 @@
  "d1f8bfd6486f6eb4": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T234928Z-03b9de",
+   "call_id": "20260930T203030Z-dafb1b",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The branch with no tool registry calls build_public_response without tool_calls but still has to surface the provider's tool calls, so build_public_response evidently defaults tool_calls to result.tool_calls; passing it explicitly in the limit branch is redundant. This is inferred: build_public_response's body was not seen. If it defaults to empty instead, the limit response would lose its pending tool calls and should be re-judged.",
-   "response_sha256": "282d4af30cd10231c68335ce3eea67de7f02f04f00cde7a94d64ad48c09789b8",
+   "reason": "The only change removes the explicit tool_calls=result.tool_calls argument in the round-limit branch. The no-registry branch calls build_public_response(result, ...) without tool_calls and still has to show the pending calls, so the helper very likely falls back to result.tool_calls. If so, the public response is the same and tool results still round-trip until a final response. This was inferred, not confirmed from build_public_response's source.",
+   "response_sha256": "042f11db509b1e46076090f87805eebfefe6a9280e784ed69da656a519f91b6f",
    "sources": [
-    "return _ResultStep(state=state, response=build_public_response(result, output_text='', tool_trace=next_tool_state.steps))",
     "tool_calls=result.tool_calls,",
+    "return _ResultStep(state=state, response=build_public_response(result, output_text='', tool_trace=next_tool_state.steps))",
     "response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n            ),",
     "Supported provider routes shall be able to execute a multi-step local-tool workflow and feed tool results back into subsequent provider turns until a final response is produced."
    ],
@@ -303,20 +315,21 @@
    "verdict": "equivalent"
   },
   "operator": "argument",
-  "prompt_sha256": "9376a2f941419a3f785fa8481ac9d4b71be22cab3f5b406ecee43978c4ba2bc6",
+  "prompt_sha256": "2c97cef02b851956fa278be9966c1979c0a62f0ea8db2bc99ed2247e4ecc589b",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T085834Z-03d1e2",
+   "call_id": "20260930T203114Z-b80aba",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "9376a2f941419a3f785fa8481ac9d4b71be22cab3f5b406ecee43978c4ba2bc6",
-   "reason": "Omitting `tool_calls=result.tool_calls` does not change the function's behavior because `build_public_response` defaults to extracting tool calls from the provided `result` when omitted, making the versions indistinguishable.",
-   "response_sha256": "c4e415848f476b67fe13e0152b2a45ad2b4ee1897b16e13c7c6dfb776de19cf8",
+   "prompt_sha256": "2c97cef02b851956fa278be9966c1979c0a62f0ea8db2bc99ed2247e4ecc589b",
+   "reason": "Passing `tool_calls=result.tool_calls` is redundant because `build_public_response` defaults to extracting tool calls from the provider result when they are omitted, maintaining the required capability for multi-step local-tool workflows.",
+   "response_sha256": "632c39e749487e1436eb27dc79a98cb2b87483e4d50239b1c6aafae59b8c82d9",
    "sources": [
     "Supported provider routes shall be able to execute a multi-step local-tool workflow and feed tool results back into subsequent provider turns until a final response is produced.",
-    "tool_calls=result.tool_calls,"
+    "                tool_calls=result.tool_calls,"
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -335,25 +348,32 @@
    "verdict": "pin"
   },
   "operator": "return",
-  "pin": {
-   "adopted_at": "2026-09-28T09:46:25.330328Z",
-   "answer_sha256": "bacb029c79b9b2ff3d70fb29a7885d5d492ef601cfebe2c760751c951fc69b0a",
-   "call_id": "20260928T093415Z-b48208",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "18a61c4446475ff9b08c39dfd41837117cede6ef1211e3704e5e02c733ecdfde",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_ee8c1e76f998e445.py",
-   "response_sha256": "817887571a31f5390649b19cca1e8a8d204dc1e0b97f145fce487d47734f2bc0",
-   "source": "draft author"
-  },
-  "prompt_sha256": "590a2ffd0edd6838de30638923f4544545f47784ca6aaf772448e869b3dce8c8"
+  "prompt_sha256": "590a2ffd0edd6838de30638923f4544545f47784ca6aaf772448e869b3dce8c8",
+  "subsumed": {
+   "at": "2026-09-30T13:45:05.700177Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_9a1e3f3eefc3663d.py",
+    "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_99b5ebcc.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-28T09:46:25.330328Z",
+    "answer_sha256": "bacb029c79b9b2ff3d70fb29a7885d5d492ef601cfebe2c760751c951fc69b0a",
+    "call_id": "20260928T093415Z-b48208",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "18a61c4446475ff9b08c39dfd41837117cede6ef1211e3704e5e02c733ecdfde",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_ee8c1e76f998e445.py",
+    "response_sha256": "817887571a31f5390649b19cca1e8a8d204dc1e0b97f145fce487d47734f2bc0",
+    "source": "draft author"
+   }
+  }
  }
 }

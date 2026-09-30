@@ -1,30 +1,29 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS 3b57c08f839ab791
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
 from dataclasses import replace
 
 import pytest
 
-from llm_router import ConfigurationError
-from llm_router._internal.config import build_default_config, validate_config
+from llm_router import ConfigurationError, LLMRouterConfig, get_config, install_config
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
+def _with_timeout(base: LLMRouterConfig, timeout: float) -> LLMRouterConfig:
+    policy = replace(base.defaults.policy, attempt_timeout_seconds=timeout)
+    return replace(base, defaults=replace(base.defaults, policy=policy))
+
+
 @pytest.mark.verifies("REQ_INVALID_CONFIGURATION_ERRORS[revision==2]")
-def test_validation_accepts_one_second_policy_attempt_timeout() -> None:
-    config = build_default_config()
+def test_attempt_timeout_accepts_subsecond_and_rejects_zero() -> None:
+    base = get_config()
 
-    valid_policy = replace(config.defaults.policy, attempt_timeout_seconds=1.0)
-    valid_config = replace(
-        config, defaults=replace(config.defaults, policy=valid_policy)
-    )
-    validate_config(valid_config)
+    with pytest.raises(ConfigurationError, match=r"^policy attempt timeout"):
+        install_config(_with_timeout(base, 0.0))
 
-    invalid_policy = replace(config.defaults.policy, attempt_timeout_seconds=0.0)
-    invalid_config = replace(
-        config, defaults=replace(config.defaults, policy=invalid_policy)
-    )
-    with pytest.raises(ConfigurationError, match="policy attempt timeout"):
-        validate_config(invalid_config)
+    installed = install_config(_with_timeout(base, 0.5))
+    install_config(base)
+    assert installed.policy.attempt_timeout_seconds == 0.5

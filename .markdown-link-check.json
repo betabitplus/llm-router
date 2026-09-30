@@ -2,6 +2,9 @@
   "ignorePatterns": [
     {
       "pattern": "^https://github.com/betabitplus/llm-router"
+    },
+    {
+      "pattern": "^https://www\\.sciencedirect\\.com/"
     }
   ],
   "replacementPatterns": []

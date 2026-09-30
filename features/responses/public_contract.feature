@@ -37,3 +37,15 @@ Feature: Public response contract
       Given a provider SDK rejects a valid request
       When the failure reaches the public router boundary
       Then it fails with a provider error
+
+    @REQ_PROVIDER_ERROR_BOUNDARY[revision==1]
+    Scenario: A provider timeout surfaces as a provider error
+      Given a provider does not answer before its transport timeout
+      When the failure reaches the public router boundary
+      Then it fails with a provider error instead of the transport's own exception
+
+    @REQ_PROVIDER_ERROR_BOUNDARY[revision==1]
+    Scenario: A provider disconnect surfaces as a provider error
+      Given a provider closes the connection before answering
+      When the failure reaches the public router boundary
+      Then it fails with a provider error instead of the transport's own exception

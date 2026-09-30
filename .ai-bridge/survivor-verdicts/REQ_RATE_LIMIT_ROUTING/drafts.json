@@ -31,6 +31,68 @@
     "llm_router._api.types.Provider",
     "llm_router._internal.runtime.router.RouterRuntime"
    ]
+  },
+  {
+   "at": "2026-09-30T13:54:45.895957Z",
+   "call_id": "20260930T135336Z-baf4d9",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7bec31df616b88e62deae368bb358d81b626913c8b5ae1dbaf2b425e599de347",
+   "reason": "it breaks the project's lint rules (ruff: line 15: ARG002 Unused method argument: `args` | line 15: ARG002 Unused method argument: `kwargs`)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router.LLMRouter"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:56:00.907252Z",
+   "call_id": "20260930T135446Z-7ac873",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "26f45a519624ea9fb855af3932dc88b2fe386cbf27e6db71950af710c7da49b8",
+   "reason": "it does not pass on the original 5 times in a row (pytest: TypeError: Route sequences must contain only RouterProfile instances.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Provider"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:02:41.973430Z",
+   "call_id": "20260930T135601Z-53775a",
+   "cause": "kept",
+   "context_gaps": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "212a9309a981f70cd5b94920dd640cc0c4a6df346ac404a3b986f0859d27bd11",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ]
 }

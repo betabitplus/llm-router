@@ -12,6 +12,7 @@ import importlib.util
 import inspect
 import json
 import os
+import queue
 import re
 import shutil
 import socket
@@ -121,6 +122,12 @@ if EQ_SPEC is None or EQ_SPEC.loader is None:
 EQ=importlib.util.module_from_spec(EQ_SPEC)
 sys.modules.setdefault("survivor_equivalence",EQ)
 EQ_SPEC.loader.exec_module(EQ)
+# Pin subsumption: the pins other pins of their contract make redundant. No model.
+SUBSUME_SPEC=importlib.util.spec_from_file_location("pin_subsumption",ROOT/".ai-bridge/pin_subsumption.py")
+if SUBSUME_SPEC is None or SUBSUME_SPEC.loader is None:
+    raise RuntimeError("Could not load the pin subsumption")
+SUBSUME=importlib.util.module_from_spec(SUBSUME_SPEC)
+SUBSUME_SPEC.loader.exec_module(SUBSUME)
 SYMBOLIC_PRODUCERS=("PRODUCER_SYMBOLIC_DIFFERENTIAL",)
 ASSESSOR_PRODUCERS=("PRODUCER_ASSESSOR_ENSEMBLE",)
 # Scenario oracle mutants (050): does a Gherkin scenario check the outcome it names? No model.
@@ -1553,6 +1560,7 @@ def render_health_map_page():
 # Causes that only a single row can have; the rest are the Health Map's.
 EXPLORER_CAUSES={
   "support":("Supporting item fails","Something this item depends on fails, so it cannot pass until that passes."),
+  "pending":("Supporting item undecided","Something this item depends on is not decided yet, so this item cannot pass until it is."),
   "unexpected":("Path the profile does not declare","A retained test claims a path the profile does not list, so its criterion cannot be judged."),
 }
 EXPLORER_SUPPORT_SECTIONS={"feature":"requirement_support","goal":"capability_support","product":"goal_support"}
@@ -1988,9 +1996,11 @@ def explorer_payload(health_payload):
             report=json.loads(report_path.read_text())
             # The rows say what the class counts: a survivor a verdict judged equivalent or irrelevant is suppressed.
             for mutant in IMPL_FAULTS.suppress_by_verdict(IMPL_FAULTS.contract_mutants(plans[contract_id],report,ROOT),verdict_suppressions(contract_id)):
-                klass=mutant["class"]
-                # A result that no longer counts (stale, blocked, unqualified) shows on its class, not as mutants.
-                if klass not in listed or (classes.get(klass) or {}).get("campaign_state")!="current":
+                # A mutant shows under the first of its classes the profile lists (a strict comparison made
+                # inclusive counts for impl.boundary as well); a result that no longer counts (stale, blocked,
+                # unqualified) shows on its class, not as mutants.
+                klass=next((name for name in mutant.get("classes") or [mutant["class"]] if name in listed and (classes.get(name) or {}).get("campaign_state")=="current"),None)
+                if klass is None:
                     continue
                 outcome=mutant["outcome"]
                 suppression=mutant.get("suppression") or {}
@@ -2023,6 +2033,7 @@ def explorer_payload(health_payload):
                   "what":change,"note":note,
                   "attrs":{
                     "group":"Implementation","class":klass,"operator":mutant["operator"],"origin":"rule",
+                    **({"classes":" · ".join(mutant["classes"])} if len(mutant.get("classes") or [])>1 else {}),
                     **({"judgement":triaged["status"]} if outcome=="survived" and triaged else {}),
                     **({"diff":"yes"} if (mutant["source"],line) in changed_lines else {}),
                   },
@@ -2122,7 +2133,7 @@ def explorer_payload(health_payload):
             items.append({
               "id":f"support|{contract_id}|{treq_id}","kind":"support","owner":contract_id,"object":"","layers":[],
               "status":status,"state":{"pass":"Passes","fail":"Fails","na":"N/A"}.get(status,"Unknown"),
-              "causes":["support"] if status=="fail" else [],"name":treq_id,"what":(child or {}).get("title") or treq_id,
+              "causes":{"fail":["support"],"unknown":["pending"]}.get(status,[]),"name":treq_id,"what":(child or {}).get("title") or treq_id,
               "note":"Coverage "+EXPLORER_WORD.get(state["coverage"],"UNKNOWN")+" · Fault model "+EXPLORER_WORD.get(state["fault"],"UNKNOWN"),
               "attrs":{"child":treq_id},"producers":[],"links":[["Opens",href[treq_id],"semantic"]] if href.get(treq_id) else [],
             })
@@ -2172,7 +2183,7 @@ def explorer_payload(health_payload):
             items.append({
               "id":f"support|{owner}|{child.get('id')}","kind":"support","owner":owner,"object":"","layers":[],
               "status":status,"state":{"pass":"Passes","fail":"Fails","na":"N/A"}.get(status,"Unknown"),
-              "causes":["support"] if status=="fail" else [],"name":str(child.get("id") or ""),"what":str(child.get("title") or ""),
+              "causes":{"fail":["support"],"unknown":["pending"]}.get(status,[]),"name":str(child.get("id") or ""),"what":str(child.get("title") or ""),
               "note":"","attrs":{"child":child.get("id")},"producers":[],
               "links":[["Opens",href.get(child.get("id")) or child.get("url") or "","semantic"]] if (href.get(child.get("id")) or child.get("url")) else [],
             })
@@ -3546,6 +3557,7 @@ def current_evidence_qualification_environment():
       "semantic_calibration_sha256":semantic_calibration_sha256(),
       "model_generation_sha256":code(ROOT/".ai-bridge/model_generation.py"),
       "survivor_equivalence_sha256":code(ROOT/".ai-bridge/survivor_equivalence.py"),
+      "pin_subsumption_sha256":code(ROOT/".ai-bridge/pin_subsumption.py"),
       "qualification_harness_sha256":code(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
       "trace_bridge_sha256":code(ROOT/"tests/conftest.py"),
     }
@@ -5092,13 +5104,32 @@ def _implementation_fault_plans(test_rows):
     return plans
 
 
+# A stage that acts on which mutants survived (the triage, the verdicts, the pin subsumption) sets
+# the mutation pins aside when it asks whether a campaign result counts: a pin added, rewritten or
+# removed since changes what the next campaign catches, not which mutants this one saw survive, and
+# the campaign after the pin changes shows what they changed. Asking the campaign again between the
+# stages would run the same mutants again for nothing.
+PINS_ASIDE=False
+
+
+def without_pins(value):
+    """A campaign plan's tests, or its inputs, without the mutation pins."""
+    prefix=str(PINS_DIR.relative_to(ROOT))+"/"
+    if isinstance(value,dict):
+        return {key:item for key,item in value.items() if not str(key).startswith(prefix)}
+    return [item for item in value or [] if not str(item).startswith(prefix)]
+
+
 def retained_campaign_entry_state(entry,plan,shared_sha256,test_rows):
     """Current only when engine, scope, tests and every input still match, and the
-    retained engine report is the exact file the campaign recorded."""
+    retained engine report is the exact file the campaign recorded (the mutation pins
+    set aside while ``PINS_ASIDE``)."""
     run=entry.get("run") or {}
-    state,reason=IMPL_FAULTS.entry_state(
-      entry,plan,shared_sha256,IMPL_FAULTS.contract_inputs(ROOT,plan,test_rows)
-    )
+    inputs=IMPL_FAULTS.contract_inputs(ROOT,plan,test_rows)
+    if PINS_ASIDE:
+        entry={**entry,"plan_key":{**(entry.get("plan_key") or {}),"tests":without_pins((entry.get("plan_key") or {}).get("tests"))},"inputs":without_pins(entry.get("inputs") or {})}
+        plan,inputs={**plan,"tests":without_pins(plan.get("tests"))},without_pins(inputs)
+    state,reason=IMPL_FAULTS.entry_state(entry,plan,shared_sha256,inputs)
     if state!="current":
         return state,reason
     report_path=ROOT/str(run.get("report_path") or "")
@@ -5197,6 +5228,7 @@ def refresh_implementation_fault_campaign(contract_ids=None,full=False):
           "engine":{"name":"pytest-gremlins","version":IMPL_FAULTS.GREMLINS_VERSION,"operators":list(IMPL_FAULTS.OPERATORS)},
           "engine_configuration":IMPL_FAULTS.engine_configuration(),
           "class_by_operator":IMPL_FAULTS.CLASS_BY_OPERATOR,
+          "boundary_swaps":sorted(IMPL_FAULTS.BOUNDARY_SWAPS),
           "shared_input_scope":[*IMPL_FAULTS.SHARED_INPUT_SCOPE,"tests/**/*.py (support modules)",*IMPL_FAULTS.SHARED_EXPLICIT_INPUTS],
           "shared_inputs_sha256":shared_sha256,
           "head_sha":git_sha(),
@@ -6042,7 +6074,8 @@ def observed_calibration_pairs():
         records={str(row.get("fingerprint")):row for row in (json.loads(report_path.read_text()).get("results") or [])} if report_path.is_file() else {}
         candidates=[]
         for key,entry in sorted(load_verdicts(contract_id).items()):
-            pin=entry.get("pin") or {}
+            # A pin other pins made redundant still proves its mutant distinct: the cascade kept it.
+            pin=entry.get("pin") or (entry.get("subsumed") or {}).get("pin") or {}
             record=records.get(key)
             if not pin or not (pin.get("cascade") or {}).get("accepted") or not record or record.get("status") not in IMPL_FAULTS.KILLED:
                 continue
@@ -6602,7 +6635,7 @@ def rule_verdict_item(contract_id,record,context,judged):
       "operator":str(record.get("operator")),"path":str(Path(record["file_path"]).resolve().relative_to(ROOT)),
       "qualname":qualname,"original":rebuilt["original"],"mutated":rebuilt["mutated"],"mutated_source":rebuilt["source"],
       "defect":str(record.get("description") or ""),"confirmed":judged.get("status")=="found","judged":judged,
-      "prompt":EQ.verdict_prompt(context=context,target=qualname,original=rebuilt["original"],mutant=rebuilt["mutated"],judgement=EQ.judgement_summary(judged)),
+      "prompt":EQ.verdict_prompt(context=context,target=rebuilt.get("target") or qualname,original=rebuilt["original"],mutant=rebuilt["mutated"],judgement=EQ.judgement_summary(judged)),
     }
 
 
@@ -6670,7 +6703,22 @@ def verdict_items(needs,policy):
               "kept_draft":drafts.get(row["id"]) if (row.get("draft") or {}).get("accepted") else None,
               "prompt":EQ.verdict_prompt(context=context,target=qualname,original=original,mutant=mutated,judgement=EQ.judgement_summary(judged)),
             })
+    # A pin no rung of the draft ladder could write asks its verdict once more, with the callers in view.
+    for item in items:
+        if ladder_exhausted(item["contract_id"],item["key"]):
+            callers="\n".join(site["code"] for site in EQ.project_call_sites(ROOT,item["qualname"],item["path"]))
+            item["prompt"]=EQ.reconsider_prompt(item["prompt"],ROOT,item["qualname"],item["path"],SEMANTIC.api_card(ROOT,"",callers))
+            item["reconsidered"]=True
     return items
+
+
+def ladder_exhausted(contract_id,key):
+    """Whether every rung of the draft ladder, the last resort included, tried to pin a mutant and
+    none kept a test since its last kept pin, which a later rule may have taken back: its verdict is
+    then asked with the project's callers in view."""
+    rows=recorded_drafts(contract_id,key)
+    kept=max((index for index,row in enumerate(rows) if row.get("cause")=="kept"),default=-1)
+    return any(int(row.get("level") or 0)>=3 for row in rows[kept+1:])
 
 
 def verdict_answer(response,confirmed):
@@ -6679,7 +6727,7 @@ def verdict_answer(response,confirmed):
     structured=response["structured"]
     return {
       **{key:structured.get(key) for key in ("verdict","level","reason","test_focus")},"sources":list(structured.get("sources") or []),
-      "confirmed":bool(confirmed),"call_id":response["call_id"],"backend":response["backend"],"model":response["model"],
+      "confirmed":bool(confirmed),"call_id":response["call_id"],"backend":response["backend"],"model":response["model"],"effort":str(response.get("effort") or ""),
       "response_sha256":MODELS.response_sha256(response),"problems":EQ.verdict_problems(structured,confirmed,str(response.get("prompt") or "")),
     }
 
@@ -6768,6 +6816,12 @@ def module_of(path):
     return ".".join(parts)
 
 
+def public_pin(need):
+    """Whether a pin observes through the package's public API only: a Requirement's does, a
+    Technical requirement's may test its module (ADR_0006)."""
+    return need.get("type")!="treq"
+
+
 def pin_extra_imports(item,need):
     """What a pin may import beyond the contract's tests: for a Technical requirement, the module
     of the code it tests and the project modules that module imports itself, the types its inputs
@@ -6844,6 +6898,9 @@ def pin_draft_context(item,verdict,tests,need,criteria,previous=None):
     owner=item["qualname"].rpartition(".")[0]
     source=(ROOT/item["path"]).read_text()
     imports=sorted({*SEMANTIC.allowed_imports(ROOT,tests),*pin_extra_imports(item,need)})
+    # A Requirement's pin is offered the package's public API only, never its private modules.
+    if public_pin(need):
+        imports=[module for module in imports if not SEMANTIC.private_module(module,ROOT)]
     example=SEMANTIC.example_test(ROOT,pin_example_tests(item,tests,imports))
     # A line no test runs needs a path no test takes yet: a second test shows how the project gets there.
     other=reaching_test(item,imports) if item.get("line") and not line_contexts(item["path"]).get(item["line"]) else None
@@ -6883,6 +6940,44 @@ def pin_draft_context(item,verdict,tests,need,criteria,previous=None):
 _LEDGER_BY_CALL=None
 
 
+# A pin the cascade kept alone can still fail in the project's full test run, where the tests before
+# it run too: such a draft is recorded here, by its call, and never judged again from its stored answer.
+SUITE_REJECTED="suite-rejected.json"
+
+
+def suite_rejected(contract_id):
+    """The stored draft answers of a contract the full test run rejected, by call, with why."""
+    path=VERDICTS_DIR/contract_id/SUITE_REJECTED
+    return json.loads(path.read_text()) if path.is_file() else {}
+
+
+def reject_in_suite(contract_id,key,reason):
+    """Take back a pin the full test run fails: its file goes, its record keeps the pin under
+    ``rejected`` with the reason, its draft is recorded as rejected by the suite, and its mutant counts
+    as a survivor again."""
+    verdicts=load_verdicts(contract_id)
+    entry=verdicts.get(key) or {}
+    pin=entry.pop("pin",None)
+    if not pin:
+        return False
+    (ROOT/str(pin["path"])).unlink(missing_ok=True)
+    entry["rejected_pin"]={**pin,"reason":reason,"at":utc_now()}
+    save_assessments(VERDICTS_DIR/contract_id/"verdicts.json",verdicts)
+    rejected=suite_rejected(contract_id)
+    rejected[str(pin.get("call_id"))]={"key":key,"reason":reason,"at":utc_now()}
+    (VERDICTS_DIR/contract_id/SUITE_REJECTED).write_text(json.dumps(rejected,indent=1,sort_keys=True)+"\n")
+    records=load_assessments(VERDICTS_DIR/contract_id/"drafts.json")
+    response_path=VERDICTS_DIR/contract_id/"responses"/f"{pin.get('call_id')}.json"
+    question=str(json.loads(response_path.read_text()).get("prompt_sha256") or "") if response_path.is_file() else ""
+    records.setdefault(key,[]).append({
+      "at":utc_now(),"call_id":pin.get("call_id"),"model":pin.get("model"),"level":int(pin.get("level") or 1),"question_sha256":question,
+      "cause":"suite","reason":reason[:400],"grounding":[],"context_gaps":[],"sources":[],
+    })
+    save_assessments(VERDICTS_DIR/contract_id/"drafts.json",records)
+    print(f"[PIN] {contract_id} · {key}: {pin['path']} taken back: {reason}",flush=True)
+    return True
+
+
 def stored_pin_draft(contract_id,prompt):
     """The latest stored draft-author answer to exactly this pin question: a response whose digests
     hold and whose ledger row accepted it, or None."""
@@ -6891,11 +6986,13 @@ def stored_pin_draft(contract_id,prompt):
         _LEDGER_BY_CALL={row["call_id"]:row for row in MODELS.read_ledger()}
     wanted=sha256_text(prompt)
     found=[]
+    rejected=suite_rejected(contract_id)
     for path in sorted((VERDICTS_DIR/contract_id/"responses").glob("*.json")) if (VERDICTS_DIR/contract_id/"responses").is_dir() else []:
         response=json.loads(path.read_text())
         row=_LEDGER_BY_CALL.get(response.get("call_id")) or {}
         if (
-          response.get("purpose")=="mutation-pin" and response.get("prompt_sha256")==wanted and not MODELS.verify_response(response)
+          response.get("call_id") not in rejected
+          and response.get("purpose")=="mutation-pin" and response.get("prompt_sha256")==wanted and not MODELS.verify_response(response)
           and row.get("outcome")=="ok" and row.get("response_sha256")==MODELS.response_sha256(response)
         ):
             found.append(response)
@@ -6923,7 +7020,28 @@ def adopt_pins(run,policy,state,plans,needs,monitor_policy):
       if entry["verdict"] and entry["verdict"]["verdict"]=="pin" and not entry["pin"]
     ]
     first={(contract_id,key):(entry["item"]["kept_draft"],{"source":"kept semantic draft"}) for contract_id,key,entry in wanted if entry["item"].get("kept_draft")}
+    # A survivor whose pin another pin made redundant, and which survives again, first gets its own pin
+    # back: its stored draft is judged again as a kept one is, and no model is asked.
+    for contract_id,key,_entry in wanted:
+        subsumed=(load_verdicts(contract_id).get(key) or {}).get("subsumed") or {}
+        draft,origin=pin_draft_origin(contract_id,key,subsumed.get("pin") or {}) if subsumed else (None,{})
+        if draft:
+            first[(contract_id,key)]=(draft,origin)
     return draft_pins(run,policy,wanted,plans,needs,monitor_policy,first)
+
+
+def pin_draft_origin(contract_id,key,pin):
+    """The draft a pin was made from and its origin, as its record names them: a model's stored answer,
+    or the kept semantic draft; no draft when neither is stored or the full test run rejected it."""
+    if str(pin.get("call_id")) in suite_rejected(contract_id):
+        return None,{}
+    if pin.get("source") in ("draft author","draft author with tools","last resort"):
+        response_path=VERDICTS_DIR/contract_id/"responses"/f"{pin.get('call_id')}.json"
+        draft=SEMANTIC.draft_from_answer(key,json.loads(response_path.read_text())["structured"]) if response_path.is_file() else None
+        return draft,{name:pin.get(name) for name in ("source","level","call_id","model","response_sha256") if pin.get(name) is not None}
+    if pin.get("source")=="kept semantic draft":
+        return SEMANTIC.load_drafts(contract_id).get(key),{"source":"kept semantic draft"}
+    return None,{}
 
 
 def draft_pins(run,policy,wanted,plans,needs,monitor_policy,first=None,replace=False):
@@ -7023,7 +7141,7 @@ def draft_pins(run,policy,wanted,plans,needs,monitor_policy,first=None,replace=F
                     with tempfile.TemporaryDirectory(prefix="ternforge-ladder-") as scratch:
                         room=SEMANTIC.prepare_workspace(ROOT,Path(scratch)/"room",{
                           "path":item["path"],"qualname":item["qualname"],"mutated_source":item["mutated_source"],"tests":tests,
-                          "as_path":as_path,"extra_imports":list(pin_extra_imports(item,need)),
+                          "as_path":as_path,"extra_imports":list(pin_extra_imports(item,need)),"public_only":public_pin(need),
                         })
                         response,capped,said=ask(slot,role,step,prompt,SEMANTIC.DRAFT_TOOLS_ANSWER_SCHEMA,MODELS.Workspace(**room))
                     print(f"[PIN] {contract_id} · {key}: level {level}: {said}",flush=True)
@@ -7064,7 +7182,7 @@ def judge_drafts(pending,plans,needs,prompts,inputs=None):
     judged={(contract_id,key):row for (contract_id,key,_entry,_draft,_origin),row in zip(pending,judge_pin_drafts(ROOT,[
       {"key":key,"path":entry["item"]["path"],"qualname":entry["item"]["qualname"],"mutated_source":entry["item"]["mutated_source"],"draft":draft,
        "tests":list((plans.get(contract_id) or {}).get("tests") or []),"as_path":str(pin_path(contract_id,key).relative_to(ROOT)),
-       "extra_imports":list(pin_extra_imports(entry["item"],needs.get(contract_id) or {}))}
+       "extra_imports":list(pin_extra_imports(entry["item"],needs.get(contract_id) or {})),"public_only":public_pin(needs.get(contract_id) or {})}
       for contract_id,key,entry,draft,_origin in pending
     ],inputs))}
     for slot,verdict in judged.items():
@@ -7092,7 +7210,8 @@ def adopt_drafts(pending,plans,needs,questions,prompts,previous,done,normalizer,
         # The path marks a mutation pin: no shared test input changes, so only its contract's campaign goes stale.
         target.write_text(pin_header(contract_id,key,entry["verdict"],origin)+body)
         verdicts=load_verdicts(contract_id)
-        verdicts.setdefault(key,{})["pin"]={
+        verdicts.setdefault(key,{}).pop("subsumed",None)
+        verdicts[key]["pin"]={
           **origin,"path":str(target.relative_to(ROOT)),"draft_sha256":sha256_text(body),
           "answer_sha256":sha256_text(pin_body(draft)),"normalizer":normalizer,
           "cascade":{name:verdict.get(name) for name in ("accepted","passes_on_original","fails_on_mutant","imports_beyond_allowed","primitives","lint")},
@@ -7160,6 +7279,16 @@ def revise_pins():
     print(f"[PIN] {removed} pins of an older revision removed; rerun the retained tests, the portal, --refresh-implementation-faults and --decide-survivors",flush=True)
 
 
+def pin_static_problems(body,public_only=False):
+    """What the cascade's rules find in a pin without running it: a process, file-system or
+    dynamic-code primitive, a bracket in a test id, a private name of the project, a name the project
+    does not define and, for a Requirement's pin, a private module it imports or reaches."""
+    private_imports=[
+      *(f"imports {module}" for module in sorted(SEMANTIC.draft_imports(body)) if SEMANTIC.private_module(module,ROOT)),*SEMANTIC.draft_private_reach(body,ROOT),
+    ] if public_only else []
+    return [*SEMANTIC.draft_primitives(body,ROOT),*SEMANTIC.draft_id_problems(body),*SEMANTIC.draft_private_access(body,ROOT),*SEMANTIC.grounding_problems(ROOT,body)[0],*private_imports]
+
+
 def refresh_pins(contract_ids=None):
     """Bring every mutation pin to the current pin rules (ADR_0006): the draft it was made from is
     normalized and judged again; when it breaks a rule, the draft author tries again with the
@@ -7190,20 +7319,17 @@ def refresh_pins(contract_ids=None):
             verdict={**person,"by":"person"} if person.get("verdict") in EQ.VERDICTS_FINAL and person.get("reason") else reviewed_verdict(entry)
             if not pin or not verdict or verdict.get("verdict")!="pin":
                 continue
-            if pin.get("source") in ("draft author","draft author with tools","last resort"):
-                response_path=folder/"responses"/f"{pin.get('call_id')}.json"
-                draft=SEMANTIC.draft_from_answer(key,json.loads(response_path.read_text())["structured"]) if response_path.is_file() else None
-                origin={name:pin.get(name) for name in ("source","level","call_id","model","response_sha256") if pin.get(name) is not None}
-            else:
-                draft=SEMANTIC.load_drafts(contract_id).get(key)
-                origin={"source":"kept semantic draft"}
+            draft,origin=pin_draft_origin(contract_id,key,{**pin,"source":pin.get("source") or "kept semantic draft"})
             # A pin already made under the current rules and unchanged since, its body exactly its
-            # origin's draft in the project's style, is left as it is.
+            # origin's draft in the project's style, is left as it is. The rules a pin meets without
+            # being run (no primitive, no private name, only names the project defines) are checked
+            # again, since one may have been added since the pin was kept.
             pin_file=ROOT/str(pin.get("path") or "")
             if (
               pin.get("normalizer")==normalizer and pin.get("answer_sha256") and pin_file.is_file()
               and sha256_text(pin_body(pin_file.read_text()))==pin.get("draft_sha256")
               and draft is not None and sha256_text(pin_body(SEMANTIC.normalize_draft(draft,str(pin.get("path")))[0]))==pin.get("draft_sha256")
+              and not pin_static_problems(pin_body(pin_file.read_text()),public_pin(needs.get(contract_id) or {}))
             ):
                 continue
             if key in proposals:
@@ -7230,6 +7356,219 @@ def refresh_pins(contract_ids=None):
     print(f"[PIN] {len(wanted)} pins checked against the current rules, {adopted} kept or rewritten; {summary['calls']} calls",flush=True)
 
 
+# Pin subsumption (ADR_0006 as amended 2026-09-30): a pin every mutant of which other pins of its
+# contract kill is removed; its record keeps the pin and names the pins that kill its mutant, and its
+# file waits beside the record, so the pin comes back as it was when the campaign shows it mattered.
+SUBSUMPTION="subsumption.json"
+SUBSUMED_PINS="subsumed-pins"
+SUBSUME_WORKERS=6
+SUBSUME_TIMEOUT=300
+
+
+def subsumed_file(folder,path):
+    """Where a removed pin waits beside its record: as text, so no test run, linter or type checker
+    takes it for code."""
+    return folder/SUBSUMED_PINS/(Path(str(path)).name+".txt")
+
+
+def recorded_pins(contract_id):
+    """The contract's pins as their records keep them, by mutant: each file present and the draft it recorded."""
+    pins={}
+    for key,entry in load_verdicts(contract_id).items():
+        pin=entry.get("pin") or {}
+        pin_file=ROOT/str(pin.get("path") or "")
+        if pin and pin_file.is_file() and sha256_text(pin_body(pin_file.read_text()))==pin.get("draft_sha256"):
+            pins[key]=pin
+    return pins
+
+
+def campaign_rows(contract_id):
+    """The contract's retained campaign result, by fingerprint."""
+    campaign=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
+    report=ROOT/str((((campaign.get("contracts") or {}).get(contract_id) or {}).get("run") or {}).get("report_path") or "")
+    return {str(row.get("fingerprint")):row for row in (json.loads(report.read_text()).get("results") or [])} if report.is_file() else {}
+
+
+def mutant_sources(contract_id,keys,rows):
+    """Each mutant as the file it changes, relative to the project, and that file's mutated source: a
+    semantic one from its proposal, a rule one rebuilt from its campaign record, as the cascade judges a
+    pin against its mutant. A mutant that cannot be rebuilt is left out."""
+    proposals={row["id"]:row for row in SEMANTIC.load_proposals(contract_id).get("proposals") or []}
+    mutants={}
+    for key in keys:
+        if key in proposals:
+            path,qualname=proposals[key]["target"].split("::",1)
+            mutated=SEMANTIC.apply_replacement((ROOT/path).read_text(),qualname,proposals[key]["replacement"])
+            if mutated:
+                mutants[key]=(path,mutated)
+        elif key in rows:
+            rebuilt=EQ.rule_mutant_source(Path(rows[key]["file_path"]).read_text(),rows[key])
+            if "reason" not in rebuilt:
+                mutants[key]=(str(Path(rows[key]["file_path"]).resolve().relative_to(ROOT)),rebuilt["source"])
+    return mutants
+
+
+def retained_semantic_results(contract_id):
+    """The contract's last semantic cascade result, current or not: what it caught before a removal is
+    what the next cascade checks, and it is run again once the pins changed."""
+    path=SEMANTIC_RESULTS_DIR/f"{contract_id}.json"
+    return json.loads(path.read_text()) if path.is_file() else {}
+
+
+def caught_and_surviving(rows,semantic_state):
+    """What a contract's current campaign and last semantic cascade catch, and what they let survive."""
+    results=semantic_state.get("results") or []
+    return (
+      {key for key,row in rows.items() if row.get("status") in IMPL_FAULTS.KILLED}|{str(row["id"]) for row in results if row.get("outcome")=="caught"},
+      {key for key,row in rows.items() if row.get("status")=="survived"}|{str(row["id"]) for row in results if row.get("outcome") in {"distinguished","undecided"}},
+    )
+
+
+def subsume_pins(contract_ids=None,verify_only=False):
+    """First check every earlier removal against the current campaign and bring back what it cost,
+    then remove the pins other pins of their contract make redundant. Asks no model; a contract whose
+    campaign is not current waits for it."""
+    global PINS_ASIDE
+    PINS_ASIDE=True
+    current=current_campaign_contracts()
+    contracts=[]
+    for folder in sorted(path for path in VERDICTS_DIR.iterdir() if path.is_dir()) if VERDICTS_DIR.is_dir() else []:
+        contract_id=folder.name
+        if contract_ids and contract_id not in contract_ids:
+            continue
+        pins=recorded_pins(contract_id)
+        if len(pins)<2 and not (folder/SUBSUMPTION).is_file():
+            continue
+        if contract_id not in current:
+            print(f"[SUBSUME] {contract_id}: waits for a current campaign",flush=True)
+            continue
+        contracts.append((contract_id,pins))
+    copies=queue.Queue()
+    with tempfile.TemporaryDirectory(prefix="ternforge-subsume-") as scratch:
+        for index in range(min(SUBSUME_WORKERS,len(contracts))):
+            copies.put(SEMANTIC.isolated_copy(ROOT,Path(scratch)/f"copy-{index}"))
+
+        def one(pair):
+            contract_id,pins=pair
+            workdir=copies.get()
+            try:
+                return subsume_contract(contract_id,pins,retained_semantic_results(contract_id),workdir,verify_only)
+            finally:
+                copies.put(workdir)
+
+        results=parallel_map(one,contracts,SUBSUME_WORKERS)
+    removed,restored=sum(row[0] for row in results),sum(row[1] for row in results)
+    print(
+      f"[SUBSUME] {removed} pins removed and {restored} brought back in {len(contracts)} contracts; {len(list(PINS_DIR.glob('test_pin_*.py')))} pins now"
+      +("; rerun the retained tests and the campaign, then --subsume-pins again to check what the removal cost" if removed or restored else ""),
+      flush=True,
+    )
+
+
+def run_pins(workdir,tests,timeout):
+    return SEMANTIC.run_tests(ROOT,workdir,tests,timeout=timeout)
+
+
+def subsume_contract(contract_id,pins,semantic_state,workdir,verify_only=False):
+    """One contract, in its own copy of the project: bring back the removed pins that kill what its
+    campaign caught before the removal and misses now, then remove the pins the kill matrix of its
+    pins against its pinned mutants shows redundant. Returns how many pins it removed and brought back."""
+    folder=VERDICTS_DIR/contract_id
+    rows=campaign_rows(contract_id)
+    caught,surviving=caught_and_surviving(rows,semantic_state)
+    record=json.loads((folder/SUBSUMPTION).read_text()) if (folder/SUBSUMPTION).is_file() else {}
+    restored=restore_subsumed(contract_id,record,rows,surviving,workdir) if record else []
+    pins=recorded_pins(contract_id) if restored else pins
+    # A last pass only checks: removing more would need yet another campaign to check it.
+    if verify_only or (record and sorted(pin["path"] for pin in pins.values())==sorted(record.get("kept") or [])):
+        return 0,len(restored)
+    order=sorted(pins,key=lambda key:pins[key]["path"])
+    paths=[pins[key]["path"] for key in order]
+    failing=SUBSUME.pins_failing(workdir,paths,run_pins,SUBSUME_TIMEOUT)
+    if failing is None or failing:
+        print(f"[SUBSUME] {contract_id}: its pins do not all pass on the original ({', '.join(sorted(failing or [])) or 'the run did not finish'}), so none is removed",flush=True)
+        return 0,len(restored)
+    mutants=mutant_sources(contract_id,order,rows)
+    matrix=SUBSUME.kill_matrix(workdir,paths,mutants,run_pins,SUBSUME_TIMEOUT)
+    kills={path:set() for path in paths}
+    # A pin brought back once stays: the matrix cannot see the mutant it alone kills. So does a pin
+    # whose mutant cannot be rebuilt or whose run told nothing, since no other pin is shown to kill it.
+    # A pin that breaks a rule of the cascade is about to be written again, so it vouches for no
+    # mutant but its own.
+    protected={path for path in record.get("restored") or [] if path in kills}
+    public=public_pin(current_needs().get(contract_id) or {})
+    rewritten={pins[key]["path"] for key in order if pin_static_problems(pin_body((ROOT/pins[key]["path"]).read_text()),public)}
+    for key in order:
+        own=pins[key]["path"]
+        kills[own].add(key)
+        if matrix.get(key) is None:
+            protected.add(own)
+        for path in matrix.get(key) or ():
+            if path not in rewritten:
+                kills[path].add(key)
+    covered=set().union(*(kills[path] for path in protected)) if protected else set()
+    kept=sorted({*protected,*SUBSUME.greedy_cover(kills,set(order)-covered,[path for path in paths if path not in protected])})
+    removed={key:{"path":pins[key]["path"],"by":sorted(path for path in kept if key in kills[path])} for key in order if pins[key]["path"] not in kept}
+    verdicts=load_verdicts(contract_id)
+    for key,row in removed.items():
+        (folder/SUBSUMED_PINS).mkdir(parents=True,exist_ok=True)
+        shutil.move(str(ROOT/str(row["path"])),str(subsumed_file(folder,row["path"])))
+        entry=verdicts[key]
+        entry["subsumed"]={"by":row["by"],"at":utc_now(),"pin":entry.pop("pin")}
+        print(f"[SUBSUME] {contract_id} · {key}: {row['path']} removed, its mutant killed by {', '.join(row['by'])}",flush=True)
+    save_assessments(folder/"verdicts.json",verdicts)
+    (folder/SUBSUMPTION).write_text(json.dumps({
+      "at":utc_now(),"pins":paths,"kept":kept,"restored":sorted(record.get("restored") or []),"removed":{**(record.get("removed") or {}),**removed},
+      "matrix":{key:(sorted(matrix[key]) if matrix.get(key) is not None else None) for key in order if key in matrix},
+      "caught_before":sorted(caught),
+    },indent=1)+"\n")
+    return len(removed),len(restored)
+
+
+def restore_subsumed(contract_id,record,rows,surviving,workdir):
+    """Bring back, as they were, the removed pins that kill a mutant the campaign caught before their
+    removal and misses now: the fewest that kill them all, found by running them in the copy."""
+    folder=VERDICTS_DIR/contract_id
+    verdicts=load_verdicts(contract_id)
+    # A removed pin comes back as it was only while it still meets the rules a kept pin meets without
+    # running; one the rules have outgrown stays out, and its mutant, surviving, gets a pin written anew.
+    public=public_pin(current_needs().get(contract_id) or {})
+    waiting={
+      key:entry for key,entry in verdicts.items()
+      if (entry.get("subsumed") or {}).get("pin") and subsumed_file(folder,entry["subsumed"]["pin"]["path"]).is_file()
+      and not pin_static_problems(pin_body(subsumed_file(folder,entry["subsumed"]["pin"]["path"]).read_text()),public)
+    }
+    lost=sorted(set(record.get("caught_before") or [])&surviving)
+    if not lost or not waiting:
+        if lost:
+            print(f"[SUBSUME] {contract_id}: {len(lost)} mutants caught before the removal survive now, and no removed pin is left to bring back",flush=True)
+        return []
+    paths={key:entry["subsumed"]["pin"]["path"] for key,entry in waiting.items()}
+    for key,path in paths.items():
+        shutil.copyfile(subsumed_file(folder,path),workdir/path)
+    try:
+        matrix=SUBSUME.kill_matrix(workdir,sorted(paths.values()),mutant_sources(contract_id,lost,rows),run_pins,SUBSUME_TIMEOUT)
+    finally:
+        for path in paths.values():
+            (workdir/path).unlink(missing_ok=True)
+    kills={path:{key for key,failing in matrix.items() if failing and path in failing} for path in paths.values()}
+    chosen=set(SUBSUME.greedy_cover(kills,set(lost),sorted(paths.values())))
+    for key,path in paths.items():
+        if path not in chosen:
+            continue
+        shutil.move(str(subsumed_file(folder,path)),str(ROOT/path))
+        verdicts[key]["pin"]=verdicts[key].pop("subsumed")["pin"]
+        print(f"[SUBSUME] {contract_id} · {key}: {path} brought back: it kills {', '.join(sorted(kills[path]&set(lost)))}, which the campaign missed without it",flush=True)
+    save_assessments(folder/"verdicts.json",verdicts)
+    unexplained=sorted(set(lost)-set().union(*(kills[path] for path in chosen)) if chosen else set(lost))
+    if unexplained:
+        print(f"[SUBSUME] {contract_id}: no removed pin kills {', '.join(unexplained)}, so the removal did not cost them",flush=True)
+    record["restored"]=sorted({*(record.get("restored") or []),*chosen})
+    record["kept"]=sorted({*(record.get("kept") or []),*chosen})
+    (folder/SUBSUMPTION).write_text(json.dumps(record,indent=1)+"\n")
+    return sorted(chosen)
+
+
 def verdict_request(role,purpose,item,problems=()):
     """One verdict or review question about a survivor, as ``Run.call_many`` asks it; asked again, it
     says what the earlier answer broke."""
@@ -7241,6 +7580,8 @@ def verdict_request(role,purpose,item,problems=()):
 def decide_survivors(contract_ids=None):
     """Ask the verdict model about every judged survivor whose question has no current answer, then
     adopt a mutation pin for every pin verdict (ADR_0006). Only a person starts it, on request."""
+    global PINS_ASIDE
+    PINS_ASIDE=True
     policy=model_generation_policy()
     usable=qualified_model_backends()
     if not usable:
@@ -7271,7 +7612,7 @@ def decide_survivors(contract_ids=None):
             # review answers one question only; a pin stays with its mutant while the verdict asked
             # anew still pins it (settled below, once the answer is final): execution, not the
             # question, keeps a pin.
-            row[1]={**{name:value for name,value in entry.items() if (name=="review" and same) or name=="pin"},"prompt_sha256":prompt_sha256,"answer":answer} if answer else None
+            row[1]={**{name:value for name,value in entry.items() if (name in ("review","rechecks") and same) or name=="pin"},"prompt_sha256":prompt_sha256,"answer":answer} if answer else None
             if not same:
                 anew.add((item["contract_id"],item["key"]))
         # An answer that broke a rule the schema cannot state (a source that is not in the question,
@@ -7313,6 +7654,7 @@ def decide_survivors(contract_ids=None):
             verdicts=load_verdicts(item["contract_id"])
             verdicts[item["key"]]=entry
             save_assessments(VERDICTS_DIR/item["contract_id"]/"verdicts.json",verdicts)
+    recheck_suppressions(run,policy,items)
     state=verdict_state(refresh=True)
     if contract_ids:
         state={contract_id:contract for contract_id,contract in state.items() if contract_id in contract_ids}
@@ -7322,6 +7664,79 @@ def decide_survivors(contract_ids=None):
     print(f"[VERDICT] {summary['calls']} calls, {tokens_text(summary['tokens']['total'])} tokens"+(f", ${summary['list_usd']:.3f} at list price" if summary["list_usd"] is not None else "")+"; verdicts "+", ".join(f"{count} {name}" for name,count in sorted(counts.items()))+f"; {adopted} pins adopted",flush=True)
     if adopted:
         print("[VERDICT] new mutation pins: rerun the retained tests, then --refresh-implementation-faults and --refresh-semantic-mutants",flush=True)
+
+
+# When the model or level a verdict role asks first is not the one that answered a suppression,
+# one in ten of that answerer's suppressions, those whose key hashes lowest with the role's current
+# model, is asked again of the role as it now stands. A changed judge then shows on a sample of what
+# the old one took out of its class, not only on the canaries, as a model upgrade is checked against
+# a sample of the old model's decisions; an answer that does not uphold one pins its mutant.
+RECHECK_ONE_IN=10
+RECHECK_PARTS={"verdict":"answer","verdict_review":"review"}
+
+
+def role_head(policy,role):
+    """The model a role asks first and the level it answers at, as the calls table reads it."""
+    entry=(policy["roles"].get(role) or [{}])[0]
+    return str(entry.get("model") or ""),call_level({"backend":entry.get("backend"),"model":entry.get("model"),"effort":(entry.get("effort") or [""])[0]})
+
+
+def answered_at(answer,ledger):
+    """The model and level a stored answer came from; a level its call did not record is read as the calls table reads it."""
+    row=ledger.get(str(answer.get("call_id"))) or {"backend":answer.get("backend"),"model":answer.get("model"),"effort":answer.get("effort")}
+    return str(answer.get("model") or ""),call_level(row).split(",",1)[0]
+
+
+def suppression_rechecks(policy,items):
+    """The re-check sample: for each role, the suppressions that count by their answer and review and
+    that another model or level answered, grouped by who answered; of each group, one in ten by
+    key, each with its current re-check, if any. A re-check's own outcome never moves a sample."""
+    ledger={str(row.get("call_id")):row for row in MODELS.read_ledger()}
+    heads={role:role_head(policy,role) for role in RECHECK_PARTS}
+    groups,stored={},{}
+    for item in items:
+        verdicts,decided=stored.setdefault(item["contract_id"],(load_verdicts(item["contract_id"]),person_decisions(item["contract_id"])))
+        entry=verdicts.get(item["key"]) or {}
+        base=reviewed_verdict({**entry,"rechecks":{}})
+        if item["key"] in decided or entry.get("prompt_sha256")!=sha256_text(item["prompt"]) or not base or base["verdict"] not in SUPPRESSING:
+            continue
+        for role,part in RECHECK_PARTS.items():
+            answered=answered_at(entry.get(part) or {},ledger)
+            if answered!=heads[role]:
+                groups.setdefault((role,answered),[]).append((item,entry))
+    rows=[]
+    for (role,answered),members in sorted(groups.items()):
+        ranked=sorted(members,key=lambda pair:sha256_text(f"{heads[role][0]}@{heads[role][1]}|{pair[0]['contract_id']}|{pair[0]['key']}"))
+        for item,entry in ranked[:-(-len(ranked)//RECHECK_ONE_IN)]:
+            done=(entry.get("rechecks") or {}).get(role) or {}
+            current=done.get("prompt_sha256")==entry.get("prompt_sha256") and not done.get("problems") and answered_at(done,ledger)==heads[role]
+            rows.append({"role":role,"answered":answered,"head":heads[role],"group":len(members),"item":item,"suppressed":entry["answer"]["verdict"],"recheck":done if current else None})
+    return rows
+
+
+def recheck_suppressions(run,policy,items):
+    """Ask the re-check sample's waiting members again, each of the role it samples, and keep each
+    answer beside the verdict; one that broke a rule the schema cannot state is asked once more."""
+    waiting=[row for row in suppression_rechecks(policy,items) if row["recheck"] is None]
+    answers=[]
+    for row,(_call,response,attempts) in zip(waiting,run.call_many([verdict_request(row["role"],"survivor-verdict-recheck",row["item"]) for row in waiting])):
+        answer=verdict_answer(response,row["item"]["confirmed"]) if response is not None else None
+        print(f"[RECHECK] {row['item']['contract_id']} · {row['item']['key']} ({row['suppressed']} by {'@'.join(row['answered'])}): "+attempts_text(attempts)+(f" → {answer['verdict']}"+(" · "+"; ".join(answer["problems"]) if answer["problems"] else "") if answer else ""),flush=True)
+        answers.append(answer)
+    again=[index for index,answer in enumerate(answers) if answer and answer["problems"]]
+    for index,(_call,response,attempts) in zip(again,run.call_many([verdict_request(waiting[index]["role"],"survivor-verdict-recheck",waiting[index]["item"],(answers[index] or {}).get("problems") or []) for index in again])):
+        answer=verdict_answer(response,waiting[index]["item"]["confirmed"]) if response is not None else None
+        print(f"[RECHECK] {waiting[index]['item']['contract_id']} · {waiting[index]['item']['key']}: asked again: "+attempts_text(attempts)+(f" → {answer['verdict']}" if answer else ""),flush=True)
+        if answer is not None:
+            answers[index]=answer
+    for row,answer in zip(waiting,answers):
+        if answer is None:
+            continue
+        verdicts=load_verdicts(row["item"]["contract_id"])
+        entry=verdicts.get(row["item"]["key"]) or {}
+        entry.setdefault("rechecks",{})[row["role"]]={**answer,"prompt_sha256":sha256_text(row["item"]["prompt"]),"asked_at":utc_now()}
+        verdicts[row["item"]["key"]]=entry
+        save_assessments(VERDICTS_DIR/row["item"]["contract_id"]/"verdicts.json",verdicts)
 
 
 def qualified_model_backends():
@@ -7587,6 +8002,8 @@ def assess_survivors(contract_ids=None):
     """Judge the surviving rule mutants of every contract whose campaign result counts: the symbolic
     search first, then the assessors for the ones it leaves unsure, within the budget. Nothing here
     changes a mutant's outcome. Only a person starts it, on request."""
+    global PINS_ASIDE
+    PINS_ASIDE=True
     policy=model_generation_policy()
     state=assessor_calibration_state(policy)
     usable=qualified_model_backends()
@@ -8673,10 +9090,11 @@ DRAFT_CAUSES={
   "syntax":"does not parse",
   "grounding":"invented project API (found before running)",
   "runtime-api":"misused project API (error on the original)",
-  "rules":"outside the pin rules (imports or primitives)",
+  "rules":"outside the pin rules (imports, primitives or private names)",
   "lint":"breaks the project's lint rules",
   "behaviour":"wrong behaviour on the original",
   "weak":"does not catch the mutant",
+  "suite":"fails in the project's full test run, though it passes alone",
   "unknown":"not kept, cause not recorded (before attempts were recorded)",
 }
 API_ERRORS=re.compile(r"\b(ImportError|ModuleNotFoundError|AttributeError|NameError|TypeError|ModelNotFoundError|ValidationError)\b")
@@ -8690,7 +9108,7 @@ def draft_cause(judged):
         return "syntax"
     if judged.get("grounding"):
         return "grounding"
-    if judged.get("imports_beyond_allowed") or judged.get("primitives"):
+    if judged.get("imports_beyond_allowed") or judged.get("primitives") or judged.get("private"):
         return "rules"
     if judged.get("lint"):
         return "lint"
@@ -8855,6 +9273,9 @@ def model_roles_facts():
         "levels":levels,"efforts":[efforts[key] for key in sorted(efforts)],"last_resort":last_resort,
       },
       "judging":judging_facts(),
+      "rechecks":recheck_facts(policy),
+      "waiting":waiting_pins(),
+      "subsumed":subsumed_facts(),
       "causes":DRAFT_CAUSES,
       "canaries":[
         {"entry":key,"passed":bool(record.get("passed")),"ran_at":str(record.get("ran_at") or ""),
@@ -8886,6 +9307,62 @@ def price_cap_facts(ledger,budget):
           "capped":len(hits),"last_capped":max((str(row.get("at") or "") for row in hits),default=""),
         })
     return {"factor":MODELS.CAP_FACTOR,"roles":rows,"capped":len(stopped)}
+
+
+def recheck_facts(policy):
+    """The re-check sample as it stands: each group of suppressions another model or level answered,
+    how many of it are sampled, re-checked and upheld, and each re-check with its answer."""
+    items=[entry["item"] for contract in verdict_state().values() for entry in contract["items"].values()]
+    groups,rows={},[]
+    for row in suppression_rechecks(policy,items):
+        group=groups.setdefault((row["role"],row["answered"]),{
+          "role":row["role"],"answered":" at ".join(row["answered"]),"now":" at ".join(row["head"]),"suppressions":row["group"],"sampled":0,"asked":0,"upheld":0,
+        })
+        group["sampled"]+=1
+        recheck=row["recheck"]
+        if recheck is None:
+            continue
+        group["asked"]+=1
+        group["upheld"]+=recheck["verdict"] in SUPPRESSING
+        rows.append({
+          "role":row["role"],"contract_id":row["item"]["contract_id"],"key":row["item"]["key"],"suppressed":row["suppressed"],"verdict":recheck["verdict"],
+          "model":recheck.get("model"),"effort":recheck.get("effort"),"call_id":recheck.get("call_id"),"reason":str(recheck.get("reason") or "")[:400],
+        })
+    return {"one_in":RECHECK_ONE_IN,"groups":list(groups.values()),"rows":rows}
+
+
+def subsumed_facts():
+    """The pins other pins of their contract made redundant, by contract, and the pins there are now."""
+    rows={}
+    for folder in sorted(path for path in VERDICTS_DIR.iterdir() if path.is_dir()) if VERDICTS_DIR.is_dir() else []:
+        for entry in load_verdicts(folder.name).values():
+            if entry.get("subsumed"):
+                row=rows.setdefault(folder.name,{"contract_id":folder.name,"removed":0,"by":set()})
+                row["removed"]+=1
+                row["by"].update(entry["subsumed"].get("by") or [])
+    return {"pins":len(list(PINS_DIR.glob("test_pin_*.py"))),"contracts":[{**row,"by":len(row["by"])} for row in sorted(rows.values(),key=lambda row:(-row["removed"],row["contract_id"]))]}
+
+
+def waiting_pins():
+    """Each mutant whose verdict that counts is pin and that has no current pin, with where its draft
+    ladder stands: not drafted yet, climbing, or every rung tried, when its verdict is asked again
+    with the project's callers in view and, still pin, the mutant waits for the person."""
+    rows=[]
+    for contract_id,contract in sorted(verdict_state().items()):
+        for key,entry in sorted(contract["items"].items()):
+            if not entry["verdict"] or entry["verdict"]["verdict"]!="pin" or entry["pin"]:
+                continue
+            drafts=recorded_drafts(contract_id,key)
+            rung=max((int(row.get("level") or 1) for row in drafts),default=0)
+            last=DRAFT_CAUSES.get(str(drafts[-1].get("cause")),str(drafts[-1].get("cause"))) if drafts else ""
+            if ladder_exhausted(contract_id,key):
+                stage="every rung tried, and asked again with its callers in view it is still pin: it waits for the person"
+            elif drafts:
+                stage=f"climbing: rung {rung} so far, the last draft {last}"
+            else:
+                stage="not drafted yet: the next --decide-survivors drafts it"
+            rows.append({"contract_id":contract_id,"key":key,"kind":entry["item"]["kind"],"drafts":len(drafts),"rung":rung,"stage":stage})
+    return rows
 
 
 def judging_facts():
@@ -8944,8 +9421,8 @@ def find_recorded_answers():
             for row in rows:
                 add(folder.name,folder,row.get("call_id"))
         for entry in load_verdicts(folder.name).values():
-            for part in ("answer","review","pin"):
-                add(folder.name,folder,(entry.get(part) or {}).get("call_id"))
+            for answer in [*(entry.get(part) or {} for part in ("answer","review","pin")),*(entry.get("rechecks") or {}).values(),(entry.get("subsumed") or {}).get("pin") or {}]:
+                add(folder.name,folder,answer.get("call_id"))
     for store in (TRIAGE_ANSWERS_DIR,SEMANTIC.PROPOSAL_ROOT):
         for path in sorted(store.glob("*/assessments.json")) if store.is_dir() else []:
             for entry in load_assessments(path).values():
@@ -8985,7 +9462,7 @@ def render_model_roles_page():
     """The Model roles page: how the models the pipeline asks fare, the draft author's health first."""
     facts=model_roles_facts()
     published=publish_model_answers()
-    for row in [*facts["draft"]["rejected"],*facts["draft"]["last_resort"],*facts["judging"]["troubled"]]:
+    for row in [*facts["draft"]["rejected"],*facts["draft"]["last_resort"],*facts["judging"]["troubled"],*facts["rechecks"]["rows"]]:
         row["answer"]=published.get(str(row.get("call_id")),"")
     for row in facts["canaries"]:
         row["answers"]=[[case,published[call_id]] for case,call_id in row.get("calls") or [] if call_id in published]
@@ -9255,6 +9732,9 @@ def parse_args():
     parser.add_argument("--decide-survivors",action="store_true",help="ask the verdict model about every judged survivor and adopt a mutation pin for every pin verdict (ADR_0006)")
     parser.add_argument("--revise-pins",action="store_true",help="remove the mutation pins that verify an older revision of their requirement than the docs declare, with their records, and rebuild the calibration from stored answers; asks no model (ADR_0006)")
     parser.add_argument("--refresh-pins",action="store_true",help="bring every mutation pin to the current pin rules: normalized, lint-clean and judged again; the draft author retries with the reason (ADR_0006)")
+    parser.add_argument("--reject-pin",nargs=3,metavar=("CONTRACT","MUTANT","REASON"),help="take back a pin the project's full test run fails though the cascade kept it alone; its draft is never judged again from its stored answer")
+    parser.add_argument("--subsume-pins",action="store_true",help="remove the pins other pins of their contract make redundant, by the kill matrix of each contract's pins against its pinned mutants, after bringing back what an earlier removal cost; asks no model")
+    parser.add_argument("--verify",action="store_true",help="with --subsume-pins: only bring back what earlier removals cost, and remove nothing")
     return parser.parse_args()
 
 
@@ -9281,6 +9761,13 @@ def main():
         return
     if args.refresh_pins:
         refresh_pins(set(args.contracts or []) or None)
+        portal_left_for_refresh()
+        return
+    if args.reject_pin:
+        reject_in_suite(*args.reject_pin)
+        return
+    if args.subsume_pins:
+        subsume_pins(set(args.contracts or []) or None,verify_only=args.verify)
         portal_left_for_refresh()
         return
     if args.assess_survivors:

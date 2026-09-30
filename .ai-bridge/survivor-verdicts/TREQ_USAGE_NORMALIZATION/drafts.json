@@ -34,5 +34,22 @@
     "llm_router._internal.capabilities.usage.normalize_usage"
    ]
   }
+ ],
+ "SM-4151C6BB": [
+  {
+   "at": "2026-09-30T14:01:24.339749Z",
+   "call_id": "20260930T135348Z-508e17",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "d5acdc9a6d75f3acf5268a685ee27c99ef84c1ac00d679085a6db018fc750339",
+   "reason": "",
+   "sources": [
+    "llm_router.UsageStats",
+    "llm_router._internal.capabilities.usage.normalize_usage"
+   ]
+  }
  ]
 }

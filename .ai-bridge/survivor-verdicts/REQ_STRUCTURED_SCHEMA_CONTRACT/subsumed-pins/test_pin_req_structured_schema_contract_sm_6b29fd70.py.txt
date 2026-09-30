@@ -1,0 +1,76 @@
+# mutation-pin: REQ_STRUCTURED_SCHEMA_CONTRACT SM-6B29FD70
+# pinned-by: claude-opus-5-5
+# written-by: claude-opus-5-5, the last resort, the verdict's own model with tools
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from llm_router import LLMRouter, Model, Provider, RouterProfile
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+)
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+)
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
+
+pytestmark = pytest.mark.verification_kind("unit")
+
+_CHAT_PATH = openai_chat_path()
+
+_SCHEMA = {
+    "title": "OrderLine",
+    "type": "object",
+    "properties": {"item": {"$ref": "#/$defs/Item"}},
+    "required": ["item"],
+    "$defs": {
+        "Item": {
+            "type": "object",
+            "properties": {"quantity": {"type": "integer", "minimum": 1}},
+            "required": ["quantity"],
+        }
+    },
+}
+
+_BREAKS_ITEM = {"item": {"quantity": 0}}
+_CONFORMS = {"item": {"quantity": 3}}
+
+
+def _reply(record: dict[str, object]) -> ScriptedResponse:
+    return ScriptedResponse(
+        status_code=200,
+        headers={"Content-Type": "application/json"},
+        body=openai_success_response(text=json.dumps(record)),
+    )
+
+
+@pytest.mark.verifies("REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]")
+def test_mapping_schema_enforces_constraints_behind_defs_ref(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A $ref'd Item constraint rejects quantity 0 and accepts quantity 3."""
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", "order-assurance-value")
+    replies = [_reply(_BREAKS_ITEM), _reply(_CONFORMS), _reply(_CONFORMS)]
+    with (
+        ScriptedHTTPServer(port=0, routes={("POST", _CHAT_PATH): replies}) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ),
+    ):
+        router = LLMRouter(
+            RouterProfile(model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER),
+            temperature=0.0,
+        )
+        response = router.query(
+            "Extract the order line from the note.",
+            response_schema=_SCHEMA,
+        )
+        recorded = server.recorded_requests("POST", _CHAT_PATH)
+
+    assert response.data["parsed"] == _CONFORMS
+    assert len(recorded) == 2

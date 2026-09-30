@@ -1,32 +1,59 @@
 {
+ "1d8ccb53084de501": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "status_code": "500"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T152201Z-9075ae",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [
+     "its source \u00abif status_code >= _SERVER_ERROR_STATUS_MIN:\\n return RetryDecision(classificati\u2026\u00bb is not in the question",
+     "none of its sources quotes a line the change touches"
+    ],
+    "reason": "The changed version omits passing the status_code argument when a server error occurs, which means it will take its default value instead of the actual integer passed.",
+    "response_sha256": "3b67ff70e65bad572be06cdf20ca1395a53ef8b63aeb32ced9f58d80d4a9dd52",
+    "sources": [
+     "    if status_code >= _SERVER_ERROR_STATUS_MIN:\\n        return RetryDecision(classification=RetryClassification.RETRYABLE, reason='server_status')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "status_code": "599"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T152201Z-ba099b",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "In the server-status branch the changed version omits status_code, so the returned RetryDecision has status_code None instead of the input value (599 here).",
+    "response_sha256": "830efa27b81a7ab4341f087c9d7ffa8291dec64cc7b579dfd29bdc21c3bf36ee",
+    "sources": [
+     "if status_code >= _SERVER_ERROR_STATUS_MIN:",
+     "return RetryDecision(classification=RetryClassification.RETRYABLE, reason='server_status')",
+     "reason=\"server_status\","
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "5be33c9fb539121d009b92af499c4ddc6f4d48f39b522e92449a8b99ac6377fd"
+ },
  "4bcf2fc831eaf45c": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T145320Z-95484c",
+    "call_id": "20260930T140926Z-0ff317",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "Omitting the context_getter argument only affects the contextual data sent to the logger during retries, which does not change the method's return value, the object's state, or the type of exceptions raised.",
-    "response_sha256": "93c35cc6c3ac8abe7df7c878b38c29bfea05c0e89281d29da1958b0ddcadf419",
+    "reason": "Omitting the `context_getter` argument only affects what is logged during intermediate retry attempts, which does not change the method's return value, the object's state, or the type of exception it raises.",
+    "response_sha256": "c8b9dfa74d7411e4b18474d95d42b9f0cade8af722ace623d6434a9946f343ea",
     "sources": [
      "        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )",
-     "    retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)"
-    ],
-    "verdict": "equivalent"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "arguments": {},
-    "backend": "antigravity-cli",
-    "call_id": "20260929T145320Z-e17ef9",
-    "confidence": 1,
-    "model": "gemini-3.8-flash-high",
-    "problems": [],
-    "reason": "Omitting context_getter in build_provider_retrying only alters retry logging metadata and does not affect the method's return value, object state, or raised exception types.",
-    "response_sha256": "435c11d06b88e62571bbf5e236de95e8765786068be544e374de35580c0ef63c",
-    "sources": [
-     "            context_getter=lambda: _retry_context(request),",
      "    retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)"
     ],
     "verdict": "equivalent"
@@ -34,20 +61,21 @@
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {},
     "backend": "claude-cli",
-    "call_id": "20260929T123012Z-d60ba0",
+    "call_id": "20260930T140926Z-b8f8ce",
     "confidence": 0.72,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The change only drops the context_getter argument, which supplies log fields for retry logging, so returns, object state and exception types stay the same.",
-    "response_sha256": "63485ebed7ad844ef24ac5c50e7f9672aa774e6e175f4ee1fcfffbd5acb553fa",
+    "reason": "The only change is dropping the optional context_getter, which only affects retry log context, so the return values and exception types are unchanged.",
+    "response_sha256": "e7ffe38e564c8798e287eec8a227a8cbc237d71c32eb01c8ecc108976981d8e0",
     "sources": [
      "retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)",
-     "context_getter=lambda: _retry_context(request),"
+     "context_getter=lambda: _retry_context(request),",
+     "raise _provider_boundary_error(exc, request=request) from exc"
     ],
     "verdict": "equivalent"
    }
   },
-  "prompt_sha256": "5e4d97c87f75d6b3fcb666bbe6af0ba8c193a992f10754103a51d4048a093f43"
+  "prompt_sha256": "71fad74900b2a17d8f42fd2ed16b7f3c04e9505eef98a80ac7c8dd775e77a160"
  },
  "5a829211adec3347": {
   "answers": {
@@ -201,6 +229,21 @@
      "if status_code > _SERVER_ERROR_STATUS_MIN:"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-012704",
+    "confidence": 0.4,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change from >= to > only matters at status_code == _SERVER_ERROR_STATUS_MIN, and I can't tell whether that value is already in one of the two status sets, which the failed symbolic search hints at.",
+    "response_sha256": "c4df12c8843793789571387c07807d9de79d05f4eec31f57248cc85dd6f70ce3",
+    "sources": [
+     "if status_code >= _SERVER_ERROR_STATUS_MIN:",
+     "if status_code > _SERVER_ERROR_STATUS_MIN:"
+    ],
+    "verdict": "unsure"
    }
   },
   "prompt_sha256": "7e0f570497a7ba264c84d34d23dbd999867c5ee0fe1fce083c6bcd760d76261f"

@@ -1,84 +1,159 @@
 # mutation-pin: REQ_ROUTE_TIMEOUT_FALLBACK b9accd29af1a644f
 # pinned-by: claude-opus-5-5
+# written-by: claude-opus-5-5, the last resort, the verdict's own model with tools
 from __future__ import annotations
 
+import dataclasses
 import typing
 
+import hypothesis
 import pytest
 
 import llm_router
-import tests.llm_router.support.workers.timeout as worker_timeout
+from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+)
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
 
 pytestmark = pytest.mark.verification_kind("unit")
 
-_BLOCK_DURATION = 3.0
-_ATTEMPT_TIMEOUT = 0.05
-_BOUNDED_TIME = 0.5
+_ATTEMPT_TIMEOUT = 0.2
+_BLOCKED_ROUTE_SECONDS = 4.0
+_DEADLINE_MS = 1500
+_FALLBACK_TEXT = "fallback route answer"
+_PROMPT = "Reply with the timeout marker only."
+_OPEN_LIMITS = llm_router.ProviderLimits(
+    rps=0.0,
+    rpm=0.0,
+    cooldown_seconds=0.0,
+    cooldown_after_failures=0,
+)
+_BOUNDED_SETTINGS = hypothesis.settings(
+    deadline=_DEADLINE_MS,
+    max_examples=1,
+    database=None,
+    derandomize=True,
+    suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+)
 
 
-class _BlockingExecutor:
-    """Executor that blocks every call until block_event is set."""
+@dataclasses.dataclass(frozen=True)
+class _Scene:
+    """A router wired to a local provider whose first answer is held back."""
 
-    def __init__(
-        self,
-        block_event: typing.Any,
-        block_duration: float,
-    ) -> None:
-        self.block_event = block_event
-        self.block_duration = block_duration
-        self.calls: list[object] = []
+    router: llm_router.LLMRouter
+    server: ScriptedHTTPServer
 
-    def execute(self, request: object) -> object:
-        self.calls.append(request)
-        self.block_event.wait(timeout=self.block_duration)
-        return object()
+
+def _answer(*, text: str, delay_seconds: float) -> ScriptedResponse:
+    return ScriptedResponse(
+        status_code=200,
+        headers={"Content-Type": "application/json"},
+        body=openai_success_response(text=text),
+        delay_seconds=delay_seconds,
+    )
+
+
+def _blocked_profile() -> llm_router.RouterProfile:
+    return llm_router.RouterProfile(
+        model=llm_router.Model.DEEPSEEK_V3,
+        provider=llm_router.Provider.OPENROUTER,
+    )
+
+
+def _fast_profile() -> llm_router.RouterProfile:
+    return llm_router.RouterProfile(
+        model=llm_router.Model.LLAMA_SCOUT,
+        provider=llm_router.Provider.GROQ,
+    )
+
+
+def _serve(
+    *,
+    profiles: list[llm_router.RouterProfile],
+    answers: list[ScriptedResponse],
+) -> typing.Iterator[_Scene]:
+    router = llm_router.LLMRouter(
+        profiles,
+        limits_by_provider={
+            llm_router.Provider.OPENROUTER: _OPEN_LIMITS,
+            llm_router.Provider.GROQ: _OPEN_LIMITS,
+        },
+        round_robin_start=False,
+        shuffle_fallbacks=False,
+        attempt_timeout_seconds=_ATTEMPT_TIMEOUT,
+    )
+    routes = {("POST", openai_chat_path()): answers}
+    with (
+        ScriptedHTTPServer(port=0, routes=routes) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ),
+    ):
+        yield _Scene(router=router, server=server)
+
+
+def _install_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
+    value = "local-provider-credential"
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", value)
+    monkeypatch.setenv("GROQ_API_KEY_1", value)
+
+
+@pytest.fixture
+def fallback_scene(monkeypatch: pytest.MonkeyPatch) -> typing.Iterator[_Scene]:
+    """First route is held far beyond the attempt timeout; second answers."""
+    _install_credentials(monkeypatch)
+    yield from _serve(
+        profiles=[_blocked_profile(), _fast_profile()],
+        answers=[
+            _answer(text="late blocked answer", delay_seconds=_BLOCKED_ROUTE_SECONDS),
+            _answer(text=_FALLBACK_TEXT, delay_seconds=0.0),
+        ],
+    )
+
+
+@pytest.fixture
+def terminal_scene(monkeypatch: pytest.MonkeyPatch) -> typing.Iterator[_Scene]:
+    """The only route is held far beyond the attempt timeout."""
+    _install_credentials(monkeypatch)
+    yield from _serve(
+        profiles=[_blocked_profile()],
+        answers=[
+            _answer(text="late blocked answer", delay_seconds=_BLOCKED_ROUTE_SECONDS),
+        ],
+    )
 
 
 @pytest.mark.verifies("REQ_ROUTE_TIMEOUT_FALLBACK[revision==1]")
-def test_sync_timeout_returns_promptly_without_blocking_on_shutdown() -> None:
-    """pool.shutdown must use wait=False after a timeout.
+@_BOUNDED_SETTINGS
+@hypothesis.given(content=hypothesis.strategies.just(_PROMPT))
+def test_sync_timeout_falls_back_without_waiting_for_blocked_route(
+    fallback_scene: _Scene,
+    content: str,
+) -> None:
+    """The fallback answer arrives well before the blocked route would answer."""
+    response = fallback_scene.router.query(content)
 
-    The defect flips timed_out to False inside the except block, so
-    pool.shutdown(wait=not False) == pool.shutdown(wait=True), which
-    blocks the caller until the stuck background thread finishes
-    (_BLOCK_DURATION seconds).  The correct code uses wait=False and
-    returns in well under _BOUNDED_TIME.
-    """
-    event_cls = getattr(worker_timeout, "Event", None)
-    if event_cls is None:
-        sys_mod = typing.sys  # typing imports sys internally
-        threading_mod = sys_mod.modules.get("threading")
-        event_cls = threading_mod.Event  # type: ignore[union-attr]
+    assert response.output_text == _FALLBACK_TEXT
+    assert [attempt.error_type for attempt in response.routing_trace] == [
+        "TimeoutError",
+        None,
+    ]
+    assert fallback_scene.server.request_count("POST", openai_chat_path()) == 2
 
-    time_mod = typing.sys.modules["time"]
 
-    router_runtime_cls = getattr(llm_router, "RouterRuntime", None)
-    if router_runtime_cls is None:
-        router_mod = typing.sys.modules["llm_router._internal.runtime.router"]
-        router_runtime_cls = router_mod.RouterRuntime
+@pytest.mark.verifies("REQ_ROUTE_TIMEOUT_FALLBACK[revision==1]")
+@_BOUNDED_SETTINGS
+@hypothesis.given(content=hypothesis.strategies.just(_PROMPT))
+def test_sync_terminal_timeout_surfaces_without_waiting_for_blocked_route(
+    terminal_scene: _Scene,
+    content: str,
+) -> None:
+    """With no fallback left, the timeout error surfaces after one attempt."""
+    with pytest.raises(TimeoutError, match=r"Attempt timed out"):
+        terminal_scene.router.query(content)
 
-    block_event = event_cls()
-    executor = _BlockingExecutor(
-        block_event=block_event,
-        block_duration=_BLOCK_DURATION,
-    )
-
-    runtime = router_runtime_cls.__new__(router_runtime_cls)
-    runtime._executor = executor
-
-    t0 = time_mod.monotonic()
-    with pytest.raises(TimeoutError):
-        runtime._call_sync_with_timeout(
-            None,
-            timeout_seconds=_ATTEMPT_TIMEOUT,
-        )
-    elapsed = time_mod.monotonic() - t0
-
-    block_event.set()  # release the stuck background thread
-
-    assert elapsed < _BOUNDED_TIME, (
-        f"_call_sync_with_timeout blocked for {elapsed:.3f}s after raising "
-        f"TimeoutError (expected < {_BOUNDED_TIME}s). "
-        "Defect: timed_out=False causes pool.shutdown(wait=True), "
-        "which hangs until the background thread finishes."
-    )
+    assert terminal_scene.server.request_count("POST", openai_chat_path()) == 1

@@ -1,64 +1,54 @@
 # mutation-pin: REQ_STRUCTURED_SCHEMA_CONTRACT 24bb2ffb3a209650
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
-from typing import Any
+import json
 
 import pytest
 
-from llm_router._internal.capabilities.schema import SchemaSpec, with_schema_transform
+from llm_router import LLMRouter, Model, Provider, RouterProfile
+from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+)
+from tests.llm_router.support.workers.worker_patches import prepare_fault_case
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
-def parse_payload(value: object) -> object:
-    assert isinstance(value, dict)
-    assert isinstance(value["count"], int)
-    return value
-
-
-def add_additional_properties_false(json_schema: Any) -> Any:
-    return {**json_schema, "additionalProperties": False}
-
-
-def make_spec() -> SchemaSpec:
-    json_schema = {
+@pytest.mark.verifies("REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]")
+def test_provider_schema_transform_keeps_schema_name_and_validation() -> None:
+    path = openai_chat_path()
+    schema = {
+        "title": "ticket_summary",
         "type": "object",
         "properties": {"count": {"type": "integer", "minimum": 0}},
         "required": ["count"],
     }
-    return SchemaSpec(
-        name="original_spec_name",
-        json_schema=json_schema,
-        parser=parse_payload,
-    )
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", path): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text='{"count": 2}'),
+                )
+            ]
+        },
+    ) as server:
+        prepare_fault_case(case="aistudio_video", server_base_url=server.base_url)
+        router = LLMRouter(
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO)
+        )
 
+        response = router.query("Count the tickets.", response_schema=schema)
 
-@pytest.mark.verifies("REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]")
-def test_with_schema_transform_keeps_name_when_none_given() -> None:
-    spec = make_spec()
+        body = json.loads(server.recorded_requests("POST", path)[0].body)
 
-    result = with_schema_transform(spec, add_additional_properties_false)
-
-    assert result.name == "original_spec_name"
-    assert result.json_schema["additionalProperties"] is False
-
-
-@pytest.mark.verifies("REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]")
-def test_with_schema_transform_replaces_name_when_given() -> None:
-    spec = make_spec()
-
-    result = with_schema_transform(
-        spec, add_additional_properties_false, name="renamed_spec"
-    )
-
-    assert result.name == "renamed_spec"
-
-
-@pytest.mark.verifies("REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]")
-def test_with_schema_transform_preserves_router_side_validation() -> None:
-    spec = make_spec()
-
-    result = with_schema_transform(spec, add_additional_properties_false)
-
-    assert result.parse({"count": 2}) == {"count": 2}
+    json_schema = body["response_format"]["json_schema"]
+    assert json_schema["name"] == "ticket_summary"
+    assert json_schema["schema"]["required"] == ["count"]
+    assert json.loads(response.output_text) == {"count": 2}

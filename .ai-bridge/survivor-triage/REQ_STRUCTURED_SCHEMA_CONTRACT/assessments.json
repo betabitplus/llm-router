@@ -254,6 +254,52 @@
   },
   "prompt_sha256": "ab9d89e16689bce8b5a7776a7f6f588c57239cafeb6ae106412e8d1d7e5c74f4"
  },
+ "5171091e759c5336": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "name": "'new'",
+     "spec": "SchemaSpec(name='old', json_schema={}, parser=int)",
+     "transform": "dict"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T185802Z-e967d7",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version completely ignores the `name` argument by hardcoding the condition to `True`, whereas the original version correctly uses the provided `name` if it is not `None`.",
+    "response_sha256": "d7e226535bb861fb9c693209b08ec4b83a5463bd95adadd7a9061ba05991523b",
+    "sources": [
+     "name=spec.name if name is None else name,",
+     "return replace(spec, name=spec.name if True else name, json_schema=transformed)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "name": "'b'",
+     "spec": "SchemaSpec(name='a', json_schema={}, parser=lambda x: x)",
+     "transform": "lambda s: s"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T185802Z-760b33",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [
+     "its source \u00abname=spec.name if None is None else name\u00bb is not in the question"
+    ],
+    "reason": "The changed version always keeps spec.name and ignores a non-None name, so name='b' gives a spec named 'a' instead of 'b'.",
+    "response_sha256": "976031d88e8482b8514c4a9a57ba9ca9fda64504853b06f6e08dcd40f57571f1",
+    "sources": [
+     "name=spec.name if None is None else name",
+     "return replace(spec, name=spec.name if True else name, json_schema=transformed)",
+     "name=spec.name if name is None else name,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "15e90432ae5f8666bca1c0483a25da33b3ad365249298f57b0a77c8170a922d1"
+ },
  "6e9116a1b83a69f4": {
   "answers": {
    "claude-cli:claude-sonnet-5": {
@@ -548,6 +594,49 @@
   },
   "prompt_sha256": "2e7f4622038419fe8af2bee5f8ed8ba654d3540a97f1cdeb622bb4320f3afaca"
  },
+ "c8e877b2ede451a3": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "name": "None",
+     "spec": "SchemaSpec(name='test', json_schema={'a': 1}, parser=lambda x: x)",
+     "transform": "lambda x: {'a': 2}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T185747Z-36c413",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified version does not pass the transformed json_schema to replace(), causing it to return a SchemaSpec with the original unmodified schema instead of the transformed one.",
+    "response_sha256": "a087f0a94070bf7f8d0433064f957e5b8c00f338ced4a60f7394f895d067bf2f",
+    "sources": [
+     "        json_schema=transformed,",
+     "    return replace(spec, name=spec.name if name is None else name)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "name": "None",
+     "spec": "SchemaSpec(name='a', json_schema={}, parser=lambda x: x)",
+     "transform": "lambda s: {'type': 'object'}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T185802Z-28e06a",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version omits json_schema=transformed in replace, so the returned spec keeps the original schema instead of the transformed one.",
+    "response_sha256": "1c9cffd494ed94baf43012a05bbdbc4ad14ffb3fd16a5b37cc7f8f76a6ec2a20",
+    "sources": [
+     "json_schema=transformed,",
+     "return replace(spec, name=spec.name if name is None else name)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "b791514e09c91f31a2ef05ea08170a6134ca3f78959837c2adca7471fa7ea8fe"
+ },
  "d84f7092509ce623": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -654,6 +743,49 @@
    }
   },
   "prompt_sha256": "0cf6463a40142688a2a5200f3c67d2ee9db41feb65fd288545f287d50a538d34"
+ },
+ "f149230e76762027": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "name": "\"b\"",
+     "spec": "SchemaSpec(name=\"a\", json_schema={}, parser=lambda x: x)",
+     "transform": "lambda x: x"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T185805Z-09bda1",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version completely ignores the `name` parameter when it is passed, while the original version updates the spec's name if the `name` parameter is not None.",
+    "response_sha256": "24053f0b4bb5602d61ede148242b22c54e1381195c36420f46c9621aea14694d",
+    "sources": [
+     "        name=spec.name if name is None else name,",
+     "    return replace(spec, json_schema=transformed)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "name": "'b'",
+     "spec": "SchemaSpec(name='a', json_schema={}, parser=lambda x: x)",
+     "transform": "lambda s: s"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T185747Z-d87ac3",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version ignores the `name` argument, so passing name='b' renames the spec in the original but leaves it as 'a' in the changed version.",
+    "response_sha256": "b699f3cc024b03e8dea4ffdba1b55b51a6dd20dadcdfd0364f76f841f151e4da",
+    "sources": [
+     "name=spec.name if name is None else name,",
+     "return replace(spec, json_schema=transformed)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "8919e09a542d3d6acb1a001c48584baf5c634c4f5fd2a4b3cec98fda3ed4ef78"
  },
  "f8b19d9c5fd12b62": {
   "answers": {

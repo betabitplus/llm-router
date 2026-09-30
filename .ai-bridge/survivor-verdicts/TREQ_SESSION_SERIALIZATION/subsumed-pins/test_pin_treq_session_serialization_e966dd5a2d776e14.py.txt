@@ -1,0 +1,24 @@
+# mutation-pin: TREQ_SESSION_SERIALIZATION e966dd5a2d776e14
+# pinned-by: claude-opus-5-5
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from llm_router._internal.runtime.errors import SessionSerializationError
+from llm_router._internal.session.serialization import decode_session
+
+pytestmark = pytest.mark.verification_kind("unit")
+
+
+@pytest.mark.verifies("TREQ_SESSION_SERIALIZATION[revision==1]")
+@pytest.mark.parametrize("system", [123, 4.5, ["be brief"]])
+def test_decode_rejects_non_string_system_with_valid_history(
+    system: object,
+) -> None:
+    history = [{"role": "user", "parts": [], "meta": {}}]
+    text = json.dumps({"version": 1, "system": system, "history": history})
+
+    with pytest.raises(SessionSerializationError, match=r"system prompt"):
+        decode_session(text)

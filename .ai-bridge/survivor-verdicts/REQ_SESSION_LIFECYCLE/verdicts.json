@@ -277,39 +277,68 @@
  "cfdaa730a0d7b1f8": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T090028Z-9be2c4",
+   "call_id": "20260930T201135Z-6ec2b2",
    "confirmed": false,
-   "level": "implementation",
+   "effort": "xhigh",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Dropping encoding=\"utf-8\" can change decoding on platforms whose default encoding isn't UTF-8, so the mutant is not strictly equivalent. However, file decoding belongs to session persistence (the method is tagged REQ_SESSION_PERSISTENCE), not to anything REQ_SESSION_LIFECYCLE asks for: turn order, ignoring history, forks, clearing or concurrency. The added parentheses around the generator expression have no effect.",
-   "response_sha256": "125c1626177194b95c3b4470332c34b9451cdf76dfce0aa40cc1e02abfe45cd2",
+   "reason": "The only real change is dropping encoding=\"utf-8\". That changes behaviour only when non-ASCII session text is loaded under a locale whose default encoding is not UTF-8. REQ_SESSION_LIFECYCLE covers in-memory history ordering, one-request history exclusion, forks, clearing and concurrency, not reading saved sessions from disk, so this requirement doesn't cover the difference. It belongs to REQ_SESSION_PERSISTENCE, which the @impl tag names.",
+   "response_sha256": "ce7f08a78b7c800afe9fa32d5589a8130a9918f156e845c495054ff8a42771f0",
    "sources": [
     "text = session_path.read_text(encoding=\"utf-8\")",
+    "text = session_path.read_text()",
+    "Remembered turns shall be available to later requests; a caller shall be able to ignore history for one request; forks shall diverge independently; clearing shall leave the session reusable; and concurrent requests shall not mix session state.",
     "# @impl Session persistence, IMPL_SESSION_PERSISTENCE, [REQ_SESSION_PERSISTENCE[revision==1]]",
-    "Remembered turns shall be available to later requests; a caller shall be able to ignore history for one request; forks shall diverge independently; clearing shall leave the session reusable; and concurrent requests shall not mix session state."
+    "return cls._from_store(SessionStore.load(path))"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "ba3baed963e5c3b6b5aeb1248d0adda6304151b7168ab10948db43e147504a9d",
+  "pin": {
+   "adopted_at": "2026-09-30T20:17:31.278161Z",
+   "answer_sha256": "574bb7c54f498aa02bf8c478cd52c0904e67c2758f41d8990a0544c419250c4c",
+   "call_id": "20260930T201548Z-c49d49",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "574bb7c54f498aa02bf8c478cd52c0904e67c2758f41d8990a0544c419250c4c",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_cfdaa730a0d7b1f8.py",
+   "response_sha256": "1fb5f1b24225a2db4e990db8f337da3c74162923b995aae351aa5e5e30d0e4ea",
+   "source": "last resort",
+   "sources": [
+    "llm_router.Session"
+   ]
+  },
+  "prompt_sha256": "b1a033204a5a089930ba817429f3de49d8aa98cd6a6c0efcb6a2d09d062ba72d",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T090042Z-174b5e",
+   "call_id": "20260930T201153Z-7992fe",
    "confirmed": false,
-   "level": "implementation",
+   "effort": "",
+   "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "ba3baed963e5c3b6b5aeb1248d0adda6304151b7168ab10948db43e147504a9d",
-   "reason": "The mutant removes the explicit UTF-8 encoding when reading the session file, altering behavior on systems where UTF-8 is not the default. This difference pertains to session persistence and file I/O, not the explicit isolation and concurrency of session history that the requirement demands.",
-   "response_sha256": "30a4da5e3d6e451c7aa8f9ff3a2a2f93f849310f6f173a41c364a4fdd3d37cb0",
+   "prompt_sha256": "b1a033204a5a089930ba817429f3de49d8aa98cd6a6c0efcb6a2d09d062ba72d",
+   "reason": "The mutant drops the explicit UTF-8 encoding when reading a session from disk. On systems with a different default encoding, loading a session with non-ASCII text will fail, breaking the requirement that remembered turns remain available to later requests.",
+   "response_sha256": "0abc2e44f5876229c769c0c79d21d52d61c3912a86ac417ee6dcd60d34043d49",
    "sources": [
-    "Requirement REQ_SESSION_LIFECYCLE (Session history remains explicit and isolated)",
-    "text = session_path.read_text(encoding=\"utf-8\")"
+    "Remembered turns shall be available to later requests",
+    "text = session_path.read_text(encoding=\"utf-8\")",
+    "text = session_path.read_text()"
    ],
-   "test_focus": "",
-   "verdict": "irrelevant"
+   "test_focus": "The `Session.load` caller reaches the changed code with a `path` to a saved session file containing non-ASCII characters.",
+   "verdict": "pin"
   }
  }
 }

@@ -33,6 +33,7 @@ GREMLINS_VERSION = "1.9.0"
 OPERATORS = (
     "comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body",
     "argument", "condition", "conditional", "negation", "container", "conversion", "method", "attribute",
+    "identity", "slice",
 )
 CLASS_BY_OPERATOR = {
     "comparison": "impl.comparison",
@@ -52,7 +53,14 @@ CLASS_BY_OPERATOR = {
     "condition": "impl.control-flow",
     "conditional": "impl.control-flow",
     "negation": "impl.control-flow",
+    # Identity and membership swaps are comparisons; MutPy's slice index removal moves a bound.
+    "identity": "impl.comparison",
+    "slice": "impl.boundary",
 }
+# A strict comparison made inclusive or back (``<`` ↔ ``<=``, ``>`` ↔ ``>=``) moves the boundary it
+# decides, as PIT's conditionals-boundary mutator does: it challenges impl.boundary as well as the
+# comparison it changes. The engine's comparison operator plants it with these descriptions.
+BOUNDARY_SWAPS = frozenset({"< to <=", "<= to <", "> to >=", ">= to >"})
 CLASSES = ("impl.comparison", "impl.boundary", "impl.arithmetic", "impl.control-flow", "impl.effect")
 CLASS_NOUNS = {
     "impl.comparison": "comparison",
@@ -364,6 +372,17 @@ def blocked_basis(plan: dict) -> str:
 # --- projection --------------------------------------------------------------------
 
 
+def fault_classes(operator: object, description: object = "") -> tuple[str, ...]:
+    """The Implementation classes one rule mutant challenges: its operator's class, and impl.boundary
+    too for a comparison made inclusive or strict (PIT's conditionals boundary)."""
+    primary = CLASS_BY_OPERATOR.get(str(operator or ""))
+    if primary is None:
+        return ()
+    if str(operator) == "comparison" and str(description or "") in BOUNDARY_SWAPS:
+        return (primary, "impl.boundary")
+    return (primary,)
+
+
 def mutant_outcome(result: dict) -> str:
     """One engine result in the Test Plan's words."""
     status = str(result.get("status") or "error")
@@ -397,14 +416,15 @@ def contract_mutants(plan: dict, report: dict, root: Path) -> list[dict]:
     for result in report.get("results") or []:
         relative = relative_source(root, result.get("file_path"))
         line = int(result.get("line_number") or -1)
-        fault_class = CLASS_BY_OPERATOR.get(str(result.get("operator") or ""))
-        if fault_class is None or (relative, line) not in allowed:
+        classes = fault_classes(result.get("operator"), result.get("description"))
+        if not classes or (relative, line) not in allowed:
             continue
         rows.append(
             {
                 "id": str(result.get("gremlin_id") or ""),
                 "fingerprint": str(result.get("fingerprint") or result.get("gremlin_id") or ""),
-                "class": fault_class,
+                "class": classes[0],
+                "classes": list(classes),
                 "operator": str(result.get("operator")),
                 "description": str(result.get("description") or ""),
                 "source": relative,
@@ -416,6 +436,7 @@ def contract_mutants(plan: dict, report: dict, root: Path) -> list[dict]:
                 "status": str(result.get("status") or "error"),
                 "outcome": mutant_outcome(result),
                 "covered": result.get("covered"),
+                "static": bool(result.get("static")),
                 "suppression": result.get("suppression"),
                 "run_skipped": result.get("run_skipped"),
                 "selected_tests": len(result.get("selected_tests") or []),
@@ -434,10 +455,10 @@ def not_planted_mutants(plan: dict, report: dict, root: Path) -> list[dict]:
     rows = []
     for item in (report.get("ternforge") or {}).get("not_planted") or []:
         relative = relative_source(root, item.get("file_path"))
-        fault_class = CLASS_BY_OPERATOR.get(str(item.get("operator") or ""))
-        if fault_class is None or (relative, int(item.get("line_number") or -1)) not in allowed:
+        classes = fault_classes(item.get("operator"), item.get("description"))
+        if not classes or (relative, int(item.get("line_number") or -1)) not in allowed:
             continue
-        rows.append({**item, "source": relative, "class": fault_class})
+        rows.append({**item, "source": relative, "class": classes[0], "classes": list(classes)})
     return rows
 
 
@@ -466,13 +487,13 @@ def project_classes(plan: dict, report: dict, root: Path, verdicts: dict[str, di
     arid = not_planted_mutants(plan, report, root)
     classes = {}
     for fault_class in CLASSES:
-        class_rows = [row for row in rows if row["class"] == fault_class]
+        class_rows = [row for row in rows if fault_class in row["classes"]]
         counts = {outcome: sum(row["outcome"] == outcome for row in class_rows) for outcome in OUTCOMES}
         judged = counts["caught"] + counts["survived"] + counts["notreached"]
         reached = counts["caught"] + counts["survived"]
         not_planted: dict[str, int] = defaultdict(int)
         for item in arid:
-            if item["class"] == fault_class:
+            if fault_class in item["classes"]:
                 not_planted[str(item.get("rule"))] += 1
         noun = CLASS_NOUNS[fault_class]
 

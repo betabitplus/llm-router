@@ -51,6 +51,22 @@
      "routes = routes[:options.max_attempts]"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195646Z-100773",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "routes[:None] returns a full copy of the list, so the unconditional slice gives the same result as skipping it when max_attempts is None.",
+    "response_sha256": "c555f3d508755d9eaa8752db4b3a4707e8386963ed3992f01ef3470ab7d88f28",
+    "sources": [
+     "if options.max_attempts is not None:",
+     "routes = routes[:options.max_attempts]",
+     "if True:"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "014097ac5fbd73ef5448e366c3e017336cd302dba550bf635b7aa5803b599c05"

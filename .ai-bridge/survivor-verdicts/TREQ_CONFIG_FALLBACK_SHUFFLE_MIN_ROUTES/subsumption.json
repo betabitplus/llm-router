@@ -1,0 +1,35 @@
+{
+ "at": "2026-09-30T13:46:06.500604Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_treq_config_fallback_shuffle_min_routes_1e7fe255a9f2e635.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_fallback_shuffle_min_routes_551e89dc7d0431df.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_treq_config_fallback_shuffle_min_routes_1e7fe255a9f2e635.py"
+ ],
+ "restored": [],
+ "removed": {
+  "551e89dc7d0431df": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_fallback_shuffle_min_routes_551e89dc7d0431df.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_fallback_shuffle_min_routes_1e7fe255a9f2e635.py"
+   ]
+  }
+ },
+ "matrix": {
+  "1e7fe255a9f2e635": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_fallback_shuffle_min_routes_1e7fe255a9f2e635.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_fallback_shuffle_min_routes_551e89dc7d0431df.py"
+  ],
+  "551e89dc7d0431df": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_fallback_shuffle_min_routes_1e7fe255a9f2e635.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_fallback_shuffle_min_routes_551e89dc7d0431df.py"
+  ]
+ },
+ "caught_before": [
+  "1e7fe255a9f2e635",
+  "551e89dc7d0431df",
+  "5a20a606ef799519",
+  "95ca4ef786f72e89"
+ ]
+}

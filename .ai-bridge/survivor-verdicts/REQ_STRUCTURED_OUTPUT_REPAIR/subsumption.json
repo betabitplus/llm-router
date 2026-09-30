@@ -1,0 +1,70 @@
+{
+ "at": "2026-09-30T15:35:41.007578Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_63b7393727f5c29f.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_8d730e921a4ddffa.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_be77717ccb35232b.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_sm_12fa1e31.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_63b7393727f5c29f.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_be77717ccb35232b.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_sm_12fa1e31.py"
+ ],
+ "restored": [],
+ "removed": {
+  "ea1a8657cd65d4b1": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_ea1a8657cd65d4b1.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_8d730e921a4ddffa.py"
+   ]
+  },
+  "8d730e921a4ddffa": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_8d730e921a4ddffa.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_be77717ccb35232b.py"
+   ]
+  }
+ },
+ "matrix": {
+  "63b7393727f5c29f": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_63b7393727f5c29f.py"
+  ],
+  "8d730e921a4ddffa": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_8d730e921a4ddffa.py",
+   "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_be77717ccb35232b.py"
+  ],
+  "be77717ccb35232b": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_be77717ccb35232b.py"
+  ],
+  "SM-12FA1E31": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_sm_12fa1e31.py"
+  ]
+ },
+ "caught_before": [
+  "1c1c79b98264630d",
+  "1f7bb1a6a5f9e700",
+  "63b7393727f5c29f",
+  "71081585658fdf5e",
+  "79a3682f04d9a62a",
+  "84a7a3ae44f6c309",
+  "8d730e921a4ddffa",
+  "9eafc6290c8a42a5",
+  "SM-12FA1E31",
+  "SM-58500330",
+  "SM-847F9370",
+  "SM-CFE3592C",
+  "SM-D7F47A4B",
+  "SM-D87C4EDA",
+  "a6fd21bd84ac17df",
+  "ae873f459ab2473c",
+  "b1022ccb04e870bd",
+  "bd68bab3229e5769",
+  "be77717ccb35232b",
+  "d1b084c77504c245",
+  "d8f0dd8e0af61dcf",
+  "ea1a8657cd65d4b1",
+  "ea416841c2d9fc28",
+  "fe7e82686f92781a"
+ ]
+}

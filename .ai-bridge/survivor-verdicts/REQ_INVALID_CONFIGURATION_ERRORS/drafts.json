@@ -1,4 +1,518 @@
 {
+ "19ce8cfa2ea55f04": [
+  {
+   "at": "2026-09-30T16:41:56.067649Z",
+   "call_id": "20260930T164009Z-10b92d",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "21aea22b1485abb0eeb6df4bda89aa507f43145c40096b7280d6e035fb960b0d",
+   "reason": "it imports llm_router._api.errors, llm_router._internal.config.assembly, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.RoutePlan",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:44:42.541950Z",
+   "call_id": "20260930T164229Z-2b3d8d",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no RoutePlan (it lives in llm_router._internal.runtime.routes)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "cea1d62c3004f41bacaee91700209e5bc8cd048de45831ac03e6e5e2d2f91b3b",
+   "reason": "it does not fit the project's code as written: llm_router has no RoutePlan (it lives in llm_router._internal.runtime.routes) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.RoutePlan",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:20:09.321414Z",
+   "call_id": "20260930T180512Z-02239b",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "80c880ee26a40b1c37662ad51e17eb6248ac7feafcccb7d91782f9471d0228ae",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.LLMRouterConfig",
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
+  }
+ ],
+ "1e7fe255a9f2e635": [
+  {
+   "at": "2026-09-30T16:41:22.110561Z",
+   "call_id": "20260930T164011Z-79baca",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4fd4f2a664910b21169436bd02571830454c015a8a90350da13013df5e973abb",
+   "reason": "it imports llm_router._api.errors, llm_router._internal.config, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.config.models.RouterPolicyDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:45:16.578496Z",
+   "call_id": "20260930T164217Z-fd50ef",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "524e1ca11edec302aee6b94d2a8192363c7b59f76c926fb11fe8bee8da939e0b",
+   "reason": "it does not fit the project's code as written: llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:23:27.296338Z",
+   "call_id": "20260930T180512Z-1b1516",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "61bca08ecd938b7dd0ebc53a82d313d548a3d86feeeb88dbbe30006d982959fd",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.config.models.RouterPolicyDefaults"
+   ]
+  }
+ ],
+ "3b57c08f839ab791": [
+  {
+   "at": "2026-09-30T16:40:39.552089Z",
+   "call_id": "20260930T164008Z-28ab1f",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3da26c0a67200cc21ec6965f35ad76147b865ac3ab811d234480b3e4e40915a6",
+   "reason": "it imports llm_router._api.errors, llm_router._internal.config, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.RouterPolicyDefaults",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.runtime.routes.RoutePlan"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:29.717999Z",
+   "call_id": "20260930T164056Z-c35387",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "68f5656b98bdcbfb615a3189d2cde943bc1df3566a5750c4a306fb5015efb8c5",
+   "reason": "it does not fit the project's code as written: llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.config.models.RouterPolicyDefaults",
+    "llm_router._internal.runtime.routes.RoutePlan"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:09:53.350825Z",
+   "call_id": "20260930T180512Z-071ff9",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c36f204bbe6cd0db9a3ce692113c36e9520940d2ae218e687d6a62f57626a205",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.LLMRouterConfig",
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
+  }
+ ],
+ "43c47ed5eb7d2a63": [
+  {
+   "at": "2026-09-30T16:40:32.987713Z",
+   "call_id": "20260930T164008Z-865300",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a255de2682173334eb9c49b167e804978373a8b146231a7c6691df109f563dc4",
+   "reason": "it imports llm_router._api.errors, llm_router._internal.config, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:21.683356Z",
+   "call_id": "20260930T164042Z-3b6b97",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f72c36f27f97da76a4d8d826d278bf2529f0c26cdff1c5b6485121fc3618c8f3",
+   "reason": "it does not fit the project's code as written: llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:18:18.168056Z",
+   "call_id": "20260930T180512Z-046b39",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8adf4e77076da2d9cd4c21e4ee2dda6ba156708e133b56cad9a0e28d47f7167e",
+   "reason": "",
+   "sources": [
+    "llm_router.install_config",
+    "llm_router.get_config",
+    "llm_router.ConfigurationError"
+   ]
+  }
+ ],
+ "4a11c78df0078b1f": [
+  {
+   "at": "2026-09-30T18:04:09.325965Z",
+   "call_id": "20260930T180351Z-260986",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "06b61a8a0f32c16f6c72280287e5a02af979f9af71aab0862ab123f9a5b79b28",
+   "reason": "it imports llm_router._internal.config.assembly, llm_router._internal.config.validation",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.config.validation.validate_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:05:36.221804Z",
+   "call_id": "20260930T180455Z-3589f6",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "aa702f9e70f1559e111421e68acc220c700491608c1ebef0342b5fc8167c3b21",
+   "reason": "it imports llm_router._internal.config",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.validate_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:23:08.896840Z",
+   "call_id": "20260930T180537Z-0559e1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "008be2be0babadfd982cf89e8d72bc5945c27848aae85bea724efb537d404bed",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.config.models.RouterPolicyDefaults"
+   ]
+  }
+ ],
+ "SM-70BDADCC": [
+  {
+   "at": "2026-09-30T16:40:40.570551Z",
+   "call_id": "20260930T164008Z-f11783",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "398d116c226af6e401da13a1c22d777ca6dc82b7b4d220930c476c408d2308b3",
+   "reason": "it imports llm_router._api.errors, llm_router._internal.config, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.ProviderCatalog"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:35.287405Z",
+   "call_id": "20260930T164109Z-b2da9f",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5f8e3f58ffc70d03a48a0efc48255825d524fd7afc75a1a0c9ee4871023ca628",
+   "reason": "it does not fit the project's code as written: llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.ProviderCatalog"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:07:11.503466Z",
+   "call_id": "20260930T180512Z-5a2b35",
+   "cause": "rules",
+   "context_gaps": [
+    "llm_router.install_config"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0d03e7c721c647ba37e2836f2e647c9bf223e7d1d755a6a72ab0b7fb71f5a584",
+   "reason": "it imports llm_router._internal.config.assembly",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.install_config",
+    "llm_router._internal.config.assembly.build_default_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:17:56.268304Z",
+   "call_id": "20260930T180714Z-7ef60f",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "9fe4a3c55961bafd1caa9126f556d6eedbfac350f545122b015eb6946984b112",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.LLMRouterConfig",
+    "llm_router.ProviderCatalog",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
+  }
+ ],
+ "SM-7C291E15": [
+  {
+   "at": "2026-09-30T16:41:21.100372Z",
+   "call_id": "20260930T164008Z-646df4",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b59641e851653851a09d159d2bda4373951a226f231e1a3453c90b703e742670",
+   "reason": "it imports llm_router._internal.config.assembly, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.ProviderCatalog"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:42:21.278291Z",
+   "call_id": "20260930T164154Z-d973ce",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "16ccedbff4d7057269720c62eb7ebaf1778267ff6ff6c43df740f79074c0e5da",
+   "reason": "it does not fit the project's code as written: llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.ProviderCatalog"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:14:36.804501Z",
+   "call_id": "20260930T180512Z-9d5d02",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "886ac9a8362265719f8a6d6559e7dc29db74e7317ec8f56336a16c45cf4c2a16",
+   "reason": "",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router.ConfigurationError"
+   ]
+  }
+ ],
+ "a02b9c41521c0e84": [
+  {
+   "at": "2026-09-30T16:41:30.460537Z",
+   "call_id": "20260930T164011Z-c39b94",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "519e7058e8b6457a2319fb647e087940c170b793f2f2a43957e07480c7960865",
+   "reason": "it imports llm_router._api.errors, llm_router._internal.config.assembly, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.runtime.routes.RoutePlan"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:45:02.377485Z",
+   "call_id": "20260930T164224Z-ca38c0",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no RoutePlan (it lives in llm_router._internal.runtime.routes)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "7923245f61fd49a7aaac86c21d43dfc8e7921fed44e24c183859add7eb85aeca",
+   "reason": "it does not fit the project's code as written: llm_router has no RoutePlan (it lives in llm_router._internal.runtime.routes) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.RoutePlan",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:14:12.374877Z",
+   "call_id": "20260930T180512Z-9efa5d",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8bb488945385380b090ac68dcd9779adaaf4bcbee45f172f49f6cd118be92359",
+   "reason": "",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.config.models.RetryPolicy"
+   ]
+  }
+ ],
  "b6340db1c7f8750a": [
   {
    "at": "2026-09-29T00:24:30.361854Z",
@@ -42,6 +556,117 @@
     "llm_router.ConfigurationError",
     "llm_router._internal.config.build_default_config",
     "llm_router._internal.config.validate_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:43:44.916488Z",
+   "call_id": "20260930T164011Z-9b19ba",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "679ee7d4fa65ae137d721211ff362c3ab862eebc31983b2b35185d7d44f8f059",
+   "reason": "it imports llm_router._api.errors, llm_router._internal.config.assembly, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:45:23.678455Z",
+   "call_id": "20260930T164345Z-788095",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "71be9b75e1ac6a164359eb31ee37ab89f4da9309dbc61209a8f5b92c13c4858c",
+   "reason": "it does not fit the project's code as written: llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no expand_route_plan (it lives in llm_router._internal.runtime.routes)",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:23:10.195074Z",
+   "call_id": "20260930T180512Z-3bf627",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7da1edcf9dbeb96ec07f0be4f02a9a1ac3bb21a35007671655abfef4c3f0e181",
+   "reason": "",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router.ConfigurationError"
+   ]
+  }
+ ],
+ "c18833e1526efa72": [
+  {
+   "at": "2026-09-30T16:40:54.759240Z",
+   "call_id": "20260930T164011Z-9e1279",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4c066005aa2d3924d0643cdbe726bf3daa9ef08df3022fc407333a5f9e08513e",
+   "reason": "it imports llm_router._api.errors, llm_router._internal.config, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:42:41.743541Z",
+   "call_id": "20260930T164140Z-1aa46c",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b699449e955675b433b6ccfae0f7aec7a7bfb517eceddc02402509d5fcd371a2",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: module 'llm_router' has no attribute 'build_default_config')",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:10:05.916727Z",
+   "call_id": "20260930T180512Z-3a3472",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "155e04b8abd5cd65664e85078927f9122cf7a4783e13f521611dae4f13878b71",
+   "reason": "",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.get_config",
+    "llm_router.install_config"
    ]
   }
  ]

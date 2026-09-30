@@ -1,0 +1,101 @@
+{
+ "at": "2026-09-30T13:47:08.524060Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_8f336828c0f9c375.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_96a28c868f99fb34.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_99d124741e83ae13.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f107933887a3fa0.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f72abc51a357f38.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_cd5c3873436c0d0c.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_96a28c868f99fb34.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_99d124741e83ae13.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f107933887a3fa0.py"
+ ],
+ "restored": [],
+ "removed": {
+  "8f336828c0f9c375": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_8f336828c0f9c375.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py"
+   ]
+  },
+  "9f72abc51a357f38": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f72abc51a357f38.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py"
+   ]
+  },
+  "cd5c3873436c0d0c": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_cd5c3873436c0d0c.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py"
+   ]
+  }
+ },
+ "matrix": {
+  "7cfc3f8477b3a2b8": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_8f336828c0f9c375.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f72abc51a357f38.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_cd5c3873436c0d0c.py"
+  ],
+  "8f336828c0f9c375": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_8f336828c0f9c375.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f72abc51a357f38.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_cd5c3873436c0d0c.py"
+  ],
+  "96a28c868f99fb34": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_96a28c868f99fb34.py"
+  ],
+  "99d124741e83ae13": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_99d124741e83ae13.py"
+  ],
+  "9f107933887a3fa0": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f107933887a3fa0.py"
+  ],
+  "9f72abc51a357f38": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_8f336828c0f9c375.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f72abc51a357f38.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_cd5c3873436c0d0c.py"
+  ],
+  "cd5c3873436c0d0c": [
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_8f336828c0f9c375.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f72abc51a357f38.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_cd5c3873436c0d0c.py"
+  ]
+ },
+ "caught_before": [
+  "074763c23704110e",
+  "0aace4319199f8e4",
+  "2234e618573d7939",
+  "25f1c3c437588eb1",
+  "5046c79860ed3bf2",
+  "57bada9f1b07ccd6",
+  "64f55757cab24ba3",
+  "650faaa02a882ee6",
+  "7cfc3f8477b3a2b8",
+  "8f336828c0f9c375",
+  "96a28c868f99fb34",
+  "99d124741e83ae13",
+  "9f107933887a3fa0",
+  "9f72abc51a357f38",
+  "SM-3FF17EF6",
+  "SM-FB3C4498",
+  "aec55f2c0dd6d350",
+  "b58fd8748230145e",
+  "c0528579e88379d9",
+  "cd5c3873436c0d0c",
+  "ce1edea4ab7fbe58",
+  "d16d8affa7f126fd",
+  "d9ca1b7064f9b0bc",
+  "e38867ec649bb4f6",
+  "f2f9dc6028cbf9f7"
+ ]
+}

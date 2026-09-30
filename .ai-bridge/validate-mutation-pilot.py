@@ -263,17 +263,24 @@ def check_verification_explorer(module: str) -> None:
         for key in set(answered) | set(decided):
             recorded_verdicts[(folder.name, key)] = effective_verdict(answered.get(key) or {}, decided.get(key))
     mutants_expected = []
+    # A boundary swap challenges impl.comparison and impl.boundary at once: a suppression counts under both.
+    mutant_classes: dict[tuple[str, str], tuple[str, ...]] = {}
+    fingerprints = load_fingerprints()
     for contract_id, entry in sorted((campaign.get("contracts") or {}).items()):
         classes_actual = ((facts.get(contract_id) or {}).get("fault_actual") or {}).get("classes") or {}
         plan = entry.get("plan") or {}
         allowed = {(path, line) for path, lines in (plan.get("attributable_lines") or {}).items() for line in lines}
         report_path = ROOT / str((entry.get("run") or {}).get("report_path") or "")
         for result in (load(report_path).get("results") or []) if report_path.is_file() else []:
-            klass = MUTATION_CLASSES.get(str(result.get("operator")))
-            if (contract_id, klass) not in listed or (relative_path(result.get("file_path")), int(result.get("line_number") or -1)) not in allowed:
-                continue
-            # A result that no longer counts shows on its class, never as mutants.
-            if (classes_actual.get(klass) or {}).get("campaign_state") != "current":
+            # Under the first of its classes the explorer lists and whose result still counts: a result
+            # that no longer counts shows on its class, never as mutants.
+            current_classes = tuple(
+                name for name in fingerprints.fault_classes(result.get("operator"), result.get("description"))
+                if (contract_id, name) in listed and (classes_actual.get(name) or {}).get("campaign_state") == "current"
+            )
+            klass = current_classes[0] if current_classes else None
+            mutant_classes[(contract_id, str(result.get("fingerprint")))] = current_classes
+            if klass is None or (relative_path(result.get("file_path")), int(result.get("line_number") or -1)) not in allowed:
                 continue
             raw = str(result.get("status"))
             status = "pass" if raw in {"zapped", "timeout"} else "na" if raw in {"pardoned", "error"} else "fail"
@@ -326,8 +333,9 @@ def check_verification_explorer(module: str) -> None:
         return item.get("status") == status and item.get("causes") == cause
 
     by_verdict = Counter(
-        (contract_id, klass) for contract_id, fingerprint, _status, _cause, klass, judged in mutants_expected
+        (contract_id, name) for contract_id, fingerprint, _status, _cause, klass, judged in mutants_expected
         if judged and (mutant_rows.get(f"mutant|{contract_id}|{fingerprint}") or {}).get("status") == "na"
+        for name in mutant_classes.get((contract_id, fingerprint)) or (klass,)
     )
     check(
         len(mutant_rows) == len(mutants_expected)
@@ -335,7 +343,7 @@ def check_verification_explorer(module: str) -> None:
         and all(
             by_verdict.get((contract_id, klass), 0)
             == int(((((facts.get(contract_id) or {}).get("fault_actual") or {}).get("classes") or {}).get(klass) or {}).get("suppressed_by_verdict") or 0)
-            for contract_id, klass in {(row[0], row[4]) for row in mutants_expected}
+            for contract_id, klass in {(row[0], name) for row in mutants_expected for name in mutant_classes.get((row[0], row[1])) or (row[4],)}
         )
         and all(item["object"] in {row["id"] for row in by_kind["fault"]} for item in mutant_rows.values())
         and all(item["attrs"].get("origin") in {"rule", "semantic"} for item in mutant_rows.values()),
@@ -444,6 +452,7 @@ def check_verification_explorer(module: str) -> None:
 MUTATION_OPERATORS = [
     "comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body",
     "argument", "condition", "conditional", "negation", "container", "conversion", "method", "attribute",
+    "identity", "slice",
 ]
 MUTATION_CLASSES = {
     "comparison": "impl.comparison",
@@ -461,7 +470,11 @@ MUTATION_CLASSES = {
     "condition": "impl.control-flow",
     "conditional": "impl.control-flow",
     "negation": "impl.control-flow",
+    "identity": "impl.comparison",
+    "slice": "impl.boundary",
 }
+# PIT's conditionals boundary: a strict comparison made inclusive or back also moves a boundary.
+MUTATION_BOUNDARY_SWAPS = ["< to <=", "<= to <", "> to >=", ">= to >"]
 MTE_STATUSES = {"Killed", "Survived", "NoCoverage", "Timeout", "RuntimeError", "CompileError", "Ignored", "Pending"}
 
 
@@ -497,8 +510,9 @@ def check_mutation_system(monitor_facts: dict) -> None:
         campaign.get("schema") == "ternforge-implementation-fault-campaign-2"
         and engine.get("operators") == MUTATION_OPERATORS
         and engine.get("plugin_sha256") == extension_digest
-        and campaign.get("class_by_operator") == MUTATION_CLASSES,
-        "the campaign runs the seven operators of the current engine extension, arithmetic to impl.arithmetic and statement and body removal to impl.effect",
+        and campaign.get("class_by_operator") == MUTATION_CLASSES
+        and campaign.get("boundary_swaps") == MUTATION_BOUNDARY_SWAPS,
+        "the campaign runs the operators of the current engine extension with the Test Plan's classes, and a strict comparison made inclusive or back counts for impl.boundary too",
     )
     entries = campaign.get("contracts") or {}
     stale_engine = sorted(
@@ -1039,7 +1053,16 @@ def check_semantic_mutants(monitor_facts: dict) -> None:
     check_architecture_mutants()
 
 
-DRAFT_CAUSES = {"kept", "syntax", "grounding", "runtime-api", "rules", "lint", "behaviour", "weak", "unknown"}
+# The negative controls that show a requirement's oracle flags a bypass of its layer (054) or a
+# media part changed on its way to the provider (055).
+STRUCTURED_BYPASS_CONTROLS = {
+    "REQ_STRUCTURED_SCHEMA_CONTRACT": {"architecture.layer-bypass": (1, 1)},
+    "REQ_MULTIMODAL_CONTENT_NORMALIZATION": {"architecture.layer-bypass": (1, 1)},
+    "REQ_DOCUMENT_INPUT": {"interface.payload-schema": (1, 1)},
+    "REQ_IMAGE_INPUT": {"interface.payload-schema": (1, 1)},
+    "REQ_VIDEO_INPUT": {"interface.payload-schema": (1, 1)},
+}
+DRAFT_CAUSES = {"kept", "syntax", "grounding", "runtime-api", "rules", "lint", "behaviour", "weak", "suite", "unknown"}
 
 
 def check_draft_attempts(by_call: dict) -> None:
@@ -1111,6 +1134,8 @@ def cited_answers() -> set[str]:
         for entry in (load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}).values():
             for part in ("answer", "review", "pin"):
                 add((entry.get(part) or {}).get("call_id"))
+            for recheck in [*(entry.get("rechecks") or {}).values(), (entry.get("subsumed") or {}).get("pin") or {}]:
+                add(recheck.get("call_id"))
     for store in (BRIDGE / "survivor-triage", BRIDGE / "semantic-mutants"):
         for path in sorted(store.glob("*/assessments.json")) if store.is_dir() else []:
             for entry in load(path).values():
@@ -1154,6 +1179,8 @@ def recorded_answer_files() -> dict[tuple[str, str], Path]:
         for entry in (load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}).values():
             for part in ("answer", "review", "pin"):
                 add(folder.name, folder, (entry.get(part) or {}).get("call_id"))
+            for recheck in [*(entry.get("rechecks") or {}).values(), (entry.get("subsumed") or {}).get("pin") or {}]:
+                add(folder.name, folder, recheck.get("call_id"))
     for store in (BRIDGE / "survivor-triage", BRIDGE / "semantic-mutants"):
         for path in sorted(store.glob("*/assessments.json")) if store.is_dir() else []:
             for entry in load(path).values():
@@ -1272,7 +1299,10 @@ def check_model_roles_page(budget: dict) -> None:
     stored = recorded_answer_files()
     published = {(path.parent.name, path.stem) for path in (HTML / "model-roles").glob("*/*.json")}
     linked = [
-        *(row.get("answer") for row in [*(draft.get("rejected") or []), *(draft.get("last_resort") or []), *((facts.get("judging") or {}).get("troubled") or [])]),
+        *(row.get("answer") for row in [
+            *(draft.get("rejected") or []), *(draft.get("last_resort") or []), *((facts.get("judging") or {}).get("troubled") or []),
+            *((facts.get("rechecks") or {}).get("rows") or []),
+        ]),
         *(path for row in facts.get("canaries") or [] for _case, path in row.get("answers") or []),
     ]
     check(
@@ -1280,6 +1310,16 @@ def check_model_roles_page(budget: dict) -> None:
         and all((HTML / "model-roles" / group / f"{call}.json").read_bytes() == stored[(group, call)].read_bytes() for group, call in published)
         and all(f'href="{link}"' in page and (HTML / str(link)).is_file() for link in linked if link),
         f"every stored question and answer a record names is published beside the Model roles page ({len(published)}), and every link to one resolves",
+    )
+    # Each re-check of a suppression stands on the page as its record keeps it.
+    shown = (facts.get("rechecks") or {}).get("rows") or []
+    check(
+        all(
+            {name: ((load(verdict_dir / str(row.get("contract_id")) / "verdicts.json").get(str(row.get("key"))) or {}).get("rechecks") or {}).get(str(row.get("role")), {}).get(name) for name in ("verdict", "call_id")}
+            == {"verdict": row.get("verdict"), "call_id": row.get("call_id")}
+            for row in shown
+        ),
+        f"every re-check of a suppression on the Model roles page stands as its record keeps it ({len(shown)})",
     )
     # The page recounts the judging roles' sources from their records.
     judged = [
@@ -1355,7 +1395,8 @@ SUPPRESSING = ("equivalent", "irrelevant")
 def effective_verdict(entry: dict, decided: dict | None = None) -> str | None:
     """The verdict a record holds as it counts (ADR_0006): the person's; else the model's pin or
     escalate; its equivalent or irrelevant only with a review that agrees, pin against one that
-    does not, none without one."""
+    does not or against a re-check of the same question that does not uphold it, none without a
+    review."""
     if decided and decided.get("verdict") in VERDICTS and decided.get("reason"):
         return decided["verdict"]
     answer = entry.get("answer") or {}
@@ -1366,7 +1407,12 @@ def effective_verdict(entry: dict, decided: dict | None = None) -> str | None:
     review = entry.get("review") or {}
     if review.get("prompt_sha256") != entry.get("prompt_sha256") or review.get("problems") or review.get("verdict") not in VERDICTS:
         return None
-    return answer["verdict"] if review["verdict"] in SUPPRESSING else "pin"
+    rechecks = (entry.get("rechecks") or {}).values()
+    against = any(
+        row.get("prompt_sha256") == entry.get("prompt_sha256") and not row.get("problems") and row.get("verdict") in VERDICTS and row["verdict"] not in SUPPRESSING
+        for row in rechecks
+    )
+    return answer["verdict"] if review["verdict"] in SUPPRESSING and not against else "pin"
 
 
 # A draft normalized by ruff is kept by everything its result depends on: the draft, the file it is
@@ -1457,12 +1503,18 @@ def check_survivor_verdicts(models, by_call: dict, usable: set) -> None:
     for folder in sorted(path for path in verdict_dir.iterdir() if path.is_dir()) if verdict_dir.is_dir() else []:
         verdicts = load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}
         decided = load(folder / "decisions.json") if (folder / "decisions.json").is_file() else {}
-        bound = pins_ok = True
+        bound = pins_ok = subsumed_ok = True
         for key, entry in verdicts.items():
+            # A pin other pins of its contract made redundant waits beside its record, which names them.
+            subsumed = entry.get("subsumed")
+            if subsumed:
+                subsumed_ok = subsumed_ok and not entry.get("pin") and bool(subsumed.get("by")) and (
+                    folder / "subsumed-pins" / (Path(str((subsumed.get("pin") or {}).get("path") or "-")).name + ".txt")
+                ).is_file()
             # The verdict and, for a suppression, its review: each a stored, ledgered call's answer to the
             # entry's question (asked once more, it says what broke), its sources and problems read from it
             # by the current rule.
-            for answer in [entry.get("answer") or {}, *([entry["review"]] if entry.get("review") else [])]:
+            for answer in [entry.get("answer") or {}, *([entry["review"]] if entry.get("review") else []), *(entry.get("rechecks") or {}).values()]:
                 response_path = folder / "responses" / f"{answer.get('call_id')}.json"
                 response = load(response_path) if response_path.is_file() else {}
                 call = by_call.get(str(answer.get("call_id"))) or {}
@@ -1490,6 +1542,7 @@ def check_survivor_verdicts(models, by_call: dict, usable: set) -> None:
             )
         check(bound, f"{folder.name}: every verdict about its survivors is a stored, ledgered call's answer")
         check(pins_ok, f"{folder.name}: every mutation pin names its mutant and is the draft the cascade kept after a pin verdict, as its origin wrote it")
+        check(subsumed_ok, f"{folder.name}: every pin removed as redundant names the pins that kill its mutant and waits beside its record")
     pin_files = sorted(str(path.relative_to(ROOT)) for path in (ROOT / "tests/llm_router/mutation_pins").glob("test_pin_*.py"))
     check(all(path in recorded for path in pin_files), f"every one of the {len(pin_files)} mutation pins is recorded with its verdict")
 
@@ -3687,11 +3740,11 @@ def main() -> None:
         (session_persistence_contract.get("target") or {}).get("required_treqs")
         == ["TREQ_SESSION_SERIALIZATION"]
         and re.search(
-            r'<strong>Technical support.*?<span class="status not-met">FAIL</span>',
+            r'<strong>Technical support</strong><span class="status met">PASS</span>',
             session_persistence_page,
             re.DOTALL,
         ),
-        "Session persistence remains blocked by its first-class serialization Technical requirement",
+        "Session persistence is no longer blocked: its first-class serialization Technical requirement passes (054)",
     )
     session_feature_facts = upper_facts["features"]["FEAT_SESSION_LIFECYCLE"]
     session_goal_facts = upper_facts["goals"]["GOAL_SESSION_CONTINUITY"]
@@ -4274,11 +4327,15 @@ def main() -> None:
         # The fallback that succeeds and, since revision 2, the request whose every route fails.
         "REQ_SYNC_ROUTE_FALLBACK": {
             "interface.error-status": (2, 2),
+            # A malformed answer and a disconnect fall back to the next route (054).
+            "runtime.malformed-response": (1, 1),
+            "runtime.unavailable-disconnect": (1, 1),
         },
         "REQ_ROUTE_TIMEOUT_FALLBACK": {
             "runtime.latency-timeout": (4, 4),
         },
-        "REQ_ROUTE_ATTEMPT_LIMIT": {},
+        # Its sentinel route beyond the limit (055).
+        "REQ_ROUTE_ATTEMPT_LIMIT": {"interface.unexpected-interaction": (1, 1)},
         "REQ_ROUTE_STICKY_START": {},
         "REQ_RATE_LIMIT_ROUTING": {
             "interface.error-status": (1, 1),
@@ -4374,6 +4431,8 @@ def main() -> None:
             ],
             "faults": {
                 "interface.error-status": (4, 4),
+                # A provider timeout retried on the same route (054).
+                "runtime.latency-timeout": (1, 1),
                 "runtime.unavailable-disconnect": (2, 2),
             },
         },
@@ -4606,8 +4665,12 @@ def main() -> None:
         (runtime_contract.get("fault_actual") or {}).get("retained_challenges") or {}
     )
     expected_runtime_faults = {
+        # The layer-bypass control and the malformed and disconnect diagnostics (054).
+        "architecture.layer-bypass": (1, 1),
         "interface.error-status": (1, 1),
         "interface.payload-schema": (1, 1),
+        "runtime.malformed-response": (1, 1),
+        "runtime.unavailable-disconnect": (1, 1),
     }
     check(
         set(runtime_faults) == set(expected_runtime_faults),
@@ -4728,7 +4791,7 @@ def main() -> None:
                 },
             },
             "treqs": [],
-            "faults": {},
+            "faults": {"interface.error-status": (1, 1), "runtime.malformed-response": (1, 1), "runtime.unavailable-disconnect": (1, 1)},
         },
         "TREQ_QWENCHAT_ADAPTER_BOUNDARY": {
             "cells": {
@@ -4740,7 +4803,7 @@ def main() -> None:
                 },
             },
             "treqs": [],
-            "faults": {},
+            "faults": {"interface.error-status": (1, 1), "interface.unexpected-interaction": (1, 1), "runtime.unavailable-disconnect": (1, 1)},
         },
         "TREQ_AISTUDIO_ADAPTER_BOUNDARY": {
             "cells": {
@@ -4749,7 +4812,7 @@ def main() -> None:
                 },
             },
             "treqs": [],
-            "faults": {},
+            "faults": {"interface.error-status": (1, 1), "interface.unexpected-interaction": (1, 1)},
         },
         "TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY": {
             "cells": {
@@ -4758,7 +4821,7 @@ def main() -> None:
                 },
             },
             "treqs": [],
-            "faults": {},
+            "faults": {"interface.error-status": (2, 2)},
         },
         "TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY": {
             "cells": {
@@ -4767,7 +4830,7 @@ def main() -> None:
                 },
             },
             "treqs": [],
-            "faults": {},
+            "faults": {"interface.error-status": (1, 1)},
         },
         "REQ_ASYNC_PROVIDER_EXECUTION": {
             "cells": {
@@ -4810,7 +4873,7 @@ def main() -> None:
                 },
             },
             "treqs": [],
-            "faults": {},
+            "faults": {"interface.payload-schema": (1, 1)},
         },
         "REQ_PROVIDER_ERROR_BOUNDARY": {
             "cells": {
@@ -4820,7 +4883,7 @@ def main() -> None:
                 },
             },
             "treqs": [],
-            "faults": {"interface.error-status": (2, 2)},
+            "faults": {"interface.error-status": (2, 2), "runtime.latency-timeout": (1, 1), "runtime.unavailable-disconnect": (1, 1)},
         },
     }
     for contract_id, expected in provider_expectations.items():
@@ -4982,7 +5045,6 @@ def main() -> None:
         },
         "TREQ_SESSION_SERIALIZATION": {
             "impl.comparison",
-            "impl.boundary",
             "impl.control-flow",
             "impl.effect",
             "interface.payload-schema",
@@ -5246,15 +5308,16 @@ def main() -> None:
             .get(class_id, {})
             .get("exercised")
         }
-        # No test declares a fault challenge for these contracts: what is challenged comes only from the
-        # current campaign, semantic mutants or scenario oracle mutants (050).
+        # A test declares only the layer-bypass control where one exists (054); everything else it challenges
+        # comes from the current campaign, semantic mutants or scenario oracle mutants (050).
+        declared = STRUCTURED_BYPASS_CONTROLS.get(contract_id, {})
         check(
-            retained == {}
+            {name: (row.get("exercised_paths"), row.get("detected_paths")) for name, row in retained.items()} == declared
             and bool(required_faults)
-            and only_campaign_extras(contract, challenged_faults, set())
+            and only_campaign_extras(contract, challenged_faults, set(declared))
             and challenged_faults <= required_faults,
-            f"{contract_id}: with no retained fault challenge, every class it challenges comes from the campaign or its "
-            f"semantic or scenario mutants ({len(challenged_faults)} of {len(required_faults)} required)",
+            f"{contract_id}: {'with no retained fault challenge but its negative control' if declared else 'with no retained fault challenge'}, "
+            f"every class it challenges comes from the campaign or its semantic or scenario mutants ({len(challenged_faults)} of {len(required_faults)} required)",
         )
 
         page = contract_pages[contract_id]
@@ -5583,15 +5646,30 @@ def main() -> None:
         "REQ_SENSITIVE_DATA_PROTECTION",
         "TREQ_VCR_RESPONSE_CONTENT_REDACTION",
     }
-    def fault_complete(contract: dict) -> bool:
-        required = {
-            item["id"]
-            for group in (contract.get("target") or {}).get("fault_groups") or []
-            for item in group.get("items") or []
-            if item.get("state") == "required"
-        }
+    def worst(states: list[str]) -> str:
+        return next((state for state in ("not-met", "unknown") if state in states), "met")
+
+    def fault_state_of(contract: dict) -> str:
+        """The Fault Model as the page must show it. A required class that is challenged but not
+        caught, or never challenged, fails it; one still holding an undecided mutant keeps it UNKNOWN,
+        never caught; it passes once every required class is caught."""
         classes = (contract.get("fault_actual") or {}).get("classes") or {}
-        return bool(required) and all((classes.get(class_id) or {}).get("exercised") and (classes.get(class_id) or {}).get("detected") for class_id in required)
+        states = []
+        for group in (contract.get("target") or {}).get("fault_groups") or []:
+            for item in group.get("items") or []:
+                if item.get("state") != "required":
+                    continue
+                actual = classes.get(item["id"]) or {}
+                if actual.get("exercised") and not actual.get("detected"):
+                    states.append("not-met")
+                elif int(actual.get("undecided") or 0):
+                    states.append("unknown")
+                else:
+                    states.append("met" if actual.get("exercised") else "not-met")
+        return worst(states) if states else "not-met"
+
+    def fault_complete(contract: dict) -> bool:
+        return fault_state_of(contract) == "met"
 
     # A Fault Model is complete once every required class is challenged and detected: by its declared
     # challenges, the campaign, or its semantic or scenario mutants (050). The developer-tool contracts
@@ -5601,15 +5679,17 @@ def main() -> None:
         set(developer_fault_expectations) <= complete_fault_contracts,
         f"the developer-tool contracts keep a complete Fault Model ({len(complete_fault_contracts)} complete in all)",
     )
-    def overall_met(contract_id: str, seen: tuple = ()) -> bool:
+    def overall_state(contract_id: str, seen: tuple = ()) -> str:
         """A contract passes when its coverage and Fault Model are complete and every Technical requirement
-        it requires passes in turn."""
-        required = ((monitor_facts["contracts"].get(contract_id) or {}).get("target") or {}).get("required_treqs") or []
-        return (
-            contract_id not in partial_coverage_contracts
-            and contract_id in complete_fault_contracts
-            and all(overall_met(treq, (*seen, contract_id)) for treq in required if treq not in seen)
+        it requires passes in turn; with nothing failing, an undecided part keeps it UNKNOWN."""
+        contract = monitor_facts["contracts"].get(contract_id) or {}
+        required = (contract.get("target") or {}).get("required_treqs") or []
+        return worst(
+            ["not-met" if contract_id in partial_coverage_contracts else "met", fault_state_of(contract)]
+            + [overall_state(treq, (*seen, contract_id)) for treq in required if treq not in seen]
         )
+
+    labels = {"met": "PASS", "unknown": "UNKNOWN", "not-met": "FAIL"}
 
     for contract_id, page in contract_pages.items():
         coverage_class = (
@@ -5618,20 +5698,19 @@ def main() -> None:
         coverage_label = (
             "FAIL" if contract_id in partial_coverage_contracts else "PASS"
         )
-        fault_complete = contract_id in complete_fault_contracts
-        fault_class = "met" if fault_complete else "not-met"
-        fault_label = "PASS" if fault_complete else "FAIL"
+        fault_class = fault_state_of(monitor_facts["contracts"].get(contract_id) or {})
+        fault_label = labels[fault_class]
         treqs = ((monitor_facts["contracts"].get(contract_id) or {}).get("target") or {}).get("required_treqs") or []
-        supported = all(overall_met(treq, (contract_id,)) for treq in treqs)
-        overall_class = "met" if overall_met(contract_id) else "not-met"
-        overall_label = "PASS" if overall_class == "met" else "FAIL"
+        supported = worst([overall_state(treq, (contract_id,)) for treq in treqs])
+        overall_class = overall_state(contract_id)
+        overall_label = labels[overall_class]
         check(
             f'<div class="overall {overall_class}">{overall_label}</div>' in page
             # The Technical support it requires passes only when each of those Technical requirements does.
             and (
                 not treqs
                 or re.search(
-                    rf'<strong>Technical support</strong><span class="status {"met" if supported else "not-met"}">{"PASS" if supported else "FAIL"}</span>',
+                    rf'<strong>Technical support</strong><span class="status {supported}">{labels[supported]}</span>',
                     page,
                     flags=re.DOTALL,
                 )
@@ -7233,9 +7312,11 @@ def main() -> None:
         "build-requirement-monitor.py",
         "build-upper-assurance-pilot.py",
         "implementation_faults.py",
+        "pin_subsumption.py",
         "qualify-evidence-confidence.py",
         "validate-mutation-pilot.py",
         "mutation-testing-integration-plan.md",
+        "mutation-testing-practice-audit.md",
         "mutation-testing-platform-extraction-manifest.md",
         "system-level-ownership.md",
         "monitor-readiness.md",
@@ -7409,6 +7490,10 @@ def main() -> None:
         "src/llm_router/_internal/providers/qwenchat.py",
         "src/llm_router/_internal/providers/retry.py",
         "src/llm_router/_internal/runtime/executor.py",
+        "src/llm_router/_internal/runtime/effective_settings.py",
+        "src/llm_router/_internal/session/serialization.py",
+        "tests/llm_router/integration/test_layer_bypass_controls.py",
+        "tests/llm_router/integration/test_media_payload_controls.py",
         "src/llm_router/_internal/runtime/limiter.py",
         "src/llm_router/_internal/runtime/router.py",
         "src/llm_router/_internal/runtime/routes.py",

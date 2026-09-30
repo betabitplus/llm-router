@@ -1,0 +1,68 @@
+{
+ "23c266a8950b1701": [
+  {
+   "at": "2026-09-30T14:22:24.084867Z",
+   "call_id": "20260930T142109Z-ec1e35",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "69f869b3da1ea15d73805dbe388af9b63b4f1cda6d2aa412140aceeb8df0e365",
+   "reason": "it does not pass on the original 5 times in a row (pytest: Failed: DID NOT RAISE Exception)",
+   "sources": [
+    "llm_router._internal.providers.registry.register_adapter_factory",
+    "llm_router._api.types.Provider"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:23:19.424219Z",
+   "call_id": "20260930T142224Z-4cdaf9",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "191533887d5d5ae6359fabfbaf0faae3a04907c8229632abb1e27e6f23b7f2b8",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: module 'llm_router._internal.providers.registry' has no attribute 'get_adapter_factory'. Did you mean: 'AdapterFactory'?)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.providers.registry.register_adapter_factory"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:24:29.525508Z",
+   "call_id": "20260930T142319Z-4ab570",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.providers.registry.get_adapter"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d076d3f998f250ece9c0154747fb4e1e88a2eb6cd0c9fe85ad50bcd4d3f55f7a",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.providers.google_genai.GoogleGenAIAdapter",
+    "llm_router._internal.providers.registry.get_adapter"
+   ]
+  }
+ ]
+}

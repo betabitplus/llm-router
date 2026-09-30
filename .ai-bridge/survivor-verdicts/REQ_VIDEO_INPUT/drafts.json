@@ -36,6 +36,68 @@
     "llm_router._internal.capabilities.media.describe_media",
     "tests.llm_router.support.builders.get_llm_router_test_data_path"
    ]
+  },
+  {
+   "at": "2026-09-30T20:55:21.972108Z",
+   "call_id": "20260930T205452Z-3e0380",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no describe_media (it lives in llm_router._internal.capabilities.media)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b33aaf87946c965827e81dd0f2bf1144796bf9dc91ef44424870f92a36bbf520",
+   "reason": "it does not fit the project's code as written: llm_router has no describe_media (it lives in llm_router._internal.capabilities.media)",
+   "sources": [
+    "llm_router._api.types.VideoSchema",
+    "tests.llm_router.support.builders.get_llm_router_test_data_path",
+    "llm_router._internal.capabilities.media.describe_media"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:55:28.244314Z",
+   "call_id": "20260930T205522Z-38a80f",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f1aedc122613d097afc80da2a6e15c84c65923796ab5ef2e9be8239b905dc7eb",
+   "reason": "it reaches `llm_router._internal.capabilities.media.describe_media` past the public API, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router.VideoSchema",
+    "tests.llm_router.support.builders.get_llm_router_test_data_path",
+    "llm_router._internal.capabilities.media.describe_media"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:59:00.317049Z",
+   "call_id": "20260930T205528Z-363e97",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.media.video.VideoObservation"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9c590250949843bf03d97ddd8823fb0dbfb228248b88323562517ddea94140ff",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.VideoSchema",
+    "tests.llm_router.support.builders.get_llm_router_test_data_path",
+    "tests.llm_router.support.media.video.VideoObservation"
+   ]
   }
  ],
  "8ba45c4ec318c00e": [
@@ -77,6 +139,70 @@
     "llm_router.VideoUrlSchema",
     "tests.llm_router.support.builders.build_test_video_url",
     "llm_router._internal.capabilities.media.VideoUrlMedia"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:55:13.341582Z",
+   "call_id": "20260930T205452Z-ca8def",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "89ede86818cce239749ddb99686dc0910be956078f46705e63e4ab42edcbd33f",
+   "reason": "it imports llm_router._internal.capabilities.media",
+   "sources": [
+    "llm_router.VideoUrlSchema",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "llm_router._internal.capabilities.media.describe_media"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:55:44.545837Z",
+   "call_id": "20260930T205516Z-6fd73c",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "3f9e14ab214b4c497e15851b15c71c098a3fde1c115b38ea629b79505a805157",
+   "reason": "it reaches `llm_router._internal.capabilities.media.describe_media` past the public API, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router.VideoUrlSchema",
+    "llm_router._api.types.VideoUrlSchema",
+    "llm_router._internal.capabilities.media.describe_media",
+    "tests.llm_router.support.builders.build_test_video_url"
+   ]
+  },
+  {
+   "at": "2026-09-30T21:01:21.187869Z",
+   "call_id": "20260930T205545Z-4b4a9d",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.media.video.VideoObservation",
+    "tests.llm_router.support.media.video.build_indoor_video_prompt",
+    "tests.llm_router.support.vcr_extensions.FILTER_HEADERS"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9d7aa25aeb96c432d536e75b62a825962633cd8e9d5fdaecb06b278eb15706d7",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.VideoUrlSchema",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.media.video.VideoObservation",
+    "tests.llm_router.support.media.video.build_indoor_video_prompt",
+    "tests.llm_router.support.vcr_extensions.FILTER_HEADERS"
    ]
   }
  ],

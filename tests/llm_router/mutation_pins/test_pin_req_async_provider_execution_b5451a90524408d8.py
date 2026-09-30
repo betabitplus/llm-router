@@ -1,93 +1,75 @@
 # mutation-pin: REQ_ASYNC_PROVIDER_EXECUTION b5451a90524408d8
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
-
-from typing import Any
 
 import pytest
 
-from llm_router import LLMRouter, Model, Provider, RouterProfile
+from llm_router import LLMRouter, Model, Provider, ProviderLimits, RouterProfile
+from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+    patched_openai_sdk,
+)
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
-@pytest.mark.asyncio
 @pytest.mark.verifies("REQ_ASYNC_PROVIDER_EXECUTION[revision==1]")
+@pytest.mark.asyncio
 async def test_async_blocked_route_remembers_fallback_success(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    env_name = "NVIDIA_API_KEY"
     value = "mock-provider-auth-12345"
-    monkeypatch.setenv(env_name, value)
-
+    for key_id in (1, 2, 3):
+        monkeypatch.setenv(f"OPENROUTER_API_KEY_{key_id}", value)
+    path = openai_chat_path()
+    limits = {
+        Provider.OPENROUTER: ProviderLimits(
+            rps=0.5,
+            rpm=1_000_000.0,
+            cooldown_seconds=0.0,
+            cooldown_after_failures=0,
+        )
+    }
     router = LLMRouter(
         [
-            RouterProfile(model=Model.DEEPSEEK_V4_FLASH, provider=Provider.NVIDIA),
-            RouterProfile(model=Model.LLAMA_8B, provider=Provider.NVIDIA),
-        ]
+            RouterProfile(
+                provider=Provider.OPENROUTER,
+                model=Model.DEEPSEEK_V3,
+                key_id=key_id,
+            )
+            for key_id in (1, 2, 3)
+        ],
+        round_robin_start=False,
+        shuffle_fallbacks=False,
+        limits_by_provider=limits,
     )
-    runtime = getattr(router, "_runtime", router)
+    with (
+        ScriptedHTTPServer(
+            port=0,
+            routes={
+                ("POST", path): [
+                    ScriptedResponse(
+                        status_code=200,
+                        headers={"Content-Type": "application/json"},
+                        body=openai_success_response(text=marker),
+                    )
+                    for marker in ("A", "B", "C")
+                ]
+            },
+        ) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ),
+    ):
+        await router.aquery("first prompt")
+        second = await router.aquery("second prompt")
+        third = await router.aquery("third prompt")
 
-    query1_routes: list[Any] = []
-    query2_routes: list[Any] = []
-    active_query = 1
-
-    orig_prepare = runtime._prepare_request
-
-    def mock_prepare_request(
-        request_id: Any,
-        route: Any,
-        settings: Any,
-        content: Any,
-    ) -> tuple[Any, float]:
-        request, _ = orig_prepare(
-            request_id=request_id,
-            route=route,
-            settings=settings,
-            content=content,
-        )
-        if active_query == 1:
-            query1_routes.append(route)
-            if len(query1_routes) == 1:
-                return request, 2.0
-            return request, 0.0
-        query2_routes.append(route)
-        return request, 0.0
-
-    monkeypatch.setattr(runtime, "_prepare_request", mock_prepare_request)
-
-    async def mock_call_async(request: Any, timeout_seconds: Any) -> Any:
-        assert request is not None
-        assert timeout_seconds is not None
-        return "mock-response-payload"
-
-    monkeypatch.setattr(runtime, "_call_async_with_timeout", mock_call_async)
-
-    def mock_complete_success(**kwargs: Any) -> str:
-        assert kwargs
-        return "sentinel-ok"
-
-    monkeypatch.setattr(runtime, "_complete_success", mock_complete_success)
-
-    fallback_flags: list[bool] = []
-    orig_remember = runtime._remember_fallback_success
-
-    def spy_remember(*args: Any, **kwargs: Any) -> Any:
-        occurred = kwargs.get("fallback_occurred")
-        fallback_flags.append(bool(occurred))
-        return orig_remember(*args, **kwargs)
-
-    monkeypatch.setattr(runtime, "_remember_fallback_success", spy_remember)
-
-    result1 = await router.aquery("first prompt")
-    assert result1 == "sentinel-ok"
-    assert next(iter(fallback_flags)) is True
-    assert runtime._sticky_start_route_index is not None
-
-    active_query = 2
-    result2 = await router.aquery("second prompt")
-    assert result2 == "sentinel-ok"
-
-    first_fallback_route = query1_routes[-1]
-    second_query_first_route = next(iter(query2_routes))
-    assert second_query_first_route is first_fallback_route
+    assert [a.route_index for a in second.routing_trace] == [0, 1]
+    assert [a.error_type for a in second.routing_trace] == ["RouteBlockedError", None]
+    # The fallback route 1 is remembered, so the next request starts there.
+    assert [a.route_index for a in third.routing_trace] == [1, 2]

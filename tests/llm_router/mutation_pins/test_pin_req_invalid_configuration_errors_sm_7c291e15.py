@@ -1,34 +1,29 @@
 # mutation-pin: REQ_INVALID_CONFIGURATION_ERRORS SM-7C291E15
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
 from dataclasses import replace
 
 import pytest
 
-from llm_router import ConfigurationError
-from llm_router._api.types import Model, Provider
-from llm_router._internal.config import build_default_config, validate_config
+import llm_router as package
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
 @pytest.mark.verifies("REQ_INVALID_CONFIGURATION_ERRORS[revision==2]")
 def test_missing_base_url_for_non_default_provider_is_rejected() -> None:
-    config = build_default_config()
-    google_spec = config.catalog.providers[Provider.GOOGLE]
-    catalog = replace(
-        config.catalog,
-        providers={Provider.GOOGLE: google_spec},
-        provider_base_urls={},
-        models={Model.GEMINI_FLASH: {Provider.GOOGLE: "gemini-flash"}},
-    )
-    invalid = replace(
-        config,
-        default_provider=Provider.GOOGLE,
-        default_model=Model.GEMINI_FLASH,
-        catalog=catalog,
-    )
+    current = package.get_config()
+    kept = {
+        provider: url
+        for provider, url in current.catalog.provider_base_urls.items()
+        if provider == current.default_provider
+    }
+    catalog = replace(current.catalog, provider_base_urls=kept)
+    invalid = replace(current, catalog=catalog)
 
-    with pytest.raises(ConfigurationError, match=r"base URL"):
-        validate_config(invalid)
+    with pytest.raises(package.ConfigurationError, match=r"requires a base URL"):
+        package.install_config(invalid)
+
+    assert package.get_config() is current

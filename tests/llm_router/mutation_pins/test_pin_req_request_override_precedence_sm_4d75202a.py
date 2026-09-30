@@ -1,54 +1,59 @@
 # mutation-pin: REQ_REQUEST_OVERRIDE_PRECEDENCE SM-4D75202A
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
+
+import json
 
 import pytest
 
-from llm_router._internal.config import build_default_config
-from llm_router._internal.runtime.effective_settings import (
-    RouterDefaults,
-    resolve_effective_settings,
+from llm_router import LLMRouter, Model, Provider, RouterProfile
+from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
 )
-from llm_router._internal.runtime.routes import RouteGenerationDefaults
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
 @pytest.mark.verifies("REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]")
-def test_falsy_call_provider_kwargs_override_inherited_kwargs() -> None:
-    config = build_default_config()
-    route_defaults = RouteGenerationDefaults(
-        key_id=0,
-        kwargs={"top_k": 40, "stop": ["x"], "unrelated": "kept"},
-    )
-    router_defaults = RouterDefaults(kwargs={"n": 3, "flag": True})
-
-    omitted = resolve_effective_settings(
-        config=config,
-        route_defaults=route_defaults,
-        route_policy_defaults={},
-        router_defaults=router_defaults,
-        call_overrides={},
-    )
-    assert omitted.kwargs["top_k"] == 40
-    assert omitted.kwargs["n"] == 3
-
-    explicit = resolve_effective_settings(
-        config=config,
-        route_defaults=route_defaults,
-        route_policy_defaults={},
-        router_defaults=router_defaults,
-        call_overrides={
-            "top_k": 0,
-            "stop": [],
-            "n": None,
-            "flag": False,
-            "custom_kwarg": 0,
+def test_falsy_call_provider_kwarg_overrides_route_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", "LOCAL_TEST_VALUE")
+    path = openai_chat_path()
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", path): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text="ok"),
+                )
+            ]
+            * 2
         },
-    )
-    assert explicit.kwargs["top_k"] == 0
-    assert explicit.kwargs["stop"] == []
-    assert explicit.kwargs["n"] is None
-    assert explicit.kwargs["flag"] is False
-    assert explicit.kwargs["custom_kwarg"] == 0
-    assert explicit.kwargs["unrelated"] == "kept"
+    ) as server:
+        router = LLMRouter(
+            RouterProfile(
+                model=Model.DEEPSEEK_V3,
+                provider=Provider.OPENROUTER,
+                kwargs={"logprobs": True, "max_tokens": 50},
+            ),
+        )
+        with patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ):
+            router.query("hello")
+            router.query("hello", logprobs=False)
+
+        recorded = server.recorded_requests("POST", path)
+        omitted = json.loads(recorded[0].body)
+        explicit = json.loads(recorded[1].body)
+        assert omitted["logprobs"] is True
+        assert explicit["logprobs"] is False
+        assert explicit["max_tokens"] == 50

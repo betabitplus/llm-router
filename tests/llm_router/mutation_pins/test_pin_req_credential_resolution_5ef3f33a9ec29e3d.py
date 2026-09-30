@@ -1,38 +1,33 @@
 # mutation-pin: REQ_CREDENTIAL_RESOLUTION 5ef3f33a9ec29e3d
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
 import pytest
 
-from llm_router import ApiKeyNotFoundError, Provider
-from llm_router._internal.config import build_default_config
-from llm_router._internal.runtime.limiter import KeyResolver
+from llm_router import ApiKeyNotFoundError, LLMRouter, Model, Provider, RouterProfile
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
 @pytest.mark.verifies("REQ_CREDENTIAL_RESOLUTION[revision==1]")
-def test_candidates_missing_required_key_raises_error(
+def test_auto_request_without_any_key_raises_missing_key_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    config = build_default_config()
-    resolver = KeyResolver(config)
-    spec = config.catalog.providers[Provider.NVIDIA]
-    for env_name in spec.api_key_env_vars.values():
-        monkeypatch.delenv(env_name, raising=False)
-    for candidate_id in range(10):
-        monkeypatch.delenv(
-            resolver._key_name(provider=Provider.NVIDIA, key_id=candidate_id),
-            raising=False,
-        )
-    expected_env_var = resolver._key_name(
-        provider=Provider.NVIDIA, key_id=config.default_key_id
+    prefix = "OPENROUTER_API_KEY"
+    monkeypatch.delenv(prefix, raising=False)
+    for number in range(100):
+        monkeypatch.delenv(f"{prefix}_{number}", raising=False)
+    router = LLMRouter(
+        RouterProfile(model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER),
+        key_id="auto",
+        temperature=0.0,
+        seed=1,
     )
-    mode = "auto"
 
-    with pytest.raises(ApiKeyNotFoundError) as exc_info:
-        resolver.candidates(provider=Provider.NVIDIA, key_id=mode)
+    with pytest.raises(ApiKeyNotFoundError, match=r"OPENROUTER_API_KEY") as info:
+        router.query("Reply with one word.")
 
-    assert exc_info.value.key_name == expected_env_var
-    assert exc_info.value.provider == Provider.NVIDIA.value
-    assert exc_info.value.key_id == config.default_key_id
+    assert info.value.provider == Provider.OPENROUTER.value
+    assert info.value.key_name.startswith(prefix)
+    assert isinstance(info.value.key_id, int)

@@ -1,0 +1,59 @@
+{
+ "at": "2026-09-30T13:44:15.758430Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_8139110fd930fa09.py",
+  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_a2e61f2155653e45.py",
+  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py",
+  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_48e372dd.py",
+  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_f91afa31.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_8139110fd930fa09.py",
+  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_a2e61f2155653e45.py",
+  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py",
+  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_48e372dd.py"
+ ],
+ "restored": [],
+ "removed": {
+  "SM-F91AFA31": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_f91afa31.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py"
+   ]
+  }
+ },
+ "matrix": {
+  "8139110fd930fa09": [
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_8139110fd930fa09.py"
+  ],
+  "a2e61f2155653e45": [
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_a2e61f2155653e45.py"
+  ],
+  "SM-39305DEA": [
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py",
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_f91afa31.py"
+  ],
+  "SM-48E372DD": [
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_48e372dd.py"
+  ],
+  "SM-F91AFA31": [
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py",
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_f91afa31.py"
+  ]
+ },
+ "caught_before": [
+  "0cdecbe4fc70f974",
+  "8139110fd930fa09",
+  "SM-39305DEA",
+  "SM-48E372DD",
+  "SM-9E7AF212",
+  "SM-D56D5CD1",
+  "SM-F91AFA31",
+  "a2e61f2155653e45",
+  "a647454d419cae27",
+  "b0c1aea2d396b07a",
+  "e8c49b42da7def44",
+  "eacf1b4cfc2d8e93",
+  "fc9f958e77dbd042"
+ ]
+}

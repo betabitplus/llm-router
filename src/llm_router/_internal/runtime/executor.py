@@ -167,6 +167,7 @@ class ProviderRouteExecutor:
                     event_type="llm_router.provider.retry.exhausted",
                     context=_retry_context(request),
                 )
+            # @impl Provider failure surfaced through the public boundary, IMPL_PROVIDER_ERROR_BOUNDARY_SYNC, [REQ_PROVIDER_ERROR_BOUNDARY[revision==1]]
             raise _provider_boundary_error(exc, request=request) from exc
         msg = "Provider retry loop ended without a result."
         raise RuntimeError(msg)
@@ -191,6 +192,7 @@ class ProviderRouteExecutor:
                     event_type="llm_router.provider.retry.exhausted",
                     context=_retry_context(request),
                 )
+            # @impl Provider failure surfaced asynchronously through the public boundary, IMPL_PROVIDER_ERROR_BOUNDARY_ASYNC, [REQ_PROVIDER_ERROR_BOUNDARY[revision==1]]
             raise _provider_boundary_error(exc, request=request) from exc
         msg = "Provider retry loop ended without a result."
         raise RuntimeError(msg)

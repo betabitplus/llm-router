@@ -1,0 +1,33 @@
+# mutation-pin: REQ_REQUEST_OVERRIDE_PRECEDENCE 02b906cf3d4b778c
+# pinned-by: claude-opus-5-5
+from __future__ import annotations
+
+import pytest
+
+from llm_router._internal.config import build_default_config
+from llm_router._internal.runtime.effective_settings import (
+    RouterDefaults,
+    resolve_effective_settings,
+)
+from llm_router._internal.runtime.routes import RouteGenerationDefaults
+
+pytestmark = pytest.mark.verification_kind("unit")
+
+
+@pytest.mark.verifies("REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]")
+def test_route_without_max_tool_rounds_keeps_config_default() -> None:
+    config = build_default_config()
+
+    settings = resolve_effective_settings(
+        config=config,
+        route_defaults=RouteGenerationDefaults(key_id=0, seed=42),
+        route_policy_defaults={},
+        router_defaults=RouterDefaults(values={"temperature": 0.7}),
+        call_overrides={},
+    )
+
+    assert config.default_max_tool_rounds is not None
+    assert settings.max_tool_rounds is not None
+    assert settings.max_tool_rounds == config.default_max_tool_rounds
+    assert settings.seed == 42
+    assert settings.temperature == 0.7

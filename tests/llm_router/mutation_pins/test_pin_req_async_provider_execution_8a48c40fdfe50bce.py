@@ -1,60 +1,68 @@
 # mutation-pin: REQ_ASYNC_PROVIDER_EXECUTION 8a48c40fdfe50bce
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
-
-import asyncio
-from typing import Any
 
 import pytest
 
 from llm_router import LLMRouter, Model, Provider, RouterProfile
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+)
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_error_response,
+    openai_success_response,
+    patched_openai_sdk,
+)
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
+@pytest.mark.asyncio
 @pytest.mark.verifies("REQ_ASYNC_PROVIDER_EXECUTION[revision==1]")
-def test_async_fallback_trace_records_call_error(
+async def test_async_fallback_trace_records_call_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    env_nvidia = "NVIDIA_API_KEY"
-    value = "mock-provider-auth-12345"
-    monkeypatch.setenv(env_nvidia, value)
-
+    for route_id in (1, 2):
+        monkeypatch.setenv(f"OPENROUTER_API_KEY_{route_id}", f"auth-{route_id}")
     router = LLMRouter(
         [
-            RouterProfile(model=Model.DEEPSEEK_V4_FLASH, provider=Provider.NVIDIA),
-            RouterProfile(model=Model.LLAMA_8B, provider=Provider.NVIDIA),
-        ]
+            RouterProfile(
+                provider=Provider.OPENROUTER,
+                model=Model.DEEPSEEK_V3,
+                key_id=route_id,
+            )
+            for route_id in (1, 2)
+        ],
+        round_robin_start=False,
+        shuffle_fallbacks=False,
     )
-    runtime = getattr(router, "_runtime", router)
+    failure = ScriptedResponse(
+        status_code=400,
+        headers={"Content-Type": "application/json"},
+        body=openai_error_response(status_code=400, message="route-one-failed"),
+    )
+    success = ScriptedResponse(
+        status_code=200,
+        headers={"Content-Type": "application/json"},
+        body=openai_success_response(text="second-route-ok"),
+    )
+    with (
+        ScriptedHTTPServer(
+            port=0,
+            routes={("POST", openai_chat_path()): [failure, success]},
+        ) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ),
+    ):
+        response = await router.aquery("hello")
 
-    simulated_error = RuntimeError("simulated provider call failure")
-    call_count = 0
-
-    async def mock_call_async(request: Any, timeout_seconds: Any) -> Any:
-        nonlocal call_count
-        assert request is not None
-        assert timeout_seconds is not None
-        call_count += 1
-        if call_count == 1:
-            raise simulated_error
-        return "second-route-ok"
-
-    monkeypatch.setattr(runtime, "_call_async_with_timeout", mock_call_async)
-
-    captured: dict[str, Any] = {}
-
-    def spy_complete_success(**kwargs: Any) -> str:
-        captured.update(kwargs)
-        return "final-sentinel"
-
-    monkeypatch.setattr(runtime, "_complete_success", spy_complete_success)
-
-    result = asyncio.run(router.aquery("test content prompt"))
-
-    assert result == "final-sentinel"
-    traces = captured["traces"]
-    assert len(traces) == 1
-    failed_trace = next(iter(traces))
-    assert failed_trace.error_type == type(simulated_error).__name__
-    assert failed_trace.error_message == str(simulated_error)
+    assert response.output_text == "second-route-ok"
+    first = response.routing_trace[0]
+    assert first.error_type is not None
+    assert first.error_message
+    assert response.routing_trace[-1].error_type is None

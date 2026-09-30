@@ -1,0 +1,7 @@
+{
+ "20260930T140550Z-629dc8": {
+  "at": "2026-09-30T14:41:30.685675Z",
+  "key": "SM-BD2A25D9",
+  "reason": "the retained full test run fails it twice (2 requests where it expects 1: the terminal route is asked again when the tests before it ran), while it passes alone and with its own folder"
+ }
+}

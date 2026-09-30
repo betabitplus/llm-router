@@ -1,51 +1,78 @@
 # mutation-pin: REQ_ROUTE_TIMEOUT_FALLBACK SM-908D5413
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
-
-import typing
 
 import pytest
 
-import llm_router
+from llm_router import LLMRouter, Model, Provider, RouterProfile
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+)
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+)
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
-class _SlowWorkerExecutor:
-    """Blocks when run on a worker thread; returns at once on the caller."""
+class _ZeroSeconds:
+    """A zero-second timeout that is falsy and still waits like a number."""
 
-    def __init__(self, response: object, release: object, caller: int) -> None:
-        self.response = response
-        self.release = release
-        self.caller = caller
-        self.received_request: object = None
+    def __bool__(self) -> bool:
+        return False
 
-    def execute(self, request: object) -> object:
-        threading = typing.sys.modules["threading"]
-        self.received_request = request
-        if threading.get_ident() != self.caller:
-            self.release.wait(5)
-        return self.response
+    def __float__(self) -> float:
+        return 0.0
+
+    def __index__(self) -> int:
+        return 0
+
+    def __gt__(self, other: object) -> bool:
+        return False
+
+    def __le__(self, other: object) -> bool:
+        return True
 
 
 @pytest.mark.verifies("REQ_ROUTE_TIMEOUT_FALLBACK[revision==1]")
-def test_sync_zero_timeout_raises_timeout_error() -> None:
-    """A zero attempt timeout must time out, not run without a timeout."""
-    threading = typing.sys.modules["threading"]
-    router_mod = typing.sys.modules["llm_router._internal.runtime.router"]
-    router_runtime_cls = router_mod.RouterRuntime
-    response_cls = router_mod.LLMRouterResponse
-    request_cls = router_mod.ResolvedRequest
+def test_sync_zero_attempt_timeout_surfaces_public_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    value = "mock-credential"
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", value)
 
-    request = request_cls.__new__(request_cls)
-    response = response_cls.__new__(response_cls)
-    release = threading.Event()
-    executor = _SlowWorkerExecutor(response, release, threading.get_ident())
+    router = LLMRouter(
+        RouterProfile(
+            provider=Provider.OPENROUTER,
+            model=Model.DEEPSEEK_V3,
+            key_id=1,
+        ),
+        attempt_timeout_seconds=_ZeroSeconds(),
+    )
 
-    runtime = router_runtime_cls.__new__(router_runtime_cls)
-    runtime._executor = executor
-
-    with pytest.raises(TimeoutError, match=r"Attempt timed out"):
-        runtime._call_sync_with_timeout(request, timeout_seconds=0)
-    release.set()
-    assert llm_router is not None
+    chat_path = openai_chat_path()
+    with (
+        ScriptedHTTPServer(
+            port=0,
+            routes={
+                ("POST", chat_path): [
+                    ScriptedResponse(
+                        status_code=200,
+                        headers={"Content-Type": "application/json"},
+                        body=openai_success_response(text="slow-only-route"),
+                        delay_seconds=1.0,
+                    ),
+                ]
+            },
+        ) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ),
+        pytest.raises(TimeoutError, match=r"Attempt timed out"),
+    ):
+        router.query("test-prompt")

@@ -1,4 +1,57 @@
 {
+ "395a299516e82a3e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T152527Z-5aefe8",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the explicit 500-character bound on the schema preview. A long schema is then cut only at preview_text's unseen default, which may be larger or absent, so the repair prompt can grow past its cap. The requirement says every incorporated dynamic component, including the schema preview, must be bounded.",
+   "response_sha256": "13c141e7bba93e083eb4b67a0da7c055655fb151dff62200fbb55b0450cc6677",
+   "sources": [
+    "Repair prompts shall bound every incorporated dynamic component, including schema identity and preview, invalid output, and validation details.",
+    "Property-generated schema identity, invalid output, and validation detail cannot expand the repair prompt beyond its cap.",
+    "schema_preview = preview_text(json.dumps(dict(spec.json_schema), sort_keys=True))",
+    "max_chars=500,"
+   ],
+   "test_focus": "Build a repair prompt from a very large generated JSON schema and check that the 'Required schema preview' part is at most 500 characters, and that the whole prompt stays within its cap.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "prompt_sha256": "01cfe94dff5b35ee07cba8c5342add9b98fdc924dfeac7dedc60fba35c38a5a0",
+  "subsumed": {
+   "at": "2026-09-30T15:52:04.704210Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_9341379044dfc2f2.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T15:29:03.528618Z",
+    "answer_sha256": "a3cdc2563987b1f31a4c679601b27c3c799083b7453c94af6829c992b2ad512b",
+    "call_id": "20260930T152803Z-fb11bd",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "a3cdc2563987b1f31a4c679601b27c3c799083b7453c94af6829c992b2ad512b",
+    "effort": "high",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_395a299516e82a3e.py",
+    "response_sha256": "8dd24c95be3b00693256a533d71aeedb6c0af0621b52023df86d7abd3ee2b78f",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.capabilities.schema.SchemaSpec",
+     "llm_router._internal.capabilities.schema.build_repair_prompt"
+    ]
+   }
+  }
+ },
  "3d767806f2945e38": {
   "answer": {
    "backend": "claude-cli",
@@ -68,17 +121,45 @@
  "53c4293e1a144b74": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260926T215632Z-0eb0a1",
+   "call_id": "20260930T152601Z-0ed2e9",
+   "confirmed": true,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes the key order in the schema preview. The preview is still cut to 500 characters, so every dynamic part of the repair prompt stays within its cap, and no requirement here says anything about key order or deterministic serialisation.",
-   "response_sha256": "4bfc9cbf91810fb847b1f89a22bced6116b4a61832eb98f9b83e3bc6c81b0da6",
+   "reason": "The mutant only changes the key order in the schema preview. `preview_text(..., max_chars=500)` still caps the preview, so every part of the prompt stays bounded. No requirement asks for a deterministic or sorted key order, so this confirmed difference falls outside what the requirement protects.",
+   "response_sha256": "ae1f61611d32e23cfb7f2fd00d314b86ca6e8ed494ee6dfc3d2c8a93eb14f6ff",
+   "sources": [
+    "Repair prompts shall bound every incorporated dynamic component, including schema identity and preview, invalid output, and validation details.",
+    "Property-generated schema identity, invalid output, and validation detail cannot expand the repair prompt beyond its cap.",
+    "schema_preview = preview_text(json.dumps(dict(spec.json_schema), sort_keys=False), max_chars=500)",
+    "json.dumps(dict(spec.json_schema), sort_keys=True),"
+   ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "boolean",
-  "prompt_sha256": "8e2f8dc2e01914c7dbdf498eb51c2cb9880f30d89b358a0a8b3621ede764f1ce"
+  "prompt_sha256": "bfec2f92d308b4feac998d9c9619d5e446804c9afe6e61b75c11c7e5a2f3233e",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260930T152614Z-e1f93e",
+   "confirmed": true,
+   "effort": "",
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "bfec2f92d308b4feac998d9c9619d5e446804c9afe6e61b75c11c7e5a2f3233e",
+   "reason": "The requirement and its criteria strictly demand that the schema preview and other dynamic components remain bounded in length. Sorting the JSON keys in the preview is an implementation detail that does not affect this boundedness, as the 500-character cap is preserved in both versions.",
+   "response_sha256": "2ccef8c9cb4d6c3b56de8e3baf26563db9ea42acfacc5edc0206d61e069797db",
+   "sources": [
+    "Repair prompts shall bound every incorporated dynamic component, including schema identity and preview, invalid output, and validation details.",
+    "Property-generated schema identity, invalid output, and validation detail cannot expand the repair prompt beyond its cap.",
+    "        json.dumps(dict(spec.json_schema), sort_keys=True),",
+    "    schema_preview = preview_text(json.dumps(dict(spec.json_schema), sort_keys=False), max_chars=500)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  },
  "65a49b2023696bc9": {
   "answer": {
@@ -207,5 +288,47 @@
    "source": "draft author"
   },
   "prompt_sha256": "75768039bf273609aac5b36894a5736009b05c9dba0883e3829f154305152968"
+ },
+ "c64c040eeaee4fb9": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T152601Z-33abe7",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Removing sort_keys only reorders the keys in the serialized schema; the length stays the same and the result still goes through preview_text with max_chars=500, so the prompt stays within its cap. No requirement here asks for a canonical or sorted schema preview, only for bounded components.",
+   "response_sha256": "4898ee25d4fa39ce5d27aed58bb4c3eaddab1d73cb05f4402d8eae2a7f934eb9",
+   "sources": [
+    "Repair prompts shall bound every incorporated dynamic component, including schema identity and preview, invalid output, and validation details.",
+    "Property-generated schema identity, invalid output, and validation detail cannot expand the repair prompt beyond its cap.",
+    "json.dumps(dict(spec.json_schema), sort_keys=True),",
+    "schema_preview = preview_text(json.dumps(dict(spec.json_schema)), max_chars=500)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "2dc924496d3c99933cdb492b35f5d0bdd9d47bcc05f077f6ab0e7c4529c314d9",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260930T152614Z-636323",
+   "confirmed": true,
+   "effort": "",
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "2dc924496d3c99933cdb492b35f5d0bdd9d47bcc05f077f6ab0e7c4529c314d9",
+   "reason": "The mutation removes the `sort_keys=True` argument when serializing the JSON schema, which alters the key order in the output. Since the `max_chars=500` bound is retained, the requirement that the prompt remains bounded is still satisfied, and the key ordering is an unspecified implementation detail.",
+   "response_sha256": "f12f872bb9b0565b366a184d3350dcde1d9b0e57493ddcbb9e339e3cc46bdfdf",
+   "sources": [
+    "Repair prompts shall bound every incorporated dynamic component, including schema identity and preview, invalid output, and validation details.",
+    "json.dumps(dict(spec.json_schema), sort_keys=True)",
+    "schema_preview = preview_text(json.dumps(dict(spec.json_schema)), max_chars=500)"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  }
 }

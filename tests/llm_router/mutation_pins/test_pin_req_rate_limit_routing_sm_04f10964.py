@@ -1,79 +1,56 @@
 # mutation-pin: REQ_RATE_LIMIT_ROUTING SM-04F10964
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
-
-from dataclasses import dataclass
 
 import pytest
 
-from llm_router._api.types import Provider
-from llm_router._internal.runtime.router import RouterRuntime
+from llm_router import LLMRouter, Model, Provider, ProviderLimits, RouterProfile
+from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+)
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
-@dataclass
-class FakeCandidate:
-    key_id: int
-
-
-@dataclass
-class FakeRoute:
-    provider: Provider
-    route_index: int
-
-
-@dataclass
-class FakeSettings:
-    key_id: object
-
-
-class RotatingKeys:
-    def __init__(self) -> None:
-        self.calls = 0
-        self.seen: list[tuple[Provider, object]] = []
-
-    def candidates(self, *, provider: Provider, key_id: object) -> list[FakeCandidate]:
-        self.seen.append((provider, key_id))
-        return [FakeCandidate(1), FakeCandidate(2)]
-
-    def resolve(
-        self,
-        *,
-        provider: Provider,
-        key_id: object,
-        preferred_key_ids: set[int] | None,
-    ) -> FakeCandidate:
-        self.seen.append((provider, key_id))
-        pool = sorted(preferred_key_ids or {1, 2})
-        chosen = pool[self.calls % len(pool)]
-        self.calls += 1
-        return FakeCandidate(chosen)
-
-
-class FreeLimiter:
-    def __init__(self) -> None:
-        self.waits = {1: 0.0, 2: 0.0}
-
-    def wait_seconds(self, *, provider: Provider, key_id: int) -> float:
-        assert provider is Provider.OPENROUTER
-        return self.waits[key_id]
+def _ok(text: str) -> ScriptedResponse:
+    return ScriptedResponse(
+        status_code=200,
+        headers={"Content-Type": "application/json"},
+        body=openai_success_response(text=text),
+    )
 
 
 @pytest.mark.verifies("REQ_RATE_LIMIT_ROUTING[revision==1]")
-def test_available_keys_rotate_before_reuse() -> None:
-    runtime = object.__new__(RouterRuntime)
-    runtime._keys = RotatingKeys()
-    runtime._limiter = FreeLimiter()
-    runtime._messages_for_content = lambda content: []
-    used = []
-    for index in range(2):
-        request, wait = runtime._prepare_request(
-            request_id=f"req-{index}",
-            route=FakeRoute(provider=Provider.OPENROUTER, route_index=0),
-            settings=FakeSettings(key_id="auto"),
-            content="hello",
-        )
-        assert wait == 0.0
-        used.append(request.key.key_id)
-    assert used[0] != used[1]
+def test_two_free_auto_keys_rotate_between_consecutive_requests(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", "local-value-1")
+    monkeypatch.setenv("OPENROUTER_API_KEY_2", "local-value-2")
+    router = LLMRouter(
+        RouterProfile(
+            provider=Provider.OPENROUTER, model=Model.DEEPSEEK_V3, key_id="auto"
+        ),
+        wait_for_cooldown_if_all_blocked=False,
+        limits_by_provider={
+            Provider.OPENROUTER: ProviderLimits(
+                rps=0.0, rpm=0.0, cooldown_seconds=0.0, cooldown_after_failures=0
+            )
+        },
+    )
+    with (
+        ScriptedHTTPServer(
+            port=0,
+            routes={("POST", openai_chat_path()): [_ok("one"), _ok("two")]},
+        ) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1", disable_sdk_retries=True
+        ),
+    ):
+        first = router.query("first").routing_trace[-1].key_id
+        second = router.query("second").routing_trace[-1].key_id
+
+    assert {first, second} == {1, 2}

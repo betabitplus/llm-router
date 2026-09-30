@@ -1,0 +1,76 @@
+{
+ "cf6979d01bc5ba63": [
+  {
+   "at": "2026-09-30T14:44:54.957343Z",
+   "call_id": "20260930T144417Z-f2bf1f",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f7ca1ebb24d08ed70578b381bf56a2d946abf6454e492cbf449de054dcaa7b23",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: module 'llm_router._internal.providers.registry' has no attribute 'create_adapter'. Did you mean: 'get_adapter'?)",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router._internal.providers.aistudio.AIStudioAdapter",
+    "llm_router._internal.providers.registry.register_adapter_factory"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:45:09.214700Z",
+   "call_id": "20260930T144455Z-e97c42",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "LLMRouterConfig cannot be built without default_provider, default_model, default_key_id, defaults, catalog"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fe6a08ffc58183efe80c4d5e1b5ee0a879b571b2e0aebdfe6ca00b0ae41d10b2",
+   "reason": "it does not fit the project's code as written: LLMRouterConfig cannot be built without default_provider, default_model, default_key_id, defaults, catalog",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model",
+    "llm_router._internal.providers.registry.get_adapter",
+    "llm_router._internal.providers.aistudio.AIStudioAdapter",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.config.LLMRouterConfig"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:46:43.296990Z",
+   "call_id": "20260930T144509Z-d7476f",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "84e81f425ed2afcdf3c0fedfc38e5a464909bf336f790f4add40d63f77e929bf",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.providers.aistudio.AIStudioAdapter",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.registry.get_adapter",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ]
+  }
+ ]
+}

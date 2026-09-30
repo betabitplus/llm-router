@@ -1,0 +1,39 @@
+{
+ "at": "2026-09-30T13:46:18.561068Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_treq_config_retry_wait_bounds_19ce8cfa2ea55f04.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_retry_wait_bounds_e303da2411404c79.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_treq_config_retry_wait_bounds_19ce8cfa2ea55f04.py"
+ ],
+ "restored": [],
+ "removed": {
+  "e303da2411404c79": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_retry_wait_bounds_e303da2411404c79.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_retry_wait_bounds_19ce8cfa2ea55f04.py"
+   ]
+  }
+ },
+ "matrix": {
+  "19ce8cfa2ea55f04": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_retry_wait_bounds_19ce8cfa2ea55f04.py"
+  ],
+  "e303da2411404c79": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_retry_wait_bounds_19ce8cfa2ea55f04.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_retry_wait_bounds_e303da2411404c79.py"
+  ]
+ },
+ "caught_before": [
+  "19ce8cfa2ea55f04",
+  "2872664c256e9143",
+  "73e5e07791e7407e",
+  "7603e9bd74c9685c",
+  "9fad475464a4b336",
+  "cbea5e28d5f33ef5",
+  "e303da2411404c79",
+  "e45e36067aae5c00",
+  "f924e996fbed3a2d"
+ ]
+}

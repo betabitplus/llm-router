@@ -1,0 +1,945 @@
+{
+ "02b906cf3d4b778c": [
+  {
+   "at": "2026-09-30T14:45:33.176107Z",
+   "call_id": "20260930T144417Z-4adeb3",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "354271015ae8020c260cedfdb1ebaec0f4a462d92891d796a7c753a11b2448f9",
+   "reason": "it does not fail on the mutant: it runs the changed lines 170\u2013174, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:46:03.191661Z",
+   "call_id": "20260930T144533Z-8ce4e5",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ccbc0cbee05faf1c95ec26be671fe2c3b5a2aa632597fdda0fb6d5d361e182db",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults",
+    "llm_router._internal.config.models.LLMRouterConfig"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:03.929907Z",
+   "call_id": "20260930T190135Z-5f7c95",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings)",
+    "llm_router has no split_router_defaults (it lives in llm_router._internal.runtime.effective_settings)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a9d31bfb403a3a58dfec1582f10618999f62b685f30698c66d3232250531fd47",
+   "reason": "it does not fit the project's code as written: llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings) | llm_router has no split_router_defaults (it lives in llm_r",
+   "sources": [
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:22.487604Z",
+   "call_id": "20260930T190209Z-a9c41d",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "49c79fa34cd662dafbae8cbfa4a6057725e79214ffe7ba106e36f7677f64c43b",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:05:58.347177Z",
+   "call_id": "20260930T190225Z-ef6662",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "543efcc85985c9b6c02e31301ffad8e7b6be0d9ab28a38321c6786de88b8dd00",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "2a31133556a5dacb": [
+  {
+   "at": "2026-09-30T14:22:21.470617Z",
+   "call_id": "20260930T142110Z-d0324e",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "54cc380aabce8ee354bc124c8a6a6070fc3275b9b1f59de6ed4aa5730a712758",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:08.225875Z",
+   "call_id": "20260930T190135Z-1fa102",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c9393f9e39c5bbcdce9e6bcd99563ca177e928f200bf578a89fa59fe10ff9169",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:40.227455Z",
+   "call_id": "20260930T190212Z-c6cda5",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings)",
+    "llm_router has no split_router_defaults (it lives in llm_router._internal.runtime.effective_settings)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "be626dad7a7627bd8bb9e0515221990c30418fc01d2bc29a995078d2a529c505",
+   "reason": "it does not fit the project's code as written: llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings) | llm_router has no split_router_defaults (it lives in llm_r",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:03:16.972080Z",
+   "call_id": "20260930T190241Z-44075b",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b6ef58aaa703bc1851c7c499ac4f6f522c3add68a5e684b188e47d5fb925517e",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:08:29.590550Z",
+   "call_id": "20260930T190321Z-c9b9b5",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "1db399c808a19c9b08b3727bdc0c8a494f9cd1c057dc93b97a43e310c86df6f0",
+   "reason": "it does not fail on the mutant: it runs the changed lines 182\u2013185, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.RoutingAttempt",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:46:16.215437Z",
+   "call_id": "20260930T194602Z-4bff52",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes)",
+    "llm_router has no RouterDefaults (it lives in llm_router._internal.runtime.effective_settings)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b84cb1b33840a59013184d86da7b86672290151bb9e5a1c7244c1ec2fa1b8088",
+   "reason": "it does not fit the project's code as written: llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes) | llm_router has no RouterDefaults (it lives in llm_router._internal.runtime.effective_settings) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no resolve_effective_settings (it lives in llm_router._",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:46:27.670538Z",
+   "call_id": "20260930T194617Z-47d878",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0f8064ddb722d7938bcb0d228f84974b5762d366a575afe8a049752e6529b906",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:48:14.866528Z",
+   "call_id": "20260930T194628Z-0e7f12",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a08188bdec5389c6bbc142234caed68bdc883b387172ae810603862cdd3331b3",
+   "reason": "it does not fail on the mutant: of the changed lines 182\u2013185 it runs line 182 but never line 185",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:53:20.338811Z",
+   "call_id": "20260930T194815Z-636125",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "2c5f0141526a2793fc1b360c1781d015855fc6ed0cf3bd9f114d6c4922a12cbf",
+   "reason": "it does not fail on the mutant: it runs the changed lines 182\u2013185, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "39cd06b3a9c8bc51": [
+  {
+   "at": "2026-09-30T19:02:01.868008Z",
+   "call_id": "20260930T190129Z-b64bf9",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "91097642e130b2f6d570b5df7face6c7bc078dfd42aa742450974a8317d298e6",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:22.585901Z",
+   "call_id": "20260930T190203Z-c54bd6",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings)",
+    "llm_router has no split_router_defaults (it lives in llm_router._internal.runtime.effective_settings)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1f833f86de0e5355b48efd5f59e4d5bf5248d3e5be4d445489d30004f18e5284",
+   "reason": "it does not fit the project's code as written: llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings) | llm_router has no split_router_defaults (it lives in llm_r",
+   "sources": [
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:06:09.005598Z",
+   "call_id": "20260930T190225Z-53a764",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.LLMRouterError",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fe34e758772a06ec38d54c0ea00cfa79f522780a073866d434c8c578ece99d18",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.LLMRouterError",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "3db6d2968629906a": [
+  {
+   "at": "2026-09-30T14:22:22.970792Z",
+   "call_id": "20260930T142110Z-846e27",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "64fd12230a8dbd5898087e9d8342c7fc64f81641093044b53aa45509c8b0c8e5",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:06.436627Z",
+   "call_id": "20260930T190131Z-279dc4",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2c9a9a7e92666b5d0e06323782ab2a534dabd5107b0c84d8cf3bc3605542dc6f",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:03:15.521106Z",
+   "call_id": "20260930T190210Z-57cedc",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings)",
+    "llm_router has no split_router_defaults (it lives in llm_router._internal.runtime.effective_settings)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "60693b3ca3f0163879439ef6feab004121279afb8e20853f9882f7ba5a3dd5a4",
+   "reason": "it does not fit the project's code as written: llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings) | llm_router has no split_router_defaults (it lives in llm_r",
+   "sources": [
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:03:42.996545Z",
+   "call_id": "20260930T190320Z-78a96b",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e5510950c81e21c57909754e82b825099eeb67f4a59ba2a43d3b70dfc3094ff5",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:10:33.235617Z",
+   "call_id": "20260930T190348Z-194d5f",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "7b2ed5d59a84ce665bc2553d8ae6b79bb0154399931b14b3a8f811d5409f3748",
+   "reason": "it does not fail on the mutant: it runs the changed lines 182\u2013185, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-4D75202A": [
+  {
+   "at": "2026-09-30T16:40:16.105192Z",
+   "call_id": "20260930T163952Z-328b15",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings)",
+    "llm_router has no split_router_defaults (it lives in llm_router._internal.runtime.effective_settings)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f24fde37e1204ceeb8d6ca8b5b9f1bfb793135d5bb3cc58a6547bf8644472c51",
+   "reason": "it does not fit the project's code as written: llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings) | llm_router has no split_router_defaults (it lives in llm_r",
+   "sources": [
+    "llm_router.build_default_config",
+    "llm_router.resolve_effective_settings",
+    "llm_router.split_router_defaults",
+    "llm_router.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:03.659228Z",
+   "call_id": "20260930T164017Z-e8d200",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6d757d6f99c7c54662c843d6f8d8a47956927def789c74ae259b7d367b92043c",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:12:00.785303Z",
+   "call_id": "20260930T180455Z-84780b",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "745732b8ab5162fceb699d7cdd75329ea2ba3045df6825e7bb7bab4056ffc995",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "bf8a96501e88d45d": [
+  {
+   "at": "2026-09-30T19:46:16.056954Z",
+   "call_id": "20260930T194558Z-4dc2d1",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "78374492a5610044fc2b08950678f84d2b104fcbce951c6bb7d07787631303ef",
+   "reason": "it imports llm_router._internal.config.assembly, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:46:41.911483Z",
+   "call_id": "20260930T194616Z-dce36c",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes)",
+    "llm_router has no RouterDefaults (it lives in llm_router._internal.runtime.effective_settings)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fef0e482372e274cf3cfb4fddc9045301efd1ecadf0ccdcee58cfb116df32ee6",
+   "reason": "it does not fit the project's code as written: llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes) | llm_router has no RouterDefaults (it lives in llm_router._internal.runtime.effective_settings) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no resolve_effective_settings (it lives in llm_router._",
+   "sources": [
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:47:21.139191Z",
+   "call_id": "20260930T194642Z-e8cdcf",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1c05f68863731c98abb270e83f3fbcc478a09152a143659106f60860160c677e",
+   "reason": "it imports llm_router._internal.config.assembly, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:49:13.094429Z",
+   "call_id": "20260930T194721Z-b1ff76",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "2c0bcea0d889047e405a688953fe57dc80ba5f7649389abadca318b68cacceee",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "e238ff65d72c6c1f": [
+  {
+   "at": "2026-09-30T19:01:41.019705Z",
+   "call_id": "20260930T190128Z-5c4163",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c1dc2280347b2a8ed1fdf51da4eea9c826762e45d3418a975c434f16302fe5ed",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:11.047809Z",
+   "call_id": "20260930T190142Z-6b2f9c",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes)",
+    "llm_router has no RouterDefaults (it lives in llm_router._internal.runtime.effective_settings)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c0a198b6980aa07b089fe6eb3bc4cfb5e7f7f4eb9c365953b008f5f1e9e7dfb6",
+   "reason": "it does not fit the project's code as written: llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes) | llm_router has no RouterDefaults (it lives in llm_router._internal.runtime.effective_settings) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no resolve_effective_settings (it lives in llm_router._",
+   "sources": [
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:06:41.729751Z",
+   "call_id": "20260930T190215Z-6ea460",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "efa44af11da1d02a4ba58083d69e846f3648e97959d3790e8c8e563f88e42c6c",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+   ]
+  }
+ ],
+ "fddcece2c3ce55c2": [
+  {
+   "at": "2026-09-30T14:46:47.452992Z",
+   "call_id": "20260930T144417Z-c0e198",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "23cb701700a85635f3d2e9e35812260ee60b8ad2600e6de22e3d993e9aebcf50",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert None == 2 | +  where None = EffectiveSettings(key_id=0, temperature=None, seed=None, response_schema=None, tools=None, tool_choice=None, max_tool_...viderLimits(rps=1.0, rpm=10.0, cooldown_seconds=600.0, cooldown_after_failures=3), limits_by_provider=mappingproxy({})).max_attempts)",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:47:26.080281Z",
+   "call_id": "20260930T144648Z-7c58c7",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "32953324d320cb8ed7635cdb47381c6d5474c439d8c113c089cd5f3cdae13a74",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.RouterDefaults",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:14.949680Z",
+   "call_id": "20260930T163951Z-c5c757",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0d32e971b5bd0c2fafc08216f6ab51f2954a02b816d2990c8e77f172862e2052",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:23.416965Z",
+   "call_id": "20260930T164016Z-6b7802",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes)",
+    "llm_router has no build_default_config (it lives in llm_router._internal.config.assembly)",
+    "llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings)",
+    "llm_router has no split_router_defaults (it lives in llm_router._internal.runtime.effective_settings)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6ef918a9c537adddc7450c88f79e1d82bd76ec61b8c8ed48cc110ad3e6622052",
+   "reason": "it does not fit the project's code as written: llm_router has no RouteGenerationDefaults (it lives in llm_router._internal.runtime.routes) | llm_router has no build_default_config (it lives in llm_router._internal.config.assembly) | llm_router has no resolve_effective_settings (it lives in llm_router._internal.runtime.effective_settings) | llm_router has no split_router_defaults (it lives in llm_r",
+   "sources": [
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults",
+    "llm_router._internal.config.assembly.build_default_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:05:50.081452Z",
+   "call_id": "20260930T180455Z-b904c7",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8b91b79cc0a98a9dd751c7a67fd11faab13b0313d76d7b141316c568b35ccccb",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:23:36.913129Z",
+   "call_id": "20260930T180551Z-a4a70f",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "b94dd3f2f183beb30b1f811715829ce8995455c49de9a69a789a73f2eabb89ac",
+   "reason": "it does not fail on the mutant: it runs the changed lines 182\u2013185, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ApiKeyNotFoundError"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:01:59.626793Z",
+   "call_id": "20260930T190128Z-c211f4",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ffae8acb4532e12e1dbafc19ed6eab00489c8950fb9931b6aa6db11a7b637eea",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:32.905431Z",
+   "call_id": "20260930T190200Z-200498",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2ab4d54f303885e7d44839a8d620fb618bff5bdc0497bbdb1eb57d48e3b584c1",
+   "reason": "it imports llm_router._internal.config, llm_router._internal.runtime.effective_settings, llm_router._internal.runtime.routes",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.effective_settings.resolve_effective_settings",
+    "llm_router._internal.runtime.effective_settings.split_router_defaults",
+    "llm_router._internal.runtime.routes.RouteGenerationDefaults"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:04:59.607001Z",
+   "call_id": "20260930T190236Z-44cc0e",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "615de046a034b53fda5c724208fccecea8de6a83992df898359c5c5bbf1b831a",
+   "reason": "it does not fail on the mutant: of the changed lines 182\u2013185 it runs line 182 but never line 185",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:12:54.396044Z",
+   "call_id": "20260930T190501Z-71d2b1",
+   "cause": "weak",
+   "context_gaps": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "90039c152bccd33cd7693194907c28f1b991e0fbaa073acc047292f574a1d4e8",
+   "reason": "it does not fail on the mutant: it runs the changed lines 182\u2013185, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ]
+}

@@ -9,7 +9,11 @@ from llm_router._internal.capabilities.content import normalize_content
 from llm_router._internal.capabilities.tools import ToolRegistry, normalize_tool_choice
 from llm_router._internal.providers.base import ProviderCredential, ProviderRequest
 from llm_router._internal.providers.openai_compatible import OpenAICompatibleAdapter
-from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+    retain_fault_injection,
+)
 from tests.llm_router.support.workers.retry import (
     openai_chat_path,
     openai_error_response,
@@ -43,6 +47,8 @@ def _request(**overrides: object) -> ProviderRequest:
 def _adapter(server: ScriptedHTTPServer) -> OpenAICompatibleAdapter:
     return OpenAICompatibleAdapter(base_url=f"{server.base_url}/v1")
 
+
+_CONTRACT = "TREQ_OPENAI_ADAPTER_BOUNDARY"
 
 pytestmark = [
     pytest.mark.verifies("TREQ_OPENAI_ADAPTER_BOUNDARY[revision==1]"),
@@ -100,8 +106,15 @@ async def test_async_success_crosses_openai_http_boundary() -> None:
 
 
 @pytest.mark.coverage_path("retryable-status")
+@pytest.mark.fault_item(_CONTRACT, "interface.error-status")
 def test_retryable_status_is_translated_to_provider_error() -> None:
     path = openai_chat_path()
+    retain_fault_injection(
+        contract_id=_CONTRACT,
+        fault_class="interface.error-status",
+        mechanism="scripted provider returns retryable HTTP 503",
+        details={"status_code": 503},
+    )
     with ScriptedHTTPServer(
         port=0,
         routes={
@@ -123,8 +136,14 @@ def test_retryable_status_is_translated_to_provider_error() -> None:
 
 
 @pytest.mark.coverage_path("malformed-json")
+@pytest.mark.fault_item(_CONTRACT, "runtime.malformed-response")
 def test_malformed_success_json_is_wrapped_as_provider_error() -> None:
     path = openai_chat_path()
+    retain_fault_injection(
+        contract_id=_CONTRACT,
+        fault_class="runtime.malformed-response",
+        mechanism="scripted provider returns HTTP 200 with a body that is not JSON",
+    )
     with ScriptedHTTPServer(
         port=0,
         routes={
@@ -145,8 +164,14 @@ def test_malformed_success_json_is_wrapped_as_provider_error() -> None:
 
 
 @pytest.mark.coverage_path("disconnect")
+@pytest.mark.fault_item(_CONTRACT, "runtime.unavailable-disconnect")
 def test_remote_disconnect_is_retryable_transport_failure() -> None:
     path = openai_chat_path()
+    retain_fault_injection(
+        contract_id=_CONTRACT,
+        fault_class="runtime.unavailable-disconnect",
+        mechanism="scripted provider closes the connection before any response",
+    )
     with ScriptedHTTPServer(
         port=0,
         routes={("POST", path): [ScriptedResponse(status_code=200, disconnect=True)]},

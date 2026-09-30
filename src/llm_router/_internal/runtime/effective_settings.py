@@ -166,6 +166,7 @@ def resolve_effective_settings(
     )
 
 
+# @impl Route default layer, IMPL_REQUEST_OVERRIDE_ROUTE_DEFAULTS, [REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]]
 def _apply_route_generation_defaults(
     values: dict[str, object],
     route_defaults: RouteGenerationDefaults,
@@ -177,6 +178,7 @@ def _apply_route_generation_defaults(
             values[field_name] = value
 
 
+# @impl Non-null default layers, IMPL_REQUEST_OVERRIDE_DEFAULT_LAYERS, [REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]]
 def _apply_non_null(
     values: dict[str, object],
     overrides: Mapping[str, object],
@@ -187,6 +189,7 @@ def _apply_non_null(
             values[key] = value
 
 
+# @impl Explicit call overrides, IMPL_REQUEST_OVERRIDE_CALL_LAYER, [REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]]
 def _apply_call_overrides(
     values: dict[str, object],
     call_overrides: Mapping[str, object],

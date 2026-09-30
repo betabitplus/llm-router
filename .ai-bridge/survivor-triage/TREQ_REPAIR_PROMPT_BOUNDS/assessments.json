@@ -1,4 +1,47 @@
 {
+ "395a299516e82a3e": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "error_message": "\"\"",
+     "invalid_output": "None",
+     "spec": "SchemaSpec(name='test', json_schema={'a': 'b' * 1000}, parser=str)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T152201Z-7bfc6c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits the `max_chars=500` argument in the `preview_text` call for `schema_preview`, which alters truncation behavior for large schemas.",
+    "response_sha256": "4be980e65cdb463078720762c4b85d3967c3a1766f9ae7949d2c43ebd3d19e1f",
+    "sources": [
+     "    schema_preview = preview_text(\n        json.dumps(dict(spec.json_schema), sort_keys=True),\n        max_chars=500,\n    )",
+     "    schema_preview = preview_text(json.dumps(dict(spec.json_schema), sort_keys=True))"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "error_message": "e",
+     "invalid_output": "1",
+     "spec": "SchemaSpec(name='s', json_schema={'a': 'x'*5000}, parser=lambda x: x)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T152201Z-3d12c1",
+    "confidence": 0.55,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops max_chars=500 for the schema preview, so a long schema is truncated at preview_text's default limit, which may not be 500 (I couldn't see its definition).",
+    "response_sha256": "772ae342aa1ef5f32dabcd3ff75fbdb658fbbb08753f7a882bb11953b7b766d9",
+    "sources": [
+     "schema_preview = preview_text(json.dumps(dict(spec.json_schema), sort_keys=True))",
+     "max_chars=500,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "1e5473b89cd1372899ecb57167a501674888451b0ece94ecc56cd9f07ce4641e"
+ },
  "3d767806f2945e38": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -55,23 +98,46 @@
  },
  "53c4293e1a144b74": {
   "answers": {
-   "antigravity-cli:gemini-3.8-flash-high": {
+   "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "error_message": "'error'",
-     "invalid_output": "'invalid'",
-     "spec": "SchemaSpec(name='test', json_schema={'b': 1, 'a': 2}, parser=None)"
+     "error_message": "\"\"",
+     "invalid_output": "None",
+     "spec": "SchemaSpec(name=\"x\", json_schema={\"b\": 1, \"a\": 2}, parser=str)"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260926T190549Z-b1a85e",
+    "call_id": "20260930T152201Z-98a9dc",
     "confidence": 1,
-    "model": "gemini-3.8-flash-high",
+    "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The original version uses sort_keys=True in json.dumps while the changed version uses sort_keys=False, producing different schema preview outputs when dictionary keys in spec.json_schema are not in sorted order.",
-    "response_sha256": "130ecfa1b8c3adb0a6b94303738bb42cdef5e8cc38f73a63994ac89f9d8d6dea",
+    "reason": "The output string will differ when the schema has keys not in alphabetical order because `json.dumps` no longer sorts the keys.",
+    "response_sha256": "bd709a7075393cd62e3d1963666375a0128af040c461929bd711a28e5815158a",
+    "sources": [
+     "        json.dumps(dict(spec.json_schema), sort_keys=True),",
+     "    schema_preview = preview_text(json.dumps(dict(spec.json_schema), sort_keys=False), max_chars=500)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "error_message": "e",
+     "invalid_output": "x",
+     "spec": "SchemaSpec(name='n', json_schema={'b': 1, 'a': 2}, parser=lambda x: x)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T152158Z-e19b54",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change from sort_keys=True to sort_keys=False alters the schema preview whenever json_schema keys are not inserted in sorted order, e.g. {'b':1,'a':2}.",
+    "response_sha256": "709b7b50488e5942ddfd1cb171d1e96bf50ef3aa7e20051f07eddfa06ed66e76",
+    "sources": [
+     "schema_preview = preview_text(\n        json.dumps(dict(spec.json_schema), sort_keys=True),\n        max_chars=500,\n    )",
+     "schema_preview = preview_text(json.dumps(dict(spec.json_schema), sort_keys=False), max_chars=500)"
+    ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "6bb2ba0f95c6a37cb85db94cef080064e92ddb820622d09cedc8ba2a1e9579bc"
+  "prompt_sha256": "8c62e7c1eeb261bfcddca0c92ba6d5d543334889c3d52bdc5170a5f2b44c4a6a"
  },
  "65a49b2023696bc9": {
   "answers": {
@@ -269,5 +335,48 @@
    }
   },
   "prompt_sha256": "8772730ceee40aa62c443132ebed958c693f0823468593138f2410812e8b07ce"
+ },
+ "c64c040eeaee4fb9": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "error_message": "\"\"",
+     "invalid_output": "\"\"",
+     "spec": "SchemaSpec(name=\"\", json_schema={\"z\": 1, \"a\": 2}, parser=int)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T152201Z-70ee3d",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version uses `sort_keys=True` when dumping the JSON schema, sorting the keys alphabetically, while the changed version removes it, preserving the dictionary's insertion order and leading to different outputs when keys are not sorted.",
+    "response_sha256": "2978eb486f5edd70e6992a3ddd021752ed3e7254fe5747fef65650931d5fe640",
+    "sources": [
+     "        json.dumps(dict(spec.json_schema), sort_keys=True),",
+     "    schema_preview = preview_text(json.dumps(dict(spec.json_schema)), max_chars=500)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "error_message": "'e'",
+     "invalid_output": "'x'",
+     "spec": "SchemaSpec(name='s', json_schema={'b': 1, 'a': 2}, parser=lambda x: x)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T152201Z-88b385",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change drops sort_keys=True, so a schema with unsorted keys like {'b':1,'a':2} yields a differently ordered schema preview.",
+    "response_sha256": "113c293941040dfa2148a780de833f8f614f50ffcb4855d9b7113953fbcaed78",
+    "sources": [
+     "json.dumps(dict(spec.json_schema), sort_keys=True),",
+     "schema_preview = preview_text(json.dumps(dict(spec.json_schema)), max_chars=500)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "65ed0b3d5c15e8b6dbe6614a7ece2cfede247cf91cbe70454bbf65b600d0f91e"
  }
 }

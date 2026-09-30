@@ -1,0 +1,29 @@
+{
+ "at": "2026-09-30T13:46:04.998649Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_3b57c08f839ab791.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_b6340db1c7f8750a.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_3b57c08f839ab791.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_b6340db1c7f8750a.py"
+ ],
+ "restored": [],
+ "removed": {},
+ "matrix": {
+  "3b57c08f839ab791": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_3b57c08f839ab791.py"
+  ],
+  "b6340db1c7f8750a": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_b6340db1c7f8750a.py"
+  ]
+ },
+ "caught_before": [
+  "09e84d06fa7746e3",
+  "1998a78cc2ad2d04",
+  "3b57c08f839ab791",
+  "9cea044a63eefd93",
+  "b6340db1c7f8750a",
+  "c8959108655c64ca"
+ ]
+}

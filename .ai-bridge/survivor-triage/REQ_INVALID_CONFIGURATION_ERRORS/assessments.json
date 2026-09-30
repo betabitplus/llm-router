@@ -850,6 +850,21 @@
      "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-3782a9",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only behavioural change is passing the mapping directly instead of bool(mapping), which is identical if _require tests truthiness with \"if not condition\".",
+    "response_sha256": "c1d49e8e145754ae2a20d4a0082ea750e600f2b44584e85d84b422d39d0ed609",
+    "sources": [
+     "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")",
+     "condition=bool(provider_models),"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "53c5a568c4ca349f6b7ed2465b1bd08e9a66cea486eb6864eed02c2f1e3465a7"

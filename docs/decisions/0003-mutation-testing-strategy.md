@@ -38,7 +38,14 @@ function-body removal → the new class `impl.effect`. Python's own faults were 
 general operators do not: a removed optional argument, conversion, method call or container
 element and a swapped attribute read → `impl.effect`; a removed operand of `and`/`or`, a
 condition replaced by `True`/`False` (Stryker, PIT) and a negated plain-value condition
-(Google's unary operator insertion) → `impl.control-flow`. Two deterministic mutant kinds
+(Google's unary operator insertion) → `impl.control-flow`. An audit on 2026-09-30 closed the gaps
+the mature tools do not have: an inverted identity or membership test (`is`/`is not`, `in`/`not in`,
+as mutmut 3 mutates them) → `impl.comparison`; a removed slice bound (MutPy's slice index removal)
+→ `impl.boundary`; a strict comparison made inclusive or back also challenges `impl.boundary`, as
+PIT's conditionals-boundary mutator does; a write to a `global` or `nonlocal` name is an effect;
+nothing inside a type annotation is mutated, as mutmut leaves annotations alone; and code that runs
+when its module is imported counts as reached, since the engine runs every selected test for it, as
+Stryker runs its static mutants (before, 21 such mutants showed as not reached and got no verdict). Two deterministic mutant kinds
 challenge the levels above the code (2026-09-28): a scenario oracle mutant changes what one Then
 step compares with, and the scenarios that use it must fail (`spec.wrong-outcome`); an architecture
 mutant adds an import an import-linter rule forbids, and the rule must break

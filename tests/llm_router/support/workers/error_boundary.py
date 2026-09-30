@@ -143,6 +143,48 @@ def _run_provider_error_scenario(*, server_base_url: str) -> None:
     router.query("Reply with one word.")
 
 
+def _run_provider_transport_failure_scenario(*, server_base_url: str) -> None:
+    """One request whose provider transport fails (a timeout or a disconnect), once."""
+    from dataclasses import replace
+
+    from llm_router import (
+        LLMRouter,
+        Model,
+        Provider,
+        RouterProfile,
+        get_config,
+        install_config,
+    )
+    from tests.llm_router.support.runtime import clear_test_caches
+    from tests.llm_router.support.workers.worker_patches import (
+        install_fast_worker_runtime_config,
+    )
+
+    os.environ.setdefault("OPENROUTER_API_KEY_1", "LOCAL_RETRY_KEY")
+    # One attempt, and the adapter's transport gives up after 0.2 s while the route's
+    # attempt timeout stays at 30 s: what reaches the caller is the provider's failure.
+    install_fast_worker_runtime_config(
+        retry_max_attempts=1, provider_timeout_seconds=0.2
+    )
+    config = get_config()
+    provider_base_urls = dict(config.catalog.provider_base_urls)
+    provider_base_urls[Provider.OPENROUTER] = f"{server_base_url}/v1"
+    install_config(
+        replace(
+            config,
+            catalog=replace(config.catalog, provider_base_urls=provider_base_urls),
+        )
+    )
+    clear_test_caches()
+    router = LLMRouter(
+        RouterProfile(model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER),
+        temperature=0.0,
+        seed=1,
+        attempt_timeout_seconds=30.0,
+    )
+    router.query("Reply with one word.")
+
+
 def run_error_boundary_worker(
     *,
     scenario: str,
@@ -198,6 +240,12 @@ def run_error_boundary_inprocess(
             if not server_base_url:
                 _raise_worker_value_error("provider_error requires --server-base-url")
             _run_provider_error_scenario(server_base_url=server_base_url)
+        elif scenario == "provider_transport_failure":
+            if not server_base_url:
+                _raise_worker_value_error(
+                    "provider_transport_failure requires a server base URL"
+                )
+            _run_provider_transport_failure_scenario(server_base_url=server_base_url)
         else:
             _raise_worker_value_error(
                 f"Unknown error-boundary worker scenario: {scenario}"

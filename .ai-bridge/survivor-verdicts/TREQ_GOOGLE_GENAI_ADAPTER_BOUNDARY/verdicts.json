@@ -1,0 +1,57 @@
+{
+ "23c266a8950b1701": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141739Z-c7aac3",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "If the Google adapter factory is never registered, a public-config request for Provider.GOOGLE can no longer reach the Google GenAI adapter. That breaks this supported provider's normalized sync and async boundary behind the public contract. The tests pass only because they build the adapter directly and never go through the factory registry.",
+   "response_sha256": "b98f326b2d66f0913b0473e59cd172ba5ec3e1ff69dd6cc157a11bc0b0b9111f",
+   "sources": [
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "The Google GenAI adapter shall preserve synchronous and asynchronous SDK behavior and translate retryable SDK failures into the public provider-error boundary.",
+    "register_adapter_factory(Provider.GOOGLE, google_adapter_from_config)"
+   ],
+   "test_focus": "Build the client through the public config and factory path with Provider.GOOGLE, using a stubbed SDK. Check that it resolves to the Google GenAI adapter and that one sync call returns a normalized response.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-30T14:24:29.526801Z",
+   "answer_sha256": "23053ec2d24db3cf93395cd99f4ceeba363a8aba4acb0cb2a1a8a2ee1455279d",
+   "call_id": "20260930T142319Z-4ab570",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "23053ec2d24db3cf93395cd99f4ceeba363a8aba4acb0cb2a1a8a2ee1455279d",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_google_genai_adapter_boundary_23c266a8950b1701.py",
+   "response_sha256": "58ed8cd0f05f99f0dca1a99afbb5f20caf9339a58c2eaa4fae9861ec56783446",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.providers.google_genai.GoogleGenAIAdapter",
+    "llm_router._internal.providers.registry.get_adapter"
+   ]
+  },
+  "prompt_sha256": "e65b9be40c607a5dd545a995e2f9bbded5db5d6dae04787221419a0073e2411e"
+ }
+}

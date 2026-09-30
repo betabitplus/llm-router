@@ -1,0 +1,57 @@
+{
+ "f0eefabee6b35a0a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141611Z-53f4c6",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Without this line, nothing maps Provider.GEMINI_WEBAPI to its factory, so a config-built client can't reach the Gemini WebAPI adapter and none of its boundary behaviour gets through. That breaks the promise that every supported provider adapter keeps the normalized semantics. This assumes no other module registers the same factory, which wasn't checked.",
+   "response_sha256": "6b9e8eb754288a2ac0dc006f418beac86fbb117d7ae261573d3f99242bb4dec8",
+   "sources": [
+    "register_adapter_factory(Provider.GEMINI_WEBAPI, gemini_webapi_adapter_from_config)",
+    "Every supported provider adapter shall preserve normalized request, response, and public-error semantics across its native HTTP or SDK boundary.",
+    "The Gemini WebAPI adapter shall preserve synchronous and asynchronous SDK behavior, local media paths, structured and textual tool outputs, retryable failures, and provider-specific error codes."
+   ],
+   "test_focus": "Import the module, then build an adapter from a config with Provider.GEMINI_WEBAPI and check that the adapter-factory registry returns the Gemini WebAPI adapter made by gemini_webapi_adapter_from_config.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-30T14:24:12.532410Z",
+   "answer_sha256": "4f55f82399db5d9747ede8800d241142763260ab7a0de106c57475e4f370f185",
+   "call_id": "20260930T142305Z-d215d9",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "4f55f82399db5d9747ede8800d241142763260ab7a0de106c57475e4f370f185",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_gemini_webapi_adapter_boundary_f0eefabee6b35a0a.py",
+   "response_sha256": "6c7aeb9347b13f6d615e9c17e9c134af9107bc471309dc520c99e10b01e4355d",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.providers.gemini_webapi.GeminiWebAPIAdapter",
+    "llm_router._internal.providers.registry.get_adapter"
+   ]
+  },
+  "prompt_sha256": "dc9513e5ae754e161ab0de5bd1160514d0ac587baeb7329ecdeaa7212c3948f0"
+ }
+}

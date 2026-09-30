@@ -1,0 +1,36 @@
+{
+ "at": "2026-09-30T13:46:19.611605Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_treq_config_route_attempt_limit_4a11c78df0078b1f.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_route_attempt_limit_ea9109b0b3884c40.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_treq_config_route_attempt_limit_4a11c78df0078b1f.py"
+ ],
+ "restored": [],
+ "removed": {
+  "ea9109b0b3884c40": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_route_attempt_limit_ea9109b0b3884c40.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_route_attempt_limit_4a11c78df0078b1f.py"
+   ]
+  }
+ },
+ "matrix": {
+  "4a11c78df0078b1f": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_route_attempt_limit_4a11c78df0078b1f.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_route_attempt_limit_ea9109b0b3884c40.py"
+  ],
+  "ea9109b0b3884c40": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_route_attempt_limit_4a11c78df0078b1f.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_route_attempt_limit_ea9109b0b3884c40.py"
+  ]
+ },
+ "caught_before": [
+  "4a11c78df0078b1f",
+  "74857ae257b8a546",
+  "8560bd0f6cad607b",
+  "c7434c7d2355a29d",
+  "ea9109b0b3884c40"
+ ]
+}

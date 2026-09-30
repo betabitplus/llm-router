@@ -14,6 +14,8 @@ from llm_router import (
     ProviderError,
     ProviderLimits,
     RouterProfile,
+    get_config,
+    install_config,
 )
 from tests.llm_router.support.fault_server import (
     ScriptedHTTPServer,
@@ -26,7 +28,10 @@ from tests.llm_router.support.workers.retry import (
     openai_success_response,
 )
 from tests.llm_router.support.workers.timeout import run_timeout_inprocess
-from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
+from tests.llm_router.support.workers.worker_patches import (
+    install_fast_worker_runtime_config,
+    patched_openai_sdk,
+)
 
 scenarios("routing/fallback.feature")
 
@@ -95,6 +100,11 @@ for _test_name, _path_id in (
 
 for _test_name, _contract_id, _fault_class in (
     (
+        "test_the_router_does_not_exceed_the_configured_number_of_route_attempts",
+        "REQ_ROUTE_ATTEMPT_LIMIT",
+        "interface.unexpected-interaction",
+    ),
+    (
         "test_a_failed_route_falls_back_to_the_next_route",
         "REQ_SYNC_ROUTE_FALLBACK",
         "interface.error-status",
@@ -128,6 +138,20 @@ for _test_name, _contract_id, _fault_class in (
     globals()[_test_name] = pytest.mark.fault_item(_contract_id, _fault_class)(
         globals()[_test_name]
     )
+
+for _test_name, _fault_class in (
+    (
+        "test_a_route_that_returns_a_malformed_response_falls_back_to_the_next_route",
+        "runtime.malformed-response",
+    ),
+    (
+        "test_a_route_that_keeps_disconnecting_falls_back_to_the_next_route",
+        "runtime.unavailable-disconnect",
+    ),
+):
+    globals()[_test_name] = pytest.mark.fault_item(
+        "REQ_SYNC_ROUTE_FALLBACK", _fault_class
+    )(globals()[_test_name])
 del _contract_id, _criterion, _fault_class, _path_id, _test_name
 
 _TIMEOUT_PATH = openai_chat_path()
@@ -140,32 +164,59 @@ def _openrouter_keys(monkeypatch: pytest.MonkeyPatch, *, count: int) -> None:
         monkeypatch.setenv(f"OPENROUTER_API_KEY_{key_id}", f"openrouter-key-{key_id}")
 
 
+def _two_route_router() -> LLMRouter:
+    return LLMRouter(
+        [
+            RouterProfile(
+                provider=Provider.OPENROUTER,
+                model=Model.DEEPSEEK_V3,
+                key_id=1,
+            ),
+            RouterProfile(
+                provider=Provider.OPENROUTER,
+                model=Model.DEEPSEEK_V3,
+                key_id=2,
+            ),
+        ],
+        shuffle_fallbacks=False,
+        round_robin_start=False,
+    )
+
+
 @given("the router has two available routes", target_fixture="case")
 def two_routes(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     _openrouter_keys(monkeypatch, count=2)
-    return {
-        "router": LLMRouter(
-            [
-                RouterProfile(
-                    provider=Provider.OPENROUTER,
-                    model=Model.DEEPSEEK_V3,
-                    key_id=1,
-                ),
-                RouterProfile(
-                    provider=Provider.OPENROUTER,
-                    model=Model.DEEPSEEK_V3,
-                    key_id=2,
-                ),
-            ],
-            shuffle_fallbacks=False,
-            round_robin_start=False,
-        )
-    }
+    return {"router": _two_route_router()}
+
+
+@given(
+    "the router has two available routes whose retry budget is two attempts",
+    target_fixture="case",
+)
+def two_routes_with_fast_retry(
+    monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequest
+) -> dict[str, Any]:
+    _openrouter_keys(monkeypatch, count=2)
+    original = get_config()
+    request.addfinalizer(lambda: install_config(original))
+    # Retried within a two-attempt budget without the default waits, then fallback.
+    install_fast_worker_runtime_config(retry_max_attempts=2)
+    return {"router": _two_route_router()}
 
 
 @given("the first route fails")
 def first_route_fails(case: dict[str, Any]) -> None:
     case["first_route_status"] = 400
+
+
+@given("the first route returns a malformed response")
+def first_route_is_malformed(case: dict[str, Any]) -> None:
+    case["first_route_fault"] = "malformed"
+
+
+@given("the first route disconnects on every attempt")
+def first_route_disconnects(case: dict[str, Any]) -> None:
+    case["first_route_fault"] = "disconnect"
 
 
 @when("a request is made")
@@ -192,26 +243,60 @@ def request_is_made(case: dict[str, Any]) -> None:
             case["request_count"] = server.request_count("POST", _TIMEOUT_PATH)
         return
 
-    retain_fault_injection(
-        contract_id="REQ_SYNC_ROUTE_FALLBACK",
-        fault_class="interface.error-status",
-        mechanism=(
-            "scripted provider returns an HTTP error status on the preferred route"
-        ),
-        details={"status_code": case["first_route_status"]},
-    )
+    first_route: list[ScriptedResponse]
+    if case.get("first_route_fault") == "malformed":
+        retain_fault_injection(
+            contract_id="REQ_SYNC_ROUTE_FALLBACK",
+            fault_class="runtime.malformed-response",
+            mechanism=(
+                "scripted provider returns HTTP 200 with a non-JSON body "
+                "on the preferred route"
+            ),
+        )
+        first_route = [
+            ScriptedResponse(
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                body=b"{not-json",
+            )
+        ]
+        case["expected_requests"] = 2
+    elif case.get("first_route_fault") == "disconnect":
+        retain_fault_injection(
+            contract_id="REQ_SYNC_ROUTE_FALLBACK",
+            fault_class="runtime.unavailable-disconnect",
+            mechanism=(
+                "scripted provider closes the connection on every attempt "
+                "of the preferred route"
+            ),
+            details={"attempts": 2},
+        )
+        first_route = [ScriptedResponse(status_code=200, disconnect=True)] * 2
+        case["expected_requests"] = 3
+    else:
+        retain_fault_injection(
+            contract_id="REQ_SYNC_ROUTE_FALLBACK",
+            fault_class="interface.error-status",
+            mechanism=(
+                "scripted provider returns an HTTP error status on the preferred route"
+            ),
+            details={"status_code": case["first_route_status"]},
+        )
+        first_route = [
+            ScriptedResponse(
+                status_code=case["first_route_status"],
+                headers={"Content-Type": "application/json"},
+                body=openai_error_response(
+                    status_code=case["first_route_status"],
+                    message="first route failed",
+                ),
+            )
+        ]
     with ScriptedHTTPServer(
         port=0,
         routes={
             ("POST", _TIMEOUT_PATH): [
-                ScriptedResponse(
-                    status_code=case["first_route_status"],
-                    headers={"Content-Type": "application/json"},
-                    body=openai_error_response(
-                        status_code=case["first_route_status"],
-                        message="first route failed",
-                    ),
-                ),
+                *first_route,
                 ScriptedResponse(
                     status_code=200,
                     headers={"Content-Type": "application/json"},
@@ -231,7 +316,7 @@ def request_is_made(case: dict[str, Any]) -> None:
 @then("the second route is used")
 def second_route_is_used(case: dict[str, Any]) -> None:
     assert case["response"].output_text == "route-1"
-    assert case["request_count"] == 2
+    assert case["request_count"] == case.get("expected_requests", 2)
 
 
 @then("the routing trace contains both attempts")
@@ -438,6 +523,15 @@ def limited_attempts(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
 
 @when("all attempted routes fail")
 def all_attempted_routes_fail(case: dict[str, Any]) -> None:
+    retain_fault_injection(
+        contract_id="REQ_ROUTE_ATTEMPT_LIMIT",
+        fault_class="interface.unexpected-interaction",
+        mechanism=(
+            "a sentinel third route response detects an attempt beyond the "
+            "configured route-attempt limit"
+        ),
+        details={"max_attempts": 2, "sentinel_attempt": 3},
+    )
     with ScriptedHTTPServer(
         port=0,
         routes={

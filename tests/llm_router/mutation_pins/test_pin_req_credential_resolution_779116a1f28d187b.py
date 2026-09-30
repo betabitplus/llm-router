@@ -1,54 +1,59 @@
 # mutation-pin: REQ_CREDENTIAL_RESOLUTION 779116a1f28d187b
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
 from dataclasses import replace
 
 import pytest
 
-from llm_router import Provider
-from llm_router._internal.config import build_default_config
-from llm_router._internal.runtime.limiter import KeyResolver
+import llm_router as package
+from llm_router import (
+    ApiKeyNotFoundError,
+    LLMRouter,
+    Model,
+    Provider,
+    RouterProfile,
+)
 
 pytestmark = pytest.mark.verification_kind("unit")
 
+PROVIDER = Provider.OPENROUTER
+CUSTOM_ENV = "CUSTOM_ROUTER_CREDENTIAL"
+
+
+def _missing_key_name(key_id: int) -> str:
+    router = LLMRouter(
+        RouterProfile(model=Model.DEEPSEEK_V3, provider=PROVIDER, key_id=key_id)
+    )
+    with pytest.raises(ApiKeyNotFoundError, match=r".+") as exc_info:
+        router.query("hello")
+    return exc_info.value.key_name
+
 
 @pytest.mark.verifies("REQ_CREDENTIAL_RESOLUTION[revision==1]")
-def test_configured_fixed_key_resolves_custom_and_default_naming(
+def test_custom_env_name_applies_only_to_default_key_id(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    base_config = build_default_config()
-    provider = Provider.GOOGLE
+    original = package.get_config()
+    default_id = original.default_key_id
+    other_id = default_id + 1
     spec = replace(
-        base_config.catalog.providers[provider],
-        api_key_env_var="CUSTOM_KEY",
+        original.catalog.providers[PROVIDER],
+        api_key_env_var=CUSTOM_ENV,
         api_key_env_vars={},
     )
-    providers = dict(base_config.catalog.providers)
-    providers[provider] = spec
-    catalog = replace(base_config.catalog, providers=providers)
-    config = replace(base_config, catalog=catalog)
+    providers = dict(original.catalog.providers)
+    providers[PROVIDER] = spec
+    catalog = replace(original.catalog, providers=providers)
+    monkeypatch.delenv(CUSTOM_ENV, raising=False)
+    monkeypatch.delenv(f"{PROVIDER.name}_API_KEY_{default_id}", raising=False)
+    monkeypatch.delenv(f"{PROVIDER.name}_API_KEY_{other_id}", raising=False)
 
-    resolver = KeyResolver(config)
-    default_key_id = config.default_key_id
-    non_default_key_id = default_key_id + 1
+    package.install_config(replace(original, catalog=catalog))
+    default_name = _missing_key_name(default_id)
+    other_name = _missing_key_name(other_id)
+    package.install_config(original)
 
-    custom_env = "CUSTOM_KEY"
-    standard_env = f"{provider.name}_API_KEY_{non_default_key_id}"
-    monkeypatch.setenv(custom_env, "custom-secret-key")
-    monkeypatch.setenv(standard_env, "standard-secret-key")
-
-    assert resolver._key_name(provider=provider, key_id=default_key_id) == custom_env
-    assert (
-        resolver._key_name(provider=provider, key_id=non_default_key_id) == standard_env
-    )
-
-    resolved_default = resolver.resolve(provider=provider, key_id=default_key_id)
-    assert resolved_default.env_var == custom_env
-    assert resolved_default.value == "custom-secret-key"
-
-    resolved_non_default = resolver.resolve(
-        provider=provider, key_id=non_default_key_id
-    )
-    assert resolved_non_default.env_var == standard_env
-    assert resolved_non_default.value == "standard-secret-key"
+    assert default_name == CUSTOM_ENV
+    assert other_name == f"{PROVIDER.name}_API_KEY_{other_id}"

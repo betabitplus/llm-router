@@ -13,9 +13,9 @@
   },
   "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-27T19:54:19.523568Z",
-   "answer_sha256": "f0ab22de5bded9745f7d989a82bd7974c122ca9d66d5ee522543fdb0fb10f9b5",
-   "call_id": "20260926T225456Z-eea057",
+   "adopted_at": "2026-09-30T18:20:09.333892Z",
+   "answer_sha256": "2598b3cf3fb98d6a93f70077a43b5226aec879f9e66fe57e8f550e2ab31bbff7",
+   "call_id": "20260930T180512Z-02239b",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -24,12 +24,20 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "f0ab22de5bded9745f7d989a82bd7974c122ca9d66d5ee522543fdb0fb10f9b5",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "2598b3cf3fb98d6a93f70077a43b5226aec879f9e66fe57e8f550e2ab31bbff7",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_19ce8cfa2ea55f04.py",
-   "response_sha256": "18ccc1dbb1427adf5e5b740ff89a7df9acb4a3005b0f919684c04d46eebcd676",
-   "source": "draft author"
+   "response_sha256": "6398d43a4bbc05412a7285ca35002c06be9f17a4a9dd645d493a99a5aaeb7dbd",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.LLMRouterConfig",
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
   },
   "prompt_sha256": "e4b4d1d204ae1fa88e77715acea9356af4bd37b1189cce3b1674999a0b5250ea"
  },
@@ -47,9 +55,9 @@
   },
   "operator": "boundary",
   "pin": {
-   "adopted_at": "2026-09-27T19:54:19.529630Z",
-   "answer_sha256": "e2c1ff2954bc66d7c051bd3975301050bcab994afbac7b5c4d7a84d3615557b7",
-   "call_id": "20260926T225517Z-b90b97",
+   "adopted_at": "2026-09-30T18:23:27.300126Z",
+   "answer_sha256": "dc3f15f943872e8cbebdcdddee1273be684b2f27517b1436ee6bdab5a26d8530",
+   "call_id": "20260930T180512Z-1b1516",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -58,12 +66,22 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "e2c1ff2954bc66d7c051bd3975301050bcab994afbac7b5c4d7a84d3615557b7",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "dc3f15f943872e8cbebdcdddee1273be684b2f27517b1436ee6bdab5a26d8530",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_1e7fe255a9f2e635.py",
-   "response_sha256": "b8c802b772d59722a5609f71bb191d04c396a194b3143aa78e3bd2c0f2876ee5",
-   "source": "draft author"
+   "response_sha256": "8e9b36f708a69a34dccaa73b0840ffe79ef0e6ba290640a79a2da6fb7b8f617a",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.config.models.RouterPolicyDefaults"
+   ]
   },
   "prompt_sha256": "730af778986f2f93fefcb555c61aff708476070aabf015a8edb16bad9b98641c"
  },
@@ -81,9 +99,9 @@
   },
   "operator": "boundary",
   "pin": {
-   "adopted_at": "2026-09-27T19:54:19.531450Z",
-   "answer_sha256": "f7a4402ec9ac26e788987ec452cf601e6c1d84aca9d4d78d54378feb660e4af8",
-   "call_id": "20260926T225543Z-d86110",
+   "adopted_at": "2026-09-30T18:09:53.368244Z",
+   "answer_sha256": "17ab9a0dcccdd08127bba8ed6f736a709496564c7fd292b98a80023bffd762d5",
+   "call_id": "20260930T180512Z-071ff9",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -92,12 +110,20 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "cac21cec2e55ff65eec979dc4c6cbbfa1bdc9685fa1f15e34808a0bd5e7698a4",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "17ab9a0dcccdd08127bba8ed6f736a709496564c7fd292b98a80023bffd762d5",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_3b57c08f839ab791.py",
-   "response_sha256": "b022b308189bba674fe7f0d610b8f8c1db25bc5e13b2fa177a694cb35599c520",
-   "source": "draft author"
+   "response_sha256": "d9cbe2257505264fa33a17a64f86843a441b02a27e565c85b802ee51073c2682",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.LLMRouterConfig",
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
   },
   "prompt_sha256": "a55e2db02f60d4f822d3a17656fe0f3862226c1094794b94787329e388a7e932"
  },
@@ -115,9 +141,9 @@
   },
   "operator": "boundary",
   "pin": {
-   "adopted_at": "2026-09-27T19:54:19.532207Z",
-   "answer_sha256": "5752101866b166ca2bcc44a308fd7ed2f76eeb81d37fcbb8db8ce1ec16a65d90",
-   "call_id": "20260926T225607Z-ea59e8",
+   "adopted_at": "2026-09-30T18:18:18.177752Z",
+   "answer_sha256": "1fec6c8eec739958088fa46cfda0f0ccad21dc9483548ab7ae688affb6df7e16",
+   "call_id": "20260930T180512Z-046b39",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -126,12 +152,19 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "5752101866b166ca2bcc44a308fd7ed2f76eeb81d37fcbb8db8ce1ec16a65d90",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "1fec6c8eec739958088fa46cfda0f0ccad21dc9483548ab7ae688affb6df7e16",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_43c47ed5eb7d2a63.py",
-   "response_sha256": "f8933f2f92291b43c24508edecfaccd09272ff22bc557786f2d0a95d965e57c1",
-   "source": "draft author"
+   "response_sha256": "b9f158c98336f0393de46054744a9b25aa20e494de3104ee616bac7b0ff2e0db",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.install_config",
+    "llm_router.get_config",
+    "llm_router.ConfigurationError"
+   ]
   },
   "prompt_sha256": "3fd5fb56a1f6b8c3d477a9350efbba83bc4eb84410463fed8447b1cf110400bd"
  },
@@ -149,9 +182,9 @@
   },
   "operator": "boundary",
   "pin": {
-   "adopted_at": "2026-09-27T19:54:19.533642Z",
-   "answer_sha256": "fa2f9c8eaebebfcdd8d350742a860ac937beac201d3622f16142e20c82cb6fc9",
-   "call_id": "20260926T225624Z-6832b6",
+   "adopted_at": "2026-09-30T18:23:08.901416Z",
+   "answer_sha256": "cdf635bb1ec5a2c414b9e66e872a1058c333bedf5deff98a6dba82908e03004a",
+   "call_id": "20260930T180537Z-0559e1",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -160,12 +193,22 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "422285f3f8fcd274bcb45c9e0d98f175c542a78fe5f64dcc943c18449f09b834",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "cdf635bb1ec5a2c414b9e66e872a1058c333bedf5deff98a6dba82908e03004a",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_4a11c78df0078b1f.py",
-   "response_sha256": "52c1408d61ebcc9196a8cfda74d27284d3fa527d01815b4f1b8b5345ab1ccfcc",
-   "source": "draft author"
+   "response_sha256": "eb69d785a3d25310c2b023b878e38a7e134ea666d2eff3634251b5c3d14b6a5e",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.config.models.RouterPolicyDefaults"
+   ]
   },
   "prompt_sha256": "06131d67be720264d6097a792589103e51458cb4bc189ab6b4d1c9fa5cb2487a"
  },
@@ -182,26 +225,32 @@
    "verdict": "pin"
   },
   "operator": "comparison",
-  "pin": {
-   "adopted_at": "2026-09-27T19:54:19.536662Z",
-   "answer_sha256": "2eff3d2823fcc031ce030e805fd83ac693c2d7cf74bbd6c4bc870dcf5aecfd8b",
-   "call_id": "20260926T225651Z-bb1159",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "ef7f2676a8c04c67699ff6042e94f73fff23a497af085cf0134e3530863b1adf",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_551e89dc7d0431df.py",
-   "response_sha256": "36490799be8d17ec5552105f46aa499ecfaf0c2429a38d0246cc33fbbb8cbd2f",
-   "source": "draft author"
-  },
-  "prompt_sha256": "290d034c6d64526c057129d4d230341b61d038b375ce7ee03b1390a6441cef7b"
+  "prompt_sha256": "290d034c6d64526c057129d4d230341b61d038b375ce7ee03b1390a6441cef7b",
+  "subsumed": {
+   "at": "2026-09-30T13:45:33.041403Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_1e7fe255a9f2e635.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T19:54:19.536662Z",
+    "answer_sha256": "2eff3d2823fcc031ce030e805fd83ac693c2d7cf74bbd6c4bc870dcf5aecfd8b",
+    "call_id": "20260926T225651Z-bb1159",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "ef7f2676a8c04c67699ff6042e94f73fff23a497af085cf0134e3530863b1adf",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_551e89dc7d0431df.py",
+    "response_sha256": "36490799be8d17ec5552105f46aa499ecfaf0c2429a38d0246cc33fbbb8cbd2f",
+    "source": "draft author"
+   }
+  }
  },
  "SM-70BDADCC": {
   "answer": {
@@ -224,8 +273,9 @@
   },
   "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-29T19:13:36.453854Z",
-   "answer_sha256": "70657320d1e525633c3aa5ff6db24f5d4bc1380d17ffe56977c587134a5f4821",
+   "adopted_at": "2026-09-30T18:17:56.289820Z",
+   "answer_sha256": "88a2ffd9e1319645c7ad0cfa270a75d4476c638dc6178e91a5c8a000c009abd1",
+   "call_id": "20260930T180714Z-7ef60f",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -234,10 +284,23 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "399f83bd839db324506cb43cd525e7216ba4035eaaf0de995340ca4113366497",
+   "draft_sha256": "88a2ffd9e1319645c7ad0cfa270a75d4476c638dc6178e91a5c8a000c009abd1",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_sm_70bdadcc.py",
-   "source": "kept semantic draft"
+   "response_sha256": "ebc00bc529136f46a29f3d6d4643498e84a4b70ad6c9ceb26f9ea2f331471970",
+   "source": "last resort",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.LLMRouterConfig",
+    "llm_router.ProviderCatalog",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
   },
   "prompt_sha256": "3ca66c9122847745350d541870c7f04a46efe568e6a5b29997ef0de1826eec63"
  },
@@ -262,8 +325,9 @@
   },
   "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-29T17:21:43.466168Z",
-   "answer_sha256": "b55f24d5b62be14a2be25acecfc2dddbe4a31acbfa9ed3a6a90edb24f4212c33",
+   "adopted_at": "2026-09-30T18:14:36.813591Z",
+   "answer_sha256": "a56398ec4f57966ae163c1ff8345a03d61eef0f94e49449b92534712bc03d00d",
+   "call_id": "20260930T180512Z-9d5d02",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -272,10 +336,19 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "b55f24d5b62be14a2be25acecfc2dddbe4a31acbfa9ed3a6a90edb24f4212c33",
+   "draft_sha256": "a56398ec4f57966ae163c1ff8345a03d61eef0f94e49449b92534712bc03d00d",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_sm_7c291e15.py",
-   "source": "kept semantic draft"
+   "response_sha256": "46a15778bf25f8bdbe2f127cdd1a461348698204ca511b7d052039c48eac0158",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router.ConfigurationError"
+   ]
   },
   "prompt_sha256": "b643d8097834e6095696defa554e716e2645b1564ae982af8a2e2c439290e8be"
  },
@@ -293,9 +366,9 @@
   },
   "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-27T19:54:19.539940Z",
-   "answer_sha256": "07a672eed80eb704a21165245be65855a2586f4b948f7633ed7dddf0cd6eab38",
-   "call_id": "20260926T225716Z-36abf2",
+   "adopted_at": "2026-09-30T18:14:12.382170Z",
+   "answer_sha256": "543b4fd6041865747d4be07bc666dd3dae089c636db66770801c9f2533feca96",
+   "call_id": "20260930T180512Z-9efa5d",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -304,12 +377,22 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "fd8d9084328c60a61e15fa58afa02b283d981dc6aee734fd400aa9c885f7499e",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "543b4fd6041865747d4be07bc666dd3dae089c636db66770801c9f2533feca96",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_a02b9c41521c0e84.py",
-   "response_sha256": "c296a6ede86c81a99813219a4269f240897396609713dc5987285c2c5b9db310",
-   "source": "draft author"
+   "response_sha256": "e2fd789c026b4b13d0aed770dc0a7290c51637d6e238d62ea9167c8f93e56268",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router.ConfigurationError",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.BehaviorDefaults",
+    "llm_router._internal.config.models.RetryPolicy"
+   ]
   },
   "prompt_sha256": "124f6d95ead2aab6262439f0407ec64078b4fb1d3c59cfce1cefc7e192e61f3f"
  },
@@ -326,26 +409,32 @@
    "verdict": "pin"
   },
   "operator": "boundary",
-  "pin": {
-   "adopted_at": "2026-09-27T19:54:19.541094Z",
-   "answer_sha256": "13d388e0853e28537b63c6a04f7ef4f85aeaa6d1d34dfa94c3c702ccab2eed76",
-   "call_id": "20260926T225739Z-14d926",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "041567a0248cbe34f2b8a08618ea04b89fc12d679c8fd43d413a8030e4630b5a",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_a6c77976ba2d4065.py",
-   "response_sha256": "594a23db344d8cfe725a00c923008ed3780df28b71ef8ebae7a6c1f91d09056f",
-   "source": "draft author"
-  },
-  "prompt_sha256": "5ec62f618013fc10ac4d30debb49b800e86505bdb2ea8421a423fa9735aef980"
+  "prompt_sha256": "5ec62f618013fc10ac4d30debb49b800e86505bdb2ea8421a423fa9735aef980",
+  "subsumed": {
+   "at": "2026-09-30T13:45:33.042665Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_a02b9c41521c0e84.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T19:54:19.541094Z",
+    "answer_sha256": "13d388e0853e28537b63c6a04f7ef4f85aeaa6d1d34dfa94c3c702ccab2eed76",
+    "call_id": "20260926T225739Z-14d926",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "041567a0248cbe34f2b8a08618ea04b89fc12d679c8fd43d413a8030e4630b5a",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_a6c77976ba2d4065.py",
+    "response_sha256": "594a23db344d8cfe725a00c923008ed3780df28b71ef8ebae7a6c1f91d09056f",
+    "source": "draft author"
+   }
+  }
  },
  "b6340db1c7f8750a": {
   "answer": {
@@ -368,9 +457,9 @@
   },
   "operator": "conditional",
   "pin": {
-   "adopted_at": "2026-09-29T12:52:35.192417Z",
-   "answer_sha256": "ec9b4218b90be9f235b249d4b2a5a372985dd9ac32a19365099b13624442721e",
-   "call_id": "20260929T125208Z-225b25",
+   "adopted_at": "2026-09-30T18:23:10.198592Z",
+   "answer_sha256": "4b90d3fa249d25330d4eb512f1cc219c7aad8f496a0d699ba34b7fb610f7f4fe",
+   "call_id": "20260930T180512Z-3bf627",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -379,17 +468,18 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "ec9b4218b90be9f235b249d4b2a5a372985dd9ac32a19365099b13624442721e",
-   "effort": "low",
+   "draft_sha256": "4b90d3fa249d25330d4eb512f1cc219c7aad8f496a0d699ba34b7fb610f7f4fe",
+   "effort": "medium",
+   "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_b6340db1c7f8750a.py",
-   "response_sha256": "17086cdc2d7312164a1691e6d585a4d1789644d374a6c63593792463ad50a858",
-   "source": "draft author",
+   "response_sha256": "279dd2400815db04fdbf99e78aec032da1edbc878738e38eb7c06f4962ae81e9",
+   "source": "draft author with tools",
    "sources": [
-    "llm_router.ConfigurationError",
-    "llm_router._internal.config.build_default_config",
-    "llm_router._internal.config.validate_config"
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router.ConfigurationError"
    ]
   },
   "prompt_sha256": "0f587511b2dd2526d46267d7ed1277a05d321af9f8d78a6bcfe2380069843c53"
@@ -408,9 +498,9 @@
   },
   "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-27T19:54:19.542148Z",
-   "answer_sha256": "a9f5e88c801a1c43317673eae646558cbdbea13022903d81f9d5337e221a0d68",
-   "call_id": "20260926T225803Z-07b00e",
+   "adopted_at": "2026-09-30T18:10:05.923484Z",
+   "answer_sha256": "24e085560003da4c2cb508208160ea9907c0658b5e5fab83f93c6e7433008a17",
+   "call_id": "20260930T180512Z-3a3472",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -419,12 +509,19 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "34a4f068644c936ceffdaf63be47e21268b96a422c0ed43c1080de2e504a2278",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "24e085560003da4c2cb508208160ea9907c0658b5e5fab83f93c6e7433008a17",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_c18833e1526efa72.py",
-   "response_sha256": "bcf8d3d976c2136716e5223583841a92919b8343f789d3379324b8455ece72ef",
-   "source": "draft author"
+   "response_sha256": "10681aaa1569e361fbb8268b7215d3bc5ce89d13820459a3fff5ad698c4e43a4",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
   },
   "prompt_sha256": "307ae23baf13ea00c7e5a94d7c26e678639d8cd57a8d32ec46c377238cd1848d"
  },
@@ -441,61 +538,69 @@
    "verdict": "pin"
   },
   "operator": "boundary",
-  "pin": {
-   "adopted_at": "2026-09-27T19:54:19.543686Z",
-   "answer_sha256": "92e66cf0d65958b60606796cc3066c50e3dc4e3cd45c95734c90ab3508997b02",
-   "call_id": "20260926T225832Z-a76ed7",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "92e66cf0d65958b60606796cc3066c50e3dc4e3cd45c95734c90ab3508997b02",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_c37a776247b2f0eb.py",
-   "response_sha256": "858f218637305de081fec663756dfadab9c1cc1934b595dd8c9c15175ff581c4",
-   "source": "draft author"
-  },
-  "prompt_sha256": "e9414fcd0bbe600801f7051191b7af815cedac53eb1e67f88e25d865f05f39d9"
+  "prompt_sha256": "e9414fcd0bbe600801f7051191b7af815cedac53eb1e67f88e25d865f05f39d9",
+  "subsumed": {
+   "at": "2026-09-30T13:45:33.043189Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_c18833e1526efa72.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T19:54:19.543686Z",
+    "answer_sha256": "92e66cf0d65958b60606796cc3066c50e3dc4e3cd45c95734c90ab3508997b02",
+    "call_id": "20260926T225832Z-a76ed7",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "92e66cf0d65958b60606796cc3066c50e3dc4e3cd45c95734c90ab3508997b02",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_c37a776247b2f0eb.py",
+    "response_sha256": "858f218637305de081fec663756dfadab9c1cc1934b595dd8c9c15175ff581c4",
+    "source": "draft author"
+   }
+  }
  },
  "de2cbbbd9acd877b": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T085809Z-060776",
+   "call_id": "20260930T195735Z-164e6d",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The only behavioural change hands the mapping itself to _require's condition instead of bool(mapping). Assuming _require checks truthiness, as its other callers suggest, an empty mapping still raises ConfigurationError and a non-empty one still passes. So no public request can tell the two versions apart.",
-   "response_sha256": "94af9982b58b164590af49129e1a48361feacc21898e7cfdc75b52d2e35e196c",
+   "reason": "Passing the mapping itself instead of bool(mapping) gives the same truth value, since bool() uses the mapping's own truthiness. An empty mapping still raises ConfigurationError and a non-empty one still passes. The other edits only remove comments and change quotes, so no public request can tell the versions apart.",
+   "response_sha256": "f7879444fa2543a886d8ad2a42c9e80f88aa393e63ed4b0c386a699282c5ae16",
    "sources": [
-    "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")",
+    "llm-router shall reject an effective request configuration that violates an applicable configuration constraint with a public configuration error before initiating provider execution.",
     "condition=bool(provider_models),",
-    "A public request with invalid configuration surfaces ConfigurationError and performs no provider request."
+    "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "conversion",
-  "prompt_sha256": "cc40469e2b1f3f06d416fb72ddd91a5cab325b69fecd87a51b44684046a084c5",
+  "prompt_sha256": "5ba1f4ae81767d96bf7f5233834465485bb5af05c726c349da11f115266b257e",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T085822Z-a2cde6",
+   "call_id": "20260930T195846Z-92fffa",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "cc40469e2b1f3f06d416fb72ddd91a5cab325b69fecd87a51b44684046a084c5",
-   "reason": "Removing the bool() cast does not change the program's logic because Python naturally evaluates objects by their intrinsic truthiness in boolean contexts. Both versions behave identically for any input.",
-   "response_sha256": "398c75917f5a8498e810d4e62cc3e46a9cd4875b41ea14c76662b684b834eb86",
+   "prompt_sha256": "5ba1f4ae81767d96bf7f5233834465485bb5af05c726c349da11f115266b257e",
+   "reason": "Removing the explicit `bool()` cast on the mapping does not change the condition's truthiness during evaluation, resulting in identical runtime validation behavior.",
+   "response_sha256": "f01d47def4d0b9a9b4ad42e78bf5c47f0170e9ddd55867458d6fd4aeef11aaf6",
    "sources": [
+    "llm-router shall reject an effective request configuration that violates an applicable configuration constraint with a public configuration error before initiating provider execution.",
     "condition=bool(provider_models),",
-    "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")",
-    "A public request with invalid configuration surfaces ConfigurationError and performs no provider request."
+    "_require(condition=provider_models, message=f\"model '{model.value}' must map to a provider.\")"
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -514,26 +619,32 @@
    "verdict": "pin"
   },
   "operator": "comparison",
-  "pin": {
-   "adopted_at": "2026-09-27T19:54:19.546695Z",
-   "answer_sha256": "6dcfc6f5198f27433f049913623a7988de99bc3d5c9844a502febca5dd489b12",
-   "call_id": "20260926T225851Z-5aa1f2",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "6dcfc6f5198f27433f049913623a7988de99bc3d5c9844a502febca5dd489b12",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_df61b883b2255611.py",
-   "response_sha256": "4243165ac044445e8f58187289755dc10a956da5756bcd88a59b148a41785388",
-   "source": "draft author"
-  },
-  "prompt_sha256": "0f2aca498dccdce250aa47dce1b5136037eea77bcc2d5d13a7fa8f195d2e127f"
+  "prompt_sha256": "0f2aca498dccdce250aa47dce1b5136037eea77bcc2d5d13a7fa8f195d2e127f",
+  "subsumed": {
+   "at": "2026-09-30T13:45:33.043370Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_43c47ed5eb7d2a63.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T19:54:19.546695Z",
+    "answer_sha256": "6dcfc6f5198f27433f049913623a7988de99bc3d5c9844a502febca5dd489b12",
+    "call_id": "20260926T225851Z-5aa1f2",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "6dcfc6f5198f27433f049913623a7988de99bc3d5c9844a502febca5dd489b12",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_df61b883b2255611.py",
+    "response_sha256": "4243165ac044445e8f58187289755dc10a956da5756bcd88a59b148a41785388",
+    "source": "draft author"
+   }
+  }
  },
  "e303da2411404c79": {
   "answer": {
@@ -548,26 +659,32 @@
    "verdict": "pin"
   },
   "operator": "boundary",
-  "pin": {
-   "adopted_at": "2026-09-27T19:54:19.548390Z",
-   "answer_sha256": "2036f6b40c7cd9883f4a4b98ddce728af51a9ca489b1ea2957ef5b05655ad6e4",
-   "call_id": "20260926T225915Z-6e1872",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "86bcb84c6f6cb6a68e2ea42fa046764a10ba31ed118ff368db617c2fb7a6dc3c",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_e303da2411404c79.py",
-   "response_sha256": "262de5525b79bbb80082f08e2db9b3ac3aceee1050c4bb23a0ff2ce01ab607fc",
-   "source": "draft author"
-  },
-  "prompt_sha256": "4829365142d122e5ad273f1c7fb40f011dae9f40522f8def12864a09738b6eef"
+  "prompt_sha256": "4829365142d122e5ad273f1c7fb40f011dae9f40522f8def12864a09738b6eef",
+  "subsumed": {
+   "at": "2026-09-30T13:45:33.043549Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_19ce8cfa2ea55f04.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T19:54:19.548390Z",
+    "answer_sha256": "2036f6b40c7cd9883f4a4b98ddce728af51a9ca489b1ea2957ef5b05655ad6e4",
+    "call_id": "20260926T225915Z-6e1872",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "86bcb84c6f6cb6a68e2ea42fa046764a10ba31ed118ff368db617c2fb7a6dc3c",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_e303da2411404c79.py",
+    "response_sha256": "262de5525b79bbb80082f08e2db9b3ac3aceee1050c4bb23a0ff2ce01ab607fc",
+    "source": "draft author"
+   }
+  }
  },
  "ea9109b0b3884c40": {
   "answer": {
@@ -582,25 +699,31 @@
    "verdict": "pin"
   },
   "operator": "comparison",
-  "pin": {
-   "adopted_at": "2026-09-27T19:54:19.549517Z",
-   "answer_sha256": "48a00a22668bd71494ca495725adf3e3d46e50b214d346a9898b02b678bb0c0c",
-   "call_id": "20260926T225932Z-1cad24",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "644e74d173341364accc1bac4b3cc6b131ed7d22e9890f65910cfff0e0981609",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_ea9109b0b3884c40.py",
-   "response_sha256": "1cf4d4f312b204432d11d68137dc9377198aa055077ca8fb62c16419987ea15f",
-   "source": "draft author"
-  },
-  "prompt_sha256": "fea6376f29993549047c06e8c45f64476a7ee456cd706cf02ad0464d5b2e32f9"
+  "prompt_sha256": "fea6376f29993549047c06e8c45f64476a7ee456cd706cf02ad0464d5b2e32f9",
+  "subsumed": {
+   "at": "2026-09-30T13:45:33.043729Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_4a11c78df0078b1f.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T19:54:19.549517Z",
+    "answer_sha256": "48a00a22668bd71494ca495725adf3e3d46e50b214d346a9898b02b678bb0c0c",
+    "call_id": "20260926T225932Z-1cad24",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "644e74d173341364accc1bac4b3cc6b131ed7d22e9890f65910cfff0e0981609",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_invalid_configuration_errors_ea9109b0b3884c40.py",
+    "response_sha256": "1cf4d4f312b204432d11d68137dc9377198aa055077ca8fb62c16419987ea15f",
+    "source": "draft author"
+   }
+  }
  }
 }

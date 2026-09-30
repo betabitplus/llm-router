@@ -78,9 +78,9 @@
   },
   "operator": "attribute",
   "pin": {
-   "adopted_at": "2026-09-29T10:38:22.608850Z",
-   "answer_sha256": "73e1f2a8df98dfb4aae79e3386122625554e49d4bbf533d6cddcf740b4b26200",
-   "call_id": "20260929T100341Z-6d1b0f",
+   "adopted_at": "2026-09-30T20:59:00.319004Z",
+   "answer_sha256": "9ea7553a420af39a28a180436632c1202731b69fb5c187bff713127de8550f91",
+   "call_id": "20260930T205528Z-363e97",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -89,16 +89,22 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "974551607b97605a9a10f0cd802a9b1b09c1ac9c8bbb746f819ceda4c1895460",
-   "model": "claude-sonnet-5",
+   "draft_sha256": "9ea7553a420af39a28a180436632c1202731b69fb5c187bff713127de8550f91",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_video_input_68771b7b6b05d78f.py",
-   "response_sha256": "e9117d71fe74f8ad4f184ac0f511278efad7bdf20f64751fd8e88c41818bd48d",
-   "source": "draft author",
+   "response_sha256": "169cc9a12a5827f28387c97491bcbb12901841d456d830abfe79081bff9beafe",
+   "source": "draft author with tools",
    "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
     "llm_router.VideoSchema",
-    "llm_router._internal.capabilities.media.describe_media",
-    "tests.llm_router.support.builders.get_llm_router_test_data_path"
+    "tests.llm_router.support.builders.get_llm_router_test_data_path",
+    "tests.llm_router.support.media.video.VideoObservation"
    ]
   },
   "prompt_sha256": "7fc4ae8bf614d33ff6baae208455946f93d7b9bec95ad2b653f1a5d668e81856"
@@ -123,9 +129,9 @@
   },
   "operator": "attribute",
   "pin": {
-   "adopted_at": "2026-09-29T12:02:08.922015Z",
-   "answer_sha256": "ac0b940ea81cba98cf0b439e67c790b922230c38cb3d7dced85283a1bbdb9e4e",
-   "call_id": "20260929T114734Z-561dc3",
+   "adopted_at": "2026-09-30T21:01:21.192892Z",
+   "answer_sha256": "c950af5289b1005a78ef648baf28b7cbe4fb74405fd2595c02be1b5f06fe9736",
+   "call_id": "20260930T205545Z-4b4a9d",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -134,17 +140,24 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "d276e4ca19e41d00b4c6e23c186fe6c9e40fc7d166da3b812565f739b65d3eb5",
+   "draft_sha256": "c950af5289b1005a78ef648baf28b7cbe4fb74405fd2595c02be1b5f06fe9736",
    "effort": "medium",
+   "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_video_input_8ba45c4ec318c00e.py",
-   "response_sha256": "abc431526cbbcfc817fed48e6e6c4d48b39d7cf9eabebe0b6a0a8048ad7919ca",
-   "source": "draft author",
+   "response_sha256": "b5118908e35272d99ec8e5d0147ce41424b0de1c2a84c1a4c2655c7a7de14fe6",
+   "source": "draft author with tools",
    "sources": [
-    "llm_router.VideoUrlSchema",
+    "llm_router._api.types.VideoUrlSchema",
     "tests.llm_router.support.builders.build_test_video_url",
-    "llm_router._internal.capabilities.media.VideoUrlMedia"
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.media.video.VideoObservation",
+    "tests.llm_router.support.media.video.build_indoor_video_prompt",
+    "tests.llm_router.support.vcr_extensions.FILTER_HEADERS"
    ]
   },
   "prompt_sha256": "5acc234463a6803d41c8c81df8675e2af2e52c28738cbe6937a601933cb90923"
@@ -168,31 +181,37 @@
    "verdict": "pin"
   },
   "operator": "attribute",
-  "pin": {
-   "adopted_at": "2026-09-29T12:02:08.922852Z",
-   "answer_sha256": "4adef11b2b013ac1b70b7f139b06f4f68e3ec33e9a1e5b43071e29bcd165df7d",
-   "call_id": "20260929T114737Z-587301",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "ca5a457b2715bedcb7db236156adbe0dc5f6b0a0507f2be1d061a5aa369ee0b7",
-   "effort": "medium",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_video_input_a6b4e513b6f3bf73.py",
-   "response_sha256": "53adc953c5147b00ba5f8f290047b02edc8e1379a42ea5ce66dafb4624e59790",
-   "source": "draft author",
-   "sources": [
-    "llm_router.VideoUrlSchema",
-    "llm_router._internal.capabilities.media.VideoUrlMedia",
-    "tests.llm_router.support.builders.build_test_video_url"
-   ]
-  },
-  "prompt_sha256": "6352e73c0e6514e1e739aaa80db328a2e1174af7ee59735a163502fd1bbc3333"
+  "prompt_sha256": "6352e73c0e6514e1e739aaa80db328a2e1174af7ee59735a163502fd1bbc3333",
+  "subsumed": {
+   "at": "2026-09-30T13:46:05.107297Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_video_input_8ba45c4ec318c00e.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T12:02:08.922852Z",
+    "answer_sha256": "4adef11b2b013ac1b70b7f139b06f4f68e3ec33e9a1e5b43071e29bcd165df7d",
+    "call_id": "20260929T114737Z-587301",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "ca5a457b2715bedcb7db236156adbe0dc5f6b0a0507f2be1d061a5aa369ee0b7",
+    "effort": "medium",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_video_input_a6b4e513b6f3bf73.py",
+    "response_sha256": "53adc953c5147b00ba5f8f290047b02edc8e1379a42ea5ce66dafb4624e59790",
+    "source": "draft author",
+    "sources": [
+     "llm_router.VideoUrlSchema",
+     "llm_router._internal.capabilities.media.VideoUrlMedia",
+     "tests.llm_router.support.builders.build_test_video_url"
+    ]
+   }
+  }
  }
 }

@@ -1,0 +1,254 @@
+{
+ "at": "2026-09-30T18:35:20.839415Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_155610404a9b2a0a.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_18f725f3ce572a15.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_24bb2ffb3a209650.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_2ac6551daf76c11a.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_2f6673fb9c05efb3.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_4b031c8b4a869092.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_6e9116a1b83a69f4.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_f8b19d9c5fd12b62.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_008e10b9.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_07eeea4d.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_4a74651d.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_6b29fd70.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_6e643223.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_aab2d195.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_d49276db.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_dd714eda.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_f375873a.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_155610404a9b2a0a.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_18f725f3ce572a15.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_24bb2ffb3a209650.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_2ac6551daf76c11a.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_2f6673fb9c05efb3.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_6e9116a1b83a69f4.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_a5d83d760dbc5183.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_e9e9444744bf3896.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_f8b19d9c5fd12b62.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_008e10b9.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_07eeea4d.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_6e643223.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_aab2d195.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_d49276db.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_dd714eda.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_f375873a.py"
+ ],
+ "restored": [
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_a5d83d760dbc5183.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_e9e9444744bf3896.py"
+ ],
+ "removed": {
+  "589c1fbde8e85997": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_589c1fbde8e85997.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_2ac6551daf76c11a.py"
+   ]
+  },
+  "a5d83d760dbc5183": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_a5d83d760dbc5183.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_ffbbfd72fe94fb6f.py"
+   ]
+  },
+  "b6f8d3c681f933f8": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_b6f8d3c681f933f8.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_ffbbfd72fe94fb6f.py"
+   ]
+  },
+  "bc1aa66132129a79": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_bc1aa66132129a79.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_2f6673fb9c05efb3.py"
+   ]
+  },
+  "c8e877b2ede451a3": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_c8e877b2ede451a3.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_24bb2ffb3a209650.py"
+   ]
+  },
+  "e9e9444744bf3896": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_e9e9444744bf3896.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_24bb2ffb3a209650.py",
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_aab2d195.py",
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_dd714eda.py"
+   ]
+  },
+  "SM-2093BBD0": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_2093bbd0.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_dd714eda.py"
+   ]
+  },
+  "4b031c8b4a869092": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_4b031c8b4a869092.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_24bb2ffb3a209650.py"
+   ]
+  },
+  "SM-4A74651D": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_4a74651d.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_aab2d195.py"
+   ]
+  },
+  "SM-6B29FD70": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_6b29fd70.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_dd714eda.py"
+   ]
+  }
+ },
+ "matrix": {
+  "155610404a9b2a0a": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_155610404a9b2a0a.py"
+  ],
+  "18f725f3ce572a15": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_18f725f3ce572a15.py"
+  ],
+  "24bb2ffb3a209650": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_24bb2ffb3a209650.py"
+  ],
+  "2ac6551daf76c11a": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_2ac6551daf76c11a.py"
+  ],
+  "2f6673fb9c05efb3": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_2f6673fb9c05efb3.py"
+  ],
+  "4b031c8b4a869092": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_24bb2ffb3a209650.py",
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_4b031c8b4a869092.py"
+  ],
+  "6e9116a1b83a69f4": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_6e9116a1b83a69f4.py"
+  ],
+  "f8b19d9c5fd12b62": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_f8b19d9c5fd12b62.py"
+  ],
+  "SM-008E10B9": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_008e10b9.py"
+  ],
+  "SM-07EEEA4D": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_07eeea4d.py"
+  ],
+  "SM-4A74651D": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_4a74651d.py",
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_aab2d195.py"
+  ],
+  "SM-6B29FD70": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_6b29fd70.py",
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_dd714eda.py"
+  ],
+  "SM-6E643223": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_6e643223.py"
+  ],
+  "SM-AAB2D195": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_aab2d195.py"
+  ],
+  "SM-D49276DB": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_d49276db.py"
+  ],
+  "SM-DD714EDA": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_aab2d195.py",
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_dd714eda.py"
+  ],
+  "SM-F375873A": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_f375873a.py"
+  ]
+ },
+ "caught_before": [
+  "0ab88c4b2993a9ff",
+  "0bd250ecb75a58c9",
+  "0e77b9205a65532d",
+  "134c51ceab948442",
+  "155610404a9b2a0a",
+  "18f725f3ce572a15",
+  "1fe450c0a142bcac",
+  "24bb2ffb3a209650",
+  "276e7aab07420af5",
+  "2ac6551daf76c11a",
+  "2f6673fb9c05efb3",
+  "3100ca6e501e81bd",
+  "34d57b53e9e37d3c",
+  "3f44ca2ae9d561f7",
+  "439ea0fa330dea41",
+  "4b031c8b4a869092",
+  "5171091e759c5336",
+  "5233c5669d146bb9",
+  "53853354b9bfe57b",
+  "55a384aafca36bde",
+  "589c1fbde8e85997",
+  "5da41d86e25be1cb",
+  "5fc55fd64fd27b8b",
+  "6de617b610b093eb",
+  "6e9116a1b83a69f4",
+  "6f018e4ce70cac2d",
+  "789aa2a4dab884b0",
+  "7b8a6b31580275da",
+  "83f9e33baa73923d",
+  "8585b2a84ecd44f0",
+  "86685f16a8234b15",
+  "889250197455872f",
+  "8b7164e730013dac",
+  "90bbd0736194da8c",
+  "97a98e31c62f7299",
+  "SM-008E10B9",
+  "SM-04B797BF",
+  "SM-07EEEA4D",
+  "SM-207182AF",
+  "SM-2093BBD0",
+  "SM-21182039",
+  "SM-2AE24515",
+  "SM-4A74651D",
+  "SM-5D31FD4F",
+  "SM-61C51200",
+  "SM-6B29FD70",
+  "SM-6E643223",
+  "SM-9051DAE0",
+  "SM-93155217",
+  "SM-9C5C73BC",
+  "SM-9FB4700F",
+  "SM-AAB2D195",
+  "SM-AC84BBA0",
+  "SM-BF818699",
+  "SM-C6EBF982",
+  "SM-CCCFC5DF",
+  "SM-D0010079",
+  "SM-D49276DB",
+  "SM-DD714EDA",
+  "SM-E58B2C96",
+  "SM-E93E3F33",
+  "SM-F375873A",
+  "SM-F50D9BF4",
+  "SM-FF179DA1",
+  "a5d83d760dbc5183",
+  "ab50c8fc25464048",
+  "ace4f548ebb921cd",
+  "b2d90f61accb36f9",
+  "b41225b8bf70241b",
+  "b632d509bb9dccb9",
+  "b6f8d3c681f933f8",
+  "b792f0e0aff1fe08",
+  "bc1aa66132129a79",
+  "c2e1d56b4efa147e",
+  "c8e877b2ede451a3",
+  "ccb000c7ea97662d",
+  "cdc4438e04721305",
+  "ceaa6d7b88f554d9",
+  "da7a8951ef012c23",
+  "e0d9d8a8c731200b",
+  "e9e9444744bf3896",
+  "ebee0f92d2ab5fc0",
+  "ebfc746a372ab534",
+  "f149230e76762027",
+  "f1c511e5fed2fca0",
+  "f8b19d9c5fd12b62",
+  "ffbbfd72fe94fb6f"
+ ]
+}

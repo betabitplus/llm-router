@@ -45,6 +45,27 @@
      "error_message = validated.error_message"
     ],
     "verdict": "unsure"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig with structured_output_max_attempts=3",
+     "plan": "_ExecutionPlan(schema=<SchemaSpec>, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest with a schema whose validation fails with an empty or None error_message",
+     "result": "ProviderResult with output_text that fails schema validation and gives no error message",
+     "state": "_ExecutionLoopState with structured_attempts=0"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-79d7a1",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original substitutes \"Validation failed.\" when validated.error_message is empty or None, while the changed version passes the empty value to append_repair_message, so the repair message can differ.",
+    "response_sha256": "e85c21a173196934edf79dabbde64c6122a748feef3f21338e202ba523c906f2",
+    "sources": [
+     "error_message = validated.error_message or \"Validation failed.\"",
+     "error_message = validated.error_message"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "37e4ae2053da249731bcd954f0fe6e7044efd71b18770f1609a6e9fa83e2cc37"
@@ -181,6 +202,27 @@
      "messages=append_repair_message(state.messages, request=provider_request, schema=plan.schema, result=result, error_message=error_message)"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig with structured_output_max_attempts=3",
+     "plan": "_ExecutionPlan with a SchemaSpec requiring an object, e.g. {'type':'object'}",
+     "provider_request": "ProviderRequest with any valid fields",
+     "result": "ProviderResult with output_text='not json', so validation fails with a non-empty error_message",
+     "state": "_ExecutionLoopState with structured_attempts=0"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-754f42",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original passes the validator's specific error_message to append_repair_message, while the change always passes 'Validation failed.', so the repair messages differ whenever validation fails with a non-empty message and attempts are not exhausted.",
+    "response_sha256": "65b0c52f83deb80c90f5ad9e37baaaed09b2b529ae949f712f203ca6db628b01",
+    "sources": [
+     "error_message = validated.error_message or \"Validation failed.\"",
+     "error_message = 'Validation failed.'"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "64ff0f85b9ed2272883b93817b53c9c958cd55bdef5608c2fe101bbd8b16cc8c"
@@ -306,6 +348,27 @@
     "problems": [],
     "reason": "`or` was changed to `and`: original keeps a truthy validated.error_message, changed discards it and substitutes 'Validation failed.' instead; so whenever validation fails with a real non-empty message (the normal schema-mismatch case), the repair message appended to state.messages differs between versions.",
     "response_sha256": "8fd29763e8c38d75e21c02f6e2eee93fced38a7c6ad2cd1150ddce7ac1f00f74",
+    "sources": [
+     "error_message = validated.error_message or \"Validation failed.\"",
+     "error_message = validated.error_message and 'Validation failed.'"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig with structured_output_max_attempts=3",
+     "plan": "_ExecutionPlan(schema=<a SchemaSpec>, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest with a schema",
+     "result": "ProviderResult whose output_text violates the schema, so validation gives a non-empty error_message",
+     "state": "_ExecutionLoopState with structured_attempts=0"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-1569dc",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "When validation fails with a non-empty error_message, the original passes that message to append_repair_message while the changed `and` passes 'Validation failed.' instead, so the repair message differs.",
+    "response_sha256": "c0b985dd54a9db97bdb64900a119574f15aac2678a5ba974598f060a8ae26630",
     "sources": [
      "error_message = validated.error_message or \"Validation failed.\"",
      "error_message = validated.error_message and 'Validation failed.'"

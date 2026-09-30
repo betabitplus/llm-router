@@ -526,16 +526,27 @@ class AgmAccounts:
                 row["agy"] = self.addresses[alias] == actual
         return snapshot
 
+    # agy's credential store can show a switch a moment after agm reports it done (2026-09-30: a check
+    # right after the switch still read the old account, so the run gave up on quota it had).
+    SWITCH_SETTLE = (0.0, 0.5, 1.0, 1.5, 2.0)
+
     def switch(self, alias: str) -> bool:
         """Move agy alone to an account; True once its credential store holds that account."""
+        target = self.addresses.get(alias, alias)
         try:
             done = self.runner(
-                [self.executable, "switch", self.addresses.get(alias, alias), "--target", "agy"],
+                [self.executable, "switch", target, "--target", "agy"],
                 capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL,
             )
         except (OSError, subprocess.TimeoutExpired):
             return False
-        return done.returncode == 0 and self.cli_address() == self.addresses.get(alias, alias)
+        if done.returncode != 0:
+            return False
+        for pause in self.SWITCH_SETTLE:
+            time.sleep(pause)
+            if self.cli_address() == target:
+                return True
+        return False
 
 
 class AntigravityCli:

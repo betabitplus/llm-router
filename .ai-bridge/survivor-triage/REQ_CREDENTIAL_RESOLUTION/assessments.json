@@ -1,4 +1,47 @@
 {
+ "1c6b745faa58a462": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "key_id": "'auto'",
+     "provider": "Provider.OPENROUTER",
+     "self_config": "LLMRouterConfig(default_provider=Provider.OPENROUTER, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.OPENROUTER: ProviderSpec(provider=Provider.OPENROUTER, api_key_env_var='MISSING_KEY')}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T185747Z-0786b6",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When no valid API keys are available in the environment for a provider that requires one, the original version raises an ApiKeyNotFoundError while the changed version unconditionally returns a candidate with an empty key.",
+    "response_sha256": "14e0c51ca80dfefa864cf94348f1d48e59297c87cd22887e1420a69fac2fa53b",
+    "sources": [
+     "        if _allows_missing_key(provider):",
+     "    if True:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "key_id": "'auto'",
+     "provider": "Provider.GROQ",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GROQ, default_model=Model.LLAMA_8B, default_key_id=1, defaults=<any BehaviorDefaults>, catalog=ProviderCatalog(providers={Provider.GROQ: ProviderSpec(provider=Provider.GROQ)}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T185802Z-0cdb88",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With key_id 'auto' and no keys in the environment, the original raises ApiKeyNotFoundError for a provider that requires a key (e.g. GROQ, assuming _allows_missing_key returns False for it), while the changed version always returns an empty-value ResolvedKey.",
+    "response_sha256": "93988bf51b5fc35ca39cf2ca8b8d0105a0c6f417786fbad4eb106de12c0f0c77",
+    "sources": [
+     "if _allows_missing_key(provider):",
+     "raise ApiKeyNotFoundError(\n            env_var,\n            provider.value,\n            self._config.default_key_id,\n        )"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "249027c58f1c11cf6bd62ab80579164226002716a61ff3d52b18a4ecfffb5935"
+ },
  "50e4a41c052fa9e4": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -48,6 +91,26 @@
      "eligible = [candidate for candidate in ordered_keys if candidate in preferred]"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "preferred_key_ids": "iter([2])",
+     "provider": "Provider.GOOGLE",
+     "self_config": "any LLMRouterConfig whose environment has GOOGLE_API_KEY_1 and GOOGLE_API_KEY_2 set, with default provider GOOGLE"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195646Z-5d5987",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With a one-shot iterator as preferred_key_ids, the original materializes it into a set, while the changed version consumes it during membership tests, so with keys [1,2] and iter([2]) the original picks 2 and the changed picks 1.",
+    "response_sha256": "877cd990d4fe5557f1c23604890ff2758b83942211a96815c053c6a8023fe132",
+    "sources": [
+     "preferred = preferred_key_ids or ()",
+     "preferred = set(preferred_key_ids or ())",
+     "eligible = [candidate for candidate in ordered_keys if candidate in preferred]"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "69f275d3ee79203fcdfc97a2f0799a50a13f6a8d0be8dc862477f56b1c4ef418"
@@ -390,6 +453,45 @@
   },
   "prompt_sha256": "fae7a2c5f70e1112fa856586dd3c7dbde2022c20545cce9a11527b6a1cc48107"
  },
+ "87628559ec5d804c": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260930T140926Z-b38bb3",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version appends redundant duplicate elements to the end of `ordered_keys`, which does not change the first valid candidate selected by `eligible[0]` or `ordered_keys[0]`.",
+    "response_sha256": "854822985f7be76de6d84d0e56ae0932fbc70b0947224c143972863bd8a3dfc4",
+    "sources": [
+     "            ordered_keys = [*keys[start:], *keys[:start]]",
+     "            preferred = set(preferred_key_ids or ())",
+     "            eligible = [",
+     "                candidate for candidate in ordered_keys if candidate in preferred",
+     "            ]",
+     "            key_id = eligible[0] if eligible else ordered_keys[0]"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T140913Z-d67832",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed line appends all of keys instead of keys[:start], but the first element and the first eligible element are the same in both versions, so the selection and stored offset match.",
+    "response_sha256": "871a67e8f2258fb4a3ab1bb7315c1f4347551c43956c9332417f96542d218b0f",
+    "sources": [
+     "ordered_keys = [*keys[start:], *keys[:]]",
+     "key_id = eligible[0] if eligible else ordered_keys[0]"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "17a4cb9046d7c303b2ffe4e64fbb393bb5fca535c61efa4fbcbe31997b25302b"
+ },
  "8bf6ec5f1367a5d6": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -472,6 +574,92 @@
    }
   },
   "prompt_sha256": "0e862528a70e3f79992f46b996c2dc79170d5fc5d045f666a93edf8792826f45"
+ },
+ "8f5b0ab9c609f9d1": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20260930T152201Z-21b9c8",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The only behavioral difference between the versions requires 'os.environ' to contain purely numeric keys, which cannot be controlled via the provided inputs 'self_config' and 'provider', making them equivalent for all possible inputs.",
+    "response_sha256": "1e5b97d2a8e6877ac6121b5331c7dfac466b912961b40f0b09c3b9f91aaa3cc2",
+    "sources": [
+     "        discovered = [\n            int(name.removeprefix(prefix))\n            for name in os.environ\n            if name.startswith(prefix) and name.removeprefix(prefix).isdigit()\n        ]",
+     "    discovered = [int(name.removeprefix(prefix)) for name in os.environ if name and name.removeprefix(prefix).isdigit()]"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "provider": "Provider.GROQ",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GROQ, default_model=Model.LLAMA_8B, default_key_id=1, defaults=<any valid BehaviorDefaults>, catalog=ProviderCatalog(providers={Provider.GROQ: ProviderSpec(provider=Provider.GROQ)}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T152201Z-c6af63",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The startswith(prefix) filter became a truthiness check on name, so an environment variable whose whole name is digits (e.g. '7') is now discovered as key 7, which only happens with such an environment variable set.",
+    "response_sha256": "cd09666a674224cb7d072d8c75b4b295b01f9db1f0992fd04d99fad5b102732d",
+    "sources": [
+     "if name.startswith(prefix) and name.removeprefix(prefix).isdigit()",
+     "if name and name.removeprefix(prefix).isdigit()"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "38ddc95e32d5b115b2ac87125fde4e3f15092cb36a120b651d82f5b0b734a042"
+ },
+ "9b07dce1d69c1bc9": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "key_id": "0",
+     "provider": "Provider.GOOGLE",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T185747Z-257c3f",
+    "confidence": 0.8,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When the environment variable is missing and the provider allows missing keys, the original version returns a ResolvedKey with an empty value, whereas the changed version unconditionally raises ApiKeyNotFoundError.",
+    "response_sha256": "0a21dd5b0fa1c3318660ab7888ce9ee5479e7886a81149c19abc57984362d7fa",
+    "sources": [
+     "        if value is None:",
+     "            if _allows_missing_key(provider):",
+     "                return ResolvedKey(key_id=key_id, env_var=env_var, value=\"\")",
+     "            raise ApiKeyNotFoundError(env_var, provider.value, key_id)",
+     "        if False:",
+     "            return ResolvedKey(key_id=key_id, env_var=env_var, value='')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "key_id": "99999",
+     "provider": "Provider.GEMINI_WEBAPI",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GEMINI_WEBAPI, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 2.0, 1), policy=RouterPolicyDefaults(None, None, False, False, False, 2, ProviderLimits(1.0, 60.0, 1.0, 1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(1.0, 60.0, 1.0, 1)), catalog=ProviderCatalog(providers={Provider.GEMINI_WEBAPI: ProviderSpec(provider=Provider.GEMINI_WEBAPI)}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T185802Z-b7dfda",
+    "confidence": 0.72,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "When the env var is unset and _allows_missing_key is true (likely for a no-bearer provider such as GEMINI_WEBAPI), the original returns an empty ResolvedKey while the changed version raises ApiKeyNotFoundError.",
+    "response_sha256": "9372e42460c007f00a1245841b4ca0a332f2f8a984a733ee90f9b47056805348",
+    "sources": [
+     "if _allows_missing_key(provider):",
+     "if False:",
+     "raise ApiKeyNotFoundError(env_var, provider.value, key_id)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "b8e4c6fd0866f4eaba6b2d77ce0bdad5b0220e9be7e5bc98b96be04dd61c4a9d"
  },
  "adb0de8f41da4f7e": {
   "answers": {
@@ -559,6 +747,51 @@
    }
   },
   "prompt_sha256": "12dae31329640989a82a4ea08ba5c074c716532c6b3c3e9e541e00a1f7e0bc45"
+ },
+ "afe2fe11b15a368c": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "key_id": "2",
+     "provider": "Provider.GOOGLE",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 1.0, 1), policy=RouterPolicyDefaults(1, 1.0, False, False, False, 1, ProviderLimits(1.0, 1.0, 1.0, 1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(1.0, 1.0, 1.0, 1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T185747Z-6929f4",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change hardcodes the specific key check to False, ignoring any explicitly provided integer key_id and instead falling back to auto-rotation or default keys.",
+    "response_sha256": "dab8560c280d2582522be9c5be9d2ccd2595b0c388510479104f7804cc0e6b7e",
+    "sources": [
+     "if key_id != \"auto\":",
+     "return (self._resolve_fixed(provider=provider, key_id=key_id),)",
+     "if False:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "key_id": "2",
+     "provider": "Provider.OPENROUTER",
+     "self_config": "LLMRouterConfig with default_key_id=1 and a catalog whose OPENROUTER ProviderSpec has no api_key_env_vars, with no OPENROUTER_API_KEY_* env vars set"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T185747Z-78288a",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With key_id=2 the original takes the fixed branch and raises ApiKeyNotFoundError for key 2, while the changed version always takes the auto path and raises it for default_key_id 1 (or returns all available keys).",
+    "response_sha256": "bef293ca9ddc3f7351cf0aecd3de153023f1ecb5e3600066b081af7248eb4d9e",
+    "sources": [
+     "if key_id != \"auto\":",
+     "if False:",
+     "return (self._resolve_fixed(provider=provider, key_id=key_id),)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "0d7cd8db51aad1d278ce2b9b6ea00a982713ac07aa837eeb0dbb84374fc6b0ed"
  },
  "b249b8ff900bff0b": {
   "answers": {
@@ -851,5 +1084,46 @@
    }
   },
   "prompt_sha256": "06afced1f51f72beebb32f8d76423a4e5c931a1aca08108cbc6372952d63d68e"
+ },
+ "fb57ee54d6bd1fa0": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "provider": "Provider.GOOGLE",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=1, attempt_timeout_seconds=1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}))"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T152201Z-b51884",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "If `os.environ` contains a variable named entirely with digits (e.g., '123'), the changed version incorrectly discovers it because `str.removeprefix` returns the original string when the prefix is missing, whereas the original version safely checked `startswith` first.",
+    "response_sha256": "a7edca58a7f51ad6a96666455ef26defbfa28dc7900f1f889a909ade5b5ac4d1",
+    "sources": [
+     "            if name.startswith(prefix) and name.removeprefix(prefix).isdigit()",
+     "    discovered = [int(name.removeprefix(prefix)) for name in os.environ if name.removeprefix(prefix).isdigit()]"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "provider": "Provider.GROQ",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GROQ, default_model=Model.LLAMA_8B, default_key_id=1, defaults=<any BehaviorDefaults>, catalog=ProviderCatalog(providers={Provider.GROQ: ProviderSpec(provider=Provider.GROQ)}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T152201Z-cc4aff",
+    "confidence": 0.7,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops the startswith(prefix) check, so an environment variable with an all-digit name (e.g. \"7\") is now wrongly returned as key id 7, and a non-int digit name such as \"\u00b2\" raises ValueError; the original ignores both.",
+    "response_sha256": "ba5024609b32e4223450e2a497390c513db96200b93571993ee37a2912f4e6cf",
+    "sources": [
+     "discovered = [int(name.removeprefix(prefix)) for name in os.environ if name.removeprefix(prefix).isdigit()]",
+     "if name.startswith(prefix) and name.removeprefix(prefix).isdigit()"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "c6ef3615d0fe99c3f331df8522d8376036ef1adb2e22cd93f01163bacafbeec7"
  }
 }

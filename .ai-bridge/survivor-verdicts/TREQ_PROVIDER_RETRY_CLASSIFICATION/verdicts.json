@@ -19,9 +19,9 @@
   },
   "operator": "method",
   "pin": {
-   "adopted_at": "2026-09-29T12:02:08.924441Z",
-   "answer_sha256": "a066182bbfd9b9de26e2e90bb3a824edf0eff03cc67c93a076fb03a31450cc7c",
-   "call_id": "20260929T114737Z-1614c2",
+   "adopted_at": "2026-09-30T14:06:25.973632Z",
+   "answer_sha256": "7ec7c782e21d1fe362abf6f91bb2fd6dd2932021b001a5e1b5e96a5bb592baec",
+   "call_id": "20260930T135739Z-036bd8",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -30,19 +30,31 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "a066182bbfd9b9de26e2e90bb3a824edf0eff03cc67c93a076fb03a31450cc7c",
+   "draft_sha256": "7ec7c782e21d1fe362abf6f91bb2fd6dd2932021b001a5e1b5e96a5bb592baec",
    "effort": "medium",
+   "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_103e134c5bae2419.py",
-   "response_sha256": "39f64c3646229b18ef8678d3fd23360d54cca37e6bdf69f5e3b2c1dacb81b8cf",
-   "source": "draft author",
+   "response_sha256": "84386da43cb61f46216891014b8422079a1b16c968de9ac2d0ee9fe1db525a32",
+   "source": "draft author with tools",
    "sources": [
+    "llm_router._api.errors.ProviderError",
     "llm_router._api.types.Model",
     "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.providers.base.ProviderRequest",
     "llm_router._internal.providers.base.ProviderResult",
     "llm_router._internal.runtime.executor.ProviderRouteExecutor",
-    "llm_router._internal.runtime.executor.build_provider_retrying"
+    "llm_router._internal.runtime.requests.EffectiveSettings",
+    "llm_router._internal.runtime.requests.ExpandedRoute",
+    "llm_router._internal.runtime.requests.ResolvedKey",
+    "llm_router._internal.runtime.requests.ResolvedRequest"
    ]
   },
   "prompt_sha256": "2456f4280cea8b6565c335a877f2e1671718db77a8aadc39264b5fce1126d73e"
@@ -108,9 +120,9 @@
   },
   "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-29T12:02:08.926164Z",
-   "answer_sha256": "cd13370ee904e5da406de338e664d5d40e89c8ae6ca197b2a5a865eac0343692",
-   "call_id": "20260929T114740Z-42c60e",
+   "adopted_at": "2026-09-30T14:07:00.448663Z",
+   "answer_sha256": "6d47654530741b81572f996a2c8a78150c3fd4fc008d9e66633c572f464988a5",
+   "call_id": "20260930T140252Z-459319",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -119,23 +131,66 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "cd13370ee904e5da406de338e664d5d40e89c8ae6ca197b2a5a865eac0343692",
+   "draft_sha256": "6d47654530741b81572f996a2c8a78150c3fd4fc008d9e66633c572f464988a5",
    "effort": "medium",
+   "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_1cb6c482c58e73ea.py",
-   "response_sha256": "69f9410bb441c2d4b973614bc25f812fd1ddc5938fc9ffa94dad548b2258c42c",
-   "source": "draft author",
+   "response_sha256": "485acc76365f2e0bb724f96cb046a1dd789c9e50f833a716d2163a7ddf4d6842",
+   "source": "draft author with tools",
    "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.providers.base.ProviderRequest",
     "llm_router._api.types.Model",
     "llm_router._api.types.Provider",
-    "llm_router._internal.providers.base.ProviderCredential",
-    "llm_router._internal.providers.base.ProviderRequest",
-    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
-    "llm_router._internal.runtime.executor._provider_boundary_error"
+    "llm_router._api.errors.ProviderError"
    ]
   },
   "prompt_sha256": "d243ada9e5fce7f44d59901441d7f0ce8080482dfebae67093c0187e0006cdac"
+ },
+ "1d8ccb53084de501": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T152527Z-161b90",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "For 599, the mutant keeps the same classification and reason (RETRYABLE, server_status). It only leaves the status_code field in the RetryDecision empty. The requirement and its criteria cover whether a status is retryable based on its status semantics, and no stated requirement asks for the status code to be recorded in the decision.",
+   "response_sha256": "f3622f00c47ec0a6ea8c769514a3ee15d5b1278454fdfe41bcb4ac98d9885238",
+   "sources": [
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
+    "return RetryDecision(classification=RetryClassification.RETRYABLE, reason='server_status')"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "78373054ffe5dae879e5b48975be3410df2c3658981237bc0b4a8039b4f03e9c",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260930T152542Z-614bf2",
+   "confirmed": true,
+   "effort": "",
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "78373054ffe5dae879e5b48975be3410df2c3658981237bc0b4a8039b4f03e9c",
+   "reason": "The requirement governs the logic used to classify failures (using explicit status and exception semantics), but does not mandate that the original status code must be preserved in the resulting decision object. The mutant correctly classifies the error based on the status code but omits the status code from the returned RetryDecision, which falls outside the scope of this requirement.",
+   "response_sha256": "6df1a4bbddcf5a2738acf620a55a90c81c091500bf0fa8313ad6ae6f359f992a",
+   "sources": [
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
+    "return RetryDecision(classification=RetryClassification.RETRYABLE, reason='server_status')",
+    "status_code=status_code"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  },
  "2f11d5445216910c": {
   "answer": {
@@ -174,39 +229,81 @@
  "307acf14e91902cf": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T000321Z-57934e",
+   "call_id": "20260930T141739Z-269c64",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "This line runs only if the retry loop ends without returning and without raising. A tenacity-style retry loop either returns `adapter.execute(request)` or raises once it stops retrying, so the guard can't be reached and no input tells the versions apart. This assumes `build_provider_retrying` (not shown) returns a standard tenacity-style retrier. Retry classification is untouched.",
-   "response_sha256": "96f65d645612fc771a8431645d3ad0e603a5525cec2d7e5a2f387b286686708e",
-   "sources": [
-    "msg = \"Provider retry loop ended without a result.\"",
-    "raise RuntimeError(msg)",
-    "Retry classification shall use explicit status and exception semantics rather than message substrings."
-   ],
-   "test_focus": "",
-   "verdict": "equivalent"
-  },
-  "operator": "statement",
-  "prompt_sha256": "dfeea60b5280fafea6ca4d01d7a1ca6e660cacdb26bf3b7419762f5815b1f94f",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260929T093627Z-33d9e7",
-   "confirmed": false,
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "dfeea60b5280fafea6ca4d01d7a1ca6e660cacdb26bf3b7419762f5815b1f94f",
-   "reason": "The mutation removes a defensive `RuntimeError` that guards against the retry loop exiting without returning or raising an exception. This fallback behavior is an implementation detail and does not affect how provider failures are classified as temporary or permanent according to the requirements.",
-   "response_sha256": "f42f58004b2c021d206e985eaa71f56cec33f5c8be3bc36ce5da3567e5c40e4f",
+   "reason": "The mutant only replaces the defensive raise after the retry loop. A normal run never reaches it, because success returns inside the loop and exhaustion raises into the except block. Even if reached, it would return None instead of raising, which has nothing to do with classifying temporary vs permanent failures by status or exception semantics.",
+   "response_sha256": "3aa620cdb13e3f3f4b3d67793df56d01bb7d3f1baff16bc67eb6abd9b26cc751",
    "sources": [
     "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
     "Retry classification shall use explicit status and exception semantics rather than message substrings.",
-    "msg = \"Provider retry loop ended without a result.\"",
     "raise RuntimeError(msg)",
-    "pass"
+    "msg = \"Provider retry loop ended without a result.\""
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "statement",
+  "prompt_sha256": "e0ce4e2262bed49d4d065a768745f283b3a02b06c3c160352c49eba4efc62a9a",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260930T141803Z-53ad88",
+   "confirmed": false,
+   "effort": "",
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "e0ce4e2262bed49d4d065a768745f283b3a02b06c3c160352c49eba4efc62a9a",
+   "reason": "The code modified by the mutant is strictly unreachable. The retry loop either succeeds and directly returns the result, or exhausts attempts and raises an exception that is unconditionally caught and re-raised by the `except` block. Since execution never falls through to the end of the method, no input can ever trigger or observe the difference in behavior.",
+   "response_sha256": "3250fc906e5ce9d0b368e8ab90f99f3ce3540320bbe6da3aaace7beaeef657bf",
+   "sources": [
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "raise RuntimeError(msg)",
+    "msg = 'Provider retry loop ended without a result.'"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "3a9ca1148a7ef4b1": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T152527Z-ef5056",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the status_code field from the fallback decision; the retry classification stays NON_RETRYABLE with the same reason for every input, so what gets retried and why is unchanged. No requirement, feature or goal asks the decision to carry the status code as metadata.",
+   "response_sha256": "4e9ece157266e1d6e014cd5b6963e1126a8ae5f88e1d4cccb95752a3e08a4f93",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
+    "return RetryDecision(classification=RetryClassification.NON_RETRYABLE, reason='status_not_retryable')"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "325673f9e5c84866822671d9b3f398548cbccd29d508122fa98d114e4f4db9c8",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20260930T152542Z-2e192f",
+   "confirmed": true,
+   "effort": "",
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "325673f9e5c84866822671d9b3f398548cbccd29d508122fa98d114e4f4db9c8",
+   "reason": "The requirement specifies that classification must use explicit status semantics to distinguish temporary from permanent failures. Omitting the original status code from the returned decision object for unclassified statuses does not affect the classification outcome itself, fulfilling the requirement.",
+   "response_sha256": "f6d1a41f871117c82abda255a433339e722f36ba2f998754fb5ef33d3be2e6b2",
+   "sources": [
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "        status_code=status_code,",
+    "return RetryDecision(classification=RetryClassification.NON_RETRYABLE, reason='status_not_retryable')"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -233,9 +330,9 @@
   },
   "operator": "negation",
   "pin": {
-   "adopted_at": "2026-09-29T12:02:08.927349Z",
-   "answer_sha256": "5e6cc63a553c1c64ffdb2d8cdbb7b375d34ee1fe4006d6870532acd0c7a0a97e",
-   "call_id": "20260929T114741Z-e506d6",
+   "adopted_at": "2026-09-30T14:07:29.726380Z",
+   "answer_sha256": "a3497471d482f6a77ec27d387522d88b2d706edbfb1b53233867b634a44e923e",
+   "call_id": "20260930T140245Z-e4154a",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -244,16 +341,28 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "5e6cc63a553c1c64ffdb2d8cdbb7b375d34ee1fe4006d6870532acd0c7a0a97e",
+   "draft_sha256": "a3497471d482f6a77ec27d387522d88b2d706edbfb1b53233867b634a44e923e",
    "effort": "medium",
+   "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_3c58e8e9e5eaec8a.py",
-   "response_sha256": "5b2472ac2f25bef66cce26226fd477285a2d6e8bfc506a17a7dada14c9e13375",
-   "source": "draft author",
+   "response_sha256": "7abbce34e4d8f2171033c03880309a6972a4f20b985e295ec1c2c8efb96b1336",
+   "source": "draft author with tools",
    "sources": [
     "llm_router._internal.runtime.executor.ProviderRouteExecutor",
-    "llm_router._internal.runtime.executor"
+    "llm_router._internal.runtime.requests.ResolvedRequest",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult"
    ]
   },
   "prompt_sha256": "5d179c481661ccdb124d53a37afa82bf277dce3d84d64eada0385d8b9789250f",
@@ -279,38 +388,39 @@
  "4bcf2fc831eaf45c": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T145640Z-be2ca6",
+   "call_id": "20260930T141739Z-69849c",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only drops the context_getter, so per-attempt retry log records lose their request context. Retry eligibility, attempts, results and raised errors stay the same. None of the listed requirements or criteria asks for log context, and the requirement only covers how failures are classified for retry.",
-   "response_sha256": "c211db59b8f7e3ec162547054eca70ca24edb89bd3fdf3ccfe8382a57218ba1f",
+   "reason": "Removing context_getter only strips request context from the retry-attempt log records. Classification still goes through is_retryable_provider_error, and results and boundary errors are unchanged. The logs do differ, but no requirement given here asks for retry log context.",
+   "response_sha256": "f441af074dfb26228d6ad8277f3c105146cc584011ea9cd54beac175702a8ce7",
    "sources": [
     "Retry classification shall use explicit status and exception semantics rather than message substrings.",
     "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
-    "context_getter=lambda: _retry_context(request),",
-    "retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)"
+    "retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)",
+    "context_getter=lambda: _retry_context(request),"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "d3f2a1db47d220d7c86a61a1594e0e0c90dfc030bf728f8a1e64548e5613a438",
+  "prompt_sha256": "44e751f2f139a7185fb5f63769ddb5b423779d8ce57760e112b94816269b7f44",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T145648Z-fe2c09",
+   "call_id": "20260930T141803Z-d99824",
    "confirmed": false,
-   "level": "implementation",
+   "effort": "",
+   "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "d3f2a1db47d220d7c86a61a1594e0e0c90dfc030bf728f8a1e64548e5613a438",
-   "reason": "The mutation removes the context getter for retry logging, altering the logging metadata, but this does not affect how failures are classified as temporary or permanent, which is the sole focus of the requirement.",
-   "response_sha256": "ce3c67f64ce1cd8d6368856127feea2ec1d7544561a509bd069cf005463afb8e",
+   "prompt_sha256": "44e751f2f139a7185fb5f63769ddb5b423779d8ce57760e112b94816269b7f44",
+   "reason": "The mutant drops the `context_getter` argument, which removes request context from intermediate retry logs. While this changes the log output, it does not affect whether temporary failures are retried or how their semantics are classified, which is all the requirement specifies.",
+   "response_sha256": "deeb4c54475270ccc86b0416dae657804bb20cd1e8a307e4ac9894f5dd1c2137",
    "sources": [
     "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
-    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
-    "retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)"
+    "context_getter=lambda: _retry_context(request),"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -505,9 +615,9 @@
   },
   "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-29T19:15:34.168888Z",
-   "answer_sha256": "19771ee29edd4689352eed48b45500d71037f209608317502ebb1b99a67212c7",
-   "call_id": "20260929T191342Z-b0aa84",
+   "adopted_at": "2026-09-30T14:08:51.272608Z",
+   "answer_sha256": "23ac843146a2b06d5ff9a91e5b1fba912111d106502588ae069eebe30f1c8b1b",
+   "call_id": "20260930T140610Z-093d7b",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -516,16 +626,22 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "19771ee29edd4689352eed48b45500d71037f209608317502ebb1b99a67212c7",
-   "effort": "low",
+   "draft_sha256": "23ac843146a2b06d5ff9a91e5b1fba912111d106502588ae069eebe30f1c8b1b",
+   "effort": "medium",
+   "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_f4ac62d8.py",
-   "response_sha256": "b122b12140d0fbe39a7ee51299600a07fdd7be31b34497195fe6e06dd40ba162",
-   "source": "draft author",
+   "response_sha256": "1ec037e1e326acdece4d22d867681b0a179978c6b49ea79c21849f2c97bfb179",
+   "source": "draft author with tools",
    "sources": [
     "llm_router._internal.runtime.executor.ProviderRouteExecutor",
-    "llm_router._internal.runtime.executor"
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult"
    ]
   },
   "prompt_sha256": "f8ce6b3fc479f14533167f9d06470b99a5e7ce58156294595471633de1caa293"
@@ -550,9 +666,9 @@
   },
   "operator": "return",
   "pin": {
-   "adopted_at": "2026-09-29T12:02:08.928067Z",
-   "answer_sha256": "dba56eab31aa8d165b460523ebdff7477759a3c3d4c9c491da0ed2a7f47b7f65",
-   "call_id": "20260929T114742Z-95c5d9",
+   "adopted_at": "2026-09-30T14:08:46.223646Z",
+   "answer_sha256": "2c580952b0b88d4b41180b51edb95fdfd1c1960122404cb3be38e63eca0a00a6",
+   "call_id": "20260930T140447Z-86c5ea",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -561,21 +677,33 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "dba56eab31aa8d165b460523ebdff7477759a3c3d4c9c491da0ed2a7f47b7f65",
-   "effort": "medium",
-   "model": "claude-sonnet-5-5",
+   "draft_sha256": "2c580952b0b88d4b41180b51edb95fdfd1c1960122404cb3be38e63eca0a00a6",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_bc22a7f5ad518a96.py",
-   "response_sha256": "52050d2311a1e05e7066a5b634f2c5bd77b04197dc93eee1c1e688b171226cdb",
-   "source": "draft author",
+   "response_sha256": "c2b24388674493c1b0420b7becb2637080c7da88b6585a512617bcbea9dfa9e9",
+   "source": "last resort",
    "sources": [
-    "llm_router._api.types.Model",
-    "llm_router._api.types.Provider",
-    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.providers.retry.classify_exception",
+    "llm_router._internal.providers.retry.RetryDecision",
     "llm_router._internal.providers.base.ProviderRequest",
     "llm_router._internal.providers.base.ProviderResult",
-    "llm_router._internal.runtime.executor",
-    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderFailure",
+    "llm_router._internal.providers.base.ProviderCapabilities",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.runtime.requests.ResolvedRequest",
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.ProviderLimits"
    ]
   },
   "prompt_sha256": "032b87f8fe96610f97273fcd4afafb0da840ad2958848d7af5b82cf0d49031b1"
@@ -583,38 +711,41 @@
  "d8f7199ce8dc26c9": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T195357Z-9be237",
+   "call_id": "20260930T195903Z-283caf",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The two versions can only differ at status_code == _SERVER_ERROR_STATUS_MIN. That value is caught by the earlier explicit-set checks, so it never reaches the changed comparison. The symbolic search found no distinguishing path, and the proposed boundary input was refuted because both versions behave the same on it.",
-   "response_sha256": "4b272dca04a25e0a21aa8b0fbd6faaf7712fbbf7812dc820f396ac2c0b2114d9",
+   "reason": "Changing `>=` to `>` only matters when status_code equals _SERVER_ERROR_STATUS_MIN. The symbolic search went through 298 paths without finding any input that tells the two versions apart. The one input offered as a difference (most likely that boundary code) was refuted because both versions return the same result for it, so the boundary code is already caught by one of the explicit status sets checked earlier.",
+   "response_sha256": "e8850b94126ab3eb700aa2309e997844e02692767b40c84bc9c7b33f4735f5df",
    "sources": [
-    "if status_code > _SERVER_ERROR_STATUS_MIN:",
-    "if status_code in _RETRYABLE_STATUS_CODES:",
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
     "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
+    "if status_code >= _SERVER_ERROR_STATUS_MIN:",
+    "if status_code > _SERVER_ERROR_STATUS_MIN:",
+    "the symbolic search ended none after 298 paths",
     "an input by claude-cli:claude-sonnet-5 was refuted: both versions behave the same on it"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "comparison",
-  "prompt_sha256": "398a5e6b879b2e5e4739fcbfcecfcc3c097ef6cd9900764998ebb60d9457f6ae",
+  "prompt_sha256": "eacc45b9623e5a2673a0838e9c972a1d58946d56fa4545fd56e64fb1c8f4bb27",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260928T195439Z-03b19e",
+   "call_id": "20260930T200006Z-22119f",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "398a5e6b879b2e5e4739fcbfcecfcc3c097ef6cd9900764998ebb60d9457f6ae",
-   "reason": "The change from `>=` to `>` does not alter the execution logic because the exact boundary value `_SERVER_ERROR_STATUS_MIN` is already intercepted by the preceding checks for `_RETRYABLE_STATUS_CODES` and `_NON_RETRYABLE_STATUS_CODES`, making the versions indistinguishable on any input.",
-   "response_sha256": "e61169b2163f6cc952c84693383c1f8788472cef677c89c0f80515a33331db7b",
+   "prompt_sha256": "eacc45b9623e5a2673a0838e9c972a1d58946d56fa4545fd56e64fb1c8f4bb27",
+   "reason": "The boundary value _SERVER_ERROR_STATUS_MIN is already handled by the preceding status code sets, making the change to a strict inequality functionally identical without altering classification behavior.",
+   "response_sha256": "84e7c7214661a641b06fe27f87e7ba06109d4b7f881566024c0070273bcf8c4f",
    "sources": [
-    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
-    "if status_code >= _SERVER_ERROR_STATUS_MIN:",
-    "if status_code > _SERVER_ERROR_STATUS_MIN:"
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "if status_code >= _SERVER_ERROR_STATUS_MIN:"
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -641,9 +772,9 @@
   },
   "operator": "method",
   "pin": {
-   "adopted_at": "2026-09-29T12:02:08.929099Z",
-   "answer_sha256": "b5ac16a5ba65b5cf4e45f31c55dddbd20ec73cdc4615770fbe2b60b6b70a3fea",
-   "call_id": "20260929T114745Z-a610e1",
+   "adopted_at": "2026-09-30T14:08:28.689534Z",
+   "answer_sha256": "1469374147ac1b342fdc21326b8103c8269c9f2e1a80de15bb2cf5309d433da4",
+   "call_id": "20260930T140410Z-3fcc6a",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -652,21 +783,24 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "d4367ff84e26582e1a1098fe95cd1978148a4d6d2c5655bbe27c2fa7a90f309c",
+   "draft_sha256": "1469374147ac1b342fdc21326b8103c8269c9f2e1a80de15bb2cf5309d433da4",
    "effort": "medium",
+   "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_dad9cc03506dec74.py",
-   "response_sha256": "6c37db5ba05b6d0b894f837126618d0441f087170a777d805c5797903ae362b6",
-   "source": "draft author",
+   "response_sha256": "14399b9c0ad3687ae111599a7804e4cca8ea1a73342966acd10585e7ae39bebf",
+   "source": "draft author with tools",
    "sources": [
     "llm_router._internal.runtime.executor.ProviderRouteExecutor",
-    "llm_router._internal.runtime.executor",
+    "llm_router._internal.runtime.requests.ResolvedRequest",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.RetryPolicy",
     "llm_router._internal.providers.base.ProviderRequest",
     "llm_router._internal.providers.base.ProviderResult",
-    "llm_router._internal.providers.base.ProviderCredential",
-    "llm_router._api.types.Provider",
-    "llm_router._api.types.Model"
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider"
    ]
   },
   "prompt_sha256": "22a849b7e8f0d812732a8eda94603d7d5435111502e7aeee5470bbb98341bbae"

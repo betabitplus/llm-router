@@ -9,7 +9,11 @@ from llm_router._internal.capabilities.content import normalize_content
 from llm_router._internal.providers.aistudio import AIStudioAdapter
 from llm_router._internal.providers.base import ProviderCredential, ProviderRequest
 from llm_router._internal.providers.openai_compatible import OpenAICompatibleAdapter
-from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+    retain_fault_injection,
+)
 from tests.llm_router.support.workers.retry import (
     aistudio_video_path,
     openai_chat_path,
@@ -93,6 +97,46 @@ def test_aistudio_text_uses_openai_compatible_transport() -> None:
         assert body["messages"] == [{"role": "user", "content": "hello"}]
 
 
+@pytest.mark.fault_item(
+    "TREQ_AISTUDIO_ADAPTER_BOUNDARY", "interface.unexpected-interaction"
+)
+def test_aistudio_text_never_reaches_the_native_media_transport() -> None:
+    chat_path = openai_chat_path()
+    native_path = aistudio_video_path(model=Model.GEMINI_FLASH)
+    retain_fault_injection(
+        contract_id="TREQ_AISTUDIO_ADAPTER_BOUNDARY",
+        fault_class="interface.unexpected-interaction",
+        mechanism=(
+            "a sentinel native-media route detects a text request sent to the wrong "
+            "transport"
+        ),
+    )
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", chat_path): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text="openai ok"),
+                )
+            ],
+            ("POST", native_path): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "text/event-stream"},
+                    body=_native_success_response(text="native sentinel"),
+                )
+            ],
+        },
+    ) as server:
+        result = _adapter(server).execute(_request())
+
+        assert result.output_text == "openai ok"
+        assert server.request_count("POST", native_path) == 0
+        assert server.request_count("POST", chat_path) == 1
+
+
 @pytest.mark.coverage_path("native-video-transport")
 def test_aistudio_video_uses_native_transport() -> None:
     path = aistudio_video_path(model=Model.GEMINI_FLASH)
@@ -128,8 +172,15 @@ def test_aistudio_video_uses_native_transport() -> None:
 
 
 @pytest.mark.coverage_path("native-retryable-status")
+@pytest.mark.fault_item("TREQ_AISTUDIO_ADAPTER_BOUNDARY", "interface.error-status")
 def test_aistudio_native_retryable_status_is_translated() -> None:
     path = aistudio_video_path(model=Model.GEMINI_FLASH)
+    retain_fault_injection(
+        contract_id="TREQ_AISTUDIO_ADAPTER_BOUNDARY",
+        fault_class="interface.error-status",
+        mechanism="scripted AI Studio native endpoint returns retryable HTTP 503",
+        details={"status_code": 503},
+    )
     request = _request(
         messages=[
             normalize_content(

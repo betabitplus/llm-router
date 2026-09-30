@@ -19,43 +19,51 @@
    "verdict": "pin"
   },
   "operator": "return",
-  "pin": {
-   "adopted_at": "2026-09-28T17:00:21.140815Z",
-   "answer_sha256": "cf87b121a2ef168a33d9db55fc2528034ffd782741c1fd637bdb8e131841610c",
-   "call_id": "20260928T165118Z-91458d",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "cf87b121a2ef168a33d9db55fc2528034ffd782741c1fd637bdb8e131841610c",
-   "level": 2,
-   "model": "claude-sonnet-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_62fc1baca32629b1.py",
-   "response_sha256": "48a26fbb76e4d3f788dd26a75dac5e71b5a763af7162d47dab0ec7ebb885cd02",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.Model",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.google_generate_path",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.run_retry_worker",
-    "tests.llm_router.support.workers.retry.RetryWorkerResult",
-    "src.llm_router._internal.runtime.executor._provider_boundary_error",
-    "src.llm_router._internal.runtime.executor._execute_provider_sync",
-    "src.llm_router._internal.providers.openai_compatible.OpenAICompatibleAdapter.execute",
-    "src.llm_router._internal.providers.google_genai.GoogleGenAIAdapter.execute",
-    "src.llm_router._internal.capabilities.tools.parse_tool_call",
-    "src.llm_router._api.errors.ProviderError",
-    "src.llm_router._api.errors.LLMRouterError"
-   ]
-  },
-  "prompt_sha256": "09d2886737c5cf79caf56642c75e319ca72e8147af7cde7c2c7c485992c481f5"
+  "prompt_sha256": "09d2886737c5cf79caf56642c75e319ca72e8147af7cde7c2c7c485992c481f5",
+  "subsumed": {
+   "at": "2026-09-30T13:45:09.894591Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0468831e.py",
+    "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0c2c0162.py",
+    "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_5dfdf438.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-28T17:00:21.140815Z",
+    "answer_sha256": "cf87b121a2ef168a33d9db55fc2528034ffd782741c1fd637bdb8e131841610c",
+    "call_id": "20260928T165118Z-91458d",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "cf87b121a2ef168a33d9db55fc2528034ffd782741c1fd637bdb8e131841610c",
+    "level": 2,
+    "model": "claude-sonnet-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_62fc1baca32629b1.py",
+    "response_sha256": "48a26fbb76e4d3f788dd26a75dac5e71b5a763af7162d47dab0ec7ebb885cd02",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.Model",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.google_generate_path",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.run_retry_worker",
+     "tests.llm_router.support.workers.retry.RetryWorkerResult",
+     "src.llm_router._internal.runtime.executor._provider_boundary_error",
+     "src.llm_router._internal.runtime.executor._execute_provider_sync",
+     "src.llm_router._internal.providers.openai_compatible.OpenAICompatibleAdapter.execute",
+     "src.llm_router._internal.providers.google_genai.GoogleGenAIAdapter.execute",
+     "src.llm_router._internal.capabilities.tools.parse_tool_call",
+     "src.llm_router._api.errors.ProviderError",
+     "src.llm_router._api.errors.LLMRouterError"
+    ]
+   }
+  }
  },
  "SM-0468831E": {
   "answer": {
@@ -230,35 +238,41 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-29T19:27:06.695724Z",
-   "answer_sha256": "0f7f65bac2f9dd4ca651fda245a1c6c0b92efb1499eeb22a2398518c0d569c41",
-   "call_id": "20260929T192453Z-24eb56",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "0f7f65bac2f9dd4ca651fda245a1c6c0b92efb1499eeb22a2398518c0d569c41",
-   "effort": "high",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_eea8fd67.py",
-   "response_sha256": "e3e3a26164edfb61b95eb1daac814a91bdf8774ebe24618ece29e7f05aba7b1f",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.Model",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.google_generate_path",
-    "tests.llm_router.support.workers.retry.google_success_response",
-    "tests.llm_router.support.workers.retry.run_retry_worker"
-   ]
-  },
-  "prompt_sha256": "85236a296b463543e95a83788643af650c85f02fee312c045e96e6c30466deef"
+  "prompt_sha256": "85236a296b463543e95a83788643af650c85f02fee312c045e96e6c30466deef",
+  "subsumed": {
+   "at": "2026-09-30T13:45:09.895323Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_0468831e.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T19:27:06.695724Z",
+    "answer_sha256": "0f7f65bac2f9dd4ca651fda245a1c6c0b92efb1499eeb22a2398518c0d569c41",
+    "call_id": "20260929T192453Z-24eb56",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "0f7f65bac2f9dd4ca651fda245a1c6c0b92efb1499eeb22a2398518c0d569c41",
+    "effort": "high",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_provider_error_boundary_sm_eea8fd67.py",
+    "response_sha256": "e3e3a26164edfb61b95eb1daac814a91bdf8774ebe24618ece29e7f05aba7b1f",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.Model",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.google_generate_path",
+     "tests.llm_router.support.workers.retry.google_success_response",
+     "tests.llm_router.support.workers.retry.run_retry_worker"
+    ]
+   }
+  }
  }
 }

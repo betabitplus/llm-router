@@ -3304,6 +3304,7 @@ function explorerPage(model){
   campaign:"Run the implementation fault campaign again.",
   blocked:"Find out why the campaign could not run for this contract, then run it again.",
   support:"Open the supporting item and fix what fails there.",
+  pending:"Open the supporting item and decide what it still leaves open.",
   "metric:Representation":"Run the case against the kind of target the profile requires.",
   "metric:Provenance":"Retain the evidence again, so that its result, source and artifacts belong to one run.",
   "metric:Producers":"Qualify the evidence producers again.",
@@ -3775,6 +3776,8 @@ MODEL_ROLES_TONES = {
     "weak": "repeating-linear-gradient(45deg,color-mix(in srgb,var(--tf-hm-fail) 55%,var(--tf-hm-na)) 0 3px,var(--tf-hm-na) 3px 6px)",
     "rules": "var(--tf-hm-na-strong)",
     "lint": "var(--tf-hm-na-strong)",
+    # Kept alone, failed in the full run: a runtime fault, patterned as the weak one is.
+    "suite": "repeating-linear-gradient(-45deg,color-mix(in srgb,var(--tf-hm-fail) 78%,var(--tf-hm-na)) 0 3px,var(--tf-hm-na) 3px 6px)",
     "unknown": "var(--tf-hm-na)",
 }
 
@@ -3949,6 +3952,34 @@ def model_roles_article(facts: dict, facts_json: str) -> str:
         numeric={2, 3, 4, 5},
         nowrap={6},
     ) if caps["roles"] else "<p>No call has reported its list price yet.</p>"
+    rechecks = facts["rechecks"]
+    recheck_groups = table(
+        ["Role", "Answered by", "Asked now of", "Suppressions", "Sampled", "Re-checked", "Upheld"],
+        [[plain(row["role"]), plain(row["answered"]), plain(row["now"]), plain(row["suppressions"]), plain(row["sampled"]), plain(row["asked"]),
+          (escape(str(row["upheld"])), "fail" if row["upheld"] < row["asked"] else "")] for row in rechecks["groups"]],
+        numeric={3, 4, 5, 6},
+    ) if rechecks["groups"] else "<p>Every suppression that counts was answered by the model and level its role asks now.</p>"
+    recheck_rows = table(
+        ["Role", "Contract", "Mutant", "Was", "Now", "Reason"],
+        [[plain(row["role"]), plain(row["contract_id"]), (f"<code>{escape(str(row['key']))}</code>", ""), plain(row["suppressed"]),
+          (escape(str(row["verdict"])), "" if row["verdict"] in ("equivalent", "irrelevant") else "fail"),
+          (escape(str(row["reason"])) + (f' <a href="{escape(str(row["answer"]))}">Question and answer</a>' if row.get("answer") else ""), "")]
+         for row in rechecks["rows"]],
+        nowrap={2},
+    ) if rechecks["rows"] else "<p>No suppression has been re-checked yet.</p>"
+    waiting = table(
+        ["Contract", "Mutant", "Kind", "Recorded drafts", "Where it stands"],
+        [[plain(row["contract_id"]), (f"<code>{escape(str(row['key']))}</code>", ""), plain(row["kind"]), plain(row["drafts"]), plain(row["stage"])]
+         for row in facts["waiting"]],
+        numeric={3},
+        nowrap={1},
+    ) if facts["waiting"] else "<p>Every pin verdict that counts has its pin.</p>"
+    subsumed = facts["subsumed"]
+    subsumed_table = table(
+        ["Contract", "Pins removed", "Kept pins that kill their mutants"],
+        [[plain(row["contract_id"]), plain(row["removed"]), plain(row["by"])] for row in subsumed["contracts"]],
+        numeric={1, 2},
+    ) if subsumed["contracts"] else "<p>No pin has been removed as redundant.</p>"
     return (
         '<section id="model-roles">\n<h1>Model roles<a class="headerlink" href="#model-roles" title="Link to this heading">#</a></h1>\n'
         f'<style id="tf-model-roles-style">\n{_palette("#model-roles")}\n{MODEL_ROLES_CSS}\n</style>\n'
@@ -3971,10 +4002,23 @@ def model_roles_article(facts: dict, facts_json: str) -> str:
         '<h3 id="levels">Levels</h3>\n<p class="tf-mr-note">How often each model kept its draft at each level: the data a ladder '
         "of levels starts from. A level no attempt recorded is read from its call's sign-in: before 2026-09-29 no call recorded one.</p>\n"
         f"{efforts}\n<h3>Pins the last resort wrote</h3>\n{last_resort}\n"
+        '<h3 id="waiting">Waiting for a pin</h3>\n<p class="tf-mr-note">Every mutant whose verdict that counts is pin and that has '
+        "no pin yet, and where its ladder stands. A mutant every rung missed has its verdict asked again with the project's callers "
+        "in view; one that stays pin then waits for the person.</p>\n"
+        f"{waiting}\n"
+        '<h3 id="subsumed">Pins other pins made redundant</h3>\n<p class="tf-mr-note">A pin whose mutant other pins of its contract '
+        "kill, by the kill matrix of the contract's pins against its pinned mutants, is removed and waits beside its record; it comes "
+        f"back when the campaign shows the removal cost a kill. {sum(row['removed'] for row in subsumed['contracts'])} removed, "
+        f"{subsumed['pins']} pins now.</p>\n"
+        f"{subsumed_table}\n"
         '<h2 id="judging">Judges\' sources</h2>\n<p class="tf-mr-note">The verdict, its review and every assessor cite what their '
         "answer rests on, copied word for word from their question: a line the change touches and, for a verdict, the words of the "
         "requirement. An answer whose sources are not in its question does not count and is asked again.</p>\n"
         f"{roles_cite}\n<h3>Latest answers whose sources do not hold up</h3>\n{troubled}\n"
+        '<h3 id="rechecks">Re-checks of suppressions</h3>\n<p class="tf-mr-note">When the model or level a verdict role asks first '
+        f"is not the one that answered a suppression that counts, one in {rechecks['one_in']} of that answerer's suppressions, chosen "
+        "by key, is asked again of the role as it now stands; an answer that does not uphold one pins its mutant.</p>\n"
+        f"{recheck_groups}\n{recheck_rows}\n"
         '<h2 id="canaries">Canaries</h2>\n<p class="tf-mr-note">Each model a role lists answers in earnest only after it '
         "passes its canaries, the role's very question on cases whose outcome is known.</p>\n"
         f"{canaries}\n"

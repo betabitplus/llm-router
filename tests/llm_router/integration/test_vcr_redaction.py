@@ -10,6 +10,7 @@ from vcr.serializers import yamlserializer
 
 from llm_router import LLMRouter, Model, Provider, RouterProfile
 from tests.llm_router.conftest import _vcr_scrub_request, _vcr_scrub_response
+from tests.llm_router.support.fault_observation import retain_local_fault_injection
 from tests.llm_router.support.fault_server import (
     ProviderSentinelHTTPServer,
     ScriptedHTTPServer,
@@ -67,10 +68,19 @@ def _persisted_request_bodies(cassette: Path) -> list[str]:
 
 @pytest.mark.verifies("TREQ_VCR_AUTH_REDACTION[revision==1]")
 @pytest.mark.coverage_item("VC_VCR_AUTH_DURABLE_REDACTION")
+@pytest.mark.fault_item("TREQ_VCR_AUTH_REDACTION", "interface.payload-schema")
 def test_vcr_auth_and_account_data_are_removed_before_cassette_persistence(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    retain_local_fault_injection(
+        contract_id="TREQ_VCR_AUTH_REDACTION",
+        fault_class="interface.payload-schema",
+        mechanism=(
+            "a recorded interaction carries auth headers and account fields that "
+            "the stored cassette's schema must not keep"
+        ),
+    )
     provider_path = openai_chat_path()
     sidecar_path = "/capture"
     product_prompt = "safe auth redaction product prompt"
@@ -190,10 +200,21 @@ def test_vcr_auth_and_account_data_are_removed_before_cassette_persistence(
 
 
 @pytest.mark.verifies("TREQ_VCR_RESPONSE_CONTENT_REDACTION[revision==1]")
+@pytest.mark.fault_item(
+    "TREQ_VCR_RESPONSE_CONTENT_REDACTION", "interface.payload-schema"
+)
 def test_vcr_response_scrubs_recognized_reflected_credential_before_persistence(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    retain_local_fault_injection(
+        contract_id="TREQ_VCR_RESPONSE_CONTENT_REDACTION",
+        fault_class="interface.payload-schema",
+        mechanism=(
+            "a provider response body reflects a credential that the stored "
+            "cassette's schema must not keep"
+        ),
+    )
     provider_path = openai_chat_path()
     protected_reflection = "AIza" + ("A" * 35)
     cassette = tmp_path / "response-reflection.yaml"

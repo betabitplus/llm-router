@@ -61,6 +61,69 @@
     "llm_router._internal.capabilities.schema.normalize_schema",
     "llm_router._internal.capabilities.schema.SchemaSpec"
    ]
+  },
+  {
+   "at": "2026-09-30T16:41:17.729737Z",
+   "call_id": "20260930T164011Z-06c927",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4ac7d1a5b0cfe8e4264db8a984bf039d2749c9d4611c395399d798be37517bb5",
+   "reason": "it imports llm_router._internal.capabilities.schema, types",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:42:14.109180Z",
+   "call_id": "20260930T164144Z-464ae0",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "39db96690471f4f5e830a9bd668dfe2c9211a3bc9b40ee31bdf48b5d63e1cab2",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:22:34.881013Z",
+   "call_id": "20260930T180500Z-619f36",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8b8e2b11664f6cc69cd6c10a594d7db73a14bfcb19fe47a17f7227490fbda6c3",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ],
  "18f725f3ce572a15": [
@@ -77,6 +140,79 @@
    "sources": [
     "llm_router._internal.capabilities.schema.SchemaSpec",
     "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:25.119494Z",
+   "call_id": "20260930T164008Z-6c9362",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema)",
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "147e1d91c0d41f7a80c64bee94e3663ad95a4c6c3712c964bc7b1b60cdfa4d71",
+   "reason": "it does not fit the project's code as written: llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema) | llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.normalize_schema",
+    "llm_router.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:42:13.139449Z",
+   "call_id": "20260930T164151Z-d3656d",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "24045ab0cb36e109bb0ef8b532348678c79ca8dc7c0af0286fe1c9db28ba3ad2",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:23:35.122807Z",
+   "call_id": "20260930T180502Z-97afe2",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "dd2e72b44e08aaca38fe6778a001c0de05bc7040683375db35a1ded311af5383",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   }
  ],
@@ -127,6 +263,73 @@
     "llm_router._internal.capabilities.schema.SchemaSpec",
     "llm_router._internal.capabilities.schema.with_schema_transform"
    ]
+  },
+  {
+   "at": "2026-09-30T16:40:54.291655Z",
+   "call_id": "20260930T164008Z-6ee7f0",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema)",
+    "llm_router has no with_schema_transform (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "db06e4e81e72d822c90bdbca93aabbcd3a844538cc8a5a33ded0df1b4b8af15c",
+   "reason": "it does not fit the project's code as written: llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema) | llm_router has no with_schema_transform (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.SchemaSpec",
+    "llm_router.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:30.993275Z",
+   "call_id": "20260930T164113Z-cbd385",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c9b2440010728d91ecbfa18a3c7b483921aca8cbe5db45f17730ad4813b39aa2",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:24:43.886300Z",
+   "call_id": "20260930T180500Z-fa7508",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3861ea9251eeec778d1040a5f93b46545e22a29fa66349787a4de12ec0157178",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+   ]
   }
  ],
  "2ac6551daf76c11a": [
@@ -142,6 +345,60 @@
    "reason": "",
    "sources": [
     "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:23.755786Z",
+   "call_id": "20260930T164008Z-92ba3c",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "29c09ed9edef9cf0cdc4d51206d8198cb98713bdbae258e8541503388f72d397",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:42:06.103053Z",
+   "call_id": "20260930T164148Z-f76649",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "69958226ab4373c82ebf5f92852f74be78f7c63a34aa8c8b4c8321e9fc86b37c",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:24:48.623216Z",
+   "call_id": "20260930T180457Z-862bbd",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "919fbf6c9e5194a2311b60332927bc43823b79c2be6d5ae5099322d88bf5ce93",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
    ]
   }
  ],
@@ -159,6 +416,68 @@
    "sources": [
     "llm_router._internal.capabilities.schema.normalize_schema"
    ]
+  },
+  {
+   "at": "2026-09-30T16:42:35.194714Z",
+   "call_id": "20260930T164009Z-c38ed8",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "bc67ce368964d235861b789c04b04693822adb91c648f1c90b638aeba059df85",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:43:36.021871Z",
+   "call_id": "20260930T164235Z-2484a4",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "77a8edc43dd2bd6b4a3819df575c1a47c08b6f9ea45ff69f391014abe02861f3",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:21:41.522108Z",
+   "call_id": "20260930T180501Z-672b23",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3e66d73266cd54c710e452bceaceede30dfe032cd47f474de8448333bba2a376",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ],
  "4b031c8b4a869092": [
@@ -174,6 +493,75 @@
    "reason": "",
    "sources": [
     "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:51.854397Z",
+   "call_id": "20260930T164008Z-3959a6",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "47641ba2345a3c5c1c5a1982c9161adc18f788d92fad2c67e3671ab04e2700d6",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:31.135861Z",
+   "call_id": "20260930T164110Z-e55c24",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema)",
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7d07ff9261d58e943c539faa55bb37dddc6b866e111b4fc2205f3c301d02e8ab",
+   "reason": "it does not fit the project's code as written: llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema) | llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:20:12.685698Z",
+   "call_id": "20260930T180501Z-d0aedf",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1260bf1191be1cc3938de7f568a9617d0cf80dca404a513a847b84e104c08dbe",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
    ]
   }
  ],
@@ -206,6 +594,121 @@
    "reason": "",
    "sources": [
     "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:02:49.148561Z",
+   "call_id": "20260930T135348Z-f10be8",
+   "cause": "grounding",
+   "context_gaps": [
+    "llm_router._internal.capabilities.schema.build_schema_spec"
+   ],
+   "grounding": [
+    "llm_router._internal.capabilities.schema has no build_schema_spec"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "6be139e652a8e43479474ae43aeb4458ad49ba1b2930747554d1ddd99b397386",
+   "reason": "it does not fit the project's code as written: llm_router._internal.capabilities.schema has no build_schema_spec",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:06:07.421307Z",
+   "call_id": "20260930T140251Z-a84943",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f26c06e4c53283012dc4f07fa8ecac4aa6f47f498b9d39bf55f5b4d5eaaa5c1a",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:00.088209Z",
+   "call_id": "20260930T164008Z-06b3c4",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2e06fbdc83d288d3582d638662c79569807f889c606ac985d1a6f64590443579",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:37.934590Z",
+   "call_id": "20260930T164125Z-a82148",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e0f3e8733684600fa804c32e1fb2171c0e9a99dfc9e1f2aff82efc0e0b633904",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:06:44.752666Z",
+   "call_id": "20260930T180459Z-813de8",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7ee05eb635f351d371307bcf930cf043a1a3740a4a51104004f7c5f1502d6038",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:24:33.968845Z",
+   "call_id": "20260930T180646Z-1a5aa4",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "3910316415ae56e9cef15720b15737904ad6e2032ba20be1a485600e3fd1e0dd",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   }
  ],
@@ -242,6 +745,180 @@
     "llm_router._internal.capabilities.schema._pydantic_schema_spec",
     "llm_router._internal.capabilities.schema.normalize_schema"
    ]
+  },
+  {
+   "at": "2026-09-30T13:54:55.321928Z",
+   "call_id": "20260930T135348Z-859e0a",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "54221efa0b3024fc89c0560c7c3fbe1824474a0c7ce9bf1178d1f6d53ca3929b",
+   "reason": "it imports decimal",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:56:10.276042Z",
+   "call_id": "20260930T135455Z-6f174e",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "664d9659a7a831782e782188bc3609722bb209bacbb2263f92dff5ea280a6c6d",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:24.451366Z",
+   "call_id": "20260930T164008Z-dbfe54",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f1a618bf22e8fa564ca2839417757f733efa20c90ade4a418132a68785d90028",
+   "reason": "it imports decimal, llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:19.540536Z",
+   "call_id": "20260930T164026Z-7703bb",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9b6137bf99ca1277cbfd2734f04665d508f615deaca36816558cca94629c2200",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:15:28.216122Z",
+   "call_id": "20260930T180502Z-21accb",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "24d16c5c9a6724eed942bd4802a68b9e6f6de2fa5f25739917db751b9d36a1b5",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-07EEEA4D": [
+  {
+   "at": "2026-09-30T14:01:13.174501Z",
+   "call_id": "20260930T135348Z-dc4cfe",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "661e2c2109bbd2c5bd56626ae7d8d78d87d712ba0f6b5e2745ebfbf55852a180",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:41.112324Z",
+   "call_id": "20260930T164011Z-369ef3",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f87200fcc8d3614632e2e5e87d1252c0b54e0bd42dbdbce2a575cc8cce180e6c",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:20.763494Z",
+   "call_id": "20260930T164047Z-7b8dde",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "685db529095eb7f2287ad245febb88a1418e24415c58a2eaff5503050f748867",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:24:48.365705Z",
+   "call_id": "20260930T180502Z-c2983b",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b115a45135b98ad7343d44fa96ec796e9f0a72ba25eeb4f20072f846dac9bb5f",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ],
  "SM-2093BBD0": [
@@ -276,6 +953,242 @@
     "llm_router._internal.capabilities.schema.SchemaSpec",
     "llm_router._internal.capabilities.schema.with_schema_transform"
    ]
+  },
+  {
+   "at": "2026-09-30T19:03:15.704273Z",
+   "call_id": "20260930T190139Z-1b7f35",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "78cd54274298c0a7ed87adfbe4e6d5a0263270391a23eb7d4a78d0abb9a358f0",
+   "reason": "it does not fail on the mutant: it runs the changed lines 155\u2013159, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:05:07.759406Z",
+   "call_id": "20260930T190318Z-11953b",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7ca98d406841b13c64b7a3ba5aff85b5eb9f687c8f42ec462c27c618703e0956",
+   "reason": "it does not pass on the original 5 times in a row (pytest: RecursionError: maximum recursion depth exceeded | llm_router._api.errors.ProviderError: Provider 'aistudio' failed for model 'gemini-3.6-flash'. Failure type: RecursionError.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:07:00.933970Z",
+   "call_id": "20260930T190508Z-2815b9",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "07169abbeb55cc41c38f9b686f1a904071ed347abe86ef610718c1aa42c6bb10",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+   ]
+  }
+ ],
+ "SM-2AE24515": [
+  {
+   "at": "2026-09-30T16:41:40.319086Z",
+   "call_id": "20260930T164009Z-bec2b5",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema)",
+    "llm_router has no validate_schema_output (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "39b3f2a34774fb3f349abdf0b2faf1eed24ea43991697dfc7a5b9f79b1a9a801",
+   "reason": "it does not fit the project's code as written: llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema) | llm_router has no validate_schema_output (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:42:55.395264Z",
+   "call_id": "20260930T164222Z-bf66ed",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "89111de42ff778dd3cea4d3d6cead521524e2f0afd4030e4b8915f7e2979601e",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:25:44.173815Z",
+   "call_id": "20260930T180503Z-93d106",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3129386e28944b2f04e7ad12b79092731eee56811d8a732ed21c533c00880624",
+   "reason": "it does not fail on the mutant: of the changed lines 111\u2013119 it runs lines 111\u2013112 and 119 but never line 113",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:27:51.505938Z",
+   "call_id": "20260930T182544Z-628880",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "de286d77b5582d8a791e33c561ff43d6c494c9bd51c9f3e98b1482ab3dfa4bd1",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.SchemaValidationResult"
+   ]
+  }
+ ],
+ "SM-4A74651D": [
+  {
+   "at": "2026-09-30T13:54:43.803889Z",
+   "call_id": "20260930T135348Z-f33ab1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "19adc8c39810b7b940d816cf67b9fbb093478fa524474d5063a8b19521df6429",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:50.735285Z",
+   "call_id": "20260930T164008Z-f609a7",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "455bfad837e2f962e11bed5fab41edc94acf8ed6a5107070c78a87c3e2e49864",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:25.975390Z",
+   "call_id": "20260930T164110Z-27e689",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "75392c0c2944e15e4256db6632bd44605d3d8c49f33f20fc6c81b7b87abc6a79",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:16:00.817847Z",
+   "call_id": "20260930T180457Z-255b6b",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4e9d6f2215732a997a569c118b0f0fc8c213475c6697d7278ff9991eaed2d0f2",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ],
  "SM-6B29FD70": [
@@ -293,6 +1206,162 @@
    "sources": [
     "llm_router._internal.capabilities.schema.normalize_schema",
     "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:28.474496Z",
+   "call_id": "20260930T164010Z-3e178a",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "5ac4aa07c7b2561182504c8f10d19bbee61051698837ecc22003ad6d723a2bcb",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:42:35.480560Z",
+   "call_id": "20260930T164155Z-02b85f",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "87572f18ba68cf4a2c2ff9684054ff011d5f6f87f5d26253c6abe8c50a5edfb7",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:16:53.177796Z",
+   "call_id": "20260930T180503Z-17403d",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e115ee4733ed28219f3422c78d969c1bd7c794625b476eda97e69b9fe3047cdc",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:25:26.083640Z",
+   "call_id": "20260930T181700Z-209358",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "6d050069775f27f1973561edc7035accb781910efe75e77e15a3098c0e616290",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-6E643223": [
+  {
+   "at": "2026-09-30T14:01:07.968789Z",
+   "call_id": "20260930T135348Z-26d20b",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "0ef3f5092bd937d2a514c410c0a1b31a70f3bed5ffbfedf68dcdd920b5cceb38",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:25.653884Z",
+   "call_id": "20260930T164008Z-2e7a44",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5be5ad732627ce4bf6bf66f074b943ce2e22bde6f9b850fdafbe8bd2df71ae07",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:07.984250Z",
+   "call_id": "20260930T164026Z-750f81",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a70597787c8343399c059c12978f388eff6622fefd1509b7e555f1fb905b7a32",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:24:53.141002Z",
+   "call_id": "20260930T180502Z-77c20c",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5388dc1050d9a7e87ececc89557eb272cf6b364346e51b5b0d17e7429c6412c7",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   }
  ],
@@ -312,6 +1381,248 @@
     "llm_router._internal.capabilities.schema.normalize_schema",
     "llm_router._internal.capabilities.schema.SchemaSpec"
    ]
+  },
+  {
+   "at": "2026-09-30T16:41:11.913489Z",
+   "call_id": "20260930T164008Z-0ecead",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f476fc2f026526e440a7c98eef66e273300e221630488b8b51335a4886242104",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:54.412329Z",
+   "call_id": "20260930T164142Z-5e5c18",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "01ba1fd0111233de7c4fda589fe43b956c9acef12399213ba5362aebb0c1b2b6",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:08:45.108111Z",
+   "call_id": "20260930T180504Z-b4d8e2",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fdeed91e4267bcff7b171a691127683eeff0f569978748111b608eeff59326ba",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.normalize_schema",
+    "llm_router._internal.capabilities.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:20:15.209674Z",
+   "call_id": "20260930T180847Z-ef7efc",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "36cbec7c3d799cb58ccd0afb4407e20a623b75a39556ecd147e35a6b67402f02",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:02.969874Z",
+   "call_id": "20260930T190133Z-ab7e76",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "069344759829e5038fe2fb9da0595523db7c2adbe3b849127c9175e5328e2810",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:25.388100Z",
+   "call_id": "20260930T190207Z-7b1eba",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+    "llm_router has no validate_schema_output (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d2d6d4097801fa94a8a54b8af3d1653a4d8467112340ae87d09d4641d66cc89b",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema) | llm_router has no validate_schema_output (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:03:15.463014Z",
+   "call_id": "20260930T190227Z-7cf2a0",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "94bf7013aa72b323e326d9af7e6ac8a7f535d5a0415545fe6a494f03cd8a9f6b",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:06:53.385682Z",
+   "call_id": "20260930T190320Z-6e0c0c",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "0540f445b3d0c261526649626e7947aab7cde91f7a7d0839d3832cfdaf38746c",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-AAB2D195": [
+  {
+   "at": "2026-09-30T16:43:32.176593Z",
+   "call_id": "20260930T164009Z-922ba6",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema)",
+    "llm_router has no with_schema_transform (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "718e3227109948e2f61fbd48737d21204fba7a3e7751035b304d2cc85e512ce5",
+   "reason": "it does not fit the project's code as written: llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema) | llm_router has no with_schema_transform (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:44:13.680014Z",
+   "call_id": "20260930T164332Z-da55c2",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "d0d6f1fee42e00a019a45cc0bd90c6bb1ac11fb29117b19a601b81c62ab5f112",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:20:27.562660Z",
+   "call_id": "20260930T180459Z-e6509e",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "135c2dec286f3b4924be0ee301d759543724fbdcbc868f919c36a73bf4581852",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:26:16.025081Z",
+   "call_id": "20260930T182029Z-1192fe",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "llm_router.VideoUrlSchema",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.aistudio_video_path",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "712c7f5b43dd9ed699ca14f429cf09fc216023ae4a2ca9c63498c58e4087c77a",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.VideoUrlSchema",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.aistudio_video_path",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ]
   }
  ],
  "SM-C6EBF982": [
@@ -329,6 +1640,348 @@
    "sources": [
     "llm_router._internal.capabilities.schema._parse_pydantic_model"
    ]
+  },
+  {
+   "at": "2026-09-30T13:55:12.828828Z",
+   "call_id": "20260930T135348Z-b5ec48",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ed3d163e5740bebd72f141a4870ca6821d16d766a094d77153aad8a4e2ee77d7",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:52.094252Z",
+   "call_id": "20260930T164008Z-16b427",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "defed812c4eda20b6af9af0065b72f2fe30ddc967e70592ff9499c17cc6672f4",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:27.857962Z",
+   "call_id": "20260930T164111Z-a03cee",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b84b53c3fb5cc2f133ba93867ebc29a8cffa5575b93aa99c95fc9fbd06306379",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:11:35.690043Z",
+   "call_id": "20260930T180502Z-b92de5",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "cba87a883012ed2449c1562193361eb5338ac23948c60679dd3f863bbf170d23",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:25:32.586522Z",
+   "call_id": "20260930T181139Z-3bd280",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "930724ce2ae7a2abed177a6c7b4d8036e4679ec57390cb6326ebbfefd807a9de",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 181\u2013182: of the function under test it runs lines 176 and 178\u2013180; the nearest it gets is line 180",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:01.039934Z",
+   "call_id": "20260930T190132Z-ea4ff4",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "35660872ef1383e401406d8c35ed60b6805c60c38018babb1af0146d0f62bbdb",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:20.658110Z",
+   "call_id": "20260930T190203Z-5e1dd5",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "55945002c5f5823370805baa3dd1de1499c561716cce88d0f506e8920e821139",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:03:56.321775Z",
+   "call_id": "20260930T190222Z-5e36f0",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "af3d521dfc649080198403631386a60e6c52111030184ecd2273e3ecc9336745",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.normalize_schema",
+    "llm_router._internal.capabilities.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:07:15.910873Z",
+   "call_id": "20260930T190402Z-924bca",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "22fe717e6473fa0bbee24f2a2d3336c46718c370ad708adcae24feb16f5cff39",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.SchemaValidationResult"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:30:09.384427Z",
+   "call_id": "20260930T192958Z-755a2b",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "20d38fbe655b9cb3fb9970621f24e53c2f0b18e5579df1e4236c7080397977a2",
+   "reason": "it imports llm_router._internal.capabilities.schema; it imports `_parse_pydantic_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:30:24.996319Z",
+   "call_id": "20260930T193009Z-6a2fb6",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3caa2c6eeae32e5901b57c93d27d0eb0776b0cc9d371f8859f2c44d10d3b9895",
+   "reason": "it imports llm_router._internal.capabilities.schema; it imports `_parse_pydantic_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:31:42.020530Z",
+   "call_id": "20260930T193025Z-e7726d",
+   "cause": "behaviour",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "174797b412791152a50324992d4948c0afd0f05dc01d81fa8591b45aef28e1c6",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert False | +  where False = isinstance({'x': None}, RequiredNullable))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:35:24.507866Z",
+   "call_id": "20260930T193142Z-2957da",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "374c7e449378848c9fac77de96fff5cbf53b09017ef7f49c761b1217acb24e6e",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 181\u2013182: of the function under test it runs lines 176 and 178\u2013180; the nearest it gets is line 180",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.LLMRouterResponse",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:32:06.818963Z",
+   "call_id": "20260930T203158Z-c64221",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3d1e4e9eda88f1dd07b95c27413efdace4dd9f626a8a2cc09c97dbfb3aafb89d",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:32:25.988526Z",
+   "call_id": "20260930T203207Z-f4b002",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+    "llm_router has no validate_schema_output (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2118f74edc5308c303669eb0550fcb44ca9dc21601d9dfca8ce87635bf8a663a",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema) | llm_router has no validate_schema_output (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:34:26.444265Z",
+   "call_id": "20260930T203226Z-bdd937",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5d7cdf58fdf19f38f0c5b2f4cd49724320515ae1ecd297ee1da38fe5ba8e7443",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 181\u2013182: of the function under test it runs lines 176 and 178\u2013180; the nearest it gets is line 180",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:37:38.346048Z",
+   "call_id": "20260930T203426Z-616fff",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "8d849bea5a5c84c1f6b1cf34ece4d5b9102b6978f0512b4788b7be107f749512",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 181\u2013182: of the function under test it runs lines 176 and 178\u2013180; the nearest it gets is line 180",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ],
  "SM-D49276DB": [
@@ -345,6 +1998,88 @@
    "reason": "",
    "sources": [
     "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:03:03.612535Z",
+   "call_id": "20260930T135348Z-a3c9d5",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "62c634e44b33d31d836ba062e8ff964fc76cc9e9feac5b4f3a08c6ebd9dff99b",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:23.183556Z",
+   "call_id": "20260930T164008Z-12fb34",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "03d1e7a35a58129ffe88dd256c3d19efd75b84bf04f068908fd8c0cbc2f5bbb9",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:19.323892Z",
+   "call_id": "20260930T164024Z-ee1df7",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0a397ff91332c4a8c67672876bdc4b1a58f8f81aa7f2ed8f730ad238076e7ec8",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:23:41.716108Z",
+   "call_id": "20260930T180502Z-629922",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "21fb1032193372ffce342081a6a57e4e2de787bfecc86b466c6dd3e2c77f614e",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   }
  ],
@@ -380,6 +2115,77 @@
     "llm_router._internal.capabilities.schema.SchemaSpec",
     "llm_router._internal.capabilities.schema.with_schema_transform"
    ]
+  },
+  {
+   "at": "2026-09-30T16:41:13.679402Z",
+   "call_id": "20260930T164008Z-f6e3a3",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema)",
+    "llm_router has no with_schema_transform (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2aadb398fa4c780119afc825f9d5c780a3254e241db6a0c08716a8ac6e7082f1",
+   "reason": "it does not fit the project's code as written: llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema) | llm_router has no with_schema_transform (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.SchemaSpec",
+    "llm_router.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:42:12.626510Z",
+   "call_id": "20260930T164141Z-da5b0f",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b6806002dc599070c19e09f59aaf590c1e063fbf3a4e1940c462fe806f89363a",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:17:33.900115Z",
+   "call_id": "20260930T180457Z-dd0be6",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "llm_router.VideoUrlSchema",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.aistudio_video_path",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "792d06d2b01990ce3f424571959e39b07e18eace39b811654dbd51515b76e42e",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.VideoUrlSchema",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.aistudio_video_path",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ]
   }
  ],
  "SM-E58B2C96": [
@@ -396,6 +2202,118 @@
    "reason": "",
    "sources": [
     "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:54:44.770856Z",
+   "call_id": "20260930T135348Z-644a4d",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e2801544c6f5593349a06de65bbaac8a302ccf103ff8199d40b17c1995566a44",
+   "reason": "it imports `_parse_pydantic_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:55:33.649579Z",
+   "call_id": "20260930T135445Z-12bd4b",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "853850168227ebdd877f2cd93141f3af3d0c71d8b19e18ffcfd1d8f77ab64772",
+   "reason": "it imports `_parse_pydantic_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:00:42.000287Z",
+   "call_id": "20260930T135534Z-e16c75",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "37bdacd24c1ce6e13b08db4160628528a76bead8c5ef949f7014a79d220ffa7f",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:09.415617Z",
+   "call_id": "20260930T164011Z-53b1f1",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c651ccbaa33e6ca9502c139289bbdb7f31aa649e2fa7d0f9cc94e07e0bb40a23",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:48.636113Z",
+   "call_id": "20260930T164137Z-1f272e",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "aba293c1e274928545b89279a26332ca1df2237ace4ca1f60897ba089c902516",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:08:23.890332Z",
+   "call_id": "20260930T180502Z-36b4b7",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ca2241587df61ecf894cfdf87f8e936fd11956c039cea9ffa39b55c45c05d972",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:15:41.192853Z",
+   "call_id": "20260930T180824Z-772b21",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "be454fb24bcb4ea76392870d1cc06df5d01473c3736b5dda9873f05f3e751c4e",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
    ]
   }
  ],
@@ -416,6 +2334,70 @@
     "llm_router._internal.capabilities.schema.validate_schema_output",
     "llm_router._internal.capabilities.schema.SchemaSpec"
    ]
+  },
+  {
+   "at": "2026-09-30T16:42:20.565851Z",
+   "call_id": "20260930T164009Z-18d453",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "7660c350fb5d27a21aef800159593cb887954d94a9b25f867ad17f1026cd7121",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:43:25.514360Z",
+   "call_id": "20260930T164230Z-bddf98",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "bf1ef0da5a77385adc978b2bfc94a7bfc6d98886d6ab2f59835cae30fd41911a",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:18:59.214346Z",
+   "call_id": "20260930T180504Z-8bcc73",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "dfb5477cdd94acfe2fca82cd1cecae22d8f2c6dd8b12f02dd4e738b8d4182648",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ],
  "a5d83d760dbc5183": [
@@ -432,6 +2414,154 @@
    "sources": [
     "llm_router._internal.capabilities.schema._parse_pydantic_model"
    ]
+  },
+  {
+   "at": "2026-09-30T19:02:06.577927Z",
+   "call_id": "20260930T190134Z-c33dd2",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a551c50c21e7650408e7ec6057288d94abf82670bea42b934d07fc3620a64a43",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:04:36.412598Z",
+   "call_id": "20260930T190212Z-b12a95",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "684756197da94dc624d185c4e7e41eb56b07d01a2f6719edd464d87bc580b71d",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:05:02.114404Z",
+   "call_id": "20260930T190438Z-f66c63",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7da6b87ee696050f0823dcb4572ac38b655579125a021ec90923ad5751cbbbbb",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:09:06.686363Z",
+   "call_id": "20260930T190503Z-70599d",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "89040254813d53f4319bdc14c668c5f4ff7f29f5fbffdebcad7025b61d30a359",
+   "reason": "it does not fail on the mutant: it never reaches the changed line 181: of the function under test it runs lines 176 and 178\u2013180; the nearest it gets is line 180",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:46:13.693782Z",
+   "call_id": "20260930T194602Z-713f0f",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "60fde166f28fecc2532f540effa49aec48fe0c34fbcec4980dd22b3edd0e4295",
+   "reason": "it imports llm_router._internal.capabilities.schema; it imports `_parse_pydantic_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:46:32.023472Z",
+   "call_id": "20260930T194613Z-adb709",
+   "cause": "grounding",
+   "context_gaps": [
+    "llm_router.capabilities.schema.pydantic_schema_spec"
+   ],
+   "effort": "high",
+   "grounding": [
+    "the project has no module llm_router.capabilities.schema"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "60fde166f28fecc2532f540effa49aec48fe0c34fbcec4980dd22b3edd0e4295",
+   "reason": "it imports llm_router.capabilities.schema; it does not fit the project's code as written: the project has no module llm_router.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema._pydantic_schema_spec"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:46:52.299618Z",
+   "call_id": "20260930T194632Z-c668bf",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4f8988bc248068e8eb447ce48674b583080437e5e4490c932f69ed594fc32d52",
+   "reason": "it imports llm_router._internal.capabilities.schema; it imports `_parse_pydantic_model`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:50:11.090506Z",
+   "call_id": "20260930T194652Z-4d31d3",
+   "cause": "rules",
+   "context_gaps": [
+    "llm_router._internal.capabilities.normalize_schema",
+    "llm_router._internal.capabilities.validate_schema_output"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "65ceac6cbf0c72b47bc5b5d2be3cf30106d9a330d8ea2555f0701c326e3ef5db",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.normalize_schema",
+    "llm_router._internal.capabilities.validate_schema_output",
+    "llm_router._internal.capabilities.SchemaSpec"
+   ]
   }
  ],
  "b6f8d3c681f933f8": [
@@ -447,6 +2577,86 @@
    "reason": "",
    "sources": [
     "llm_router._internal.capabilities.schema._parse_pydantic_model"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:04.181552Z",
+   "call_id": "20260930T190133Z-78d495",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4880d3af8ccf02af185a5d5f31febc50e0f19c67fc471d510663f5504f8d12e6",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:34.697294Z",
+   "call_id": "20260930T190209Z-2afe78",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "5fda52bd293a2e42beb4fb2988d6a130269e787e54e6f79f7b1f67708abc0456",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:03:40.764332Z",
+   "call_id": "20260930T190236Z-3c09c4",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c2d387954a3780acc518b057190a3a936c6aa66e91a0a26dae0202ea15b5182d",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.normalize_schema",
+    "llm_router._internal.capabilities.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:07:29.761275Z",
+   "call_id": "20260930T190346Z-4b3649",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "45311adb798c61d204f7212d4b8d506c9d5b29078112f04cd9a8f25417407f4f",
+   "reason": "it does not fail on the mutant: it runs the changed line 178, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   }
  ],
@@ -497,6 +2707,52 @@
     "llm_router._internal.capabilities.schema.SchemaSpec",
     "llm_router._internal.capabilities.schema.with_schema_transform"
    ]
+  },
+  {
+   "at": "2026-09-30T19:03:02.775061Z",
+   "call_id": "20260930T190137Z-f7687e",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b06406ce264d35e24c0d6d991656f312d1f2e0f2010b70890158bbe198aaedbf",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert {'$schema': 'https://json-schema.org/draft/2020-12/schema', 'title': 'ticket_summary', 'type': 'object', 'additionalProperties': False, ...} != {'$schema': 'https://json-schema.org/draft/2020-12/schema', 'title': 'ticket_summary', 'type': 'object', 'additionalProperties': Fals)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:05:06.119489Z",
+   "call_id": "20260930T190303Z-883e5f",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "13a92ef1ea0bd83940c8f07a5b824cfde198866d94b2f44b11281d4cb5cbdbbf",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+   ]
   }
  ],
  "e9e9444744bf3896": [
@@ -546,6 +2802,77 @@
    "sources": [
     "llm_router._internal.capabilities.schema.SchemaSpec",
     "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:46:12.227594Z",
+   "call_id": "20260930T194602Z-1442ba",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema)",
+    "llm_router has no with_schema_transform (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "24ee9b80a7f1fc0e9dcc0a18bde5b39cc743a70202f7ab0ae7aa155682c3d00c",
+   "reason": "it does not fit the project's code as written: llm_router has no SchemaSpec (it lives in llm_router._internal.capabilities.schema) | llm_router has no with_schema_transform (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.SchemaSpec",
+    "llm_router.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:46:22.266153Z",
+   "call_id": "20260930T194612Z-42f1c0",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "721d1196e20351a16a29ca20b4d9a32bc88fc5e44821d7dd2eee5308a273be0e",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.with_schema_transform"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:48:41.126427Z",
+   "call_id": "20260930T194622Z-6fdd33",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "llm_router.VideoUrlSchema",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.aistudio_video_path",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a67df2eb1be20163d6224a40232d82cceecc7bc7d4b733e9acdb4f4e8d21178a",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.VideoUrlSchema",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.aistudio_video_path",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
    ]
   }
  ],
@@ -608,6 +2935,147 @@
    "sources": [
     "llm_router._internal.capabilities.schema._validate_mapping_schema_definition"
    ]
+  },
+  {
+   "at": "2026-09-30T13:54:46.960637Z",
+   "call_id": "20260930T135348Z-299562",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d29a4d2d212b8361198b8ba6dbf7465eaaef7e29d7cfd5327ca0ce8686b958e1",
+   "reason": "it imports `_validate_mapping_schema_definition`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.capabilities.schema._validate_mapping_schema_definition"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:56:39.854354Z",
+   "call_id": "20260930T135447Z-c54c82",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ee8756cf07829836a00c211a3fce152369efa4d05b89979cc2c064b55c317b8b",
+   "reason": "it does not fail on the mutant: of the changed lines 188\u2013193 it runs lines 188 and 192 but never lines 190 and 193",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:59:34.662759Z",
+   "call_id": "20260930T135641Z-3fd5f9",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a26f0d358cd797fc80d97f3f60abf707ed6841b5e75d2766e49b57d54757a078",
+   "reason": "it imports `_validate_mapping_schema_definition`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.capabilities.schema._validate_mapping_schema_definition"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:05:32.023413Z",
+   "call_id": "20260930T135938Z-9dc369",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "bd60b66d338b4fa3287ea5a076a43f56c70285314511f0ccdca9eaadd00714ee",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:40:22.219564Z",
+   "call_id": "20260930T164008Z-4a069b",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a3e1c359d67917ba951a2b1353b31a60d482929aa04149a23c581dfa7097bbaf",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:17.539242Z",
+   "call_id": "20260930T164023Z-127126",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1b45eebf2f35af23d3fcfb4ebc5c25af9a0485b222b7eac6e4c0e8266a63f953",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:20:12.507065Z",
+   "call_id": "20260930T180502Z-1bd89c",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2c5b5ebeea13d246736fc4115f110ff7320d8547a037837f894dece068ddecd7",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:25:26.151189Z",
+   "call_id": "20260930T182016Z-cb41e5",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "f8f760b0b2d218310cc5465be87c5b5f4d9bd5e31a49816aae4739a98c4e4688",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ]
   }
  ],
  "ffbbfd72fe94fb6f": [
@@ -626,6 +3094,169 @@
     "llm_router._internal.capabilities.schema.SchemaValidationResult",
     "llm_router._internal.capabilities.schema.normalize_schema",
     "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:13.877089Z",
+   "call_id": "20260930T164011Z-6c8142",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f926503c22346588039fca95c04adbcb236af58af465fe642e268413869cb4de",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:42:12.900523Z",
+   "call_id": "20260930T164142Z-fbc7b7",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e13a76f5bf7e20bd883666f86d2f5a69878cf68ee46fcd9d8e1862bd5e454554",
+   "reason": "it imports llm_router._internal.capabilities",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:20:17.965084Z",
+   "call_id": "20260930T180457Z-7107b8",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2a3a0e5f29d6d2f76cdc296b0ef62bfea9be3924dc15cd2bcd89188c83e5a590",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.SchemaSpec"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:25:52.526036Z",
+   "call_id": "20260930T182020Z-42f1f8",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "0001f63c59a49508189d3776b242ba2eacb408e24a43e547a0457a5032b5358a",
+   "reason": "it does not fail on the mutant: it never reaches the changed line 181: of the function under test it runs lines 176 and 178\u2013180; the nearest it gets is line 180",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:02:02.275826Z",
+   "call_id": "20260930T190136Z-c89980",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "825c3d1d145c727e740f58d69ff26ff13dccc352d09a072e2bea374a23d987b6",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:03:38.775625Z",
+   "call_id": "20260930T190205Z-70d678",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "aee6a30cd2ba8ede254abbbd9a71b2390a3a050b3c145021539c832d1f8c3bfa",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Structured output validation failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "llm_router._api.types.LLMRouterResponse"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:04:37.836833Z",
+   "call_id": "20260930T190341Z-394123",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c93d183ccff1cd3be2f17ab39a9f2d3da60f2f49ac41437a8e3f6562a791212f",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output",
+    "llm_router._internal.capabilities.schema.SchemaValidationResult"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:09:31.483406Z",
+   "call_id": "20260930T190439Z-dfa194",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "26c7ecc7ee222712842039760ae04d3e6975c392e213ca0974d5e3544f82dd24",
+   "reason": "it does not fail on the mutant: it never reaches the changed line 181: of the function under test it runs lines 176 and 178\u2013180; the nearest it gets is line 180",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   }
  ]

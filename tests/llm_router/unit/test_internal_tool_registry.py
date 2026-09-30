@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from llm_router._internal.capabilities.tools import ToolRegistry, parse_tool_call
+from tests.llm_router.support.fault_observation import retain_local_fault_injection
 
 
 def add(a: int, b: int = 1) -> int:
@@ -53,3 +54,33 @@ def test_tool_call_parser_accepts_supported_provider_shapes(
 
     assert call.name == "add"
     assert call.args == {"a": 2, "b": 5}
+
+
+@pytest.mark.fault_item("TREQ_TOOL_REGISTRY", "interface.payload-schema")
+@pytest.mark.parametrize(
+    ("payload", "error", "message"),
+    [
+        ({"function": {"arguments": '{"a": 2}'}}, ValueError, "missing a name"),
+        (
+            {"functionCall": {"name": "add", "args": [2, 5]}},
+            TypeError,
+            "must be a mapping",
+        ),
+    ],
+    ids=["openai-without-name", "google-args-not-a-mapping"],
+)
+def test_tool_call_parser_refuses_a_shape_its_schema_does_not_allow(
+    payload: dict[str, object],
+    error: type[Exception],
+    message: str,
+) -> None:
+    retain_local_fault_injection(
+        contract_id="TREQ_TOOL_REGISTRY",
+        fault_class="interface.payload-schema",
+        mechanism=(
+            "a provider tool call without its name, or with arguments that are "
+            "not a mapping"
+        ),
+    )
+    with pytest.raises(error, match=message):
+        parse_tool_call(payload)

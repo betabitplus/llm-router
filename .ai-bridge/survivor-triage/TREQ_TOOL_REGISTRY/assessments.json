@@ -205,6 +205,23 @@
      "args=dict(call.args),"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "call": "ToolCall(name='t', args={'a': 1}, id='1')"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-5c843c",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original copies args into the ToolStep with dict(call.args), while the changed version aliases call.args, so step.args is call.args only in the changed version.",
+    "response_sha256": "3c1872a6a73f41708d3ac9f889bdb321913fc3bbece5651fb9588e28f83ceccd",
+    "sources": [
+     "args=dict(call.args),\n            result=result,",
+     "return ToolStep(tool_name=call.name, args=call.args, result=result, call_id=call.id)"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "b6d8404f021d50cba03b6a12b4a967172a75d94b041d1212123cb9628d3232b1"
@@ -309,6 +326,23 @@
      "raise ToolExecutionError(\n                tool_name=call.name,\n                args=dict(call.args),\n                cause=exc,\n            ) from exc"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "call": "ToolCall(name='t', args=MappingProxyType({'a': 1}), id='1')"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195646Z-ecc5ec",
+    "confidence": 0.55,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "On failure the original passes a dict copy of call.args to ToolExecutionError, while the changed version passes call.args itself, so the stored args differ in identity and possibly type (and aliasing if the callable mutates it).",
+    "response_sha256": "80555fc29b6a27803153e530a43e6678912498f67b0e6aa7b411cc7db75b66eb",
+    "sources": [
+     "raise ToolExecutionError(tool_name=call.name, args=call.args, cause=exc) from exc",
+     "args=dict(call.args),"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "ce5e0e74e18bde0523ec8f5db943ea559eb4bbc6793c207d84694109c58cf50a"

@@ -33,9 +33,19 @@ count and is asked once more with what broke (amended 2026-09-28). A pin verdict
 test is adopted as a mutation pin only when, in the project's style (formatted and safely
 fixed by its ruff rules), it breaks no lint rule, passes on the original five times, fails on
 the mutant and imports only what the contract's tests may and, for a Technical requirement,
-the module of the code it tests and the project modules it imports. A mutation pin verifies its contract and names its mutant;
+the module of the code it tests and the project modules it imports, and reads, replaces or imports
+no private name of the project (amended 2026-09-30: a pin anchored on private steps checks the
+implementation, not the requirement); a Requirement's pin imports no private module of the project
+either, and reaches none by attribute or dotted name (amended 2026-09-30). A mutation pin verifies its contract and names its mutant;
 it proves no coverage case and no depth. When the pin rules change, every pin is judged again,
-and a pin no draft brings within them is removed. An escalated survivor keeps its class failing and waits for the person, whose
+and a pin no draft brings within them is removed. A pin verdict no draft could turn into a test
+is asked once more with the project's callers in view; a change no caller reaches is then
+irrelevant, reviewed as any suppression, and a mutant still pinned waits for the person (amended
+2026-09-30, after GEM-LLM's contextual equivalents). When the model or level a verdict role asks
+first changes, one in ten of the suppressions another answerer decided is asked again, and one
+the role no longer upholds is pinned (amended 2026-09-30). A pin whose mutant other pins of its
+contract kill is removed, by the kill matrix of the contract's pins and a greedy cover, and comes
+back as it was when the campaign shows the removal cost a kill (amended 2026-09-30). An escalated survivor keeps its class failing and waits for the person, whose
 verdict wins over the model's. A verdict counts while the code, the tests and the question it
 answered are unchanged. Every model a role lists passes that role's canaries, cases with a
 known outcome, before its answers count, and again after any change of model, question or

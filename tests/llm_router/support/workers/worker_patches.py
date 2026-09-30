@@ -235,8 +235,14 @@ def install_fast_worker_runtime_config(
     *,
     retry_max_attempts: int | None = None,
     structured_output_max_attempts: int | None = None,
+    provider_timeout_seconds: float | None = None,
 ) -> None:
-    """Install fast bounded retry/structured defaults for hermetic workers."""
+    """Install fast bounded retry/structured defaults for hermetic workers.
+
+    ``provider_timeout_seconds`` sets the config policy's attempt timeout, which an
+    HTTP adapter uses as its transport timeout; a router's own attempt timeout (a
+    router default) can stay longer, so the provider's transport times out first.
+    """
     from llm_router import (
         BehaviorDefaults,
         ProviderLimits,
@@ -265,9 +271,16 @@ def install_fast_worker_runtime_config(
         base_config.catalog.providers,
         fast_provider_limits,
     )
+    fast_policy = (
+        base_config.policy
+        if provider_timeout_seconds is None
+        else replace(
+            base_config.policy, attempt_timeout_seconds=provider_timeout_seconds
+        )
+    )
     fast_defaults = BehaviorDefaults(
         retry_policy=fast_retry_policy,
-        policy=base_config.policy,
+        policy=fast_policy,
         default_max_tool_rounds=base_config.default_max_tool_rounds,
         structured_output_max_attempts=(
             base_config.structured_output_max_attempts

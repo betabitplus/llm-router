@@ -30,6 +30,133 @@
    "sources": [
     "llm_router.Model"
    ]
+  },
+  {
+   "at": "2026-09-30T20:55:13.390567Z",
+   "call_id": "20260930T205448Z-449c32",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "af0880f4d0ac21710e65342415c96c6a23cf767afbee62aa3afc32d54c26f037",
+   "reason": "it imports llm_router._internal.runtime.output",
+   "sources": [
+    "llm_router._internal.runtime.output.build_public_response",
+    "llm_router.Model",
+    "llm_router.LLMRouterResponse"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:55:27.408621Z",
+   "call_id": "20260930T205516Z-596e8d",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "06daf1b053a75b2d8b1718da5475e6d00963823d95eca0bb632910f07deaa527",
+   "reason": "it reaches `llm_router._internal.runtime.output` past the public API, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router.Model.GEMINI_FLASH_LITE",
+    "llm_router._internal.runtime.output.build_public_response"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:58:24.897873Z",
+   "call_id": "20260930T205528Z-31f253",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6b504c772dda726de71ecdd9eb34867f9e61d52b79e1173c42cd8a704bf871a7",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ]
+  }
+ ],
+ "SM-2A89BC91": [
+  {
+   "at": "2026-09-30T20:54:58.401383Z",
+   "call_id": "20260930T205452Z-5e02c8",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e7b7a34444b8cd85b9025dd66bb7a4e342a28f04e995e957cf305dbdc075b1c6",
+   "reason": "it reaches `llm_router._internal.runtime.output` past the public API, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.runtime.output.build_public_response",
+    "llm_router.Model"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:58:39.879507Z",
+   "call_id": "20260930T205511Z-3cf666",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "1cd65686fb5bcf2c96c994e6e5a60fecbe9ebc0eb9dd48b0e5a5520ffe2f098f",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: module 'llm_router' has no attribute 'build_public_response')",
+   "sources": [
+    "llm_router._internal.runtime.output.build_public_response",
+    "llm_router.Model.GEMINI_FLASH_LITE"
+   ]
+  },
+  {
+   "at": "2026-09-30T21:00:27.692195Z",
+   "call_id": "20260930T205841Z-89d4c3",
+   "cause": "kept",
+   "context_gaps": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6f7e1725de053fbdd3a32cde65d910434bd879744fa9757cd334b6f6063415cd",
+   "reason": "",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.Provider",
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
+   ]
   }
  ],
  "SM-44C084CF": [
@@ -72,6 +199,85 @@
     "llm_router._internal.runtime.output.build_public_response",
     "llm_router._internal.runtime.output.ProviderResult"
    ]
+  },
+  {
+   "at": "2026-09-30T20:55:13.357104Z",
+   "call_id": "20260930T205452Z-2f2925",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9a372069f7ed02006605f7a3924346830b74e421d95fdcedaecd0e138e54c117",
+   "reason": "it reaches `llm_router._internal.runtime.output` past the public API, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router.Model",
+    "llm_router._internal.runtime.output.build_public_response"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:55:57.667599Z",
+   "call_id": "20260930T205516Z-476c76",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "bfa59028b6db06936fb002602e223e644d2ef819891675972187bc75fa26ecc7",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: module 'llm_router' has no attribute 'build_public_response')",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.build_public_response"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:56:12.789622Z",
+   "call_id": "20260930T205558Z-c6ab02",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2d007eba2dee5cc97414878175e71775d368f3ad4e49fe60c4830a38cc1508d1",
+   "reason": "it reaches `llm_router._internal.runtime.output` past the public API, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router.Model",
+    "llm_router._internal.runtime.output.build_public_response"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:59:38.045362Z",
+   "call_id": "20260930T205613Z-0b86f0",
+   "cause": "kept",
+   "context_gaps": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "d45b9399b712ea77b8dca17e044f2016d0b58db6fc5de25ef092adc705b7098e",
+   "reason": "",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router.Provider",
+    "llm_router.Model",
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.UsageStats",
+    "llm_router.LLMRouterResponse",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ]
   }
  ],
  "SM-7211CDB1": [
@@ -89,6 +295,72 @@
    "sources": [
     "llm_router.ToolCall",
     "llm_router._internal.runtime.output.build_public_response"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:55:13.295527Z",
+   "call_id": "20260930T205452Z-646b77",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3553974a32ad7066fe99c293514de0220e6960cda31b648122f5a31de0a14e93",
+   "reason": "it reaches `llm_router._internal.runtime.output` past the public API, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.runtime.output.build_public_response",
+    "llm_router.ToolCall",
+    "llm_router.Model"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:55:31.307729Z",
+   "call_id": "20260930T205516Z-519317",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b643c9055d3286c44d1e19e072348a25b6f4aead0cfd77455eb20b5fe5d5de00",
+   "reason": "it reaches `llm_router._internal.runtime.output` past the public API, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.runtime.output.build_public_response",
+    "llm_router.ToolCall",
+    "llm_router.Model"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:59:22.739755Z",
+   "call_id": "20260930T205532Z-c0239e",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4be8e0b6f360a68b39133759fc943ad7927bde5eb735adb402d7a2eaf1b40bb6",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
    ]
   }
  ],
@@ -111,6 +383,71 @@
     "llm_router.ToolCall",
     "llm_router._internal.providers.base.ProviderResult",
     "llm_router._internal.runtime.output.build_public_response"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:55:13.268350Z",
+   "call_id": "20260930T205448Z-04bcc8",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4fe5b02f556b7ead10e14df6d985373181f24f1492c8feb84c1ccd814d716187",
+   "reason": "it reaches `llm_router._internal.runtime.output` past the public API, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.UsageStats",
+    "llm_router.ToolCall"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:55:34.537520Z",
+   "call_id": "20260930T205516Z-072275",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d988bfb03a863cc72f4af5eb2c8ca2d35ad5a01fa83684a8140b428804b851bb",
+   "reason": "it reaches `llm_router._internal.runtime.output` past the public API, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.runtime.output.build_public_response",
+    "llm_router.Model",
+    "llm_router.UsageStats",
+    "llm_router.ToolCall"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:59:07.491767Z",
+   "call_id": "20260930T205535Z-1e0bff",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0ba483837ef84d879a4349295a101328f0af5ff377d5b3cf627d7528d0230c81",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router.LLMRouterConfig",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
    ]
   }
  ]

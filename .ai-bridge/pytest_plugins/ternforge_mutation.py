@@ -5,8 +5,9 @@ logic, returned values). This module adds the operators the engine lacks, and
 everything that keeps a mutant honest before it runs:
 
 * ``statement`` removes a statement with an effect: a call, an attribute or item
-  write, an augmented assignment, ``raise`` or ``del``. It never removes a plain
-  name binding, so a removal cannot unbind a name.
+  write, a write to a name the function declares ``global`` or ``nonlocal``, an
+  augmented assignment, ``raise`` or ``del``. It never removes a plain local name
+  binding, so a removal cannot unbind a name.
 * ``body`` replaces a function body with a default of its annotated return type,
   the extreme mutation that finds pseudo-tested functions.
 * Python's own faults, after PyTation (arXiv 2601.19088), which found most of its
@@ -23,6 +24,13 @@ everything that keeps a mutant honest before it runs:
   expression with ``True`` or ``False`` (Stryker, PIT), and ``negation`` negates a
   condition that is a plain value, where no other operator reaches (Google's unary
   operator insertion).
+* ``identity`` inverts an identity or membership test (``is`` ↔ ``is not``, ``in`` ↔
+  ``not in``), as mutmut does; the engine's comparison operator swaps only ``<``,
+  ``<=``, ``>``, ``>=``, ``==`` and ``!=``.
+* ``slice`` removes one bound of a slice (``items[:n]`` → ``items[:]``), MutPy's slice
+  index removal: a cap or a window the code cuts loses its bound.
+* Nothing inside a type annotation is mutated, as mutmut leaves annotations alone: an
+  annotation changes no call.
 * Arid-code rules keep mutants out of code whose change no contract can observe.
 * The ``# mutation: <category>[<operators>] <reason>`` pragma suppresses mutants
   visibly, with a category and a reason; a suppressed mutant never runs.
@@ -46,13 +54,14 @@ from pathlib import Path
 OPERATOR_NAMES = (
     "comparison", "boundary", "arithmetic", "boolean", "return", "statement", "body",
     "argument", "condition", "conditional", "negation", "container", "conversion", "method", "attribute",
+    "identity", "slice",
 )
 # The prior of operator productivity (Google's: relational, logical, statement removal, then
 # the rest, with PyTation's survival rates placing its operators); the recorded verdicts refine
 # it, and a pull request reports one survivor per line in that order.
 OPERATOR_PRIORITY = (
-    "comparison", "boolean", "condition", "arithmetic", "statement", "argument", "return", "negation",
-    "conversion", "container", "boundary", "method", "attribute", "conditional", "body",
+    "comparison", "identity", "boolean", "condition", "arithmetic", "statement", "argument", "return", "negation",
+    "conversion", "container", "boundary", "slice", "method", "attribute", "conditional", "body",
 )
 # The operators that change a condition as a whole: planted on the test of an if, while or
 # conditional expression, never by the engine's own visit of the expression.
@@ -108,6 +117,22 @@ def _writes_only_attributes_or_items(targets: list[ast.expr]) -> bool:
     return bool(targets) and all(isinstance(target, (ast.Attribute, ast.Subscript)) for target in targets)
 
 
+def _names_declared_outside(node: ast.AST) -> set[str]:
+    """The names the function around ``node`` declares ``global`` or ``nonlocal``: writing one is a
+    write to state that outlives the call, as an attribute write is (needs ``annotate``'s links)."""
+    function = _enclosing(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    if function is None:
+        return set()
+    return {name for item in _own_nodes(function) if isinstance(item, (ast.Global, ast.Nonlocal)) for name in item.names}
+
+
+def _writes_only_outer_names(targets: list[ast.expr], node: ast.AST) -> bool:
+    if not targets or not all(isinstance(target, ast.Name) for target in targets):
+        return False
+    outer = _names_declared_outside(node)
+    return all(isinstance(target, ast.Name) and target.id in outer for target in targets)
+
+
 def is_effect_statement(node: ast.AST) -> bool:
     """A statement whose removal loses an effect but cannot unbind a name."""
     if isinstance(node, ast.Expr):
@@ -115,9 +140,11 @@ def is_effect_statement(node: ast.AST) -> bool:
     if isinstance(node, ast.AugAssign):
         return True
     if isinstance(node, ast.Assign):
-        return _writes_only_attributes_or_items(node.targets)
+        return _writes_only_attributes_or_items(node.targets) or _writes_only_outer_names(node.targets, node)
     if isinstance(node, ast.AnnAssign):
-        return node.value is not None and _writes_only_attributes_or_items([node.target])
+        return node.value is not None and (
+            _writes_only_attributes_or_items([node.target]) or _writes_only_outer_names([node.target], node)
+        )
     if isinstance(node, ast.Raise):
         return True
     if isinstance(node, ast.Delete):
@@ -134,7 +161,7 @@ class StatementRemoval:
 
     @property
     def description(self) -> str:
-        return "Remove a statement with an effect (call, attribute or item write, augmented assignment, raise, del)"
+        return "Remove a statement with an effect (call, attribute or item write, global or nonlocal write, augmented assignment, raise, del)"
 
     def can_mutate(self, node: ast.AST) -> bool:
         return isinstance(node, ast.stmt) and is_effect_statement(node)
@@ -785,10 +812,99 @@ class AttributeSwap(_PythonOperator):
         return [_described(swapped, f"{receiver}.{node.attr} → {receiver}.{other}")]
 
 
+class IdentitySwap(_PythonOperator):
+    """Invert an identity or membership test (mutmut's ``is`` ↔ ``is not`` and ``in`` ↔ ``not in``):
+    the omitted-versus-given and known-versus-unknown decisions the engine's comparison operator does
+    not reach."""
+
+    name = "identity"
+    description = "Invert an identity or membership test"
+    SWAPS: dict[type, type] = {ast.Is: ast.IsNot, ast.IsNot: ast.Is, ast.In: ast.NotIn, ast.NotIn: ast.In}
+    WORDS: dict[type, str] = {ast.Is: "is", ast.IsNot: "is not", ast.In: "in", ast.NotIn: "not in"}
+
+    def can_mutate(self, node: ast.AST) -> bool:
+        return isinstance(node, ast.Compare) and any(type(op) in self.SWAPS for op in node.ops)
+
+    def mutate(self, node: ast.AST) -> list[ast.AST]:
+        if not isinstance(node, ast.Compare):
+            return []
+        mutated = []
+        for index, op in enumerate(node.ops):
+            swap = self.SWAPS.get(type(op))
+            if swap is None:
+                continue
+            compare = copy.deepcopy(node)
+            compare.ops[index] = swap()
+            mutated.append(_described(compare, f"{self.WORDS[type(op)]} to {self.WORDS[swap]}"))
+        return mutated
+
+
+class SliceIndexRemoval(_PythonOperator):
+    """Remove one bound of a slice that is read (MutPy's slice index removal): a cap, a window or a
+    skipped head loses its bound, ``routes[:limit]`` → ``routes[:]``."""
+
+    name = "slice"
+    description = "Remove one bound of a slice"
+    BOUNDS = ("lower", "upper", "step")
+
+    def _bounds(self, node: ast.AST) -> list[str]:
+        if not (isinstance(node, ast.Subscript) and isinstance(node.ctx, ast.Load) and isinstance(node.slice, ast.Slice)):
+            return []
+        return [bound for bound in self.BOUNDS if getattr(node.slice, bound) is not None]
+
+    def can_mutate(self, node: ast.AST) -> bool:
+        return bool(self._bounds(node))
+
+    def mutate(self, node: ast.AST) -> list[ast.AST]:
+        if not isinstance(node, ast.Subscript):
+            return []
+        mutated = []
+        written = compact(clean_source(node.slice), 50)
+        for bound in self._bounds(node):
+            copied = copy.deepcopy(node)
+            setattr(copied.slice, bound, None)
+            mutated.append(_described(copied, f"removed the {bound} bound of [{written}]"))
+        return mutated
+
+
 PYTHON_OPERATORS = (
     ArgumentRemoval, ConditionOperandRemoval, ConditionalReplacement, NegationInsertion,
     ContainerElementRemoval, ConversionRemoval, MethodCallRemoval, AttributeSwap,
+    IdentitySwap, SliceIndexRemoval,
 )
+
+
+def annotation_spans(tree: ast.AST) -> list[tuple[tuple[int, int], tuple[int, int]]]:
+    """Where a module's type annotations are: a parameter's, a return's and an annotated assignment's.
+    Nothing there is mutated (mutmut leaves annotations alone): an annotation changes no call."""
+    spans = []
+    for node in ast.walk(tree):
+        annotations: list[ast.expr | None] = []
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            arguments = node.args
+            annotations.append(node.returns)
+            annotations.extend(argument.annotation for argument in (*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs))
+            annotations.extend(argument.annotation for argument in (arguments.vararg, arguments.kwarg) if argument is not None)
+        elif isinstance(node, ast.AnnAssign):
+            annotations.append(node.annotation)
+        spans.extend(node_span(annotation) for annotation in annotations if annotation is not None)
+    return spans
+
+
+def function_body_spans(tree: ast.AST) -> list[tuple[tuple[int, int], tuple[int, int]]]:
+    """Where code runs only when a function is called: every function's and lambda's body. What lies
+    outside (module and class bodies, decorators, default values) runs when the module is imported."""
+    spans = []
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+            spans.append((node_span(node.body[0])[0], node_span(node.body[-1])[1]))
+        elif isinstance(node, ast.Lambda):
+            spans.append(node_span(node.body))
+    return spans
+
+
+def within(spans: list[tuple[tuple[int, int], tuple[int, int]]], start: tuple[int, int], end: tuple[int, int]) -> bool:
+    return any(span_start <= start and end <= span_end for span_start, span_end in spans)
 
 
 # --- arid code ---------------------------------------------------------------------
@@ -828,11 +944,19 @@ def _is_logging_call(call: ast.Call) -> bool:
     return False
 
 
+def _builds_log_hook(call: ast.Call) -> bool:
+    """A call that only builds a logger or a logging callback (``get_logger(…)``,
+    ``build_retry_before_sleep_logger(…)``): what it is given changes log records alone."""
+    return (dotted_name(call.func) or "").split(".")[-1].endswith("_logger")
+
+
 def arid_regions(tree: ast.AST, rules: set[str]) -> list[Region]:
     regions = []
     for node in ast.walk(tree):
         call = _call_of(node) if isinstance(node, ast.stmt) else None
         if call is not None and "arid.logging" in rules and _is_logging_call(call):
+            regions.append(Region("arid.logging", *node_span(node)))
+        if isinstance(node, ast.Call) and "arid.logging" in rules and _builds_log_hook(node):
             regions.append(Region("arid.logging", *node_span(node)))
         if call is not None and "arid.sleep" in rules and (dotted_name(call.func) or "") in SLEEP_CALLS:
             regions.append(Region("arid.sleep", *node_span(node)))

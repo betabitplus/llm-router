@@ -149,6 +149,14 @@ def run_retry_inprocess(
             install_fast_worker_runtime_config(
                 retry_max_attempts=max_attempts,
             )
+        if base_scenario == "retryable_timeout":
+            # The adapter's transport gives up after 0.2 s; the route's own attempt
+            # timeout (a router default in the worker) stays at 30 s, so the provider
+            # times out first.
+            install_fast_worker_runtime_config(
+                retry_max_attempts=max_attempts,
+                provider_timeout_seconds=0.2,
+            )
 
         with _patch_context_for_case(case=case, server_base_url=server_base_url):
             payload = worker._run_case(case=case, scenario=scenario)

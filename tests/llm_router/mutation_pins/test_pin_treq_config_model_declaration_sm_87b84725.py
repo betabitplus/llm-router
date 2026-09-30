@@ -3,32 +3,58 @@
 # written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
-import dataclasses
+import typing
+from dataclasses import dataclass, replace
 
 import pytest
 
-from llm_router._api.types import Model
+from llm_router import Model, Provider, ProviderCatalog
 from llm_router._internal.config import build_default_config
-from llm_router._internal.runtime.routes import _resolve_model
+from llm_router._internal.runtime.routes import expand_route_plan
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
-class _EnumOnlyModels(dict):
-    """Declared-model mapping that recognises only Model members as keys."""
+class EnumKeyedModels(typing.Mapping[Model, typing.Mapping[Provider, str]]):
+    """Registry that only recognises real Model members as declared."""
+
+    def __init__(self, data: typing.Mapping[Model, typing.Mapping[Provider, str]]):
+        self._data = dict(data)
+
+    def __getitem__(self, key: Model) -> typing.Mapping[Provider, str]:
+        return self._data[key]
+
+    def __iter__(self) -> typing.Iterator[Model]:
+        return iter(self._data)
+
+    def __len__(self) -> int:
+        return len(self._data)
 
     def __contains__(self, key: object) -> bool:
-        return type(key) is Model and dict.__contains__(self, key)
+        return isinstance(key, Model) and key in self._data
+
+
+@dataclass(frozen=True)
+class EnumKeyedCatalog(ProviderCatalog):
+    """Catalog whose model registry is keyed strictly by Model members."""
+
+    def __post_init__(self) -> None:
+        ProviderCatalog.__post_init__(self)
+        object.__setattr__(self, "models", EnumKeyedModels(self.models))
 
 
 @pytest.mark.verifies("TREQ_CONFIG_MODEL_DECLARATION[revision==1]")
-def test_declared_model_string_is_accepted_via_resolved_enum() -> None:
+def test_declared_model_given_as_string_is_accepted() -> None:
     base = build_default_config()
-    catalog = dataclasses.replace(base.catalog)
-    object.__setattr__(catalog, "models", _EnumOnlyModels(base.catalog.models))
-    config = dataclasses.replace(base, catalog=catalog)
-    model = config.default_model
+    catalog = EnumKeyedCatalog(
+        providers=base.catalog.providers,
+        provider_base_urls=base.catalog.provider_base_urls,
+        models=base.catalog.models,
+    )
+    config = replace(base, catalog=catalog)
+    declared = next(iter(config.models))
 
-    assert model in config.models
-    assert _resolve_model(model, config=config) == model
-    assert _resolve_model(model.value, config=config) == model
+    plan = expand_route_plan(declared.value, config=config)
+
+    assert plan.routes
+    assert all(route.model is declared for route in plan.routes)

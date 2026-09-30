@@ -1,0 +1,94 @@
+{
+ "at": "2026-09-30T18:34:08.881366Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_sm_4d75202a.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_2a31133556a5dacb.py",
+  "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_bf8a96501e88d45d.py",
+  "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_sm_4d75202a.py"
+ ],
+ "restored": [
+  "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_2a31133556a5dacb.py",
+  "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_bf8a96501e88d45d.py"
+ ],
+ "removed": {
+  "bf8a96501e88d45d": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_bf8a96501e88d45d.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_sm_4d75202a.py"
+   ]
+  },
+  "e238ff65d72c6c1f": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_e238ff65d72c6c1f.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_sm_4d75202a.py"
+   ]
+  },
+  "02b906cf3d4b778c": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_02b906cf3d4b778c.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_fddcece2c3ce55c2.py"
+   ]
+  },
+  "2a31133556a5dacb": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_2a31133556a5dacb.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_fddcece2c3ce55c2.py"
+   ]
+  },
+  "39cd06b3a9c8bc51": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_39cd06b3a9c8bc51.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_fddcece2c3ce55c2.py"
+   ]
+  },
+  "3db6d2968629906a": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_3db6d2968629906a.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_fddcece2c3ce55c2.py"
+   ]
+  }
+ },
+ "matrix": {
+  "SM-4D75202A": [
+   "tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_sm_4d75202a.py"
+  ]
+ },
+ "caught_before": [
+  "01ababc89ff3fcd4",
+  "02b906cf3d4b778c",
+  "0838c5a230450824",
+  "0e5c9f80c7c1944a",
+  "0eea92c42616012e",
+  "165b3006729d34e7",
+  "2a31133556a5dacb",
+  "2b81d57ede62a737",
+  "2c0bfc8cb8691a84",
+  "39cd06b3a9c8bc51",
+  "3ca64ca2a81ad0a2",
+  "3db6d2968629906a",
+  "676449d8013496c7",
+  "6a43d4f8f4959c55",
+  "SM-0F21D9F8",
+  "SM-4982ECD4",
+  "SM-4D75202A",
+  "SM-59F6C2F2",
+  "SM-A03AD11C",
+  "SM-A5A4F487",
+  "SM-F0F68907",
+  "a919b5049ac4973c",
+  "b3f9cc0a212e6a72",
+  "b83f12838b4318b9",
+  "b9d7a986ea9e2b6b",
+  "bf8a96501e88d45d",
+  "c7d0b514219e0ec4",
+  "d250f1d70d27f10e",
+  "d2c7d83c27884756",
+  "d887de589ac47903",
+  "da9272bf79524176",
+  "e238ff65d72c6c1f",
+  "e3bdce103bbb74ab",
+  "fddcece2c3ce55c2"
+ ]
+}

@@ -1,23 +1,25 @@
 # mutation-pin: TREQ_CONFIG_MODEL_DECLARATION e1379ec0c0ed9e96
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
 import pytest
 
 from llm_router._api.types import Model
 from llm_router._internal.config import build_default_config
-from llm_router._internal.runtime.routes import _resolve_model
+from llm_router._internal.runtime.routes import expand_route_plan
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
 @pytest.mark.verifies("TREQ_CONFIG_MODEL_DECLARATION[revision==1]")
-def test_resolve_model_converts_declared_string_to_enum_member() -> None:
+def test_expand_route_plan_maps_declared_string_to_model_member() -> None:
     config = build_default_config()
-    model = config.default_model
-    value = model.value
+    declared = next(iter(config.models))
 
-    resolved = _resolve_model(value, config=config)
+    plan = expand_route_plan(declared.value, config=config)
 
-    assert isinstance(resolved, Model)
-    assert resolved == model
+    assert plan.routes
+    for route in plan.routes:
+        assert isinstance(route.model, Model)
+        assert route.model is declared

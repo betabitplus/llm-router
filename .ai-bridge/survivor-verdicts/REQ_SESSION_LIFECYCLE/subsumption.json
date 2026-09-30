@@ -1,0 +1,76 @@
+{
+ "at": "2026-09-30T13:45:36.318081Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_040c94eda75a331d.py",
+  "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_214200bb10e1f588.py",
+  "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_76471d519ce0db39.py",
+  "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_77955ca3373db890.py",
+  "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_b38d6c310d61d789.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_040c94eda75a331d.py",
+  "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_214200bb10e1f588.py",
+  "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_76471d519ce0db39.py",
+  "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_77955ca3373db890.py",
+  "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_b38d6c310d61d789.py"
+ ],
+ "restored": [],
+ "removed": {},
+ "matrix": {
+  "040c94eda75a331d": [
+   "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_040c94eda75a331d.py"
+  ],
+  "214200bb10e1f588": [
+   "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_214200bb10e1f588.py"
+  ],
+  "76471d519ce0db39": [
+   "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_76471d519ce0db39.py"
+  ],
+  "77955ca3373db890": [
+   "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_77955ca3373db890.py"
+  ],
+  "b38d6c310d61d789": [
+   "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_b38d6c310d61d789.py"
+  ]
+ },
+ "caught_before": [
+  "040c94eda75a331d",
+  "1ae91d331560bc76",
+  "1ccbf1ffe0e7158a",
+  "214200bb10e1f588",
+  "2213f72b9bef5d68",
+  "2523fa0ddbf41d9c",
+  "28c3de6f0f7ad33c",
+  "3cfce545742afbae",
+  "3ff0fd464f1b29a6",
+  "4a46305fda91f7f9",
+  "4e2757b798f3c2aa",
+  "5bb0add3a6cbe61a",
+  "5e9041778db58e62",
+  "62201b16299729b6",
+  "65a52b55660e4a45",
+  "674a3676df84a16a",
+  "6e61b5fe62bda327",
+  "74a8e8713ff6d32b",
+  "76471d519ce0db39",
+  "77955ca3373db890",
+  "8b5ec9d05289bebe",
+  "8d614a214bae6ac3",
+  "966320c74d3ce6c8",
+  "97ecabcb087c092a",
+  "9b688652df31d315",
+  "acc0984e1d81eb25",
+  "b06c6d1bfbe3afcc",
+  "b22308b1f84ed856",
+  "b38d6c310d61d789",
+  "bcefb5ab34379675",
+  "ca4e5fa018ccd3a9",
+  "cd0c16c9ac465a74",
+  "ce5a1c73a79499d9",
+  "cf9e0da3f3d95db6",
+  "da4b71ef5d3989d3",
+  "dbd9add56faff249",
+  "fb0262acab656a69",
+  "fedee6df619938b9"
+ ]
+}

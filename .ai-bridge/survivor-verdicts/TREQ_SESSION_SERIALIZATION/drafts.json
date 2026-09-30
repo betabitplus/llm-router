@@ -31,6 +31,139 @@
    ]
   }
  ],
+ "5e426e56bd7decaf": [
+  {
+   "at": "2026-09-30T14:44:50.297368Z",
+   "call_id": "20260930T144416Z-cc3b81",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7a21de49c8f61cdefbc7c6d07f2e26fb0a946b050f367ba8d01f8875f46f4ada",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.errors.SessionSerializationError",
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:06:28.982244Z",
+   "call_id": "20260930T144416Z-cc3b81",
+   "cause": "suite",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7a21de49c8f61cdefbc7c6d07f2e26fb0a946b050f367ba8d01f8875f46f4ada",
+   "reason": "its parametrized cases get ids with a double bracket ([[]] and [[{\"version\": 1}]]), which the documentation build reads as a sphinx-needs function call, so the portal does not build",
+   "sources": []
+  },
+  {
+   "at": "2026-09-30T19:01:58.347410Z",
+   "call_id": "20260930T190120Z-08183e",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b1cc660f9bb7d08a81e89cf8676c9392b50f52b7e901533eff32d3803b4f911e",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.errors.SessionSerializationError",
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  }
+ ],
+ "5eca933c7a02d62f": [
+  {
+   "at": "2026-09-30T14:44:50.462718Z",
+   "call_id": "20260930T144416Z-f8694e",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9767fb7009ae4ec394e04787410bdd80c56fa1ff5d9617bae501a94cdce338d0",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.errors.SessionSerializationError",
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  }
+ ],
+ "623b0ce689f82e48": [
+  {
+   "at": "2026-09-30T14:21:50.229226Z",
+   "call_id": "20260930T142110Z-a2dc38",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "cf77d483a6837d11c0ae6eb81b434ccae114fb77e1be1d6cc9c2185a0866076d",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.session.serialization.decode_session",
+    "llm_router._internal.runtime.errors.SessionSerializationError"
+   ]
+  },
+  {
+   "at": "2026-09-30T19:01:59.435924Z",
+   "call_id": "20260930T190121Z-ead0f1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "cbbcb8dbf0ac630559a831f84f2e588f9c52b4c9daf0062c237a9e1a8748a790",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.errors.SessionSerializationError",
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  }
+ ],
+ "73af7c5839a73039": [
+  {
+   "at": "2026-09-30T14:21:50.044999Z",
+   "call_id": "20260930T142110Z-68d422",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "05307d22cf3132c69f536b4ab805a3692aa1e0a7cece423fb6e0c451cde44a68",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  }
+ ],
+ "84e67158176fdd1f": [
+  {
+   "at": "2026-09-30T14:21:45.941586Z",
+   "call_id": "20260930T142110Z-506d75",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3cdec0d46ef76bd93403412fc4113ffc67aca5c13ee573763606c111d5fb47d4",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.session.serialization.decode_session",
+    "llm_router._internal.runtime.errors.SessionSerializationError"
+   ]
+  }
+ ],
  "SM-B91A9265": [
   {
    "at": "2026-09-29T19:15:34.153141Z",
@@ -46,6 +179,114 @@
    "sources": [
     "llm_router._internal.session.serialization.encode_session",
     "llm_router._api.types.ChatMessage"
+   ]
+  }
+ ],
+ "ae9bb16e0f156df0": [
+  {
+   "at": "2026-09-30T14:22:18.661720Z",
+   "call_id": "20260930T142110Z-88f2a7",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4f5f5c14636ee74e69ab3b42625b25456ef99ba1499f8d3d099ddf911cef74fd",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.session.serialization.decode_session",
+    "llm_router._internal.runtime.errors.SessionSerializationError"
+   ]
+  }
+ ],
+ "e4925bbc494ef9d1": [
+  {
+   "at": "2026-09-30T14:21:49.849670Z",
+   "call_id": "20260930T142110Z-1794ec",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b52d3179468a8718a3784b1b439dadeac454b90ebb84090cb39c80013d0ff874",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.session.serialization.decode_session",
+    "llm_router._internal.runtime.errors.SessionSerializationError"
+   ]
+  }
+ ],
+ "e966dd5a2d776e14": [
+  {
+   "at": "2026-09-30T14:44:50.050494Z",
+   "call_id": "20260930T144416Z-b3ca3a",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ab5b951887b7053434050c084d7a1b044e6db2c97794c5c7946efcb4f9a36e6e",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.errors.SessionSerializationError",
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  }
+ ],
+ "f1db3a48e54f5fe2": [
+  {
+   "at": "2026-09-30T14:21:49.926204Z",
+   "call_id": "20260930T142110Z-176d21",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2c3df5b89d8348c23427838f68125513ff833254b82b53db6fccfc0cd121396e",
+   "reason": "it uses pathlib",
+   "sources": [
+    "llm_router._internal.session.SessionStore",
+    "llm_router._internal.session.store.SessionStore.save",
+    "llm_router._internal.session.store.SessionStore.remember",
+    "llm_router._internal.session.store.SessionStore.history",
+    "llm_router._internal.session.store.SessionStore.system"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:23:05.208558Z",
+   "call_id": "20260930T142150Z-7f9a1d",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3110dbd00798278eaad654f8d77175fd5526fe86f3f4e59de5dcf6da63984fe8",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.session.serialization.decode_session",
+    "llm_router._api.types.ChatMessage"
+   ]
+  }
+ ],
+ "fa88bb3261b0e691": [
+  {
+   "at": "2026-09-30T14:21:48.884282Z",
+   "call_id": "20260930T142110Z-be2231",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c54aeefbf5019cd56405d751f565964c47c369412935abccb6961632a8cd282b",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.session.serialization.decode_session"
    ]
   }
  ]

@@ -1,0 +1,7 @@
+{
+ "20260930T144416Z-cc3b81": {
+  "at": "2026-09-30T16:06:28.981774Z",
+  "key": "5e426e56bd7decaf",
+  "reason": "its parametrized cases get ids with a double bracket ([[]] and [[{\"version\": 1}]]), which the documentation build reads as a sphinx-needs function call, so the portal does not build"
+ }
+}

@@ -1,60 +1,47 @@
 # mutation-pin: REQ_REQUEST_OVERRIDE_PRECEDENCE e238ff65d72c6c1f
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
+
+import json
 
 import pytest
 
-from llm_router._internal.config import build_default_config
-from llm_router._internal.runtime.effective_settings import (
-    RouterDefaults,
-    resolve_effective_settings,
+from llm_router import LLMRouter, Model, Provider, RouterProfile
+from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
 )
-from llm_router._internal.runtime.routes import RouteGenerationDefaults
+from tests.llm_router.support.workers.worker_patches import prepare_fault_case
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
 @pytest.mark.verifies("REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]")
-def test_router_default_kwargs_override_route_and_yield_to_request() -> None:
-    config = build_default_config()
-    route_defaults = RouteGenerationDefaults(
-        key_id=1,
-        kwargs={
-            "priority_lane": "standard",
-            "tenant_id": "tenant-route",
-            "log_tag": "audit-route",
-        },
+def test_router_level_provider_kwargs_reach_request_and_call_wins() -> None:
+    path = openai_chat_path()
+    ok = ScriptedResponse(
+        status_code=200,
+        headers={"Content-Type": "application/json"},
+        body=openai_success_response(text="done"),
     )
-    router_defaults = RouterDefaults(
-        values={},
-        kwargs={
-            "priority_lane": "expedited",
-            "tenant_id": "tenant-router",
-            "routing_tag": "cluster-primary",
-        },
-    )
-    call_overrides = {
-        "tenant_id": "tenant-call",
-        "client_label": "batch-worker",
-    }
+    with ScriptedHTTPServer(port=0, routes={("POST", path): [ok, ok]}) as server:
+        prepare_fault_case(case="aistudio_video", server_base_url=server.base_url)
+        router = LLMRouter(
+            RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.AISTUDIO),
+            user="router-user",
+            metadata={"tier": "router"},
+        )
 
-    effective = resolve_effective_settings(
-        config=config,
-        route_defaults=route_defaults,
-        route_policy_defaults={},
-        router_defaults=router_defaults,
-        call_overrides=call_overrides,
-    )
+        router.query("Hello.")
+        router.query("Hello again.", user="call-user")
 
-    assert effective.kwargs["priority_lane"] == "expedited"
-    assert effective.kwargs["tenant_id"] == "tenant-call"
-    assert effective.kwargs["routing_tag"] == "cluster-primary"
-    assert effective.kwargs["log_tag"] == "audit-route"
-    assert effective.kwargs["client_label"] == "batch-worker"
-    assert effective.kwargs == {
-        "priority_lane": "expedited",
-        "tenant_id": "tenant-call",
-        "routing_tag": "cluster-primary",
-        "log_tag": "audit-route",
-        "client_label": "batch-worker",
-    }
+        recorded = server.recorded_requests("POST", path)
+        inherited = json.loads(recorded[0].body)
+        overridden = json.loads(recorded[1].body)
+
+    assert inherited["user"] == "router-user"
+    assert inherited["metadata"] == {"tier": "router"}
+    assert overridden["user"] == "call-user"
+    assert overridden["metadata"] == {"tier": "router"}

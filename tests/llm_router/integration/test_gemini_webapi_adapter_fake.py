@@ -13,6 +13,7 @@ from llm_router._internal.capabilities.schema import normalize_schema
 from llm_router._internal.capabilities.tools import ToolRegistry
 from llm_router._internal.providers.base import ProviderCredential, ProviderRequest
 from llm_router._internal.providers.gemini_webapi import GeminiWebAPIAdapter
+from tests.llm_router.support.fault_observation import retain_local_fault_injection
 
 
 class Reply(BaseModel):
@@ -126,8 +127,15 @@ async def test_async_gemini_webapi_passes_local_video_path(tmp_path: Path) -> No
 
 
 @pytest.mark.coverage_path("retryable-status")
+@pytest.mark.fault_item("TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY", "interface.error-status")
 def test_gemini_webapi_retryable_status_is_translated() -> None:
     client = FakeClient([FakeStatusError(503, "try again")])
+    retain_local_fault_injection(
+        contract_id="TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY",
+        fault_class="interface.error-status",
+        mechanism="fake Gemini WebAPI client raises a status error 503",
+        details={"status_code": 503},
+    )
 
     with pytest.raises(ProviderError) as exc_info:
         GeminiWebAPIAdapter(client=client).execute(_request())
@@ -138,8 +146,15 @@ def test_gemini_webapi_retryable_status_is_translated() -> None:
 
 
 @pytest.mark.coverage_path("provider-error-code")
+@pytest.mark.fault_item("TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY", "interface.error-status")
 def test_gemini_webapi_provider_specific_error_code_is_preserved() -> None:
     client = FakeClient([FakeProviderCodeError(1060, "server refused")])
+    retain_local_fault_injection(
+        contract_id="TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY",
+        fault_class="interface.error-status",
+        mechanism="fake Gemini WebAPI client raises provider error code 1060",
+        details={"status_code": 1060},
+    )
 
     with pytest.raises(ProviderError) as exc_info:
         GeminiWebAPIAdapter(client=client).execute(_request())

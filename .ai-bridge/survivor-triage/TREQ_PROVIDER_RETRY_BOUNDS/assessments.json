@@ -124,6 +124,26 @@
      "wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds)"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "logging.getLogger('x')",
+     "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-36d31e",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version passes max_wait_seconds as the wait minimum, so every wait is exactly max_wait_seconds, while the original draws random waits between min_wait_seconds and the exponential bound.",
+    "response_sha256": "2ed9605c4b166cef31015012816095b3078611fdb11cdc89fa52d1f574b42720",
+    "sources": [
+     "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
+     "wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds)"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "157253370640fe24fc6903371fdcc0aa658db83d3bb1bdf13132345adaf46d70"
@@ -242,6 +262,26 @@
     "sources": [
      "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
      "wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "None",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=100.0, max_attempts=5)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195646Z-0f9d5e",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version passes min_wait_seconds as the wait's max, so when max_wait_seconds is larger, the original's backoff cap grows and can exceed the min, while the changed version's cap stays at min.",
+    "response_sha256": "80abd3dccd29a08658022c486955ead0ef7078ac505ff5e8b10d7f2140c5d442",
+    "sources": [
+     "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
+     "max=policy.min_wait_seconds"
     ],
     "verdict": "distinct"
    }
@@ -372,6 +412,26 @@
     "sources": [
      "wait=wait_random_exponential(",
      "min=policy.min_wait_seconds,",
+     "wait=wait_random_exponential(max=policy.max_wait_seconds)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "logging.getLogger('x')",
+     "policy": "RetryPolicy(min_wait_seconds=5.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-808456",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops min=policy.min_wait_seconds, so wait_random_exponential uses min=0 and the wait bounds and the wait.min attribute differ whenever min_wait_seconds is nonzero.",
+    "response_sha256": "db90c94cfb8bb4b22e7f7acab6186459fed514d515ba001b5f1ddb021f3d800a",
+    "sources": [
+     "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
      "wait=wait_random_exponential(max=policy.max_wait_seconds)"
     ],
     "verdict": "distinct"
@@ -619,6 +679,26 @@
      "min=policy.min_wait_seconds,",
      "max=policy.max_wait_seconds,",
      "wait=wait_random_exponential(min=policy.min_wait_seconds), retry=retry_if_exception(is_retryable_provider_error)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "None",
+     "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.001, max_attempts=5)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195646Z-c36830",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version omits max=policy.max_wait_seconds, so the wait cap falls back to tenacity's huge default and waits can far exceed a small max_wait_seconds.",
+    "response_sha256": "da45cf10f662ce0884647679ece19feff6fe0e74803acce59885732685a0d3e2",
+    "sources": [
+     "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),",
+     "wait=wait_random_exponential(min=policy.min_wait_seconds)"
     ],
     "verdict": "distinct"
    }

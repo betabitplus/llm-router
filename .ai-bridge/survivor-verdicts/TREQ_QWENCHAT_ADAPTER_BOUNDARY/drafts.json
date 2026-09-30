@@ -22,6 +22,22 @@
    ]
   }
  ],
+ "185b6874039f611f": [
+  {
+   "at": "2026-09-30T14:22:53.468302Z",
+   "call_id": "20260930T142110Z-a89bd1",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "ca6b0e2699702a451c3697e61984e749f5994c6ca8444c9878ceddb35ce6ee80",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
  "1e1bd3200d2722cb": [
   {
    "at": "2026-09-28T10:39:06.983271Z",
@@ -110,6 +126,38 @@
    ]
   }
  ],
+ "23b422ccd29d9e9f": [
+  {
+   "at": "2026-09-30T14:22:54.818090Z",
+   "call_id": "20260930T142110Z-51a56e",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "ea335538d6b88b2a6595bd7e3faf2076ae40ffe6a12cd8d92afe6785c8aabef6",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "355054900e3b0e62": [
+  {
+   "at": "2026-09-30T14:23:05.837459Z",
+   "call_id": "20260930T142110Z-b29b8c",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "98b42a73744e791c8dc73a83835d247e3e70891629d689622dbdb1dc5d2e76c5",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
  "36fb82fcc47860a2": [
   {
    "at": "2026-09-29T11:47:11.542444Z",
@@ -172,6 +220,22 @@
     "llm_router._internal.providers.base.ProviderCredential",
     "llm_router._internal.providers.base.ProviderRequest",
     "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "423e7eb093169520": [
+  {
+   "at": "2026-09-30T14:22:52.948403Z",
+   "call_id": "20260930T142110Z-c548f6",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "d8d38ea9e7651a1b58599eab172f66f8e398e0a1d1d64a115b1b6c4919953439",
+   "reason": "",
+   "sources": [
     "llm_router._internal.providers.qwenchat.QwenChatAdapter"
    ]
   }
@@ -256,6 +320,22 @@
    "level": 1,
    "model": "claude-sonnet-5-5",
    "question_sha256": "a0ef910a4cca59c97ad0026959efb2c41686a154efd37ee9fc3c84d4671cb809",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "80dc89d52f2c3e6f": [
+  {
+   "at": "2026-09-30T14:22:51.258622Z",
+   "call_id": "20260930T142110Z-d16380",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "71d071d00424f4326e93516ed1b6f7c7e4a004e7c762a728a14c05de26d6e2f0",
    "reason": "",
    "sources": [
     "llm_router._internal.providers.qwenchat.QwenChatAdapter"
@@ -347,6 +427,22 @@
     "llm_router._internal.providers.base.ProviderCredential",
     "llm_router._internal.providers.base.ProviderRequest",
     "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "89cec15e825762c1": [
+  {
+   "at": "2026-09-30T14:22:24.720076Z",
+   "call_id": "20260930T142110Z-4e1bd6",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "7592dd83830c882782a2656c3ebe4a88e18e0e0c347a6b8d71e1fdf4f299561d",
+   "reason": "",
+   "sources": [
     "llm_router._internal.providers.qwenchat.QwenChatAdapter"
    ]
   }
@@ -464,6 +560,29 @@
    ]
   }
  ],
+ "b2ede67441d3c603": [
+  {
+   "at": "2026-09-30T15:27:53.337149Z",
+   "call_id": "20260930T152720Z-de718b",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "803ea8f2409ace64d3da2d464f318b6e7b169166456061256c1f1101e0d98617",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
  "b4ed2e3d119cad14": [
   {
    "at": "2026-09-29T11:47:11.542504Z",
@@ -554,6 +673,23 @@
    ]
   }
  ],
+ "eefc9085c442a9e5": [
+  {
+   "at": "2026-09-30T14:21:50.275428Z",
+   "call_id": "20260930T142110Z-cad256",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "33bd9c036a8be0402f6594a33e769d2eca6a68d08424bc05ec19fa09ec72eca1",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
  "f78852f8c6d406f7": [
   {
    "at": "2026-09-29T11:47:11.542519Z",
@@ -572,6 +708,22 @@
     "llm_router._internal.capabilities.content.normalize_content",
     "llm_router._internal.providers.base.ProviderCredential",
     "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "fce408324289d87d": [
+  {
+   "at": "2026-09-30T14:22:56.074206Z",
+   "call_id": "20260930T142110Z-d55519",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "41f7ba7ad7c2f6470e88e912025fb08d26631692f067f6fe233b24bfdfd826cc",
+   "reason": "",
+   "sources": [
     "llm_router._internal.providers.qwenchat.QwenChatAdapter"
    ]
   }

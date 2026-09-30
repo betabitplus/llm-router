@@ -1,0 +1,145 @@
+{
+ "at": "2026-09-30T16:50:56.383338Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_00e231387191a730.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_73af7c5839a73039.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_84e67158176fdd1f.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_e4925bbc494ef9d1.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_b91a9265.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_00e231387191a730.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_73af7c5839a73039.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_84e67158176fdd1f.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_e4925bbc494ef9d1.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_b91a9265.py"
+ ],
+ "restored": [
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_00e231387191a730.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_73af7c5839a73039.py"
+ ],
+ "removed": {
+  "00e231387191a730": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_00e231387191a730.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_ae82b8cb.py"
+   ]
+  },
+  "SM-A96F2E5C": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_a96f2e5c.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_ae82b8cb.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_b91a9265.py"
+   ]
+  },
+  "623b0ce689f82e48": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_623b0ce689f82e48.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5e426e56bd7decaf.py"
+   ]
+  },
+  "ae9bb16e0f156df0": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_ae9bb16e0f156df0.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py"
+   ]
+  },
+  "e966dd5a2d776e14": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_e966dd5a2d776e14.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_84e67158176fdd1f.py"
+   ]
+  },
+  "f1db3a48e54f5fe2": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_f1db3a48e54f5fe2.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_73af7c5839a73039.py"
+   ]
+  },
+  "fa88bb3261b0e691": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fa88bb3261b0e691.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_73af7c5839a73039.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_84e67158176fdd1f.py"
+   ]
+  },
+  "SM-AE82B8CB": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_ae82b8cb.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_b91a9265.py"
+   ]
+  },
+  "73af7c5839a73039": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_73af7c5839a73039.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py"
+   ]
+  }
+ },
+ "matrix": {
+  "00e231387191a730": [
+   "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_00e231387191a730.py"
+  ],
+  "5eca933c7a02d62f": [
+   "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py"
+  ],
+  "73af7c5839a73039": [
+   "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_73af7c5839a73039.py"
+  ],
+  "84e67158176fdd1f": [
+   "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_84e67158176fdd1f.py"
+  ],
+  "e4925bbc494ef9d1": [
+   "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_e4925bbc494ef9d1.py"
+  ],
+  "SM-B91A9265": [
+   "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_b91a9265.py"
+  ]
+ },
+ "caught_before": [
+  "00e231387191a730",
+  "119099f5c8108cd4",
+  "156900cc76dc8a64",
+  "1f944c7f88d1b3d8",
+  "260c7f6de9f0332e",
+  "453ddd541b61f396",
+  "45b28efe613a8cc8",
+  "4a691dee31294251",
+  "510d8fa5149ca488",
+  "59e23f68cccb3170",
+  "5e426e56bd7decaf",
+  "5eca933c7a02d62f",
+  "612e673f44577614",
+  "623b0ce689f82e48",
+  "63f6073917c898ed",
+  "73af7c5839a73039",
+  "84e67158176fdd1f",
+  "8d2eef923f9246ee",
+  "92622e5a5f97e586",
+  "9880b8eb40956608",
+  "9e0aadb00f64ceda",
+  "9e3d1c41b323b0bb",
+  "SM-587B20AF",
+  "SM-A96F2E5C",
+  "SM-AE82B8CB",
+  "SM-B91A9265",
+  "SM-DB7C9088",
+  "SM-F7C472D9",
+  "a2ea086ea892f112",
+  "ae8e3f634ed82537",
+  "ae9bb16e0f156df0",
+  "c2b74ad3b47c070d",
+  "ca4e71c78fed8df4",
+  "cd1603f4d587024a",
+  "d8e1a107d00d1841",
+  "e4925bbc494ef9d1",
+  "e5c95b5c96c0f284",
+  "e966dd5a2d776e14",
+  "f1db3a48e54f5fe2",
+  "fa88bb3261b0e691"
+ ]
+}

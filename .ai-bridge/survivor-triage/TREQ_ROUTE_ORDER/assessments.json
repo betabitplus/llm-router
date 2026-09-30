@@ -48,6 +48,22 @@
      "routes = routes[:options.max_attempts]"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195646Z-ad9d5b",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "Slicing with routes[:None] returns the full list, so dropping the None guard changes nothing.",
+    "response_sha256": "112ef82b03f088edaae94b1bfe914ee189cee484563a1690b3019fd8fc1eb931",
+    "sources": [
+     "if options.max_attempts is not None:",
+     "if True:",
+     "routes = routes[:options.max_attempts]"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "014097ac5fbd73ef5448e366c3e017336cd302dba550bf635b7aa5803b599c05"
@@ -102,6 +118,24 @@
     "problems": [],
     "reason": "The changed version drops the final tuple() conversion and returns the list produced by _ordered_start/slicing directly, so for any non-empty routes tuple the original returns a tuple while the changed version returns a list, and tuple != list under == even with identical elements.",
     "response_sha256": "8fae9d36d1d288bb9398037658ca9b131554ec5b9c452a2149a6715897ed776b",
+    "sources": [
+     "return tuple(routes)",
+     "return routes"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, request_index=0, max_attempts=None)",
+     "plan": "RoutePlan(routes=(ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m', defaults=RouteGenerationDefaults(key_id=KeyId('k'))),))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195643Z-918e06",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original returns tuple(routes) while the changed version returns the list itself, so any non-empty plan gives a tuple in one and a list in the other, and they are not equal.",
+    "response_sha256": "b5973f116265580b68b0c64f65af79d0b1cd2281827c35bb78bcaabc5e62e828",
     "sources": [
      "return tuple(routes)",
      "return routes"
@@ -522,6 +556,24 @@
     "sources": [
      "if (\n        options.shuffle_fallbacks\n        and len(routes) >= options.min_routes_for_fallback_shuffle\n    ):",
      "if options.shuffle_fallbacks and len(routes) >= options.shuffle_fallbacks:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=10, request_index=0, max_attempts=None, selected_start_route_index=None, shuffler=type('S', (), {'shuffle': lambda self, x: x.reverse()})())",
+     "plan": "RoutePlan(routes=tuple(ExpandedRoute(route_index=i, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='m', defaults=RouteGenerationDefaults(key_id=KeyId('k'))) for i in range(3)))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195646Z-c788f8",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed code compares len(routes) to options.shuffle_fallbacks (True, which equals 1) instead of min_routes_for_fallback_shuffle, so with 3 routes and a minimum of 10 the original skips the shuffle and the changed version reverses the fallbacks.",
+    "response_sha256": "441c5c946589ddf6d07fb263a44402316ff024423a28e51eb1b9365e1bd93b4a",
+    "sources": [
+     "if options.shuffle_fallbacks and len(routes) >= options.shuffle_fallbacks:",
+     "and len(routes) >= options.min_routes_for_fallback_shuffle"
     ],
     "verdict": "distinct"
    }

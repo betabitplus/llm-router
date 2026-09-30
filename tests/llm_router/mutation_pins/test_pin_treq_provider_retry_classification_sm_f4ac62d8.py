@@ -1,79 +1,96 @@
 # mutation-pin: TREQ_PROVIDER_RETRY_CLASSIFICATION SM-F4AC62D8
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import pytest
 
-from llm_router._internal.runtime import executor as executor_module
+from llm_router._api.errors import ProviderError
+from llm_router._api.types import Model, Provider
+from llm_router._internal.config import RetryPolicy
+from llm_router._internal.providers.base import ProviderRequest, ProviderResult
 from llm_router._internal.runtime.executor import ProviderRouteExecutor
 
 pytestmark = pytest.mark.verification_kind("unit")
 
+EXHAUSTED_EVENT = "llm_router.provider.retry.exhausted"
+
+
+class Config:
+    def __init__(self) -> None:
+        self.retry_policy = RetryPolicy(
+            min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=1
+        )
+
 
 @dataclass
-class _Config:
-    retry_policy: object | None = None
+class Route:
+    route_index: int = 0
+    model: Model = Model.LLAMA_8B
+    provider: Provider = Provider.GROQ
+    provider_model: str = "llama-3.1-8b-instant"
 
 
-class _Attempt:
-    def __enter__(self) -> None:
-        return None
-
-    def __exit__(self, *_args: object) -> bool:
-        return False
-
-
-class _Retrying:
-    def __iter__(self):
-        yield _Attempt()
+@dataclass
+class Key:
+    key_id: int = 1
+    env_var: str = "GROQ_API_ENV"
+    value: str = "v"
 
 
-class _FailingAdapter:
-    def __init__(self, message: str) -> None:
-        self._message = message
+@dataclass
+class Settings:
+    temperature: float | None = None
+    seed: int | None = None
+    response_schema: object | None = None
+    tools: tuple[object, ...] | None = None
+    tool_choice: str | None = None
+    max_tool_rounds: int | None = None
+    kwargs: dict[str, object] = field(default_factory=dict)
 
-    def execute(self, _request: object) -> Any:
-        raise ValueError(self._message)
+
+@dataclass
+class Resolved:
+    request_id: str = "req-1"
+    route: Route = field(default_factory=Route)
+    settings: Settings = field(default_factory=Settings)
+    key: Key = field(default_factory=Key)
+    messages: tuple[str, ...] = ("hello",)
+    content: object = "hello"
 
 
-def _run(monkeypatch: pytest.MonkeyPatch, message: str) -> list[object]:
-    logged: list[object] = []
-    adapter = _FailingAdapter(message)
-    monkeypatch.setattr(
-        ProviderRouteExecutor, "_adapter_for", lambda _self, _request: adapter
-    )
-    monkeypatch.setattr(
-        executor_module, "build_provider_retrying", lambda **_kw: _Retrying()
-    )
-    monkeypatch.setattr(
-        executor_module, "is_retryable_provider_error", lambda _exc: False
-    )
-    monkeypatch.setattr(executor_module, "_retry_context", lambda _request: {})
-    monkeypatch.setattr(
-        executor_module,
-        "log_retry_exhausted",
-        lambda *_a, **kw: logged.append(kw["event_type"]),
-    )
-    monkeypatch.setattr(
-        executor_module,
-        "_provider_boundary_error",
-        lambda _exc, **_kw: RuntimeError("boundary"),
-    )
-    executor = ProviderRouteExecutor(config=_Config())  # type: ignore[arg-type]
-    with pytest.raises(RuntimeError, match=r"boundary"):
-        executor._execute_provider_sync(object())  # type: ignore[arg-type]
-    return logged
+class RaisingAdapter:
+    def execute(self, request: ProviderRequest) -> ProviderResult:
+        msg = f"retry budget: timeout while parsing ({request.request_id})"
+        raise ValueError(msg)
+
+
+def adapter_getter(provider: Provider, config: Any) -> RaisingAdapter:
+    assert provider is Provider.GROQ
+    assert config is not None
+    return RaisingAdapter()
 
 
 @pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]")
-def test_retry_like_message_does_not_mark_error_retryable(
-    monkeypatch: pytest.MonkeyPatch,
+def test_retry_like_message_does_not_log_exhausted_event(
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
-    retry_text = _run(monkeypatch, "please retry later")
-    timeout_text = _run(monkeypatch, "Timeout while parsing")
+    executor = ProviderRouteExecutor(
+        config=Config(),  # type: ignore[arg-type]
+        adapter_getter=adapter_getter,  # type: ignore[arg-type]
+    )
+    caplog.set_level(0)
 
-    assert retry_text == []
-    assert timeout_text == []
+    with pytest.raises(ProviderError, match=r"Failure type: ValueError"):
+        executor.execute(Resolved())  # type: ignore[arg-type]
+
+    seen = [
+        record
+        for record in caplog.records
+        if EXHAUSTED_EVENT in record.getMessage()
+        or EXHAUSTED_EVENT in str(record.__dict__)
+    ]
+    assert seen == []

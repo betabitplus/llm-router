@@ -2,36 +2,39 @@
  "0912db8ce4b47a9a": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T092235Z-1b2dc5",
+   "call_id": "20260930T195903Z-d1fd9f",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "For an Enum, calling Model(member) returns that same member. So when the mutant skips the isinstance shortcut, it still resolves to the same value, and the declaration check that follows sees the same result. Strings and invalid inputs take the same try/except path in both versions, so undeclared models are still rejected before provider execution.",
-   "response_sha256": "5bbe82ba448a85a847415b05f1c6166e71dc0a69cd2918f5d8508e6a6e3d3a36",
+   "reason": "When `Model(...)` is given a member of `Model`, it returns that member unchanged, because `Enum.__new__` returns the value when `type(value) is cls`. So removing the `isinstance` shortcut gives the same `resolved` for every input. The later check that rejects models not in `config.models` still rejects undeclared models before provider execution.",
+   "response_sha256": "5b0f7c2722605f6d2e31535013f7f9fbcfbd05d87088e39a6561ac6f80077668",
    "sources": [
     "A requested model shall be accepted only when it is declared by the effective configuration.",
-    "if isinstance(model, Model):",
-    "if False:",
-    "resolved = Model(model)"
+    "An undeclared requested model is rejected before provider execution.",
+    "    if isinstance(model, Model):",
+    "    if False:",
+    "            resolved = Model(model)"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "conditional",
-  "prompt_sha256": "a86829039363ec94c9cadf529aa9dd1fd0c7350c7bd467df6c00af4e2e5c7455",
+  "prompt_sha256": "9c59e72507f29b96f0a521824afc45914a9e5e1b41417e3e5a4ecc3d4ad07d20",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T092618Z-526602",
+   "call_id": "20260930T195923Z-18f812",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "a86829039363ec94c9cadf529aa9dd1fd0c7350c7bd467df6c00af4e2e5c7455",
-   "reason": "Passing an Enum member to its own constructor returns the member itself, so bypassing the explicit type check and always calling the constructor produces identical output for all inputs.",
-   "response_sha256": "30537305dd9e7e939be5c55330779536f202ef8ebff6b7ddab1eeab15224b1fd",
+   "prompt_sha256": "9c59e72507f29b96f0a521824afc45914a9e5e1b41417e3e5a4ecc3d4ad07d20",
+   "reason": "Passing an Enum instance to its own constructor returns the instance itself, making the explicit `isinstance` check redundant and resulting in identical behavior for all inputs.",
+   "response_sha256": "eba0c65962843b7c2a35ee654f3eee9ec368b6ec0828077e3dd900d255dffdfa",
    "sources": [
-    "Technical requirement TREQ_CONFIG_MODEL_DECLARATION (Requested model is declared by the effective configuration): A requested model shall be accepted only when it is declared by the effective configuration.",
+    "A requested model shall be accepted only when it is declared by the effective configuration.",
     "if isinstance(model, Model):",
     "if False:"
    ],
@@ -53,9 +56,9 @@
   },
   "operator": "return",
   "pin": {
-   "adopted_at": "2026-09-27T16:38:36.863274Z",
-   "answer_sha256": "31fb838b39b267bc69e9e39d1cdb5fe984049eab51b3d915d905663928d01c09",
-   "call_id": "20260927T160834Z-a6f8c3",
+   "adopted_at": "2026-09-30T14:01:23.732139Z",
+   "answer_sha256": "149b87997ad6ef5be5c0327bc29396eef181c5e52b81b8849e96cf66db540e31",
+   "call_id": "20260930T135611Z-38cf2c",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -64,12 +67,18 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "31fb838b39b267bc69e9e39d1cdb5fe984049eab51b3d915d905663928d01c09",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "149b87997ad6ef5be5c0327bc29396eef181c5e52b81b8849e96cf66db540e31",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_3cc16a6300b216ed.py",
-   "response_sha256": "3fda6fdb77d34948df4c7d0b4f77e9a1b71eb184841c40727ea1bd56b1d95460",
-   "source": "draft author"
+   "response_sha256": "42b88929374663b580a8ace3e83a18baa435a254c083cbccce3f9c590633f6b8",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
   },
   "prompt_sha256": "5e76e779d4a852e5c41a88a842e4cc3723774207bd8e89a96b966463cfd83ff9"
  },
@@ -87,9 +96,9 @@
   },
   "operator": "statement",
   "pin": {
-   "adopted_at": "2026-09-27T16:38:36.863816Z",
-   "answer_sha256": "42b225e7e88d7231a4f7f57b757ab23e5c057a535db3a04bbd47d3c27d30ac79",
-   "call_id": "20260927T160903Z-596412",
+   "adopted_at": "2026-09-30T14:05:11.883859Z",
+   "answer_sha256": "9bfcdcb8da1d4f90519d3b9ea48ad5418e493d13da2cd74b6511ceddecd81434",
+   "call_id": "20260930T135938Z-53d7ce",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -98,12 +107,19 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "2b1df89596c32c375fbd90bcb3d48ad48f7710a83b687017461d96c27956ad0f",
-   "model": "gemini-3.8-flash-medium",
+   "draft_sha256": "9bfcdcb8da1d4f90519d3b9ea48ad5418e493d13da2cd74b6511ceddecd81434",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_5ed9365a38636da5.py",
-   "response_sha256": "0b63e9957283b937b37809f2eaac59d4f40440e581175f9846d57d38ccb0d421",
-   "source": "draft author"
+   "response_sha256": "79600b8a61bd4831d754015af5746ab893bb88989a97d41742e9cafed003b805",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._internal.config.build_default_config",
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
   },
   "prompt_sha256": "fc6fa4b264e56b76b06d7062ebf466c5881c7cc0104bc3b5482635b0eca0ce75"
  },
@@ -128,9 +144,9 @@
   },
   "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-29T20:22:27.993166Z",
-   "answer_sha256": "6c87a783c91bd15a01e9ef5b59b12e16b5f57be65771ec19c077610080131bcb",
-   "call_id": "20260929T202107Z-dc6a63",
+   "adopted_at": "2026-09-30T14:08:16.251693Z",
+   "answer_sha256": "2cb3667cbf2eb8516b5b1bb0de778115af43990bb742ffb903f8fbbfbd862299",
+   "call_id": "20260930T140410Z-12c8cd",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -139,18 +155,21 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "6c87a783c91bd15a01e9ef5b59b12e16b5f57be65771ec19c077610080131bcb",
+   "draft_sha256": "2cb3667cbf2eb8516b5b1bb0de778115af43990bb742ffb903f8fbbfbd862299",
    "effort": "medium",
    "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py",
-   "response_sha256": "73184fe45dbdd0759f7c657e78fae42d60a0f56305044461aa88f9bcfd12e2bd",
+   "response_sha256": "7741fd60ba3fc85c378afb736d8f37a08a7165a49b2bf1e9376a06be421e59c0",
    "source": "draft author with tools",
    "sources": [
+    "llm_router._internal.runtime.routes.expand_route_plan",
     "llm_router._internal.config.build_default_config",
-    "llm_router._internal.runtime.routes._resolve_model",
-    "llm_router._api.types.Model"
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderCatalog",
+    "llm_router._internal.config.models.LLMRouterConfig"
    ]
   },
   "prompt_sha256": "abd1625c1a17b7b062fcdd9cb608982c3a192def03a11044aec33aeb945c5a08",
@@ -195,9 +214,9 @@
   },
   "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-29T19:15:34.166921Z",
-   "answer_sha256": "cf077aeb6f93718d613c6fe547b5eee9ddfe4160bb98b6eea5f068c84a635879",
-   "call_id": "20260929T191342Z-3b7d9f",
+   "adopted_at": "2026-09-30T14:06:11.195268Z",
+   "answer_sha256": "3966b0c61d792515839f8f53522eb573542a8cbe300a2928b68fc0517c639c29",
+   "call_id": "20260930T140246Z-93cfb3",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -206,19 +225,20 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "a5bc1672a4aa993ae82a0f94e18414238314228f20c20f64b0be1906b7bedca8",
-   "effort": "low",
+   "draft_sha256": "3966b0c61d792515839f8f53522eb573542a8cbe300a2928b68fc0517c639c29",
+   "effort": "medium",
+   "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py",
-   "response_sha256": "8abc5f7565221a2a40133e6a212e17ef62dd7fb1677b37b51340aa6e5d6e06a9",
-   "source": "draft author",
+   "response_sha256": "bbf760f4dfbd981d4aff34da70b07581fb1b1e263d3d3d9aaad9d55dbfa76238",
+   "source": "draft author with tools",
    "sources": [
-    "llm_router._internal.config.build_default_config",
-    "llm_router._internal.runtime.routes._resolve_model",
-    "llm_router._api.types.Model",
     "llm_router._api.errors.ConfigurationError",
-    "llm_router._internal.config.models.LLMRouterConfig"
+    "llm_router._api.types.Model",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan"
    ]
   },
   "prompt_sha256": "0080df57ea1d14722add4876787c725c5668066753e33cd89c16ad42b1749411"
@@ -244,9 +264,9 @@
   },
   "operator": "conditional",
   "pin": {
-   "adopted_at": "2026-09-29T10:38:22.614228Z",
-   "answer_sha256": "b4ae34f6aa9a502027635fc67112e5dcbf9a9b2e01d85c8a110c1bd57a34c88a",
-   "call_id": "20260929T100513Z-45d9e1",
+   "adopted_at": "2026-09-30T14:06:27.360704Z",
+   "answer_sha256": "58a0a9bed5799c30438172690413740c45a136a3b6f284fc764f3aae92f95777",
+   "call_id": "20260930T140129Z-e20a4a",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -255,15 +275,17 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "b4ae34f6aa9a502027635fc67112e5dcbf9a9b2e01d85c8a110c1bd57a34c88a",
-   "model": "claude-sonnet-5",
+   "draft_sha256": "58a0a9bed5799c30438172690413740c45a136a3b6f284fc764f3aae92f95777",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_e1379ec0c0ed9e96.py",
-   "response_sha256": "d95266a0023f6d3857b63625346a97fb551705ea20766de2486b9a7fd4a69d47",
-   "source": "draft author",
+   "response_sha256": "d4d1a9b76f149838f9793c86ed2303dd9e448c9576b87ee82b48e4facb59864e",
+   "source": "draft author with tools",
    "sources": [
+    "llm_router._internal.runtime.routes.expand_route_plan",
     "llm_router._internal.config.build_default_config",
-    "llm_router._internal.runtime.routes._resolve_model",
     "llm_router._api.types.Model"
    ]
   },

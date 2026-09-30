@@ -1,0 +1,38 @@
+{
+ "at": "2026-09-30T13:46:32.636619Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_a3f68e4f70d254ab.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_cdebfb831ae4dc16.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_a3f68e4f70d254ab.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_cdebfb831ae4dc16.py"
+ ],
+ "restored": [],
+ "removed": {},
+ "matrix": {
+  "a3f68e4f70d254ab": [
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_a3f68e4f70d254ab.py"
+  ],
+  "cdebfb831ae4dc16": [
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_cdebfb831ae4dc16.py"
+  ]
+ },
+ "caught_before": [
+  "215558c8cbb01afa",
+  "21d91cee7e3fffe6",
+  "3ec8cd4b6a88b8fe",
+  "79edb43ade54e9e9",
+  "7f52d5b4995c38e8",
+  "8d30060d84dd8e63",
+  "8d7425a17f0e8e96",
+  "SM-34257EB1",
+  "SM-369A264B",
+  "SM-95CE7B9E",
+  "SM-C50F6FFC",
+  "SM-F3908946",
+  "a3f68e4f70d254ab",
+  "cdebfb831ae4dc16",
+  "db163c27f5c1a62c"
+ ]
+}

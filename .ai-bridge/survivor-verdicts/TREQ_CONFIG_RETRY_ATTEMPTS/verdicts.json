@@ -68,30 +68,36 @@
    "verdict": "pin"
   },
   "operator": "boundary",
-  "pin": {
-   "adopted_at": "2026-09-29T10:38:22.615949Z",
-   "answer_sha256": "b098b4d8bf5e53d2ba95d5e0d4e7318103b12e794ffd98bc7b237da53ad22542",
-   "call_id": "20260929T100553Z-356f92",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "b098b4d8bf5e53d2ba95d5e0d4e7318103b12e794ffd98bc7b237da53ad22542",
-   "model": "claude-sonnet-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_retry_attempts_a6c77976ba2d4065.py",
-   "response_sha256": "9b976c94311f414c384fb71f5e730822e8f67d5948b9af6e78048c4d3d076027",
-   "source": "draft author",
-   "sources": [
-    "llm_router._api.errors.ConfigurationError",
-    "llm_router._internal.config.build_default_config",
-    "llm_router._internal.config.validate_config"
-   ]
-  },
-  "prompt_sha256": "722b9c64bce16146d86a007d074bffc1a9ae0eddefa2f308080469a2de6a524f"
+  "prompt_sha256": "722b9c64bce16146d86a007d074bffc1a9ae0eddefa2f308080469a2de6a524f",
+  "subsumed": {
+   "at": "2026-09-30T13:46:18.487369Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_retry_attempts_a02b9c41521c0e84.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T10:38:22.615949Z",
+    "answer_sha256": "b098b4d8bf5e53d2ba95d5e0d4e7318103b12e794ffd98bc7b237da53ad22542",
+    "call_id": "20260929T100553Z-356f92",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "b098b4d8bf5e53d2ba95d5e0d4e7318103b12e794ffd98bc7b237da53ad22542",
+    "model": "claude-sonnet-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_config_retry_attempts_a6c77976ba2d4065.py",
+    "response_sha256": "9b976c94311f414c384fb71f5e730822e8f67d5948b9af6e78048c4d3d076027",
+    "source": "draft author",
+    "sources": [
+     "llm_router._api.errors.ConfigurationError",
+     "llm_router._internal.config.build_default_config",
+     "llm_router._internal.config.validate_config"
+    ]
+   }
+  }
  }
 }

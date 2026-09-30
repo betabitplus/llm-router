@@ -1,0 +1,39 @@
+# mutation-pin: REQ_REQUEST_OVERRIDE_PRECEDENCE 3db6d2968629906a
+# pinned-by: claude-opus-5-5
+from __future__ import annotations
+
+import pytest
+
+from llm_router._internal.config import build_default_config
+from llm_router._internal.runtime.effective_settings import (
+    RouterDefaults,
+    resolve_effective_settings,
+)
+from llm_router._internal.runtime.routes import RouteGenerationDefaults
+
+pytestmark = pytest.mark.verification_kind("unit")
+
+
+@pytest.mark.verifies("REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]")
+def test_null_default_layer_does_not_clear_but_request_null_does() -> None:
+    config = build_default_config()
+
+    settings = resolve_effective_settings(
+        config=config,
+        route_defaults=RouteGenerationDefaults(key_id=0),
+        route_policy_defaults={"max_attempts": 5},
+        router_defaults=RouterDefaults(
+            values={"max_attempts": None, "unknown_extra": 3}
+        ),
+        call_overrides={},
+    )
+    assert settings.max_attempts == 5
+
+    cleared = resolve_effective_settings(
+        config=config,
+        route_defaults=RouteGenerationDefaults(key_id=0, temperature=0.3),
+        route_policy_defaults={},
+        router_defaults=RouterDefaults(),
+        call_overrides={"temperature": None},
+    )
+    assert cleared.temperature is None

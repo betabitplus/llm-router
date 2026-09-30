@@ -66,6 +66,7 @@ class ToolLoopState:
     steps: tuple[ToolStep, ...] = ()
     outstanding_tool_calls: tuple[ToolCall, ...] = ()
 
+    # @impl Tool round bound, IMPL_TOOL_ROUND_BOUND, [REQ_TOOL_RUNTIME_SAFETY[revision==1]]
     def can_execute_tools(self) -> bool:
         """Return whether another local tool round can run."""
         return self.completed_rounds < self.max_rounds
@@ -218,6 +219,7 @@ def _tool_call_components(
     )
 
 
+# @impl Bounded tool round advance, IMPL_TOOL_ROUND_ADVANCE, [REQ_TOOL_RUNTIME_SAFETY[revision==1]]
 def run_tool_round(
     *,
     state: ToolLoopState,

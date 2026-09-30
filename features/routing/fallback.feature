@@ -13,6 +13,22 @@ Feature: Route fallback
       And the routing trace contains both attempts
 
     @REQ_SYNC_ROUTE_FALLBACK[revision==2]
+    Scenario: A route that returns a malformed response falls back to the next route
+      Given the router has two available routes
+      And the first route returns a malformed response
+      When a request is made
+      Then the second route is used
+      And the routing trace contains both attempts
+
+    @REQ_SYNC_ROUTE_FALLBACK[revision==2]
+    Scenario: A route that keeps disconnecting falls back to the next route
+      Given the router has two available routes whose retry budget is two attempts
+      And the first route disconnects on every attempt
+      When a request is made
+      Then the second route is used
+      And the routing trace contains both attempts
+
+    @REQ_SYNC_ROUTE_FALLBACK[revision==2]
     Scenario: The last route error is exposed when every route fails
       Given the router has two available routes
       And every route fails

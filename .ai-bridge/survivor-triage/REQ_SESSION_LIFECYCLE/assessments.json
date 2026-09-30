@@ -47,6 +47,20 @@
      "text = session_path.read_text()"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-3351bd",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only change is dropping encoding=\"utf-8\" from read_text, which matters only under a non-UTF-8 default locale; on a UTF-8 default the versions behave identically.",
+    "response_sha256": "01a37b8b25a3d7a98659447a19e77fec40e66dea9821f00fc3311a458615303e",
+    "sources": [
+     "text = session_path.read_text(encoding=\"utf-8\")"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "7496ecba5a7ac91f514363bacf51e8f8302da2648ac6b5530e5ea47245e93369"

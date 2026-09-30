@@ -1,4 +1,75 @@
 {
+ "SM-B25D86B3": [
+  {
+   "at": "2026-09-30T16:40:14.778908Z",
+   "call_id": "20260930T163952Z-923046",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no ToolChoice (it lives in llm_router._internal.capabilities.tools)",
+    "llm_router has no ToolRegistry (it lives in llm_router._internal.capabilities.tools)",
+    "llm_router has no normalize_tool_choice (it lives in llm_router._internal.capabilities.tools)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9b30d29ae9d68d11671aa2105f0dc5ceac5754fd69c7a7944295cddfff1519e9",
+   "reason": "it does not fit the project's code as written: llm_router has no ToolChoice (it lives in llm_router._internal.capabilities.tools) | llm_router has no ToolRegistry (it lives in llm_router._internal.capabilities.tools) | llm_router has no normalize_tool_choice (it lives in llm_router._internal.capabilities.tools)",
+   "sources": [
+    "llm_router.ToolChoice",
+    "llm_router.ToolRegistry",
+    "llm_router.normalize_tool_choice"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:09.301428Z",
+   "call_id": "20260930T164016Z-fe5acd",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "bfd7dba64ef2f2efb683fe45ea9d48ed117cd95617e7ebb7ac62a4f603e28cbe",
+   "reason": "it imports llm_router._internal.capabilities.tools",
+   "sources": [
+    "llm_router._internal.capabilities.tools.ToolChoice",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.capabilities.tools.normalize_tool_choice"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:14:47.684972Z",
+   "call_id": "20260930T180438Z-055e3d",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b56571bad625e852d10dc53d32bf643f31626c1e94ec2f5b30f9c1a71da82b96",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
+   ]
+  }
+ ],
  "e6293e4c0f29961b": [
   {
    "at": "2026-09-29T10:38:22.579502Z",
@@ -49,6 +120,75 @@
    "sources": [
     "llm_router._internal.capabilities.tools.ToolRegistry",
     "llm_router._internal.capabilities.tools.normalize_tool_choice"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:41:38.803353Z",
+   "call_id": "20260930T164011Z-358a79",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no ToolRegistry (it lives in llm_router._internal.capabilities.tools)",
+    "llm_router has no normalize_tool_choice (it lives in llm_router._internal.capabilities.tools)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "96cbaf8b98a8e3aea78524ab19f693bfb19a5a4b09db989c9a254b2d6681d746",
+   "reason": "it does not fit the project's code as written: llm_router has no ToolRegistry (it lives in llm_router._internal.capabilities.tools) | llm_router has no normalize_tool_choice (it lives in llm_router._internal.capabilities.tools)",
+   "sources": [
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.capabilities.tools.normalize_tool_choice"
+   ]
+  },
+  {
+   "at": "2026-09-30T16:42:58.204350Z",
+   "call_id": "20260930T164201Z-4f0d53",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "3fcb50d9bc34e918e04924be76a030fcaecea5c820ecbdb32398d72e9158b852",
+   "reason": "it imports llm_router._internal.capabilities.tools",
+   "sources": [
+    "llm_router._internal.capabilities.tools.ToolDefinition",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.capabilities.tools.normalize_tool_choice"
+   ]
+  },
+  {
+   "at": "2026-09-30T18:07:07.340287Z",
+   "call_id": "20260930T180434Z-a65470",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.tool_failure.google_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "91ea5c0a433cd2236b11c871b0b3e667ffdc66f82fa7ba9170194b37d60daf08",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.tool_failure.google_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
    ]
   }
  ]

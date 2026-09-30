@@ -36,6 +36,87 @@
     "llm_router._internal.runtime.executor.ProviderRouteExecutor",
     "llm_router._internal.runtime.executor.build_provider_retrying"
    ]
+  },
+  {
+   "at": "2026-09-30T13:55:55.350188Z",
+   "call_id": "20260930T135348Z-bc9245",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fbd6f17cf57cc04a28c730f18433ab535df620475a18238f6386564f1dd5e9c0",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: 'ProviderRouteExecutor' object has no attribute 'execute_provider_call')",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:57:36.967757Z",
+   "call_id": "20260930T135555Z-31f56f",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "ResolvedRequest cannot be built without route, settings, key, content",
+    "ResolvedRequest takes no argument credential; it takes content, key, messages, request_id, route, settings",
+    "ResolvedRequest takes no argument model; it takes content, key, messages, request_id, route, settings",
+    "ResolvedRequest takes no argument provider; it takes content, key, messages, request_id, route, settings",
+    "ResolvedRequest takes no argument provider_model; it takes content, key, messages, request_id, route, settings",
+    "RetryPolicy cannot be built without min_wait_seconds, max_wait_seconds"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "bdf385c97c6f8cdc2b49bf37144aef63841a4a7b1e4bb4d9d0cd1eefa3bccee8",
+   "reason": "it does not fit the project's code as written: ResolvedRequest cannot be built without route, settings, key, content | ResolvedRequest takes no argument credential; it takes content, key, messages, request_id, route, settings | ResolvedRequest takes no argument model; it takes content, key, messages, request_id, route, settings | ResolvedRequest takes no argument provider; it takes content, key, m",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.ProviderCatalog"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:06:25.971701Z",
+   "call_id": "20260930T135739Z-036bd8",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._api.errors.ProviderError"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c218f413a1a199d4c7b831bf025108ba10cd1fda13506c03b46a4d3fab483a90",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.requests.EffectiveSettings",
+    "llm_router._internal.runtime.requests.ExpandedRoute",
+    "llm_router._internal.runtime.requests.ResolvedKey",
+    "llm_router._internal.runtime.requests.ResolvedRequest"
+   ]
   }
  ],
  "1cb6c482c58e73ea": [
@@ -79,6 +160,68 @@
     "llm_router._internal.runtime.executor.ProviderRouteExecutor",
     "llm_router._internal.runtime.executor._provider_boundary_error"
    ]
+  },
+  {
+   "at": "2026-09-30T14:00:00.397795Z",
+   "call_id": "20260930T135348Z-6fd165",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "e68307a5f0407e04da4affd07f4be2f5f0f6f1f6c2deb785e73a053dc1b4e207",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert <RetryClassification.NON_RETRYABLE: 'non_retryable'> is <RetryClassification.RETRYABLE: 'retryable'> | +  where <RetryClassification.NON_RETRYABLE: 'non_retryable'> = RetryDecision(classification=<RetryClassification.NON_RETRYABLE: 'non_retryable'>, reason='exception_not_retryable', status_code=None).classification)",
+   "sources": [
+    "llm_router._internal.providers.retry.RetryClassification",
+    "llm_router._internal.providers.retry.RetryDecision",
+    "llm_router._internal.providers.retry.classify_exception"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:02:51.334864Z",
+   "call_id": "20260930T140000Z-9682e8",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "RetryPolicy cannot be built without min_wait_seconds, max_wait_seconds, max_attempts"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "747d1c95963f79bbe47c3a6554d4ee987e0d063f246fa932870333fc828c17d8",
+   "reason": "it breaks the project's lint rules (ruff: line 33: ARG002 Unused method argument: `request`); it reads or replaces `_execute_provider_sync`, a private name of the project: observe what the requirement names through what the code offers its callers; it does not fit the project's code as written: RetryPolicy cannot be built without min_wait_seconds, max_wait_seconds, max_attempts",
+   "sources": [
+    "llm_router._internal.providers.retry.RetryClassification",
+    "llm_router._internal.providers.retry.classify_exception",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:07:00.440045Z",
+   "call_id": "20260930T140252Z-459319",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._api.errors.ProviderError"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9df651b4e77c0564e5df43fec764ecf002193ddf8b558e8658e185998e2126e4",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.errors.ProviderError"
+   ]
   }
  ],
  "3c58e8e9e5eaec8a": [
@@ -111,6 +254,85 @@
    "sources": [
     "llm_router._internal.runtime.executor.ProviderRouteExecutor",
     "llm_router._internal.runtime.executor"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:59:31.660533Z",
+   "call_id": "20260930T135348Z-1b007d",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "73f30d0faf89dba85229f7f81a80044925ed1e99032998553c1fc17710956658",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 153\u2013162",
+   "sources": [
+    "llm_router._internal.providers.retry.RetryClassification",
+    "llm_router._internal.providers.retry.classify_exception"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:02:44.313006Z",
+   "call_id": "20260930T135932Z-be963b",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "ResolvedRequest cannot be built without route, settings, key, content",
+    "ResolvedRequest takes no argument credential; it takes content, key, messages, request_id, route, settings",
+    "ResolvedRequest takes no argument model; it takes content, key, messages, request_id, route, settings",
+    "ResolvedRequest takes no argument provider; it takes content, key, messages, request_id, route, settings",
+    "ResolvedRequest takes no argument provider_model; it takes content, key, messages, request_id, route, settings",
+    "RetryPolicy cannot be built without min_wait_seconds, max_wait_seconds, max_attempts"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e70a97277672b18c21cb5a80fedfa85d83669f16045fc960436f8fb28d81879a",
+   "reason": "it breaks the project's lint rules (ruff: line 38: ARG002 Unused method argument: `request`); it does not fit the project's code as written: ResolvedRequest cannot be built without route, settings, key, content | ResolvedRequest takes no argument credential; it takes content, key, messages, request_id, route, settings | ResolvedRequest takes no argument model; it takes content, key, messages, requ",
+   "sources": [
+    "llm_router._internal.providers.retry.RetryClassification",
+    "llm_router._internal.providers.retry.classify_exception",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.Provider",
+    "llm_router._internal.providers.base.Model",
+    "llm_router._internal.runtime.requests.ResolvedRequest",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.config.ProviderLimits"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:07:29.722648Z",
+   "call_id": "20260930T140245Z-e4154a",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._api.errors.ProviderError"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3741802114f252220a114f3fc67aa6ff08962f08db11450c1f41d8bc31700f60",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.requests.ResolvedRequest",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult"
    ]
   }
  ],
@@ -166,6 +388,67 @@
     "llm_router._internal.runtime.executor.ProviderRouteExecutor",
     "llm_router._internal.runtime.executor"
    ]
+  },
+  {
+   "at": "2026-09-30T14:04:05.247706Z",
+   "call_id": "20260930T135348Z-8100d0",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "f00354a90f3a5da43914dd769edceff4039b03d40897e35de1d0f02cb3ea305a",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 163\u2013175",
+   "sources": [
+    "llm_router._internal.providers.retry.RetryClassification",
+    "llm_router._internal.providers.retry.classify_exception"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:06:09.341705Z",
+   "call_id": "20260930T140406Z-85f2dc",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "RetryPolicy cannot be built without min_wait_seconds, max_wait_seconds"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f819032f81f96a9b5aa6a51a52fb4e193632cd7cc66c285f7b3ee3cd8711ab27",
+   "reason": "it uses vars; it does not fit the project's code as written: RetryPolicy cannot be built without min_wait_seconds, max_wait_seconds",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model",
+    "llm_router._internal.config.RetryPolicy"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:08:51.271133Z",
+   "call_id": "20260930T140610Z-093d7b",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._api.errors.ProviderError"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6a22f8de38fb579ebd035dce5c03057fee488829af2f38908e9090826311eb98",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult"
+   ]
   }
  ],
  "bc22a7f5ad518a96": [
@@ -210,6 +493,120 @@
     "llm_router._internal.runtime.executor",
     "llm_router._internal.runtime.executor.ProviderRouteExecutor"
    ]
+  },
+  {
+   "at": "2026-09-30T13:55:17.324624Z",
+   "call_id": "20260930T135348Z-2d0053",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "42d5216f904062b9940d8605854ab3633b47e47aec6d51571afa476925570d56",
+   "reason": "it does not pass on the original 5 times in a row (pytest: [100%] | fixture 'retry_config' not found)",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.retry.classify_exception",
+    "llm_router._internal.providers.retry.RetryClassification",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:56:41.938983Z",
+   "call_id": "20260930T135517Z-b0ffe5",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "RetryPolicy cannot be built without min_wait_seconds, max_wait_seconds, max_attempts",
+    "RouterPolicyDefaults cannot be built without max_attempts, attempt_timeout_seconds, wait_for_cooldown_if_all_blocked, round_robin_start, shuffle_fallbacks, min_routes_for_fallback_shuffle, default_limits",
+    "llm_router._internal.config has no ProviderLimits (it lives in llm_router._api.types)",
+    "llm_router._internal.providers.registry has no ProviderCatalog (it lives in llm_router._internal.config.models)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "33e6d4c32ff2b11b114a589c2b51788bc5a86e01c89b512ac93f2367ac9e4423",
+   "reason": "it does not fit the project's code as written: RetryPolicy cannot be built without min_wait_seconds, max_wait_seconds, max_attempts | RouterPolicyDefaults cannot be built without max_attempts, attempt_timeout_seconds, wait_for_cooldown_if_all_blocked, round_robin_start, shuffle_fallbacks, min_routes_for_fallback_shuffle, default_limits | llm_router._internal.config has no ProviderLimits (it lives ",
+   "sources": [
+    "llm_router._internal.providers.retry.RetryClassification",
+    "llm_router._internal.providers.retry.classify_exception",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.providers.registry.ProviderCatalog"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:04:45.816159Z",
+   "call_id": "20260930T135642Z-c66e9e",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f848bd3b8c4657408d95c519d092f2fef0da97f7271fb2309ac4c50c63e2e793",
+   "reason": "it does not pass on the original 5 times in a row (pytest: TypeError: test_retry_after_transport_error_returns_adapter_result.<locals>.<lambda>() takes 1 positional argument but 2 were given)",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:08:46.221605Z",
+   "call_id": "20260930T140447Z-86c5ea",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.providers.base.ProviderCapabilities",
+    "llm_router._internal.providers.base.ProviderFailure"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "e2b915ae70116c5f8e14a3e211fe0839ed86a29150b5a642c73edf92b369a927",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.providers.retry.classify_exception",
+    "llm_router._internal.providers.retry.RetryDecision",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderFailure",
+    "llm_router._internal.providers.base.ProviderCapabilities",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.runtime.requests.ResolvedRequest",
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.ProviderLimits"
+   ]
   }
  ],
  "dad9cc03506dec74": [
@@ -248,6 +645,68 @@
     "llm_router._internal.providers.base.ProviderCredential",
     "llm_router._api.types.Provider",
     "llm_router._api.types.Model"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:01:50.105004Z",
+   "call_id": "20260930T135348Z-019fb2",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "8f0d20c9b66a57d80855f633b72092bd84be5cf2d55b73c6d5c0e76e1e19bb05",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed lines 152\u2013162",
+   "sources": [
+    "llm_router._internal.providers.retry.RetryClassification",
+    "llm_router._internal.providers.retry.classify_exception"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:04:09.362620Z",
+   "call_id": "20260930T140151Z-b17f78",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0c7b5cd95fb480c071d0cb52aad1c7b6f80391878a79389f74456f7bcf56ced5",
+   "reason": "it breaks the project's lint rules (ruff: line 41: ARG002 Unused method argument: `request`); it reads or replaces `_execute_provider_sync`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.capabilities.content.NormalizedMessage",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.Model"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:08:28.686987Z",
+   "call_id": "20260930T140410Z-3fcc6a",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.build_default_config"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d98ff82b043d8db497b5f5b8b4152f59c913728bca5cf70bccc935664a523754",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.requests.ResolvedRequest",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider"
    ]
   }
  ]

@@ -36,6 +36,12 @@ Feature: Provider recovery
       Then the asynchronous request succeeds after one transport retry
 
     @REQ_PROVIDER_RETRY[revision==2]
+    Scenario: A temporary provider timeout succeeds on retry
+      Given a provider does not answer before its transport timeout once
+      When the same provider answers in time on a later attempt
+      Then the request succeeds after one transport retry
+
+    @REQ_PROVIDER_RETRY[revision==2]
     Scenario: An asynchronous permanent provider failure is not retried
       Given a provider rejects an asynchronous request permanently
       When the asynchronous request is executed

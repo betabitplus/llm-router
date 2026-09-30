@@ -19,6 +19,18 @@ Feature: Sensitive data protection
       Then provider failure diagnostics contain only safe failure metadata
 
     @TREQ_RUNTIME_LOG_SAFETY[revision==2]
+    Scenario: Malformed provider response diagnostics exclude provider-controlled protected text
+      Given a malformed provider response contains protected text and a protected credential
+      When the malformed provider response crosses the public router boundary
+      Then malformed-response diagnostics contain only safe failure metadata
+
+    @TREQ_RUNTIME_LOG_SAFETY[revision==2]
+    Scenario: Provider disconnect diagnostics exclude protected caller values
+      Given a provider disconnects while the request carries a protected prompt and credential
+      When the disconnect crosses the public router boundary
+      Then disconnect diagnostics contain only safe failure metadata
+
+    @TREQ_RUNTIME_LOG_SAFETY[revision==2]
     Scenario: Tool failure diagnostics exclude caller and tool-cause content
       Given a request contains protected prompt, credential, tool arguments, and tool-cause text
       When the protected local tool fails

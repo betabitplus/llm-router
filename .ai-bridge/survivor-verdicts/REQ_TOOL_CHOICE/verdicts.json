@@ -91,6 +91,29 @@
   },
   "operator": "statement",
   "prompt_sha256": "8ff5e5472808ffeb3282af8f58c4ba3d249b94a20b8530ac0fe2752524cee401",
+  "rechecks": {
+   "verdict": {
+    "asked_at": "2026-09-30T14:21:01.058547Z",
+    "backend": "claude-cli",
+    "call_id": "20260930T142038Z-c61d33",
+    "confirmed": false,
+    "effort": "xhigh",
+    "level": "implementation",
+    "model": "claude-opus-5-5",
+    "problems": [],
+    "prompt_sha256": "8ff5e5472808ffeb3282af8f58c4ba3d249b94a20b8530ac0fe2752524cee401",
+    "reason": "The mutant only changes what happens to an unsupported input type, such as an int. It returns None where the original raised TypeError. REQ_TOOL_CHOICE and its criteria cover only the supported named-choice forms (string and mapping) and \"required\". Every one of those paths returns before the changed line, so their behaviour is identical and rejecting other types is outside what this requirement asks for.",
+    "response_sha256": "4b0db442627efc54d6dea6653e23a71478881eafdb9a5fe3fdb42d5b52cbdbc8",
+    "sources": [
+     "Both supported public named-choice input forms normalize to the same selected registered tool.",
+     "The public \"required\" choice normalizes to a required call, and each distinct provider translation asks for a call to any registered tool.",
+     "raise TypeError(msg)",
+     "msg = 'tool_choice must be a string, mapping, or None.'\n    pass"
+    ],
+    "test_focus": "",
+    "verdict": "irrelevant"
+   }
+  },
   "review": {
    "backend": "antigravity-cli",
    "call_id": "20260928T195411Z-0de985",
@@ -130,8 +153,9 @@
   },
   "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-29T17:21:43.477461Z",
-   "answer_sha256": "7d9122cd3455c2017a266682b50775b033de53fb3c5962c60bd12b20d4526f73",
+   "adopted_at": "2026-09-30T18:14:47.688645Z",
+   "answer_sha256": "b73e19a192124acb0388324d6d72de739624cb506d86dbd35bdbac10eab2df2b",
+   "call_id": "20260930T180438Z-055e3d",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -140,10 +164,25 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "7d9122cd3455c2017a266682b50775b033de53fb3c5962c60bd12b20d4526f73",
+   "draft_sha256": "b73e19a192124acb0388324d6d72de739624cb506d86dbd35bdbac10eab2df2b",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_tool_choice_sm_b25d86b3.py",
-   "source": "kept semantic draft"
+   "response_sha256": "f825f68c3c27339405ef38adafc6519070bd708e5852c821b4598f80e1af958f",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
+   ]
   },
   "prompt_sha256": "1460b2f34a4a55ae12c988607c1f05fe14bac712544fba0ddbd6b8ecd1fbbb7f"
  },
@@ -207,9 +246,9 @@
   },
   "operator": "conversion",
   "pin": {
-   "adopted_at": "2026-09-29T12:16:07.611932Z",
-   "answer_sha256": "bc8b425e8f4a22740184be70c3d2b7179c83c3b2945f07529ff54198e60ff0c0",
-   "call_id": "20260929T120217Z-69718f",
+   "adopted_at": "2026-09-30T18:07:07.346234Z",
+   "answer_sha256": "ba1c79af39123acadc60a7b599d2a4620a5bb30df3ad4a55966874dd2025e2eb",
+   "call_id": "20260930T180434Z-a65470",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -218,17 +257,25 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "bc8b425e8f4a22740184be70c3d2b7179c83c3b2945f07529ff54198e60ff0c0",
+   "draft_sha256": "e273c29136963085187a9843997c576b4ad506f4e6eeb7c2b818c92f98f1eb57",
    "effort": "medium",
    "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_tool_choice_e6293e4c0f29961b.py",
-   "response_sha256": "64e2fd6a48b74a7cf6238367852e49ae626954289a30dfc8fa5a90663969a057",
+   "response_sha256": "cf25e425e3242dd9fbb507d3f91a8d9de1bfa0ded181ef9a393c7ae816a97cda",
    "source": "draft author with tools",
    "sources": [
-    "llm_router._internal.capabilities.tools.ToolRegistry",
-    "llm_router._internal.capabilities.tools.normalize_tool_choice"
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.tool_failure.google_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
    ]
   },
   "prompt_sha256": "edbf16b9e2202281d8e78b9d3a25f3e4d0f4b6ad724be4117e2d9ab9b3a0bc1f"

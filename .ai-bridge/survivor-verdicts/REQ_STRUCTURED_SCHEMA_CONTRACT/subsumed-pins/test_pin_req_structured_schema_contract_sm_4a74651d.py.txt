@@ -1,0 +1,64 @@
+# mutation-pin: REQ_STRUCTURED_SCHEMA_CONTRACT SM-4A74651D
+# pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from llm_router import LLMRouter, Model, Provider, RouterProfile
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+)
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+)
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
+
+pytestmark = pytest.mark.verification_kind("unit")
+
+_CHAT_PATH = openai_chat_path()
+
+_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "count": {"type": "integer", "minimum": 0},
+        "label": {"type": "string"},
+    },
+    "required": ["count"],
+}
+
+_RECORD = {"count": 7, "label": "batch", "total": 21, "note": "extra"}
+
+
+@pytest.mark.verifies("REQ_STRUCTURED_SCHEMA_CONTRACT[revision==2]")
+def test_mapping_schema_returns_undeclared_fields_the_schema_allows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Valid output with undeclared keys comes back unchanged."""
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", "inventory-assurance-value")
+    reply = ScriptedResponse(
+        status_code=200,
+        headers={"Content-Type": "application/json"},
+        body=openai_success_response(text=json.dumps(_RECORD)),
+    )
+    with (
+        ScriptedHTTPServer(port=0, routes={("POST", _CHAT_PATH): [reply]}) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ),
+    ):
+        router = LLMRouter(
+            RouterProfile(model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER),
+            temperature=0.0,
+        )
+        response = router.query(
+            "Summarise the batch.",
+            response_schema=_SCHEMA,
+        )
+
+    assert response.data["parsed"] == _RECORD

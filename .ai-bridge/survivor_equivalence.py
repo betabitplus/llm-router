@@ -332,18 +332,36 @@ def _spans(node: ast.AST, start: dict, end: dict) -> bool:
     )
 
 
+def _scope_span(node: ast.AST) -> tuple[int, int]:
+    """First and last line of a statement, decorators included."""
+    return min([node.lineno, *[decorator.lineno for decorator in getattr(node, "decorator_list", [])]]), int(node.end_lineno or node.lineno)
+
+
 def rule_mutant_source(module_source: str, record: dict) -> dict:
     """The module source of one rule mutant of the engine's report, rebuilt from its operator, its
     location and its replacement, and checked against the original text the report names. Returns
-    ``{"source", "original", "mutated"}`` or ``{"reason"}``."""
+    ``{"source", "original", "mutated", "scope", "target"}`` or ``{"reason"}``.
+
+    A mutant in a function is rebuilt in that function. One in a class body (a decorator, a class
+    attribute) or in a module-level statement runs when its module is imported: it is rebuilt in the
+    class, or in the statement, and its ``scope`` says so (``class``, ``module``), since no call reaches
+    it that a harness could search."""
     qualname = str(record.get("qualname") or "")
     tree = ast.parse(module_source)
-    function, _parents = _find(tree, qualname)
-    if function is None or isinstance(function, ast.ClassDef):
-        return {"reason": "the mutant's function is not in its module"}
     location = record.get("location") or {}
     start, end = location.get("start") or {}, location.get("end") or {}
+    if qualname in {"", "<module>"}:
+        line = int(start.get("line") or 0)
+        function = next((item for item in tree.body if _scope_span(item)[0] <= line <= _scope_span(item)[1]), None)
+        kind = "module"
+    else:
+        function, _parents = _find(tree, qualname)
+        kind = "class" if isinstance(function, ast.ClassDef) else "function"
+    if function is None:
+        return {"reason": "the mutant's code is not in its module"}
     operator = str(record.get("operator") or "")
+    if operator == "body" and kind != "function":
+        return {"reason": "a body mutant replaces a function's body"}
     mutated = copy.deepcopy(function)
     try:
         replacement = ast.parse(str(record.get("replacement") or ""))
@@ -368,6 +386,9 @@ def rule_mutant_source(module_source: str, record: dict) -> dict:
         new = replacement.body[0] if statement else (replacement.body[0].value if replacement.body and isinstance(replacement.body[0], ast.Expr) else None)
         if new is None:
             return {"reason": "the replacement is not an expression"}
+        if target is mutated:
+            # A module-level statement is its own scope: the mutant replaces it whole.
+            mutated = new
         for parent in ast.walk(mutated):
             for name, value in ast.iter_fields(parent):
                 if value is target:
@@ -375,10 +396,32 @@ def rule_mutant_source(module_source: str, record: dict) -> dict:
                 elif isinstance(value, list) and target in value:
                     value[value.index(target)] = new
     code = ast.unparse(ast.fix_missing_locations(mutated))
-    rebuilt = replace_function(module_source, qualname, code)
-    if rebuilt is None:
-        return {"reason": "the mutated function cannot be put back"}
-    return {"source": rebuilt, "original": function_source(module_source, qualname) or "", "mutated": code}
+    if kind == "function":
+        rebuilt = replace_function(module_source, qualname, code)
+        if rebuilt is None:
+            return {"reason": "the mutated function cannot be put back"}
+        return {"source": rebuilt, "original": function_source(module_source, qualname) or "", "mutated": code, "scope": kind, "target": qualname}
+    first, last = _scope_span(function)
+    lines = module_source.splitlines()
+    indent = lines[first - 1][: len(lines[first - 1]) - len(lines[first - 1].lstrip())]
+    replacement_lines = [(indent + line) if line.strip() else line for line in _dedent(code).splitlines()]
+    rebuilt = "\n".join([*lines[: first - 1], *replacement_lines, *lines[last:]]) + "\n"
+    if kind == "module":
+        target = f"the module-level statement at line {first}, which runs when its module is imported"
+        return {"source": rebuilt, "original": "\n".join(lines[first - 1 : last]), "mutated": code, "scope": kind, "target": target}
+    # A class shows the statement of its body the mutant changes, or its decorators and header: the
+    # whole class would repeat what did not change.
+    line = int(start.get("line") or 0)
+    position = next((index for index, item in enumerate(function.body) if _scope_span(item)[0] <= line <= _scope_span(item)[1]), None)
+    if position is None:
+        original = "\n".join(lines[first - 1 : function.lineno])
+        shown = "\n".join([*("@" + ast.unparse(decorator) for decorator in mutated.decorator_list), f"class {mutated.name}:"])
+    else:
+        item_first, item_last = _scope_span(function.body[position])
+        original = _dedent("\n".join(lines[item_first - 1 : item_last]))
+        shown = ast.unparse(mutated.body[position])
+    target = f"class {qualname}, whose body runs when its module is imported"
+    return {"source": rebuilt, "original": original, "mutated": shown, "scope": kind, "target": target}
 
 
 # --- witnesses: parsed without evaluating anything else, checked by execution ------------------
@@ -934,6 +977,10 @@ def triage(request: dict) -> dict:
         if "reason" in rebuilt:
             rows.append({**row, "status": "not-applicable", "reason": rebuilt["reason"]})
             continue
+        if rebuilt.get("scope") != "function":
+            # Import-time code: no call reaches it that a harness could search; its verdict still comes.
+            rows.append({**row, "status": "not-applicable", "reason": "it runs when its module is imported, so no call reaches it that a search could vary", "mutated": rebuilt["mutated"], "original": rebuilt["original"]})
+            continue
         judged = judge_survivor(
             sources[path], rebuilt["source"], str(record.get("qualname")),
             scratch=scratch, token="r" + re.sub(r"\W", "_", fingerprint), seconds=float(request.get("seconds") or 20), paths=request.get("paths"),
@@ -1204,7 +1251,8 @@ SUPPRESSING = ("equivalent", "irrelevant")
 def reviewed_verdict(entry: dict) -> dict | None:
     """The model's verdict as it counts (ADR_0006): pin and escalate as answered; equivalent or
     irrelevant only when the review, a model of another family asked the same question, agrees,
-    and pin when it does not; none while the review is missing."""
+    and pin when it does not, or when the role's current model, asked again, does not; none while
+    the review is missing."""
     answer = entry.get("answer") or {}
     if answer.get("problems") or answer.get("verdict") not in VERDICTS_FINAL:
         return None
@@ -1213,17 +1261,94 @@ def reviewed_verdict(entry: dict) -> dict | None:
     review = entry.get("review") or {}
     if review.get("prompt_sha256") != entry.get("prompt_sha256") or review.get("problems") or review.get("verdict") not in VERDICTS_FINAL:
         return None
-    if review["verdict"] in SUPPRESSING:
+    against = review if review["verdict"] not in SUPPRESSING else recheck_against(entry)
+    if against is None:
         return {**answer, "by": answer.get("model"), "reviewed_by": review.get("model")}
+    # A re-check may come from the same model at another level, so it is named with its level.
+    name = str(against.get("model")) if against is review else f"{against.get('model')} at {against.get('effort') or 'its default level'}, asked again,"
     return {
-        **answer, "verdict": "pin", "by": f"{answer.get('model')} and {review.get('model')}",
-        "reason": f"{review.get('model')} disagrees with {answer['verdict']}: {review.get('reason')}",
-        "test_focus": str(review.get("test_focus") or answer.get("test_focus") or ""),
+        **answer, "verdict": "pin", "by": f"{answer.get('model')} and {name.rstrip(',')}",
+        "reason": f"{name} disagrees with {answer['verdict']}: {against.get('reason')}",
+        "test_focus": str(against.get("test_focus") or answer.get("test_focus") or ""),
     }
+
+
+def recheck_against(entry: dict) -> dict | None:
+    """A suppression's re-check that does not uphold it: the verdict or its review asked again of
+    the role's current model, for the same question, answering by the rules and not suppressing."""
+    for _role, recheck in sorted((entry.get("rechecks") or {}).items()):
+        if recheck.get("prompt_sha256") == entry.get("prompt_sha256") and not recheck.get("problems") and recheck.get("verdict") in VERDICTS_FINAL and recheck["verdict"] not in SUPPRESSING:
+            return recheck
+    return None
 
 
 def verdict_prompt(*, context: str, target: str, original: str, mutant: str, judgement: str) -> str:
     return VERDICT_TEMPLATE.format(context=context + "\n" if context else "", target=target, original=original, mutant=mutant, judgement=judgement)
+
+
+# A pin verdict no rung of the draft ladder could turn into a test is asked once more with what a
+# person would look up next: where the project calls the function, and how what it is handed is
+# built. A branch no caller can take cannot be observed where the requirement is observed (a
+# contextual equivalent, as GEM-LLM calls it), and a verdict that looked at the function alone
+# cannot see that.
+RECONSIDER_MARK = "No test could pin this mutant:"
+RECONSIDER_NOTE = """
+
+No test could pin this mutant: every rung of the draft ladder, the last one working in a copy of
+the project, wrote a test that passed on both versions or broke the pin rules. Where the project
+calls {name}, with the function around each call:
+{sites}
+{card}Decide again with these callers in view. If no caller can hand the function what the changed
+code needs, the difference cannot be observed where the requirement is observed: answer irrelevant
+(equivalent only when no input tells the versions apart at all), and cite under sources the lines
+that show it. If a caller can, answer pin, and say in test_focus which caller reaches the changed
+code and with what."""
+CALL_SITES_SHOWN = 8
+CALLER_LINES_SHOWN = 24
+
+
+def project_call_sites(root: Path, qualname: str, path: str) -> list[dict]:
+    """Every call of the function across the project's source, the target's own body left out: a
+    call by name for a function, by attribute for a method, each with the function around it."""
+    name = qualname.rsplit(".", 1)[-1]
+    sites = []
+    for file in sorted((root / "src").rglob("*.py")):
+        relative = str(file.relative_to(root))
+        source = file.read_text()
+        tree = ast.parse(source)
+        own = _find(tree, qualname)[0] if relative == path else None
+        skip = set(range(own.lineno, (own.end_lineno or own.lineno) + 1)) if own is not None else set()
+        functions = [node for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or node.lineno in skip:
+                continue
+            called = node.func.attr if isinstance(node.func, ast.Attribute) else node.func.id if isinstance(node.func, ast.Name) else None
+            if called != name:
+                continue
+            around = min(
+                (item for item in functions if item.lineno <= node.lineno <= (item.end_lineno or item.lineno)),
+                key=lambda item: (item.end_lineno or item.lineno) - item.lineno,
+                default=None,
+            )
+            lines = source.splitlines()
+            first = min([around.lineno, *[decorator.lineno for decorator in around.decorator_list]]) if around is not None else node.lineno
+            last = int(around.end_lineno or around.lineno) if around is not None else node.lineno
+            shown = lines[first - 1 : last][:CALLER_LINES_SHOWN]
+            sites.append({"where": f"{relative}:{node.lineno}", "code": _dedent("\n".join(shown))})
+    return sites
+
+
+def reconsider_note(name: str, sites: list[dict], card: str = "") -> str:
+    """What the reconsidered verdict question adds: each call site with its function, and the card."""
+    blocks = [f"- {site['where']}:\n```python\n{site['code']}\n```" for site in sites[:CALL_SITES_SHOWN]]
+    if len(sites) > CALL_SITES_SHOWN:
+        blocks.append(f"(and {len(sites) - CALL_SITES_SHOWN} more)")
+    return RECONSIDER_NOTE.format(name=name, sites="\n".join(blocks) or "no call anywhere in the project's source", card=card + "\n" if card else "")
+
+
+def reconsider_prompt(prompt: str, root: Path, qualname: str, path: str, card: str = "") -> str:
+    """The verdict question once the draft ladder is exhausted: the same question and the callers."""
+    return prompt + reconsider_note(qualname.rsplit(".", 1)[-1], project_call_sites(root, qualname, path), card)
 
 
 def verdict_parts(prompt: str) -> tuple[dict[str, str], list[str]]:
@@ -1233,6 +1358,9 @@ def verdict_parts(prompt: str) -> tuple[dict[str, str], list[str]]:
     blocks = CODE_FENCE.findall(question)
     judgement = re.search(r"What the survivor judgement found: (.*?)\nDecide one verdict:", question, re.DOTALL)
     parts = {"requirement": question.split("The original version of ", 1)[0], "code": "\n".join(blocks), "judgement": judgement.group(1) if judgement else ""}
+    if RECONSIDER_MARK in question:
+        # A reconsidered question also shows the callers and how what they hand is built.
+        parts["callers"] = question.split(RECONSIDER_MARK, 1)[1]
     return parts, changed_lines(blocks[0], blocks[1]) if len(blocks) >= 2 else []
 
 

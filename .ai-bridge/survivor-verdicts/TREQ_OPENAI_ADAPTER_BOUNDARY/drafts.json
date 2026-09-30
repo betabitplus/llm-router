@@ -1,0 +1,77 @@
+{
+ "bc8864eb8ffc0616": [
+  {
+   "at": "2026-09-30T14:44:56.510472Z",
+   "call_id": "20260930T144417Z-f64dda",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c5dfb0cc8511e1d8b414b36990ca88f7b3ce887c23e995a41d3fe548c2679ebb",
+   "reason": "it does not pass on the original 5 times in a row (pytest: Failed: DID NOT RAISE Exception)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.providers.registry.register_adapter_factory",
+    "llm_router._internal.providers.aistudio.adapter_from_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:45:29.187648Z",
+   "call_id": "20260930T144456Z-4fa912",
+   "cause": "grounding",
+   "context_gaps": [
+    "llm_router._internal.providers.registry.create_adapter"
+   ],
+   "effort": "high",
+   "grounding": [
+    "LLMRouterConfig cannot be built without default_provider, default_model, default_key_id, defaults, catalog",
+    "llm_router._internal.providers.registry has no create_adapter"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "bd01f47cf550df5a252e2b3bd74ad6f2384f23bcda18b0ffada15dd58dee5fd3",
+   "reason": "it does not fit the project's code as written: LLMRouterConfig cannot be built without default_provider, default_model, default_key_id, defaults, catalog | llm_router._internal.providers.registry has no create_adapter",
+   "sources": [
+    "llm_router._internal.providers.openai_compatible.OpenAICompatibleAdapter",
+    "llm_router._internal.providers.registry.register_adapter_factory",
+    "llm_router._internal.providers.aistudio.adapter_from_config"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:47:19.633130Z",
+   "call_id": "20260930T144529Z-d4b071",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._internal.providers.registry.get_adapter"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "831a33472dbc1e401385db328e5b9ae90373aa59c9463541d2df74da58c53850",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.config.BehaviorDefaults",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.ProviderCatalog",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.RouterPolicyDefaults",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.openai_compatible.OPENAI_COMPATIBLE_PROVIDERS",
+    "llm_router._internal.providers.openai_compatible.OpenAICompatibleAdapter",
+    "llm_router._internal.providers.registry.get_adapter",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ]
+  }
+ ]
+}

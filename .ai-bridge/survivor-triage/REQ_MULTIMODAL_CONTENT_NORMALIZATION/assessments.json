@@ -339,6 +339,23 @@
      "return content"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "content": "['a', 'b']"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195645Z-b505cb",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a list input the original returns a tuple via tuple(content), while the changed version returns the list itself, and a list does not equal a tuple.",
+    "response_sha256": "76212fe616a3397871c917a57fadbc06603044e46752deaa11042e377d0cae46",
+    "sources": [
+     "return tuple(content)",
+     "return content"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "f86959108bf14542a72dfc9faadbe9e771ab35a377242decc00865c764c87aec"
@@ -390,6 +407,23 @@
     "problems": [],
     "reason": "The original returns `tuple(normalized)` while the changed version returns `normalized` (a list), so even for an empty input the two versions return `()` vs `[]`, which are unequal and of different types.",
     "response_sha256": "5cd625289d11166595263e85e574558c01ed9226a23b06d9bd77ab83a01e497e",
+    "sources": [
+     "return tuple(normalized)",
+     "return normalized"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "parts": "[]"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T195646Z-76f991",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original returns a tuple via tuple(normalized), while the changed version returns the list itself, so for parts=[] the results are () and [], which are not equal.",
+    "response_sha256": "7dcf87e3695641f32030738247aa0fc9b09172d391ecf1e6931fa5bb237cb083",
     "sources": [
      "return tuple(normalized)",
      "return normalized"

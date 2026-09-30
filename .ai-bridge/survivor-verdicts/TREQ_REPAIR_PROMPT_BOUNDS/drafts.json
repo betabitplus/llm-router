@@ -1,4 +1,38 @@
 {
+ "395a299516e82a3e": [
+  {
+   "at": "2026-09-30T15:28:03.595557Z",
+   "call_id": "20260930T152720Z-1aaaad",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e7912102ae0dd5d25c2ee9fd76f0bdc27d9dc0c2d3724ac0710ba959938ca8c4",
+   "reason": "it does not fail on the mutant: it runs the changed lines 122\u2013128, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-09-30T15:29:03.527230Z",
+   "call_id": "20260930T152803Z-fb11bd",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9d8c921017541bd2632b1c8d0470f619868ff9ecd98ce6ffc4849bb05731a55e",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.schema.SchemaSpec",
+    "llm_router._internal.capabilities.schema.build_repair_prompt"
+   ]
+  }
+ ],
  "3d767806f2945e38": [
   {
    "at": "2026-09-29T11:47:11.544959Z",

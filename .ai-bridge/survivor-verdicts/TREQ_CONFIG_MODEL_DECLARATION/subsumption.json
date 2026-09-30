@@ -1,0 +1,54 @@
+{
+ "at": "2026-09-30T13:46:23.873247Z",
+ "pins": [
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_3cc16a6300b216ed.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_5ed9365a38636da5.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_e1379ec0c0ed9e96.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_3cc16a6300b216ed.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_5ed9365a38636da5.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_e1379ec0c0ed9e96.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py"
+ ],
+ "restored": [],
+ "removed": {},
+ "matrix": {
+  "3cc16a6300b216ed": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_3cc16a6300b216ed.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_e1379ec0c0ed9e96.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py"
+  ],
+  "5ed9365a38636da5": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_5ed9365a38636da5.py"
+  ],
+  "e1379ec0c0ed9e96": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_e1379ec0c0ed9e96.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py"
+  ],
+  "SM-87B84725": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py"
+  ],
+  "SM-8D7935BF": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py"
+  ]
+ },
+ "caught_before": [
+  "21a42edeaa506772",
+  "3aace789c921b2fb",
+  "3cc16a6300b216ed",
+  "5ed9365a38636da5",
+  "7aaa51dc58b26b2b",
+  "SM-87B84725",
+  "SM-8D7935BF",
+  "SM-B1B17178",
+  "SM-F7806335",
+  "e1379ec0c0ed9e96",
+  "ec4f7ba0feabf0c7",
+  "feb268a2d271b818"
+ ]
+}

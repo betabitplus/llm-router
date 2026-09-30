@@ -1,4 +1,175 @@
 {
+ "0601f3c62c74bba8": [
+  {
+   "at": "2026-09-30T13:55:32.786299Z",
+   "call_id": "20260930T135336Z-f81b26",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2ff481a1d95770b8ccd0cdcb59322b5e93b7d597721c4527022ddd2eb0849a06",
+   "reason": "it does not fail on the mutant: of the changed lines 211\u2013250 it runs lines 211, 220, 223, 235 and 239\u2013240 but never lines 226\u2013227, 230\u2013231, 243, 245\u2013246, 248 and 250",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:58:46.778022Z",
+   "call_id": "20260930T135532Z-19aa35",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "48db46afcf027f4c8131b020125207b2745176a51bda391b7d4bc8f813a846bc",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile"
+   ]
+  }
+ ],
+ "2f06445af49144cc": [
+  {
+   "at": "2026-09-30T15:28:11.183047Z",
+   "call_id": "20260930T152720Z-ccf8b0",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "dd1ce231d3b1e5705d5e2cf16d132614d68f9bd5eddda6e96b61dfd644c93679",
+   "reason": "it does not fail on the mutant: of the changed lines 211\u2013250 it runs lines 211, 220, 223, 235, 239\u2013240 and 247 but never lines 226\u2013227, 230\u2013231, 243, 245\u2013246, 248 and 250",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T15:28:57.017162Z",
+   "call_id": "20260930T152811Z-1a539e",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a055d1c5c1511c30a90f1c6306c1150718b28eab1754a2bbe8a3b0be97b59419",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile"
+   ]
+  }
+ ],
+ "3dc1348c54023b59": [
+  {
+   "at": "2026-09-30T13:54:49.105306Z",
+   "call_id": "20260930T135332Z-c8e9e1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "15c929f0b7b354a739e570603b4a88f50cc631412a0176029b144cefd36fc9c9",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.ProviderLimits"
+   ]
+  }
+ ],
+ "4185d08c0ebf67fe": [
+  {
+   "at": "2026-09-30T13:54:51.659092Z",
+   "call_id": "20260930T135332Z-344161",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1f78c8cabebe8c74367ce81361809760253520e4a2a99bdf3bb0fe3d913a73e4",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert 0.17340949992649257 >= 0.3)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:57:24.858297Z",
+   "call_id": "20260930T135451Z-35dd3f",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2627108dee57b4839ff3eea650a450ca3bdb97f68bc87c9bce638223e0d823fd",
+   "reason": "it does not fail on the mutant: of the changed lines 211\u2013250 it runs lines 211, 220, 223, 229, 235 and 239\u2013240 but never lines 226\u2013227, 230\u2013231, 243, 245\u2013246, 248 and 250",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:02:06.769854Z",
+   "call_id": "20260930T135735Z-911b24",
+   "cause": "kept",
+   "context_gaps": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2612eb2d9014668a2208ff5f96cbfe0dd0cd3cd5314580168ad89fd171549bf0",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.patched_openai_sdk"
+   ]
+  }
+ ],
  "8a48c40fdfe50bce": [
   {
    "at": "2026-09-29T00:24:30.357715Z",
@@ -17,6 +188,75 @@
     "llm_router.Provider.NVIDIA",
     "llm_router.RouterProfile"
    ]
+  },
+  {
+   "at": "2026-09-30T13:54:53.565704Z",
+   "call_id": "20260930T135336Z-e4e501",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a502595c31ccf540ccf4d31b7b1fcc3a3d2fc154e0a27a012545bb19124171d8",
+   "reason": "it does not pass on the original 5 times in a row (pytest: asyncio.exceptions.CancelledError | TimeoutError)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:57:11.169993Z",
+   "call_id": "20260930T135453Z-c10ef7",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1720fabb65c801c759a4d8d9be76525f9c5ac1f1acd5a869a0c3dd5bd79bb81e",
+   "reason": "it does not pass on the original 5 times in a row (pytest: asyncio.exceptions.CancelledError | TimeoutError)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router._api.types.RoutingAttempt",
+    "llm_router._api.types.LLMRouterResponse"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:08:03.130699Z",
+   "call_id": "20260930T135712Z-474692",
+   "cause": "kept",
+   "context_gaps": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fb12dad0553ad3e3e09878e66cf574c1342643caaf962b1f0871282782a78784",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.patched_openai_sdk"
+   ]
   }
  ],
  "SM-230B4176": [
@@ -30,6 +270,24 @@
    "level": 1,
    "model": "claude-sonnet-5-5",
    "question_sha256": "96d24b1888d7483103bbb747dd3b98bfee65ae46d9c760e745c49e4025848ba4",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:55:27.516171Z",
+   "call_id": "20260930T135336Z-04f80d",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "dc7f26a4da06bb0f395890eebae9c699b7c086a53700a940ba18fb44e3b5f5a7",
    "reason": "",
    "sources": [
     "llm_router.LLMRouter",
@@ -93,6 +351,42 @@
     "llm_router.Provider",
     "llm_router.RouterProfile"
    ]
+  },
+  {
+   "at": "2026-09-30T13:54:42.676151Z",
+   "call_id": "20260930T135336Z-239c64",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d27bf49acdb2b7a492d3c47478695891ba189d167eeec4ea63cbc9bbe6fad964",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ConfigurationError: Conflicting route policy default: attempt_timeout_seconds.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:57:00.108302Z",
+   "call_id": "20260930T135442Z-4c5865",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b51c5eae53263a4ee87300b8f8a1b27609d4343f1077dabbfde5027ebb84ba15",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
   }
  ],
  "SM-AA98B36D": [
@@ -112,6 +406,149 @@
     "llm_router.Model",
     "llm_router.Provider",
     "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:54:43.837899Z",
+   "call_id": "20260930T135336Z-67d50e",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "502913437c1d34ab01af6f03222393163fcf8d04a563172ab57ac8bfc9ea0923",
+   "reason": "it does not pass on the original 5 times in a row (pytest: TypeError: Unsupported media value: dict.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:56:45.066091Z",
+   "call_id": "20260930T135443Z-a81253",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "59fc0d2609d176d43063720d2001240984cd03ee809bb6538c1124d427bd28bd",
+   "reason": "it does not pass on the original 5 times in a row (pytest: TypeError: Unsupported media value: dict.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:07:00.948708Z",
+   "call_id": "20260930T135645Z-ef9a42",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ed0621791aa4eb3d3f284217ff8311e4f25195d2fc3445dce5d1690488c3baf9",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.Session",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ]
+  }
+ ],
+ "a73d76c7050e2371": [
+  {
+   "at": "2026-09-30T13:55:59.941067Z",
+   "call_id": "20260930T135336Z-15e8fc",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a6d5c9e654a25d794de2894e94d7dd45e7aa3e95ac0c039507fdd274e88931f0",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'nvidia' failed for model 'deepseek-v4-flash'. Reason: Provider request failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:57:52.727494Z",
+   "call_id": "20260930T135600Z-68d36e",
+   "cause": "grounding",
+   "context_gaps": [
+    "tests.llm_router.support.fault_server.FaultServer"
+   ],
+   "effort": "high",
+   "grounding": [
+    "tests.llm_router.support.fault_server has no FaultServer"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2c79ad31e9a2e9dab51d24367c6b1a3bd585248945d25d01fb65f678b0b53a4c",
+   "reason": "it does not fit the project's code as written: tests.llm_router.support.fault_server has no FaultServer",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.FaultServer"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:03:03.666066Z",
+   "call_id": "20260930T135753Z-d41897",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "92f487b5afc0f3c9a6e936810727223680614c19ad7944f8972fb4bac1dc399c",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
    ]
   }
  ],
@@ -149,6 +586,146 @@
     "llm_router.Provider",
     "llm_router.RouterProfile"
    ]
+  },
+  {
+   "at": "2026-09-30T14:02:48.875100Z",
+   "call_id": "20260930T135348Z-667eaf",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "66b80b5c4ee33a30558d0cd7096bf550bb0695dcebbf9e34a67ae9054c2efec2",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ModelNotFoundError: Model 'llama-3.1-8b-instruct' not configured for provider 'groq'.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router.LLMRouterResponse",
+    "llm_router.RoutingAttempt"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:06:13.146079Z",
+   "call_id": "20260930T140249Z-0713fe",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ff0f68bae980e87714239fc27d650dbac9f85b7c454f36046b6e9cfbc84cc7fd",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ConfigurationError: Conflicting route policy default: default_limits.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:11:12.572511Z",
+   "call_id": "20260930T140614Z-4bf22e",
+   "cause": "kept",
+   "context_gaps": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "76a7b916d283e1ffd54118bef11a96486421eaf675ecafbf8ae97c56768a7f6e",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.patched_openai_sdk"
+   ]
+  }
+ ],
+ "c673733c4b655a92": [
+  {
+   "at": "2026-09-30T13:55:44.147513Z",
+   "call_id": "20260930T135336Z-acb9d6",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1c83383b09bb320853103ac5354750b7e3849b8fcb63027e02df63a019da1f47",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ModelNotFoundError: Model 'llama-3.1-8b-instruct' not configured for provider 'groq'.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:59:15.589384Z",
+   "call_id": "20260930T135544Z-909c00",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "178897eebae2b12ef0a192248c93549b3e34dc22f8a5d5c44c62090552ad56c7",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ProviderError: Provider 'nvidia' failed for model 'deepseek-v4-flash'. Reason: Provider request failed.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:10:09.810995Z",
+   "call_id": "20260930T135918Z-a1c107",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a0e222173ad65f7fb30fdf330204503e5744ea77b3eea52af8e89d858fbe25bf",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ]
   }
  ],
  "e1a047184fcbb294": [
@@ -168,6 +745,152 @@
     "llm_router.Provider",
     "llm_router.RouterProfile",
     "llm_router.UsageStats"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:56:05.572665Z",
+   "call_id": "20260930T135336Z-e1b445",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8b910afd59ee51ee178b3cef53e18a16f4de61729ea1a7ebe5797c437c2fb5f5",
+   "reason": "it does not fail on the mutant: of the changed lines 211\u2013250 it runs lines 211, 220, 223, 235 and 239\u2013240 but never lines 226\u2013227, 230\u2013231, 243, 245\u2013246, 248 and 250",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:00:43.341226Z",
+   "call_id": "20260930T135605Z-9246f7",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f7dc1417fc31bda193648b9ef958ff28301b521eadaa24269621be2490e6f068",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ModelNotFoundError: Model 'llama-3.1-8b-instruct' not configured for provider 'groq'.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._api.types.RoutingAttempt"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:03:05.471905Z",
+   "call_id": "20260930T140043Z-faabb9",
+   "cause": "rules",
+   "context_gaps": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "55ef0b3e3dd801aba3b292887ab79a2900cbf5ad830af6224390ad91bffea3ec",
+   "reason": "it imports tests.llm_router.support.workers.worker_patches",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:07:59.389492Z",
+   "call_id": "20260930T140306Z-3dbbe2",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "496a08fad0135612e382199f53ba2096968716cf448932d2315b2b45a93a4a1c",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._api.types.RoutingAttempt",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.patched_openai_sdk"
+   ]
+  }
+ ],
+ "fddc853000a48d63": [
+  {
+   "at": "2026-09-30T13:55:22.862897Z",
+   "call_id": "20260930T135336Z-9749b2",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b315f7d3cac5b0bdd551f6f042d3df611ed50b462c7c53789eb03fa98882a35b",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ConfigurationError: router policy max attempts must be at least 1.)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:57:49.239337Z",
+   "call_id": "20260930T135523Z-7ab599",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c5f2cb3af7568daff452c81bed5faa95b6c715ca1aa93e460a8eaf21e3e93111",
+   "reason": "it does not pass on the original 5 times in a row (pytest: llm_router._api.errors.ConfigurationError: Route spec must define at least one route.)",
+   "sources": [
+    "llm_router.LLMRouter"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:02:14.599436Z",
+   "call_id": "20260930T135750Z-3037d1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8959a3bf1afc8a908eb577f3143363e100a5886a4e6389bd7740bcd465468f38",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
    ]
   }
  ]

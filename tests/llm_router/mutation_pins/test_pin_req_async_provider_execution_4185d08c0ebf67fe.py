@@ -1,76 +1,85 @@
 # mutation-pin: REQ_ASYNC_PROVIDER_EXECUTION 4185d08c0ebf67fe
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
-
-import asyncio
-from typing import Any
 
 import pytest
 
-from llm_router import LLMRouter, Model, Provider, RouterProfile
+from llm_router import LLMRouter, Model, Provider, ProviderLimits, RouterProfile
+from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+    patched_openai_sdk,
+)
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
 @pytest.mark.verifies("REQ_ASYNC_PROVIDER_EXECUTION[revision==1]")
-def test_async_execution_defers_pacing_wait_under_one_second(
+@pytest.mark.asyncio
+async def test_async_pacing_wait_under_one_second_defers_route(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    env_nvidia = "NVIDIA_API_KEY"
-    env_openai = "OPENAI_API_KEY"
+    env_first = "OPENROUTER_API_KEY_1"
+    env_second = "OPENROUTER_API_KEY_2"
     value = "mock-provider-auth-12345"
-    monkeypatch.setenv(env_nvidia, value)
-    monkeypatch.setenv(env_openai, value)
-
+    monkeypatch.setenv(env_first, value)
+    monkeypatch.setenv(env_second, value)
+    path = openai_chat_path()
+    limits = {
+        Provider.OPENROUTER: ProviderLimits(
+            rps=2.0,
+            rpm=1_000_000.0,
+            cooldown_seconds=0.0,
+            cooldown_after_failures=0,
+        )
+    }
     router = LLMRouter(
-        RouterProfile(model=Model.DEEPSEEK_V4_FLASH, provider=Provider.NVIDIA)
+        [
+            RouterProfile(
+                provider=Provider.OPENROUTER,
+                model=Model.DEEPSEEK_V3,
+                key_id=1,
+            ),
+            RouterProfile(
+                provider=Provider.OPENROUTER,
+                model=Model.DEEPSEEK_V3,
+                key_id=2,
+            ),
+        ],
+        round_robin_start=False,
+        shuffle_fallbacks=False,
+        limits_by_provider=limits,
     )
-    runtime = getattr(router, "_runtime", router)
+    with (
+        ScriptedHTTPServer(
+            port=0,
+            routes={
+                ("POST", path): [
+                    ScriptedResponse(
+                        status_code=200,
+                        headers={"Content-Type": "application/json"},
+                        body=openai_success_response(text=marker),
+                    )
+                    for marker in ("A", "B", "C")
+                ]
+            },
+        ) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ),
+    ):
+        first = await router.aquery("first prompt")
+        second = await router.aquery("second prompt")
 
-    routes = runtime._next_attempt_order(
-        settings=runtime._settings_for_first_route(call_overrides={})
-    )
-    route = routes[0]
-
-    def mock_attempt_order(*, settings: Any) -> tuple[Any, ...]:
-        assert settings is not None
-        return (route, route)
-
-    monkeypatch.setattr(runtime, "_next_attempt_order", mock_attempt_order)
-
-    prepared_requests: list[Any] = []
-    original_prepare = runtime._prepare_request
-
-    def mock_prepare(*args: Any, **kwargs: Any) -> tuple[Any, float]:
-        req, _ = original_prepare(*args, **kwargs)
-        prepared_requests.append(req)
-        wait_seconds = 0.5 if len(prepared_requests) == 1 else 0.0
-        return req, wait_seconds
-
-    monkeypatch.setattr(runtime, "_prepare_request", mock_prepare)
-
-    called_requests: list[Any] = []
-
-    async def mock_call_async(request: Any, timeout_seconds: Any) -> Any:
-        assert timeout_seconds is not None
-        called_requests.append(request)
-        return "mock-response-data"
-
-    monkeypatch.setattr(runtime, "_call_async_with_timeout", mock_call_async)
-
-    complete_calls: list[dict[str, Any]] = []
-
-    def mock_complete_success(*args: Any, **kwargs: Any) -> Any:
-        assert not args
-        complete_calls.append(kwargs)
-        return "mock-success-response"
-
-    monkeypatch.setattr(runtime, "_complete_success", mock_complete_success)
-
-    result = asyncio.run(router.aquery("test content prompt"))
-
-    assert result == "mock-success-response"
-    assert len(prepared_requests) == 2
-    assert called_requests == [prepared_requests[1]]
-    assert len(complete_calls) == 1
-    assert len(complete_calls[0]["traces"]) == 1
+    assert [attempt.key_id for attempt in first.routing_trace] == [1]
+    # Route 1 is paced for about half a second: it must be reported as
+    # blocked and the ready route 2 must serve the request.
+    assert [attempt.key_id for attempt in second.routing_trace] == [1, 2]
+    assert [attempt.error_type for attempt in second.routing_trace] == [
+        "RouteBlockedError",
+        None,
+    ]
+    assert 0.0 < second.routing_trace[0].wait_seconds < 1.0

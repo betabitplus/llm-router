@@ -43,6 +43,265 @@
   },
   "prompt_sha256": "08746c819a46de2df5897851275805f13c9bd09886e17acc96869dddd0a3d5d5"
  },
+ "5e426e56bd7decaf": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141922Z-294891",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "If the JSON is valid but not an object (e.g. `[]`, `1`, `null`), the mutant skips the rejection and calls `payload.get('version')`, which raises AttributeError instead of SessionSerializationError. Data like this has no supported version and is incompatible, and the requirement says such data must be rejected with SessionSerializationError.",
+   "response_sha256": "a22115f8d0ab2a9011ca21bb87d32a45e043bc4317ee8be97023952110b805a9",
+   "sources": [
+    "Session serialization rejects incompatible data",
+    "Unsupported serialization versions raise SessionSerializationError instead of loading incompatible state.",
+    "msg = 'Session payload must be a JSON object.'\n        pass"
+   ],
+   "test_focus": "Decoding valid non-object JSON such as `[]`, `42` or `null` must raise SessionSerializationError, not AttributeError or any other exception.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-30T19:01:58.352376Z",
+   "answer_sha256": "8231ab55c1feb4bf083dd40c0c71aae09ec67cb2c88907b112cac2820a16cfb2",
+   "call_id": "20260930T190120Z-08183e",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "8231ab55c1feb4bf083dd40c0c71aae09ec67cb2c88907b112cac2820a16cfb2",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5e426e56bd7decaf.py",
+   "response_sha256": "9c6988b90c27c536deecbcaa7c83fd331a40f8e8e8def5a64a845746ef62f006",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.runtime.errors.SessionSerializationError",
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  },
+  "prompt_sha256": "2dbb813a2e7acbced957b781ae77c7feb3cbc16c091f0da2eaf449d5233a6454",
+  "rejected_pin": {
+   "adopted_at": "2026-09-30T14:44:50.298751Z",
+   "answer_sha256": "9df2ff81d90204b35d28fc322bdd0a649da61eb81e9ed37b40903d7b28d7ff2c",
+   "at": "2026-09-30T16:06:28.980627Z",
+   "call_id": "20260930T144416Z-cc3b81",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "9df2ff81d90204b35d28fc322bdd0a649da61eb81e9ed37b40903d7b28d7ff2c",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5e426e56bd7decaf.py",
+   "reason": "its parametrized cases get ids with a double bracket ([[]] and [[{\"version\": 1}]]), which the documentation build reads as a sphinx-needs function call, so the portal does not build",
+   "response_sha256": "d04173b4fa5d8a83e8ccffc45d8c3fe2bbca03312af8865a70f4e1aa7af676f6",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.runtime.errors.SessionSerializationError",
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  }
+ },
+ "5eca933c7a02d62f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141922Z-01b7cd",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With the raise swapped for `pass`, a correctly versioned payload whose history is not a list is no longer rejected. A history of `\"\"` or `{}` loads as an empty conversation, and a missing history escapes as a TypeError instead of a SessionSerializationError. That breaks the requirement that serialization rejects incompatible data rather than loading incompatible state.",
+   "response_sha256": "0966f085003c3a4b2a87c9365a774ad87b1206269bfc627cff46dc7ca84c5254",
+   "sources": [
+    "Session serialization rejects incompatible data",
+    "reject unsupported serialization versions rather than loading incompatible state",
+    "        msg = 'Session history must be a list.'\n        pass",
+    "        raise SessionSerializationError(msg)"
+   ],
+   "test_focus": "Call decode_session with the current version and a history that is missing, `\"\"` or `{}`, and assert that each case raises SessionSerializationError and never returns an empty history.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-30T14:44:50.463589Z",
+   "answer_sha256": "6d41ade8de15bf4b5581ecb4c89f51ce5a1e86e25e7814de800a38a5b62f835d",
+   "call_id": "20260930T144416Z-f8694e",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "6d41ade8de15bf4b5581ecb4c89f51ce5a1e86e25e7814de800a38a5b62f835d",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py",
+   "response_sha256": "6960bf292ca4895c385c87c2fd6ae75c05e5c74495418e13f76fb210edae4e01",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.runtime.errors.SessionSerializationError",
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  },
+  "prompt_sha256": "789757b8ac3a2e70d3f74349a3a08729ba21393ede5b0bccb31eb3d25286f184"
+ },
+ "623b0ce689f82e48": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141922Z-c3e7fb",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "A JSON payload that is not an object has no supported version, so it counts as incompatible data. The requirement says such data must be rejected with SessionSerializationError, but the mutant raises AttributeError instead (confirmed with the input '1\\r'). Callers that handle SessionSerializationError would then crash on this input.",
+   "response_sha256": "d1ff132e0758408295ec53fab2a09f9010c13b63a2f5366107fccb0b6713e5d7",
+   "sources": [
+    "Session serialization rejects incompatible data",
+    "Unsupported serialization versions raise SessionSerializationError instead of loading incompatible state.",
+    "if False:",
+    "msg = 'Session payload must be a JSON object.'"
+   ],
+   "test_focus": "Decoding valid JSON that is not an object (for example '1' or '[]') must raise SessionSerializationError, not AttributeError or any other exception.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-30T19:01:59.437179Z",
+   "answer_sha256": "0fa990958fed33de4fd3e3f3bef8d0463774e9e7ce3c664fc97da3e6ec2eef3a",
+   "call_id": "20260930T190121Z-ead0f1",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "0fa990958fed33de4fd3e3f3bef8d0463774e9e7ce3c664fc97da3e6ec2eef3a",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_623b0ce689f82e48.py",
+   "response_sha256": "726efae6acf0af7209f54037f8486faf3d7eadc649302a738bb5a064eb776f5c",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.runtime.errors.SessionSerializationError",
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  },
+  "prompt_sha256": "765cc00d93606217fb3013624964dfdce90c52b9cf368a857dac184be0b539d0"
+ },
+ "73af7c5839a73039": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141922Z-a73797",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant raises SessionSerializationError for any non-null system prompt, so a saved session with a string system prompt no longer loads. This breaks the requirement that save/load preserve the system prompt, and execution confirms it: \"hello\" is returned by the original and rejected by the mutant.",
+   "response_sha256": "285e1ec35c9f23bafd1a5f680691b045076a32fefe873d5d8c7137e81d1f05bc",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "if system is not None and not isinstance(system, str):",
+    "if system is not None:"
+   ],
+   "test_focus": "Save a session with a non-empty string system prompt, load it back, and check that the loaded system prompt equals the original string and that no SessionSerializationError is raised.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-09-30T14:21:50.045814Z",
+   "answer_sha256": "4503e224879f73e5b31a60ff2877d29993140776621d956190d05ecdc88fcf7d",
+   "call_id": "20260930T142110Z-68d422",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "4503e224879f73e5b31a60ff2877d29993140776621d956190d05ecdc88fcf7d",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_73af7c5839a73039.py",
+   "response_sha256": "9555115f1fda681c5a4649936fbfc46e5a035e44959c107b38f9dd0e21e77806",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  },
+  "prompt_sha256": "19dc1469af27211d93673044278e41afd4f6a48683b4ee7077343614d6ab7067"
+ },
+ "84e67158176fdd1f": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141922Z-7fa3a1",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant removes the check on the system prompt's type. A session whose system prompt is an integer now loads instead of raising SessionSerializationError. That is loading incompatible state, which the requirement to reject incompatible data forbids.",
+   "response_sha256": "16d4aaa2573ef82b65f45a8997598af8c8e79d0d60382a6a2d5793a2db22abd6",
+   "sources": [
+    "Session serialization rejects incompatible data",
+    "reject unsupported serialization versions rather than loading incompatible state",
+    "Saving and loading a session shall preserve its system prompt",
+    "if system is not None and not isinstance(system, str):",
+    "if False:"
+   ],
+   "test_focus": "Test that decode_session raises SessionSerializationError for a supported-version payload whose \"system\" is not a string or null, for example 123.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "pin": {
+   "adopted_at": "2026-09-30T14:21:45.944416Z",
+   "answer_sha256": "73d1cabcd0e876f57ec3322430f88eb7c2a9975bd0baca06f3d87c99229048c2",
+   "call_id": "20260930T142110Z-506d75",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "73d1cabcd0e876f57ec3322430f88eb7c2a9975bd0baca06f3d87c99229048c2",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_84e67158176fdd1f.py",
+   "response_sha256": "0e373642cf238e8f6de6530d1aa9f9cc653b6922b296ac468feed95937cdd8b3",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.session.serialization.decode_session",
+    "llm_router._internal.runtime.errors.SessionSerializationError"
+   ]
+  },
+  "prompt_sha256": "364f011c01161c2e150674e123536235164caa87021748ca19692ca552bfc2bc"
+ },
  "92622e5a5f97e586": {
   "answer": {
    "backend": "claude-cli",
@@ -84,33 +343,36 @@
  "9e3d1c41b323b0bb": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T001212Z-bf6dac",
+   "call_id": "20260930T141922Z-fb2d4f",
    "confirmed": true,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Dropping sort_keys only changes the order of keys in the JSON text. Loading the output still gives back the same system, history and version. The requirement asks for state to survive save/load and for unsupported versions to be rejected. It never asks for a deterministic or canonical key order.",
-   "response_sha256": "edf338fd5714de057c720512879dda8db8649bca75600a94ed1ad3729e0ef8fc",
+   "reason": "Dropping sort_keys changes only the key order in the JSON text; parsing the output gives the same mapping, so save/load still keeps system, history and media, and the version check still sees the same version. No requirement asks for byte-identical or canonically ordered session files.",
+   "response_sha256": "5da344423f82cd2a903deb4b478a2f42f95124afd64700a43a06cb7bc1835094",
    "sources": [
     "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
     "Unsupported serialization versions raise SessionSerializationError instead of loading incompatible state.",
-    "return json.dumps(payload, indent=2, sort_keys=True)"
+    "return json.dumps(payload, indent=2, sort_keys=True)",
+    "return json.dumps(payload, indent=2)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "c190ddd9ce5a9fbb3019c3c4abfc9eac5cc3cf5c969bc48f2a94b94caf1fb5c1",
+  "prompt_sha256": "0433e85cf2695b49519b498de0dec9c73705e2e9e8097f1793f97d65a6a7d7de",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T094723Z-4a3a4a",
+   "call_id": "20260930T141939Z-29c206",
    "confirmed": true,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "c190ddd9ce5a9fbb3019c3c4abfc9eac5cc3cf5c969bc48f2a94b94caf1fb5c1",
-   "reason": "The requirement mandates preserving session state data, not the specific key ordering within the JSON serialized string. JSON objects are unordered by definition, so omitting `sort_keys=True` does not impact the round-tripping of state.",
-   "response_sha256": "666c1305618effc8d3528bf60d77428c916eafd71d98b33ff2b63f92f61fda46",
+   "prompt_sha256": "0433e85cf2695b49519b498de0dec9c73705e2e9e8097f1793f97d65a6a7d7de",
+   "reason": "The requirements mandate that session state is preserved across saving and loading, but do not dictate a strict canonical JSON string format or key ordering. Since the semantic data is preserved upon deserialization regardless of key sorting, this difference is an implementation detail.",
+   "response_sha256": "12845ea1488502d1725186ee00497aa2fdda3ccc884ad00a75d648583b823daa",
    "sources": [
     "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
     "return json.dumps(payload, indent=2, sort_keys=True)",
@@ -140,23 +402,30 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-29T17:21:43.479325Z",
-   "answer_sha256": "362d75d89709d3d4b008d537fc4a576ccd6ffab7c4b212fdc0b10d1086fd2222",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "362d75d89709d3d4b008d537fc4a576ccd6ffab7c4b212fdc0b10d1086fd2222",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_a96f2e5c.py",
-   "source": "kept semantic draft"
-  },
-  "prompt_sha256": "aad45d4bdcb412b9ca25e9cb64be27705bb8307c5621677ad6a701af7c302849"
+  "prompt_sha256": "aad45d4bdcb412b9ca25e9cb64be27705bb8307c5621677ad6a701af7c302849",
+  "subsumed": {
+   "at": "2026-09-30T13:48:32.477616Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_ae82b8cb.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_b91a9265.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T17:21:43.479325Z",
+    "answer_sha256": "362d75d89709d3d4b008d537fc4a576ccd6ffab7c4b212fdc0b10d1086fd2222",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "362d75d89709d3d4b008d537fc4a576ccd6ffab7c4b212fdc0b10d1086fd2222",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_a96f2e5c.py",
+    "source": "kept semantic draft"
+   }
+  }
  },
  "SM-AE82B8CB": {
   "answer": {
@@ -177,23 +446,29 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-29T19:13:36.460095Z",
-   "answer_sha256": "f3492df7d9d29bdf5a53f3ceb9f87c1e1e3a5f5bbdc7e18191555e7283cda2a5",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "c745bf925be896740e1a6f9af35ab03746bb668d3eed40b915be1c12bda66528",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_ae82b8cb.py",
-   "source": "kept semantic draft"
-  },
-  "prompt_sha256": "f81dda7fe5f289de6b811f8ce9b58cb1df659ed738f85ce4fd6a83c3a35f6a88"
+  "prompt_sha256": "f81dda7fe5f289de6b811f8ce9b58cb1df659ed738f85ce4fd6a83c3a35f6a88",
+  "subsumed": {
+   "at": "2026-09-30T15:36:19.103172Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_b91a9265.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T19:13:36.460095Z",
+    "answer_sha256": "f3492df7d9d29bdf5a53f3ceb9f87c1e1e3a5f5bbdc7e18191555e7283cda2a5",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "c745bf925be896740e1a6f9af35ab03746bb668d3eed40b915be1c12bda66528",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_ae82b8cb.py",
+    "source": "kept semantic draft"
+   }
+  }
  },
  "SM-B91A9265": {
   "answer": {
@@ -278,6 +553,254 @@
    ],
    "test_focus": "",
    "verdict": "irrelevant"
+  }
+ },
+ "ae9bb16e0f156df0": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141922Z-072f2b",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the check that history is a list. A version-valid file with history null now fails with TypeError instead of SessionSerializationError, and a non-list history such as {} would probably load as an empty conversation. Both break the requirement that session serialization reject incompatible data rather than load it.",
+   "response_sha256": "c884954355f6a572039897f4f732922383159c9495ed03bba8f46921b8b55b45",
+   "sources": [
+    "Session serialization rejects incompatible data",
+    "reject unsupported serialization versions rather than loading incompatible state",
+    "if not isinstance(raw_history, list):",
+    "if False:"
+   ],
+   "test_focus": "decode_session on a correct-version payload whose history is missing, null or not a list (e.g. {\"version\": 1, \"history\": null} or {\"version\": 1, \"history\": {}}) must raise SessionSerializationError.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "a220425b41b23fbee0ba66d85a559a52c0d739e76c05b702c682d4327dbb3fbd",
+  "subsumed": {
+   "at": "2026-09-30T15:36:19.101182Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T14:22:18.666984Z",
+    "answer_sha256": "e9af6afd9a0676d5badfd8b1e019bbcd03121f54a3e5e6ad70ae2aad5747a8f7",
+    "call_id": "20260930T142110Z-88f2a7",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "e9af6afd9a0676d5badfd8b1e019bbcd03121f54a3e5e6ad70ae2aad5747a8f7",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_ae9bb16e0f156df0.py",
+    "response_sha256": "9bae0e264ceb64fafd9ca5467d56ac4f8b95fbaee390445b3a0b7fabc2c40759",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.session.serialization.decode_session",
+     "llm_router._internal.runtime.errors.SessionSerializationError"
+    ]
+   }
+  }
+ },
+ "e4925bbc494ef9d1": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141922Z-10d69f",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With the `raise` replaced by `pass`, a session file that is not valid JSON never binds `payload`, so the next line raises UnboundLocalError instead of the domain SessionSerializationError. Corrupt input is incompatible data, and the requirement says to reject it with SessionSerializationError. A caller that catches that error would crash instead.",
+   "response_sha256": "ef2b60ef9fb21ca797b70a051da3b8916d1de104722e16044a42c0c5524c505f",
+   "sources": [
+    "Session serialization rejects incompatible data",
+    "Unsupported serialization versions raise SessionSerializationError instead of loading incompatible state.",
+    "raise SessionSerializationError(msg) from exc",
+    "pass"
+   ],
+   "test_focus": "Decoding or loading a session from text that is not valid JSON (e.g. \"{not json\") must raise SessionSerializationError, not some other exception.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "pin": {
+   "adopted_at": "2026-09-30T14:21:49.851135Z",
+   "answer_sha256": "7d19a28aba2ad7f5469b9f670d2f18eae06e7d00ba6a0f4b5636aa4a9c0c6886",
+   "call_id": "20260930T142110Z-1794ec",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "7d19a28aba2ad7f5469b9f670d2f18eae06e7d00ba6a0f4b5636aa4a9c0c6886",
+   "effort": "low",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_e4925bbc494ef9d1.py",
+   "response_sha256": "b15b3777e64211d0a33cca1870dfa5dafbb8f0791cfe0049aa5f21de686903b4",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.session.serialization.decode_session",
+    "llm_router._internal.runtime.errors.SessionSerializationError"
+   ]
+  },
+  "prompt_sha256": "41d56333e8794041d8f0d898d126d977b765cbf7411637a8d1f389cbd9a414b8"
+ },
+ "e966dd5a2d776e14": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141922Z-69bfac",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "This requirement is about rejecting incompatible data rather than loading it. The mutant stops raising for a non-string system prompt, so a session file with the current version and a system prompt like `123` loads bad state into the session instead of raising SessionSerializationError.",
+   "response_sha256": "ca589a8f1e15fb60a27a74976684b6f5a3a37eaffd8348025cfe8ba66de4d891",
+   "sources": [
+    "Session serialization rejects incompatible data",
+    "reject unsupported serialization versions rather than loading incompatible state",
+    "Saving and loading a session shall preserve its system prompt",
+    "msg = 'Session system prompt must be a string or null.'\n        pass"
+   ],
+   "test_focus": "Decoding a session payload that has the current version, a valid history list and a non-string system value (e.g. 123) must raise SessionSerializationError.",
+   "verdict": "pin"
+  },
+  "operator": "statement",
+  "prompt_sha256": "3255ae7334bde2d7ddee162c10fc28e89ae84fd5e76fcf9c243bfbaf8fae4770",
+  "subsumed": {
+   "at": "2026-09-30T15:36:19.101877Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_84e67158176fdd1f.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T14:44:50.052914Z",
+    "answer_sha256": "9427ee3e03e562399614e9ceb91fd3ce74a8d698ebabc7fc445d316e03f8e7c6",
+    "call_id": "20260930T144416Z-b3ca3a",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "9427ee3e03e562399614e9ceb91fd3ce74a8d698ebabc7fc445d316e03f8e7c6",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_e966dd5a2d776e14.py",
+    "response_sha256": "6bb1b23b648fca218f4f40b3f77c4acbb214e8a5c235aba0c21d61f28ae3b43f",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.runtime.errors.SessionSerializationError",
+     "llm_router._internal.session.serialization.decode_session"
+    ]
+   }
+  }
+ },
+ "f1db3a48e54f5fe2": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141922Z-fc3007",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant returns a lazy, single-use generator instead of a tuple of messages. The loaded history can't be compared, measured or read twice, and errors from malformed messages are delayed. Saving and loading therefore no longer preserves the conversation history.",
+   "response_sha256": "2cad9ddbf9a3e6fdc941c1f4e1e362da2a2524f1f6ac0d59aa6ba2cd59f37ad6",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "return system, tuple(_decode_message(item) for item in raw_history)",
+    "return (system, (_decode_message(item) for item in raw_history))",
+    "reject unsupported serialization versions rather than loading incompatible state"
+   ],
+   "test_focus": "Decode an encoded session and check that the history is a tuple equal to the saved messages. It must stay the same when read twice or after a second save/load round trip.",
+   "verdict": "pin"
+  },
+  "operator": "conversion",
+  "pin": {
+   "adopted_at": "2026-09-30T19:01:49.656614Z",
+   "answer_sha256": "29d509efe86b1f860b076f9b568fba69b0bbec9d21c5b45e0a23adf42c4ff11c",
+   "call_id": "20260930T142150Z-7f9a1d",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "29d509efe86b1f860b076f9b568fba69b0bbec9d21c5b45e0a23adf42c4ff11c",
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_f1db3a48e54f5fe2.py",
+   "response_sha256": "67e95b829f31363406fde11b12ce350994dee815042a7cf8649591e3bf3949f0",
+   "source": "draft author"
+  },
+  "prompt_sha256": "1d06cca5c2c605c411d04096c83e3b96ba3745526444580253a7fb89cf783eb7"
+ },
+ "fa88bb3261b0e691": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20260930T141922Z-620f78",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant flips the type check, so any session that has a valid string system prompt now raises SessionSerializationError instead of loading. That breaks the requirement that save/load keep the system prompt, and execution confirms it with a plain string prompt.",
+   "response_sha256": "ee1bf5f137ba2296844a7195484fbae40e73ef49ae7ee29ae55ca1534d69629a",
+   "sources": [
+    "Saving and loading a session shall preserve its system prompt, conversation history, generated text, metadata, and supported embedded media across the serialized representation.",
+    "if system is not None and isinstance(system, str):",
+    "if system is not None and not isinstance(system, str):"
+   ],
+   "test_focus": "Save and load a session with a non-null string system prompt. Check that loading does not raise and returns the same system prompt.",
+   "verdict": "pin"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "e3b9b01c32fb1f7b0811ab9d948ce428425c29f2671be9e3355f960dc8cdd7ea",
+  "subsumed": {
+   "at": "2026-09-30T15:36:19.103002Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_73af7c5839a73039.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_84e67158176fdd1f.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T14:21:48.886590Z",
+    "answer_sha256": "053e68d4b2973b9c17069eb8f31342973c298507c1902cb2fa1691e5986e8e21",
+    "call_id": "20260930T142110Z-be2231",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "053e68d4b2973b9c17069eb8f31342973c298507c1902cb2fa1691e5986e8e21",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fa88bb3261b0e691.py",
+    "response_sha256": "fcf0cf0ad9322deb6000bb60c11362ee02b9e4436c20f7acab6d7bbb4358c158",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.session.serialization.decode_session"
+    ]
+   }
   }
  }
 }

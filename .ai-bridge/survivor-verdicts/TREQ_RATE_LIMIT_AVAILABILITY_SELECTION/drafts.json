@@ -41,6 +41,92 @@
     "llm_router.RouterProfile",
     "llm_router._internal.runtime.router.RouterRuntime"
    ]
+  },
+  {
+   "at": "2026-09-30T13:54:56.372344Z",
+   "call_id": "20260930T135348Z-ddac5a",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "95583390840a24b8e21a69edab292d848e7526392fdc567392c68b5a58281d68",
+   "reason": "it breaks the project's lint rules (ruff: line 31: ARG002 Unused method argument: `provider` | line 31: ARG002 Unused method argument: `key_id` | line 37: ARG002 Unused method argument: `provider` | line 38: ARG002 Unused method argument: `key_id`); it reads or replaces `_keys`, reads or replaces `_limiter`, reads or replaces `_messages_for_content`, reads or replaces `_prepare_request`, a private",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:56:56.129311Z",
+   "call_id": "20260930T135456Z-4658a0",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "307bec591dda03b70747cb798bcb86c5c4fb2c5ee4c545e9ce6f6d0b346b4ae1",
+   "reason": "it does not pass on the original 5 times in a row (pytest: fixture '_keys' not found)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "tests.llm_router.bdd.routing.test_rate_limits"
+   ]
+  },
+  {
+   "at": "2026-09-30T13:59:31.931385Z",
+   "call_id": "20260930T135657Z-937575",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "102d12cecc81c797c58b2c0e36af5e79c049ea41c738dbdd5893b60697c456ab",
+   "reason": "it reads or replaces `_keys`, reads or replaces `_limiter`, reads or replaces `_messages_for_content`, reads or replaces `_prepare_request`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:07:06.671910Z",
+   "call_id": "20260930T135932Z-7e97e5",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.Model",
+    "llm_router.ProviderError",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "5449cf5d3388d0dea59138c0eb945ad25487f64e8dff0f7ef93fc3c0fc4664d8",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ],
  "0d1ec285e912ae10": [
@@ -101,6 +187,75 @@
     "llm_router._api.types.Provider",
     "llm_router._internal.runtime.router.RouterRuntime"
    ]
+  },
+  {
+   "at": "2026-09-30T13:58:43.997122Z",
+   "call_id": "20260930T135348Z-46ba1b",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "c9edbb335de1b897bb1748c932f35925e36dbdc5df83e95222c30148dfe549a7",
+   "reason": "it breaks the project's lint rules (ruff: line 71: PT019 Fixture `_keys` without value is injected as parameter, use `@pytest.mark.usefixtures` instead)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "tests.llm_router.bdd.routing.test_rate_limits._keys"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:01:14.242066Z",
+   "call_id": "20260930T135844Z-d92eb2",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "609ca6b39c81ba7ac3cae7b2754e3b58b855df8d7b5353123e6b37e75e90868c",
+   "reason": "it reads or replaces `_keys`, reads or replaces `_limiter`, reads or replaces `_messages_for_content`, reads or replaces `_prepare_request`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:06:04.800807Z",
+   "call_id": "20260930T140114Z-678cf4",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.Model",
+    "llm_router.ProviderError",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "6cf64d0e8aaf0e742914beec248e33b6cb22c40023b731397613811073779f5e",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ],
  "87ecdb53561b826d": [
@@ -120,6 +275,71 @@
     "llm_router._api.types.Model",
     "llm_router._api.types.Provider",
     "llm_router._api.types.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:01:09.290298Z",
+   "call_id": "20260930T135602Z-b512f4",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "6eb9fa8950c1aa39769a14095cea2ecf3caf675f0db6bd2adf9bb191cbed6807",
+   "reason": "it reads or replaces `_keys`, reads or replaces `_limiter`, reads or replaces `_messages_for_content`, reads or replaces `_prepare_request`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:03:21.265690Z",
+   "call_id": "20260930T140109Z-c8da4c",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "153b2440fd272901f69abf51ac0a8e04363ef4ec97772aa4cce1d8e8057f6158",
+   "reason": "it breaks the project's lint rules (ruff: line 19: ARG002 Unused method argument: `kwargs`)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:07:39.559909Z",
+   "call_id": "20260930T140322Z-5692ec",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.Model",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "a21628711a86a5c3f88fe41ff50fde38741dd4d9e84dad0b9d778a80d23dfaee",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   }
  ],
@@ -190,6 +410,99 @@
     "llm_router.RouterProfile",
     "llm_router._internal.runtime.router.RouterRuntime"
    ]
+  },
+  {
+   "at": "2026-09-30T14:01:30.752663Z",
+   "call_id": "20260930T135348Z-5d6aad",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "badaff8b7cad3b8b4b9ce4a828cf5fee39b2941e7734b13b7f30f0a295efcba1",
+   "reason": "it breaks the project's lint rules (ruff: line 23: PT019 Fixture `_keys` without value is injected as parameter, use `@pytest.mark.usefixtures` instead)",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime",
+    "tests.llm_router.bdd.routing.test_rate_limits._keys"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:03:24.049412Z",
+   "call_id": "20260930T140131Z-93eb5f",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3c2258f813553fe48335de70a5f96c707b660bffce687d636e35d0bb5b072d7b",
+   "reason": "it breaks the project's lint rules (ruff: line 31: ARG002 Unused method argument: `key_id`); it reads or replaces `_keys`, reads or replaces `_limiter`, reads or replaces `_messages_for_content`, reads or replaces `_prepare_request`, a private name of the project: observe what the requirement names through what the code offers its callers",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:07:07.158779Z",
+   "call_id": "20260930T140324Z-47c3cb",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.Model",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b360f861a100ad3c9b2895954fcfc263bf1779e82cae450eb08e37ce6b2098da",
+   "reason": "it does not fail on the mutant: of the changed lines 340\u2013360 it runs lines 340, 346\u2013349, 354\u2013356, 358 and 360 but never lines 343\u2013344",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:11:38.305823Z",
+   "call_id": "20260930T140707Z-4d263a",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "8685fe224e2e824423fc55facfc1c36c385d9402e4a126ce749952b1c935a363",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router.KeyId",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._api.types.RoutingAttempt"
+   ]
   }
  ],
  "f71e9f7973e36624": [
@@ -209,6 +522,126 @@
     "llm_router._api.types.Provider",
     "llm_router._api.types.Model",
     "llm_router._api.types.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-09-30T14:07:53.783862Z",
+   "call_id": "20260930T135651Z-9b660d",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._api.types.ProviderLimits"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "67bf018b0fce367eb398b3029a8dfaf28f7470e50a2eaf7e1b55cb087b9c4f3e",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._internal.runtime.router.RouterRuntime"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:56:02.527659Z",
+   "call_id": "20260930T205452Z-e608f7",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "4be0bd15fcd528d8cdf74db741e87e36e12cbf3e17a69bbba1000b9e28195b36",
+   "reason": "it does not fail on the mutant: of the changed lines 340\u2013360 it runs lines 340, 346\u2013349, 353\u2013356, 358 and 360 but never lines 343\u2013344",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T20:59:10.281120Z",
+   "call_id": "20260930T205602Z-f7fdc6",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "cf0b91ce0d0eeaf02e994fba443dfcb0bae07ea680783e38f40e9847bab4df1f",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert 1 == 2 | +  where 1 = RoutingAttempt(profile_name=None, route_index=0, provider='openrouter', model='deepseek-chat-v3', key_id=1, wait_seconds=0.0, temperature=None, seed=None, max_tool_rounds=4, error_type=None, error_message=None).key_id)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T21:00:19.422481Z",
+   "call_id": "20260930T205910Z-6c57c9",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "81051338b6a1f6ebf4e67b9b42ba52b09ca95e426800acad14f9d076148ed655",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert 1 == 2 | +  where 1 = RoutingAttempt(profile_name=None, route_index=0, provider='openrouter', model='deepseek-chat-v3', key_id=1, wait_seconds=0.9788852499332279, temperature=None, seed=None, max_tool_rounds=4, error_type=None, error_message=None).key_id)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-09-30T21:03:38.811684Z",
+   "call_id": "20260930T210019Z-1af323",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "5002471a1302bb6a492ac390aae628d095fb35e39b054f49fad7cf1758a1d5d2",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._api.types.RoutingAttempt",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   }
  ]

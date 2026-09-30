@@ -1,0 +1,38 @@
+# mutation-pin: REQ_ASYNC_PROVIDER_EXECUTION SM-592318D7
+# pinned-by: claude-opus-5-5
+from __future__ import annotations
+
+import pytest
+
+from llm_router import LLMRouter, Model, Provider, RouterProfile
+
+pytestmark = pytest.mark.verification_kind("unit")
+
+
+@pytest.mark.verifies("REQ_ASYNC_PROVIDER_EXECUTION[revision==1]")
+@pytest.mark.asyncio
+async def test_async_fallback_route_uses_its_own_profile_key_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    router = LLMRouter(
+        [
+            RouterProfile(
+                model=Model.DEEPSEEK_V4_FLASH,
+                provider=Provider.NVIDIA,
+                key_id=1,
+            ),
+            RouterProfile(
+                model=Model.DEEPSEEK_V3,
+                provider=Provider.OPENROUTER,
+                key_id=2,
+            ),
+        ],
+        round_robin_start=False,
+        shuffle_fallbacks=False,
+    )
+    with pytest.raises(Exception, match=r".+") as info:
+        await router.aquery("test content prompt")
+    message = str(info.value)
+    assert "2" in message

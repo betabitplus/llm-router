@@ -259,6 +259,46 @@
   },
   "prompt_sha256": "24a5c89d635bffe3dbbdd84bc67169bb73dc404b2cf3ef48a4b73ac84c3e5ae0"
  },
+ "61ee605eb792ca32": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "{\"a\": 1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20260930T152201Z-2866a1",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version unconditionally attempts to parse the input as a JSON string, failing on dictionary inputs that the original version correctly returns as is.",
+    "response_sha256": "2cb2bb8eb872bbe5f456248420910d0fb82d12052945740efb01c5ed94d7919d",
+    "sources": [
+     "    if isinstance(value, str):",
+     "    if True:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "{'a': 1}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20260930T152201Z-bfff56",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a dict input the original returns it as a mapping, while the changed version always runs string extraction and json.loads on the dict, which raises an error instead.",
+    "response_sha256": "e97fb5694ea2ae52f7c982037bab498892010168f39caf54169f2e57ecc951f9",
+    "sources": [
+     "if True:",
+     "value = _extract_json_payload(value)",
+     "if isinstance(value, str):"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "adc0de14e1ca1b5ca37f5f76fade37fba69048401edc44f7b032c5a7f5dc10d6"
+ },
  "6de617b610b093eb": {
   "answers": {
    "claude-cli:claude-sonnet-5": {

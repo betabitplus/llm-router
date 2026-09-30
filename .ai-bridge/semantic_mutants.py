@@ -47,6 +47,7 @@ import builtins
 import copy
 import dataclasses
 import enum
+import functools
 import hashlib
 import importlib.util
 import json
@@ -368,14 +369,178 @@ def confinement_problems(module_source: str, original_code: str, replacement: st
     return problems
 
 
-def draft_primitives(code: str) -> list[str]:
-    """The process, file-system, network and dynamic-code primitives a draft test uses."""
+# A pin observes what its requirement names through what the code offers its callers, never through
+# the private steps it takes to get there: a private attribute read or replaced, a private method
+# patched, a private name imported. Those change with a refactoring that breaks nothing, and a test
+# anchored on them checks the implementation, not the requirement (on 2026-09-30 a third of the REQ
+# pins did, against one module in fifty of the project's own tests). Attribute access is ruff's
+# flake8-self rule (SLF001); the string-named access it does not see (getattr, setattr,
+# monkeypatch.setattr, patch, patch.object) and private-name imports are checked here.
+PRIVATE_ACCESS_CALLS = frozenset({"getattr", "setattr", "hasattr", "delattr", "patch", "object"})
+
+
+def _private_name(name: str) -> bool:
+    return len(name) > 1 and name.startswith("_") and not (name.startswith("__") and name.endswith("__"))
+
+
+def project_packages(root: Path) -> tuple[set[str], set[str]]:
+    """The project's own top-level packages, and its private modules and packages (``_internal``,
+    ``_api``): a path through those is how its component tests import, not a private member."""
+    source = root / "src"
+    packages = {
+        path.stem if path.suffix == ".py" else path.name
+        for path in source.iterdir()
+        if (path.is_dir() and (path / "__init__.py").is_file()) or path.suffix == ".py"
+    } if source.is_dir() else set()
+    private = {
+        path.stem if path.suffix == ".py" else path.name
+        for path in source.rglob("*")
+        if (path.suffix == ".py" or path.is_dir()) and _private_name(path.stem if path.suffix == ".py" else path.name)
+    } if source.is_dir() else set()
+    return packages, private
+
+
+@functools.cache
+def project_private_strings(root: Path) -> frozenset[str]:
+    """The private names the project's code spells as strings (``kwargs.pop("_executor")``): options
+    and hooks it keeps from its callers."""
     found = set()
+    for path in (root / "src").rglob("*.py"):
+        found.update(_private_strings(ast.parse(path.read_text())))
+    return frozenset(found)
+
+
+def _private_strings(tree: ast.AST) -> set[str]:
+    """Private names spelled as whole strings; a piece of an f-string (``f"{name}_API_KEY_{n}"``)
+    names nothing."""
+    pieces = {id(value) for node in ast.walk(tree) if isinstance(node, ast.JoinedStr) for value in node.values}
+    return {
+        node.value for node in ast.walk(tree)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str) and id(node) not in pieces
+        and node.value.isidentifier() and _private_name(node.value)
+    }
+
+
+def draft_private_access(code: str, root: Path = PROJECT) -> list[str]:
+    """The project's private names a draft test reads, replaces, imports or passes: a private
+    keyword, or a private option the project's code spells as a string (``{"_executor": ...}``)."""
+    packages, private_modules = project_packages(root)
+    tree = ast.parse(code)
+    passed = _private_strings(tree) & project_private_strings(root)
+    found = set()
+    ruff = [shutil.which("uv") or "uv", "run", "--project", str(PROJECT), "--no-sync", "ruff"]
+    done = subprocess.run(
+        [*ruff, "check", "--no-fix", "--isolated", "--select", "SLF001", "--output-format", "concise", "--stdin-filename", DRAFT_PATH, "-"],
+        input=code, text=True, capture_output=True, cwd=PROJECT, timeout=120, check=False,
+    )
+    for line in done.stdout.splitlines():
+        match = re.search(r"SLF001 Private member accessed: `([^`]+)`", line)
+        if match and match.group(1) not in private_modules:
+            found.add(f"reads or replaces `{match.group(1)}`")
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and (node.module or "").split(".")[0] in packages:
+            found.update(f"imports `{alias.name}`" for alias in node.names if _private_name(alias.name))
+        elif isinstance(node, ast.Call) and ast.unparse(node.func).rsplit(".", 1)[-1] in PRIVATE_ACCESS_CALLS:
+            for argument in node.args[:2]:
+                if isinstance(argument, ast.Constant) and isinstance(argument.value, str):
+                    last = argument.value.rsplit(".", 1)[-1]
+                    if _private_name(last) and last not in private_modules:
+                        found.add(f"reads or replaces `{last}`")
+        elif isinstance(node, ast.keyword) and node.arg and _private_name(node.arg):
+            found.add(f"passes `{node.arg}`")
+    found.update(f"passes `{name}`" for name in passed)
+    return sorted(found)
+
+
+def private_module(module: str, root: Path = PROJECT) -> bool:
+    """Whether an import path runs through a private module or package of the project
+    (``llm_router._internal``, ``llm_router._api``): what a Requirement's pin may not import."""
+    packages, _private = project_packages(root)
+    parts = module.split(".")
+    return parts[0] in packages and any(_private_name(part) for part in parts[1:])
+
+
+DOTTED_NAME = re.compile(r"[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+")
+
+
+def draft_private_reach(code: str, root: Path = PROJECT) -> list[str]:
+    """The private modules of the project a draft reaches without importing them: an attribute path
+    from the package (``llm_router._internal.runtime.output``), a dotted name handed to a patch, or a
+    private module's name handed to ``getattr``. A Requirement's pin may reach them no more than it
+    may import them."""
+    packages, _private = project_packages(root)
+    tree = ast.parse(code)
+    bound = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name.split(".")[0] in packages:
+                    bound[alias.asname or alias.name.split(".")[0]] = alias.name if alias.asname else alias.name.split(".")[0]
+        elif isinstance(node, ast.ImportFrom) and node.module and not node.level and node.module.split(".")[0] in packages:
+            bound.update({alias.asname or alias.name: f"{node.module}.{alias.name}" for alias in node.names})
+
+    def dotted(node: ast.AST) -> str | None:
+        parts = []
+        while isinstance(node, ast.Attribute):
+            parts.append(node.attr)
+            node = node.value
+        return ".".join([bound[node.id], *reversed(parts)]) if isinstance(node, ast.Name) and node.id in bound else None
+
+    found = set()
+    for node in ast.walk(tree):
+        path = None
+        if isinstance(node, ast.Attribute):
+            path = dotted(node)
+        elif isinstance(node, ast.Constant) and isinstance(node.value, str) and DOTTED_NAME.fullmatch(node.value):
+            path = node.value
+        elif (
+            isinstance(node, ast.Call) and ast.unparse(node.func).rsplit(".", 1)[-1] in PRIVATE_ACCESS_CALLS and len(node.args) >= 2
+            and isinstance(node.args[1], ast.Constant) and isinstance(node.args[1].value, str)
+        ):
+            base = dotted(node.args[0])
+            path = f"{base}.{node.args[1].value}" if base else None
+        if path and private_module(path, root):
+            found.add(path)
+    return sorted(f"reaches `{path}` past the public API" for path in found if not any(other.startswith(path + ".") for other in found))
+
+
+def draft_id_problems(code: str) -> list[str]:
+    """Parametrized values that put a bracket into a test's id, without ``ids=`` to name the cases:
+    the documentation build reads ``[[`` in a test's name as a sphinx-needs function call."""
+    found = []
     for node in ast.walk(ast.parse(code)):
+        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "parametrize"):
+            continue
+        if any(keyword.arg == "ids" for keyword in node.keywords) or len(node.args) < 2:
+            continue
+        for value in ast.walk(node.args[1]):
+            if isinstance(value, ast.Constant) and isinstance(value.value, (str, bytes)):
+                text = value.value if isinstance(value.value, str) else value.value.decode(errors="replace")
+                if "[" in text or "]" in text:
+                    found.append(f"a parametrized value with a bracket ({text[:40]!r}) without ids=, which the documentation build reads as a function call")
+    return sorted(set(found))
+
+
+def draft_primitives(code: str, root: Path = PROJECT) -> list[str]:
+    """The process, file-system, network and dynamic-code primitives a draft test uses, imported or
+    reached as an attribute of a module from outside the project (``typing.sys``). A project module's
+    own client stays reachable: an adapter's test replaces its transport there."""
+    found = set()
+    tree = ast.parse(code)
+    packages, _private = project_packages(root)
+    imported = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported.update(alias.asname or alias.name.split(".")[0] for alias in node.names if alias.name.split(".")[0] not in packages)
+        elif isinstance(node, ast.ImportFrom) and node.module and not node.level and node.module.split(".")[0] not in packages:
+            imported.update(alias.asname or alias.name for alias in node.names)
+    for node in ast.walk(tree):
         if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load) and node.id in DYNAMIC_BUILTINS:
             found.add(node.id)
         elif isinstance(node, ast.Attribute) and node.attr in SENSITIVE_ATTRIBUTES:
             found.add(node.attr)
+        elif isinstance(node, ast.Attribute) and node.attr in PROCESS_MODULES and isinstance(node.value, ast.Name) and node.value.id in imported:
+            found.add(f"{node.value.id}.{node.attr}")
         elif isinstance(node, ast.Import):
             found.update(alias.name for alias in node.names if alias.name.split(".")[0] in PROCESS_MODULES)
         elif isinstance(node, ast.ImportFrom) and node.module and node.module.split(".")[0] in PROCESS_MODULES:
@@ -1070,7 +1235,7 @@ def ruff_version() -> str:
 
 def judge_draft(
     root: Path, workdir: Path, draft: str, tests: list[str], file: Path, original: str, mutated: str,
-    *, as_path: str = DRAFT_PATH, extra_imports: tuple[str, ...] = (), qualname: str = "",
+    *, as_path: str = DRAFT_PATH, extra_imports: tuple[str, ...] = (), qualname: str = "", public_only: bool = False,
 ) -> dict:
     """Keep a draft test only when, in the project's style, it breaks none of its lint rules,
     imports nothing beyond the public API, what the contract's tests already import and the given
@@ -1085,12 +1250,16 @@ def judge_draft(
                 "fails_on_mutant": False, "imports_beyond_allowed": [], "primitives": [], "lint": [], "draft": draft}
     draft, lint = normalize_draft(draft, as_path)
     allowed = allowed_imports(root, tests) | set(extra_imports)
+    # A Requirement's pin observes through the package's public API: none of its private modules.
+    if public_only:
+        allowed = {module for module in allowed if not private_module(module, root)}
     extra = sorted(draft_imports(draft, allowed) - allowed)
-    primitives = draft_primitives(draft)
+    primitives = draft_primitives(draft, root) + draft_id_problems(draft)
+    private = draft_private_access(draft, root) + (draft_private_reach(draft, root) if public_only else [])
     grounding, used = grounding_problems(root, draft)
-    if extra or primitives or lint or grounding:
+    if extra or primitives or private or lint or grounding:
         return {"accepted": False, "ran": False, "passes_on_original": 0, "fails_on_mutant": False,
-                "imports_beyond_allowed": extra, "primitives": primitives, "lint": lint, "grounding": grounding,
+                "imports_beyond_allowed": extra, "primitives": primitives, "private": private, "lint": lint, "grounding": grounding,
                 "used": used, "draft": draft}
     target = workdir / as_path
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -1123,6 +1292,7 @@ def judge_draft(
         "reach": reach,
         "imports_beyond_allowed": [],
         "primitives": [],
+        "private": [],
         "lint": [],
         "grounding": [],
         "used": used,
@@ -1404,7 +1574,7 @@ def judge_pins(root: Path, items: list[dict]) -> list[dict]:
             file = workdir / item["path"]
             judged = judge_draft(
                 root, workdir, item["draft"], item["tests"], file, file.read_text(), item["mutated_source"],
-                as_path=item.get("as_path") or DRAFT_PATH, extra_imports=tuple(item.get("extra_imports") or ()),
+                as_path=item.get("as_path") or DRAFT_PATH, extra_imports=tuple(item.get("extra_imports") or ()), public_only=bool(item.get("public_only")),
                 qualname=str(item.get("qualname") or ""),
             )
             results.append({"key": item["key"], **judged})
@@ -1420,6 +1590,11 @@ def draft_rejection(judged: dict) -> str:
         reasons.append("it imports " + ", ".join(judged["imports_beyond_allowed"]))
     if judged.get("primitives"):
         reasons.append("it uses " + ", ".join(judged["primitives"]))
+    if judged.get("private"):
+        reasons.append(
+            "it " + ", ".join(judged["private"][:6]) + ", a private name of the project: observe what the "
+            "requirement names through what the code offers its callers"
+        )
     if judged.get("grounding"):
         reasons.append("it does not fit the project's code as written: " + " | ".join(judged["grounding"][:6]))
     if judged.get("ran", True):
@@ -1610,14 +1785,17 @@ The original gives {original_result}; the defect gives {mutant_result}.
 {owner}{callees}{callers}{guide}{example}{api}{path}{reach}Write a standalone test that passes on the original code and fails on the defect. Take the
 input above as the shape of a failing case, not as literal test data: use realistic values of the
 same shape (a token count is a positive integer, not a boolean) and name what the test pins. Build
-its inputs through the project's own types. Import only these modules: {imports}. Use no network,
-files, subprocesses, sleeps, randomness, exec or eval. Keep it plain, as the project's ruff rules
+its inputs through the project's own types. Import only these modules: {imports}. Observe what
+the requirement names through what the code offers its callers: read, replace or import no private
+name of the project (one that starts with `_`), not through getattr, setattr, monkeypatch.setattr or
+patch either. Use no network, files, subprocesses, sleeps, randomness, exec or eval. Keep it plain, as the project's ruff rules
 want it: lines of at most 88 characters, no try/except around the code under test, no unused
 arguments or variables, no string literal passed to or stored under a name that says secret,
 token, key or password (keep such a test value under a neutral name, such as `value`), no call
 in an argument default, lowercase names inside functions, `next(iter(...))` rather than
 `[...][0]`, a raw string for `match=`, `pytest.raises` always with `match=`, and no
-fallbacks that guess how to build the inputs: build them one way, as the example does. Set
+fallbacks that guess how to build the inputs: build them one way, as the example does. Name
+parametrized cases with ids= when a value holds a bracket. Set
 pytestmark = pytest.mark.verification_kind("unit") at module level and mark the test function
 with @pytest.mark.verifies("{requirement_id}[revision=={revision}]").{asyncio}
 {previous}Return the complete module as test_code, one sentence on what it pins as explanation,
@@ -2192,7 +2370,9 @@ def canary_questions(calibration: Path, canaries: dict, role: str) -> list[dict]
         {
             "id": case["id"], "system": judge.VERDICT_SYSTEM, "schema": judge.VERDICT_SCHEMA, "expected": case["expected"],
             "confirmed": "confirmed by execution" in case["judgement"],
-            "prompt": judge.verdict_prompt(context=case["context"], target=case["target"], original=case["original"], mutant=case["mutant"], judgement=case["judgement"]),
+            "prompt": judge.verdict_prompt(context=case["context"], target=case["target"], original=case["original"], mutant=case["mutant"], judgement=case["judgement"])
+            # A pin no rung of the draft ladder could write is asked with its callers in view.
+            + (judge.reconsider_note(case["target"], case["reconsider"]["sites"], case["reconsider"].get("card", "")) if case.get("reconsider") else ""),
         }
         for case in canaries["verdict"]
     ]
@@ -2272,7 +2452,7 @@ def prepare_workspace(root: Path, destination: Path, item: dict) -> dict:
     (destination / str(item["as_path"])).parent.mkdir(parents=True, exist_ok=True)
     tools = destination / ".draft-tools"
     tools.mkdir(parents=True, exist_ok=True)
-    fields = ("path", "qualname", "mutated_source", "tests", "as_path", "extra_imports")
+    fields = ("path", "qualname", "mutated_source", "tests", "as_path", "extra_imports", "public_only")
     (tools / "request.json").write_text(json.dumps({"root": str(root), **{name: item.get(name) for name in fields}}, indent=1))
     uv = shutil.which("uv") or "uv"
     launcher = (
@@ -2322,10 +2502,11 @@ def agent_check(workspace: Path) -> str:
         judged = judge_draft(
             root, workdir, written.read_text(), tests, file, file.read_text(), str(request["mutated_source"]),
             as_path=str(request["as_path"]), extra_imports=tuple(request.get("extra_imports") or ()), qualname=str(request.get("qualname") or ""),
+            public_only=bool(request.get("public_only")),
         )
     findings = type_findings(str(judged.get("draft") or written.read_text()))
     lines = [f"The cascade's check of {request['as_path']}:"]
-    ruled = [item for name in ("lint", "imports_beyond_allowed", "primitives", "grounding") for item in judged.get(name) or []]
+    ruled = [item for name in ("lint", "imports_beyond_allowed", "primitives", "private", "grounding") for item in judged.get(name) or []]
     if judged.get("reason") or ruled:
         lines.append("- not run: " + draft_rejection(judged))
     else:

@@ -138,61 +138,70 @@
    "verdict": "pin"
   },
   "operator": "return",
-  "pin": {
-   "adopted_at": "2026-09-27T17:10:11.929360Z",
-   "answer_sha256": "802a705462d5229bce78c704aa68ac75aaac8a12cfee25e2b660b93a22ce54ad",
-   "call_id": "20260927T170426Z-cb241e",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "802a705462d5229bce78c704aa68ac75aaac8a12cfee25e2b660b93a22ce54ad",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_58413afa88ad9810.py",
-   "response_sha256": "e975db999ca5fe424f5e78d42f03b889861b3fe6d3f2b1065d59a5a75753930c",
-   "source": "draft author"
-  },
-  "prompt_sha256": "e264f3f2cb3dae1a05c02e9087dd396c23e635aa3090f17c304f4edf139bc799"
+  "prompt_sha256": "e264f3f2cb3dae1a05c02e9087dd396c23e635aa3090f17c304f4edf139bc799",
+  "subsumed": {
+   "at": "2026-09-30T13:48:51.493594Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_516ee0826f5a2224.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T17:10:11.929360Z",
+    "answer_sha256": "802a705462d5229bce78c704aa68ac75aaac8a12cfee25e2b660b93a22ce54ad",
+    "call_id": "20260927T170426Z-cb241e",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "802a705462d5229bce78c704aa68ac75aaac8a12cfee25e2b660b93a22ce54ad",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_58413afa88ad9810.py",
+    "response_sha256": "e975db999ca5fe424f5e78d42f03b889861b3fe6d3f2b1065d59a5a75753930c",
+    "source": "draft author"
+   }
+  }
  },
  "8bdbc9dc44639ca0": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T094743Z-391b2a",
+   "call_id": "20260930T200026Z-f556bf",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "For ints, `(input_tokens or output_tokens)` is false only when both are 0. In that case `input_tokens + output_tokens` is also 0, so the dropped guard never changes `total_tokens`. This holds whatever the sign of the values, so no usage shape can tell the two versions apart.",
-   "response_sha256": "43b78fed71bab5a2f911fcc71232d4226206db44755565e00dafe4600c417a12",
+   "reason": "The versions differ only when total_tokens is 0 and both input_tokens and output_tokens are falsy, which for integers from _first_int means both are 0. The mutant then sets total_tokens = 0 + 0 = 0, the same as the original, so the normalized UsageStats cannot differ.",
+   "response_sha256": "a47e950fbaec29b7fff193327fac4ad75e1e2fad176ec855cdbf5b0e5971cc98",
    "sources": [
     "Provider-specific usage mappings and objects shall normalize into the common usage statistics model with a consistent total token count.",
     "if total_tokens == 0 and (input_tokens or output_tokens):",
-    "if total_tokens == 0:"
+    "if total_tokens == 0:",
+    "total_tokens = input_tokens + output_tokens"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "condition",
-  "prompt_sha256": "5957d328349921fb53857368b2f4397f86279e69a16749045d6959186164ce49",
+  "prompt_sha256": "0598e1ac6f9628008dd2387ca4ac608ba84fb8be5becf48e999b8529b4dcef34",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T094754Z-56c38d",
+   "call_id": "20260930T200048Z-5ed113",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "5957d328349921fb53857368b2f4397f86279e69a16749045d6959186164ce49",
-   "reason": "The mutant removes a check that only skips the assignment when both input and output tokens are 0. When they are 0, the mutant simply computes 0 + 0 = 0, leaving total_tokens unchanged and producing identical output to the original version in all cases.",
-   "response_sha256": "2d8ac2bc91d1d3ae41ab4038d90b7a03039370ca248656b613bf06bafd4c71d6",
+   "prompt_sha256": "0598e1ac6f9628008dd2387ca4ac608ba84fb8be5becf48e999b8529b4dcef34",
+   "reason": "The condition '(input_tokens or output_tokens)' only prevents the assignment when both input and output token counts are 0. When they are both 0, the mutant simply assigns 0 + 0, resulting in 0, which is functionally identical to the original version's behavior of leaving the value unchanged.",
+   "response_sha256": "70943e84a27c588f8b68280f86bd4c2b517d32604fe4da9c7bf59f241e215f8e",
    "sources": [
-    "Every supported usage shape produces the stable common usage model with a consistent total token count.",
     "if total_tokens == 0 and (input_tokens or output_tokens):",
-    "if total_tokens == 0:"
+    "if total_tokens == 0:",
+    "Every supported usage shape produces the stable common usage model with a consistent total token count."
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -212,8 +221,9 @@
   },
   "operator": "semantic",
   "pin": {
-   "adopted_at": "2026-09-27T19:54:19.557487Z",
-   "answer_sha256": "0c8a49d17d2e6aac60e0e6ca5301cae95b62c7de9e0584a7a7a0fc0ce2064574",
+   "adopted_at": "2026-09-30T14:01:24.343624Z",
+   "answer_sha256": "59015fcc0bc55e473d2a4cb21f94b448f6b7522b152013088e69b35eef8618b0",
+   "call_id": "20260930T135348Z-508e17",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -222,10 +232,17 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "0c8a49d17d2e6aac60e0e6ca5301cae95b62c7de9e0584a7a7a0fc0ce2064574",
+   "draft_sha256": "59015fcc0bc55e473d2a4cb21f94b448f6b7522b152013088e69b35eef8618b0",
+   "effort": "",
+   "model": "gemini-3.8-flash-medium",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_sm_4151c6bb.py",
-   "source": "kept semantic draft"
+   "response_sha256": "485cba8e207d9654f006c40d70de0255e5912847a538b6cd75b016faa72c4a50",
+   "source": "draft author",
+   "sources": [
+    "llm_router.UsageStats",
+    "llm_router._internal.capabilities.usage.normalize_usage"
+   ]
   },
   "prompt_sha256": "4edbdd7ad515731a354b1f387ee365aea7c9a2f36b755b6ae4309e83b8e7661b"
  },
@@ -242,23 +259,29 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-27T19:54:19.557949Z",
-   "answer_sha256": "3f409c54ab93517c23c333c789d55966eaa2059ea4960561a9ac48470169ac05",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "3f409c54ab93517c23c333c789d55966eaa2059ea4960561a9ac48470169ac05",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_sm_67e8442b.py",
-   "source": "kept semantic draft"
-  },
-  "prompt_sha256": "e1b0001ea38b660f68165040f43ed74d67e1971527582239d8027c329c702a56"
+  "prompt_sha256": "e1b0001ea38b660f68165040f43ed74d67e1971527582239d8027c329c702a56",
+  "subsumed": {
+   "at": "2026-09-30T13:48:51.493825Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_1356bcae910da7c0.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T19:54:19.557949Z",
+    "answer_sha256": "3f409c54ab93517c23c333c789d55966eaa2059ea4960561a9ac48470169ac05",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "3f409c54ab93517c23c333c789d55966eaa2059ea4960561a9ac48470169ac05",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_sm_67e8442b.py",
+    "source": "kept semantic draft"
+   }
+  }
  },
  "f3d4b39e06f3f013": {
   "answer": {

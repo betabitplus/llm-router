@@ -1,0 +1,19 @@
+{
+ "9f60c66b56e11a2f": [
+  {
+   "at": "2026-09-30T14:21:46.105775Z",
+   "call_id": "20260930T142109Z-bac15c",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e78b21ecaf32638656c35737df18cc5735921567e8baf7924dca3b97583382b6",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.capabilities.tools.ToolRegistry"
+   ]
+  }
+ ]
+}

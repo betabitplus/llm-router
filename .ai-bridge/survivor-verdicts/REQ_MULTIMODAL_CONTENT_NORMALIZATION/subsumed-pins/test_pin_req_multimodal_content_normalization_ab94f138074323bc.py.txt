@@ -1,0 +1,70 @@
+# mutation-pin: REQ_MULTIMODAL_CONTENT_NORMALIZATION ab94f138074323bc
+# pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
+from __future__ import annotations
+
+from dataclasses import replace
+
+import pytest
+from PIL import Image
+
+from llm_router import (
+    LLMRouter,
+    Model,
+    Provider,
+    RouterProfile,
+    get_config,
+    install_config,
+)
+from tests.llm_router.support.fault_server import (
+    ProviderSentinelHTTPServer,
+    ScriptedResponse,
+)
+from tests.llm_router.support.workers.retry import openai_chat_path
+
+pytestmark = pytest.mark.verification_kind("unit")
+
+_MAX_IMAGE_DIMENSION = 16384
+
+
+@pytest.mark.verifies("REQ_MULTIMODAL_CONTENT_NORMALIZATION[revision==2]")
+def test_image_height_above_max_dimension_is_rejected_before_provider(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = openai_chat_path()
+    current = get_config()
+    provider_spec = current.catalog.providers[Provider.OPENROUTER]
+    for env_var in provider_spec.api_key_env_vars.values():
+        monkeypatch.setenv(env_var, "local-value")
+    image = Image.new("L", (64, _MAX_IMAGE_DIMENSION + 1))
+
+    with ProviderSentinelHTTPServer(
+        port=0,
+        routes={
+            ("POST", path): [
+                ScriptedResponse(
+                    status_code=500,
+                    headers={"Content-Type": "application/json"},
+                    body=b'{"error":{"message":"provider must not be called"}}',
+                )
+            ]
+        },
+    ) as server:
+        base_urls = dict(current.provider_base_urls)
+        base_urls[Provider.OPENROUTER] = f"{server.base_url}/v1"
+        install_config(
+            replace(
+                current,
+                catalog=replace(current.catalog, provider_base_urls=base_urls),
+            )
+        )
+        try:
+            router = LLMRouter(
+                RouterProfile(model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER)
+            )
+            with pytest.raises(ValueError, match=r"too large"):
+                router.query([image])
+        finally:
+            install_config(current)
+
+        assert server.request_count("POST", path) == 0

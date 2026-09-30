@@ -1,93 +1,104 @@
 # mutation-pin: TREQ_PROVIDER_RETRY_CLASSIFICATION 1cb6c482c58e73ea
 # pinned-by: claude-opus-5-5
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Any
 
 import pytest
 
+from llm_router._api.errors import ProviderError
 from llm_router._api.types import Model, Provider
-from llm_router._internal.providers.base import (
-    ProviderCredential,
-    ProviderRequest,
-)
-from llm_router._internal.runtime import executor as executor_module
-from llm_router._internal.runtime.executor import (
-    ProviderRouteExecutor,
-    _provider_boundary_error,
-)
+from llm_router._internal.config import RetryPolicy
+from llm_router._internal.providers.base import ProviderRequest
+from llm_router._internal.runtime.executor import ProviderRouteExecutor
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
-class _StatusError(Exception):
-    def __init__(self, status_code: int) -> None:
-        super().__init__("bad request")
-        self.status_code = status_code
+@dataclass(frozen=True)
+class FakeConfig:
+    retry_policy: RetryPolicy
 
 
-class _Config:
-    retry_policy = None
+@dataclass(frozen=True)
+class FakeRoute:
+    provider: Provider = Provider.GROQ
+    model: Model = Model.LLAMA_8B
+    provider_model: str = "llama-3.1-8b-instant"
+    route_index: int | None = 0
 
 
-class _Attempt:
-    def __enter__(self) -> None:
-        return None
+@dataclass(frozen=True)
+class FakeSettings:
+    response_schema: object | None = None
+    tools: tuple[object, ...] = ()
+    tool_choice: object | None = None
+    max_tool_rounds: int | None = None
+    temperature: float | None = None
+    seed: int | None = None
+    kwargs: dict[str, Any] = field(default_factory=dict)
 
-    def __exit__(self, *_args: object) -> None:
-        return None
+
+@dataclass(frozen=True)
+class FakeKey:
+    key_id: int = 1
+    env_var: str = "GROQ_API_KEY"
+    value: str = "v"
 
 
-class _Adapter:
-    def __init__(self, exc: Exception) -> None:
-        self._exc = exc
+@dataclass(frozen=True)
+class FakeResolved:
+    request_id: str
+    route: FakeRoute
+    settings: FakeSettings
+    key: FakeKey
+    messages: tuple[str, ...]
+    content: object
+
+
+class FailingAdapter:
+    def __init__(self, error: Exception) -> None:
+        self.error = error
+        self.calls = 0
 
     def execute(self, _request: ProviderRequest) -> Any:
-        raise self._exc
+        self.calls += 1
+        raise self.error
 
 
-def _request() -> ProviderRequest:
-    return ProviderRequest(
-        request_id="req-1",
-        provider=Provider.GROQ,
-        model=Model.LLAMA_8B,
-        provider_model="llama-8b",
-        credential=ProviderCredential(key_id=1, env_var="ENV_VALUE", value="v"),
-        messages=(),
+def _run(error: Exception) -> tuple[ProviderError, FailingAdapter]:
+    adapter = FailingAdapter(error)
+
+    def getter(_provider: Provider, _config: object) -> FailingAdapter:
+        return adapter
+
+    policy = RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=2)
+    executor = ProviderRouteExecutor(
+        config=FakeConfig(retry_policy=policy),  # type: ignore[arg-type]
+        adapter_getter=getter,  # type: ignore[arg-type]
     )
+    request = FakeResolved(
+        request_id="req-1",
+        route=FakeRoute(),
+        settings=FakeSettings(),
+        key=FakeKey(),
+        messages=("hello",),
+        content="hello",
+    )
+    with pytest.raises(ProviderError, match=r".*") as info:
+        executor.execute(request)  # type: ignore[arg-type]
+    return info.value, adapter
 
 
 @pytest.mark.verifies("TREQ_PROVIDER_RETRY_CLASSIFICATION[revision==1]")
-@pytest.mark.parametrize(
-    ("exc", "retryable"),
-    [
-        (_StatusError(400), False),
-        (ConnectionError("connection dropped"), True),
-    ],
-)
-def test_sync_failure_raises_chained_boundary_error(
-    monkeypatch: pytest.MonkeyPatch, exc: Exception, retryable: bool
-) -> None:
-    request = _request()
-    monkeypatch.setattr(
-        executor_module, "build_provider_retrying", lambda **_k: [_Attempt()]
-    )
-    monkeypatch.setattr(
-        executor_module, "is_retryable_provider_error", lambda _e: retryable
-    )
-    monkeypatch.setattr(executor_module, "log_retry_exhausted", lambda *_a, **_k: None)
-    monkeypatch.setattr(executor_module, "_retry_context", lambda _r: {})
+def test_provider_failures_surface_boundary_error_chained_from_original() -> None:
+    permanent = ValueError("400 bad request")
+    boundary, adapter = _run(permanent)
+    assert adapter.calls == 1
+    assert boundary.__cause__ is permanent
 
-    executor = object.__new__(ProviderRouteExecutor)
-    executor._config = _Config()
-    executor._adapter_for = lambda _r: _Adapter(exc)
-
-    expected = _provider_boundary_error(exc, request=request)
-
-    with pytest.raises(Exception, match=r".*") as info:
-        executor._execute_provider_sync(request)
-
-    assert type(info.value) is type(expected)
-    assert info.value.__cause__ is exc
-    if type(expected) is not RuntimeError:
-        assert type(info.value) is not RuntimeError
+    transport = ConnectionResetError("reset by peer")
+    boundary, adapter = _run(transport)
+    assert boundary.__cause__ is transport
