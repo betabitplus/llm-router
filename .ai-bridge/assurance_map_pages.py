@@ -73,10 +73,15 @@ html[data-theme=dark] #verification-health-map{--tf-map-ring:color-mix(in srgb,v
 .tf-map-tab[aria-selected=true]{border-color:var(--tf-map-selected);background:var(--tf-map-raised)}
 .tf-map-tab:focus-visible{outline:2px solid var(--tf-map-ring);outline-offset:-2px}
 .tf-map-tab-title{min-width:0;font-size:.78rem;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tf-map-tab-status{display:flex;align-items:center;gap:.4rem;min-width:0;font-size:.78rem;white-space:nowrap}
+.tf-map-tab-status{display:grid;min-width:0;font-size:.78rem;white-space:nowrap}
 .tf-map-tab-status b{font-weight:750}
-.tf-map-count{display:flex;align-items:center;min-width:0;font-size:.72rem;color:var(--pst-color-text-muted);white-space:nowrap}
+.tf-map-count{display:grid;min-width:0;font-size:.72rem;color:var(--pst-color-text-muted);white-space:nowrap}
 .tf-map-count-text{min-width:0;overflow:hidden;text-overflow:ellipsis}
+/* The lines of every view a card can show sit in one cell, one over the other: only the view its layer opens in is
+   seen, and the card is as wide as its widest view, so it keeps its size when the view changes. */
+.tf-map-variant{grid-area:1/1;display:flex;align-items:center;min-width:0}
+.tf-map-tab-status>.tf-map-variant{gap:.4rem}
+.tf-map-variant:not(.on){visibility:hidden}
 .tf-map-count b{color:var(--pst-color-text-base);font-weight:700}
 .tf-map-thumb{grid-column:2;grid-row:1/span 3;display:block;width:76px;height:auto}
 .tf-map-thumb.radial{width:54px;height:54px;justify-self:center}
@@ -595,6 +600,14 @@ function mapStrip(o){
  let pinWidth=0,edgeFrame=0,hold=null,picked=null,drag=null,dropped=false,folded=null,full=null,lastLayer=null;
  const order=()=>o.groups().flatMap(group=>group.keys);
  const toneOf=key=>o.groups().find(group=>group.keys.includes(key))?.tone||"";
+ // A card's second and third lines say what the view its layer opens in says: health's verdict and count, or the
+ // measure's line under the view's name. The lines of every view sit one over the other and the one in view shows,
+ // so the card is as wide as its widest view and keeps its size when the view changes.
+ const cardsOf=key=>o.cards?.(key)||[o.card(key)];
+ const variant=(card,view,html)=>'<span class="tf-map-variant'+(card.view===view?" on":"")+'" data-variant="'+escapeHtml(card.view||"")+'"'+(card.view===view?"":' aria-hidden="true"')+">"+html+"</span>";
+ const linesHtml=(key,cards,view)=>
+   '<span class="tf-map-tab-status">'+cards.map(card=>variant(card,view,card.status+'<span class="tf-map-help" aria-hidden="true" data-tip="'+escapeHtml(card.help||byKey.get(key)[2])+'">?</span>')).join("")+"</span>"
+   +'<span class="tf-map-count">'+cards.map(card=>variant(card,view,'<span class="tf-map-count-text"'+(card.tip?' data-tip="'+escapeHtml(card.tip)+'"':"")+">"+card.count+"</span>"+card.delta)).join("")+"</span>";
  // A card and, for a layer with several views, the slider of their thumbnails that the open card shows beside it.
  function tabHtml(key){
    const[,label,help]=byKey.get(key),card=o.card(key),views=o.views?.(key)||"",list=views?o.viewList(key):[];
@@ -602,11 +615,18 @@ function mapStrip(o){
    const dots=list.length?'<span class="tf-map-dots" aria-hidden="true">'+list.map(view=>'<i data-dot="'+view.key+'"></i>').join("")+"</span>":"";
    const spoken=escapeHtml(help)+(list.length?" Views: "+list.map(view=>escapeHtml(view.label)).join(", ")+".":"");
    return'<div class="tf-map-tab-wrap" data-map-wrap="'+key+'">'
-     +'<button type="button" role="tab" class="tf-map-tab'+(views?" has-views":"")+'" id="tf-map-tab-'+key+'" data-map-layer="'+key+'" aria-label="'+escapeHtml(card.name)+'" aria-controls="tf-map-stage" aria-describedby="tf-map-help-'+key+'">'
+     +'<button type="button" role="tab" class="tf-map-tab'+(views?" has-views":"")+(card.health?" measure":"")+'" id="tf-map-tab-'+key+'" data-map-layer="'+key+'" data-view="'+escapeHtml(card.view||"")+'" aria-label="'+escapeHtml(card.name)+'" aria-controls="tf-map-stage" aria-describedby="tf-map-help-'+key+'">'
      +'<span class="tf-map-tab-title">'+label+"</span>"+card.thumb
-     +'<span class="tf-map-tab-status">'+card.status+'<span class="tf-map-help" aria-hidden="true" data-tip="'+escapeHtml(help)+'">?</span></span>'
-     +'<span class="tf-map-count"><span class="tf-map-count-text">'+card.count+"</span>"+card.delta+"</span>"
+     +linesHtml(key,cardsOf(key),card.view)
      +dots+'<span class="tf-sr-only" id="tf-map-help-'+key+'">'+spoken+"</span></button>"+views+"</div>";
+ }
+ // A card whose layer now opens in another view shows that view's lines and says them aloud.
+ function refill(tab,key){
+   const card=o.card(key);
+   tab.dataset.view=card.view||"";
+   tab.classList.toggle("measure",!!card.health);
+   tab.setAttribute("aria-label",card.name);
+   tab.querySelectorAll("[data-variant]").forEach(line=>{const on=line.dataset.variant===card.view;line.classList.toggle("on",on);line.toggleAttribute("aria-hidden",!on)});
  }
  function groupHtml(group,index){
    if(!group.keys.length)return"";
@@ -669,6 +689,8 @@ function mapStrip(o){
      wrap.classList.toggle("open",open);
      const thumb=wrap.querySelector(".tf-map-tab>.tf-map-thumb"),view=o.currentView(key);
      if(thumb&&thumb.dataset.view!==view)thumb.outerHTML=o.thumb(key);
+     const tab=wrap.querySelector(".tf-map-tab");
+     if(tab.dataset.view&&tab.dataset.view!==view)refill(tab,key);
      wrap.querySelectorAll("[data-dot]").forEach(dot=>dot.classList.toggle("on",dot.dataset.dot===view));
      if(!views)return;
      wrap.querySelector(".tf-map-tab").setAttribute("aria-expanded",String(open||narrow.matches&&key===current));
@@ -1884,7 +1906,8 @@ function mapPage(o){
  // the mini-map, a row's marks (one per contract, in the view's colours) and the foot are the same in every layer. The
  // All layers table lists a layer's other views as rows below it.
  const plain=html=>String(html).replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim();
- const spoken=(key,card)=>labelOf(key)+": "+plain(card.status)+", "+plain(card.count);
+ // A card in a measure says the measure in full, then the verdict it keeps.
+ const spoken=(key,card)=>labelOf(key)+": "+plain(card.status)+", "+(card.tip||plain(card.count))+(card.health?" Health: "+plain(card.health.status)+", "+plain(card.health.count)+".":"");
  const projectionOfRow=key=>viewOf(key)?.projection??key;
  function stripCells(projection){
    let out="";
@@ -1932,8 +1955,16 @@ function mapPage(o){
      +views.map(view=>{const tip=view.ask||view.tip,name=view.label||labelOf(view.layer);return'<button type="button" role="radio" class="tf-map-choice" data-map-view="'+view.key+'" aria-checked="false" tabindex="-1"'+(tip?' data-tip="'+escapeHtml(tip)+'"':"")+">"+viewThumb(view)+'<span class="tf-map-choice-name" data-name="'+escapeHtml(name)+'">'+escapeHtml(name)+"</span></button>"}).join("")
      +"</span>"+more+"</span>";
  }
+ // A card's lines in one of its layer's views: health's verdict and count with its changes, or, where the page pairs a
+ // measure with the verdict, the measure's line with the measure's changes; the "?" asks that view's question.
+ function cardOf(key,view){
+   const lines=o.strip.viewCard?.(key,view)||o.strip.card(key),changes=lines.changes||key;
+   return{...lines,view:view.key,help:lines.health?view.ask:"",name:spoken(key,lines),delta:mapDelta(delta,changes,o.words(changes)),thumb:thumbOf(key)};
+ }
  const strip=mapStrip({groups:o.strip.groups,layers:o.layers,columns:tree.columns,hint,views:viewsHtml,viewTip:key=>{const view=viewOf(key);return view?.ask||view?.tip||""},viewNote:key=>idleNote(viewOf(key)),viewList:key=>lensesOf(key).map(view=>({key:view.key,label:view.label||labelOf(view.layer)})),thumb:thumbOf,currentView:key=>openingView(key).key,selectView:key=>select(key,false),
-   card:key=>{const lines=o.strip.card(key);return{...lines,name:spoken(key,lines),delta:mapDelta(delta,key,o.words(key)),thumb:thumbOf(key)}},
+   // A card speaks for the view its layer opens in: health's verdict, or the line of the measure in view. It holds the
+   // lines of all its views, so it keeps its size when the view changes.
+   card:key=>cardOf(key,openingView(key)),cards:key=>lensesOf(key).map(view=>cardOf(key,view)),
    row:key=>{
      if(LAYER_KEYS.includes(key))return{...o.strip.row(key),name:spoken(key,o.strip.card(key))};
      const view=viewOf(key),row=o.strip.row(view.projection);
@@ -2397,6 +2428,12 @@ function layerRow(key){
  const failing=failingOf(key);
  return{status:verdictHtml(key,true),count:failing?"<b>"+failing+"</b>/"+applicableOf(key):"all "+applicableOf(key)};
 }
+// The verdict as a mark alone, for a card that shows one of its layer's measures: the card keeps its place among the
+// failing or passing layers, and the mark's hint says the verdict it keeps.
+function layerMark(key){
+ const verdict=verdictOf(key);
+ return'<span class="tf-health-verdict '+verdict+' tf-map-mark-only" data-tip="Health: '+word(verdict)+", "+countLine(key)+'"><i class="fa-solid '+(verdict==="passed"?"fa-circle-check":"fa-circle-xmark")+'" aria-hidden="true"></i></span>';
+}
 // Overall first, then failing layers and passing layers behind the pass line.
 function layerGroups(){
  const order=layerOrder();
@@ -2544,7 +2581,7 @@ return{
  tree,layers:LAYERS,insights,words:()=>["newly failing","fixed"],
  href:hrefFor,says,describe,paint,legend:legendHtml,tone:toneOf,blank:(row,key)=>status(row,key)==="na",
  facets:FACETS,panels:PANELS,filterRows:marked,
- strip:{groups:layerGroups,card:layerCard,row:layerRow},
+ strip:{groups:layerGroups,card:layerCard,row:layerRow,mark:layerMark},
  table:TABLE,tableCell,groupCell,
  tiles:{leaf:(row,key)=>'class="tf-map-tile '+status(row,key)+'"',mark:(row,key)=>status(row,key)==="failed"?"tf-health-own-failed":""},
  rings:RINGS,
@@ -2945,18 +2982,49 @@ const TABLE={
  csv:{head:["tests_per_cell","required_cases_per_cell","required_cases_covered","required_cases","deepest_level","most_realistic_boundary","model_validation","substitutes_and_recordings","mutants_caught","mutants_judged","share_caught","not_measured_reason","required_fault_classes","detected_fault_classes","own_passing_tests"],line:csvLine}
 };
 
-// A measure's row in the All layers table: the number it stands for, which folds away on narrow screens like the
-// verdict word in a health row.
+// What a measure says in one line, on its layer's card and in its row of the All layers table: the one number that
+// matters most in it, counted in contracts and never a score, short enough for the card; the hint says it in full.
+function measureLine(key){
+ const all=leaves.map(row=>C[row.id]),count=test=>all.filter(test).length,total=all.length;
+ const lines={
+   overall:()=>{
+     const states=all.map(profileStates),missing=states.filter(state=>state.includes("missing")).length,beyond=states.filter(state=>state.includes("beyond")).length;
+     const also=beyond?"; "+beyond+" also have tests beyond it":"";
+     return missing
+       ?{short:"<b>"+missing+"</b> miss a cell",tip:missing+" of "+total+" contracts have no test in a cell their profile asks for"+also+"."}
+       :{short:"all as asked",tip:"All "+total+" contracts have tests in every cell their profile asks for"+also+"."};
+   },
+   level:()=>{
+     const reached=count(c=>c.deepest===topLevel),none=LEVELS.slice(LEVELS.indexOf(topLevel)+1).map(level=>LEVEL_NAME[level].toLowerCase());
+     return{short:"<b>"+reached+"</b> at "+LEVEL_SHORT[topLevel].toLowerCase(),tip:reached+" of "+total+" contracts reach "+LEVEL_NAME[topLevel].toLowerCase()+", the deepest level any test reaches"+(none.length?"; none reach "+listed(none):"")+"."};
+   },
+   boundary:()=>{
+     const at=bound=>count(c=>c.real===bound),untested=count(c=>!c.real);
+     return{short:"<b>"+at("direct")+"</b> live · "+at("replay")+" replay",
+       tip:at("direct")+" of "+total+" contracts have tests that talk to the live service; "+at("replay")+" use recordings, "+at("substitute")+" substitutes and "+at("none")+" stay local"+(untested?"; "+untested+" have no passing tests":"")+"."};
+   },
+   trust:()=>{
+     const backed=count(c=>c.trust&&c.trust!=="na"),unchecked=count(c=>c.trust==="l0");
+     if(!backed)return{short:"no substitutes",tip:"No contract's tests rest on a substitute or a recording."};
+     return{short:"<b>"+unchecked+"</b>/"+backed+" unchecked",tip:unchecked+" of the "+backed+" contracts whose tests rest on substitutes or recordings use models not checked against the real service (L0); "+(backed-unchecked)+" are checked at L1 or above."};
+   },
+   detect:()=>{
+     const measured=all.filter(c=>c.detect),full=measured.filter(c=>c.detect[0]===c.detect[1]).length,left=total-measured.length;
+     if(!measured.length)return{short:"none measured",tip:"No contract has its mutants measured."};
+     return{short:"<b>"+full+"</b>/"+measured.length+" catch all",tip:full+" of the "+measured.length+" measured contracts catch every planted bug"+(left?"; "+left+" are not measured":"")+"."};
+   }
+ };
+ return lines[key]();
+}
+// A measure's row in the All layers table: its line, which folds away on narrow screens like the verdict word in a
+// health row.
 function layerRow(key){
- const measured=leaves.map(row=>C[row.id]).filter(c=>c.detect),middle=median(measured.map(ratio));
- const number={
-   overall:()=>"<b>"+Object.values(CELLS).filter(cell=>cell.tests).length+"</b> of 20 cells",
-   level:()=>"<b>"+countOf(c=>c.deepest===topLevel)+"</b> at "+LEVEL_SHORT[topLevel].toLowerCase(),
-   boundary:()=>"<b>"+countOf(c=>c.real==="direct")+"</b> reach live",
-   trust:()=>"<b>"+countOf(c=>c.trust==="l0")+"</b> on L0 models",
-   detect:()=>"<b>"+(middle===null?"—":pct(middle))+"</b> median"
- }[key]();
- return{status:'<span class="tf-map-row-word">'+number+"</span>",count:""};
+ return{status:'<span class="tf-map-row-word">'+measureLine(key).short+"</span>",count:""};
+}
+// A measure on its layer's card: its line, and the sentence behind it for the hint and for what the card says aloud.
+function layerCard(key){
+ const line=measureLine(key);
+ return{count:line.short,tip:line.tip};
 }
 // Overall has no single colour per contract, so its row in the All layers table stands each ray upright: as high as
 // the contract's deepest level, in the colour of its most realistic boundary. The other rows are the shared ones.
@@ -2982,7 +3050,7 @@ return{
  tree,insights:model.insights,words:key=>CHANGE_WORDS[key],
  href:hrefFor,says,describe,paint,legend:legendHtml,tone,blank,measure,measureHtml,measureGroupHtml,tableCell,groupCell,levels:LEVELS,
  facets:FACETS,panels:PANELS,markPanel:markCells,
- strip:{row:layerRow,cells:key=>key==="overall"?overallCells():undefined},
+ strip:{row:layerRow,cells:key=>key==="overall"?overallCells():undefined,card:layerCard},
  table:TABLE,
  tiles:{leaf:(row,key)=>'style="fill:'+FILL[key](C[row.id])+'"'},
  rings:RINGS,
@@ -2994,6 +3062,11 @@ return{
 PAIRS_MAP_CSS = r"""/* Health beside its measures. A measure judges nothing, so its Changes are outlined
    without red or green; the card shows the other half of a pair beside the one in view. */
 #verification-health-map.tf-pairs-measuring{--tf-map-up:var(--tf-map-ring);--tf-map-down:var(--tf-map-ring)}
+/* A card shown in one of its measures: the view's name beside the mark of the verdict the card keeps, then the
+   measure's line. A measure judges nothing, so its changes there carry no red or green either. */
+.tf-map-tab.measure .tf-map-mark-only{opacity:.75}
+.tf-pairs-view-name{min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:650}
+.tf-map-tab.measure .tf-map-delta{--tf-map-up:var(--tf-map-ring);--tf-map-down:var(--tf-map-ring)}
 .tf-pairs-other{display:flex;flex-wrap:wrap;gap:.1rem .6rem;margin-top:.45rem;padding-top:.4rem;border-top:1px solid var(--tf-map-line);color:var(--pst-color-text-muted)}
 .tf-pairs-other b{font-weight:650;color:var(--pst-color-text-base)}
 /* The contracts table: a measure's one value, and how a group's contracts split over its colours. */
@@ -3115,6 +3188,9 @@ function pairsMap(H,D){
    blank:(row,projection)=>side(projection).blank(as(row,projection),own(projection)),
    facets,panels,filterRows:H.filterRows,markPanel:D.markPanel,
    strip:{groups:H.strip.groups,card:H.strip.card,
+     // A card shown in one of its measures says what that measure says: the view's name beside the mark of the verdict
+     // the card keeps, and the measure's line. Its changes are the measure's.
+     viewCard:(key,view)=>measured(view.projection)?{...D.strip.card(own(view.projection)),status:H.strip.mark(key)+'<span class="tf-pairs-view-name">'+escapeHtml(view.label)+"</span>",health:H.strip.card(key),changes:view.projection}:null,
      row:projection=>measured(projection)?D.strip.row(own(projection)):H.strip.row(projection),
      cells:projection=>measured(projection)?D.strip.cells(own(projection)):undefined},
    table:TABLE,

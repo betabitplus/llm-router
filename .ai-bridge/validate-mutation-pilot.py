@@ -7121,8 +7121,20 @@ def main() -> None:
         and 'id="tf-map-changes"' in health_section
         and "mapChanges(document.getElementById(\"tf-map-changes\")" in health_section.replace('$("tf-map-changes")', 'document.getElementById("tf-map-changes")')
         and "strip:{row:layerRow,cells:" in page_own["depth"]
-        and "strip:{groups:H.strip.groups,card:H.strip.card," in pairs_js,
-        "the page runs one shared layer strip, All layers table and Changes: health groups the layers into failing and passing and gives each its card, and a measure adds only its row in the All layers table",
+        and "strip:{groups:H.strip.groups,card:H.strip.card," in pairs_js
+        # A card says what the view its layer opens in says, and keeps its size when the view changes.
+        and "strip:{groups:layerGroups,card:layerCard,row:layerRow,mark:layerMark}" in page_own["health"]
+        and ",card:layerCard}" in page_own["depth"]
+        and "function layerRow(key){\n return{status:'<span class=\"tf-map-row-word\">'+measureLine(key).short+\"</span>\",count:\"\"};\n}" in page_own["depth"]
+        and "viewCard:(key,view)=>measured(view.projection)?" in pairs_js
+        and "card:key=>cardOf(key,openingView(key)),cards:key=>lensesOf(key).map(view=>cardOf(key,view))," in map_pages_js
+        and "if(tab.dataset.view&&tab.dataset.view!==view)refill(tab,key);" in map_pages_js
+        and ".tf-map-variant{grid-area:1/1;" in map_pages_css
+        and ".tf-map-variant:not(.on){visibility:hidden}" in map_pages_css,
+        "the page runs one shared layer strip, All layers table and Changes: health groups the layers into failing and passing "
+        "and gives each its card; a card shown in one of its measures says that measure's line and changes under the view's "
+        "name, beside the mark of the verdict it keeps, and holds the lines of all its views so it keeps its size when the "
+        "view changes; a measure's row in the All layers table says the same line",
     )
     check(
         "def run_delta(snapshots,schema,stamp,values,compare):" in health_builder_source
