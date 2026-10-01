@@ -112,39 +112,39 @@
  "SM-2DBB5B58": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T083039Z-cd4784",
+   "call_id": "20261001T114454Z-b1787e",
    "confirmed": true,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only ignores an explicit `tool_calls=` override. Every visible caller passes just `result`, `tool_trace` and sometimes `structured_data`, so the public `tool_calls` field still comes from `result.tool_calls` in both versions. The call at line 418 is not visible in the excerpt, but no test written in a copy of the project could tell the versions apart there, so the requirement on normalized tool semantics is not affected.",
-   "response_sha256": "864f06fb02ba4252274930d26cd0631938ad8104b261f1c752afdf7c1cbbe66a",
+   "reason": "The mutant only ignores an explicitly passed `tool_calls` override. None of the three call sites ever passes `tool_calls`; each gives just `result`, `tool_trace` and sometimes `structured_data`. That means public tool-call semantics always come from `result.tool_calls` in both versions, so no family's normalized response can differ where the requirement is observed.",
+   "response_sha256": "62ffdba77352f67fbc2ffa6c4149de3cbdf3398b8545d4ecb6890a8af24402d5",
    "sources": [
-    "tool_calls=list(result.tool_calls),",
+    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics.",
     "tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),",
-    "response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n            ),",
-    "response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),",
-    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics."
+    "tool_calls=list(result.tool_calls),",
+    "tool_trace=state.tool_state.steps,",
+    "structured_data=validated.value,"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "semantic",
-  "prompt_sha256": "3b997e037cdd695fb68319de8285d0cc8d41ef40f57512382193eb2a1b463609",
+  "prompt_sha256": "3e55f4e367ef2203ea57947d7f1c138763aa2ae53c68bfa696a6b78eab173c57",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T083101Z-4efa47",
+   "call_id": "20261001T114546Z-92da12",
    "confirmed": true,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "3b997e037cdd695fb68319de8285d0cc8d41ef40f57512382193eb2a1b463609",
-   "reason": "No caller provides the `tool_calls` argument to `build_public_response`, so it always defaults to `None`. As a result, the original conditional expression and the mutant's direct usage of `result.tool_calls` behave identically in all actual executions, making the difference unobservable where the requirement is observed.",
-   "response_sha256": "70228314235a382a31b18e972a54c2808199333d89ca542a7f524068cb10c106",
+   "prompt_sha256": "3e55f4e367ef2203ea57947d7f1c138763aa2ae53c68bfa696a6b78eab173c57",
+   "reason": "The mutant ignores the `tool_calls` keyword argument, but no caller in the codebase passes this argument to `build_public_response`. Because the changed code is unreachable through the existing callers, the difference cannot be observed and is irrelevant to the requirement.",
+   "response_sha256": "c1248f75fcf49e8bebcac8a6cd77d7f4aad0affe9ceee2eb2f009ff86082e554",
    "sources": [
-    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics.",
+    "Requirement REQ_RESPONSE_NORMALIZATION (Equivalent provider replies normalize consistently): Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics.",
     "tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),",
     "            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n            ),",
     "            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),"

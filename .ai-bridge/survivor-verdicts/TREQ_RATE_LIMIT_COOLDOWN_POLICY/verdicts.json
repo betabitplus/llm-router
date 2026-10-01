@@ -101,26 +101,32 @@
    "verdict": "pin"
   },
   "operator": "boundary",
-  "pin": {
-   "adopted_at": "2026-09-29T12:52:02.816917Z",
-   "answer_sha256": "1a8f1265248e998134db460941b71df8dba3be257986215a4b7d38244c014239",
-   "call_id": "20260929T112226Z-a41b70",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "5fd692b1eb6f143d67c04f72a0191d3f1ebb71ccfb1ebff3dc13a323cdfeebca",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
-   "response_sha256": "06e9a3a179885ec2eb751a41c702dcea2aaa65396eb77562bfa52be73947beab",
-   "source": "draft author"
-  },
-  "prompt_sha256": "424cd080b0c3b7e590181d4d52aad6b89d309db4e050b6f1a98bf31ed0b822da"
+  "prompt_sha256": "424cd080b0c3b7e590181d4d52aad6b89d309db4e050b6f1a98bf31ed0b822da",
+  "subsumed": {
+   "at": "2026-10-01T13:48:57.672933Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T12:52:02.816917Z",
+    "answer_sha256": "1a8f1265248e998134db460941b71df8dba3be257986215a4b7d38244c014239",
+    "call_id": "20260929T112226Z-a41b70",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "5fd692b1eb6f143d67c04f72a0191d3f1ebb71ccfb1ebff3dc13a323cdfeebca",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
+    "response_sha256": "06e9a3a179885ec2eb751a41c702dcea2aaa65396eb77562bfa52be73947beab",
+    "source": "draft author"
+   }
+  }
  },
  "7d8cf2a980915b49": {
   "answer": {
@@ -227,26 +233,32 @@
    "verdict": "pin"
   },
   "operator": "statement",
-  "pin": {
-   "adopted_at": "2026-09-29T12:52:02.819132Z",
-   "answer_sha256": "ed5d0478a2e91267c07b0795a3508c68804323b7e98cb4d4b97e41d5e4a7565d",
-   "call_id": "20260929T112228Z-5834e0",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "ed5d0478a2e91267c07b0795a3508c68804323b7e98cb4d4b97e41d5e4a7565d",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_96a28c868f99fb34.py",
-   "response_sha256": "8bcd91df9e1784cb1a37707b727d0b4da51b6bf7bc717ec0f5bfcd3b01d62e43",
-   "source": "draft author"
-  },
-  "prompt_sha256": "ba54cc23d3832fb0faede27af32e863226bf8b19098b5c2d6453e94bb285a554"
+  "prompt_sha256": "ba54cc23d3832fb0faede27af32e863226bf8b19098b5c2d6453e94bb285a554",
+  "subsumed": {
+   "at": "2026-10-01T13:48:57.673904Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T12:52:02.819132Z",
+    "answer_sha256": "ed5d0478a2e91267c07b0795a3508c68804323b7e98cb4d4b97e41d5e4a7565d",
+    "call_id": "20260929T112228Z-5834e0",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "ed5d0478a2e91267c07b0795a3508c68804323b7e98cb4d4b97e41d5e4a7565d",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_96a28c868f99fb34.py",
+    "response_sha256": "8bcd91df9e1784cb1a37707b727d0b4da51b6bf7bc717ec0f5bfcd3b01d62e43",
+    "source": "draft author"
+   }
+  }
  },
  "99d124741e83ae13": {
   "answer": {
@@ -268,26 +280,32 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-29T12:52:02.820134Z",
-   "answer_sha256": "163985f6d6c2a0667651a96071f272edbc1dff500b506c79199d690a95b1c1b5",
-   "call_id": "20260929T112230Z-73dbbd",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "163985f6d6c2a0667651a96071f272edbc1dff500b506c79199d690a95b1c1b5",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_99d124741e83ae13.py",
-   "response_sha256": "b0dc1053802500ebaa6b2482d68afe52464f7d705a041d695835e6800284b989",
-   "source": "draft author"
-  },
-  "prompt_sha256": "9c2b575546d33378e112589f97aebe8a4ab6db537ca0aaf9dc6e40150c36a6b3"
+  "prompt_sha256": "9c2b575546d33378e112589f97aebe8a4ab6db537ca0aaf9dc6e40150c36a6b3",
+  "subsumed": {
+   "at": "2026-10-01T13:48:57.674111Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T12:52:02.820134Z",
+    "answer_sha256": "163985f6d6c2a0667651a96071f272edbc1dff500b506c79199d690a95b1c1b5",
+    "call_id": "20260929T112230Z-73dbbd",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "163985f6d6c2a0667651a96071f272edbc1dff500b506c79199d690a95b1c1b5",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_99d124741e83ae13.py",
+    "response_sha256": "b0dc1053802500ebaa6b2482d68afe52464f7d705a041d695835e6800284b989",
+    "source": "draft author"
+   }
+  }
  },
  "9f107933887a3fa0": {
   "answer": {
@@ -308,32 +326,38 @@
    "verdict": "pin"
   },
   "operator": "boundary",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.583176Z",
-   "answer_sha256": "7ef9999884cbfb84ed0a33bf6f2e5211edead7a13bd6395c550e5bfe087b2f36",
-   "call_id": "20260929T112230Z-c3a271",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "7ef9999884cbfb84ed0a33bf6f2e5211edead7a13bd6395c550e5bfe087b2f36",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f107933887a3fa0.py",
-   "response_sha256": "b957d9de769d116fd89554c7acfd404eb3632189760592802b7a3469c3635c72",
-   "source": "draft author",
-   "sources": [
-    "llm_router.Provider",
-    "llm_router.ProviderLimits",
-    "llm_router._internal.runtime.limiter.LimiterState"
-   ]
-  },
-  "prompt_sha256": "fbec93c5974cffe77ec75ecc5afcb225d99dd78a6934f3361ca1d67dea6d8ded"
+  "prompt_sha256": "fbec93c5974cffe77ec75ecc5afcb225d99dd78a6934f3361ca1d67dea6d8ded",
+  "subsumed": {
+   "at": "2026-10-01T13:48:57.674275Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.583176Z",
+    "answer_sha256": "7ef9999884cbfb84ed0a33bf6f2e5211edead7a13bd6395c550e5bfe087b2f36",
+    "call_id": "20260929T112230Z-c3a271",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "7ef9999884cbfb84ed0a33bf6f2e5211edead7a13bd6395c550e5bfe087b2f36",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f107933887a3fa0.py",
+    "response_sha256": "b957d9de769d116fd89554c7acfd404eb3632189760592802b7a3469c3635c72",
+    "source": "draft author",
+    "sources": [
+     "llm_router.Provider",
+     "llm_router.ProviderLimits",
+     "llm_router._internal.runtime.limiter.LimiterState"
+    ]
+   }
+  }
  },
  "9f72abc51a357f38": {
   "answer": {

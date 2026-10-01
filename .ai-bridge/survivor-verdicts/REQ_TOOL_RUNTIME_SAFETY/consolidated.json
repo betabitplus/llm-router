@@ -1,0 +1,45 @@
+{
+ "FN-E206A50B": {
+  "adopted_at": "2026-10-01T13:01:16.764861Z",
+  "answer_sha256": "89dddc35fb90d520067622348727f118559c49c1213523b49713ffb699c0e9f7",
+  "call_id": "20261001T125650Z-b4732e",
+  "cascade": {
+   "4180d032448ab8db": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-2027036F": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "89dddc35fb90d520067622348727f118559c49c1213523b49713ffb699c0e9f7",
+  "effort": "low",
+  "function": "src/llm_router/_internal/runtime/executor.py::_run_logged_tool_round",
+  "keys": [
+   "4180d032448ab8db",
+   "SM-2027036F"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_fn_e206a50b.py",
+  "response_sha256": "9de13d443119f98beb8a7612f5065b123f86c0cc111728321a21e86a2f659d0d",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.RouterProfile",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "tests.llm_router.support.fault_server.ScriptedResponse",
+   "tests.llm_router.support.workers.retry.openai_chat_path",
+   "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+   "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+  ],
+  "suite_checked": true
+ }
+}

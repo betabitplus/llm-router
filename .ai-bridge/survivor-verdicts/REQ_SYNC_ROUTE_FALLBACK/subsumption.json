@@ -1,21 +1,36 @@
 {
- "at": "2026-09-30T13:45:52.583194Z",
+ "at": "2026-10-01T13:46:54.301966Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_45f4eab791155bbe.py",
-  "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py"
+  "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py",
+  "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_fn_18e45f3c.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_45f4eab791155bbe.py",
-  "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py"
+  "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_fn_18e45f3c.py"
  ],
  "restored": [],
- "removed": {},
+ "removed": {
+  "45f4eab791155bbe": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_45f4eab791155bbe.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_fn_18e45f3c.py"
+   ]
+  },
+  "b4662840626becac": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_fn_18e45f3c.py"
+   ]
+  }
+ },
  "matrix": {
   "45f4eab791155bbe": [
-   "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_45f4eab791155bbe.py"
+   "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_45f4eab791155bbe.py",
+   "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_fn_18e45f3c.py"
   ],
   "b4662840626becac": [
-   "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py"
+   "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py",
+   "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_fn_18e45f3c.py"
   ]
  },
  "caught_before": [

@@ -121,7 +121,7 @@ def is_retryable_provider_error(exc: BaseException) -> bool:
     return bool(getattr(exc.cause, "retryable", False))
 
 
-# @impl Bounded synchronous provider retry, IMPL_PROVIDER_RETRY_SYNC_BOUNDS, [TREQ_PROVIDER_RETRY_BOUNDS[revision==2]]
+# @impl Bounded synchronous provider retry, IMPL_PROVIDER_RETRY_SYNC_BOUNDS, [TREQ_PROVIDER_RETRY_BOUNDS[revision==3]]
 def build_provider_retrying(
     *,
     policy: RetryPolicy,
@@ -147,7 +147,7 @@ def build_provider_retrying(
     )
 
 
-# @impl Bounded asynchronous provider retry, IMPL_PROVIDER_RETRY_ASYNC_BOUNDS, [TREQ_PROVIDER_RETRY_BOUNDS[revision==2]]
+# @impl Bounded asynchronous provider retry, IMPL_PROVIDER_RETRY_ASYNC_BOUNDS, [TREQ_PROVIDER_RETRY_BOUNDS[revision==3]]
 def build_provider_async_retrying(
     *,
     policy: RetryPolicy,

@@ -1,0 +1,38 @@
+{
+ "FN-09E5F504": {
+  "adopted_at": "2026-10-01T13:14:34.326935Z",
+  "answer_sha256": "5ce62675d5dd92cbf403fc9371f04aace1e280bd550f264933037ab0df58d80c",
+  "call_id": "20261001T131229Z-665427",
+  "cascade": {
+   "3b9da8b0c2e02991": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "516ee0826f5a2224": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "5ce62675d5dd92cbf403fc9371f04aace1e280bd550f264933037ab0df58d80c",
+  "effort": "low",
+  "function": "src/llm_router/_internal/capabilities/usage.py::normalize_usage",
+  "keys": [
+   "3b9da8b0c2e02991",
+   "516ee0826f5a2224"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_fn_09e5f504.py",
+  "response_sha256": "d301ec3d82d9532badfc340fed154a1f254365e60bee46fe37d81273c7461d53",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.UsageStats",
+   "llm_router._internal.capabilities.usage.normalize_usage"
+  ],
+  "suite_checked": true
+ }
+}

@@ -2,36 +2,38 @@
  "134c51ceab948442": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T235150Z-815c50",
+   "call_id": "20261001T113657Z-b22bd0",
    "confirmed": true,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant changes only the derived schema name when a mapping has `$id` but no `title`. The mapping itself is still preserved and validated, and the parser still enforces the schema. No requirement, criterion, Feature or Goal says how the schema name should be derived.",
-   "response_sha256": "738f599026ca410a19c9c191bef3be19f5699624459bc4468b56994020fedfdf",
+   "reason": "The mutant only changes the derived SchemaSpec name when a mapping has `$id` but no `title`. The json_schema is still preserved, invalid schemas are still rejected, and the router-side parser still validates against the same schema. The requirement says nothing about how the schema name is derived.",
+   "response_sha256": "cca5a966d7dc6ea6f807cac537d5b3b75c2246c583c261bbeee3eb5337e082bd",
    "sources": [
-    "name = str(copied.get('title') or 'structured_response')",
+    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them.",
+    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
     "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
-    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them."
+    "name = str(copied.get('title') or 'structured_response')"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "condition",
-  "prompt_sha256": "58c481699822b8889ced9e6935ed04620fdf5702043d4119c7dce0b108761b7e",
+  "prompt_sha256": "9e1817f2c28b03127a35ba2282ed1ce37e5ea179578b10e3512533f39a37c13c",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T090148Z-ca3d39",
+   "call_id": "20261001T113803Z-5a85bb",
    "confirmed": true,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "58c481699822b8889ced9e6935ed04620fdf5702043d4119c7dce0b108761b7e",
-   "reason": "The requirement dictates that JSON Schema mappings are preserved and their Draft 2020-12 semantics enforced, but it does not specify how the internal SchemaSpec name is generated. Since the underlying JSON schema itself remains perfectly preserved in both versions, removing the $id fallback for the SchemaSpec name is an implementation detail that does not affect any required behavior.",
-   "response_sha256": "647158aa9547c7340d3033c079ee58ab9006750d6872fac2b8915b913743c91c",
+   "prompt_sha256": "9e1817f2c28b03127a35ba2282ed1ce37e5ea179578b10e3512533f39a37c13c",
+   "reason": "The requirement mandates that the schema mapping itself is preserved, which both versions do, but does not specify how the internal SchemaSpec name must be derived from it. The fallback to $id is an implementation detail.",
+   "response_sha256": "b1c663313648e55c8e6650a349dd9875c2a92f5d2764dcffb0eaf108014e2372",
    "sources": [
-    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
-    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them.",
+    "A valid object JSON Schema mapping is preserved",
     "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
     "name = str(copied.get('title') or 'structured_response')"
    ],
@@ -59,39 +61,45 @@
    "verdict": "pin"
   },
   "operator": "conversion",
-  "pin": {
-   "adopted_at": "2026-09-30T18:22:34.891336Z",
-   "answer_sha256": "6800d9ea80ab02405b60b279c11ccc0f2eba8ed086bacc5c9f2e61ce721275dd",
-   "call_id": "20260930T180500Z-619f36",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "6800d9ea80ab02405b60b279c11ccc0f2eba8ed086bacc5c9f2e61ce721275dd",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_155610404a9b2a0a.py",
-   "response_sha256": "8c563dbeb38d0359d44b3da134f0793d845277b257d8eac5d4ec64cae66136e9",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "5e5e0e512b791ccc4f20f88cc7327d1464435c0d2f6d6f8a63a947682328d2ce"
+  "prompt_sha256": "5e5e0e512b791ccc4f20f88cc7327d1464435c0d2f6d6f8a63a947682328d2ce",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.262469Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_98e4d6a0.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:22:34.891336Z",
+    "answer_sha256": "6800d9ea80ab02405b60b279c11ccc0f2eba8ed086bacc5c9f2e61ce721275dd",
+    "call_id": "20260930T180500Z-619f36",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "6800d9ea80ab02405b60b279c11ccc0f2eba8ed086bacc5c9f2e61ce721275dd",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_155610404a9b2a0a.py",
+    "response_sha256": "8c563dbeb38d0359d44b3da134f0793d845277b257d8eac5d4ec64cae66136e9",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "18f6055a7b78672a": {
   "answer": {
@@ -208,39 +216,45 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-30T18:24:43.891953Z",
-   "answer_sha256": "7fc46256092341e6a7ffb145a33915a62c588d7b1017ebccb0c3d579fff32061",
-   "call_id": "20260930T180500Z-fa7508",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "7fc46256092341e6a7ffb145a33915a62c588d7b1017ebccb0c3d579fff32061",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_24bb2ffb3a209650.py",
-   "response_sha256": "f578a5ac1335f7d7a9e371712a21362f25e3de63144bf38924d4b74bdcfe94cb",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
-   ]
-  },
-  "prompt_sha256": "4702c42ac68f0eebfdf6fef190d798ff762251479eb9271527c6de5b8c252a77"
+  "prompt_sha256": "4702c42ac68f0eebfdf6fef190d798ff762251479eb9271527c6de5b8c252a77",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.263011Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_ea3f2437.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:24:43.891953Z",
+    "answer_sha256": "7fc46256092341e6a7ffb145a33915a62c588d7b1017ebccb0c3d579fff32061",
+    "call_id": "20260930T180500Z-fa7508",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "7fc46256092341e6a7ffb145a33915a62c588d7b1017ebccb0c3d579fff32061",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_24bb2ffb3a209650.py",
+    "response_sha256": "f578a5ac1335f7d7a9e371712a21362f25e3de63144bf38924d4b74bdcfe94cb",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+    ]
+   }
+  }
  },
  "2ac6551daf76c11a": {
   "answer": {
@@ -262,34 +276,40 @@
    "verdict": "pin"
   },
   "operator": "statement",
-  "pin": {
-   "adopted_at": "2026-09-30T18:24:48.631731Z",
-   "answer_sha256": "019ae0a34f2762fd04a38139f4d2cfcb0ba29008225a0061dfead85212a86d3a",
-   "call_id": "20260930T180457Z-862bbd",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "019ae0a34f2762fd04a38139f4d2cfcb0ba29008225a0061dfead85212a86d3a",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_2ac6551daf76c11a.py",
-   "response_sha256": "8ee851bd3e8bdc12cec0af4bbd529e3cb4c697d25236f0effbba0642594ea5cc",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile"
-   ]
-  },
-  "prompt_sha256": "9066f5e449fa604baf956448ea41b1dc343f32e966adace27d748fc0b439b4a6"
+  "prompt_sha256": "9066f5e449fa604baf956448ea41b1dc343f32e966adace27d748fc0b439b4a6",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.263948Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_98e4d6a0.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:24:48.631731Z",
+    "answer_sha256": "019ae0a34f2762fd04a38139f4d2cfcb0ba29008225a0061dfead85212a86d3a",
+    "call_id": "20260930T180457Z-862bbd",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "019ae0a34f2762fd04a38139f4d2cfcb0ba29008225a0061dfead85212a86d3a",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_2ac6551daf76c11a.py",
+    "response_sha256": "8ee851bd3e8bdc12cec0af4bbd529e3cb4c697d25236f0effbba0642594ea5cc",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile"
+    ]
+   }
+  }
  },
  "2f6673fb9c05efb3": {
   "answer": {
@@ -348,37 +368,40 @@
  "46f251ff0853b30b": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T090301Z-859b9a",
+   "call_id": "20261001T113657Z-5c372d",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Draft202012Validator only reads the schema's keys, never changes them, and builds its validator fresh on each call. So validating the original mapping or a shallow dict copy gives the same accept/reject result and the same errors. Router-side enforcement of the declared Draft 2020-12 semantics stays the same.",
-   "response_sha256": "8feb1ce3469235e56faa62480ee9662706ff780d497a34fcbad3c80f5b4c7fdc",
+   "reason": "Draft202012Validator only reads the schema (via get/items and reference lookups) and never changes it. Since a shallow dict copy shares every nested subschema, both versions accept and reject the same outputs, raise the same exception type and return the same parsed object. The only leftover difference is how a non-dict mapping prints in the error text, which no requirement asks about.",
+   "response_sha256": "c13a24cb5ffb1781d31d30fac4ce5d8d10b4c903aeb15beb77fb7a8efbac88e3",
    "sources": [
-    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution",
     "Draft202012Validator(dict(schema)).validate(parsed)",
-    "Draft202012Validator(schema).validate(parsed)"
+    "Draft202012Validator(schema).validate(parsed)",
+    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution",
+    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "conversion",
-  "prompt_sha256": "0c06d7c2b7823c1196db1010517692c83f7c996664c166f64dd72318cb7fe5de",
+  "prompt_sha256": "5de352dde8540bad4ef9352c98df4035c7ac042587891939da2d8ad91daba418",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T090314Z-2a7dd1",
+   "call_id": "20261001T113803Z-522450",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "0c06d7c2b7823c1196db1010517692c83f7c996664c166f64dd72318cb7fe5de",
-   "reason": "The Draft202012Validator does not mutate the schema mapping it receives, so omitting the shallow dictionary copy preserves the identical validation semantics and observable behavior.",
-   "response_sha256": "8be3401ba80f3b910c67a5e76a6bb4856c9892739ddc92be2a04ccc4c4fb36f6",
+   "prompt_sha256": "5de352dde8540bad4ef9352c98df4035c7ac042587891939da2d8ad91daba418",
+   "reason": "The Draft202012Validator accepts any Mapping and does not mutate it. Passing the schema mapping directly instead of making a shallow dict copy produces identical validation behavior.",
+   "response_sha256": "db927305b1cae837a66d627025a23eb390e717f93450d9c689eae1c98b81c128",
    "sources": [
     "Draft202012Validator(dict(schema)).validate(parsed)",
     "Draft202012Validator(schema).validate(parsed)",
-    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution."
+    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution."
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -466,7 +489,25 @@
    "verdict": "irrelevant"
   },
   "operator": "conditional",
-  "prompt_sha256": "eb0f34806a6e5b8f7835d3decaacf884bd15eee2033cd1814fff5397ba13de54"
+  "prompt_sha256": "eb0f34806a6e5b8f7835d3decaacf884bd15eee2033cd1814fff5397ba13de54",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20261001T113803Z-513742",
+   "confirmed": true,
+   "effort": "",
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "eb0f34806a6e5b8f7835d3decaacf884bd15eee2033cd1814fff5397ba13de54",
+   "reason": "The mutation prevents renaming the schema specification during a transform by ignoring the `name` argument, but the requirement only mandates that provider-specific transforms do not weaken validation and preserve constraints, never mentioning the ability to rename specs.",
+   "response_sha256": "149be94e3ae075c5b99df27c6f365b16a4f93cb46e02902902884a9c6b026241",
+   "sources": [
+    "Provider-specific schema transforms shall not weaken router-side validation.",
+    "name=spec.name if name is None else name"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  },
  "589c1fbde8e85997": {
   "answer": {
@@ -521,13 +562,14 @@
  "5da41d86e25be1cb": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T235222Z-d518f9",
+   "call_id": "20261001T113700Z-7e7983",
    "confirmed": true,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant changes only the fallback name (from 'structured_response' to 'None') when a mapping has no title or $id. The schema is still deep-copied, validated before execution, preserved and parsed the same way. The requirement and its criteria say nothing about the spec's name.",
-   "response_sha256": "2b0996015d94588e60225b5a1f9e620b9348e264ded841e3745131a14fdf4fb9",
+   "reason": "The only change is the fallback name for a mapping schema that has no title or $id: it becomes the string 'None' instead of 'structured_response'. The schema is still preserved, still validated before execution, and its parser is unchanged. No requirement, criterion, Feature or Goal says what this fallback label should be.",
+   "response_sha256": "17cafadf9c4c67726741721c41687bfb00cd930d08a14fbe85d05b732783d566",
    "sources": [
     "name = str(copied.get('title') or copied.get('$id'))",
     "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
@@ -538,19 +580,20 @@
    "verdict": "irrelevant"
   },
   "operator": "condition",
-  "prompt_sha256": "fa112c85cacbd5b56808a77ce547061508a0e39488cd06493f82f234289208cd",
+  "prompt_sha256": "59ccc5f0642a9c73e180ea16dc03b088850f63dbed6ada1c0771d67baa84958e",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T090338Z-469f0c",
+   "call_id": "20261001T113803Z-46c73b",
    "confirmed": true,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "fa112c85cacbd5b56808a77ce547061508a0e39488cd06493f82f234289208cd",
-   "reason": "The requirement mandates preserving valid JSON Schema mappings and enforcing their validation constraints, but does not specify a default name when both title and $id are missing. Changing this fallback name is an implementation detail regarding default values that does not affect the contract.",
-   "response_sha256": "574b40fa49105e879b5e701c7e5ac3b178280c20b86174f723448f65ccc5d349",
+   "prompt_sha256": "59ccc5f0642a9c73e180ea16dc03b088850f63dbed6ada1c0771d67baa84958e",
+   "reason": "The change alters the default fallback name assigned to the schema spec from \"structured_response\" to \"None\" when neither a title nor an ID is provided, which is an implementation detail not specified by the requirement.",
+   "response_sha256": "12b31a4aca6912663b6c324c1e55c2fff2b9baeb30963f22b8269c2daaac6dee",
    "sources": [
-    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them.",
+    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
     "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
     "name = str(copied.get('title') or copied.get('$id'))"
    ],
@@ -577,10 +620,72 @@
    "verdict": "pin"
   },
   "operator": "return",
+  "prompt_sha256": "1bdeae77b7f4dc61249f1515a54ace2106c5df1c957de46ecb9c78ad098eb3ba",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.265140Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_91f4b37c.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:24:33.976031Z",
+    "answer_sha256": "824f5dd9fd9dcd147e103ec53af3fd39795d765259886d5f0f5d1082353d93de",
+    "call_id": "20260930T180646Z-1a5aa4",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "824f5dd9fd9dcd147e103ec53af3fd39795d765259886d5f0f5d1082353d93de",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_6e9116a1b83a69f4.py",
+    "response_sha256": "e4e772e7572eb777c62151b684bb2276b556ce61f3e7ecf083e32d68346e1f44",
+    "source": "last resort",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
+ },
+ "8585b2a84ecd44f0": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T113657Z-519307",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant names every untitled mapping schema with the dict printed as text and drops the $id fallback. That makes normalization produce unusable provider-facing names (braces, quotes, spaces), likely making providers reject the request. This breaks the requirement that structured schemas normalize predictably for providers.",
+   "response_sha256": "e2419251e3c29ac984ae27891e952befa34aaa8cfdb547845aa1557c895a5805",
+   "sources": [
+    "Requirement REQ_STRUCTURED_SCHEMA_CONTRACT (Structured schemas normalize predictably)",
+    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them.",
+    "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
+    "name = str(copied.get('title') or copied or 'structured_response')",
+    "Goal GOAL_RICH_INPUT_OUTPUT (Preserve rich input and structured-output semantics across providers)"
+   ],
+   "test_focus": "Normalizing a mapping schema without a title must take its name from $id, and one with neither must be named 'structured_response', never the schema dict as text.",
+   "verdict": "pin"
+  },
+  "operator": "method",
   "pin": {
-   "adopted_at": "2026-09-30T18:24:33.976031Z",
-   "answer_sha256": "824f5dd9fd9dcd147e103ec53af3fd39795d765259886d5f0f5d1082353d93de",
-   "call_id": "20260930T180646Z-1a5aa4",
+   "adopted_at": "2026-10-01T11:55:08.430300Z",
+   "answer_sha256": "28e2843389f1a59ab76339c10449a504a6d576c978361219b79f637d987bf811",
+   "call_id": "20261001T115329Z-f353cc",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -589,14 +694,14 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "824f5dd9fd9dcd147e103ec53af3fd39795d765259886d5f0f5d1082353d93de",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
+   "draft_sha256": "28e2843389f1a59ab76339c10449a504a6d576c978361219b79f637d987bf811",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_6e9116a1b83a69f4.py",
-   "response_sha256": "e4e772e7572eb777c62151b684bb2276b556ce61f3e7ecf083e32d68346e1f44",
-   "source": "last resort",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_8585b2a84ecd44f0.py",
+   "response_sha256": "b4ce8035ffdf75902cffe0729aef31be3d972c081428dcbeeee8cb3d820d1384",
+   "source": "draft author with tools",
    "sources": [
     "llm_router.LLMRouter",
     "llm_router.Model",
@@ -606,62 +711,25 @@
     "tests.llm_router.support.fault_server.ScriptedResponse",
     "tests.llm_router.support.workers.retry.openai_chat_path",
     "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
    ]
   },
-  "prompt_sha256": "1bdeae77b7f4dc61249f1515a54ace2106c5df1c957de46ecb9c78ad098eb3ba"
- },
- "8585b2a84ecd44f0": {
-  "answer": {
-   "backend": "claude-cli",
-   "call_id": "20260928T235222Z-b32b37",
-   "confirmed": true,
-   "level": "implementation",
-   "model": "claude-opus-5-5",
-   "problems": [],
-   "reason": "The mutant only changes the display name derived for a mapping schema. It drops the `$id` fallback and uses the dict's repr instead of 'structured_response'. The json_schema and parser stay the same, and the requirement and its criteria cover only schema preservation, validation after provider execution, rejecting invalid schemas, and Pydantic reconstruction, never the name.",
-   "response_sha256": "3350a0af64370ba8d8779c5399dda0152a80fccba1bef1fc7d916fc54097bd7b",
-   "sources": [
-    "name = str(copied.get('title') or copied or 'structured_response')",
-    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them.",
-    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution."
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  },
-  "operator": "method",
-  "prompt_sha256": "dfbacd954bdd1044632fed361f2f9d2fc3a14b5b333b104b701e010a9db56369",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260929T090338Z-8ce018",
-   "confirmed": true,
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "dfbacd954bdd1044632fed361f2f9d2fc3a14b5b333b104b701e010a9db56369",
-   "reason": "The requirement ensures that the schema mapping is preserved and its validation constraints are enforced, but it does not specify how the internal name of the schema should be derived when a title is missing. Changing the fallback name to a stringified dictionary does not affect the schema's validation semantics.",
-   "response_sha256": "485bc0f8bd78195fac93fa54b0fee8e9b234d661fa082a6c376e314eeeebc555",
-   "sources": [
-    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them.",
-    "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
-    "name = str(copied.get('title') or copied or 'structured_response')"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "2a2a96b74e5699865b06e716c08bedf30b88b190885e2556c7480a63148732d1"
  },
  "87ad8ca644dbe3d7": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T235222Z-72732f",
+   "call_id": "20261001T113700Z-2fc7df",
    "confirmed": true,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant still rejects output that fails parsing (valid=False) and still returns the parsed value when it passes, so validation keeps enforcing the schema. The only difference is that the diagnostic error_message is dropped, and no requirement, criterion, Feature or Goal asks for that text.",
-   "response_sha256": "249e23a740745494db6a42708981b092948034bc9f024323a3c02d99540b5aa2",
+   "reason": "The mutant still reports valid=False and returns no parsed value when parsing fails, so router-side validation still enforces the schema. It only drops the diagnostic error_message text, and no requirement, criterion, Feature or Goal asks for that message.",
+   "response_sha256": "24b5206d47bd632af731f44ec414ab439f0058f96d135663f7354945fd041bb2",
    "sources": [
     "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution",
+    "router-side validation enforces its declared nested/common constraints rather than silently ignoring them",
     "return SchemaValidationResult(valid=False)",
     "error_message=preview_value(exc),"
    ],
@@ -669,19 +737,20 @@
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "28b95decd186b503ca8a05a8db046dbb84d783ca6332d4ea00df17b3dd7e8f27",
+  "prompt_sha256": "3984e597cd5f8ba1730d9f44c36419143f38801d7314cbccdaebba7955d70a68",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T090358Z-278039",
+   "call_id": "20261001T113803Z-7c660d",
    "confirmed": true,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "28b95decd186b503ca8a05a8db046dbb84d783ca6332d4ea00df17b3dd7e8f27",
-   "reason": "The mutant omits the error message when returning a failed validation result. The requirement only mandates that validation enforces constraints and rejects invalid outputs, making the presence of the error message an implementation detail.",
-   "response_sha256": "a1172a0013bc85e07f1b961cee8f124c34841cfabbcc978c98050426672fa7cc",
+   "prompt_sha256": "3984e597cd5f8ba1730d9f44c36419143f38801d7314cbccdaebba7955d70a68",
+   "reason": "The requirement mandates that router-side validation enforces constraints and rejects invalid schemas, but it does not prescribe capturing or surfacing a specific error message upon validation failure.",
+   "response_sha256": "cbd205b9ecc3f71491d3b23bb87c1c4a16522af6a441ad37fc7073c2666d5e69",
    "sources": [
-    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
+    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution",
     "error_message=preview_value(exc),"
    ],
    "test_focus": "",
@@ -708,39 +777,45 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-30T18:15:28.262053Z",
-   "answer_sha256": "e6e41090785641c4aacd136ba9e884db93523d7535a5dcf5700e6b8ab1aaa696",
-   "call_id": "20260930T180502Z-21accb",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "e6e41090785641c4aacd136ba9e884db93523d7535a5dcf5700e6b8ab1aaa696",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_008e10b9.py",
-   "response_sha256": "57610d09f558fe77c51a9aba8c7b250390ac5661367388770751ebad9f5df31b",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "91e5a75034e1f244be972de7d9f788449eae4bda4d52a42bebfbaacba5a6a9b9"
+  "prompt_sha256": "91e5a75034e1f244be972de7d9f788449eae4bda4d52a42bebfbaacba5a6a9b9",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.266679Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_ed3039dc.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:15:28.262053Z",
+    "answer_sha256": "e6e41090785641c4aacd136ba9e884db93523d7535a5dcf5700e6b8ab1aaa696",
+    "call_id": "20260930T180502Z-21accb",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "e6e41090785641c4aacd136ba9e884db93523d7535a5dcf5700e6b8ab1aaa696",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_008e10b9.py",
+    "response_sha256": "57610d09f558fe77c51a9aba8c7b250390ac5661367388770751ebad9f5df31b",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "SM-07EEEA4D": {
   "answer": {
@@ -858,39 +933,45 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-30T19:07:00.937495Z",
-   "answer_sha256": "267de9e2df7cd5fc1e907a06fbd16b2614ffc841ca0f8e883024ada1bf234f5a",
-   "call_id": "20260930T190508Z-2815b9",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "267de9e2df7cd5fc1e907a06fbd16b2614ffc841ca0f8e883024ada1bf234f5a",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_2093bbd0.py",
-   "response_sha256": "d65f2808a2e57fc03879e5e02abe25c7eef3c0d31b80a99fb12639938b0eeb46",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
-   ]
-  },
-  "prompt_sha256": "e4dc3edae73d0b10e2ffc6916ce78af7082c01eac3233cfa5dce13b26337142a"
+  "prompt_sha256": "e4dc3edae73d0b10e2ffc6916ce78af7082c01eac3233cfa5dce13b26337142a",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.267316Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_ea3f2437.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T19:07:00.937495Z",
+    "answer_sha256": "267de9e2df7cd5fc1e907a06fbd16b2614ffc841ca0f8e883024ada1bf234f5a",
+    "call_id": "20260930T190508Z-2815b9",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "267de9e2df7cd5fc1e907a06fbd16b2614ffc841ca0f8e883024ada1bf234f5a",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_2093bbd0.py",
+    "response_sha256": "d65f2808a2e57fc03879e5e02abe25c7eef3c0d31b80a99fb12639938b0eeb46",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+    ]
+   }
+  }
  },
  "SM-21182039": {
   "answer": {
@@ -938,45 +1019,45 @@
  "SM-2AE24515": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T080944Z-0be9aa",
+   "call_id": "20261001T114454Z-4c0fa0",
    "confirmed": true,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes behaviour when the value is a dict. Both project callers always pass strings: the executor passes `result.output_text: str`, and the prompted path passes candidates from `_structured_candidates`, which returns `tuple[str, ...]`. The dict branch never runs, so router-side validation after provider execution is unchanged. A direct call can tell the versions apart, so the verdict is irrelevant rather than equivalent.",
-   "response_sha256": "5cd6e01bf42f79b1b5d3891a65ecc8369e33b77be89301049cb411dbcc0fb619",
+   "reason": "The mutant only changes behaviour when `value` is a dict. Both callers pass strings: `_structured_candidates` returns `tuple[str, ...]` and `ProviderResult.output_text` is a `str`. So stripping None-valued keys can never happen where router-side validation is observed.",
+   "response_sha256": "515b461522cb7c3b1d202658dcc45c3740d8bc865e091fcdbe1a52d612857152",
    "sources": [
     "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution",
     "if isinstance(value, dict):",
     "validation = validate_schema_output(plan.schema, result.output_text)",
-    "for candidate in _structured_candidates(text):\n        result = validate_schema_output(spec, candidate)",
+    "for candidate in _structured_candidates(text):",
     "_structured_candidates(text: str) -> tuple[str, ...]",
-    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str"
+    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str, usage: UsageStats | None = \u2026, tool_calls: tuple[ToolCall, ...] = \u2026, tool_call_metadata: tuple[Mapping[str, Any], ...] = \u2026)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "semantic",
-  "prompt_sha256": "de47e4a47ecb274a8e27bed8c5987b6554bba5e52cd03c51791a4f0d6d7412f7",
+  "prompt_sha256": "e4ed968044d4db98e850a9387b32ecfe367838e139bc2fcb783e623058ff2970",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T081059Z-d8ac95",
+   "call_id": "20261001T114546Z-05a2c1",
    "confirmed": true,
    "effort": "",
-   "level": "implementation",
+   "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "de47e4a47ecb274a8e27bed8c5987b6554bba5e52cd03c51791a4f0d6d7412f7",
-   "reason": "The mutant introduces behavior that strips None values only when the `value` argument is a dictionary. However, both callers in the project pass strings (`candidate` from `_structured_candidates` and `result.output_text` from `ProviderResult`), meaning the mutant's dictionary-specific condition is never met and the difference cannot be observed.",
-   "response_sha256": "c7d67bcc9c0b2ad10ab1533eb734ecd19e9e0afd98fa098d77583388290551c7",
+   "prompt_sha256": "e4ed968044d4db98e850a9387b32ecfe367838e139bc2fcb783e623058ff2970",
+   "reason": "The mutant removes `None` values from dictionary inputs, which would violate the requirement to enforce declared nested/common constraints rather than silently ignoring them. However, the only project callers (`_validate_structured_result` and `parse_prompted_structured_data`) pass string inputs (`result.output_text` and strings from `_structured_candidates(text)`) rather than dictionaries. Because no caller hands a dictionary to the function, the changed code is never executed and the difference cannot be observed where the requirement is observed.",
+   "response_sha256": "356de454616ee6fe85add045c4af4d682da572db7d9647f58b817400887ad2d9",
    "sources": [
     "Requirement REQ_STRUCTURED_SCHEMA_CONTRACT (Structured schemas normalize predictably): Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
+    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them.",
     "if isinstance(value, dict):",
-    "result = validate_schema_output(spec, candidate)",
-    "_structured_candidates(text: str) -> tuple[str, ...]",
     "validation = validate_schema_output(plan.schema, result.output_text)",
-    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str, usage: UsageStats | None = \u2026, tool_calls: tuple[ToolCall, ...] = \u2026, tool_call_metadata: tuple[Mapping[str, Any], ...] = \u2026)"
+    "for candidate in _structured_candidates(text):",
+    "_structured_candidates(text: str) -> tuple[str, ...]"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -1176,43 +1257,49 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-30T19:06:53.388051Z",
-   "answer_sha256": "29735cda6ad45a2426fbbdb275f088ec0032cea2dd2b1d8c07e00aa67d5d2aa9",
-   "call_id": "20260930T190320Z-6e0c0c",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "29735cda6ad45a2426fbbdb275f088ec0032cea2dd2b1d8c07e00aa67d5d2aa9",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_9c5c73bc.py",
-   "response_sha256": "783d95a8c6d6bb4cbe0bb551c24d2b3bb075c1874e2bdda05293bcc104dc3f2c",
-   "source": "last resort",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "llm_router.get_config",
-    "llm_router.install_config",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
-    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "635e4573ad8bd17d7e1f923dac4ea901cfa8325eeb2411454eecc2eff573a835"
+  "prompt_sha256": "635e4573ad8bd17d7e1f923dac4ea901cfa8325eeb2411454eecc2eff573a835",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.267568Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_98e4d6a0.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T19:06:53.388051Z",
+    "answer_sha256": "29735cda6ad45a2426fbbdb275f088ec0032cea2dd2b1d8c07e00aa67d5d2aa9",
+    "call_id": "20260930T190320Z-6e0c0c",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "29735cda6ad45a2426fbbdb275f088ec0032cea2dd2b1d8c07e00aa67d5d2aa9",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_9c5c73bc.py",
+    "response_sha256": "783d95a8c6d6bb4cbe0bb551c24d2b3bb075c1874e2bdda05293bcc104dc3f2c",
+    "source": "last resort",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "llm_router.get_config",
+     "llm_router.install_config",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+     "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "SM-AAB2D195": {
   "answer": {
@@ -1234,41 +1321,47 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-30T18:26:16.028093Z",
-   "answer_sha256": "979c4c19b23af0f21e7a078bebc8ed974e3cb339d1a4cf6bb41af6871e18ba2d",
-   "call_id": "20260930T182029Z-1192fe",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "979c4c19b23af0f21e7a078bebc8ed974e3cb339d1a4cf6bb41af6871e18ba2d",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_aab2d195.py",
-   "response_sha256": "26a18ed28cec7e3a28abd0e6af2b6d7c0f591e0b3f735dab6c6f1f3c5fe9e90e",
-   "source": "last resort",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "llm_router.VideoUrlSchema",
-    "llm_router.get_config",
-    "llm_router.install_config",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.aistudio_video_path",
-    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
-   ]
-  },
-  "prompt_sha256": "1640304a279d01d88164593d4c9650d98e34f77968faa9d1b363fed969c1885a"
+  "prompt_sha256": "1640304a279d01d88164593d4c9650d98e34f77968faa9d1b363fed969c1885a",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.267767Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_ea3f2437.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:26:16.028093Z",
+    "answer_sha256": "979c4c19b23af0f21e7a078bebc8ed974e3cb339d1a4cf6bb41af6871e18ba2d",
+    "call_id": "20260930T182029Z-1192fe",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "979c4c19b23af0f21e7a078bebc8ed974e3cb339d1a4cf6bb41af6871e18ba2d",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_aab2d195.py",
+    "response_sha256": "26a18ed28cec7e3a28abd0e6af2b6d7c0f591e0b3f735dab6c6f1f3c5fe9e90e",
+    "source": "last resort",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "llm_router.VideoUrlSchema",
+     "llm_router.get_config",
+     "llm_router.install_config",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.aistudio_video_path",
+     "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+    ]
+   }
+  }
  },
  "SM-BF818699": {
   "answer": {
@@ -1315,26 +1408,25 @@
  "SM-C6EBF982": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T080944Z-cf0859",
+   "call_id": "20261001T114454Z-06c5e6",
    "confirmed": false,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant drops explicit None entries from mapping output before validation. A model reconstructed from valid JSON containing null then gets the field's default, or fails validation as missing, instead of keeping None. The project caller _pydantic_schema_spec passes any value straight through SchemaSpec.parse, so a dict reaches the changed branch.",
-   "response_sha256": "5a152a4c3ac64c5759444cff5223599ee55de5d6732d4df17cde6600ab50ce3d",
+   "reason": "The mutant changes the result when `SchemaSpec.parse` gets an already-decoded dict that contains explicit nulls, which is valid JSON output. It throws away `None` values before validation, so a required Optional field raises a missing-field error, and a field whose default is not None gets that default instead of None. Either way, the router no longer rebuilds the model it was asked for from valid JSON output.",
+   "response_sha256": "38179708def502f0899d23af90138959c3564c2502426e699d04ec9ccd4e9c63",
    "sources": [
     "Pydantic model types shall preserve their generated schema and reconstruct the requested model from valid JSON output.",
     "A Pydantic model type retains its generated schema and valid JSON reconstructs the requested model type.",
     "    if isinstance(value, dict):\n        value = {k: v for k, v in value.items() if v is not None}",
-    "parser=lambda value: _parse_pydantic_model(model, value),",
-    "SchemaSpec(name: str, json_schema: Mapping[str, Any], parser: Callable[[object], object], model_type: type[BaseModel] | None = \u2026); methods parse(value: object) -> object"
+    "parser=lambda value: _parse_pydantic_model(model, value),"
    ],
-   "test_focus": "Define a Pydantic model M with `x: int | None = 5` and `y: int | None` (required). Assert that `_pydantic_schema_spec(M).parse({\"x\": None, \"y\": None})` returns an M instance with x is None and y is None. The original code passes; the mutant gives x == 5 and raises a missing-field error for y.",
+   "test_focus": "Call `_pydantic_schema_spec(M)` with `class M(BaseModel): x: int | None; y: int | None = 5`. Then check that `spec.parse({\"x\": None, \"y\": None})` returns an instance of `M` with `x is None` and `y is None`, and does not raise `ValidationError`.",
    "verdict": "pin"
   },
   "operator": "semantic",
-  "prompt_sha256": "bded343ccfe1bcef4434972ef6691a3134c039a0d1237923f00d730c3e014547"
+  "prompt_sha256": "c67945d876e06459f7848634e8362acfae8e7e1d074beb45b67a3be83594be91"
  },
  "SM-D49276DB": {
   "answer": {
@@ -1357,39 +1449,45 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-30T18:23:41.724553Z",
-   "answer_sha256": "331dfd8504b9ab8d5c234c91afab043c48c93dff189d98f91b7d7b84c686b03c",
-   "call_id": "20260930T180502Z-629922",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "331dfd8504b9ab8d5c234c91afab043c48c93dff189d98f91b7d7b84c686b03c",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_d49276db.py",
-   "response_sha256": "40c663c86446bbbc49da5ae8c3b3b6f8b323630afb43792da8bbac107bd4efb5",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "87e642ae9a36f055144c23b3f5f6cc527613f8203b4e99b3d5c21a5a8f6317c4"
+  "prompt_sha256": "87e642ae9a36f055144c23b3f5f6cc527613f8203b4e99b3d5c21a5a8f6317c4",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.268021Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_91f4b37c.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:23:41.724553Z",
+    "answer_sha256": "331dfd8504b9ab8d5c234c91afab043c48c93dff189d98f91b7d7b84c686b03c",
+    "call_id": "20260930T180502Z-629922",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "331dfd8504b9ab8d5c234c91afab043c48c93dff189d98f91b7d7b84c686b03c",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_d49276db.py",
+    "response_sha256": "40c663c86446bbbc49da5ae8c3b3b6f8b323630afb43792da8bbac107bd4efb5",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "SM-DD714EDA": {
   "answer": {
@@ -1411,41 +1509,47 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-30T18:17:33.905882Z",
-   "answer_sha256": "eaa1eaeb9ca1fb698504e8e591fa6a378dd896ea6858d094401aa0a9794c1d9a",
-   "call_id": "20260930T180457Z-dd0be6",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "eaa1eaeb9ca1fb698504e8e591fa6a378dd896ea6858d094401aa0a9794c1d9a",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_dd714eda.py",
-   "response_sha256": "969f1d61b199e644414052d715758d86fd51082c177abaf06f196ef0351a30bc",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "llm_router.VideoUrlSchema",
-    "llm_router.get_config",
-    "llm_router.install_config",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.aistudio_video_path",
-    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
-   ]
-  },
-  "prompt_sha256": "81ea25e2bc85e822fae3709c554f60d24f410947b99b91c33b1ee48c03151075"
+  "prompt_sha256": "81ea25e2bc85e822fae3709c554f60d24f410947b99b91c33b1ee48c03151075",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.268232Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_ea3f2437.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:17:33.905882Z",
+    "answer_sha256": "eaa1eaeb9ca1fb698504e8e591fa6a378dd896ea6858d094401aa0a9794c1d9a",
+    "call_id": "20260930T180457Z-dd0be6",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "eaa1eaeb9ca1fb698504e8e591fa6a378dd896ea6858d094401aa0a9794c1d9a",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_dd714eda.py",
+    "response_sha256": "969f1d61b199e644414052d715758d86fd51082c177abaf06f196ef0351a30bc",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "llm_router.VideoUrlSchema",
+     "llm_router.get_config",
+     "llm_router.install_config",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.aistudio_video_path",
+     "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+    ]
+   }
+  }
  },
  "SM-E58B2C96": {
   "answer": {
@@ -1532,61 +1636,69 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-30T18:18:59.226312Z",
-   "answer_sha256": "70d2aaa3ab2da673f9d2dd8ffda4101b9157a15c15c99fc8493cc0e9160d2ea6",
-   "call_id": "20260930T180504Z-8bcc73",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "70d2aaa3ab2da673f9d2dd8ffda4101b9157a15c15c99fc8493cc0e9160d2ea6",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_f375873a.py",
-   "response_sha256": "ab0371f1fabcbf0bc31b219741981dddeb5b9b1c4ce8f30bd91fbbe9f0f4516a",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "baffa324617b39428090219f0bbdf7a6e51b80cf5cb43cc53ce254fe4592f9c3"
+  "prompt_sha256": "baffa324617b39428090219f0bbdf7a6e51b80cf5cb43cc53ce254fe4592f9c3",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.268495Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_ed3039dc.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:18:59.226312Z",
+    "answer_sha256": "70d2aaa3ab2da673f9d2dd8ffda4101b9157a15c15c99fc8493cc0e9160d2ea6",
+    "call_id": "20260930T180504Z-8bcc73",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "70d2aaa3ab2da673f9d2dd8ffda4101b9157a15c15c99fc8493cc0e9160d2ea6",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_sm_f375873a.py",
+    "response_sha256": "ab0371f1fabcbf0bc31b219741981dddeb5b9b1c4ce8f30bd91fbbe9f0f4516a",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "a5d83d760dbc5183": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T235235Z-66286d",
+   "call_id": "20261001T113657Z-c2c0a2",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "When a provider hands back already-parsed JSON (a mapping) rather than text, the mutant returns None where it should rebuild the requested Pydantic model. That breaks the requirement that valid JSON output rebuilds the model.",
-   "response_sha256": "d993d0bb6f387cb7893bcb2903334ec0e55a5f54609ee29e84c3d77fdea1d2f2",
+   "reason": "The caller _pydantic_schema_spec builds a parser lambda that passes any value through to _parse_pydantic_model. So SchemaSpec.parse called with a decoded JSON mapping reaches the changed line. There the mutant returns None instead of the requested model instance, which breaks reconstructing the requested model from valid JSON output.",
+   "response_sha256": "43a811836c84e4d8ef5f2caefa1f49b254d7d89d7e1d9e22f21f3b466642c289",
    "sources": [
     "Pydantic model types shall preserve their generated schema and reconstruct the requested model from valid JSON output.",
     "A Pydantic model type retains its generated schema and valid JSON reconstructs the requested model type.",
     "    return model.model_validate(value)",
-    "    return None"
+    "    return None",
+    "        parser=lambda value: _parse_pydantic_model(model, value),"
    ],
-   "test_focus": "Give _parse_pydantic_model (or the structured-output path) a dict that is valid for the model, and check that it returns an instance of the requested model type with the expected field values, not None.",
+   "test_focus": "Build _pydantic_schema_spec(SomeModel) and call its .parse() with a valid dict such as {\"name\": \"x\", \"count\": 1}. Assert that the result is a SomeModel instance with those field values, not None.",
    "verdict": "pin"
   },
   "operator": "return",
-  "prompt_sha256": "178cf04faac2a69d3a4a6fcb91b9eceef9c508cf82b38c39d7d70fcfbafbf2f8"
+  "prompt_sha256": "9de5fe7432db3fc5b31c6e35e2cfe3b226a4de5308e7bdb8f25c6c4792fc8eb1"
  },
  "aec74b7e70db5c78": {
   "answer": {
@@ -1667,52 +1779,26 @@
  "b6f8d3c681f933f8": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T235235Z-d7a8dc",
+   "call_id": "20261001T114021Z-4a811c",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant sends every non-model value, including already-parsed mappings, through string-based JSON extraction. The documented mapping input then no longer reconstructs the requested Pydantic model, which breaks the requirement's reconstruction promise.",
-   "response_sha256": "8adefbaeb4589c162453b3c105d2af91e6253a8d8cb89828f5dd4da56f15b3df",
+   "reason": "SchemaSpec.parse takes any object, so a decoded JSON mapping can reach the parser. The original turns that mapping into the requested model with model_validate. The mutant sends it to _extract_json_payload and model_validate_json instead, which expect text. That breaks rebuilding the requested Pydantic model from valid JSON output.",
+   "response_sha256": "961633b830940a754e48d713381d987328bf2db4836c5dee5f586f1f2520eac4",
    "sources": [
     "Pydantic model types shall preserve their generated schema and reconstruct the requested model from valid JSON output.",
-    "\"\"\"Parse a Pydantic model from text, mappings, or existing model objects.\"\"\"",
+    "A Pydantic model type retains its generated schema and valid JSON reconstructs the requested model type.",
     "if True:",
-    "return model.model_validate(value)"
+    "parser=lambda value: _parse_pydantic_model(model, value),",
+    "SchemaSpec(name: str, json_schema: Mapping[str, Any], parser: Callable[[object], object], model_type: type[BaseModel] | None = \u2026); methods parse(value: object) -> object"
    ],
-   "test_focus": "Calling _parse_pydantic_model with a dict of valid field values must return an instance of the requested model with those values, and must not raise.",
+   "test_focus": "Build _pydantic_schema_spec(SomeModel) for a small Pydantic model and call .parse({\"field\": value}) with a valid mapping. Assert it returns a SomeModel instance with the matching field values, with no error raised.",
    "verdict": "pin"
   },
   "operator": "conditional",
-  "prompt_sha256": "77690144c55ae575496e2e4e29b3d147f62ab1f53d1413fbb8240d9420564ecd",
-  "subsumed": {
-   "at": "2026-09-30T13:48:19.757230Z",
-   "by": [
-    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_ffbbfd72fe94fb6f.py"
-   ],
-   "pin": {
-    "adopted_at": "2026-09-29T10:38:22.593654Z",
-    "answer_sha256": "6b4f840041804b568c7e38b102483dd5fe1197ac12e26215c7e4495933377ec1",
-    "call_id": "20260929T094858Z-4a50d1",
-    "cascade": {
-     "accepted": true,
-     "fails_on_mutant": true,
-     "imports_beyond_allowed": [],
-     "lint": [],
-     "passes_on_original": 5,
-     "primitives": []
-    },
-    "draft_sha256": "6b4f840041804b568c7e38b102483dd5fe1197ac12e26215c7e4495933377ec1",
-    "model": "gemini-3.8-flash-medium",
-    "normalizer": "ruff 0.16.3",
-    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_b6f8d3c681f933f8.py",
-    "response_sha256": "03cbe2e71e3400a97eb00e0c61c6a2a63693817a01f6af8da54957794e915dda",
-    "source": "draft author",
-    "sources": [
-     "llm_router._internal.capabilities.schema._parse_pydantic_model"
-    ]
-   }
-  }
+  "prompt_sha256": "c6083f8944e741560847231b7b9491d372543e25c5be7f5aea153f7f3aee1b7a"
  },
  "b792f0e0aff1fe08": {
   "answer": {
@@ -1824,52 +1910,59 @@
    "verdict": "pin"
   },
   "operator": "argument",
-  "pin": {
-   "adopted_at": "2026-09-30T19:05:06.123182Z",
-   "answer_sha256": "b82bdef974bfdb3c3c67d18556dee105bca37c2b01580945759ce375491f2e65",
-   "call_id": "20260930T190303Z-883e5f",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "b82bdef974bfdb3c3c67d18556dee105bca37c2b01580945759ce375491f2e65",
-   "effort": "high",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_c8e877b2ede451a3.py",
-   "response_sha256": "17c941bf9a13ef0a35544eeb466b7f9ba79c93f88789ada440437da28f817087",
-   "source": "draft author",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
-   ]
-  },
-  "prompt_sha256": "2cef7333e7c54e87d376e65a88ecb95eb5066d9221a527ce4d5be58dd4fefbd8"
+  "prompt_sha256": "2cef7333e7c54e87d376e65a88ecb95eb5066d9221a527ce4d5be58dd4fefbd8",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.266335Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_ea3f2437.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T19:05:06.123182Z",
+    "answer_sha256": "b82bdef974bfdb3c3c67d18556dee105bca37c2b01580945759ce375491f2e65",
+    "call_id": "20260930T190303Z-883e5f",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "b82bdef974bfdb3c3c67d18556dee105bca37c2b01580945759ce375491f2e65",
+    "effort": "high",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_c8e877b2ede451a3.py",
+    "response_sha256": "17c941bf9a13ef0a35544eeb466b7f9ba79c93f88789ada440437da28f817087",
+    "source": "draft author",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+    ]
+   }
+  }
  },
  "d84f7092509ce623": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T090450Z-309ef1",
+   "call_id": "20261001T114021Z-2326e1",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "_validate_mapping_schema_definition runs before the name is computed and rejects invalid Draft 2020-12 schemas. The meta-schema requires title and $id to be strings, so any truthy value reaching the name expression is already a str, and the fallback literal is a str too. That makes str() a no-op on every accepted input. This assumes the validator uses the meta-schema; the validator itself wasn't read.",
-   "response_sha256": "f751ab1605c304632882b9d97d817012b9265de6dd0e93a1d9801778a8732bd5",
+   "reason": "Normalization rejects any mapping that isn't a valid JSON Schema, and Draft 2020-12 requires `title` and `$id` to be strings. The fallback is the string literal `'structured_response'`, so the name is always a string and `str()` changes nothing. The only suggested distinguishing input was tested and both versions behaved the same.",
+   "response_sha256": "a297c42119f3401952a7fc24145b78b731bf5699df9b11c5f1cbea3dc8e9a6e8",
    "sources": [
+    "Mapping schema inputs shall be valid object JSON Schemas",
     "An invalid JSON Schema mapping is rejected during normalization before provider execution can begin.",
-    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
     "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
     "name = copied.get('title') or copied.get('$id') or 'structured_response'"
    ],
@@ -1877,17 +1970,18 @@
    "verdict": "equivalent"
   },
   "operator": "conversion",
-  "prompt_sha256": "402b91c40e19478dbe5073f06a9e134ccef4f7d3477e9bec9799a2e0259753d4",
+  "prompt_sha256": "a663a3f7716452f1e25a6c0cae4396397bd40467b80958d94aae307b625e0d80",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T091106Z-a5ac22",
+   "call_id": "20261001T114054Z-034fb8",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "402b91c40e19478dbe5073f06a9e134ccef4f7d3477e9bec9799a2e0259753d4",
-   "reason": "The validation step ensures that the schema is valid and any 'title' or '$id' fields are strings, making the explicit string conversion redundant. Thus, both versions produce the exact same outcome for all valid inputs.",
-   "response_sha256": "724a04ba7af3ff8796d293aea644aea81a4fb8920cba3ce6be9ec608800d3f68",
+   "prompt_sha256": "a663a3f7716452f1e25a6c0cae4396397bd40467b80958d94aae307b625e0d80",
+   "reason": "The schema validation preceding the assignment ensures that any provided 'title' or '$id' are valid strings according to JSON schema rules. As a result, the fallback chain inherently evaluates to a string, rendering the explicit string conversion an identity operation.",
+   "response_sha256": "6bb1c00ca1c7af6a90f933c8008f61aa7a40ab4d1d1fec880afa7d6392564763",
    "sources": [
     "An invalid JSON Schema mapping is rejected during normalization before provider execution can begin.",
     "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
@@ -1900,42 +1994,58 @@
  "da7a8951ef012c23": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T235244Z-704901",
+   "call_id": "20261001T144037Z-13ed9f",
    "confirmed": true,
-   "level": "implementation",
+   "effort": "xhigh",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant sends any non-Pydantic class, such as int, down the Pydantic path. That class is still rejected, only with AttributeError instead of TypeError. The requirement only covers mapping schemas and Pydantic model types, and it says nothing about which error other classes should raise.",
-   "response_sha256": "48c67913755e785f5cf12f6108842aeef791ecef12cc0a9adbb222bffbcf52ed",
+   "reason": "The mutant handles every class as a Pydantic model. A non-model type like int then fails with an incidental AttributeError instead of the deliberate TypeError, and a duck-typed class could even get through. That breaks the requirement that schemas \"normalize predictably\", where only Pydantic model types and mappings are accepted.",
+   "response_sha256": "b9684871a19dfedf47382bc2722911ce19a16fba4c7f186a104272abef8adebd",
    "sources": [
-    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
-    "Pydantic model types shall preserve their generated schema and reconstruct the requested model from valid JSON output.",
-    "if isinstance(schema, type):",
-    "if isinstance(schema, type) and issubclass(schema, BaseModel):"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  },
-  "operator": "condition",
-  "prompt_sha256": "ed64a840587fe38e13f320efd51d72d2aaeee716bd0af22c292b3e2b106fe9d2",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260929T090502Z-a76a55",
-   "confirmed": true,
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "ed64a840587fe38e13f320efd51d72d2aaeee716bd0af22c292b3e2b106fe9d2",
-   "reason": "The requirement mandates the behavior for Pydantic model types and JSON schema mappings, but does not specify the exact error to raise for unsupported types like `int`. The difference in the type of exception raised (TypeError versus AttributeError) is an implementation detail.",
-   "response_sha256": "5ae9e52550d81ad893b5ad48ff6300d873787cfc7885f95460fc98264fb38bae",
-   "sources": [
+    "Structured schemas normalize predictably",
     "Pydantic model types shall preserve their generated schema and reconstruct the requested model from valid JSON output.",
     "if isinstance(schema, type) and issubclass(schema, BaseModel):",
-    "if isinstance(schema, type):"
+    "if isinstance(schema, type):",
+    "msg = \"response_schema must be a Pydantic model type or JSON schema mapping.\""
    ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+   "test_focus": "Check that normalize_schema(int), or any other class that is not a Pydantic BaseModel subclass, raises TypeError with the message \"response_schema must be a Pydantic model type or JSON schema mapping.\"",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-10-01T14:45:01.866689Z",
+   "answer_sha256": "33e3f2b7bdac2f53abeada9ba76c9553aed1baf94dfb051dca1e55ca4f06a0f1",
+   "call_id": "20261001T144345Z-b94bc7",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "33e3f2b7bdac2f53abeada9ba76c9553aed1baf94dfb051dca1e55ca4f06a0f1",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_da7a8951ef012c23.py",
+   "response_sha256": "99acc5e1758dc5383e62defb524d852d50d5c750753a2cda7f55375243624126",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "c7606d711f1863b75da38c31afee01621ce80de9d27942c23050df414fbe716b"
  },
  "e9e9444744bf3896": {
   "answer": {
@@ -1995,100 +2105,90 @@
  "f149230e76762027": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T190046Z-f3274b",
+   "call_id": "20261001T120813Z-7ee15f",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only drops the adapter-supplied name override, and the schema transform still happens. The requirement only says transforms must not weaken router-side validation and that the Pydantic schema and model reconstruction must be preserved. None of that depends on the spec's name, so no clause of this requirement notices the difference.",
-   "response_sha256": "3f6bec8d89c955a4670b63d26eed0d85234829d21842d7e186841af6cd68cae2",
+   "reason": "The mutant only differs when a caller passes `name`, and the project's only caller never does. Through that path both versions return the same name and the same transformed schema. Spec renaming is also not something the requirement asks for; it covers schema preservation and router-side validation.",
+   "response_sha256": "4a7e8fc42981c897824264a701557f6b31bef1f5c7f5af3cd934f8fecc1f3e5e",
    "sources": [
-    "Provider-specific schema transforms shall not weaken router-side validation.",
+    "transformed = with_schema_transform(request.schema, inline_schema_refs)",
     "name=spec.name if name is None else name,",
     "return replace(spec, json_schema=transformed)",
-    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them."
+    "Provider-specific schema transforms shall not weaken router-side validation."
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "85a19175c51537f0138e1fb98e36b723df17958cac861f27f791b39412411e7c"
+  "prompt_sha256": "e6057f0e2e174b2873aaf2d0571a5ec99b4b1cde97f7c48894989a9d4050b1b9",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20261001T120905Z-3317c1",
+   "confirmed": false,
+   "effort": "",
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "e6057f0e2e174b2873aaf2d0571a5ec99b4b1cde97f7c48894989a9d4050b1b9",
+   "reason": "The mutation removes the ability to override the schema's name by dropping the `name` argument during `replace()`, but the only caller (`_request_with_inlined_schema`) does not pass this argument. Since the argument defaults to `None` and is never provided, both versions preserve the original `spec.name`, making the difference unobservable where the requirement is evaluated.",
+   "response_sha256": "10e698afbcec1488a36efac01022ccdb82df6252418485d37a0bb333476451c8",
+   "sources": [
+    "Provider-specific schema transforms shall not weaken router-side validation.",
+    "transformed = with_schema_transform(request.schema, inline_schema_refs)",
+    "name=spec.name if name is None else name,"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
  },
  "f8b19d9c5fd12b62": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T091126Z-731ac2",
+   "call_id": "20261001T163907Z-1c569e",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "jsonschema's default type checker treats only `dict` instances as \"object\". If the caller passes a non-dict Mapping (e.g. MappingProxyType) straight to check_schema, it fails the metaschema's `type: [\"object\",\"boolean\"]` check. The mutant would then reject a valid object schema that the original accepts after dict() conversion, which breaks the contract for Mapping schema inputs.",
-   "response_sha256": "a1deb16261cf3651553bb0ab492d7fe2a3ac706b252263f713f4fcbb67b81d2d",
+   "reason": "jsonschema treats a schema as an object only if it is a real dict. The mutant skips the dict(schema) copy, so a valid object schema passed as a non-dict Mapping (e.g. MappingProxyType) fails the meta-schema type check and raises ValueError, while the original accepts it. That breaks the rule that valid Mapping schema inputs are preserved.",
+   "response_sha256": "fba5d869f1f0a79c4a52504eb8b8a3ec8d892604a8a96eea3ef091a5ff46050b",
    "sources": [
     "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
     "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them.",
-    "        Draft202012Validator.check_schema(dict(schema))",
-    "        Draft202012Validator.check_schema(schema)"
+    "Draft202012Validator.check_schema(dict(schema))",
+    "Draft202012Validator.check_schema(schema)"
    ],
-   "test_focus": "Pass a valid object schema wrapped in a non-dict Mapping, such as types.MappingProxyType({\"type\": \"object\", \"properties\": {\"a\": {\"type\": \"string\"}}}). The test must check that normalization accepts it and that the schema is preserved, not rejected with a ValueError.",
+   "test_focus": "Pass a valid object Draft 2020-12 schema wrapped in a non-dict Mapping (e.g. types.MappingProxyType({\"type\": \"object\", \"properties\": {...}})) and assert normalization accepts it without raising ValueError.",
    "verdict": "pin"
   },
   "operator": "conversion",
-  "pin": {
-   "adopted_at": "2026-09-30T18:25:26.152930Z",
-   "answer_sha256": "5608cffbd2ae5b0369d9d98a59673f42e2de9203467084253114d14ff76c55b6",
-   "call_id": "20260930T182016Z-cb41e5",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "5304d20bfb3cbb4d8a74a1e9b34389bf11329d855b78352d31a8dab7177b40d3",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_f8b19d9c5fd12b62.py",
-   "response_sha256": "d097c4430fdca93920832d4303911692759461bacf07befa60372141e1b1b69d",
-   "source": "last resort",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "llm_router.get_config",
-    "llm_router.install_config",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.qwen_chat_path",
-    "tests.llm_router.support.workers.retry.qwen_success_response"
-   ]
-  },
-  "prompt_sha256": "3743490f3ab87604b5bd6b3e2db5205299c614c4a8f568db2cb37698d6482303"
+  "prompt_sha256": "80e375f84330f3eab50e8493a89901fb53876b58e20d04e3510ea605be83ec0d"
  },
  "ffbbfd72fe94fb6f": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T235255Z-30a2ad",
+   "call_id": "20261001T114021Z-368640",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "When a provider returns parsed JSON as a mapping instead of text, the mutant returns the model class itself and does not validate the data. The router then fails to rebuild the requested model and skips validation, which breaks the requirement to reconstruct the model from valid JSON output.",
-   "response_sha256": "5d6c049476bab225bbb6c79325530aee7ab51c7c8740e43254e515bf6ab689e2",
+   "reason": "`_pydantic_schema_spec` makes `_parse_pydantic_model` the parser behind `SchemaSpec.parse`, so a mapping value reaches the changed line. The original validates it into a model instance; the mutant returns the model class itself and never validates. That breaks \"reconstruct the requested model\" and lets invalid mappings through without an error.",
+   "response_sha256": "63c7ae5cc62185cea1686025e49bea317ac3c2542257be2eb30d3c77a191d287",
    "sources": [
     "Pydantic model types shall preserve their generated schema and reconstruct the requested model from valid JSON output.",
     "A Pydantic model type retains its generated schema and valid JSON reconstructs the requested model type.",
+    "parser=lambda value: _parse_pydantic_model(model, value),",
+    "    return model.model_validate(value)",
     "    return model"
    ],
-   "test_focus": "Pass a dict of valid JSON output for a Pydantic model type. Check that the result is an instance of that model with the expected field values, and that an invalid dict raises a validation error.",
+   "test_focus": "Call `_pydantic_schema_spec(M).parse({...valid fields...})` and assert the result is an instance of M with the expected field values (not the class M). Also call `parse` with an invalid mapping and assert it raises a `ValidationError`.",
    "verdict": "pin"
   },
   "operator": "method",
-  "prompt_sha256": "82648cf525d93b95c03dbf9c9c80706e4c6e121b57192c0714ccf65bb1929630"
+  "prompt_sha256": "cc83aeb6b77bf328b7505c9937739ca9a91e504ca9e77b0c9be1d15fb5942323"
  }
 }

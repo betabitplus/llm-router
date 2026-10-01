@@ -1,39 +1,73 @@
 {
- "at": "2026-09-30T13:46:23.873247Z",
+ "at": "2026-10-01T13:47:39.471753Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_3cc16a6300b216ed.py",
   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_5ed9365a38636da5.py",
   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_e1379ec0c0ed9e96.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py",
   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py",
   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_3cc16a6300b216ed.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_5ed9365a38636da5.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_e1379ec0c0ed9e96.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py"
  ],
  "restored": [],
- "removed": {},
+ "removed": {
+  "3cc16a6300b216ed": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_3cc16a6300b216ed.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py"
+   ]
+  },
+  "5ed9365a38636da5": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_5ed9365a38636da5.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py"
+   ]
+  },
+  "e1379ec0c0ed9e96": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_e1379ec0c0ed9e96.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py"
+   ]
+  },
+  "SM-87B84725": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py"
+   ]
+  },
+  "SM-8D7935BF": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py"
+   ]
+  }
+ },
  "matrix": {
   "3cc16a6300b216ed": [
    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_3cc16a6300b216ed.py",
    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_e1379ec0c0ed9e96.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py",
    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py",
    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py"
   ],
   "5ed9365a38636da5": [
-   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_5ed9365a38636da5.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_5ed9365a38636da5.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py"
   ],
   "e1379ec0c0ed9e96": [
    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_e1379ec0c0ed9e96.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py"
   ],
   "SM-87B84725": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py",
    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_87b84725.py"
   ],
   "SM-8D7935BF": [
+   "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py",
    "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_sm_8d7935bf.py"
   ]
  },

@@ -129,9 +129,9 @@
   },
   "operator": "attribute",
   "pin": {
-   "adopted_at": "2026-09-30T21:01:21.192892Z",
-   "answer_sha256": "c950af5289b1005a78ef648baf28b7cbe4fb74405fd2595c02be1b5f06fe9736",
-   "call_id": "20260930T205545Z-4b4a9d",
+   "adopted_at": "2026-10-01T15:06:17.076186Z",
+   "answer_sha256": "b626f4e5b44c1c6701415131414b73ad4a8f98865ef5d4c6438d72b13f730bd1",
+   "call_id": "20261001T150449Z-4b327b",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -140,22 +140,21 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "c950af5289b1005a78ef648baf28b7cbe4fb74405fd2595c02be1b5f06fe9736",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
+   "draft_sha256": "b626f4e5b44c1c6701415131414b73ad4a8f98865ef5d4c6438d72b13f730bd1",
+   "effort": "",
+   "model": "gemini-3.1-pro-high",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_video_input_8ba45c4ec318c00e.py",
-   "response_sha256": "b5118908e35272d99ec8e5d0147ce41424b0de1c2a84c1a4c2655c7a7de14fe6",
-   "source": "draft author with tools",
+   "response_sha256": "cc3e5d0dc3a706d55ef219995b8b9f4cf46a906fa0ab8713df3f27adfeee7b10",
+   "source": "draft author",
    "sources": [
-    "llm_router._api.types.VideoUrlSchema",
-    "tests.llm_router.support.builders.build_test_video_url",
     "llm_router.LLMRouter",
     "llm_router.Model",
     "llm_router.Provider",
+    "llm_router.ProviderError",
     "llm_router.RouterProfile",
-    "tests.llm_router.support.media.video.VideoObservation",
+    "llm_router.VideoUrlSchema",
+    "tests.llm_router.support.builders.build_test_video_url",
     "tests.llm_router.support.media.video.build_indoor_video_prompt",
     "tests.llm_router.support.vcr_extensions.FILTER_HEADERS"
    ]

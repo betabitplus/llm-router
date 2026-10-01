@@ -1,21 +1,36 @@
 {
- "at": "2026-09-30T13:45:22.954998Z",
+ "at": "2026-10-01T13:46:00.072818Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_req_session_persistence_5fd031363386257e.py",
-  "tests/llm_router/mutation_pins/test_pin_req_session_persistence_cfdaa730a0d7b1f8.py"
+  "tests/llm_router/mutation_pins/test_pin_req_session_persistence_cfdaa730a0d7b1f8.py",
+  "tests/llm_router/mutation_pins/test_pin_req_session_persistence_fn_3a4b7540.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_req_session_persistence_5fd031363386257e.py",
-  "tests/llm_router/mutation_pins/test_pin_req_session_persistence_cfdaa730a0d7b1f8.py"
+  "tests/llm_router/mutation_pins/test_pin_req_session_persistence_fn_3a4b7540.py"
  ],
  "restored": [],
- "removed": {},
+ "removed": {
+  "5fd031363386257e": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_session_persistence_5fd031363386257e.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_session_persistence_fn_3a4b7540.py"
+   ]
+  },
+  "cfdaa730a0d7b1f8": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_session_persistence_cfdaa730a0d7b1f8.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_session_persistence_fn_3a4b7540.py"
+   ]
+  }
+ },
  "matrix": {
   "5fd031363386257e": [
-   "tests/llm_router/mutation_pins/test_pin_req_session_persistence_5fd031363386257e.py"
+   "tests/llm_router/mutation_pins/test_pin_req_session_persistence_5fd031363386257e.py",
+   "tests/llm_router/mutation_pins/test_pin_req_session_persistence_fn_3a4b7540.py"
   ],
   "cfdaa730a0d7b1f8": [
-   "tests/llm_router/mutation_pins/test_pin_req_session_persistence_cfdaa730a0d7b1f8.py"
+   "tests/llm_router/mutation_pins/test_pin_req_session_persistence_cfdaa730a0d7b1f8.py",
+   "tests/llm_router/mutation_pins/test_pin_req_session_persistence_fn_3a4b7540.py"
   ]
  },
  "caught_before": [

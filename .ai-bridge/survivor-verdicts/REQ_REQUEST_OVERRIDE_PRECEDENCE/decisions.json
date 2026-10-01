@@ -1,0 +1,16 @@
+{
+ "3db6d2968629906a": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant drops `value is not None` from _apply_non_null. Both layers it is given never hold None: split_router_defaults keeps a constructor setting only when it is not None, and _collect_policy_defaults skips a profile's None. So the guard is true for every value the function receives, and the mutant behaves the same on every path. The review's case (a default layer that maps a key to None) cannot be built through the public API, which is why every rung of the draft ladder reached the line and checked nothing it changes. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after every rung of the draft ladder and the verdict asked again with its callers in view.",
+  "verdict": "equivalent"
+ },
+ "fddcece2c3ce55c2": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant turns `key in values and value is not None` into an `or`. Both layers _apply_non_null is given never hold None (split_router_defaults and _collect_policy_defaults drop it), and their keys are setting fields resolve_effective_settings already put in `values`; so both conditions hold for every value the function receives, and the mutant applies exactly what the original applies. No public path can build the review's case, a default layer with None for a known key. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after every rung of the draft ladder and the verdict asked again with its callers in view.",
+  "verdict": "equivalent"
+ }
+}

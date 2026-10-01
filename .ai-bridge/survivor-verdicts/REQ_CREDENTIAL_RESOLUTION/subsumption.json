@@ -1,24 +1,30 @@
 {
- "at": "2026-09-30T18:36:13.796073Z",
+ "at": "2026-10-01T13:50:29.137538Z",
  "pins": [
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_165277b3148f155e.py",
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_1c6b745faa58a462.py",
   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_53bdcf1990f4aaa4.py",
   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_5ef3f33a9ec29e3d.py",
   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_6a19c74173ddbaf9.py",
   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_779116a1f28d187b.py",
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_9b07dce1d69c1bc9.py",
   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_adb0de8f41da4f7e.py",
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_afe2fe11b15a368c.py",
   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b249b8ff900bff0b.py",
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b30cea8391ac9160.py",
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b424da4f88707d25.py",
   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_e917251d85f56c41.py",
-  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_f6c26fefc186db93.py"
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_f6c26fefc186db93.py",
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0b39f604.py",
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py",
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_53bdcf1990f4aaa4.py",
-  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_5ef3f33a9ec29e3d.py",
-  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_6a19c74173ddbaf9.py",
   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_779116a1f28d187b.py",
-  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_adb0de8f41da4f7e.py",
   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b249b8ff900bff0b.py",
-  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_e917251d85f56c41.py",
-  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_f6c26fefc186db93.py"
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0b39f604.py",
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py",
+  "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
  ],
  "restored": [
   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b249b8ff900bff0b.py"
@@ -39,7 +45,7 @@
   "b30cea8391ac9160": {
    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b30cea8391ac9160.py",
    "by": [
-    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_adb0de8f41da4f7e.py"
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0b39f604.py"
    ]
   },
   "fb57ee54d6bd1fa0": {
@@ -47,32 +53,135 @@
    "by": [
     "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b249b8ff900bff0b.py"
    ]
+  },
+  "165277b3148f155e": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_165277b3148f155e.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ]
+  },
+  "1c6b745faa58a462": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_1c6b745faa58a462.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ]
+  },
+  "53bdcf1990f4aaa4": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_53bdcf1990f4aaa4.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py"
+   ]
+  },
+  "5ef3f33a9ec29e3d": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_5ef3f33a9ec29e3d.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ]
+  },
+  "6a19c74173ddbaf9": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_6a19c74173ddbaf9.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ]
+  },
+  "9b07dce1d69c1bc9": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_9b07dce1d69c1bc9.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0b39f604.py"
+   ]
+  },
+  "adb0de8f41da4f7e": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_adb0de8f41da4f7e.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ]
+  },
+  "afe2fe11b15a368c": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_afe2fe11b15a368c.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ]
+  },
+  "b424da4f88707d25": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b424da4f88707d25.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ]
+  },
+  "e917251d85f56c41": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_e917251d85f56c41.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py"
+   ]
+  },
+  "f6c26fefc186db93": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_f6c26fefc186db93.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py"
+   ]
   }
  },
  "matrix": {
+  "165277b3148f155e": [
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_165277b3148f155e.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_adb0de8f41da4f7e.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+  ],
+  "1c6b745faa58a462": [
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_1c6b745faa58a462.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+  ],
   "53bdcf1990f4aaa4": [
-   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_53bdcf1990f4aaa4.py"
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_53bdcf1990f4aaa4.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py"
   ],
   "5ef3f33a9ec29e3d": [
-   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_5ef3f33a9ec29e3d.py"
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_1c6b745faa58a462.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_5ef3f33a9ec29e3d.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
   ],
   "6a19c74173ddbaf9": [
-   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_6a19c74173ddbaf9.py"
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_6a19c74173ddbaf9.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
   ],
   "779116a1f28d187b": [
    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_779116a1f28d187b.py"
   ],
+  "9b07dce1d69c1bc9": [
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_9b07dce1d69c1bc9.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b30cea8391ac9160.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0b39f604.py"
+  ],
   "adb0de8f41da4f7e": [
-   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_adb0de8f41da4f7e.py"
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_165277b3148f155e.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_adb0de8f41da4f7e.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+  ],
+  "afe2fe11b15a368c": [
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_afe2fe11b15a368c.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b424da4f88707d25.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
   ],
   "b249b8ff900bff0b": [
    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b249b8ff900bff0b.py"
   ],
+  "b30cea8391ac9160": [
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_9b07dce1d69c1bc9.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b30cea8391ac9160.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0b39f604.py"
+  ],
+  "b424da4f88707d25": [
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_afe2fe11b15a368c.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b424da4f88707d25.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+  ],
   "e917251d85f56c41": [
-   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_e917251d85f56c41.py"
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_e917251d85f56c41.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py"
   ],
   "f6c26fefc186db93": [
-   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_f6c26fefc186db93.py"
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_f6c26fefc186db93.py",
+   "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py"
   ]
  },
  "caught_before": [

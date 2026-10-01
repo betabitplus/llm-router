@@ -473,8 +473,12 @@ def rule_mutant_source(module_source: str, record: dict) -> dict:
         )
         if index is None:
             return {"reason": "no node of the function stands at the mutant's location"}
-        segment = ast.get_source_segment(module_source, nodes[index]) or ""
-        if " ".join(segment.split()) != " ".join(str(record.get("original") or "").split()):
+        segment = " ".join((ast.get_source_segment(module_source, nodes[index]) or "").split())
+        named = " ".join(str(record.get("original") or "").split())
+        # The report names a long node by its beginning and an ellipsis, as the engine's extension
+        # compacts it; the rest of the node is read here, at its location.
+        same = segment.startswith(named[:-1]) and len(segment) >= len(named) if named.endswith("…") else segment == named
+        if not same:
             return {"reason": "the code at the mutant's location is not what the report names"}
         target = list(ast.walk(mutated))[index]
         new = replacement.body[0] if statement else (replacement.body[0].value if replacement.body and isinstance(replacement.body[0], ast.Expr) else None)

@@ -1,25 +1,50 @@
 {
- "at": "2026-09-30T13:45:38.210673Z",
+ "at": "2026-10-01T20:25:59.896879Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_3ccbc7c7990f5f22.py",
-  "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_b9accd29af1a644f.py",
+  "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_9587fa3b6bf28237.py",
+  "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_67d9cee8.py",
+  "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_6c69bc54.py",
   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_908d5413.py",
   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_bd2a25d9.py"
  ],
  "kept": [
   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_3ccbc7c7990f5f22.py",
-  "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_b9accd29af1a644f.py",
+  "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_67d9cee8.py",
   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_908d5413.py",
   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_bd2a25d9.py"
  ],
  "restored": [],
- "removed": {},
+ "removed": {
+  "9587fa3b6bf28237": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_9587fa3b6bf28237.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_3ccbc7c7990f5f22.py"
+   ]
+  },
+  "SM-6C69BC54": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_6c69bc54.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_67d9cee8.py"
+   ]
+  }
+ },
  "matrix": {
   "3ccbc7c7990f5f22": [
-   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_3ccbc7c7990f5f22.py"
+   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_3ccbc7c7990f5f22.py",
+   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_9587fa3b6bf28237.py"
   ],
-  "b9accd29af1a644f": [
-   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_b9accd29af1a644f.py"
+  "9587fa3b6bf28237": [
+   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_3ccbc7c7990f5f22.py",
+   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_9587fa3b6bf28237.py"
+  ],
+  "SM-67D9CEE8": [
+   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_67d9cee8.py",
+   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_6c69bc54.py"
+  ],
+  "SM-6C69BC54": [
+   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_67d9cee8.py",
+   "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_6c69bc54.py"
   ],
   "SM-908D5413": [
    "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_908d5413.py"

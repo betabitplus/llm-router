@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import example, given, settings, strategies as st
 
 from llm_router._internal.capabilities.schema import (
     build_repair_prompt,
@@ -35,6 +35,18 @@ _META = st.dictionaries(
     max_size=3,
 )
 _TURN = st.tuples(_TEXT, _TEXT, _META)
+# The repair prompt's cap: its fixed guidance plus every dynamic component at its
+# own bound (schema name 120, schema preview 500, validation detail 300 and invalid
+# output 500 characters).
+_REPAIR_PROMPT_CAP = 1_608
+# A preview keeps whole words, so it is text of short words that fills a component
+# to its bound; arbitrary text rarely has the spaces to do it.
+_WORDS = st.lists(
+    st.text(alphabet="abcdefghijklmnopqrstuvwxyz", min_size=1, max_size=9),
+    max_size=400,
+).map(" ".join)
+_REPAIR_TEXT = st.one_of(st.text(min_size=0, max_size=2_000), _WORDS)
+_LONG_WORDS = "word " * 600
 
 
 @pytest.mark.verifies("REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]")
@@ -76,9 +88,14 @@ def test_generation_precedence_preserves_omission_vs_explicit_none(
 @pytest.mark.coverage_item("VC_REPAIR_PROMPT_BOUNDS")
 @pytest.mark.verification_kind("property")
 @given(
-    schema_name=st.text(min_size=0, max_size=2_000),
-    invalid_output=st.text(min_size=0, max_size=2_000),
-    error_message=st.text(min_size=0, max_size=2_000),
+    schema_name=_REPAIR_TEXT,
+    invalid_output=_REPAIR_TEXT,
+    error_message=_REPAIR_TEXT,
+)
+@example(
+    schema_name=_LONG_WORDS,
+    invalid_output=_LONG_WORDS,
+    error_message=_LONG_WORDS,
 )
 def test_repair_prompt_remains_bounded(
     *,
@@ -91,7 +108,7 @@ def test_repair_prompt_remains_bounded(
         invalid_output=invalid_output,
         error_message=error_message,
     )
-    assert len(prompt) <= 1_200
+    assert len(prompt) <= _REPAIR_PROMPT_CAP
 
 
 @pytest.mark.verifies("REQ_SESSION_PERSISTENCE[revision==1]")

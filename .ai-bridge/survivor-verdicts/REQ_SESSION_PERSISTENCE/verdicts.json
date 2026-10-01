@@ -19,30 +19,36 @@
    "verdict": "pin"
   },
   "operator": "statement",
-  "pin": {
-   "adopted_at": "2026-09-30T16:41:38.558172Z",
-   "answer_sha256": "a436cfdf83bccf4cc81ed579cff56b73bbd61b2064a214f87607a53f07155e22",
-   "call_id": "20260930T163949Z-de99c5",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "a436cfdf83bccf4cc81ed579cff56b73bbd61b2064a214f87607a53f07155e22",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_session_persistence_5fd031363386257e.py",
-   "response_sha256": "208e08e67bcafe7dc5cbe82bbaa2e9c4a2a4cd608bfe74180519d02b752102fb",
-   "source": "draft author",
-   "sources": [
-    "llm_router.Session"
-   ]
-  },
-  "prompt_sha256": "c3e20aa7cc78b2d3021f762eed89559d3324be0322548a6a3d129202a2c46c49"
+  "prompt_sha256": "c3e20aa7cc78b2d3021f762eed89559d3324be0322548a6a3d129202a2c46c49",
+  "subsumed": {
+   "at": "2026-10-01T13:46:00.071261Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_session_persistence_fn_3a4b7540.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T16:41:38.558172Z",
+    "answer_sha256": "a436cfdf83bccf4cc81ed579cff56b73bbd61b2064a214f87607a53f07155e22",
+    "call_id": "20260930T163949Z-de99c5",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "a436cfdf83bccf4cc81ed579cff56b73bbd61b2064a214f87607a53f07155e22",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_session_persistence_5fd031363386257e.py",
+    "response_sha256": "208e08e67bcafe7dc5cbe82bbaa2e9c4a2a4cd608bfe74180519d02b752102fb",
+    "source": "draft author",
+    "sources": [
+     "llm_router.Session"
+    ]
+   }
+  }
  },
  "cfdaa730a0d7b1f8": {
   "answer": {
@@ -64,32 +70,38 @@
    "verdict": "pin"
   },
   "operator": "argument",
-  "pin": {
-   "adopted_at": "2026-09-30T18:24:36.180710Z",
-   "answer_sha256": "c1526d80eea3f7c75efda4f5f9a32c5e6910c8cbcd180d46808edf3d026559d8",
-   "call_id": "20260930T180455Z-9611d9",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "c1526d80eea3f7c75efda4f5f9a32c5e6910c8cbcd180d46808edf3d026559d8",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_session_persistence_cfdaa730a0d7b1f8.py",
-   "response_sha256": "4a43fc458c2414b107b91f38d2fb37fbdbd97fae54aa0d8a306fad0d55292bb9",
-   "source": "last resort",
-   "sources": [
-    "llm_router.Session",
-    "llm_router._internal.session.store.SessionStore",
-    "llm_router._api.types.ChatMessage"
-   ]
-  },
-  "prompt_sha256": "17a313540bf631c4f192c2edd1046fc9e7e09f9c3650229903266304731f1a24"
+  "prompt_sha256": "17a313540bf631c4f192c2edd1046fc9e7e09f9c3650229903266304731f1a24",
+  "subsumed": {
+   "at": "2026-10-01T13:46:00.071940Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_session_persistence_fn_3a4b7540.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:24:36.180710Z",
+    "answer_sha256": "c1526d80eea3f7c75efda4f5f9a32c5e6910c8cbcd180d46808edf3d026559d8",
+    "call_id": "20260930T180455Z-9611d9",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "c1526d80eea3f7c75efda4f5f9a32c5e6910c8cbcd180d46808edf3d026559d8",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_session_persistence_cfdaa730a0d7b1f8.py",
+    "response_sha256": "4a43fc458c2414b107b91f38d2fb37fbdbd97fae54aa0d8a306fad0d55292bb9",
+    "source": "last resort",
+    "sources": [
+     "llm_router.Session",
+     "llm_router._internal.session.store.SessionStore",
+     "llm_router._api.types.ChatMessage"
+    ]
+   }
+  }
  }
 }

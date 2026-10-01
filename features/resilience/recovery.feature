@@ -47,29 +47,29 @@ Feature: Provider recovery
       When the asynchronous request is executed
       Then the provider is not retried asynchronously
 
-    @TREQ_PROVIDER_RETRY_BOUNDS[revision==2]
+    @TREQ_PROVIDER_RETRY_BOUNDS[revision==3]
     Scenario: Synchronous provider retry stops at the configured attempt limit
       Given a provider keeps failing with retryable errors
       When synchronous retry exhausts a two-attempt budget
       Then exactly two synchronous provider attempts are made
 
-    @TREQ_PROVIDER_RETRY_BOUNDS[revision==2]
+    @TREQ_PROVIDER_RETRY_BOUNDS[revision==3]
     Scenario: Asynchronous provider retry stops at the configured attempt limit
       Given a provider keeps failing asynchronously with retryable errors
       When asynchronous retry exhausts a two-attempt budget
       Then exactly two asynchronous provider attempts are made
 
-    @TREQ_PROVIDER_RETRY_BOUNDS[revision==2]
-    Scenario: Synchronous provider retry never waits longer than the configured maximum
+    @TREQ_PROVIDER_RETRY_BOUNDS[revision==3]
+    Scenario: Synchronous provider retry waits within the configured retry wait bounds
       Given a provider keeps failing with retryable errors
       When synchronous retry waits between three attempts
-      Then no synchronous retry wait exceeds the configured maximum
+      Then every synchronous retry wait lies within the configured bounds
 
-    @TREQ_PROVIDER_RETRY_BOUNDS[revision==2]
-    Scenario: Asynchronous provider retry never waits longer than the configured maximum
+    @TREQ_PROVIDER_RETRY_BOUNDS[revision==3]
+    Scenario: Asynchronous provider retry waits within the configured retry wait bounds
       Given a provider keeps failing asynchronously with retryable errors
       When asynchronous retry waits between three attempts
-      Then no asynchronous retry wait exceeds the configured maximum
+      Then every asynchronous retry wait lies within the configured bounds
 
   Rule: Invalid structured output can be repaired
 

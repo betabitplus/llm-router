@@ -1,0 +1,226 @@
+{
+ "FN-91F4B37C": {
+  "adopted_at": "2026-10-01T12:53:28.001201Z",
+  "answer_sha256": "9d2f4eb46d4c443b4b883fa77dd2e095c2d2701061222258621e53828d23ef73",
+  "call_id": "20261001T124926Z-d9693d",
+  "cascade": {
+   "6e9116a1b83a69f4": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-D49276DB": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "9d2f4eb46d4c443b4b883fa77dd2e095c2d2701061222258621e53828d23ef73",
+  "effort": "high",
+  "function": "src/llm_router/_internal/capabilities/schema.py::_parse_pydantic_model",
+  "keys": [
+   "6e9116a1b83a69f4",
+   "SM-D49276DB"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_91f4b37c.py",
+  "response_sha256": "a2e2f9b25b9b73e6923c60eba21905ddcbf1bb242ffef5310941fb2ab381f9ac",
+  "source": "consolidation",
+  "sources": [
+   "llm_router._api.router.LLMRouter",
+   "llm_router._api.types.Model",
+   "llm_router._api.types.Provider",
+   "llm_router._api.types.RouterProfile",
+   "llm_router._api.types.ProviderLimits",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "py_lib_testkit._internal.test_support.http.ScriptedResponse",
+   "tests.llm_router.support.workers.retry.openai_chat_path",
+   "tests.llm_router.support.workers.retry.openai_success_response",
+   "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+  ],
+  "suite_checked": true
+ },
+ "FN-98E4D6A0": {
+  "adopted_at": "2026-10-01T12:58:38.030064Z",
+  "answer_sha256": "9ea9d1984301bb0ffaee924010ef48d1901880a2fa57a30a5fbc9eeaf3f0973a",
+  "call_id": "20261001T125235Z-6b39b7",
+  "cascade": {
+   "155610404a9b2a0a": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "2ac6551daf76c11a": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "8585b2a84ecd44f0": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-9C5C73BC": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "9ea9d1984301bb0ffaee924010ef48d1901880a2fa57a30a5fbc9eeaf3f0973a",
+  "effort": "high",
+  "function": "src/llm_router/_internal/capabilities/schema.py::normalize_schema",
+  "keys": [
+   "155610404a9b2a0a",
+   "2ac6551daf76c11a",
+   "8585b2a84ecd44f0",
+   "SM-9C5C73BC"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_98e4d6a0.py",
+  "response_sha256": "63a7303707633e55740b0f45b4fcb8991d6512999fdf7499ed63b6c96646048f",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.RouterProfile",
+   "llm_router.get_config",
+   "llm_router.install_config",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "tests.llm_router.support.fault_server.ScriptedResponse",
+   "tests.llm_router.support.workers.retry.openai_chat_path",
+   "tests.llm_router.support.workers.retry.openai_success_response",
+   "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+   "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+   "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+  ],
+  "suite_checked": true
+ },
+ "FN-EA3F2437": {
+  "adopted_at": "2026-10-01T13:00:41.189894Z",
+  "answer_sha256": "ecd18dffd8fc781e646f3d8226f0ae5b8fae5936f87c57853a27df8d096601c3",
+  "call_id": "20261001T125543Z-729f8f",
+  "cascade": {
+   "24bb2ffb3a209650": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-2093BBD0": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-AAB2D195": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-DD714EDA": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "c8e877b2ede451a3": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "e9e9444744bf3896": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "ecd18dffd8fc781e646f3d8226f0ae5b8fae5936f87c57853a27df8d096601c3",
+  "effort": "high",
+  "function": "src/llm_router/_internal/capabilities/schema.py::with_schema_transform",
+  "keys": [
+   "24bb2ffb3a209650",
+   "SM-2093BBD0",
+   "SM-AAB2D195",
+   "SM-DD714EDA",
+   "c8e877b2ede451a3",
+   "e9e9444744bf3896"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_ea3f2437.py",
+  "response_sha256": "7b6a408a6a8ae7485830bebf2811ac949f59084c69bca01521e75e7f92229e59",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.RouterProfile",
+   "llm_router.VideoUrlSchema",
+   "llm_router.get_config",
+   "llm_router.install_config",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "tests.llm_router.support.fault_server.ScriptedResponse",
+   "tests.llm_router.support.workers.retry.aistudio_video_path",
+   "tests.llm_router.support.workers.retry.openai_chat_path",
+   "tests.llm_router.support.workers.retry.openai_success_response",
+   "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url",
+   "tests.llm_router.support.workers.worker_patches.prepare_fault_case"
+  ],
+  "suite_checked": true
+ },
+ "FN-ED3039DC": {
+  "adopted_at": "2026-10-01T12:48:17.315174Z",
+  "answer_sha256": "673a4e8466660929425a317fb92be2245138d5b10f214110c777989e004bbfde",
+  "call_id": "20261001T124635Z-497109",
+  "cascade": {
+   "SM-008E10B9": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-F375873A": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "673a4e8466660929425a317fb92be2245138d5b10f214110c777989e004bbfde",
+  "effort": "",
+  "function": "src/llm_router/_internal/capabilities/schema.py::_pydantic_schema_spec",
+  "keys": [
+   "SM-008E10B9",
+   "SM-F375873A"
+  ],
+  "model": "gemini-3.8-flash-medium",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_structured_schema_contract_fn_ed3039dc.py",
+  "response_sha256": "b8015a8d4ea0e2323e788eec3e8192e3ad53e2386c711eb22802e6f080a8f058",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.RouterProfile",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "tests.llm_router.support.fault_server.ScriptedResponse",
+   "tests.llm_router.support.workers.retry.openai_chat_path",
+   "tests.llm_router.support.workers.retry.openai_success_response",
+   "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+  ],
+  "suite_checked": true
+ }
+}

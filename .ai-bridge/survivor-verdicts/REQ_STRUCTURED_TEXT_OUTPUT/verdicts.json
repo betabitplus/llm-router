@@ -18,40 +18,46 @@
    "verdict": "pin"
   },
   "operator": "condition",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.550668Z",
-   "answer_sha256": "d8e8270c9811a3a13e147510f991a1ba20af1cfd7d0c7e37aa46f2f8178bc40d",
-   "call_id": "20260929T105401Z-1e9c01",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "d8e8270c9811a3a13e147510f991a1ba20af1cfd7d0c7e37aa46f2f8178bc40d",
-   "effort": "",
-   "model": "claude-sonnet-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_01fd76634a96fdbd.py",
-   "response_sha256": "b124448ee25574227c30eacb61f4f501385edc4cec22c05ece7e0d9ccd8a95e2",
-   "source": "draft author",
-   "sources": [
-    "llm_router._api.router.LLMRouter",
-    "llm_router._api.types.Model",
-    "llm_router._api.types.Provider",
-    "llm_router._api.types.RouterProfile",
-    "llm_router._api.types.LLMRouterResponse",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
-    "pydantic.RootModel"
-   ]
-  },
-  "prompt_sha256": "4b13f25d8cedb013624404d0ee4dd190d73ba5db69ba12a956ab2b52d2c58808"
+  "prompt_sha256": "4b13f25d8cedb013624404d0ee4dd190d73ba5db69ba12a956ab2b52d2c58808",
+  "subsumed": {
+   "at": "2026-10-01T13:49:21.213665Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_fn_ef7d2612.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.550668Z",
+    "answer_sha256": "d8e8270c9811a3a13e147510f991a1ba20af1cfd7d0c7e37aa46f2f8178bc40d",
+    "call_id": "20260929T105401Z-1e9c01",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "d8e8270c9811a3a13e147510f991a1ba20af1cfd7d0c7e37aa46f2f8178bc40d",
+    "effort": "",
+    "model": "claude-sonnet-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_01fd76634a96fdbd.py",
+    "response_sha256": "b124448ee25574227c30eacb61f4f501385edc4cec22c05ece7e0d9ccd8a95e2",
+    "source": "draft author",
+    "sources": [
+     "llm_router._api.router.LLMRouter",
+     "llm_router._api.types.Model",
+     "llm_router._api.types.Provider",
+     "llm_router._api.types.RouterProfile",
+     "llm_router._api.types.LLMRouterResponse",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk",
+     "pydantic.RootModel"
+    ]
+   }
+  }
  },
  "0bd04ba951d7aa46": {
   "answer": {
@@ -74,38 +80,44 @@
    "verdict": "pin"
   },
   "operator": "slice",
-  "pin": {
-   "adopted_at": "2026-09-30T14:23:01.341379Z",
-   "answer_sha256": "61dd5729c8b7a6b279975e74f41dbc70ecea93d56a9358f07ec40c5f663c60f8",
-   "call_id": "20260930T142111Z-79c625",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "9f147210e72bc325c7faf945f963f883058456815395536facd0ae6a6f437420",
-   "effort": "",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_0bd04ba951d7aa46.py",
-   "response_sha256": "bb17b5b7cb8414ff3bd317cead2b8cafce479272e07fb520b84aff6b55f5f1d9",
-   "source": "draft author",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "1a6f9c492cad5d63a63babbc616b15b608ae471b7c07cfbb52d2d9236d8b987e"
+  "prompt_sha256": "1a6f9c492cad5d63a63babbc616b15b608ae471b7c07cfbb52d2d9236d8b987e",
+  "subsumed": {
+   "at": "2026-10-01T13:49:21.214303Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_fn_ef7d2612.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T14:23:01.341379Z",
+    "answer_sha256": "61dd5729c8b7a6b279975e74f41dbc70ecea93d56a9358f07ec40c5f663c60f8",
+    "call_id": "20260930T142111Z-79c625",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "9f147210e72bc325c7faf945f963f883058456815395536facd0ae6a6f437420",
+    "effort": "",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_0bd04ba951d7aa46.py",
+    "response_sha256": "bb17b5b7cb8414ff3bd317cead2b8cafce479272e07fb520b84aff6b55f5f1d9",
+    "source": "draft author",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "0ddb26b38c02ad8c": {
   "answer": {
@@ -126,37 +138,43 @@
    "verdict": "pin"
   },
   "operator": "condition",
-  "pin": {
-   "adopted_at": "2026-09-29T10:38:22.596323Z",
-   "answer_sha256": "305d1d39f704f46101508c09d13313e10e4608f425d11e7969874066f7c8bad4",
-   "call_id": "20260929T094858Z-7c1b74",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "34430b78dfc81ce595d23270385bcc19bbb62e3f0daf3d01e5758af341166be5",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_0ddb26b38c02ad8c.py",
-   "response_sha256": "fc41858d1390d8e9723b5a23b6e7223abcb7df87fe91687e07fd0b7bbb6dce76",
-   "source": "draft author",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "c1438868efb6fa54eaef0ba556fcc2da57ff39dc03fe2e15137e498af7880ad3"
+  "prompt_sha256": "c1438868efb6fa54eaef0ba556fcc2da57ff39dc03fe2e15137e498af7880ad3",
+  "subsumed": {
+   "at": "2026-10-01T13:49:21.214516Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_fn_ef7d2612.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T10:38:22.596323Z",
+    "answer_sha256": "305d1d39f704f46101508c09d13313e10e4608f425d11e7969874066f7c8bad4",
+    "call_id": "20260929T094858Z-7c1b74",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "34430b78dfc81ce595d23270385bcc19bbb62e3f0daf3d01e5758af341166be5",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_0ddb26b38c02ad8c.py",
+    "response_sha256": "fc41858d1390d8e9723b5a23b6e7223abcb7df87fe91687e07fd0b7bbb6dce76",
+    "source": "draft author",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "1045c8ab17c9edbd": {
   "answer": {
@@ -244,35 +262,37 @@
  "137765413f3e5276": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T091140Z-1cb525",
+   "call_id": "20261001T114021Z-decc9d",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "If first_obj != -1, then first_obj >= 0. So last_obj > first_obj already means last_obj >= 1, which makes the dropped last_obj != -1 check redundant. The condition gives the same result for every input string.",
-   "response_sha256": "3593372698b59942b50924b48d171595eba065190096052cfad801b63cb23359",
+   "reason": "The check `last_obj != -1` is redundant. `str.find` returns -1 or an index of 0 or more, so when `first_obj != -1` we have `first_obj >= 0`, and `last_obj > first_obj` then forces `last_obj >= 1`. No input can make the two versions take different branches, so the structured result is the same.",
+   "response_sha256": "6c839d83e56817a288c3400591452051599a5175f782ddadefbadca053aebe9c",
    "sources": [
     "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
     "if first_obj != -1 and last_obj > first_obj:",
-    "Provider-specific response formatting shall not change the public structured result."
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "condition",
-  "prompt_sha256": "e0d342680cfae2d13830be077f91e7ed900f5f7ec814662b13513c99ae5f9e30",
+  "prompt_sha256": "41a6146dee01818acfe2095b06ffe4f3d53eee20551aecb46f30db44cd380529",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T091209Z-498aed",
+   "call_id": "20261001T114355Z-0c58f3",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "e0d342680cfae2d13830be077f91e7ed900f5f7ec814662b13513c99ae5f9e30",
-   "reason": "The dropped 'last_obj != -1' check is logically redundant. If 'first_obj != -1', it must be >= 0. Therefore, 'last_obj > first_obj' guarantees that 'last_obj > 0', making it impossible for 'last_obj' to be -1.",
-   "response_sha256": "9a9ad043a57446cf09fdf7be18a75618fe3e14555708b9b118ca41a542ca8001",
+   "prompt_sha256": "41a6146dee01818acfe2095b06ffe4f3d53eee20551aecb46f30db44cd380529",
+   "reason": "The condition last_obj != -1 is mathematically redundant because first_obj != -1 implies first_obj >= 0. Therefore, the subsequent condition last_obj > first_obj guarantees that last_obj is strictly greater than 0, making it impossible for last_obj to be -1, meaning the original and mutant versions behave identically for all inputs.",
+   "response_sha256": "7fc615c6a810b8c7c643a99d398b7f80929266f41d706376c34fdfb91fbb31c3",
    "sources": [
-    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "Requirement REQ_STRUCTURED_TEXT_OUTPUT (Structured text output): A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema. Provider-specific response formatting shall not change the public structured result.",
     "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
     "if first_obj != -1 and last_obj > first_obj:"
    ],
@@ -283,13 +303,14 @@
  "178bec10306929cd": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T145419Z-fef26b",
+   "call_id": "20261001T114021Z-388eb9",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The two conditions can only disagree when last_arr == first_arr. When both are found, first_arr points at a '[' and last_arr points at a ']', so the two indexes can never be equal. The guard therefore gives the same result in both versions for every input, and the structured result is unchanged.",
-   "response_sha256": "d6599dd545598501890bfb40cb3a7574ce364f93ffb3a12a1209a9d483e19998",
+   "reason": "The two versions only differ when first_arr == last_arr with both != -1. That can't happen, because one index can't hold both '[' and ']'. So `>=` and `>` give the same result for every input, and the structured result stays the same.",
+   "response_sha256": "e712947870076ac95a4aaf2d3d59c0c158b85abeb64b2cedf36144bc3eb2b021",
    "sources": [
     "if first_arr != -1 and last_arr != -1 and (last_arr >= first_arr):",
     "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
@@ -299,19 +320,21 @@
    "verdict": "equivalent"
   },
   "operator": "comparison",
-  "prompt_sha256": "6a37973ab90dabb82ece83d7908e6f830f26f94c6b314f17379dddc02b5ce0a9",
+  "prompt_sha256": "7355454dfe1d664880be5381c0bfa73ebb33e05909ffdf0d7ce5682e8e6e4bb0",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T145520Z-623f0a",
+   "call_id": "20261001T114054Z-6b452f",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "6a37973ab90dabb82ece83d7908e6f830f26f94c6b314f17379dddc02b5ce0a9",
-   "reason": "Because the string indices first_arr and last_arr must point to distinct characters ('[' and ']'), they can never be equal when found. Therefore, the condition `last_arr >= first_arr` is logically identical to `last_arr > first_arr` on all inputs, producing exactly the same parsing behavior.",
-   "response_sha256": "1fbf77c9441ce0e774e5960f80730c471ceeaa2d67f8e9a848518fbf66071694",
+   "prompt_sha256": "7355454dfe1d664880be5381c0bfa73ebb33e05909ffdf0d7ce5682e8e6e4bb0",
+   "reason": "The characters '[' and ']' are distinct, so their indices first_arr and last_arr can never be equal. Thus, last_arr >= first_arr is logically equivalent to last_arr > first_arr.",
+   "response_sha256": "a94d474eae2346f28909c42f7d25492939cc3b2e310fe101885a9b423277eafe",
    "sources": [
-    "Requirement REQ_STRUCTURED_TEXT_OUTPUT (Structured text output): A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
     "if first_arr != -1 and last_arr != -1 and (last_arr >= first_arr):"
    ],
    "test_focus": "",
@@ -360,89 +383,65 @@
  "1d475cc4b98b3b39": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T235322Z-31ffe1",
+   "call_id": "20261001T163927Z-9f0331",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "This matters when a provider hands over a dict that is already decoded (the non-string branch). Its keys may not be strings, and the original code turned every key into a string. The mutant passes those keys through unchanged, so provider-specific key types reach the public result, and a key like 1 would no longer match a schema property named \"1\".",
-   "response_sha256": "b28a63776d4d57515ba960bf115cbe6dc3147801ecba414fce9f88c0b8a92b76",
+   "reason": "This needs a pinning test. When an adapter hands back an already-parsed mapping with non-string keys (e.g. 1, True, None), the original turns the keys into strings, but the mutant passes the provider's key types into the public result. A result keyed {1: ...} is not a JSON-object result and fails schema checks such as `required: [\"1\"]`, so the provider's own format leaks through.",
+   "response_sha256": "1e4d828323e7ae743c20f990abf64cc63c3a4ed9c806043adaec5c37406f1673",
    "sources": [
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
     "Provider-specific response formatting shall not change the public structured result.",
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
     "return {str(key): item for key, item in decoded.items()}",
     "return {key: item for key, item in decoded.items()}"
    ],
-   "test_focus": "Pass a dict that is already decoded and has a non-string key (e.g. {1: \"x\"}) through the structured-output path. Assert that the public result has only string keys (e.g. {\"1\": \"x\"}) and validates against the requested schema.",
+   "test_focus": "Have a fake adapter return an already-parsed dict with non-string keys (e.g. {1: \"x\"}). Check that the public structured result has only string keys ({\"1\": \"x\"}) and validates against a caller schema that requires property \"1\".",
    "verdict": "pin"
   },
   "operator": "conversion",
-  "pin": {
-   "adopted_at": "2026-09-29T12:16:07.600099Z",
-   "answer_sha256": "42273d008b4a0290022caa47049f044370765cadf88173dd502bb2df1b294baf",
-   "call_id": "20260929T120217Z-24c265",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "42273d008b4a0290022caa47049f044370765cadf88173dd502bb2df1b294baf",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_1d475cc4b98b3b39.py",
-   "response_sha256": "ef5f88a6bf34fa4ae09b4baacc8981f59df48fa6f1a6c5ea9b26b2b3c2369002",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "a3f0b4ed5ccb2608cb533b2331b7e0e5f6b37ec4db7beeb0bd4ca4cf44980886"
+  "prompt_sha256": "4b9507577c331f90bf02f600e5b8d22d8d86e343f8eae7bc9ffc52f02543f0a9"
  },
  "2020243fe707999b": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T091233Z-55c5c8",
+   "call_id": "20261001T114021Z-ebed34",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "When both are found, first_obj points at '{' and last_obj points at '}'. One index can't hold two different characters, so last_obj == first_obj never happens, and `>=` picks the same branch as `>` for every input string.",
-   "response_sha256": "9aafbe3d639d1e862b0470d1e61c1e0999c5ac00f8a101c3229876349e8e8882",
+   "reason": "first_obj is the index of a '{' and last_obj is the index of a '}'. One position can't hold both characters, so when both are found the indices can never be equal. That makes `last_obj >= first_obj` give the same result as `last_obj > first_obj` for every input, and the structured result is unchanged.",
+   "response_sha256": "008e7d410b5aa383286d4aa982fd20874e857cc75f463bb610d08a680dd9d7c7",
    "sources": [
-    "if first_obj != -1 and last_obj != -1 and (last_obj >= first_obj):",
     "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+    "if first_obj != -1 and last_obj != -1 and (last_obj >= first_obj):",
+    "first_obj = stripped.find(\"{\")",
+    "last_obj = stripped.rfind(\"}\")",
     "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "comparison",
-  "prompt_sha256": "9122f1f3e854ab36193f6bfdc9e78a0326a41d8963fef61f13ba1a6cdf0f484b",
+  "prompt_sha256": "75e086ca204256a2c017335511c92091d982afec5bf3e3177a64aa17e147a2a3",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T091403Z-e4030b",
+   "call_id": "20261001T114054Z-22ec35",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "9122f1f3e854ab36193f6bfdc9e78a0326a41d8963fef61f13ba1a6cdf0f484b",
-   "reason": "Because `find('{')` and `rfind('}')` search for distinct characters, their successful index locations can never be equal. Therefore, `last_obj == first_obj` is an impossible state, making the condition `last_obj >= first_obj` logically identical to `last_obj > first_obj` across all possible inputs.",
-   "response_sha256": "ab239729085ead9cebf9d12d858bccfac32240bc0f12141bbe503ee105732f27",
+   "prompt_sha256": "75e086ca204256a2c017335511c92091d982afec5bf3e3177a64aa17e147a2a3",
+   "reason": "Since the methods search for different characters ('{' and '}'), their successful result indices can never be equal. Therefore, the condition `last_obj >= first_obj` evaluates identically to `last_obj > first_obj`, producing the exact same logical outcome for all inputs.",
+   "response_sha256": "05ed04d55dfabdb35dc507baa302ebac033c32035aded80fcd07cf0c658e1c7d",
    "sources": [
     "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
-    "    if first_obj != -1 and last_obj != -1 and (last_obj >= first_obj):"
+    "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+    "if first_obj != -1 and last_obj != -1 and (last_obj >= first_obj):"
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -541,37 +540,43 @@
    "verdict": "pin"
   },
   "operator": "return",
-  "pin": {
-   "adopted_at": "2026-09-29T10:38:22.598220Z",
-   "answer_sha256": "1e56fff2eed76f4a92414b35acb39b776aced6693eb10055fda9648f25629e6b",
-   "call_id": "20260929T095053Z-40de09",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "6ed92bad989d008dd5a1e76d9c91c3c1444c739db72b551372794e406cd12833",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_25bba4d0464eefdd.py",
-   "response_sha256": "7c3a535663c13f183ab5b6eeff86f70c4b476889b2f6b7415281231ce6814a66",
-   "source": "draft author",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "d34ceb7d7dbe5b681fc695c46a134482f0dc759f1e7c6ede395b068d12b856b5"
+  "prompt_sha256": "d34ceb7d7dbe5b681fc695c46a134482f0dc759f1e7c6ede395b068d12b856b5",
+  "subsumed": {
+   "at": "2026-10-01T13:49:21.216746Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_fn_16a21965.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T10:38:22.598220Z",
+    "answer_sha256": "1e56fff2eed76f4a92414b35acb39b776aced6693eb10055fda9648f25629e6b",
+    "call_id": "20260929T095053Z-40de09",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "6ed92bad989d008dd5a1e76d9c91c3c1444c739db72b551372794e406cd12833",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_25bba4d0464eefdd.py",
+    "response_sha256": "7c3a535663c13f183ab5b6eeff86f70c4b476889b2f6b7415281231ce6814a66",
+    "source": "draft author",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "2c420db103b29600": {
   "answer": {
@@ -803,13 +808,14 @@
  "4ca061c650885f70": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T091418Z-0c5c49",
+   "call_id": "20261001T114021Z-4060bc",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "After value.strip(), stripped has no leading whitespace. So if it doesn't start with \"```\", lines[0].strip() can't match any fence marker and the mutant returns value, just like the original. Empty input also returns value in both versions, so the dropped startswith check is redundant.",
-   "response_sha256": "bdc46f63d128d796500d7cc2303baa3be74445e5bc0c1fe94178171f4c0894bb",
+   "reason": "After strip(), stripped begins with a non-whitespace character, and every line break splitlines() recognises counts as whitespace. So lines[0].strip() can only match a fence marker when stripped starts with ```, which makes the removed startswith check redundant. Empty input returns value in both versions, so the public structured result never changes.",
+   "response_sha256": "95e324ee3e91a91332b505482f536de1b3b9b2a264df1c14f49096a08784960f",
    "sources": [
     "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
     "if not stripped or not stripped.endswith('```'):",
@@ -820,21 +826,21 @@
    "verdict": "equivalent"
   },
   "operator": "method",
-  "prompt_sha256": "78f8f984f012e17aa6d8d0f56b94e0832f33b1c1279794bad05be1734b7b0dd3",
+  "prompt_sha256": "936c1c32ae505ad4a7794b8dce329c10f6724a2885c344719ad7c308d2c68386",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T091430Z-7cb6b4",
+   "call_id": "20261001T114355Z-f21c01",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "78f8f984f012e17aa6d8d0f56b94e0832f33b1c1279794bad05be1734b7b0dd3",
-   "reason": "The removed startswith check is mathematically redundant because value.strip() ensures the string has no leading whitespace; if it lacks the code fence prefix, its first line cannot match the allowed fence formats in the subsequent check, causing both versions to safely return the original value.",
-   "response_sha256": "1a9ebf3dc9ab3909e37fb024b67d2a5d7320b4f68d06aed5334bc0d76fc8aaf3",
+   "prompt_sha256": "936c1c32ae505ad4a7794b8dce329c10f6724a2885c344719ad7c308d2c68386",
+   "reason": "The removed startswith check is functionally redundant. Because value.strip() removes all leading whitespace, if lines[0].strip() later matches an allowed opening code fence, stripped must intrinsically start with '```'. Both versions also correctly return the original value for empty inputs, ensuring identical behavior.",
+   "response_sha256": "a578e22f8831dc4a6f7cd59ab626ffb02d75fa3b2b7980724e71c5736d474704",
    "sources": [
-    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
-    "if not stripped or not stripped.endswith('```'):",
-    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through."
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema. Provider-specific response formatting shall not change the public structured result.",
+    "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):"
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -902,39 +908,45 @@
    "verdict": "pin"
   },
   "operator": "return",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.553582Z",
-   "answer_sha256": "390605d6b0fe5942b2a9109f1bb1d41ff2bb6295aa90351e2fa29edab7f009c2",
-   "call_id": "20260929T105401Z-6b0b6f",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "390605d6b0fe5942b2a9109f1bb1d41ff2bb6295aa90351e2fa29edab7f009c2",
-   "effort": "",
-   "model": "claude-sonnet-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_594d55ab4bfdf987.py",
-   "response_sha256": "9a2e1128321cefedff2194fd1d836960df8c919a48b4807deb4aa63652c46944",
-   "source": "draft author",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.assertions.parse_json_object",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "41ea9c36f77c3dd0965abf26440278efc784edeb971bc2aeb6166a50b5679376"
+  "prompt_sha256": "41ea9c36f77c3dd0965abf26440278efc784edeb971bc2aeb6166a50b5679376",
+  "subsumed": {
+   "at": "2026-10-01T13:49:21.217118Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_fn_16a21965.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.553582Z",
+    "answer_sha256": "390605d6b0fe5942b2a9109f1bb1d41ff2bb6295aa90351e2fa29edab7f009c2",
+    "call_id": "20260929T105401Z-6b0b6f",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "390605d6b0fe5942b2a9109f1bb1d41ff2bb6295aa90351e2fa29edab7f009c2",
+    "effort": "",
+    "model": "claude-sonnet-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_594d55ab4bfdf987.py",
+    "response_sha256": "9a2e1128321cefedff2194fd1d836960df8c919a48b4807deb4aa63652c46944",
+    "source": "draft author",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.assertions.parse_json_object",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "5b5f64ae9f619fd8": {
   "answer": {
@@ -955,37 +967,43 @@
    "verdict": "pin"
   },
   "operator": "condition",
-  "pin": {
-   "adopted_at": "2026-09-29T10:38:22.600987Z",
-   "answer_sha256": "f488085ec864573e637f675ba4dd3807ac08383062e9b2ef9cc254c13c334a51",
-   "call_id": "20260929T095148Z-f00d6d",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "90a812038b16782b0e132e1e1299dab3db3b141cb8800deab71d873ccc1e7ac5",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_5b5f64ae9f619fd8.py",
-   "response_sha256": "de217a72610cba7a310e2984084fd49d9f5a29d28a3416195ab2ff43e05b7c71",
-   "source": "draft author",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "362efcca28404b277898e2a4d195bef47dbc5ef2e5549df00d5faac7c4f5b13c"
+  "prompt_sha256": "362efcca28404b277898e2a4d195bef47dbc5ef2e5549df00d5faac7c4f5b13c",
+  "subsumed": {
+   "at": "2026-10-01T13:49:21.217644Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_fn_ef7d2612.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T10:38:22.600987Z",
+    "answer_sha256": "f488085ec864573e637f675ba4dd3807ac08383062e9b2ef9cc254c13c334a51",
+    "call_id": "20260929T095148Z-f00d6d",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "90a812038b16782b0e132e1e1299dab3db3b141cb8800deab71d873ccc1e7ac5",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_5b5f64ae9f619fd8.py",
+    "response_sha256": "de217a72610cba7a310e2984084fd49d9f5a29d28a3416195ab2ff43e05b7c71",
+    "source": "draft author",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "5b724a1640748451": {
   "answer": {
@@ -1029,41 +1047,6 @@
    "verdict": "irrelevant"
   },
   "operator": "comparison",
-  "pin": {
-   "adopted_at": "2026-09-29T15:05:19.551335Z",
-   "answer_sha256": "d6d9596f99d271989e0a2ab467515efbf3db004f154d8d74d3fc1ef66e26bd1a",
-   "call_id": "20260929T150310Z-947f1d",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "d6d9596f99d271989e0a2ab467515efbf3db004f154d8d74d3fc1ef66e26bd1a",
-   "effort": "high",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_5d42724e6abd7c36.py",
-   "response_sha256": "2c09eb21caa51ef1f10b4bfcde8e76b60598b05be0edae9087870a7b1f07c2c6",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.ProviderError",
-    "llm_router.RouterProfile",
-    "llm_router.get_config",
-    "llm_router.install_config",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.qwen_chat_path",
-    "tests.llm_router.support.workers.retry.qwen_success_response",
-    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
-   ]
-  },
   "prompt_sha256": "6a8643c5333b2420dd7bd4de807953463e229eb616f9abb6ec0628d9750b436a",
   "review": {
    "backend": "antigravity-cli",
@@ -1083,30 +1066,89 @@
    ],
    "test_focus": "A test must provide an empty payload wrapped in code fences and verify that the output is an empty string with the formatting completely stripped.",
    "verdict": "pin"
+  },
+  "subsumed": {
+   "at": "2026-10-01T13:49:21.217978Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_fn_16a21965.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T15:05:19.551335Z",
+    "answer_sha256": "d6d9596f99d271989e0a2ab467515efbf3db004f154d8d74d3fc1ef66e26bd1a",
+    "call_id": "20260929T150310Z-947f1d",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "d6d9596f99d271989e0a2ab467515efbf3db004f154d8d74d3fc1ef66e26bd1a",
+    "effort": "high",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_5d42724e6abd7c36.py",
+    "response_sha256": "2c09eb21caa51ef1f10b4bfcde8e76b60598b05be0edae9087870a7b1f07c2c6",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.ProviderError",
+     "llm_router.RouterProfile",
+     "llm_router.get_config",
+     "llm_router.install_config",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.qwen_chat_path",
+     "tests.llm_router.support.workers.retry.qwen_success_response",
+     "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+    ]
+   }
   }
  },
  "61ee605eb792ca32": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T152405Z-1c3e3a",
+   "call_id": "20261001T114021Z-c6a200",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "requirement",
+   "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant sends every candidate through the string-extraction path. Execution confirms that an already-decoded dict ({\"a\": 1}) now raises AttributeError instead of returning {'a': 1}. Any adapter whose provider hands back structured output as a parsed mapping would then return no structured result, which breaks the requirement that every supported adapter family returns one.",
-   "response_sha256": "65ba6cb81af4a2872cca9f7558aa835873939502531bac7531385f2815b78f6a",
+   "reason": "The mutant only differs for non-string candidates, such as an already-decoded dict. Its one caller, _parse_mapping_schema, just passes on whatever its own caller gives it, and every test attempt, including the last one run in a copy of the project, failed to get a non-string candidate there from a supported text route. So the public structured result the requirement promises cannot show the difference.",
+   "response_sha256": "09a8a637765ad56cb8d41262186ec3eb79f45b5e570eb32c647e11f90e384adc",
    "sources": [
     "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
-    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
-    "if isinstance(value, str):",
-    "if True:"
+    "    parsed = _parse_json_object(value)\n    Draft202012Validator(dict(schema)).validate(parsed)",
+    "    if isinstance(value, str):",
+    "    if True:"
    ],
-   "test_focus": "Check that a dict candidate such as {\"a\": 1}, the form a provider returns when output is already parsed, comes back as the same JSON object mapping and does not raise.",
-   "verdict": "pin"
+   "test_focus": "",
+   "verdict": "irrelevant"
   },
   "operator": "conditional",
-  "prompt_sha256": "a04e2817031a8547d10aa2a409a6212fc9a622fee5260e15d187b76c4fcd6eca"
+  "prompt_sha256": "27ef1cb348b99c2555b1c42e6cbddc20f15672ab17ab8b1c57a09e6bd52e5281",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20261001T114054Z-cc0372",
+   "confirmed": true,
+   "effort": "",
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "27ef1cb348b99c2555b1c42e6cbddc20f15672ab17ab8b1c57a09e6bd52e5281",
+   "reason": "The requirement mandates that the public structured result must remain consistent regardless of provider-specific formatting. The mutant unconditionally processes the input as a string, crashing on adapter families that naturally return a parsed dictionary for structured output.",
+   "response_sha256": "17f1818608d7e347bea56352fe963b9b45c8d3ac75028bac8e838916ebf634eb",
+   "sources": [
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "if isinstance(value, str):"
+   ],
+   "test_focus": "Call `LLMRouter.query` with a `response_schema` using a provider adapter that produces a parsed dictionary (e.g. via tool calls) to verify the structured output is handled without raising an error.",
+   "verdict": "pin"
+  }
  },
  "6232a4f662a368fe": {
   "answer": {
@@ -1590,39 +1632,45 @@
    "verdict": "pin"
   },
   "operator": "method",
-  "pin": {
-   "adopted_at": "2026-09-29T12:16:07.601567Z",
-   "answer_sha256": "451b854e35243657a740644dba17679ace88c8c3e7295e0a1d3d4065cbb53738",
-   "call_id": "20260929T120217Z-4dba11",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "451b854e35243657a740644dba17679ace88c8c3e7295e0a1d3d4065cbb53738",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_8400a761e6861e17.py",
-   "response_sha256": "944eb9fd04e3d405f67dfa8668d4fc5f14fa58032c10d93bbf0c8244a680dbc3",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "f1791b2c06bd08a6256e48b38156d9a816bf75b6ec9a8416b2ab61679a493cd6"
+  "prompt_sha256": "f1791b2c06bd08a6256e48b38156d9a816bf75b6ec9a8416b2ab61679a493cd6",
+  "subsumed": {
+   "at": "2026-10-01T13:49:21.218360Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_fn_16a21965.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T12:16:07.601567Z",
+    "answer_sha256": "451b854e35243657a740644dba17679ace88c8c3e7295e0a1d3d4065cbb53738",
+    "call_id": "20260929T120217Z-4dba11",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "451b854e35243657a740644dba17679ace88c8c3e7295e0a1d3d4065cbb53738",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_8400a761e6861e17.py",
+    "response_sha256": "944eb9fd04e3d405f67dfa8668d4fc5f14fa58032c10d93bbf0c8244a680dbc3",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "87ad8ca644dbe3d7": {
   "answer": {
@@ -1884,38 +1932,6 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-29T19:34:01.871927Z",
-   "answer_sha256": "dcbea4e9717f7e7f1b92206e22d62a6ff8ce505681d4b6acc3ed69a2f8158bef",
-   "call_id": "20260929T193017Z-f73095",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "dcbea4e9717f7e7f1b92206e22d62a6ff8ce505681d4b6acc3ed69a2f8158bef",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_sm_2d3d81e7.py",
-   "response_sha256": "dd568d52ce323824a720ade917e43fef563525f69e55871533e3d544a4eba38f",
-   "source": "last resort",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
   "prompt_sha256": "5c2508a01b2a2c13f2135b29c1f664b029799b6a22cd39fe0e4a639fabbd682a"
  },
  "SM-69699DF1": {
@@ -2003,43 +2019,43 @@
  "SM-A1CB8BE4": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T080944Z-0cf19f",
+   "call_id": "20261001T114454Z-ebc112",
    "confirmed": true,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only behaves differently when the value is a dict or list. Both project callers always pass strings: the prompted parser passes candidates from `_structured_candidates`, which returns `tuple[str, ...]`, and the executor passes `ProviderResult.output_text`, which is a `str`. So the skipped validation can never be seen in the structured result the requirement checks.",
-   "response_sha256": "c2f51677d258efbab9381da8a1e1319d1678498af2f22b3df2b48ada02782214",
+   "reason": "The new branch only runs when the value is a dict or a list, and no caller ever passes one. The prompted parser passes strings from _structured_candidates, and the executor passes result.output_text, which is typed as str. So the structured result the requirement covers comes out the same either way.",
+   "response_sha256": "76cbce0ce751a83230135ea677eb4ed9245d4e61ca889d357fefa225ab3e7a1b",
    "sources": [
     "if isinstance(value, (dict, list)):",
-    "for candidate in _structured_candidates(text):",
+    "result = validate_schema_output(spec, candidate)",
     "_structured_candidates(text: str) -> tuple[str, ...]",
     "validation = validate_schema_output(plan.schema, result.output_text)",
-    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str",
+    "output_text: str",
     "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "semantic",
-  "prompt_sha256": "91d33cd748e14c0591e24f02729dbc87780df3fef028a6d3071dda1f3a53e45e",
+  "prompt_sha256": "dd5596f7a8f6956de04fea64548efb038c5a4dbc8672f249253472a3d42fe436",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T081059Z-8e7c53",
+   "call_id": "20261001T114515Z-1a4878",
    "confirmed": true,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "91d33cd748e14c0591e24f02729dbc87780df3fef028a6d3071dda1f3a53e45e",
-   "reason": "The mutated code adds an early return for dict or list values, but both callers in the project pass strings (from _structured_candidates which returns tuple[str, ...] and ProviderResult.output_text which is a str). Thus, the changed code path is never reached, and the difference cannot be observed.",
-   "response_sha256": "0caebb68744ad469bc75d88da2c018634541054f26dfa0fa6f98a3fc82d30576",
+   "prompt_sha256": "dd5596f7a8f6956de04fea64548efb038c5a4dbc8672f249253472a3d42fe436",
+   "reason": "The mutated code only changes behavior when `value` is a `dict` or `list`. However, in all places where this function is called within the project (`parse_prompted_structured_data` and `_validate_structured_result`), the `value` provided is exclusively a string (either a `candidate` from `_structured_candidates` which yields a `tuple[str, ...]`, or `result.output_text` which is typed as `str`). Thus, the difference cannot be observed.",
+   "response_sha256": "fe01e306e908ecd724dd8994c7a0f69e3d1c7225e7bdf2295efc4af996f74fcc",
    "sources": [
     "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
-    "    if isinstance(value, (dict, list)):",
+    "if isinstance(value, (dict, list)):",
     "_structured_candidates(text: str) -> tuple[str, ...]",
-    "validation = validate_schema_output(plan.schema, result.output_text)"
+    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str, usage: UsageStats | None = \u2026, tool_calls: tuple[ToolCall, ...] = \u2026, tool_call_metadata: tuple[Mapping[str, Any], ...] = \u2026)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -2169,39 +2185,45 @@
    "verdict": "pin"
   },
   "operator": "container",
-  "pin": {
-   "adopted_at": "2026-09-29T12:16:07.603659Z",
-   "answer_sha256": "2008126cb9197baf1a26bce2ab82f211b02e013a13dcc823453d394fd45664d0",
-   "call_id": "20260929T120217Z-3c7bde",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "2008126cb9197baf1a26bce2ab82f211b02e013a13dcc823453d394fd45664d0",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_a1048e7de4231e38.py",
-   "response_sha256": "cab3226e02ac2025531aaedac4ac97e754d19c29a331cbc8e72044d306820e3f",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "910c0ee3e2f498594c2370d4de9bc780ca277d4302a947ed9fe611fd5f378139"
+  "prompt_sha256": "910c0ee3e2f498594c2370d4de9bc780ca277d4302a947ed9fe611fd5f378139",
+  "subsumed": {
+   "at": "2026-10-01T13:49:21.218668Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_fn_16a21965.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T12:16:07.603659Z",
+    "answer_sha256": "2008126cb9197baf1a26bce2ab82f211b02e013a13dcc823453d394fd45664d0",
+    "call_id": "20260929T120217Z-3c7bde",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "2008126cb9197baf1a26bce2ab82f211b02e013a13dcc823453d394fd45664d0",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_a1048e7de4231e38.py",
+    "response_sha256": "cab3226e02ac2025531aaedac4ac97e754d19c29a331cbc8e72044d306820e3f",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "a1ecc6333d1910f4": {
   "answer": {
@@ -2284,38 +2306,44 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.556218Z",
-   "answer_sha256": "d67e6e945721363c5761edde78ec73662020ebc3cae2a37ae02180da8ead329f",
-   "call_id": "20260929T105401Z-da3a10",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "d67e6e945721363c5761edde78ec73662020ebc3cae2a37ae02180da8ead329f",
-   "effort": "",
-   "model": "claude-sonnet-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_a57b176468930694.py",
-   "response_sha256": "19b4c6ff7318fded2870acaf5d7a36a17e9191595021cafe74ee159fe23e7a0c",
-   "source": "draft author",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "53a436eebab94616ddbcf74577a4c1b0d187494a71347e12690f7ae4ac713f6e"
+  "prompt_sha256": "53a436eebab94616ddbcf74577a4c1b0d187494a71347e12690f7ae4ac713f6e",
+  "subsumed": {
+   "at": "2026-10-01T13:49:21.219487Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_fn_16a21965.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.556218Z",
+    "answer_sha256": "d67e6e945721363c5761edde78ec73662020ebc3cae2a37ae02180da8ead329f",
+    "call_id": "20260929T105401Z-da3a10",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "d67e6e945721363c5761edde78ec73662020ebc3cae2a37ae02180da8ead329f",
+    "effort": "",
+    "model": "claude-sonnet-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_a57b176468930694.py",
+    "response_sha256": "19b4c6ff7318fded2870acaf5d7a36a17e9191595021cafe74ee159fe23e7a0c",
+    "source": "draft author",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "a6d49b98e29bf6d3": {
   "answer": {
@@ -2336,39 +2364,45 @@
    "verdict": "pin"
   },
   "operator": "method",
-  "pin": {
-   "adopted_at": "2026-09-29T12:16:07.604971Z",
-   "answer_sha256": "37d0756759c0a930f56541d5b0ba8d6f5a0a224235bde9ec92b4177604737efe",
-   "call_id": "20260929T120217Z-fa9f87",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "37d0756759c0a930f56541d5b0ba8d6f5a0a224235bde9ec92b4177604737efe",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_a6d49b98e29bf6d3.py",
-   "response_sha256": "e7f0f6a71b1e245004347d7ca805fb804fef6bf5c716f85d5d8935735e0ce1bb",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "b24a00b066bfaed6b5b5751dc7a91697e14856e51ed9a18ff313e675bb1c560a"
+  "prompt_sha256": "b24a00b066bfaed6b5b5751dc7a91697e14856e51ed9a18ff313e675bb1c560a",
+  "subsumed": {
+   "at": "2026-10-01T13:49:21.220071Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_fn_16a21965.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T12:16:07.604971Z",
+    "answer_sha256": "37d0756759c0a930f56541d5b0ba8d6f5a0a224235bde9ec92b4177604737efe",
+    "call_id": "20260929T120217Z-fa9f87",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "37d0756759c0a930f56541d5b0ba8d6f5a0a224235bde9ec92b4177604737efe",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_a6d49b98e29bf6d3.py",
+    "response_sha256": "e7f0f6a71b1e245004347d7ca805fb804fef6bf5c716f85d5d8935735e0ce1bb",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "a7ba458316157d60": {
   "answer": {
@@ -2978,33 +3012,36 @@
  "f89c92d6b15a7771": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T145601Z-228c9c",
+   "call_id": "20261001T114021Z-aa7242",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Once `first_arr != -1` holds, `first_arr >= 0`, so `last_arr > first_arr` already forces `last_arr >= 1`. That makes the dropped `last_arr != -1` check redundant: both conditions give the same result for every input, and the extracted payload is unchanged.",
-   "response_sha256": "0105d3306cee400f91de9495d5e937ccc727d57343721f1fd2599297433e2479",
+   "reason": "The mutant drops only `last_arr != -1`, and `first_arr != -1` with `last_arr > first_arr` already rules it out: `first_arr` is at least 0, so `last_arr` must be at least 1. No input can make the two versions return different output, so the structured result is unchanged. The one input offered as a difference was refuted.",
+   "response_sha256": "dc49510cbe7254970f64cd003afbb33379b22234ae543d75d5a7cec5ad021d8e",
    "sources": [
     "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
     "if first_arr != -1 and last_arr > first_arr:",
-    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "an input by claude-cli:claude-sonnet-5-5@low was refuted: both versions behave the same on it"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "condition",
-  "prompt_sha256": "3fc719d83f0c157a3289de52b3ef23e54227419aaa8edc99940bf0a5fd97b495",
+  "prompt_sha256": "c0ba680db5d250ff5523df6b38a259ee3042c118d9298da7fc654d51325f8a0c",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T145623Z-3d2784",
+   "call_id": "20261001T114355Z-2eebea",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "3fc719d83f0c157a3289de52b3ef23e54227419aaa8edc99940bf0a5fd97b495",
-   "reason": "The condition `last_arr != -1` is mathematically redundant because `first_arr != -1` guarantees `first_arr >= 0`. Therefore, if `last_arr` is `-1`, the check `last_arr > first_arr` inherently evaluates to false, leaving the function's output identical in all cases.",
-   "response_sha256": "82a1b4673d8168c04bffa25ca0d0df86587df52b9371cc66ffbb06c94671cca4",
+   "prompt_sha256": "c0ba680db5d250ff5523df6b38a259ee3042c118d9298da7fc654d51325f8a0c",
+   "reason": "The condition `last_arr != -1` is logically redundant. Because `first_arr != -1` means `first_arr >= 0`, the check `last_arr > first_arr` guarantees that `last_arr` is strictly greater than 0, which makes `last_arr != -1` necessarily true.",
+   "response_sha256": "8a631a5b01701c3b548ff8ae6a13b168cd4aeff7f23a222dd9475ec4c9e76e0c",
    "sources": [
     "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
     "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
@@ -3017,13 +3054,14 @@
  "f8f680e363cf4d0d": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T091930Z-e68cd4",
+   "call_id": "20261001T114021Z-94bf04",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "`stripped` has no leading whitespace, and every character `splitlines()` breaks on is whitespace to `strip()`, so `lines[0]` starts at `stripped[0]`. It can only match a fence opener if `stripped` starts with three backticks, which makes the removed `startswith` check redundant for every input.",
-   "response_sha256": "ff4b867175b0324a9a3d5d21f618712f42e8bcf1e7ed308cfc6d7a2e5b806420",
+   "reason": "`stripped` has no leading whitespace and is not empty. Every line-break character that `splitlines` splits on is whitespace, so `lines[0]` keeps the first character of `stripped`. `lines[0].strip()` can only match an allowed opener if `stripped` starts with three backticks, so the removed check is redundant and both versions return the same value for every input.",
+   "response_sha256": "8bbdad17579ba5b1b4b7af51ee881c709180494b33610b1b1bdc32d91be63a60",
    "sources": [
     "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
     "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
@@ -3033,19 +3071,20 @@
    "verdict": "equivalent"
   },
   "operator": "condition",
-  "prompt_sha256": "fa342bd31aa19eebb05e78b30332066ad7f546be5547f1d2065c2d3f29295085",
+  "prompt_sha256": "d46b742bc1458f2a62bb93369f682f8551cf21bc094b93464586fa344f3a090c",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T092019Z-4803d0",
+   "call_id": "20261001T114355Z-50d203",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "fa342bd31aa19eebb05e78b30332066ad7f546be5547f1d2065c2d3f29295085",
-   "reason": "The dropped startswith check is logically redundant. Because stripped already has no leading whitespace, the subsequent check requiring lines[0].strip() to match a code fence ensures that stripped must also start with those same characters, making both versions functionally identical.",
-   "response_sha256": "c455d9e9e04e197d64c17ea0084ede4678904e1acc04349b6e91f431c92c7d8b",
+   "prompt_sha256": "d46b742bc1458f2a62bb93369f682f8551cf21bc094b93464586fa344f3a090c",
+   "reason": "The removed startswith check is mathematically redundant because the stripped string has no leading whitespace. If lines[0].strip() matches a valid code fence, stripped is already guaranteed to start with three backticks, meaning the original and mutant behavior remain perfectly equivalent in stripping provider-specific formatting.",
+   "response_sha256": "9ac7f9753f654988265e519eeedffc49c7acd93d16c1b1ad065ca260bc2e2be3",
    "sources": [
-    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "Provider-specific response formatting shall not change the public structured result.",
     "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):"
    ],
    "test_focus": "",

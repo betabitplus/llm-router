@@ -1,4 +1,166 @@
 {
+ "2a4f224cd89c9053": [
+  {
+   "at": "2026-10-01T20:19:20.104303Z",
+   "call_id": "20261001T201809Z-ee8098",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "167fdc71d0d21ac7589452e4de61ca20e8d9a4d1048637d013d3c79db6409f6d",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  }
+ ],
+ "621cfe26a9c437b8": [
+  {
+   "at": "2026-10-01T20:19:21.038175Z",
+   "call_id": "20261001T201809Z-3fbfe4",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "b3d4e64897e84b76b1b9f6760c33473282556800899163893fa96928243557d8",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  }
+ ],
+ "909ea17c8e00b989": [
+  {
+   "at": "2026-10-01T17:11:24.113881Z",
+   "call_id": "20261001T171039Z-a2c8da",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "324a3347f3b5b56d2a81a7f6738ec1677cb6f19700d694013d2765ea74c89b7d",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T20:19:37.970203Z",
+   "call_id": "20261001T201809Z-a0a7c1",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "ProviderError cannot be built without provider, model"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "253bb31c232ab9d9f5033434efc4f2606bf1ea4dcd483ef155ec6b6abf74c25c",
+   "reason": "it does not fit the project's code as written: ProviderError cannot be built without provider, model",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T20:20:47.227420Z",
+   "call_id": "20261001T201938Z-88754a",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "3b90c8784dfb20a6c37a1e103600519d8041d1aba99299f393ee71b9533f1e59",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  }
+ ],
+ "FN-026176FE": [
+  {
+   "at": "2026-10-01T13:04:04.393613Z",
+   "call_id": "20261001T130113Z-098c40",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "017289828a35e0dad9790197fae8aec537790c04e7e911be23ffd38a05e0bc7c",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  }
+ ],
+ "FN-AF73187B": [
+  {
+   "at": "2026-10-01T13:03:56.538329Z",
+   "call_id": "20261001T130109Z-2c8004",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "18ef342f7a46d60223932003f22ec341b0dc3461bb683911976c595e07d324d4",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  }
+ ],
+ "SM-06C8D1CA": [
+  {
+   "at": "2026-10-01T11:48:24.663347Z",
+   "call_id": "20261001T114640Z-691133",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "854ff4d30fe067871c551b8b191037a0bd833206d2e7b4209d5633fac0268c5a",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  }
+ ],
+ "SM-57FED309": [
+  {
+   "at": "2026-10-01T11:48:00.256396Z",
+   "call_id": "20261001T114640Z-a1f5e0",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "589a918d8bf0a96061f8ad18463b1c86b39645e56c6a9d8b39adf98de4130c9b",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  }
+ ],
  "a3f68e4f70d254ab": [
   {
    "at": "2026-09-28T10:39:06.982829Z",
@@ -243,6 +405,144 @@
     "llm_router._internal.config.models.RetryPolicy",
     "llm_router._internal.providers.retry.build_provider_async_retrying"
    ]
+  },
+  {
+   "at": "2026-10-01T20:19:33.416226Z",
+   "call_id": "20261001T201809Z-0dd0bc",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "ProviderError cannot be built without provider, model"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "cf0e4b8566b8892a1ad22130cadee37ff8171a34c2e18f535b675bad63677152",
+   "reason": "it does not fit the project's code as written: ProviderError cannot be built without provider, model",
+   "sources": [
+    "llm_router._internal.providers.retry.build_provider_async_retrying",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._api.errors.ProviderError"
+   ]
+  },
+  {
+   "at": "2026-10-01T20:20:11.728400Z",
+   "call_id": "20261001T201933Z-ed2fc1",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "c74137dff32a5081821456fe80f8a12ca9d2349b2c2d185b6d6d41c44dd9fa19",
+   "reason": "it breaks the project's lint rules (ruff: line 17: N818 Exception name `RetryableCause` should be named with an Error suffix)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T20:21:00.214571Z",
+   "call_id": "20261001T202012Z-de712c",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b57e633248b5424dd50f3fe351e81ae1bcb9d3b8948d86ff678c88252227aa76",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  }
+ ],
+ "af31395bc89f6b7e": [
+  {
+   "at": "2026-10-01T17:11:34.183805Z",
+   "call_id": "20261001T171039Z-245756",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "b6ef5c09ed27fd035709a106494314d6f5195e2bceacedfcd037f7b01736b325",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T20:19:19.794380Z",
+   "call_id": "20261001T201809Z-e02eb1",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "ProviderError cannot be built without provider, model"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "8b4c85df2aa38b639acc7ae16ae7766ac66c8de1fc4f24b197a5bf762ef91248",
+   "reason": "it does not fit the project's code as written: ProviderError cannot be built without provider, model",
+   "sources": [
+    "llm_router._internal.providers.retry.build_provider_async_retrying",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._api.errors.ProviderError"
+   ]
+  },
+  {
+   "at": "2026-10-01T20:20:01.129859Z",
+   "call_id": "20261001T201920Z-9358b3",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "52f452917166575697ca0aa2e3f87aa7b1c13ec424e3e2772b46112ab02cde4b",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: | - Provider 'test_provider' failed for model 'test_model'. Reason: permanent provider error | + permanent provider error)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T20:20:52.697283Z",
+   "call_id": "20261001T202001Z-4965d1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "15f0d4aec4810c30e248061c469ff18714387abb8fc9821db5135766fd486a3a",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  }
+ ],
+ "ba9d483d07816a12": [
+  {
+   "at": "2026-10-01T17:11:51.117808Z",
+   "call_id": "20261001T171039Z-ffe6c9",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "4826e3aafbd98980ed4400c4e7ac0db12e2a36f0787a25b658d2b90d59ea7171",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
   }
  ],
  "cdebfb831ae4dc16": [
@@ -363,6 +663,57 @@
     "llm_router._internal.providers.retry.build_provider_retrying",
     "llm_router._internal.config.models.RetryPolicy",
     "llm_router._api.errors.ProviderError"
+   ]
+  },
+  {
+   "at": "2026-10-01T20:20:08.849127Z",
+   "call_id": "20261001T201809Z-b2d271",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "ProviderError cannot be built without provider, model"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "033fe3f27791a6d66797fa26d876ff7b606f867e3dba8e4a8e9b627e66a0bcb1",
+   "reason": "it does not fit the project's code as written: ProviderError cannot be built without provider, model",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T20:20:44.211865Z",
+   "call_id": "20261001T202009Z-ca2f50",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "f2ad2248714f8b80c11c56d9196ef04af16e54359907c30116dc33fc0e4f929f",
+   "reason": "it breaks the project's lint rules (ruff: line 13: N818 Exception name `TransientCause` should be named with an Error suffix)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T20:21:47.171321Z",
+   "call_id": "20261001T202044Z-27330d",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "926a56f1ffbee307d4b739baa1716fb11bf5bd94316b89ad79239943de1c7c4e",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
    ]
   }
  ]

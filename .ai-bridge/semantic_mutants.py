@@ -1206,6 +1206,10 @@ DRAFT_PASSES = 5
 # session time (the median of its five), is rejected (2026-10-01: eight pins took 41 of the 52 s of
 # all pins).
 DRAFT_SECONDS = 3.0
+# One run of a draft past this is a hang or far beyond a pin's time: it stops there and counts as a
+# failure (2026-10-01: a consolidated draft's test waited with no time limit, and each run held the
+# judgement 15 minutes).
+DRAFT_RUN_SECONDS = 60
 
 
 def session_seconds(run: dict) -> float | None:
@@ -1287,13 +1291,19 @@ def judge_draft(
     target.write_text(draft)
     try:
         file.write_text(original)
-        runs = [run_tests(PROJECT, workdir, [as_path]) for _ in range(DRAFT_PASSES)]
+        # Five passes in a row on the original: the first that fails ends them, as the draft is lost then.
+        runs = []
+        for _ in range(DRAFT_PASSES):
+            runs.append(run_tests(PROJECT, workdir, [as_path], timeout=DRAFT_RUN_SECONDS))
+            if runs[-1]["returncode"] != 0:
+                break
         passes = [run["returncode"] == 0 for run in runs]
-        slow = draft_too_slow(runs) if all(passes) else None
+        passed = len(passes) == DRAFT_PASSES and all(passes)
+        slow = draft_too_slow(runs) if passed else None
         file.write_text(mutated)
-        fails = run_tests(PROJECT, workdir, [as_path])["returncode"] == 1
+        fails = run_tests(PROJECT, workdir, [as_path], timeout=DRAFT_RUN_SECONDS)["returncode"] == 1 if passed else False
         reach = {}
-        if all(passes) and not fails:
+        if passed and not fails:
             # A draft that passes both ways: what it ran of the defect tells whether it missed the
             # changed lines or reached them without checking what they do.
             reach = draft_reach(mutated, original, qualname, run_tests(PROJECT, workdir, [as_path], measure=file).get("executed") or [])
@@ -1304,7 +1314,7 @@ def judge_draft(
         else:
             target.write_text(replaced)
     return {
-        "accepted": all(passes) and fails and not slow,
+        "accepted": passed and fails and not slow,
         "slow_seconds": slow,
         "ran": True,
         "passes_on_original": sum(passes),
@@ -1496,7 +1506,8 @@ def grounding_problems(root: Path, draft: str, package: str = "llm_router") -> t
     name its module does not bind, a member an enum of the project lacks, a keyword a constructor of
     the project does not take. What the tree alone cannot settle (an outside package, a lazy module,
     an inherited or aliased constructor) is never a problem. Returns the problems and every project
-    name the draft imports, as module.Name."""
+    name the draft imports that the tree defines, as module.Name: a name it does not define is a
+    grounding problem, never a hole in the question."""
     try:
         tree = ast.parse(draft)
     except SyntaxError:
@@ -1509,7 +1520,6 @@ def grounding_problems(root: Path, draft: str, package: str = "llm_router") -> t
         if not (isinstance(node, ast.ImportFrom) and node.module and not node.level and node.module.split(".")[0] in {package, "tests"}):
             continue
         for alias in node.names:
-            used.append(f"{node.module}.{alias.name}")
             if _module_file(root, node.module) is None:
                 problems.append(f"the project has no module {node.module}")
                 continue
@@ -1518,7 +1528,9 @@ def grounding_problems(root: Path, draft: str, package: str = "llm_router") -> t
                 known = _project_names(root, package) if known is None else known
                 elsewhere = known.get(alias.name)
                 problems.append(f"{node.module} has no {alias.name}" + (f" (it lives in {elsewhere})" if elsewhere else ""))
-            elif found[1] is not None:
+                continue
+            used.append(f"{node.module}.{alias.name}")
+            if found[1] is not None:
                 classes[alias.asname or alias.name] = (found[0], found[1])
     # A class the draft derives from one of the project's, adding no fields or constructor of its
     # own, is built as its base is.
@@ -1625,7 +1637,8 @@ def draft_rejection(judged: dict) -> str:
         if int(judged.get("passes_on_original") or 0) < DRAFT_PASSES:
             errors = judged.get("original_errors") or []
             reasons.append(f"it does not pass on the original {DRAFT_PASSES} times in a row" + (" (pytest: " + " | ".join(errors) + ")" if errors else ""))
-        if not judged.get("fails_on_mutant"):
+        elif not judged.get("fails_on_mutant"):
+            # Only a draft that passes on the original runs on the mutant at all.
             reasons.append("it does not fail on the mutant" + reach_text(judged.get("reach") or {}))
     return "; ".join(reasons)
 
@@ -1797,19 +1810,9 @@ DRAFT_TOOLS_ANSWER_SCHEMA = {
     **DRAFT_ANSWER_SCHEMA,
     "properties": {**DRAFT_ANSWER_SCHEMA["properties"], "explanation": {"type": "string", "minLength": 10, "maxLength": 1500}},
 }
-DRAFT_TEMPLATE = """Write one pytest test module for Requirement {requirement_id} (revision {revision}): {statement}
-Verification criteria: {criteria}
-The function under test, {target}:
-{original}
-A realistic defect ({mutant_id}) changes it to:
-{mutated}
-What the defect does: {defect}
-On this input the two differ: {input}
-The original gives {original_result}; the defect gives {mutant_result}.
-{owner}{callees}{callers}{guide}{example}{api}{path}{reach}Write a standalone test that passes on the original code and fails on the defect. Take the
-input above as the shape of a failing case, not as literal test data: use realistic values of the
-same shape (a token count is a positive integer, not a boolean) and name what the test pins. Build
-its inputs through the project's own types. Import only these modules: {imports}. Observe what
+# What every pin draft must hold to, the same in a question about one defect and in one about all
+# of a function's defects.
+DRAFT_RULES = """Import only these modules: {imports}. Observe what
 the requirement names through what the code offers its callers: read, replace or import no private
 name of the project (one that starts with `_`), not through getattr, setattr, monkeypatch.setattr or
 patch either. Use no network, files, subprocesses, sleeps, randomness, exec or eval. Keep it plain, as the project's ruff rules
@@ -1821,10 +1824,73 @@ in an argument default, lowercase names inside functions, `next(iter(...))` rath
 fallbacks that guess how to build the inputs: build them one way, as the example does. Name
 parametrized cases with ids= when a value holds a bracket. Set
 pytestmark = pytest.mark.verification_kind("unit") at module level and mark the test function
-with @pytest.mark.verifies("{requirement_id}[revision=={revision}]").{asyncio}
+with @pytest.mark.verifies("{requirement_id}[revision=={revision}]")."""
+DRAFT_TEMPLATE = (
+    """Write one pytest test module for Requirement {requirement_id} (revision {revision}): {statement}
+Verification criteria: {criteria}
+The function under test, {target}:
+{original}
+A realistic defect ({mutant_id}) changes it to:
+{mutated}
+What the defect does: {defect}
+On this input the two differ: {input}
+The original gives {original_result}; the defect gives {mutant_result}.
+{owner}{callees}{callers}{guide}{example}{api}{path}{reach}Write a standalone test that passes on the original code and fails on the defect. Take the
+input above as the shape of a failing case, not as literal test data: use realistic values of the
+same shape (a token count is a positive integer, not a boolean) and name what the test pins. Build
+its inputs through the project's own types. """
+    + DRAFT_RULES
+    + """{asyncio}
 {previous}Return the complete module as test_code, one sentence on what it pins as explanation,
 and under sources every name of the project or its tests the test uses, as module.Name, each
 taken from the example or the API card above: a name you cannot cite there is one you guess."""
+)
+
+# One test for all of a function's pinned defects (AdverTest gives the author the survivors of a
+# target together): fewer, shorter pins with the same strength, each defect still caught.
+CONSOLIDATE_TEMPLATE = (
+    """Write one pytest test module for Requirement {requirement_id} (revision {revision}): {statement}
+Verification criteria: {criteria}
+The function under test, {target}:
+{original}
+The project has one test for each of these {count} realistic defects of it; each test passes on the
+original code and fails on its defect:
+{defects}
+{api}Replace them with one test module that passes on the original code and fails on every defect
+above: as few test functions as the defects need, sharing their setup, each assertion pinning
+what one of them breaks, and the whole module running within {seconds} seconds. Build its inputs
+as the tests above do, through the project's own types. """
+    + DRAFT_RULES
+    + """{asyncio} Every test function of the module carries that mark.
+{previous}Return the complete module as test_code, one sentence on what it pins as explanation,
+and under sources every name of the project or its tests the test uses, as module.Name, each
+taken from the tests or the API card above: a name you cannot cite there is one you guess."""
+)
+
+
+def consolidation_prompt(context: dict) -> str:
+    """The question for one test of all of a function's pinned defects: each with what it changes, what
+    it does and the test that catches it now."""
+    previous = context.get("previous") or {}
+    defects = "\n".join(
+        f"Defect {item['key']}: {item['defect']}\nIt changes the function to:\n{item['mutated']}\nThe test that catches it now:\n{item['pin']}"
+        for item in context["defects"]
+    )
+    return CONSOLIDATE_TEMPLATE.format(
+        requirement_id=context["requirement"]["id"],
+        revision=context["requirement"]["revision"],
+        statement=context["requirement"]["statement"],
+        criteria="; ".join(context["criteria"]),
+        target=context["target"],
+        original=context["original"],
+        count=len(context["defects"]),
+        defects=defects,
+        api=f"{context['api']}\n" if context.get("api") else "",
+        seconds=f"{DRAFT_SECONDS:g}",
+        imports=", ".join(context["imports"]),
+        asyncio=f" {context['asyncio']}" if context.get("asyncio") else "",
+        previous=f"An earlier module was rejected because {previous['reason']}:\n{previous['code']}\n" if previous else "",
+    )
 
 
 def mutant_answer_schema(budget: int) -> dict:
@@ -1987,9 +2053,10 @@ def _parsed(path: Path) -> ast.Module | None:
 
 
 def _module_file(root: Path, module: str) -> Path | None:
-    """Where a module of the project (under ``src/``) or of its tests lives, read from the tree."""
+    """Where a module of the project (under ``src/``), of its tests or of an installed dependency (in
+    the project's virtual environment, its version locked) lives, read from the tree."""
     parts = module.split(".")
-    for base in (root / "src", root):
+    for base in (root / "src", root, *sorted((root / ".venv").glob("lib/python*/site-packages"))):
         candidate = base.joinpath(*parts)
         if candidate.with_suffix(".py").is_file():
             return candidate.with_suffix(".py")
@@ -2000,9 +2067,9 @@ def _module_file(root: Path, module: str) -> Path | None:
 
 def _definition(root: Path, module: str, name: str, depth: int = 0) -> tuple[str, ast.AST] | None:
     """The class or function a module defines or re-exports under a name, followed through the
-    package's own imports."""
+    package's own imports and its plain aliases (``ScriptedResponse = _ScriptedResponse``)."""
     path = _module_file(root, module)
-    if path is None or depth > 5:
+    if path is None or depth > 8:
         return None
     tree = _parsed(path)
     if tree is None:
@@ -2010,6 +2077,12 @@ def _definition(root: Path, module: str, name: str, depth: int = 0) -> tuple[str
     for node in tree.body:
         if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == name:
             return module, node
+    for node in tree.body:
+        if (
+            isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == name and isinstance(node.value, ast.Name) and node.value.id != name
+        ):
+            return _definition(root, module, node.value.id, depth + 1)
     package = module if path.name == "__init__.py" else module.rpartition(".")[0]
     for node in tree.body:
         if isinstance(node, ast.ImportFrom):
@@ -2121,10 +2194,48 @@ def _project_names(root: Path, package: str) -> dict[str, str]:
     return found
 
 
-def api_card(root: Path, example: str, mentioned: str = "", package: str = "llm_router", limit: int = 30) -> str:
+# What a test builds and runs a router from: always described, whatever the example imports.
+API_CORE = ("LLMRouter", "RouterProfile", "Model", "Provider")
+
+
+def test_import_names(root: Path, tests: list[str], packages: tuple[str, ...] = ("llm_router", "tests")) -> list[tuple[str, str]]:
+    """The project and test-support names the contract's own tests import at module level, in order,
+    then the other public names of every test-support module they import from (the response a server
+    helper is scripted with sits beside the server)."""
+    found: list[tuple[str, str]] = []
+    support: list[str] = []
+    for test_file in sorted({nodeid.split("::", 1)[0] for nodeid in tests}):
+        path = root / test_file
+        try:
+            tree = ast.parse(path.read_text()) if path.is_file() else None
+        except SyntaxError:
+            tree = None
+        for node in tree.body if tree is not None else []:
+            if isinstance(node, ast.ImportFrom) and node.module and not node.level and node.module.split(".")[0] in packages:
+                found += [(node.module, alias.name) for alias in node.names if alias.name != "*"]
+                if node.module.split(".")[0] == "tests":
+                    support.append(node.module)
+    for module in dict.fromkeys(support):
+        path = _module_file(root, module)
+        tree = _parsed(path) if path is not None else None
+        for node in tree.body if tree is not None else []:
+            if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and not node.name.startswith(("_", "test_")):
+                found.append((module, node.name))
+            elif (
+                isinstance(node, ast.ImportFrom) and node.module and not node.level
+                and node.module.split(".")[0] not in {*sys.stdlib_module_names, "__future__"}
+            ):
+                found += [(module, alias.asname or alias.name) for alias in node.names if not (alias.asname or alias.name).startswith("_") and alias.name != "*"]
+    return list(dict.fromkeys(found))
+
+
+def api_card(
+    root: Path, example: str, mentioned: str = "", package: str = "llm_router", limit: int = 60, names: list[tuple[str, str]] | tuple = (),
+) -> str:
     """Where the names a draft needs live and how they are built: every name the example imports
-    from the project or its tests, and every project name the mentioned text (an earlier draft's
-    errors, the verdict's focus) names, with the full members of every enum."""
+    from the project or its tests, every project name the mentioned text (an earlier draft's errors,
+    the verdict's focus) names, what a test builds a router from, and ``names`` (what the contract's
+    own tests import), with the full members of every enum."""
     wanted: list[tuple[str, str]] = []
     # The example may be cut short: its import block is read on its own, statement by statement.
     for chunk in re.split(r"\n\s*\n", example):
@@ -2138,6 +2249,7 @@ def api_card(root: Path, example: str, mentioned: str = "", package: str = "llm_
     if mentioned:
         known = _project_names(root, package)
         wanted += [(known[name], name) for name in re.findall(r"\b([A-Z][A-Za-z0-9]+|[a-z_]+[a-z0-9_]*)\b", mentioned) if name in known and len(name) > 3]
+    wanted += [(package, name) for name in API_CORE] + list(names)
     lines: list[str] = []
     seen: set[str] = set()
     # What a name returns is described after it, two steps deep: a test asserts on what it gets back.
@@ -2164,7 +2276,7 @@ def draft_context(root: Path, requirement: dict, criteria: list[str], proposal: 
     source = (root / path).read_text()
     owner = qualname.rpartition(".")[0]
     example = example_test(root, tests)
-    api = api_card(root, example, str((previous or {}).get("reason") or ""))
+    api = api_card(root, example, str((previous or {}).get("reason") or ""), names=test_import_names(root, tests))
     return {
         "requirement": {key: requirement.get(key) for key in ("id", "revision", "statement")},
         "criteria": criteria,

@@ -144,6 +144,52 @@ def test_google_sdk_retryable_status_is_translated_to_provider_error() -> None:
     assert exc_info.value.cause.retry_reason == "retryable_status"
 
 
+@pytest.mark.verifies("REQ_PROVIDER_ADAPTER_INTEROPERABILITY[revision==2]")
+@pytest.mark.fault_item(
+    "REQ_PROVIDER_ADAPTER_INTEROPERABILITY", "interface.payload-schema"
+)
+def test_google_answer_without_candidate_content_is_a_provider_error() -> None:
+    empty_candidate = SimpleNamespace(content=SimpleNamespace(parts=[]))
+    client = FakeClient(
+        [SimpleNamespace(text=None, candidates=[empty_candidate], usage_metadata=None)]
+    )
+    retain_local_fault_injection(
+        contract_id="REQ_PROVIDER_ADAPTER_INTEROPERABILITY",
+        fault_class="interface.payload-schema",
+        mechanism="fake Google GenAI client answers a candidate without content parts",
+    )
+
+    with pytest.raises(ProviderError) as exc_info:
+        GoogleGenAIAdapter(client=client).execute(_request())
+
+    assert exc_info.value.cause.retryable is False
+    assert exc_info.value.cause.retry_reason == "missing_candidate_content"
+
+
+def test_google_answer_with_only_a_function_call_is_a_result() -> None:
+    call_part = SimpleNamespace(
+        text=None,
+        function_call=SimpleNamespace(id="call-1", name="lookup", args={"q": "x"}),
+        thought_signature=None,
+    )
+    client = FakeClient(
+        [
+            SimpleNamespace(
+                text=None,
+                candidates=[
+                    SimpleNamespace(content=SimpleNamespace(parts=[call_part]))
+                ],
+                usage_metadata=None,
+            )
+        ]
+    )
+
+    result = GoogleGenAIAdapter(client=client).execute(_request())
+
+    assert result.output_text == ""
+    assert [call.name for call in result.tool_calls] == ["lookup"]
+
+
 for _test_name in (
     "test_sync_google_adapter_uses_sdk_boundary_and_normalizes_result",
     "test_async_google_adapter_uses_sdk_async_boundary",

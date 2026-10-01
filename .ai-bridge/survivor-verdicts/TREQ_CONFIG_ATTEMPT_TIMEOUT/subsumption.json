@@ -1,21 +1,36 @@
 {
- "at": "2026-09-30T13:46:04.998649Z",
+ "at": "2026-10-01T13:47:15.600046Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_3b57c08f839ab791.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_b6340db1c7f8750a.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_b6340db1c7f8750a.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_fn_8b04992a.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_3b57c08f839ab791.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_b6340db1c7f8750a.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_fn_8b04992a.py"
  ],
  "restored": [],
- "removed": {},
+ "removed": {
+  "3b57c08f839ab791": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_3b57c08f839ab791.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_fn_8b04992a.py"
+   ]
+  },
+  "b6340db1c7f8750a": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_b6340db1c7f8750a.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_fn_8b04992a.py"
+   ]
+  }
+ },
  "matrix": {
   "3b57c08f839ab791": [
-   "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_3b57c08f839ab791.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_3b57c08f839ab791.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_fn_8b04992a.py"
   ],
   "b6340db1c7f8750a": [
-   "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_b6340db1c7f8750a.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_b6340db1c7f8750a.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_fn_8b04992a.py"
   ]
  },
  "caught_before": [

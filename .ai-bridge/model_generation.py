@@ -1101,6 +1101,14 @@ class Run:
                 backend.profile = alias
                 return ""
             self.unswitchable.add((name, alias))
+        # A switch agm could not confirm may have landed later, or a person may have moved agy meanwhile
+        # (2026-10-01: every call was deferred while agy sat on an account with quota left): the
+        # credential store says which account answers, and one with quota left is followed.
+        accounts = self.accounts(name)
+        actual = accounts.alias_of(accounts.cli_address() or "-")
+        if actual in candidates:
+            backend.profile = actual
+            return ""
         return "agm could not move agy to an account with quota left"
 
     def restore_accounts(self) -> None:

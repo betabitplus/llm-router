@@ -1,4 +1,60 @@
 {
+ "165277b3148f155e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T113657Z-a943b7",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "Replacing `_allows_missing_key(provider)` with `False` means a provider that allows a missing key, with automatic selection and no keys discovered, now raises the missing-key error instead of returning an empty credential. This directly violates the criterion that such provider families resolve the permitted empty value.",
+   "response_sha256": "f0ece2fd3a7e5d5579bb959e5d5457874969bfd96bf695d9ce0e320c3b23f04b",
+   "sources": [
+    "Every provider family that permits an absent bearer credential resolves the permitted empty value.",
+    "Configured fixed keys, custom environment names, optional credentials, and automatically rotated keys shall resolve deterministically.",
+    "if _allows_missing_key(provider):",
+    "if False:"
+   ],
+   "test_focus": "With no keys in the environment, call `candidates(provider=<a provider family that allows a missing key>, key_id=\"auto\")` and assert it returns one `ResolvedKey` with value \"\", the default key_id and the expected env_var, rather than raising `ApiKeyNotFoundError`.",
+   "verdict": "pin"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "227c05715d1fef1c0cfde8de9c2a508726a311b218ab69b05b59f38d349ea144",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.133153Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-10-01T11:49:24.448176Z",
+    "answer_sha256": "74ba43115f20abcd99921b40910f8996c53d4d4c92a6c384c1107b85c34407b8",
+    "call_id": "20261001T114645Z-285c24",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "d18cc11fbd14b922a457ca72e84021cfaaa75ac49fb14df623ec4a4b7dc79e77",
+    "effort": "",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_165277b3148f155e.py",
+    "response_sha256": "3126884d78fccb6d2e91997886f3582dc5fb5f4d3c1fe11655692ad561083639",
+    "source": "draft author",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.ProviderError",
+     "llm_router.RouterProfile"
+    ]
+   }
+  }
+ },
  "1c6b745faa58a462": {
   "answer": {
    "backend": "claude-cli",
@@ -20,76 +76,81 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-30T19:13:10.506296Z",
-   "answer_sha256": "bdc0630fbe618b8ef28dcc1b0bdd1181beaed7806a9849fb0ca23d24b79589d3",
-   "call_id": "20260930T190722Z-5506ca",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "bdc0630fbe618b8ef28dcc1b0bdd1181beaed7806a9849fb0ca23d24b79589d3",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_1c6b745faa58a462.py",
-   "response_sha256": "4013d827e40cd21ceaf915b9b0c7ce0bfbcefddd30029e5cddc66d69f4d6369c",
-   "source": "last resort",
-   "sources": [
-    "llm_router._api.errors.ApiKeyNotFoundError",
-    "llm_router._api.router.LLMRouter",
-    "llm_router._api.types.Model",
-    "llm_router._api.types.Provider",
-    "llm_router._api.types.RouterProfile",
-    "llm_router.get_config",
-    "llm_router.install_config"
-   ]
-  },
-  "prompt_sha256": "752a676a5f78ee2c7bde174f613177a8e57a5c828d932157542960faf9fcadb3"
+  "prompt_sha256": "752a676a5f78ee2c7bde174f613177a8e57a5c828d932157542960faf9fcadb3",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.133437Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T19:13:10.506296Z",
+    "answer_sha256": "bdc0630fbe618b8ef28dcc1b0bdd1181beaed7806a9849fb0ca23d24b79589d3",
+    "call_id": "20260930T190722Z-5506ca",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "bdc0630fbe618b8ef28dcc1b0bdd1181beaed7806a9849fb0ca23d24b79589d3",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_1c6b745faa58a462.py",
+    "response_sha256": "4013d827e40cd21ceaf915b9b0c7ce0bfbcefddd30029e5cddc66d69f4d6369c",
+    "source": "last resort",
+    "sources": [
+     "llm_router._api.errors.ApiKeyNotFoundError",
+     "llm_router._api.router.LLMRouter",
+     "llm_router._api.types.Model",
+     "llm_router._api.types.Provider",
+     "llm_router._api.types.RouterProfile",
+     "llm_router.get_config",
+     "llm_router.install_config"
+    ]
+   }
+  }
  },
  "50e4a41c052fa9e4": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195732Z-e18159",
+   "call_id": "20261001T113700Z-365d21",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "For any value of the declared type Collection[int] | None, `candidate in preferred` gives the same answer on the raw collection as on set(collection), so key selection and rotation offsets are identical. The only diverging input, a one-shot iterator, is not a Collection and was refuted. The only remaining difference is lookup speed, which the contract doesn't observe.",
-   "response_sha256": "b24f3bd6a4e9aeb0864f67bba38d7ce134cf1cd1ac56acfa737863abc58b27b7",
+   "reason": "For any `Collection[int]`, checking `candidate in preferred_key_ids` gives the same answer as checking `candidate in set(preferred_key_ids)`, and `None` or an empty input becomes `()` in both versions. So the eligible keys, the selected key and the stored rotation offset are identical, and only lookup speed differs.",
+   "response_sha256": "afe02b2d16f862c7d2e8110c4690827acceba5f939b2f7d125115ff027fdeeec",
    "sources": [
-    "preferred_key_ids: Collection[int] | None = None,",
+    "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs.",
     "preferred = set(preferred_key_ids or ())",
     "preferred = preferred_key_ids or ()",
-    "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs."
+    "preferred_key_ids: Collection[int] | None = None,"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "conversion",
-  "prompt_sha256": "31a73ba17adf95495018b3a02ef408734bb0bdb2aac79728f4df627c61c83dd1",
+  "prompt_sha256": "13369f8f68fda400734d9f08e485aedaa4e7dbfa102927fa941292a4ab478a56",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T195757Z-34ed7d",
+   "call_id": "20261001T113959Z-4a1192",
    "confirmed": false,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "31a73ba17adf95495018b3a02ef408734bb0bdb2aac79728f4df627c61c83dd1",
-   "reason": "The `Collection[int]` type hint requires an object that supports repeated membership tests (`__contains__`). For any valid collection, evaluating membership directly or converting it to a set first yields the exact same results.",
-   "response_sha256": "417b7f8fc7d1a3d1a92fa546fc7ebe1c02a4cc38b66a430d6c842f2fffafd93c",
+   "prompt_sha256": "13369f8f68fda400734d9f08e485aedaa4e7dbfa102927fa941292a4ab478a56",
+   "reason": "Removing the set conversion changes the internal data structure used for the membership check but does not alter the logical outcome. The deterministic resolution behavior remains exactly the same for all inputs.",
+   "response_sha256": "c4cda1b6f20b661a6ac1970e8898f6d0e91f9dad633bd81f78982b692e2442fd",
    "sources": [
-    "preferred_key_ids: Collection[int] | None = None",
+    "Requirement REQ_CREDENTIAL_RESOLUTION (Credentials resolve deterministically): Configured fixed keys, custom environment names, optional credentials, and automatically rotated keys shall resolve deterministically.",
     "preferred = set(preferred_key_ids or ())",
-    "preferred = preferred_key_ids or ()",
-    "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs."
+    "preferred = preferred_key_ids or ()"
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -108,37 +169,43 @@
    "verdict": "pin"
   },
   "operator": "statement",
-  "pin": {
-   "adopted_at": "2026-09-30T18:20:24.225155Z",
-   "answer_sha256": "e48e2b8c119423c594157ae1d15196ed9c64e4cd77e2ff935daaf6f2f6bae474",
-   "call_id": "20260930T180731Z-662c6f",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "e48e2b8c119423c594157ae1d15196ed9c64e4cd77e2ff935daaf6f2f6bae474",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_53bdcf1990f4aaa4.py",
-   "response_sha256": "f1ae431d5788f0374bb1e54200aa8c36ec524aa0a15c0d044f8f64a43bcdb0cd",
-   "source": "last resort",
-   "sources": [
-    "llm_router.ApiKeyNotFoundError",
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "llm_router.get_config",
-    "llm_router._internal.config.models.LLMRouterConfig"
-   ]
-  },
-  "prompt_sha256": "5fb26cf4367351e10f0574ce070b9f315ea6177f7c9a806298b5f96fcd9e45ed"
+  "prompt_sha256": "5fb26cf4367351e10f0574ce070b9f315ea6177f7c9a806298b5f96fcd9e45ed",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.133663Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:20:24.225155Z",
+    "answer_sha256": "e48e2b8c119423c594157ae1d15196ed9c64e4cd77e2ff935daaf6f2f6bae474",
+    "call_id": "20260930T180731Z-662c6f",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "e48e2b8c119423c594157ae1d15196ed9c64e4cd77e2ff935daaf6f2f6bae474",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_53bdcf1990f4aaa4.py",
+    "response_sha256": "f1ae431d5788f0374bb1e54200aa8c36ec524aa0a15c0d044f8f64a43bcdb0cd",
+    "source": "last resort",
+    "sources": [
+     "llm_router.ApiKeyNotFoundError",
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "llm_router.get_config",
+     "llm_router._internal.config.models.LLMRouterConfig"
+    ]
+   }
+  }
  },
  "5ef3f33a9ec29e3d": {
   "answer": {
@@ -153,35 +220,41 @@
    "verdict": "pin"
   },
   "operator": "statement",
-  "pin": {
-   "adopted_at": "2026-09-30T18:07:51.149161Z",
-   "answer_sha256": "e34e3483331aae0952d382010e4f718e68bc69de17321a42e2a9aff6d74af0ac",
-   "call_id": "20260930T180430Z-580671",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "e34e3483331aae0952d382010e4f718e68bc69de17321a42e2a9aff6d74af0ac",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_5ef3f33a9ec29e3d.py",
-   "response_sha256": "ad9154ed10b2ad1467d15a10cb7bb90fbd5f59a213e388b635bcb3d409bf2f9e",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.ApiKeyNotFoundError",
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile"
-   ]
-  },
-  "prompt_sha256": "a897210571b006afd16f452a930b8d79f1b69c33afc532cfd26785ca4dbc4fe2"
+  "prompt_sha256": "a897210571b006afd16f452a930b8d79f1b69c33afc532cfd26785ca4dbc4fe2",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.133875Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:07:51.149161Z",
+    "answer_sha256": "e34e3483331aae0952d382010e4f718e68bc69de17321a42e2a9aff6d74af0ac",
+    "call_id": "20260930T180430Z-580671",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "e34e3483331aae0952d382010e4f718e68bc69de17321a42e2a9aff6d74af0ac",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_5ef3f33a9ec29e3d.py",
+    "response_sha256": "ad9154ed10b2ad1467d15a10cb7bb90fbd5f59a213e388b635bcb3d409bf2f9e",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.ApiKeyNotFoundError",
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile"
+    ]
+   }
+  }
  },
  "6a19c74173ddbaf9": {
   "answer": {
@@ -203,39 +276,45 @@
    "verdict": "pin"
   },
   "operator": "conversion",
-  "pin": {
-   "adopted_at": "2026-09-30T18:15:39.098383Z",
-   "answer_sha256": "ee575e11b25974322876d341944122f885ab25f07690ff5292497270d5fbb2db",
-   "call_id": "20260930T180455Z-5e8680",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "ee575e11b25974322876d341944122f885ab25f07690ff5292497270d5fbb2db",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_6a19c74173ddbaf9.py",
-   "response_sha256": "a2d5cc43d7617eeb46f1a3dd196b8ac46a9965ccf6405333f4f5a6a9990dd36a",
-   "source": "last resort",
-   "sources": [
-    "llm_router.ApiKeyNotFoundError",
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "llm_router.get_config",
-    "llm_router.install_config",
-    "llm_router._internal.config.models.LLMRouterConfig",
-    "llm_router._internal.config.models.ProviderCatalog"
-   ]
-  },
-  "prompt_sha256": "cf26664e3ca82dc92c4e176bf45783cc8749f2ec6754e41fdad6ff71499f0e76"
+  "prompt_sha256": "cf26664e3ca82dc92c4e176bf45783cc8749f2ec6754e41fdad6ff71499f0e76",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.134309Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:15:39.098383Z",
+    "answer_sha256": "ee575e11b25974322876d341944122f885ab25f07690ff5292497270d5fbb2db",
+    "call_id": "20260930T180455Z-5e8680",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "ee575e11b25974322876d341944122f885ab25f07690ff5292497270d5fbb2db",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_6a19c74173ddbaf9.py",
+    "response_sha256": "a2d5cc43d7617eeb46f1a3dd196b8ac46a9965ccf6405333f4f5a6a9990dd36a",
+    "source": "last resort",
+    "sources": [
+     "llm_router.ApiKeyNotFoundError",
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "llm_router.get_config",
+     "llm_router.install_config",
+     "llm_router._internal.config.models.LLMRouterConfig",
+     "llm_router._internal.config.models.ProviderCatalog"
+    ]
+   }
+  }
  },
  "779116a1f28d187b": {
   "answer": {
@@ -285,37 +364,39 @@
  "87628559ec5d804c": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T141431Z-1d217b",
+   "call_id": "20261001T113700Z-2f754e",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant's list is the original rotation plus a copy of keys[start:], whose elements all appear earlier. So ordered_keys[0], the first eligible candidate, the selected position and the stored offset are all unchanged. Key rotation stays exactly as deterministic as before.",
-   "response_sha256": "8fddc4dede8d580cdf9f3be6fa6b8ab47d69135612ceb263d9e1db98182fb2a2",
+   "reason": "The mutant's ordered_keys starts with exactly the original rotated list (keys[start:] + keys[:start]) and then only adds repeats of keys[start:]. Picking the first eligible key, or the first key overall, therefore always gives the same key_id, and the rotation offset updates the same way, so rotation stays deterministic and observably identical.",
+   "response_sha256": "c925d7be8dcd38e9ac96940b507000ddf5aa3151fd61043376be0a62962c259b",
    "sources": [
     "ordered_keys = [*keys[start:], *keys[:]]",
     "ordered_keys = [*keys[start:], *keys[:start]]",
+    "key_id = eligible[0] if eligible else ordered_keys[0]",
     "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "slice",
-  "prompt_sha256": "08248d989fd128ddd4225cd3290c016c42dc9d033ec0b89727d45508b91d11f3",
+  "prompt_sha256": "cce538b7bf1f16426ec81b91d6e18a8092cd2be6336e912c31f8a5efd7e0079a",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T141551Z-18aaad",
+   "call_id": "20261001T113750Z-1b453f",
    "confirmed": false,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "08248d989fd128ddd4225cd3290c016c42dc9d033ec0b89727d45508b91d11f3",
-   "reason": "The mutated code appends the entirety of the `keys` list rather than just the slice up to the `start` index. Because the function only ever selects the very first available or eligible candidate (`eligible[0]` or `ordered_keys[0]`), these extra appended elements do not change the chosen key, resulting in identical deterministic rotation behavior.",
-   "response_sha256": "5b51e89575399a693aedffbaf72c73ab2345d168af77636c3aa0d7cc047622e2",
+   "prompt_sha256": "cce538b7bf1f16426ec81b91d6e18a8092cd2be6336e912c31f8a5efd7e0079a",
+   "reason": "The mutated `ordered_keys` list contains the exact same elements in the same order as the original for its first `len(keys)` elements, simply appending a redundant `keys[start:]` at the end. Since the algorithm only selects the first matching element (`eligible[0]`) or the very first element (`ordered_keys[0]`), these redundant trailing elements never affect the chosen `key_id`.",
+   "response_sha256": "9938fccf4ad6e686edde07f97caa3b659b6e0997eabc1b4bc7e3f65b17c60d7b",
    "sources": [
     "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs.",
+    "ordered_keys = [*keys[start:], *keys[:start]]",
     "ordered_keys = [*keys[start:], *keys[:]]"
    ],
    "test_focus": "",
@@ -420,84 +501,106 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-30T19:06:21.367076Z",
-   "answer_sha256": "68ff77046dca0f19cc42c18243ebe88052c73c4acb755c04ec0dd40d48359030",
-   "call_id": "20260930T190215Z-8b8597",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "68ff77046dca0f19cc42c18243ebe88052c73c4acb755c04ec0dd40d48359030",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_9b07dce1d69c1bc9.py",
-   "response_sha256": "dff27ae981ec60b96e72e68157356a9581c4a292179b623cb24dff64f66b2148",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "llm_router.get_config",
-    "llm_router.install_config",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.qwen_chat_path",
-    "tests.llm_router.support.workers.retry.qwen_success_response"
-   ]
-  },
-  "prompt_sha256": "575e46241307d569605797589a9e78039a0441feb021458d040fc989af19390d"
+  "prompt_sha256": "575e46241307d569605797589a9e78039a0441feb021458d040fc989af19390d",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.134595Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0b39f604.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T19:06:21.367076Z",
+    "answer_sha256": "68ff77046dca0f19cc42c18243ebe88052c73c4acb755c04ec0dd40d48359030",
+    "call_id": "20260930T190215Z-8b8597",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "68ff77046dca0f19cc42c18243ebe88052c73c4acb755c04ec0dd40d48359030",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_9b07dce1d69c1bc9.py",
+    "response_sha256": "dff27ae981ec60b96e72e68157356a9581c4a292179b623cb24dff64f66b2148",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "llm_router.get_config",
+     "llm_router.install_config",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.qwen_chat_path",
+     "tests.llm_router.support.workers.retry.qwen_success_response"
+    ]
+   }
+  }
  },
  "adb0de8f41da4f7e": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260927T152538Z-ce4912",
+   "call_id": "20261001T113700Z-09347a",
+   "confirmed": false,
+   "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "For a provider that allows an absent bearer credential, automatic selection with no available keys now returns None instead of one ResolvedKey with an empty value. That breaks the requirement's criterion that every such provider family resolves to the permitted empty value.",
-   "response_sha256": "899df6c9e6ede6ebc692c8b1bc53723edfde90503e660ccf1b851e827df2cdaa",
-   "test_focus": "For each provider family that permits a missing key, with no keys configured, call candidates(key_id=\"auto\") and check that it returns exactly one ResolvedKey with the default key_id, the expected env_var and value \"\".",
+   "reason": "For a provider that permits an absent credential and has no discovered keys, auto selection now returns None where it used to return a candidate with an empty value. That breaks the criterion that such providers resolve the permitted empty value, and any caller that iterates over the candidates would fail.",
+   "response_sha256": "1887d0af54e56b3134e8e4fb4ccbdbd80bd1d7cfd0f18f8b19227d842a044d96",
+   "sources": [
+    "Every provider family that permits an absent bearer credential resolves the permitted empty value.",
+    "Configured fixed keys, custom environment names, optional credentials, and automatically rotated keys shall resolve deterministically.",
+    "        if _allows_missing_key(provider):",
+    "        return None"
+   ],
+   "test_focus": "Use a provider family that allows a missing key, configure no keys, call candidates with key_id=\"auto\", and check that it returns a one-element tuple whose ResolvedKey has the default key_id, the expected env_var and value \"\".",
    "verdict": "pin"
   },
   "operator": "return",
-  "prompt_sha256": "76900ca9ba5b11bc14e6238b11b87f57f65bf13764cd726a8e29a87d6294298b",
-  "rejected_pin": {
-   "adopted_at": "2026-09-30T18:07:51.754654Z",
-   "answer_sha256": "c46533956ec7bdb347bb154d69519e7b633a9d8628fa39b9ec9f9180fd75115b",
-   "at": "2026-09-30T21:56:16.171888Z",
-   "call_id": "20260930T180431Z-dd662d",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "c46533956ec7bdb347bb154d69519e7b633a9d8628fa39b9ec9f9180fd75115b",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_adb0de8f41da4f7e.py",
-   "reason": "it expects the provider request to fail, which holds only while the test run blocks the network; without --block-network the original reaches the real provider and passes",
-   "response_sha256": "b79e46cf4b2114f48e708171179d77a45febbb9aacf6688641ee314b34880f00",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.ProviderError",
-    "llm_router.RouterProfile"
-   ]
+  "prompt_sha256": "07065a14172047b11d71d255f48126d163385bf8f2916c8e17ce1891b3ffee90",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.134792Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-10-01T11:55:06.541406Z",
+    "answer_sha256": "722b3c7166c6bc866aa62daa0ff8b6dd47ecbc9e2674264d2402f5ecd30f8844",
+    "call_id": "20261001T115343Z-ea11cc",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "722b3c7166c6bc866aa62daa0ff8b6dd47ecbc9e2674264d2402f5ecd30f8844",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_adb0de8f41da4f7e.py",
+    "response_sha256": "91b23732c42f1e24f515d4ae2fea3ee867742327ca44b2bf368306d97e9d6976",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router._api.router.LLMRouter",
+     "llm_router._api.types.Model",
+     "llm_router._api.types.Provider",
+     "llm_router._api.types.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "py_lib_testkit._internal.test_support.http.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.qwen_chat_path",
+     "tests.llm_router.support.workers.retry.qwen_success_response",
+     "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+    ]
+   }
   }
  },
  "afe2fe11b15a368c": {
@@ -522,42 +625,48 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-30T19:10:34.637845Z",
-   "answer_sha256": "69565c675bf88b02c1b4b454b039f1a1f00a74c1bf61d7b61ecc6b93a4fe0390",
-   "call_id": "20260930T190654Z-6453e1",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "69565c675bf88b02c1b4b454b039f1a1f00a74c1bf61d7b61ecc6b93a4fe0390",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_afe2fe11b15a368c.py",
-   "response_sha256": "cdc87167f31ea8e84538180ecefe98e7a386c7662267846b9ef3d33349e869ba",
-   "source": "last resort",
-   "sources": [
-    "llm_router.ApiKeyNotFoundError",
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "llm_router.get_config",
-    "llm_router.install_config",
-    "llm_router._api.errors.ApiKeyNotFoundError",
-    "llm_router._api.router.LLMRouter",
-    "llm_router._api.types.Model",
-    "llm_router._api.types.Provider",
-    "llm_router._api.types.RouterProfile"
-   ]
-  },
-  "prompt_sha256": "e7d272a121a96f0f104a30826d984f98766da1d703cc66663250419010e83cee"
+  "prompt_sha256": "e7d272a121a96f0f104a30826d984f98766da1d703cc66663250419010e83cee",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.135112Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T19:10:34.637845Z",
+    "answer_sha256": "69565c675bf88b02c1b4b454b039f1a1f00a74c1bf61d7b61ecc6b93a4fe0390",
+    "call_id": "20260930T190654Z-6453e1",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "69565c675bf88b02c1b4b454b039f1a1f00a74c1bf61d7b61ecc6b93a4fe0390",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_afe2fe11b15a368c.py",
+    "response_sha256": "cdc87167f31ea8e84538180ecefe98e7a386c7662267846b9ef3d33349e869ba",
+    "source": "last resort",
+    "sources": [
+     "llm_router.ApiKeyNotFoundError",
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "llm_router.get_config",
+     "llm_router.install_config",
+     "llm_router._api.errors.ApiKeyNotFoundError",
+     "llm_router._api.router.LLMRouter",
+     "llm_router._api.types.Model",
+     "llm_router._api.types.Provider",
+     "llm_router._api.types.RouterProfile"
+    ]
+   }
+  }
  },
  "b249b8ff900bff0b": {
   "answer": {
@@ -629,40 +738,46 @@
    "verdict": "pin"
   },
   "operator": "return",
-  "pin": {
-   "adopted_at": "2026-09-30T19:06:47.240927Z",
-   "answer_sha256": "553698af08d821e5aef82c6b13c68152f427cae1d8d3f71e287683e3879bdf7e",
-   "call_id": "20260930T190316Z-c1fa3e",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "553698af08d821e5aef82c6b13c68152f427cae1d8d3f71e287683e3879bdf7e",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b30cea8391ac9160.py",
-   "response_sha256": "e5d9ec93791f6136c3e613f1df038622b47bb2f142f6384063f6d79c256f49ea",
-   "source": "last resort",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "llm_router.get_config",
-    "llm_router.install_config",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.qwen_chat_path",
-    "tests.llm_router.support.workers.retry.qwen_success_response"
-   ]
-  },
-  "prompt_sha256": "8a538db3045c286dc4b88b05247e303f1c452058c820d2fc92de10c78f6b4543"
+  "prompt_sha256": "8a538db3045c286dc4b88b05247e303f1c452058c820d2fc92de10c78f6b4543",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.135800Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0b39f604.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T19:06:47.240927Z",
+    "answer_sha256": "553698af08d821e5aef82c6b13c68152f427cae1d8d3f71e287683e3879bdf7e",
+    "call_id": "20260930T190316Z-c1fa3e",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "553698af08d821e5aef82c6b13c68152f427cae1d8d3f71e287683e3879bdf7e",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b30cea8391ac9160.py",
+    "response_sha256": "e5d9ec93791f6136c3e613f1df038622b47bb2f142f6384063f6d79c256f49ea",
+    "source": "last resort",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "llm_router.get_config",
+     "llm_router.install_config",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.qwen_chat_path",
+     "tests.llm_router.support.workers.retry.qwen_success_response"
+    ]
+   }
+  }
  },
  "b424da4f88707d25": {
   "answer": {
@@ -685,40 +800,46 @@
    "verdict": "pin"
   },
   "operator": "method",
-  "pin": {
-   "adopted_at": "2026-09-30T19:09:59.988152Z",
-   "answer_sha256": "de584339a053e3d0a4d6dfafcedf500812d6b6d3a78d48b1968ad6c1abbd90b7",
-   "call_id": "20260930T190626Z-f8c8cb",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "de584339a053e3d0a4d6dfafcedf500812d6b6d3a78d48b1968ad6c1abbd90b7",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b424da4f88707d25.py",
-   "response_sha256": "f8485a0d577df34106c2c6c887268c8d1300a65d4755f16e05d0aab3a28e98fe",
-   "source": "last resort",
-   "sources": [
-    "llm_router.ApiKeyNotFoundError",
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "llm_router.get_config",
-    "llm_router.install_config",
-    "llm_router._api.errors.ApiKeyNotFoundError",
-    "llm_router._api.router.LLMRouter",
-    "llm_router._api.types.RouterProfile"
-   ]
-  },
-  "prompt_sha256": "32365b10d3f0ba2987b9929ac8da6b24d96834cc09ab00c5dbda28febcc6e341"
+  "prompt_sha256": "32365b10d3f0ba2987b9929ac8da6b24d96834cc09ab00c5dbda28febcc6e341",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.136015Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T19:09:59.988152Z",
+    "answer_sha256": "de584339a053e3d0a4d6dfafcedf500812d6b6d3a78d48b1968ad6c1abbd90b7",
+    "call_id": "20260930T190626Z-f8c8cb",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "de584339a053e3d0a4d6dfafcedf500812d6b6d3a78d48b1968ad6c1abbd90b7",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_b424da4f88707d25.py",
+    "response_sha256": "f8485a0d577df34106c2c6c887268c8d1300a65d4755f16e05d0aab3a28e98fe",
+    "source": "last resort",
+    "sources": [
+     "llm_router.ApiKeyNotFoundError",
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "llm_router.get_config",
+     "llm_router.install_config",
+     "llm_router._api.errors.ApiKeyNotFoundError",
+     "llm_router._api.router.LLMRouter",
+     "llm_router._api.types.RouterProfile"
+    ]
+   }
+  }
  },
  "e917251d85f56c41": {
   "answer": {
@@ -740,40 +861,46 @@
    "verdict": "pin"
   },
   "operator": "container",
-  "pin": {
-   "adopted_at": "2026-09-30T18:12:25.296173Z",
-   "answer_sha256": "e1e8f889036a24754fb463f0cadf6e82381f707217f378c27b9b91beebe74944",
-   "call_id": "20260930T180430Z-ff767b",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "e1e8f889036a24754fb463f0cadf6e82381f707217f378c27b9b91beebe74944",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_e917251d85f56c41.py",
-   "response_sha256": "f529780acfc9cc0fb8741eac4e9fad70de2c927a68e0d13277bca825064c99c7",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.ProviderLimits",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.retry.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "f03199967e4013e41cdff1b79aca85431ece0da88bd182eda104d49d9fbfea56"
+  "prompt_sha256": "f03199967e4013e41cdff1b79aca85431ece0da88bd182eda104d49d9fbfea56",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.136171Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:12:25.296173Z",
+    "answer_sha256": "e1e8f889036a24754fb463f0cadf6e82381f707217f378c27b9b91beebe74944",
+    "call_id": "20260930T180430Z-ff767b",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "e1e8f889036a24754fb463f0cadf6e82381f707217f378c27b9b91beebe74944",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_e917251d85f56c41.py",
+    "response_sha256": "f529780acfc9cc0fb8741eac4e9fad70de2c927a68e0d13277bca825064c99c7",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.ProviderLimits",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.retry.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "f6c26fefc186db93": {
   "answer": {
@@ -788,40 +915,46 @@
    "verdict": "pin"
   },
   "operator": "arithmetic",
-  "pin": {
-   "adopted_at": "2026-09-30T18:07:42.891799Z",
-   "answer_sha256": "61f69d3865197dd20085be16bd8c21f97a94af51a17d76bf7e167221403951fa",
-   "call_id": "20260930T180431Z-81b82b",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "61f69d3865197dd20085be16bd8c21f97a94af51a17d76bf7e167221403951fa",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_f6c26fefc186db93.py",
-   "response_sha256": "97808f170829b56961a3cad83db0417faf0986b442fa28e076d740299c509e97",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.ProviderLimits",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "801e4f63e608f097ebd9f4d98d12485855493a840cd15eb0aeeecdffcb9e9e71"
+  "prompt_sha256": "801e4f63e608f097ebd9f4d98d12485855493a840cd15eb0aeeecdffcb9e9e71",
+  "subsumed": {
+   "at": "2026-10-01T13:50:29.136581Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:07:42.891799Z",
+    "answer_sha256": "61f69d3865197dd20085be16bd8c21f97a94af51a17d76bf7e167221403951fa",
+    "call_id": "20260930T180431Z-81b82b",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "61f69d3865197dd20085be16bd8c21f97a94af51a17d76bf7e167221403951fa",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_f6c26fefc186db93.py",
+    "response_sha256": "97808f170829b56961a3cad83db0417faf0986b442fa28e076d740299c509e97",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.ProviderLimits",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "fb57ee54d6bd1fa0": {
   "answer": {

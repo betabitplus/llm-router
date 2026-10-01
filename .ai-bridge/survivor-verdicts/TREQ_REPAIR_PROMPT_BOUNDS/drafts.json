@@ -182,5 +182,39 @@
     "llm_router._internal.capabilities.schema.normalize_schema"
    ]
   }
+ ],
+ "FN-1EC1218F": [
+  {
+   "at": "2026-10-01T13:11:44.454838Z",
+   "call_id": "20261001T131001Z-e07b23",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "780551a9c46aafd70bd05025efad9714e4442c41279237895749bd27ae104e9a",
+   "reason": "it breaks the project's lint rules (ruff: line 28: B905 `zip()` without an explicit `strict=` parameter)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-10-01T13:14:12.874836Z",
+   "call_id": "20261001T131144Z-6a7135",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3264b836716cdbe5967807f7f205c6e67ba67263439053d65e90f4d87c9c63dc",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert 50 <= 3 | +  where 3 = len('...') | Failing test case: test_oversized_components_are_each_capped( | # The test always failed when commented parts were varied together.)",
+   "sources": [
+    "llm_router._internal.capabilities.schema.build_repair_prompt",
+    "llm_router._internal.capabilities.schema.normalize_schema"
+   ]
+  }
  ]
 }

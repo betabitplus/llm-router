@@ -1,31 +1,21 @@
 {
- "at": "2026-09-30T15:36:33.569077Z",
+ "at": "2026-10-01T13:46:40.021229Z",
  "pins": [
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_0601f3c62c74bba8.py",
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_2f06445af49144cc.py",
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_3dc1348c54023b59.py",
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_4185d08c0ebf67fe.py",
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_8a48c40fdfe50bce.py",
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_a73d76c7050e2371.py",
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_b5451a90524408d8.py",
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_c673733c4b655a92.py",
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_e1a047184fcbb294.py",
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fddc853000a48d63.py",
+  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py",
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_230b4176.py",
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_592318d7.py",
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_aa98b36d.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_2f06445af49144cc.py",
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_3dc1348c54023b59.py",
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_4185d08c0ebf67fe.py",
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_8a48c40fdfe50bce.py",
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_b5451a90524408d8.py",
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_c673733c4b655a92.py",
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_e1a047184fcbb294.py",
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fddc853000a48d63.py",
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_230b4176.py",
-  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_aa98b36d.py"
+  "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
  ],
  "restored": [
   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_c673733c4b655a92.py"
@@ -57,54 +47,102 @@
     "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_b5451a90524408d8.py",
     "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_e1a047184fcbb294.py"
    ]
+  },
+  "2f06445af49144cc": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_2f06445af49144cc.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
+   ]
+  },
+  "3dc1348c54023b59": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_3dc1348c54023b59.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
+   ]
+  },
+  "4185d08c0ebf67fe": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_4185d08c0ebf67fe.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
+   ]
+  },
+  "8a48c40fdfe50bce": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_8a48c40fdfe50bce.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
+   ]
+  },
+  "b5451a90524408d8": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_b5451a90524408d8.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
+   ]
+  },
+  "e1a047184fcbb294": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_e1a047184fcbb294.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
+   ]
+  },
+  "fddc853000a48d63": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fddc853000a48d63.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
+   ]
+  },
+  "SM-230B4176": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_230b4176.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
+   ]
+  },
+  "SM-AA98B36D": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_aa98b36d.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
+   ]
   }
  },
  "matrix": {
-  "0601f3c62c74bba8": [
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_0601f3c62c74bba8.py",
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_3dc1348c54023b59.py",
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_a73d76c7050e2371.py"
-  ],
   "2f06445af49144cc": [
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_2f06445af49144cc.py"
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_2f06445af49144cc.py",
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
   ],
   "3dc1348c54023b59": [
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_3dc1348c54023b59.py"
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_3dc1348c54023b59.py",
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
   ],
   "4185d08c0ebf67fe": [
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_4185d08c0ebf67fe.py"
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_4185d08c0ebf67fe.py",
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
   ],
   "8a48c40fdfe50bce": [
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_8a48c40fdfe50bce.py"
-  ],
-  "a73d76c7050e2371": [
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_4185d08c0ebf67fe.py",
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_a73d76c7050e2371.py",
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_b5451a90524408d8.py"
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_8a48c40fdfe50bce.py",
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
   ],
   "b5451a90524408d8": [
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_b5451a90524408d8.py"
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_b5451a90524408d8.py",
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
   ],
   "c673733c4b655a92": [
    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_b5451a90524408d8.py",
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_c673733c4b655a92.py"
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_c673733c4b655a92.py",
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
   ],
   "e1a047184fcbb294": [
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_e1a047184fcbb294.py"
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_e1a047184fcbb294.py",
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
   ],
   "fddc853000a48d63": [
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fddc853000a48d63.py"
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fddc853000a48d63.py",
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py"
   ],
   "SM-230B4176": [
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py",
    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_230b4176.py"
   ],
-  "SM-592318D7": [
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_4185d08c0ebf67fe.py",
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_b5451a90524408d8.py",
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_e1a047184fcbb294.py",
-   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_592318d7.py"
-  ],
   "SM-AA98B36D": [
+   "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py",
    "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_sm_aa98b36d.py"
   ]
  },
@@ -121,6 +159,7 @@
   "2b5448556afd92da",
   "2b940a5fe7b5e8d7",
   "2e53b12c273fddd6",
+  "2f06445af49144cc",
   "3b575528d6a7605a",
   "3dc1348c54023b59",
   "4185d08c0ebf67fe",
@@ -131,7 +170,6 @@
   "78b23107d5a9b868",
   "8a48c40fdfe50bce",
   "90723743e50760f4",
-  "98f548ec2fdcdd17",
   "9ee3191330b27a10",
   "SM-230B4176",
   "SM-380CC9C2",

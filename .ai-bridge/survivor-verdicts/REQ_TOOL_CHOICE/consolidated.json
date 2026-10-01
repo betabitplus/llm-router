@@ -1,0 +1,53 @@
+{
+ "FN-0BA02F80": {
+  "adopted_at": "2026-10-01T13:01:08.876660Z",
+  "answer_sha256": "f6f50a6ea60e4d63c3633fa83ddb5e587cc8b0ad57d9df03eb83dad901b6dc52",
+  "call_id": "20261001T125638Z-c4dae2",
+  "cascade": {
+   "SM-B25D86B3": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "e6293e4c0f29961b": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "eecdb1201e9ab7e6": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "f6f50a6ea60e4d63c3633fa83ddb5e587cc8b0ad57d9df03eb83dad901b6dc52",
+  "effort": "low",
+  "function": "src/llm_router/_internal/capabilities/tools.py::normalize_tool_choice",
+  "keys": [
+   "SM-B25D86B3",
+   "e6293e4c0f29961b",
+   "eecdb1201e9ab7e6"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_tool_choice_fn_0ba02f80.py",
+  "response_sha256": "78c41f1008aa39710311fff3794b1576ccd1e7e8d59d2646bc5ad3b23d425656",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.RouterProfile",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "py_lib_testkit._internal.test_support.http.ScriptedResponse",
+   "tests.llm_router.support.workers.retry.google_generate_path",
+   "tests.llm_router.support.workers.retry.google_success_response",
+   "tests.llm_router.support.workers.tool_failure.google_tool_call_response",
+   "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
+  ],
+  "suite_checked": true
+ }
+}

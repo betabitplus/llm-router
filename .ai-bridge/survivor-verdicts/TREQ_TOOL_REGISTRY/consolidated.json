@@ -1,0 +1,39 @@
+{
+ "FN-8BF3E332": {
+  "adopted_at": "2026-10-01T13:14:58.633459Z",
+  "answer_sha256": "8de25f677ba316cd0b02fba315cb87ac6c020da87d5f4f3657693bcbbc8f5fd7",
+  "call_id": "20261001T131428Z-dbd416",
+  "cascade": {
+   "77252785424d95f7": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "77986b22a0ac6322": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "8de25f677ba316cd0b02fba315cb87ac6c020da87d5f4f3657693bcbbc8f5fd7",
+  "effort": "high",
+  "function": "src/llm_router/_internal/capabilities/tools.py::ToolRegistry.execute",
+  "keys": [
+   "77252785424d95f7",
+   "77986b22a0ac6322"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_fn_8bf3e332.py",
+  "response_sha256": "1b33a14d3e93398829914db06b2b0d4445464a857a2f5e9e2658fc46b86c8305",
+  "source": "consolidation",
+  "sources": [
+   "llm_router._api.errors.ToolExecutionError",
+   "llm_router._api.types.ToolCall",
+   "llm_router._internal.capabilities.tools.ToolRegistry"
+  ],
+  "suite_checked": true
+ }
+}

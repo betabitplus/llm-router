@@ -1,17 +1,16 @@
 {
- "at": "2026-09-30T15:35:57.826167Z",
+ "at": "2026-10-01T13:49:55.995174Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77252785424d95f7.py",
   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77986b22a0ac6322.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_7ebb796581f85dea.py",
   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_9f60c66b56e11a2f.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_e9c1165894dd60d7.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_e9c1165894dd60d7.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_fn_8bf3e332.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77252785424d95f7.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77986b22a0ac6322.py",
   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_9f60c66b56e11a2f.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_e9c1165894dd60d7.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_e9c1165894dd60d7.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_fn_8bf3e332.py"
  ],
  "restored": [],
  "removed": {
@@ -20,18 +19,28 @@
    "by": [
     "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_9f60c66b56e11a2f.py"
    ]
+  },
+  "77252785424d95f7": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77252785424d95f7.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_fn_8bf3e332.py"
+   ]
+  },
+  "77986b22a0ac6322": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77986b22a0ac6322.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_fn_8bf3e332.py"
+   ]
   }
  },
  "matrix": {
   "77252785424d95f7": [
-   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77252785424d95f7.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77252785424d95f7.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_fn_8bf3e332.py"
   ],
   "77986b22a0ac6322": [
-   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77986b22a0ac6322.py"
-  ],
-  "7ebb796581f85dea": [
-   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_7ebb796581f85dea.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_9f60c66b56e11a2f.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_77986b22a0ac6322.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_fn_8bf3e332.py"
   ],
   "9f60c66b56e11a2f": [
    "tests/llm_router/mutation_pins/test_pin_treq_tool_registry_9f60c66b56e11a2f.py"

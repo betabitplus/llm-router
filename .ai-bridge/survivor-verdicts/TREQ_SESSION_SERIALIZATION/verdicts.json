@@ -63,30 +63,6 @@
    "verdict": "pin"
   },
   "operator": "statement",
-  "pin": {
-   "adopted_at": "2026-09-30T19:01:58.352376Z",
-   "answer_sha256": "8231ab55c1feb4bf083dd40c0c71aae09ec67cb2c88907b112cac2820a16cfb2",
-   "call_id": "20260930T190120Z-08183e",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "8231ab55c1feb4bf083dd40c0c71aae09ec67cb2c88907b112cac2820a16cfb2",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5e426e56bd7decaf.py",
-   "response_sha256": "9c6988b90c27c536deecbcaa7c83fd331a40f8e8e8def5a64a845746ef62f006",
-   "source": "draft author",
-   "sources": [
-    "llm_router._internal.runtime.errors.SessionSerializationError",
-    "llm_router._internal.session.serialization.decode_session"
-   ]
-  },
   "prompt_sha256": "2dbb813a2e7acbced957b781ae77c7feb3cbc16c091f0da2eaf449d5233a6454",
   "rejected_pin": {
    "adopted_at": "2026-09-30T14:44:50.298751Z",
@@ -113,6 +89,36 @@
     "llm_router._internal.runtime.errors.SessionSerializationError",
     "llm_router._internal.session.serialization.decode_session"
    ]
+  },
+  "subsumed": {
+   "at": "2026-10-01T13:50:25.843378Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fn_1dd7271e.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T19:01:58.352376Z",
+    "answer_sha256": "8231ab55c1feb4bf083dd40c0c71aae09ec67cb2c88907b112cac2820a16cfb2",
+    "call_id": "20260930T190120Z-08183e",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "8231ab55c1feb4bf083dd40c0c71aae09ec67cb2c88907b112cac2820a16cfb2",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5e426e56bd7decaf.py",
+    "response_sha256": "9c6988b90c27c536deecbcaa7c83fd331a40f8e8e8def5a64a845746ef62f006",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.runtime.errors.SessionSerializationError",
+     "llm_router._internal.session.serialization.decode_session"
+    ]
+   }
   }
  },
  "5eca933c7a02d62f": {
@@ -136,31 +142,37 @@
    "verdict": "pin"
   },
   "operator": "statement",
-  "pin": {
-   "adopted_at": "2026-09-30T14:44:50.463589Z",
-   "answer_sha256": "6d41ade8de15bf4b5581ecb4c89f51ce5a1e86e25e7814de800a38a5b62f835d",
-   "call_id": "20260930T144416Z-f8694e",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "6d41ade8de15bf4b5581ecb4c89f51ce5a1e86e25e7814de800a38a5b62f835d",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py",
-   "response_sha256": "6960bf292ca4895c385c87c2fd6ae75c05e5c74495418e13f76fb210edae4e01",
-   "source": "draft author",
-   "sources": [
-    "llm_router._internal.runtime.errors.SessionSerializationError",
-    "llm_router._internal.session.serialization.decode_session"
-   ]
-  },
-  "prompt_sha256": "789757b8ac3a2e70d3f74349a3a08729ba21393ede5b0bccb31eb3d25286f184"
+  "prompt_sha256": "789757b8ac3a2e70d3f74349a3a08729ba21393ede5b0bccb31eb3d25286f184",
+  "subsumed": {
+   "at": "2026-10-01T13:50:25.843901Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fn_1dd7271e.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T14:44:50.463589Z",
+    "answer_sha256": "6d41ade8de15bf4b5581ecb4c89f51ce5a1e86e25e7814de800a38a5b62f835d",
+    "call_id": "20260930T144416Z-f8694e",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "6d41ade8de15bf4b5581ecb4c89f51ce5a1e86e25e7814de800a38a5b62f835d",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_5eca933c7a02d62f.py",
+    "response_sha256": "6960bf292ca4895c385c87c2fd6ae75c05e5c74495418e13f76fb210edae4e01",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.runtime.errors.SessionSerializationError",
+     "llm_router._internal.session.serialization.decode_session"
+    ]
+   }
+  }
  },
  "623b0ce689f82e48": {
   "answer": {
@@ -183,31 +195,37 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-30T19:01:59.437179Z",
-   "answer_sha256": "0fa990958fed33de4fd3e3f3bef8d0463774e9e7ce3c664fc97da3e6ec2eef3a",
-   "call_id": "20260930T190121Z-ead0f1",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "0fa990958fed33de4fd3e3f3bef8d0463774e9e7ce3c664fc97da3e6ec2eef3a",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_623b0ce689f82e48.py",
-   "response_sha256": "726efae6acf0af7209f54037f8486faf3d7eadc649302a738bb5a064eb776f5c",
-   "source": "draft author",
-   "sources": [
-    "llm_router._internal.runtime.errors.SessionSerializationError",
-    "llm_router._internal.session.serialization.decode_session"
-   ]
-  },
-  "prompt_sha256": "765cc00d93606217fb3013624964dfdce90c52b9cf368a857dac184be0b539d0"
+  "prompt_sha256": "765cc00d93606217fb3013624964dfdce90c52b9cf368a857dac184be0b539d0",
+  "subsumed": {
+   "at": "2026-10-01T13:50:25.844404Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fn_1dd7271e.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T19:01:59.437179Z",
+    "answer_sha256": "0fa990958fed33de4fd3e3f3bef8d0463774e9e7ce3c664fc97da3e6ec2eef3a",
+    "call_id": "20260930T190121Z-ead0f1",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "0fa990958fed33de4fd3e3f3bef8d0463774e9e7ce3c664fc97da3e6ec2eef3a",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_623b0ce689f82e48.py",
+    "response_sha256": "726efae6acf0af7209f54037f8486faf3d7eadc649302a738bb5a064eb776f5c",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.runtime.errors.SessionSerializationError",
+     "llm_router._internal.session.serialization.decode_session"
+    ]
+   }
+  }
  },
  "73af7c5839a73039": {
   "answer": {
@@ -276,31 +294,37 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-30T14:21:45.944416Z",
-   "answer_sha256": "73d1cabcd0e876f57ec3322430f88eb7c2a9975bd0baca06f3d87c99229048c2",
-   "call_id": "20260930T142110Z-506d75",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "73d1cabcd0e876f57ec3322430f88eb7c2a9975bd0baca06f3d87c99229048c2",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_84e67158176fdd1f.py",
-   "response_sha256": "0e373642cf238e8f6de6530d1aa9f9cc653b6922b296ac468feed95937cdd8b3",
-   "source": "draft author",
-   "sources": [
-    "llm_router._internal.session.serialization.decode_session",
-    "llm_router._internal.runtime.errors.SessionSerializationError"
-   ]
-  },
-  "prompt_sha256": "364f011c01161c2e150674e123536235164caa87021748ca19692ca552bfc2bc"
+  "prompt_sha256": "364f011c01161c2e150674e123536235164caa87021748ca19692ca552bfc2bc",
+  "subsumed": {
+   "at": "2026-10-01T13:50:25.844678Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fn_1dd7271e.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T14:21:45.944416Z",
+    "answer_sha256": "73d1cabcd0e876f57ec3322430f88eb7c2a9975bd0baca06f3d87c99229048c2",
+    "call_id": "20260930T142110Z-506d75",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "73d1cabcd0e876f57ec3322430f88eb7c2a9975bd0baca06f3d87c99229048c2",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_84e67158176fdd1f.py",
+    "response_sha256": "0e373642cf238e8f6de6530d1aa9f9cc653b6922b296ac468feed95937cdd8b3",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.session.serialization.decode_session",
+     "llm_router._internal.runtime.errors.SessionSerializationError"
+    ]
+   }
+  }
  },
  "92622e5a5f97e586": {
   "answer": {
@@ -494,31 +518,37 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-29T19:15:34.169734Z",
-   "answer_sha256": "a6f2adea02c1fb4a18216d5a291af25ab941d0e56186e82f8423b694ee783ebe",
-   "call_id": "20260929T191342Z-8ce77c",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "b44d004e6c7ef20436dfdb9070687252ab8210f50f4800fc786330c9c76da971",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_b91a9265.py",
-   "response_sha256": "dae3dd04c66391749be25b3ed7c181a3394f6889f318d42923e6743b0efdc42e",
-   "source": "draft author",
-   "sources": [
-    "llm_router._internal.session.serialization.encode_session",
-    "llm_router._api.types.ChatMessage"
-   ]
-  },
-  "prompt_sha256": "c679b408a63e6ce9008e701274d5cdfad53fcfea56aee37588aa51bf38a8c6fb"
+  "prompt_sha256": "c679b408a63e6ce9008e701274d5cdfad53fcfea56aee37588aa51bf38a8c6fb",
+  "subsumed": {
+   "at": "2026-10-01T13:50:25.845530Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fn_039b7b95.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T19:15:34.169734Z",
+    "answer_sha256": "a6f2adea02c1fb4a18216d5a291af25ab941d0e56186e82f8423b694ee783ebe",
+    "call_id": "20260929T191342Z-8ce77c",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "b44d004e6c7ef20436dfdb9070687252ab8210f50f4800fc786330c9c76da971",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_sm_b91a9265.py",
+    "response_sha256": "dae3dd04c66391749be25b3ed7c181a3394f6889f318d42923e6743b0efdc42e",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.session.serialization.encode_session",
+     "llm_router._api.types.ChatMessage"
+    ]
+   }
+  }
  },
  "a2ea086ea892f112": {
   "answer": {
@@ -636,31 +666,37 @@
    "verdict": "pin"
   },
   "operator": "statement",
-  "pin": {
-   "adopted_at": "2026-09-30T14:21:49.851135Z",
-   "answer_sha256": "7d19a28aba2ad7f5469b9f670d2f18eae06e7d00ba6a0f4b5636aa4a9c0c6886",
-   "call_id": "20260930T142110Z-1794ec",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "7d19a28aba2ad7f5469b9f670d2f18eae06e7d00ba6a0f4b5636aa4a9c0c6886",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_e4925bbc494ef9d1.py",
-   "response_sha256": "b15b3777e64211d0a33cca1870dfa5dafbb8f0791cfe0049aa5f21de686903b4",
-   "source": "draft author",
-   "sources": [
-    "llm_router._internal.session.serialization.decode_session",
-    "llm_router._internal.runtime.errors.SessionSerializationError"
-   ]
-  },
-  "prompt_sha256": "41d56333e8794041d8f0d898d126d977b765cbf7411637a8d1f389cbd9a414b8"
+  "prompt_sha256": "41d56333e8794041d8f0d898d126d977b765cbf7411637a8d1f389cbd9a414b8",
+  "subsumed": {
+   "at": "2026-10-01T13:50:25.844890Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fn_1dd7271e.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T14:21:49.851135Z",
+    "answer_sha256": "7d19a28aba2ad7f5469b9f670d2f18eae06e7d00ba6a0f4b5636aa4a9c0c6886",
+    "call_id": "20260930T142110Z-1794ec",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "7d19a28aba2ad7f5469b9f670d2f18eae06e7d00ba6a0f4b5636aa4a9c0c6886",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_e4925bbc494ef9d1.py",
+    "response_sha256": "b15b3777e64211d0a33cca1870dfa5dafbb8f0791cfe0049aa5f21de686903b4",
+    "source": "draft author",
+    "sources": [
+     "llm_router._internal.session.serialization.decode_session",
+     "llm_router._internal.runtime.errors.SessionSerializationError"
+    ]
+   }
+  }
  },
  "e966dd5a2d776e14": {
   "answer": {
@@ -736,26 +772,34 @@
    "verdict": "pin"
   },
   "operator": "conversion",
-  "pin": {
-   "adopted_at": "2026-09-30T19:01:49.656614Z",
-   "answer_sha256": "29d509efe86b1f860b076f9b568fba69b0bbec9d21c5b45e0a23adf42c4ff11c",
-   "call_id": "20260930T142150Z-7f9a1d",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "29d509efe86b1f860b076f9b568fba69b0bbec9d21c5b45e0a23adf42c4ff11c",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_f1db3a48e54f5fe2.py",
-   "response_sha256": "67e95b829f31363406fde11b12ce350994dee815042a7cf8649591e3bf3949f0",
-   "source": "draft author"
-  },
-  "prompt_sha256": "1d06cca5c2c605c411d04096c83e3b96ba3745526444580253a7fb89cf783eb7"
+  "prompt_sha256": "1d06cca5c2c605c411d04096c83e3b96ba3745526444580253a7fb89cf783eb7",
+  "subsumed": {
+   "at": "2026-10-01T13:50:25.845326Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_73af7c5839a73039.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fn_039b7b95.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fn_1dd7271e.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T19:01:49.656614Z",
+    "answer_sha256": "29d509efe86b1f860b076f9b568fba69b0bbec9d21c5b45e0a23adf42c4ff11c",
+    "call_id": "20260930T142150Z-7f9a1d",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "29d509efe86b1f860b076f9b568fba69b0bbec9d21c5b45e0a23adf42c4ff11c",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_f1db3a48e54f5fe2.py",
+    "response_sha256": "67e95b829f31363406fde11b12ce350994dee815042a7cf8649591e3bf3949f0",
+    "source": "draft author"
+   }
+  }
  },
  "fa88bb3261b0e691": {
   "answer": {

@@ -191,7 +191,7 @@ provider boundary; the external participant is therefore Surrogate at L0.
 | Criterion                         | Contract                                    | Test level         | Boundary   | Required paths | Required path IDs | Success criterion                                                                                                          |
 | --------------------------------- | ------------------------------------------- | ------------------ | ---------- | -------------: | ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `VC_PROVIDER_RETRY_ATTEMPT_BOUND` | {need}`[[id]] <TREQ_PROVIDER_RETRY_BOUNDS>` | System Integration | Substitute |              2 | `sync` · `async`  | Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond. |
-| `VC_PROVIDER_RETRY_WAIT_BOUND`    | {need}`[[id]] <TREQ_PROVIDER_RETRY_BOUNDS>` | System Integration | Substitute |              2 | `sync` · `async`  | Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.                |
+| `VC_PROVIDER_RETRY_WAIT_BOUND`    | {need}`[[id]] <TREQ_PROVIDER_RETRY_BOUNDS>` | System Integration | Substitute |              2 | `sync` · `async`  | Sync and async retry each wait at least the configured minimum and no longer than the configured maximum retry wait.       |
 
 ### Evidence aggregation
 

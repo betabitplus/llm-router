@@ -8,5 +8,10 @@
   "at": "2026-10-01T08:25:04.662640Z",
   "key": "b9accd29af1a644f",
   "reason": "it passes alone but fails in the full run: its routing trace depends on timing and on the router and server its hypothesis examples share"
+ },
+ "20261001T124336Z-15c621": {
+  "at": "2026-10-01T14:12:45.015215Z",
+  "key": "FN-D498759F",
+  "reason": "after it, in the same process, test_recovery_remains_the_preferred_path_on_the_next_request fails (3 of 3 in fixed order; never without it): its three timed-out attempts keep running in the background past the test and disturb the routing tests that follow"
  }
 }

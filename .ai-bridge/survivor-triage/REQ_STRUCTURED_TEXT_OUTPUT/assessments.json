@@ -103,6 +103,21 @@
      "if first_obj != -1 and last_obj > first_obj:"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20261001T113147Z-2c2544",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "Dropping `last_obj != -1` is redundant because last_obj > first_obj with first_obj >= -1 already implies last_obj >= 0 whenever first_obj != -1.",
+    "response_sha256": "6d59172c9d441327435c18f97302a33c3f2d394d8830fec3153c7ef2364934d9",
+    "sources": [
+     "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
+     "if first_obj != -1 and last_obj > first_obj:"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "e18575acf9d49d0315e39f084cf181e5599185b472a6ba1b4319377c60c24a97"
@@ -151,6 +166,22 @@
     "sources": [
      "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
      "if first_arr != -1 and last_arr != -1 and (last_arr >= first_arr):"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20261001T113147Z-9a02ab",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only behavioral edit is > to >= on array indices, and first_arr can never equal last_arr because one character cannot be both '[' and ']'.",
+    "response_sha256": "24d7d82f68368af00087139980af0cc356228d343f557f90228fb17e98a19d24",
+    "sources": [
+     "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:",
+     "first_arr = stripped.find(\"[\")",
+     "last_arr = stripped.rfind(\"]\")"
     ],
     "verdict": "equivalent"
    }
@@ -259,6 +290,20 @@
     "sources": [
      "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
      "if first_obj != -1 and last_obj != -1 and (last_obj >= first_obj):"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20261001T113200Z-4acca5",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The only change is > to >= on the object indices, and the two indices can't be equal because one character can't be both '{' and '}'.",
+    "response_sha256": "40adc2d91386dd0af5c9ff30a5161f2dbd87521d5525f912e5b0923b15ad1d22",
+    "sources": [
+     "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:"
     ],
     "verdict": "equivalent"
    }
@@ -427,6 +472,22 @@
      "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20261001T113147Z-97e6ce",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The dropped startswith check is implied by the later check that the first line is one of the fence markers, and empty input returns value in both versions.",
+    "response_sha256": "81035ac4e63637399c7a513276a77b555d47e2b2cb4a07545dd62d94eb12a3c8",
+    "sources": [
+     "if not stripped or not stripped.endswith('```'):",
+     "if lines[0].strip() not in {'```', '```json', '```JSON'}:",
+     "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "db00be6cad4e91e1a9f893efa31592a3a2578c8434d23e2f49b62730eaef0a99"
@@ -491,18 +552,38 @@
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "value": "{\"a\": 1}"
+     "value": "{}"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260930T152201Z-2866a1",
+    "call_id": "20261001T113204Z-7c10aa",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version unconditionally attempts to parse the input as a JSON string, failing on dictionary inputs that the original version correctly returns as is.",
-    "response_sha256": "2cb2bb8eb872bbe5f456248420910d0fb82d12052945740efb01c5ed94d7919d",
+    "reason": "The original version correctly bypasses JSON parsing for non-string inputs like dictionaries, whereas the changed version attempts to parse all inputs, causing an exception when non-strings are passed to `json.loads()`.",
+    "response_sha256": "ecddc971a4adefe2dbd577567d09bb3f93de55b0bd14451da9522ecbd38e04fd",
     "sources": [
      "    if isinstance(value, str):",
      "    if True:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T113147Z-644114",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is a dict, the original version assigns decoded = value via the else branch and returns the dictionary, while the changed version unconditionally calls _extract_json_payload on the non-string input.",
+    "response_sha256": "f73f99fa04399fd8a894f8ec5194afbbba87fa8ca12e080d214119b0b4b6403d",
+    "sources": [
+     "    if isinstance(value, str):",
+     "    else:",
+     "        decoded = value",
+     "    if True:",
+     "        value = _extract_json_payload(value)"
     ],
     "verdict": "distinct"
    },
@@ -511,21 +592,22 @@
      "value": "{'a': 1}"
     },
     "backend": "claude-cli",
-    "call_id": "20260930T152201Z-bfff56",
+    "call_id": "20261001T113204Z-1fafc3",
     "confidence": 0.93,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "For a dict input the original returns it as a mapping, while the changed version always runs string extraction and json.loads on the dict, which raises an error instead.",
-    "response_sha256": "e97fb5694ea2ae52f7c982037bab498892010168f39caf54169f2e57ecc951f9",
+    "reason": "For a dict input the original skips extraction and returns the mapping, while the changed version always runs _extract_json_payload and json.loads on it, which raises an exception.",
+    "response_sha256": "8980ad0d7c431110b4d93194e97cdd9502a7c0fdfe270c65ee37038b341de343",
     "sources": [
      "if True:",
      "value = _extract_json_payload(value)",
-     "if isinstance(value, str):"
+     "if isinstance(value, str):",
+     "decoded = value"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "adc0de14e1ca1b5ca37f5f76fade37fba69048401edc44f7b032c5a7f5dc10d6"
+  "prompt_sha256": "afc829ea1c92339e924cc8e12e9a5d163473a93552b235e6cfc2aa017a425485"
  },
  "6de617b610b093eb": {
   "answers": {
@@ -1368,6 +1450,23 @@
      "if first_arr != -1 and last_arr > first_arr:"
     ],
     "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "'a]'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T113200Z-be13d9",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops the first_arr != -1 check, so for \"a]\" it slices stripped[-1:2] and returns \"]\", while the original returns \"a]\".",
+    "response_sha256": "d7ce8b948a9a959dc8e020961b9b7e0cd3bfa648311b3210349237447c5a698e",
+    "sources": [
+     "if first_arr != -1 and last_arr > first_arr:",
+     "if first_arr != -1 and last_arr != -1 and last_arr > first_arr:"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "7a58e29aef10938bc81c1292f34b6d014e0bd98bc68ca59c9d5945bc55952a22"
@@ -1419,6 +1518,22 @@
      "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
      "if not stripped.endswith('```'):",
      "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20261001T113204Z-337ae2",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The removed startswith check is implied by the later lines[0].strip() membership check, since stripped has no leading whitespace and every allowed opener begins with three backticks.",
+    "response_sha256": "83833d231042644a942ecb1b2317a1530e4af92794c2b59084daf818e2b316fb",
+    "sources": [
+     "if not stripped.endswith('```'):",
+     "if lines[0].strip() not in {'```', '```json', '```JSON'}:",
+     "stripped = value.strip()"
     ],
     "verdict": "equivalent"
    }

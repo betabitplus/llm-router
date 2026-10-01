@@ -1,9 +1,9 @@
 # mutation-pin: TREQ_PROVIDER_RETRY_BOUNDS a3f68e4f70d254ab
 # pinned-by: claude-opus-5-5
 # written-by: claude-sonnet-5-5, the draft author with tools
-from __future__ import annotations
+"""Unit test for async provider retry bounds and reraise contract."""
 
-from typing import Any
+from __future__ import annotations
 
 import pytest
 
@@ -15,37 +15,36 @@ pytestmark = pytest.mark.verification_kind("unit")
 
 
 class RetryableCauseError(Exception):
-    """Error cause indicating a retryable provider failure."""
+    """Private error cause flagged as retryable."""
 
-    retryable = True
+    retryable: bool = True
 
 
-class DummyRetryLogger:
-    """Minimal logger implementation for retrying tests."""
+class QuietLogger:
+    """Logger that drops warnings."""
 
-    def warning(self, event: str, **values: Any) -> None:
+    def warning(self, event: str, **values: object) -> None:
         del event, values
 
 
 @pytest.mark.asyncio
-@pytest.mark.verifies("TREQ_PROVIDER_RETRY_BOUNDS[revision==2]")
-async def test_provider_async_retrying_reraises_original_error() -> None:
-    call_count = 0
+@pytest.mark.verifies("TREQ_PROVIDER_RETRY_BOUNDS[revision==3]")
+async def test_async_retry_reraises_provider_error_on_exhaustion() -> None:
     policy = RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=3)
-    error = ProviderError(
-        RetryableCauseError(),
-        "dummy_provider",
-        "dummy_model",
-        message="rate limit exceeded",
-    )
-    retrying = build_provider_async_retrying(policy=policy, logger=DummyRetryLogger())
+    retrying = build_provider_async_retrying(policy=policy, logger=QuietLogger())
+    attempts = 0
 
-    async def failing_provider_call() -> None:
-        nonlocal call_count
-        call_count += 1
-        raise error
+    async def failing_operation() -> None:
+        nonlocal attempts
+        attempts += 1
+        raise ProviderError(
+            RetryableCauseError("temporary cause"),
+            "test_provider",
+            "test_model",
+            message="temporary provider error",
+        )
 
-    with pytest.raises(ProviderError, match=r"rate limit exceeded"):
-        await retrying(failing_provider_call)
+    with pytest.raises(ProviderError, match=r"temporary provider error"):
+        await retrying(failing_operation)
 
-    assert call_count == policy.max_attempts
+    assert attempts == 3

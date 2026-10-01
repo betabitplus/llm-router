@@ -1,6 +1,111 @@
 {
+ "SM-06C8D1CA": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T113438Z-413a3c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version incorrectly assigns max_wait_seconds to the multiplier parameter instead of max, returning a Retrying instance configured with different exponential backoff behavior.",
+    "response_sha256": "e31e914808efd4f53ba7bda257a148cd6b9f4c0812253dfa20e1280e35bd49e2",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "            multiplier=policy.max_wait_seconds,"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T113438Z-ed7aab",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version sets policy.max_wait_seconds as the multiplier rather than the maximum wait time in wait_random_exponential, altering the retry wait strategy returned by the function.",
+    "response_sha256": "70b08fc98b9130508e42533cad1215153238c4822d443cd8f368cf77a6e8adf1",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "            multiplier=policy.max_wait_seconds,"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "logging.getLogger('x')",
+     "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=100.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T112645Z-8d71db",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version passes max_wait_seconds as the multiplier and drops the max cap, so with a large max_wait the sleep before a retry can reach 100s instead of being capped at 1s on the first retry, and it exceeds the cap on later retries.",
+    "response_sha256": "00789f0ce55d3628a765b8b7472ac80fecec0e49add8970768ad486db878bd2e",
+    "sources": [
+     "multiplier=policy.max_wait_seconds,",
+     "max=policy.max_wait_seconds,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "8995e326fb39d0a42d377f03db67ecba04a3bef5c5bf9508b872c957d8622afc"
+ },
  "SM-57FED309": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=10.0, max_attempts=5)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T113438Z-dc434c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits `max=policy.max_wait_seconds` when creating `wait_random_exponential`, so the wait time will no longer be clamped to the policy's maximum, resulting in a differently configured `AsyncRetrying` object.",
+    "response_sha256": "d06169c18e82db8f3715aa940a8dfa88e8861a4409cc7d6ff4404ac1111101d9",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "            multiplier=policy.min_wait_seconds,"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "RetryLogger()",
+     "policy": "RetryPolicy(min_wait_seconds=2.0, max_wait_seconds=10.0, max_attempts=3)",
+     "state_sink": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T113438Z-e05961",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version replaces the maximum wait time parameter with a multiplier parameter set to the minimum wait seconds, altering the retry wait strategy returned by the function.",
+    "response_sha256": "58dbb2c98e69a2d04615d57ddd45fb46690c200e7ed7569361d7675c9cf1bd3a",
+    "sources": [
+     "            max=policy.max_wait_seconds,",
+     "            multiplier=policy.min_wait_seconds,"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
      "context_getter": "None",

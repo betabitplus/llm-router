@@ -307,6 +307,55 @@
    ]
   }
  ],
+ "FN-3779C411": [
+  {
+   "at": "2026-10-01T12:43:09.053049Z",
+   "call_id": "20261001T124111Z-90ec31",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "cbea57e658b606376def0a72463d7aeff3283e55c24d5f2190f16b2fa8b4f29e",
+   "reason": "it breaks the project's lint rules (ruff: line 22: PLR0915 Too many statements (52 > 50))",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.LLMRouterConfig",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderCatalog",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.models.LLMRouterConfig",
+    "llm_router._internal.config.models.ProviderCatalog",
+    "llm_router._internal.config.state.get_config",
+    "llm_router._internal.config.state.install_config",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider"
+   ]
+  },
+  {
+   "at": "2026-10-01T12:46:26.613945Z",
+   "call_id": "20261001T124309Z-7c0bbd",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "f7e068bcb392a763626b77d376f8b97571b1a4386214b1540493118d37fba311",
+   "reason": "it imports collections.abc",
+   "sources": [
+    "llm_router.ConfigurationError",
+    "llm_router.LLMRouterConfig",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderCatalog",
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
+  }
+ ],
  "SM-70BDADCC": [
   {
    "at": "2026-09-30T16:40:40.570551Z",

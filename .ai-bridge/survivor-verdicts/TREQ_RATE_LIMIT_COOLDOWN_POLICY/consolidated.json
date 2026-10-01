@@ -1,0 +1,53 @@
+{
+ "FN-1B8C5B26": {
+  "adopted_at": "2026-10-01T13:10:24.010480Z",
+  "answer_sha256": "4ffd0815b656cf8dc3d0f793983d00fc2d63f29650327611fff4a02b30bd4047",
+  "call_id": "20261001T130611Z-486adc",
+  "cascade": {
+   "7cfc3f8477b3a2b8": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "96a28c868f99fb34": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "99d124741e83ae13": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "9f107933887a3fa0": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "719b33e615eddac5b8d37964f05d976cdb8d2242e40b750bf5a953070c7dd2df",
+  "effort": "low",
+  "function": "src/llm_router/_internal/runtime/limiter.py::LimiterState.record_failure",
+  "keys": [
+   "7cfc3f8477b3a2b8",
+   "96a28c868f99fb34",
+   "99d124741e83ae13",
+   "9f107933887a3fa0"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py",
+  "response_sha256": "0ef0f2e8d15ed000ab7efd104aa8eb6afdf2e713247fa1e432c365b6c78b42c3",
+  "source": "consolidation",
+  "sources": [
+   "llm_router._api.types.Provider",
+   "llm_router._api.types.ProviderLimits",
+   "llm_router._internal.runtime.limiter.LimiterState"
+  ],
+  "suite_checked": true
+ }
+}

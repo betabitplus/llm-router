@@ -1,0 +1,77 @@
+{
+ "FN-12FC5C09": {
+  "adopted_at": "2026-10-01T13:12:52.440636Z",
+  "answer_sha256": "bdd4fc71e83463a5ca1bcf5e7348aab6c7cb4b8edba3674a6e800df6baaf04b4",
+  "call_id": "20261001T131046Z-e01a2e",
+  "cascade": {
+   "SM-LOG-01": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-LOG-02": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "bdd4fc71e83463a5ca1bcf5e7348aab6c7cb4b8edba3674a6e800df6baaf04b4",
+  "effort": "low",
+  "function": "src/llm_router/_internal/providers/base.py::ProviderRequest.log_context",
+  "keys": [
+   "SM-LOG-01",
+   "SM-LOG-02"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_fn_12fc5c09.py",
+  "response_sha256": "c704a1bacfdfd10047c5359d520468c1e38d1b05537c099d5829d71d2635fe47",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router._internal.providers.base.ProviderCredential",
+   "llm_router._internal.providers.base.ProviderRequest"
+  ],
+  "suite_checked": true
+ },
+ "FN-94D62FAE": {
+  "adopted_at": "2026-10-01T13:12:38.194224Z",
+  "answer_sha256": "17426f7f06f64631b1f1067222cf6d7de0ea5e24a96028e726fcc67f48871821",
+  "call_id": "20261001T131040Z-19be3e",
+  "cascade": {
+   "84eb2eb645a09af6": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-LOG-04": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "17426f7f06f64631b1f1067222cf6d7de0ea5e24a96028e726fcc67f48871821",
+  "effort": "low",
+  "function": "src/llm_router/_internal/providers/base.py::ProviderFailure.__post_init__",
+  "keys": [
+   "84eb2eb645a09af6",
+   "SM-LOG-04"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_fn_94d62fae.py",
+  "response_sha256": "a64831a93535db808a018b0c5163bad4ec159603c39fad5609843624fec127f3",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router._internal.providers.base.ProviderFailure"
+  ],
+  "suite_checked": true
+ }
+}

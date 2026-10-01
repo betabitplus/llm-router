@@ -1,0 +1,235 @@
+{
+ "FN-1D4B22D1": {
+  "adopted_at": "2026-10-01T13:11:09.966822Z",
+  "answer_sha256": "e9abc938ef94a1fd4344c47ab7e310949d176898d5ac7081ff9256076ec317e0",
+  "call_id": "20261001T130841Z-851181",
+  "cascade": {
+   "8654a7b1099c3580": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "aeeb7e44dc927403": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "cb633e63a453812c": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "e9abc938ef94a1fd4344c47ab7e310949d176898d5ac7081ff9256076ec317e0",
+  "effort": "high",
+  "function": "src/llm_router/_internal/providers/qwenchat.py::QwenChatAdapter.execute",
+  "keys": [
+   "8654a7b1099c3580",
+   "aeeb7e44dc927403",
+   "cb633e63a453812c"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_1d4b22d1.py",
+  "response_sha256": "3c23d5d2dcae7738bf504c4807aa3fc211a1a677b34ca5bf35e4cf8e536bedc4",
+  "source": "consolidation",
+  "sources": [
+   "llm_router._api.errors.ProviderError",
+   "llm_router._api.types.Model",
+   "llm_router._api.types.Provider",
+   "llm_router._internal.capabilities.content.normalize_content",
+   "llm_router._internal.providers.base.ProviderCredential",
+   "llm_router._internal.providers.base.ProviderRequest",
+   "llm_router._internal.providers.qwenchat.QwenChatAdapter",
+   "llm_router._internal.providers.qwenchat.transport_failure"
+  ],
+  "suite_checked": true
+ },
+ "FN-B1675618": {
+  "adopted_at": "2026-10-01T13:08:13.067384Z",
+  "answer_sha256": "dfd81d4521906f5f7e5a820e877f0aba0587d2d2a9f8eb3563ffaf81a3fc989c",
+  "call_id": "20261001T130420Z-b83159",
+  "cascade": {
+   "14f4d9793d873316": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "40231175bc1ce35e": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "7a62ad64f09cc0a0": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "7f08bc96d2f666c5": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "8fddc8d6682ad36b": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "b2c437a6ff46e0ea": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "dfd81d4521906f5f7e5a820e877f0aba0587d2d2a9f8eb3563ffaf81a3fc989c",
+  "effort": "low",
+  "function": "src/llm_router/_internal/providers/qwenchat.py::QwenChatAdapter.build_payload",
+  "keys": [
+   "14f4d9793d873316",
+   "40231175bc1ce35e",
+   "7a62ad64f09cc0a0",
+   "7f08bc96d2f666c5",
+   "8fddc8d6682ad36b",
+   "b2c437a6ff46e0ea"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_b1675618.py",
+  "response_sha256": "0d35bafea4bdb16a1bec43ae016d39506c1edc177caecdcddbdab2df0d7f64a4",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router._internal.capabilities.content.normalize_content",
+   "llm_router._internal.capabilities.tools.ToolChoice",
+   "llm_router._internal.capabilities.tools.ToolDefinition",
+   "llm_router._internal.capabilities.tools.ToolRegistry",
+   "llm_router._internal.providers.base.ProviderCredential",
+   "llm_router._internal.providers.base.ProviderRequest",
+   "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+  ],
+  "suite_checked": true
+ },
+ "FN-E736B01D": {
+  "adopted_at": "2026-10-01T13:06:44.058902Z",
+  "answer_sha256": "dc63d33333ca0a9a49299107d9b95b72ad9246ebaad1b6135971b96e55d6dbd7",
+  "call_id": "20261001T130356Z-492613",
+  "cascade": {
+   "14086e0bf74da773": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "36fb82fcc47860a2": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "7879b343f0d7cac0": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "8f495188e4365ff8": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "b1c0fd5ecaa6d923": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "cebb90925a422d7e": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "dc63d33333ca0a9a49299107d9b95b72ad9246ebaad1b6135971b96e55d6dbd7",
+  "effort": "low",
+  "function": "src/llm_router/_internal/providers/qwenchat.py::QwenChatAdapter.abuild_payload",
+  "keys": [
+   "14086e0bf74da773",
+   "36fb82fcc47860a2",
+   "7879b343f0d7cac0",
+   "8f495188e4365ff8",
+   "b1c0fd5ecaa6d923",
+   "cebb90925a422d7e"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_e736b01d.py",
+  "response_sha256": "20c1fea36beaea7c422e6db848fec289f25b16af4c9e6a2360b2e7875c2026f7",
+  "source": "consolidation",
+  "sources": [
+   "llm_router._api.types.Model",
+   "llm_router._api.types.Provider",
+   "llm_router._internal.capabilities.content.normalize_content",
+   "llm_router._internal.capabilities.tools.ToolChoice",
+   "llm_router._internal.capabilities.tools.ToolDefinition",
+   "llm_router._internal.capabilities.tools.ToolRegistry",
+   "llm_router._internal.providers.base.ProviderCredential",
+   "llm_router._internal.providers.base.ProviderRequest",
+   "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+  ],
+  "suite_checked": true
+ },
+ "FN-EEDAB3CA": {
+  "adopted_at": "2026-10-01T13:04:50.987691Z",
+  "answer_sha256": "2a4f3d5885af789aa099016aa56c7d56dbef551246adeaa4edfcd146d7bd55f2",
+  "call_id": "20261001T130310Z-d81e9f",
+  "cascade": {
+   "185b6874039f611f": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "23b422ccd29d9e9f": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "eefc9085c442a9e5": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "2a4f3d5885af789aa099016aa56c7d56dbef551246adeaa4edfcd146d7bd55f2",
+  "effort": "low",
+  "function": "src/llm_router/_internal/providers/qwenchat.py::QwenChatAdapter",
+  "keys": [
+   "185b6874039f611f",
+   "23b422ccd29d9e9f",
+   "eefc9085c442a9e5"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_eedab3ca.py",
+  "response_sha256": "2b65cac3fd4b304416739644b8586d917b30bad98c3eadc57d9247d3e7f67869",
+  "source": "consolidation",
+  "sources": [
+   "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+  ],
+  "suite_checked": true
+ }
+}

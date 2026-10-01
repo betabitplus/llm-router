@@ -1,19 +1,14 @@
 {
- "at": "2026-09-30T13:47:08.524060Z",
+ "at": "2026-10-01T13:48:57.676130Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_8f336828c0f9c375.py",
   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_96a28c868f99fb34.py",
   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_99d124741e83ae13.py",
   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f107933887a3fa0.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f72abc51a357f38.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_cd5c3873436c0d0c.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_96a28c868f99fb34.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_99d124741e83ae13.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f107933887a3fa0.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
  ],
  "restored": [],
  "removed": {
@@ -34,41 +29,48 @@
    "by": [
     "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py"
    ]
+  },
+  "7cfc3f8477b3a2b8": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
+   ]
+  },
+  "96a28c868f99fb34": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_96a28c868f99fb34.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
+   ]
+  },
+  "99d124741e83ae13": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_99d124741e83ae13.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
+   ]
+  },
+  "9f107933887a3fa0": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f107933887a3fa0.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
+   ]
   }
  },
  "matrix": {
   "7cfc3f8477b3a2b8": [
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_8f336828c0f9c375.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f72abc51a357f38.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_cd5c3873436c0d0c.py"
-  ],
-  "8f336828c0f9c375": [
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_8f336828c0f9c375.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f72abc51a357f38.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_cd5c3873436c0d0c.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
   ],
   "96a28c868f99fb34": [
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_96a28c868f99fb34.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_96a28c868f99fb34.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
   ],
   "99d124741e83ae13": [
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_99d124741e83ae13.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_99d124741e83ae13.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
   ],
   "9f107933887a3fa0": [
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f107933887a3fa0.py"
-  ],
-  "9f72abc51a357f38": [
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_8f336828c0f9c375.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f72abc51a357f38.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_cd5c3873436c0d0c.py"
-  ],
-  "cd5c3873436c0d0c": [
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_7cfc3f8477b3a2b8.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_8f336828c0f9c375.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f72abc51a357f38.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_cd5c3873436c0d0c.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_9f107933887a3fa0.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_cooldown_policy_fn_1b8c5b26.py"
   ]
  },
  "caught_before": [

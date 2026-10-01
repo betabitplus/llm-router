@@ -42,7 +42,7 @@ for _test_name, _criterion, _contracts in (
         "AOV_RESILIENCE_COMBINED_BUDGET_CEILING",
         (
             "REQ_PROVIDER_RETRY[revision==2]",
-            "TREQ_PROVIDER_RETRY_BOUNDS[revision==2]",
+            "TREQ_PROVIDER_RETRY_BOUNDS[revision==3]",
             "REQ_STRUCTURED_OUTPUT_REPAIR[revision==2]",
             "TREQ_STRUCTURED_OUTPUT_ATTEMPT_BOUNDS[revision==1]",
         ),

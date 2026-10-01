@@ -1,0 +1,23 @@
+{
+ "1d475cc4b98b3b39": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant keeps a decoded object's keys as they are instead of turning them into strings. On text, the only value a caller hands the parser, json.loads gives a JSON object's keys as strings, so both versions build the same mapping; a non-string key could come only from the mapping branch, which no public path reaches (see 61ee605eb792ca32). The pin killed the mutant only by replacing json.loads with one that returns an integer key, which the real json.loads never does. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01).",
+  "verdict": "irrelevant"
+ },
+ "61ee605eb792ca32": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant treats every value _parse_json_object gets as text. Every value it gets is text: the executor validates result.output_text and the prompted adapters validate string candidates, so the review's case, an adapter handing over an already parsed dictionary, does not exist on a public path (ProviderResult.output_text is a string). The drafts ran lines 209 and 218 but never the mapping branch. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after every rung of the draft ladder and the verdict asked again with its callers in view.",
+  "verdict": "irrelevant"
+ },
+ "SM-2D3D81E7": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant unwraps a decoded one-item list before the object check. On text, the only value a caller hands the parser, _extract_json_payload takes the span from the first '{' to the last '}' whenever the text holds one, so json.loads yields a list only for a payload without an object in it; unwrapping such a list leaves a non-object, which both versions reject with the same TypeError. No input tells the two apart. The pin killed the mutant only by replacing json.loads with one that wraps an object in a list, which the real json.loads never does. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01).",
+  "verdict": "equivalent"
+ }
+}

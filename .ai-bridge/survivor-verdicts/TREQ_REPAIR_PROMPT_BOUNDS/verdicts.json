@@ -20,37 +20,7 @@
    "verdict": "pin"
   },
   "operator": "argument",
-  "prompt_sha256": "01cfe94dff5b35ee07cba8c5342add9b98fdc924dfeac7dedc60fba35c38a5a0",
-  "subsumed": {
-   "at": "2026-09-30T15:52:04.704210Z",
-   "by": [
-    "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_9341379044dfc2f2.py"
-   ],
-   "pin": {
-    "adopted_at": "2026-09-30T15:29:03.528618Z",
-    "answer_sha256": "a3cdc2563987b1f31a4c679601b27c3c799083b7453c94af6829c992b2ad512b",
-    "call_id": "20260930T152803Z-fb11bd",
-    "cascade": {
-     "accepted": true,
-     "fails_on_mutant": true,
-     "imports_beyond_allowed": [],
-     "lint": [],
-     "passes_on_original": 5,
-     "primitives": []
-    },
-    "draft_sha256": "a3cdc2563987b1f31a4c679601b27c3c799083b7453c94af6829c992b2ad512b",
-    "effort": "high",
-    "model": "claude-sonnet-5-5",
-    "normalizer": "ruff 0.16.3",
-    "path": "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_395a299516e82a3e.py",
-    "response_sha256": "8dd24c95be3b00693256a533d71aeedb6c0af0621b52023df86d7abd3ee2b78f",
-    "source": "draft author",
-    "sources": [
-     "llm_router._internal.capabilities.schema.SchemaSpec",
-     "llm_router._internal.capabilities.schema.build_repair_prompt"
-    ]
-   }
-  }
+  "prompt_sha256": "01cfe94dff5b35ee07cba8c5342add9b98fdc924dfeac7dedc60fba35c38a5a0"
  },
  "3d767806f2945e38": {
   "answer": {
@@ -72,31 +42,6 @@
    "verdict": "equivalent"
   },
   "operator": "argument",
-  "pin": {
-   "adopted_at": "2026-09-29T12:16:07.616755Z",
-   "answer_sha256": "459f0a29c1527459f5716ba27dddbe8f78eb7597289a8e5c8fa1af201701c243",
-   "call_id": "20260929T120217Z-c2f741",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "7e5951026873f7074827cdfd3a3e23a48bc21025367c3cdf8e3b00c314c18d74",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_3d767806f2945e38.py",
-   "response_sha256": "f8181114c7e5adfba13415ad095bd987657da1b0cb4c7f10260051b696779d62",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router._internal.capabilities.schema.build_repair_prompt",
-    "llm_router._internal.capabilities.schema.normalize_schema"
-   ]
-  },
   "prompt_sha256": "2228450e6e1a29c0475271bd4878c7e758189aa5471e03412106db30668215a8",
   "review": {
    "backend": "antigravity-cli",
@@ -228,31 +173,6 @@
    "verdict": "pin"
   },
   "operator": "argument",
-  "pin": {
-   "adopted_at": "2026-09-29T12:16:07.618980Z",
-   "answer_sha256": "c56f884ac8495ff7f774b88a4e4098a42e1b0b1e80daa638992ac1d9123b5202",
-   "call_id": "20260929T120217Z-0de944",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "c56f884ac8495ff7f774b88a4e4098a42e1b0b1e80daa638992ac1d9123b5202",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_repair_prompt_bounds_7ddc0005bc330ecf.py",
-   "response_sha256": "98761897aa7bf46bdd6d8a9f181202a67a838e9b8d0606be2f2642fba62a73a9",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router._internal.capabilities.schema.build_repair_prompt",
-    "llm_router._internal.capabilities.schema.normalize_schema"
-   ]
-  },
   "prompt_sha256": "fb1debc0e206ec0b484d665a19def3a8c61d46f844cdac8d88c28380bab3df5d"
  },
  "9341379044dfc2f2": {
@@ -269,7 +189,7 @@
   },
   "operator": "body",
   "pin": {
-   "adopted_at": "2026-09-27T19:54:19.555330Z",
+   "adopted_at": "2026-10-01T15:02:25.938558Z",
    "answer_sha256": "f736e834b6bd25d73f751beef8937fdf41f1924a725a062acc3b36ab1360e7a3",
    "call_id": "20260927T003601Z-02f026",
    "cascade": {

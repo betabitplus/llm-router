@@ -400,12 +400,12 @@ scope is wrong.
 
 ##### Arid code
 
-| Rule                 | Code it covers                                                                                                                                                                                  | Why it is not mutated                                                                   |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `arid.logging`       | a statement that only logs or warns: a logger method call, a `log_…` or `_log_…` helper call, `warnings.warn`; a call that only builds a logger or a logging callback (a `…_logger(…)` builder) | a log line is no contract outcome, and a test that pins log wording is brittle          |
-| `arid.sleep`         | a statement that only waits: `sleep`, `time.sleep`, `asyncio.sleep`                                                                                                                             | waiting changes timing, not results                                                     |
-| `arid.type-checking` | an `if TYPE_CHECKING:` block                                                                                                                                                                    | it never runs                                                                           |
-| `arid.repr`          | a `__repr__` or `__rich_repr__` method                                                                                                                                                          | a debug representation is no contract outcome; `__str__` stays mutated, it is a message |
+| Rule                 | Code it covers                                                                                                                                                                                                                                                  | Why it is not mutated                                                                   |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `arid.logging`       | a statement that only logs or warns: a logger method call, a `log_…` or `_log_…` helper call, `warnings.warn`; a call that only builds a logger or a logging callback (a `…_logger(…)` builder); a keyword whose parameter the callee only hands to such a call | a log line is no contract outcome, and a test that pins log wording is brittle          |
+| `arid.sleep`         | a statement that only waits: `sleep`, `time.sleep`, `asyncio.sleep`                                                                                                                                                                                             | waiting changes timing, not results                                                     |
+| `arid.type-checking` | an `if TYPE_CHECKING:` block                                                                                                                                                                                                                                    | it never runs                                                                           |
+| `arid.repr`          | a `__repr__` or `__rich_repr__` method                                                                                                                                                                                                                          | a debug representation is no contract outcome; `__str__` stays mutated, it is a message |
 
 A mutant inside arid code is not planted; the campaign counts it by rule. A profile
 turns a rule off for its contract in a **Mutation policy** table
@@ -425,6 +425,16 @@ function declares `global` or `nonlocal` is removed, since it changes state that
 call, as an attribute write does. A body mutant that repeats the statement or return mutant
 of a one-statement function is not planted. A mutant that still breaks import or collection
 is invalid.
+
+A mutant no input could tell from the original is not planted either, as trivial compiler
+equivalence (TCE) finds such mutants, here read from the code as written, before the engine plants
+the mutants of the literals and containers the reading looks at, and counted by reason:
+a removed keyword that passes the callee's own default (the same literal, of the same type, in
+the project or in a dependency `uv.lock` pins); a removed `bool()` whose result is only tested for
+truth, where it stands, through a local the function binds once and only tests, or by a callee
+that only tests that parameter; a removed copy (`dict()`, `list()`, `tuple()`, `set()`) that one
+`update` or `extend` of a local bound only to a new container of that kind reads at once. Whether
+a difference matters to a requirement is never decided here: that is the survivor verdict's.
 
 ##### Suppression
 
@@ -461,7 +471,9 @@ judgement ruff's, since it formats the draft, and the architecture mutants impor
 time limit is 1.25 times its tests' time in the retained run plus 10 s, as in PIT, and a
 mutant that outruns it counts as caught only when a second run with twice the limit runs out
 of time too: a slow suite is no hang. Within a contract the engine runs mutants at once on the
-machine's cores the contracts running beside it leave, and keeps its own incremental cache per
+machine's cores the contracts running beside it leave, each mutant's tests with the full pytest
+runner under the same time limits as when they run one by one (the engine's own parallel pool calls
+its lightweight runner, which runs a test without its fixtures and marks, so it is replaced), and keeps its own incremental cache per
 contract, as PIT's history and Stryker's incremental mode do: where only tests changed, as when a
 cycle adds mutation pins, a mutant whose source file and covering test files are unchanged keeps
 its result and one a new or changed test covers runs again; a change of the engine, of the tests'
@@ -560,7 +572,9 @@ against one module in fifty of the project's own tests). A parametrized value wi
 needs `ids=`: a test's id becomes a need's title in the documentation, where `[[` starts a
 sphinx-needs function call and stops the build. A pin is a fast check: a draft whose runs on the
 original take more than 3 s by pytest's own time (the median of its five) is rejected (on
-2026-10-01 eight pins took 41 of the 52 s of all pins). Every test run blocks the network but for the
+2026-10-01 eight pins took 41 of the 52 s of all pins). One run of a draft that lasts 60 s is stopped
+and fails, and the passes on the original stop at the first that fails: a draft whose test waits on
+nothing would otherwise hold the judgement for each of its runs. Every test run blocks the network but for the
 machine itself (pytest-recording's `--block-network`): the retained run, CI and the pre-push
 hook alike, so a test whose call the block stops behaves the same in each. On 2026-10-01 the
 pre-push run, without the block, let a pin's call reach a real provider, and the pin was taken
@@ -906,14 +920,26 @@ that turns on a requirement's or technical requirement's wording is the person's
 decide (ADR_0006, amended 2026-10-01): it extends the requirement when the configuration and the
 code show the intent, as for the retry wait cap the configuration validates, and only a question
 of what a Goal or Feature promises waits for the person. A person's or delegate's verdict, when
-recorded, wins over the model's; the decisions name who decided. A verdict counts while the code, the tests and
+recorded, wins over the model's; the decisions name who decided, no model is asked about a survivor
+one settles and it does not wait for the assessors, and one that says a mutant needs no pin takes its
+pin away, a pin waiting as redundant included. A verdict counts while the code, the tests and
 the question it answered are unchanged. A mutation pin is a test module under
 `tests/llm_router/mutation_pins/` that verifies its contract and names, in its first line, the
 mutant it pins; it proves no coverage case and no depth, so it never changes a criterion's
 count or a contract's level, boundary or representation, but the next campaign counts it
 among the contract's tests. A pin is kept as the cascade judged it, in the project's style, and
 it names the answer or kept draft it was made from; when the rules change, every pin is judged
-again, and a pin that no draft brings within them is removed.
+again, and a pin that no draft brings within them is removed. A pin whose tests took half a pin's
+time limit or more in the retained run is judged again too, and stays until the draft author, told
+its time, writes a faster one the cascade keeps.
+
+The pins of one function become one (AdverTest gives the author a target's survivors together):
+`--consolidate-pins` shows the draft author every pinned defect of a function that has two or more
+pins, each with the test that catches it now, and adopts its module only when the cascade keeps it for
+every one of them, in the place and under the rules of any pin, the time limit included. The module
+names, in its first lines, its own key and the mutants it pins; a mutant whose verdict stops being pin
+leaves that list, and a consolidated pin taken back brings back the pins it alone replaced. The
+subsumption then removes the pins it makes redundant, as it removes any other.
 
 A pin often kills its neighbours too. `--subsume-pins` runs every pin of a contract against every
 mutant the contract's pins pin, in a copy of the project, and keeps a greedy set cover of that
@@ -923,14 +949,21 @@ kill). A pin whose mutant the kept pins kill is removed: its record keeps the pi
 pins that kill its mutant, and its file waits beside the record. The matrix cannot see a mutant
 that only a removed pin killed without pinning it, so the campaign after the removal is the
 check: the next `--subsume-pins` brings back, as they were, the fewest removed pins that kill
-every mutant the campaign caught before the removal and misses now, and a pin brought back
-stays. A removed pin whose mutant survives again comes back first when its verdict is decided,
+every mutant the campaign caught before the removal and misses now, unless a verdict that counts
+takes that mutant out as equivalent or irrelevant, and a pin brought back stays. A removed pin whose mutant survives again comes back first when its verdict is decided,
 judged again from its stored draft without asking a model. `--subsume-pins --verify` only
 brings back what earlier removals cost and removes nothing: the last pass before a gate, since
 another removal would need another campaign to check it. A pin the cascade keeps alone can still
-fail in the project's full test run, where the tests before it run too: `--reject-pin` takes it
-back with its reason, and its stored answer is never judged again. Subsumption runs once a milestone,
-not in every cycle.
+fail in the project's full test run, where the tests before it run too: so the stage that writes or
+rewrites pins runs the whole suite once more with them, as the retained run runs it (two workers,
+random order, the network blocked) but without coverage, in a copy of the working tree. A new pin
+that fails there is taken back with its reason and its stored answer is never judged again; another
+test that fails runs again alone and after each new pin, a pin it then fails after is taken back
+too, and a test that fails alone stops the stage. `--reject-pin` takes a pin back by hand the same
+way. A pin whose mutant the campaign
+still reports as surviving, because the engine ran the pin with the mutant switched on and it passed
+or never ran it, is taken back the same way at the end of the campaign, and its mutant returns to the
+ladder with the reason. Subsumption runs once a milestone, not in every cycle.
 
 ###### Model canaries
 

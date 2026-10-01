@@ -1,0 +1,62 @@
+# mutation-pin: REQ_REQUEST_OVERRIDE_PRECEDENCE SM-4D75202A
+# pinned-by: claude-opus-5-5
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from llm_router import LLMRouter, Model, Provider, RouterProfile
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
+)
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+)
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
+
+pytestmark = pytest.mark.verification_kind("unit")
+
+
+@pytest.mark.verifies("REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]")
+def test_falsy_call_provider_kwarg_overrides_route_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", "value-1")
+    path = openai_chat_path()
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", path): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=openai_success_response(text="ok"),
+                )
+            ]
+        },
+    ) as server:
+        router = LLMRouter(
+            RouterProfile(
+                model=Model.DEEPSEEK_V3,
+                provider=Provider.OPENROUTER,
+                key_id=1,
+                max_attempts=1,
+                kwargs={"logprobs": True, "max_tokens": 50},
+            ),
+            shuffle_fallbacks=False,
+            round_robin_start=False,
+        )
+        with patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ):
+            router.query("hello", logprobs=False)
+
+        recorded = server.recorded_requests("POST", path)
+        request_record = next(iter(recorded))
+        payload = json.loads(request_record.body)
+        assert payload["logprobs"] is False
+        assert payload["max_tokens"] == 50

@@ -256,6 +256,57 @@
     "tests.llm_router.support.workers.retry.openai_success_response",
     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
+  },
+  {
+   "at": "2026-10-01T12:18:42.656586Z",
+   "call_id": "20261001T121726Z-ec6ffd",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "e9ed219cf4e7b9537ca726d00284c54b852f67051d10eda50a3f8fa83044e070",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: Regex pattern did not match. | Expected regex: 'cool down' | Actual message: \"Provider 'openrouter' failed for model 'deepseek-chat-v3'. Reason: Provider request failed with status code 400.\")",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-01T12:22:29.202990Z",
+   "call_id": "20261001T121842Z-42dc8b",
+   "cause": "slow",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "9059596dcc039082659385049d9659e778f95b072f7a6d3b178d52d38dbef15c",
+   "reason": "it takes 3.64 s on the original, and a pin runs within 3 s",
+   "sources": [
+    "pytest",
+    "llm_router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._api.errors.ProviderError",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ],
  "87ecdb53561b826d": [
@@ -338,6 +389,62 @@
     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
     "tests.llm_router.support.fault_server.ScriptedResponse",
     "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "FN-2D644D4D": [
+  {
+   "at": "2026-10-01T13:09:38.326892Z",
+   "call_id": "20261001T130451Z-81fadc",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "60fd32ffa439dab07a8a34d491d1ade36d56a1815ac2dddd54d5fe3311e5be9e",
+   "reason": "it does not fail on the mutant: of the changed lines 340\u2013360 it runs lines 340, 346\u2013349, 354\u2013356, 358 and 360 but never lines 343\u2013344",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-01T13:12:15.923515Z",
+   "call_id": "20261001T130938Z-6123da",
+   "cause": "slow",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e1095d6bb1fbc14d8582ace2615fceaf0636ea82eecaac3ed48e8b96cb54807a",
+   "reason": "it takes 3.07 s on the original, and a pin runs within 3 s",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router.KeyId",
+    "llm_router._internal.runtime.limiter.KeyResolver",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
     "tests.llm_router.support.workers.retry.openai_success_response",
     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]

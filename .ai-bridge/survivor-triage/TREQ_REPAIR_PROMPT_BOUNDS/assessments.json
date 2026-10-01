@@ -45,56 +45,56 @@
  "3d767806f2945e38": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
-    "arguments": {},
+    "arguments": {
+     "error_message": "\"a\" * 1000",
+     "invalid_output": "None",
+     "spec": "SchemaSpec(name=\"test\", json_schema={}, parser=str)"
+    },
     "backend": "antigravity-cli",
-    "call_id": "20260929T084409Z-b46586",
-    "confidence": 0.99,
+    "call_id": "20261001T170221Z-08a4a3",
+    "confidence": 0.95,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The removal of the `max_chars=300` argument indicates it relies on the default value, and the multiline implicit string concatenation evaluates to the exact same f-string as the changed version.",
-    "response_sha256": "9599b534f5b4d9f8ad44c309cc06378a83208b335aa82cec615c8d93894e8105",
+    "reason": "The changed version omits the max_chars=300 argument when calling preview_text for the error_message, which will alter the formatting or truncation of long error messages assuming the default is different.",
+    "response_sha256": "f686c15d99a8cf604110c8bf873bdbf1d0bdf915c33c17eb7629966a13f9ff18",
     "sources": [
      "    error_preview = preview_text(error_message, max_chars=300)",
      "    error_preview = preview_text(error_message)"
     ],
-    "verdict": "equivalent"
+    "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T084409Z-277553",
+    "call_id": "20261001T170201Z-27dc1b",
     "confidence": 0.95,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "Both versions behave identically because preview_text defaults to max_chars=300 and the single f-string produces the exact same formatted string as the parenthesized string concatenation.",
-    "response_sha256": "3c0082c36688a06f2f7e3d39b905b78ee77d5dd5a3a7f38c55b97e83ed86c930",
+    "reason": "The functions are equivalent because preview_text defaults to max_chars=300, making the explicit argument in error_preview redundant, and the consolidated f-string return value is identical.",
+    "response_sha256": "644745a332b765231e1fbd3763fc012c4831f7c622e221fb7ce48d635307cef9",
     "sources": [
      "    error_preview = preview_text(error_message, max_chars=300)",
      "    error_preview = preview_text(error_message)"
     ],
     "verdict": "equivalent"
    },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "error_message": "\"e\" * 1000",
-     "invalid_output": "\"x\"",
-     "spec": "SchemaSpec(name=\"s\", json_schema={}, parser=str)"
-    },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
     "backend": "claude-cli",
-    "call_id": "20260928T233855Z-c98277",
-    "confidence": 0.65,
-    "model": "claude-sonnet-5",
+    "call_id": "20261001T163847Z-4b12d6",
+    "confidence": 0.5,
+    "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The changed version drops the explicit max_chars=300 argument to preview_text for error_message, so if preview_text's default differs from 300, a sufficiently long error_message yields different truncated output between versions.",
-    "response_sha256": "7c7a2073d29174f018d48c79c401698ee0bc8321e845affed89a9b745232b485",
+    "reason": "The only difference is that error_message is previewed without max_chars=300; whether that changes output depends on preview_text's default limit, which I can't see.",
+    "response_sha256": "7c77684f3103dd71064b86071bfafd9711934de7bbf63fcfa55b2d24ecba145c",
     "sources": [
      "error_preview = preview_text(error_message, max_chars=300)",
      "error_preview = preview_text(error_message)"
     ],
-    "verdict": "distinct"
+    "verdict": "unsure"
    }
   },
-  "prompt_sha256": "dc09295f3b316de79cfed4d0a3fc00bce587d7fd5e09442f36f744d24b48bf8f"
+  "prompt_sha256": "f2c0513d65afd6d70e174d001728b4f855a71add0a932f0913f1e733d2d179ab"
  },
  "53c4293e1a144b74": {
   "answers": {
@@ -201,59 +201,55 @@
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "error_message": "'test'",
-     "invalid_output": "'a' * 1000",
+     "error_message": "'error'",
+     "invalid_output": "'A' * 600",
      "spec": "SchemaSpec(name='test', json_schema={}, parser=str)"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260929T084409Z-fc6dfc",
-    "confidence": 0.95,
+    "call_id": "20261001T170201Z-ace843",
+    "confidence": 0.9,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The modified version omits the `max_chars=500` argument from the `preview_value` call, altering the output for large inputs unless the default limit happens to be exactly 500.",
-    "response_sha256": "f9726bcd6d65a54c71102196414d50e5a17e1a007cb8bed416591ebbdd0480f2",
+    "reason": "The changed version omits the max_chars=500 argument when calling preview_value on invalid_output, which will result in different string truncation if the default limit is not 500.",
+    "response_sha256": "c0dadcab562edaaef33e8fd1f109ae673e3da6b40e723ab6b794a9d5623063a3",
     "sources": [
-     "output_preview = preview_value(invalid_output, max_chars=500)",
-     "output_preview = preview_value(invalid_output)"
+     "    output_preview = preview_value(invalid_output, max_chars=500)",
+     "    output_preview = preview_value(invalid_output)"
     ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T084409Z-83eb07",
+    "call_id": "20261001T170201Z-49acfa",
     "confidence": 0.95,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The default value of max_chars in preview_value is 500, so omitting the argument does not alter the output, and both return statements produce identical formatted strings.",
-    "response_sha256": "7aa963d44c1bb0fda3397c35ca6a3ebff65d5435c4d3d8dba339edbcf33581ae",
+    "reason": "The two versions are equivalent because preview_value defaults max_chars to 500 and the single-line formatted return string evaluates to the exact same string as the multi-line concatenated string.",
+    "response_sha256": "1058078e575a0e1c07bdfbfea11fb259210ff5a678135ffe6ad2f31ea17cb7c4",
     "sources": [
      "    output_preview = preview_value(invalid_output, max_chars=500)",
      "    output_preview = preview_value(invalid_output)"
     ],
     "verdict": "equivalent"
    },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "error_message": "'err'",
-     "invalid_output": "'a' * 1000",
-     "spec": "SchemaSpec(name='S', json_schema={}, parser=lambda x: x)"
-    },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
     "backend": "claude-cli",
-    "call_id": "20260928T233228Z-6b2e95",
-    "confidence": 0.6,
-    "model": "claude-sonnet-5",
+    "call_id": "20261001T163847Z-d21498",
+    "confidence": 0.5,
+    "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The original calls preview_value(invalid_output, max_chars=500) while the changed version calls preview_value(invalid_output) relying on its default, so for a sufficiently long invalid_output whose default truncation length differs from 500 the two produce different 'Previous response preview' text in the returned string.",
-    "response_sha256": "156125e77eadfa6a137f2398243e72e339eb1e2d95b4664b765f3f81fd542e8b",
+    "reason": "The changed version drops max_chars=500 in the preview_value call, so equivalence depends on preview_value's default, which isn't shown; everything else is identical.",
+    "response_sha256": "d1b9f6d4a1c5aaae7eb96619f2c11a7f758b10a9bac528175cf1ea30edef6185",
     "sources": [
      "output_preview = preview_value(invalid_output, max_chars=500)",
      "output_preview = preview_value(invalid_output)"
     ],
-    "verdict": "distinct"
+    "verdict": "unsure"
    }
   },
-  "prompt_sha256": "08505aa6fc327ad77fc748e75a18d693842b9a435e0afabac458cb0105fe0858"
+  "prompt_sha256": "a1ea759b46c72053a88c64c92fcde086fe4a832ab9f24465f16af4963020bf28"
  },
  "9341379044dfc2f2": {
   "answers": {

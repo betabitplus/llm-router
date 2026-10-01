@@ -5,5 +5,33 @@
   "level": "requirement",
   "reason": "The mutant drops None values only on the mapping branch of _parse_pydantic_model. The router validates structured output from the response text, which takes the text branch (model_validate_json); no public path hands the parser a mapping, and three rungs, the last the verdict's own model with tools, never reached the changed lines. No public path can observe it. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after every rung of the draft ladder and the verdict asked again with its callers in view.",
   "verdict": "irrelevant"
+ },
+ "a5d83d760dbc5183": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant changes only the mapping branch of _parse_pydantic_model (model_validate of a value that is neither text nor the model). Every caller of the parser hands it text: the executor validates result.output_text and the prompted adapters validate string candidates. No public path hands the parser a mapping, as for SM-C6EBF982, and every rung of the draft ladder, the last the verdict's own model with tools, failed to reach a difference. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after every rung of the draft ladder and the verdict asked again with its callers in view.",
+  "verdict": "irrelevant"
+ },
+ "b6f8d3c681f933f8": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant sends every value down the text branch of _parse_pydantic_model. For text, the only value a caller gives it (the executor validates result.output_text, the prompted adapters validate string candidates), that is what the original does; the difference shows only for a mapping, which no public path hands the parser, as for SM-C6EBF982. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after every rung of the draft ladder and the verdict asked again with its callers in view.",
+  "verdict": "irrelevant"
+ },
+ "f8b19d9c5fd12b62": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant hands Draft202012Validator.check_schema the schema itself instead of a dict copy. Its only caller, normalize_schema, passes deepcopy(dict(schema)), a plain dict, so a MappingProxyType never reaches it (that case is pinned where normalize_schema copies, 155610404a9b2a0a), and check_schema only reads the schema it validates. No input tells the two apart. The pin killed the mutant only by replacing check_schema with one that removes 'required' from its argument, which the real one never does. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01).",
+  "verdict": "equivalent"
+ },
+ "ffbbfd72fe94fb6f": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant returns the model class instead of validating on the mapping branch of _parse_pydantic_model. Every caller of the parser hands it text (the executor validates result.output_text, the prompted adapters validate string candidates), so that branch is never taken on a public path, as for SM-C6EBF982. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after every rung of the draft ladder and the verdict asked again with its callers in view.",
+  "verdict": "irrelevant"
  }
 }

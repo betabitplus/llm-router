@@ -148,6 +148,49 @@
    ]
   }
  ],
+ "FN-B748D89A": [
+  {
+   "at": "2026-10-01T12:45:55.904605Z",
+   "call_id": "20261001T124241Z-e05673",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "a42f9e6e0eff2c5cb2067e05dcd6982f04617550c7fe924463695f4384eeb7b3",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 563\u2013564: of the function under test it runs lines 561\u2013562; the nearest it gets is line 562",
+   "sources": [
+    "llm_router.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_error_response",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  },
+  {
+   "at": "2026-10-01T12:55:20.078360Z",
+   "call_id": "20261001T124556Z-785ac7",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "a5d0c6d845a34e793715bbdbb3d72857285eba7908db0df8fe52dce6102c5433",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert 5 == 1)",
+   "sources": [
+    "llm_router._api.types.Model",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "py_lib_testkit._internal.test_support.http.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_error_response",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_error_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker",
+    "tests.llm_router.support.workers.retry.RetryWorkerResult"
+   ]
+  }
+ ],
  "SM-0468831E": [
   {
    "at": "2026-09-29T19:15:34.146516Z",

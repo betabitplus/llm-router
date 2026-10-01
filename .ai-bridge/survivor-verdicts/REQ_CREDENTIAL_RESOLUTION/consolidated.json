@@ -1,0 +1,176 @@
+{
+ "FN-0B39F604": {
+  "adopted_at": "2026-10-01T12:43:36.504317Z",
+  "answer_sha256": "ec47d03d780e9bb585c705d4af21c5091befda1b97fe7c912d98a48609241097",
+  "call_id": "20261001T124058Z-f4af06",
+  "cascade": {
+   "9b07dce1d69c1bc9": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "b30cea8391ac9160": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "c183d19f83572829c1396d0d7ff1523180a3e7795971dd82f03451e73816f4cc",
+  "effort": "",
+  "function": "src/llm_router/_internal/runtime/limiter.py::KeyResolver._resolve_fixed",
+  "keys": [
+   "9b07dce1d69c1bc9",
+   "b30cea8391ac9160"
+  ],
+  "model": "gemini-3.8-flash-medium",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0b39f604.py",
+  "response_sha256": "a54cba090c7dfa7fd44b3ab52ae55119af55b0d0285b3f5d4ff1386b4f2436e4",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.RouterProfile",
+   "llm_router.get_config",
+   "llm_router.install_config",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "tests.llm_router.support.fault_server.ScriptedResponse",
+   "tests.llm_router.support.workers.retry.qwen_chat_path",
+   "tests.llm_router.support.workers.retry.qwen_success_response"
+  ],
+  "suite_checked": true
+ },
+ "FN-0FAB3592": {
+  "adopted_at": "2026-10-01T12:46:34.465512Z",
+  "answer_sha256": "5bc5819c250d061d261d4121a77b146e59889a4667c345e15ff3ee4048687454",
+  "call_id": "20261001T124111Z-1d4a49",
+  "cascade": {
+   "53bdcf1990f4aaa4": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "e917251d85f56c41": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "f6c26fefc186db93": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "90a02869d5963b9908ad7df1abc360886b7d7b08ce593a4c88b7b7dcfc5464d8",
+  "effort": "",
+  "function": "src/llm_router/_internal/runtime/limiter.py::KeyResolver._resolve_auto",
+  "keys": [
+   "53bdcf1990f4aaa4",
+   "e917251d85f56c41",
+   "f6c26fefc186db93"
+  ],
+  "model": "gemini-3.8-flash-medium",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_0fab3592.py",
+  "response_sha256": "d35d601ad5f442964c76dd3f32bea239c4d651206a45f5da36b35cbe46df156f",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.ApiKeyNotFoundError",
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.ProviderLimits",
+   "llm_router.RouterProfile",
+   "llm_router.get_config",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "tests.llm_router.support.fault_server.ScriptedResponse",
+   "tests.llm_router.support.workers.retry.openai_chat_path",
+   "tests.llm_router.support.workers.retry.openai_success_response",
+   "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+  ],
+  "suite_checked": true
+ },
+ "FN-5590ACAC": {
+  "adopted_at": "2026-10-01T12:43:24.508726Z",
+  "answer_sha256": "a1afc74342dcefa0b1496585e787f62a2925328b05529d5dcf55cd2d252d2806",
+  "call_id": "20261001T124111Z-8f74e7",
+  "cascade": {
+   "165277b3148f155e": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "1c6b745faa58a462": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "5ef3f33a9ec29e3d": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "6a19c74173ddbaf9": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "adb0de8f41da4f7e": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "afe2fe11b15a368c": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "b424da4f88707d25": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "7500782fba7ace62ffec050e1b4fb0e44b9cce47721f7b5ef985734b3c9984ca",
+  "effort": "",
+  "function": "src/llm_router/_internal/runtime/limiter.py::KeyResolver.candidates",
+  "keys": [
+   "165277b3148f155e",
+   "1c6b745faa58a462",
+   "5ef3f33a9ec29e3d",
+   "6a19c74173ddbaf9",
+   "adb0de8f41da4f7e",
+   "afe2fe11b15a368c",
+   "b424da4f88707d25"
+  ],
+  "model": "gemini-3.8-flash-medium",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_credential_resolution_fn_5590acac.py",
+  "response_sha256": "64102727f2b37a4064eba8c2ab77a4e549b56fa7030aa0c2d0c3112d9fae8386",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.ApiKeyNotFoundError",
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.ProviderError",
+   "llm_router.RouterProfile",
+   "llm_router.get_config",
+   "llm_router.install_config"
+  ],
+  "suite_checked": true
+ }
+}

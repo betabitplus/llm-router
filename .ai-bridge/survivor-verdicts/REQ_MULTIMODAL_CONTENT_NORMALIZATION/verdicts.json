@@ -109,14 +109,14 @@
  "0c1b36286cf6938e": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T062428Z-8bf573",
+   "call_id": "20261001T113700Z-6af247",
    "confirmed": true,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "normalize_content passes its argument straight to _content_parts, so bytes reach the changed branch. With empty bytes (b'' or bytearray()), the mutant gives an empty tuple and normalize_content returns a message with no parts, assuming normalize_parts(()) returns (). The original raises TypeError. Unsupported top-level content is then accepted when the requirement says it must fail locally.",
-   "response_sha256": "fca155cfd4b32d3d72c3f83c2e91f77cb1de42446c08656ed5d8871f4b62b599",
+   "reason": "The requirement says unsupported top-level content must be rejected locally, and bytes are such content. The mutant no longer excludes bytes, so normalize_content(b'') likely returns a message with no parts instead of raising TypeError. Non-empty bytes probably still fail later on integer parts, which would explain why earlier tests passed on both versions.",
+   "response_sha256": "d51ef6f08c9598529d7ced7f1a66a8c7fb2c7bbeae46717a177c59780af361aa",
    "sources": [
     "Unsupported top-level content or media parts and raw images outside supported mode or dimension bounds shall fail before provider execution.",
     "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
@@ -124,11 +124,11 @@
     "if isinstance(content, Sequence):",
     "parts=normalize_parts(_content_parts(content)),"
    ],
-   "test_focus": "Call normalize_content(b'') and normalize_content(bytearray()), plus b'abc', and check that each raises TypeError whose message names the unsupported content type (\"Unsupported message content: bytes\"/\"bytearray\").",
+   "test_focus": "Call normalize_content with empty bytes (b'' and bytearray()) and check that it raises TypeError rather than returning a NormalizedMessage with empty parts.",
    "verdict": "pin"
   },
   "operator": "condition",
-  "prompt_sha256": "023308d88a6449bf8c0fb95b580c023281ca2714f96b0f88bf56e867dec3760c"
+  "prompt_sha256": "6b3f9979130331b31dc49903657e3c20ab87fc0dab842b9aa24720b4cd2b4c06"
  },
  "4e35b24fc276e4ad": {
   "answer": {
@@ -150,9 +150,9 @@
   },
   "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-30T18:23:01.537152Z",
-   "answer_sha256": "886756a573f9554017c5fdcb52e73495560988692cda7486a86f69f46577ae83",
-   "call_id": "20260930T180501Z-5ac7bf",
+   "adopted_at": "2026-10-01T12:20:13.876043Z",
+   "answer_sha256": "e51095863ad4cb27801d7a57ebe639e16ec12b144a644f27c48c6e2b0db11679",
+   "call_id": "20261001T121805Z-3250f1",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -161,25 +161,30 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "886756a573f9554017c5fdcb52e73495560988692cda7486a86f69f46577ae83",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
+   "draft_sha256": "e51095863ad4cb27801d7a57ebe639e16ec12b144a644f27c48c6e2b0db11679",
+   "effort": "",
+   "model": "gemini-3.8-flash-medium",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_4e35b24fc276e4ad.py",
-   "response_sha256": "0aa005cd5e3bd3258260b1952154e1ea00523ba452f5c24fb226a97ce4ed0343",
-   "source": "draft author with tools",
+   "response_sha256": "d248206eea9d36860968a3ee0db8a9f6de7a258072d8f27edc55f841ef2eb9eb",
+   "source": "draft author",
    "sources": [
     "llm_router.LLMRouter",
-    "llm_router.LLMRouterError",
     "llm_router.Model",
     "llm_router.Provider",
     "llm_router.RouterProfile",
     "llm_router.get_config",
     "llm_router.install_config",
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._internal.config.state.get_config",
+    "llm_router._internal.config.state.install_config",
     "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
     "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path"
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
    ]
   },
   "prompt_sha256": "2a0ee902aeb68f10056a3e1febed4a9798a0b443bc0bbe83d65f76807aba9dd9"
@@ -326,25 +331,26 @@
  "SM-73959DE4": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T083042Z-04d637",
+   "call_id": "20261001T114454Z-e967b0",
    "confirmed": true,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The caller normalize_content takes any object, so it can pass bytes to _content_parts. Bytes are unsupported top-level content that must fail locally, but the mutant splits them into int items. For empty bytes it hands normalize_parts an empty tuple; if that is accepted, normalize_content(b\"\") yields a message with no parts instead of raising.",
-   "response_sha256": "86f576a7c6dd42e469496ab5b46e41a58ca3bdb3c99aff731f3d51e9f11f9e1d",
+   "reason": "normalize_content hands any object to _content_parts, so bytes reach the changed line. The original rejects them as unsupported top-level content. The mutant splits them into integers, so b\"\" probably becomes an empty message instead of failing locally, which breaks the rule that unsupported top-level content fails before provider execution.",
+   "response_sha256": "f563d079dda9eefbc33fa34653fd37824e68d436482cd6681ff6a1e7a02f2b7e",
    "sources": [
     "Unsupported top-level content or media parts and raw images outside supported mode or dimension bounds shall fail before provider execution.",
     "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
-    "if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
-    "parts=normalize_parts(_content_parts(content)),"
+    "    if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
+    "    if isinstance(content, Sequence):",
+    "        parts=normalize_parts(_content_parts(content)),"
    ],
-   "test_focus": "Call normalize_content(b\"\") and normalize_content(bytearray(b\"\")) and assert TypeError (\"Unsupported message content\"); also assert normalize_content(b\"a\") raises the same error.",
+   "test_focus": "Call normalize_content(b\"\") and normalize_content(bytearray(b\"\")) and assert both raise TypeError. The original raises; the mutant gets an empty tuple from _content_parts and returns a message with no parts.",
    "verdict": "pin"
   },
   "operator": "semantic",
-  "prompt_sha256": "1c33d622622ef24cb9a232f93dca0f7ec7947ff363218d09632d39f9e2c50bf7"
+  "prompt_sha256": "86f7164e453a154fe29ab3a474dec7338e0d54eeeb082a3f428c67417fdc3fdd"
  },
  "SM-9B37A894": {
   "answer": {
@@ -461,43 +467,41 @@
  "a9925109311de4d5": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T064218Z-215638",
+   "call_id": "20261001T113700Z-2d8ac0",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only returns the same parts, in the same order, as a list instead of a tuple. The requirement asks for caller order, role, metadata, media kind and descriptor metadata, not a container type. Both callers only hand the result to NormalizedMessage(parts=...), and every drafted test passed on both versions, so the difference doesn't show where the requirement is observed.",
-   "response_sha256": "d65fc8a0483d49f32d2176009b422802be0e757aec7ed92d36724a2d8c72bf2f",
+   "reason": "Both callers (normalize_content, normalize_chat_message) reach the change with any input, but the only difference is tuple vs list. Order, part kinds and media descriptors stay the same, and the requirement asks only that order, role, metadata, media kind and descriptor metadata be preserved, never that parts be a tuple.",
+   "response_sha256": "0e6f4fba3f74806abe35b5a15944f842b6a08df3eaef97ee0aca1ab71563f640",
    "sources": [
     "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
-    "Mixed text/file/image/local-video/remote-video parts retain caller order and relevant descriptor metadata.",
-    "return normalized",
-    "return tuple(normalized)",
-    "parts=normalize_parts(_content_parts(content)),",
-    "parts=normalize_parts(message.parts),"
+    "Normalizing a ChatMessage preserves role, ordered parts, and metadata values while owning a separate top-level metadata mapping.",
+    "    return tuple(normalized)",
+    "    return normalized",
+    "        parts=normalize_parts(message.parts),"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "conversion",
-  "prompt_sha256": "925e41b4fa69afab3d6d6856c1648ddc1591a0b4482facb1b9afc2c9b6be3e21",
+  "prompt_sha256": "379ef260fce6b0c723ec90c12524314f8ad253cf01f8c6a50342658c85e490b7",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T064237Z-16b078",
+   "call_id": "20261001T113803Z-d4f37f",
    "confirmed": false,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "925e41b4fa69afab3d6d6856c1648ddc1591a0b4482facb1b9afc2c9b6be3e21",
-   "reason": "The requirement specifies that the normalization process must preserve caller order, but it does not mandate a specific collection type. Both a list and a tuple preserve the order of parts, making the type difference an implementation detail.",
-   "response_sha256": "89cda5350cd781d3d4b63c500d5eaead54394c41db684a3284d6fe22b9ba1551",
+   "prompt_sha256": "379ef260fce6b0c723ec90c12524314f8ad253cf01f8c6a50342658c85e490b7",
+   "reason": "The requirement and its verification criteria only mandate that the normalization preserves caller order and ordered parts, not the specific collection type. Returning a list instead of a tuple is an implementation difference in return type that does not violate any specified requirement.",
+   "response_sha256": "674739edade2c68d043ec6f2e2574236351c75adedbe82ff52d0a662c88064e4",
    "sources": [
     "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
     "Normalizing a ChatMessage preserves role, ordered parts, and metadata values while owning a separate top-level metadata mapping.",
-    "return tuple(normalized)",
-    "return normalized"
+    "return tuple(normalized)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -582,9 +586,9 @@
   },
   "operator": "comparison",
   "pin": {
-   "adopted_at": "2026-09-30T18:25:20.157677Z",
-   "answer_sha256": "a03d80ef8ce7b26f9bc52525260019205cc8484eb8a43972d54f9a521cf16a05",
-   "call_id": "20260930T180459Z-df5507",
+   "adopted_at": "2026-10-01T15:09:15.644495Z",
+   "answer_sha256": "40020f498ce4d3bd7ae7cab31a7f31fa400c1aee3a56aec27a045f9411a7a5df",
+   "call_id": "20261001T150748Z-b1ec57",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -593,25 +597,24 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "a03d80ef8ce7b26f9bc52525260019205cc8484eb8a43972d54f9a521cf16a05",
+   "draft_sha256": "40020f498ce4d3bd7ae7cab31a7f31fa400c1aee3a56aec27a045f9411a7a5df",
    "effort": "medium",
    "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_e9186235c6377e40.py",
-   "response_sha256": "6522beedf486bab999c689f56f6b31ddb8c2a3ae73cc9ffe5ffed4e707aecdad",
+   "response_sha256": "60610b8ce23d57b24f4547b59144ce3d32a811ca71a178a215acec1ca7d4ebf1",
    "source": "draft author with tools",
    "sources": [
     "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
     "llm_router.Model",
     "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "llm_router.get_config",
-    "llm_router.install_config",
-    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
     "tests.llm_router.support.fault_server.ScriptedResponse",
     "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response"
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   },
   "prompt_sha256": "f56a5372e624a4521b9698eed289a01478a51cc94eccbb0b41ab7fe34483d9af"
@@ -635,39 +638,45 @@
    "verdict": "pin"
   },
   "operator": "return",
-  "pin": {
-   "adopted_at": "2026-09-30T18:25:33.782483Z",
-   "answer_sha256": "f8824ab3ba231457255b0bad568156180f508daa3ef38072a3dd6711870c053d",
-   "call_id": "20260930T182016Z-580e60",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "f8824ab3ba231457255b0bad568156180f508daa3ef38072a3dd6711870c053d",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_f02a96133d01bfce.py",
-   "response_sha256": "5bbf08fce6f2bf43e07ff99df9ff8973bd65e7a631ef72943670f1bef4222eab",
-   "source": "last resort",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.retry.openai_success_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "55cd07ebb103cd882b704bcbe6e0ccadc446a22ba636959aeacab27c4df06207"
+  "prompt_sha256": "55cd07ebb103cd882b704bcbe6e0ccadc446a22ba636959aeacab27c4df06207",
+  "subsumed": {
+   "at": "2026-10-01T13:47:36.424635Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_9b37a894.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T18:25:33.782483Z",
+    "answer_sha256": "f8824ab3ba231457255b0bad568156180f508daa3ef38072a3dd6711870c053d",
+    "call_id": "20260930T182016Z-580e60",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "f8824ab3ba231457255b0bad568156180f508daa3ef38072a3dd6711870c053d",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_f02a96133d01bfce.py",
+    "response_sha256": "5bbf08fce6f2bf43e07ff99df9ff8973bd65e7a631ef72943670f1bef4222eab",
+    "source": "last resort",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.retry.openai_success_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "fbcda5c66084477c": {
   "answer": {

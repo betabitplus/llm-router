@@ -86,6 +86,45 @@
    ]
   }
  ],
+ "FN-D498759F": [
+  {
+   "at": "2026-10-01T12:47:55.367895Z",
+   "call_id": "20261001T124336Z-15c621",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "965309bf13c5cc30085f8c73d352ff46ec58998bc00f6e136b60393d83897cd6",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-01T14:12:45.017104Z",
+   "call_id": "20261001T124336Z-15c621",
+   "cause": "suite",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "965309bf13c5cc30085f8c73d352ff46ec58998bc00f6e136b60393d83897cd6",
+   "reason": "after it, in the same process, test_recovery_remains_the_preferred_path_on_the_next_request fails (3 of 3 in fixed order; never without it): its three timed-out attempts keep running in the background past the test and disturb the routing tests that follow",
+   "sources": []
+  }
+ ],
  "SM-67D9CEE8": [
   {
    "at": "2026-10-01T08:34:42.445117Z",
@@ -553,6 +592,25 @@
    "sources": [
     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
     "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.timeout.run_timeout_inprocess"
+   ]
+  },
+  {
+   "at": "2026-10-01T12:18:33.552268Z",
+   "call_id": "20261001T121726Z-92af50",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "566d9d545f85fa176b96a92d10ef15f97155d6e1a756bafe5ef4b8eea4f22340",
+   "reason": "",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "py_lib_testkit._internal.test_support.http.ScriptedResponse",
     "tests.llm_router.support.workers.retry.openai_chat_path",
     "tests.llm_router.support.workers.retry.openai_success_response",
     "tests.llm_router.support.workers.timeout.run_timeout_inprocess"

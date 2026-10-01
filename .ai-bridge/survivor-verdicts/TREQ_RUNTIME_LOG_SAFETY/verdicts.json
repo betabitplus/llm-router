@@ -18,32 +18,38 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.597382Z",
-   "answer_sha256": "f82c011c767b1194da1622fb1b649a6f71ed83644f02ed23003d85e6962b59e0",
-   "call_id": "20260929T112258Z-acfe43",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "f82c011c767b1194da1622fb1b649a6f71ed83644f02ed23003d85e6962b59e0",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_84eb2eb645a09af6.py",
-   "response_sha256": "5bcf8f9da7eefb7eca74067edaa9f608edaebd1fc5c94a48b83c0d9e551f5ccf",
-   "source": "draft author",
-   "sources": [
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router._internal.providers.base.ProviderFailure"
-   ]
-  },
-  "prompt_sha256": "00b5d614a0d9081f369166ef5667184954f1ed43e0c0468fab72cb01eb01a882"
+  "prompt_sha256": "00b5d614a0d9081f369166ef5667184954f1ed43e0c0468fab72cb01eb01a882",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.662197Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_fn_94d62fae.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.597382Z",
+    "answer_sha256": "f82c011c767b1194da1622fb1b649a6f71ed83644f02ed23003d85e6962b59e0",
+    "call_id": "20260929T112258Z-acfe43",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "f82c011c767b1194da1622fb1b649a6f71ed83644f02ed23003d85e6962b59e0",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_84eb2eb645a09af6.py",
+    "response_sha256": "5bcf8f9da7eefb7eca74067edaa9f608edaebd1fc5c94a48b83c0d9e551f5ccf",
+    "source": "draft author",
+    "sources": [
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router._internal.providers.base.ProviderFailure"
+    ]
+   }
+  }
  },
  "SM-LOG-01": {
   "answer": {
@@ -58,26 +64,32 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-27T20:11:01.944777Z",
-   "answer_sha256": "c4570671e37f5ade22a8b45f28a9ec021257c29a8d5628ec91ca6fbca54332d7",
-   "call_id": "20260927T200712Z-a4288d",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "c4570671e37f5ade22a8b45f28a9ec021257c29a8d5628ec91ca6fbca54332d7",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_01.py",
-   "response_sha256": "2157a38b4d399a4f05969af8037cba95d6a7dd310801dfda11356dadf663659e",
-   "source": "draft author"
-  },
-  "prompt_sha256": "9b7e82160cb4009d891409792bfc79e5943d395b3b570aabaef7fb1211e305e7"
+  "prompt_sha256": "9b7e82160cb4009d891409792bfc79e5943d395b3b570aabaef7fb1211e305e7",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.662445Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_fn_12fc5c09.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T20:11:01.944777Z",
+    "answer_sha256": "c4570671e37f5ade22a8b45f28a9ec021257c29a8d5628ec91ca6fbca54332d7",
+    "call_id": "20260927T200712Z-a4288d",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "c4570671e37f5ade22a8b45f28a9ec021257c29a8d5628ec91ca6fbca54332d7",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_01.py",
+    "response_sha256": "2157a38b4d399a4f05969af8037cba95d6a7dd310801dfda11356dadf663659e",
+    "source": "draft author"
+   }
+  }
  },
  "SM-LOG-02": {
   "answer": {
@@ -92,26 +104,32 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-27T20:11:01.945585Z",
-   "answer_sha256": "58d116a62153dacdec7e59076224ed39cb6e4af8a3046b98db3144ff0e66771e",
-   "call_id": "20260927T200734Z-c59444",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "58d116a62153dacdec7e59076224ed39cb6e4af8a3046b98db3144ff0e66771e",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_02.py",
-   "response_sha256": "74fba5123a0981fb1d51feb657cdf18ad8b425abc669dcdeec467e723a047b9a",
-   "source": "draft author"
-  },
-  "prompt_sha256": "4416f793d826d8c79bb6b4b439d5203589f023b4661998cb7a9b8d2157bef145"
+  "prompt_sha256": "4416f793d826d8c79bb6b4b439d5203589f023b4661998cb7a9b8d2157bef145",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.662658Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_fn_12fc5c09.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T20:11:01.945585Z",
+    "answer_sha256": "58d116a62153dacdec7e59076224ed39cb6e4af8a3046b98db3144ff0e66771e",
+    "call_id": "20260927T200734Z-c59444",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "58d116a62153dacdec7e59076224ed39cb6e4af8a3046b98db3144ff0e66771e",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_02.py",
+    "response_sha256": "74fba5123a0981fb1d51feb657cdf18ad8b425abc669dcdeec467e723a047b9a",
+    "source": "draft author"
+   }
+  }
  },
  "SM-LOG-04": {
   "answer": {
@@ -126,25 +144,31 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-27T20:11:01.946023Z",
-   "answer_sha256": "55ab665251db12a604b7f10a15e9a1ef4283df88b968577ffd1aae82ace587b6",
-   "call_id": "20260927T200805Z-30ba5c",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "55ab665251db12a604b7f10a15e9a1ef4283df88b968577ffd1aae82ace587b6",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_04.py",
-   "response_sha256": "5b92d6f30dc2995c00b6cae4c1b6a94b540a0fb4c88379579d91ccd01f21e115",
-   "source": "draft author"
-  },
-  "prompt_sha256": "79fc7d5dae9d23687d45d0eace3a1a8a132370c52627c47f0d3514ea1724a024"
+  "prompt_sha256": "79fc7d5dae9d23687d45d0eace3a1a8a132370c52627c47f0d3514ea1724a024",
+  "subsumed": {
+   "at": "2026-10-01T13:49:45.663041Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_fn_94d62fae.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T20:11:01.946023Z",
+    "answer_sha256": "55ab665251db12a604b7f10a15e9a1ef4283df88b968577ffd1aae82ace587b6",
+    "call_id": "20260927T200805Z-30ba5c",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "55ab665251db12a604b7f10a15e9a1ef4283df88b968577ffd1aae82ace587b6",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_runtime_log_safety_sm_log_04.py",
+    "response_sha256": "5b92d6f30dc2995c00b6cae4c1b6a94b540a0fb4c88379579d91ccd01f21e115",
+    "source": "draft author"
+   }
+  }
  }
 }

@@ -113,6 +113,25 @@
    ]
   }
  ],
+ "FN-1B8C5B26": [
+  {
+   "at": "2026-10-01T13:10:23.968818Z",
+   "call_id": "20261001T130611Z-486adc",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "bc8a2b231a6334ddd8194479b11b2bc07126942c96b9a774ee836cd7495fe115",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
  "cd5c3873436c0d0c": [
   {
    "at": "2026-09-29T11:47:11.543900Z",

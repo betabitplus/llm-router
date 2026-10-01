@@ -69,6 +69,31 @@
    ]
   }
  ],
+ "FN-E206A50B": [
+  {
+   "at": "2026-10-01T13:01:16.723178Z",
+   "call_id": "20261001T125650Z-b4732e",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "030a56e3043547e06e82da45ce6987eb5f7830e63c26f7226f928980d278dd08",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
  "SM-2027036F": [
   {
    "at": "2026-09-29T19:15:34.151155Z",

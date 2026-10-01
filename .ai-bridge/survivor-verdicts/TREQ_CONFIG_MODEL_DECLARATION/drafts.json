@@ -114,6 +114,49 @@
    ]
   }
  ],
+ "FN-8FD05B4D": [
+  {
+   "at": "2026-10-01T13:03:37.843076Z",
+   "call_id": "20261001T130041Z-6b4f32",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "ea27a35ffecfa8c1fc04ab13ec3e4d2155986e8e974d7b69fb5d328363eb889f",
+   "reason": "it does not fail on the mutant: it runs the changed lines 248\u2013257, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderCatalog",
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
+  },
+  {
+   "at": "2026-10-01T13:06:10.888893Z",
+   "call_id": "20261001T130337Z-89725d",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e73fab1b19576e05b92e4eea3ff58e92e3adfa0c32d5dd4a553db67b713163ee",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderCatalog",
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._internal.config.build_default_config",
+    "llm_router._internal.runtime.routes.expand_route_plan"
+   ]
+  }
+ ],
  "SM-87B84725": [
   {
    "at": "2026-09-29T20:13:34.963098Z",

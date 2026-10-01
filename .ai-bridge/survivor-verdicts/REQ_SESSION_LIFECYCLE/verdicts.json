@@ -19,32 +19,38 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-29T00:24:30.377032Z",
-   "answer_sha256": "91190f9197ae426c26711ddc1662e6566023138003fc1d977578a15a7a032f7f",
-   "call_id": "20260929T001300Z-8af4a6",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "91190f9197ae426c26711ddc1662e6566023138003fc1d977578a15a7a032f7f",
-   "model": "claude-sonnet-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_040c94eda75a331d.py",
-   "response_sha256": "238a76027e1e3b5bdcf33ca797fe63a98ab84b96b00c967536ef8bd890092d59",
-   "source": "draft author",
-   "sources": [
-    "llm_router.Session",
-    "Session.remember",
-    "Session.history",
-    "Session.build_messages"
-   ]
-  },
-  "prompt_sha256": "6f5f78f622c2637eb6379879d3090455f1e781fe603f5a2cdd0af78bddc254ec"
+  "prompt_sha256": "6f5f78f622c2637eb6379879d3090455f1e781fe603f5a2cdd0af78bddc254ec",
+  "subsumed": {
+   "at": "2026-10-01T13:46:16.868692Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_fn_f9b95812.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T00:24:30.377032Z",
+    "answer_sha256": "91190f9197ae426c26711ddc1662e6566023138003fc1d977578a15a7a032f7f",
+    "call_id": "20260929T001300Z-8af4a6",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "91190f9197ae426c26711ddc1662e6566023138003fc1d977578a15a7a032f7f",
+    "model": "claude-sonnet-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_040c94eda75a331d.py",
+    "response_sha256": "238a76027e1e3b5bdcf33ca797fe63a98ab84b96b00c967536ef8bd890092d59",
+    "source": "draft author",
+    "sources": [
+     "llm_router.Session",
+     "Session.remember",
+     "Session.history",
+     "Session.build_messages"
+    ]
+   }
+  }
  },
  "214200bb10e1f588": {
   "answer": {
@@ -164,26 +170,32 @@
    "verdict": "pin"
   },
   "operator": "return",
-  "pin": {
-   "adopted_at": "2026-09-27T16:38:36.861967Z",
-   "answer_sha256": "4f2125289f8843e2611fc4a5641fedb7ae26c09b9cfd99e7e2b326fa98617bde",
-   "call_id": "20260927T160649Z-49e548",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "74dfc8612e2ff89b0e342f981d497567baa5f8da6c99d7c3e63d3d434fbf1391",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_76471d519ce0db39.py",
-   "response_sha256": "54e6978e03127c3d974a875ceb803bfddf34a1ac2c64375a09edf002152c963c",
-   "source": "draft author"
-  },
-  "prompt_sha256": "19a15e834aa81e1d8d6c7ac8234b855e694dae3d55aac9d3241ce7cddb96b9b5"
+  "prompt_sha256": "19a15e834aa81e1d8d6c7ac8234b855e694dae3d55aac9d3241ce7cddb96b9b5",
+  "subsumed": {
+   "at": "2026-10-01T13:46:16.869827Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_cfdaa730a0d7b1f8.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T16:38:36.861967Z",
+    "answer_sha256": "4f2125289f8843e2611fc4a5641fedb7ae26c09b9cfd99e7e2b326fa98617bde",
+    "call_id": "20260927T160649Z-49e548",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "74dfc8612e2ff89b0e342f981d497567baa5f8da6c99d7c3e63d3d434fbf1391",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_76471d519ce0db39.py",
+    "response_sha256": "54e6978e03127c3d974a875ceb803bfddf34a1ac2c64375a09edf002152c963c",
+    "source": "draft author"
+   }
+  }
  },
  "77955ca3373db890": {
   "answer": {
@@ -248,31 +260,37 @@
    "verdict": "pin"
   },
   "operator": "argument",
-  "pin": {
-   "adopted_at": "2026-09-29T00:24:30.378872Z",
-   "answer_sha256": "5cb5d6d7847d268ca23e9cadf265160153ceb94204e07030b5c6ef2091b716f0",
-   "call_id": "20260929T001300Z-a7af34",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "5cb5d6d7847d268ca23e9cadf265160153ceb94204e07030b5c6ef2091b716f0",
-   "model": "claude-sonnet-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_b38d6c310d61d789.py",
-   "response_sha256": "05de8019ac195ad850c377f733e33f1f18a0cc472cf5d3a384d814f97999e54d",
-   "source": "draft author",
-   "sources": [
-    "llm_router.Session",
-    "llm_router._api.session.Session.remember",
-    "llm_router._api.session.Session.history"
-   ]
-  },
-  "prompt_sha256": "43b70eae5092020e5babb19c9231078c5fc0afd03c7e7756dd2f81d6f7b68b46"
+  "prompt_sha256": "43b70eae5092020e5babb19c9231078c5fc0afd03c7e7756dd2f81d6f7b68b46",
+  "subsumed": {
+   "at": "2026-10-01T13:46:16.871289Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_fn_f9b95812.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T00:24:30.378872Z",
+    "answer_sha256": "5cb5d6d7847d268ca23e9cadf265160153ceb94204e07030b5c6ef2091b716f0",
+    "call_id": "20260929T001300Z-a7af34",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "5cb5d6d7847d268ca23e9cadf265160153ceb94204e07030b5c6ef2091b716f0",
+    "model": "claude-sonnet-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_session_lifecycle_b38d6c310d61d789.py",
+    "response_sha256": "05de8019ac195ad850c377f733e33f1f18a0cc472cf5d3a384d814f97999e54d",
+    "source": "draft author",
+    "sources": [
+     "llm_router.Session",
+     "llm_router._api.session.Session.remember",
+     "llm_router._api.session.Session.history"
+    ]
+   }
+  }
  },
  "cfdaa730a0d7b1f8": {
   "answer": {

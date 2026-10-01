@@ -1,0 +1,38 @@
+{
+ "FN-3A4B7540": {
+  "adopted_at": "2026-10-01T12:47:52.543917Z",
+  "answer_sha256": "a5748efd0dce88562895eed0076c9dabf85c5fd1dee18637c1d40044f1ef12ef",
+  "call_id": "20261001T124531Z-758bf2",
+  "cascade": {
+   "5fd031363386257e": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "cfdaa730a0d7b1f8": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "ed88e2bdb940f3402712ab6ecc0246e23c79a51f4b4e869073d098b4d5ab2abb",
+  "effort": "",
+  "function": "src/llm_router/_internal/session/store.py::SessionStore.load",
+  "keys": [
+   "5fd031363386257e",
+   "cfdaa730a0d7b1f8"
+  ],
+  "model": "gemini-3.8-flash-medium",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_session_persistence_fn_3a4b7540.py",
+  "response_sha256": "93f205f58dea26cb765f8cfad28c6370bcf2246c0c0b7ea5f3cc3bf80f79f764",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.Session",
+   "llm_router._api.session.Session"
+  ],
+  "suite_checked": true
+ }
+}

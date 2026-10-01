@@ -61,6 +61,12 @@ globals()[_test_name] = pytest.mark.fault_item(
     "REQ_RATE_LIMIT_ROUTING",
     "interface.error-status",
 )(globals()[_test_name])
+# The request journal's credentials catch a call made with the blocked key while the
+# other key is available: the interaction the technical requirement rules out.
+globals()[_test_name] = pytest.mark.fault_item(
+    "TREQ_RATE_LIMIT_AVAILABILITY_SELECTION",
+    "interface.unexpected-interaction",
+)(globals()[_test_name])
 del _criterion, _test_name
 
 _SYSTEM_PROMPT = "Follow instructions exactly. Reply with only what is asked."
@@ -367,6 +373,15 @@ def request_with_blocked_rotating_key(availability_case: dict[str, Any]) -> None
             "scripted provider HTTP error opens the cooldown for one automatic key"
         ),
         details={"status_code": 400},
+    )
+    retain_fault_injection(
+        contract_id="TREQ_RATE_LIMIT_AVAILABILITY_SELECTION",
+        fault_class="interface.unexpected-interaction",
+        mechanism=(
+            "the request journal's credentials detect a call made with the blocked "
+            "key while the other key is available"
+        ),
+        details={"blocked_key_id": 1, "available_key_id": 2},
     )
     with ScriptedHTTPServer(
         port=0,

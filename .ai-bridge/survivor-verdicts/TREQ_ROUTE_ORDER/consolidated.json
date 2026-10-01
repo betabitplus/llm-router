@@ -1,0 +1,57 @@
+{
+ "FN-69242EB7": {
+  "adopted_at": "2026-10-01T13:12:29.943734Z",
+  "answer_sha256": "f8056c7d84809789c9dcf8a9cdf0afb14f49480c29294ea17bf5f10aa1446438",
+  "call_id": "20261001T131024Z-a64521",
+  "cascade": {
+   "3f852ed18986c20a": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "73f9e013ae38b43a": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "7f06d09ceb421dcd": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "93873599753fc994": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "87ff87395ad3261fbc65667d0ef0c3df653f18674479bcb49119c58a2e1f49d3",
+  "effort": "low",
+  "function": "src/llm_router/_internal/runtime/routes.py::ordered_routes",
+  "keys": [
+   "3f852ed18986c20a",
+   "73f9e013ae38b43a",
+   "7f06d09ceb421dcd",
+   "93873599753fc994"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_route_order_fn_69242eb7.py",
+  "response_sha256": "1d5e73dd9a279269d2f3dbc0deb9df64ec33715551f7e88c9b6d86fad8205fd7",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router._internal.runtime.routes.ExpandedRoute",
+   "llm_router._internal.runtime.routes.RouteGenerationDefaults",
+   "llm_router._internal.runtime.routes.RouteOrderOptions",
+   "llm_router._internal.runtime.routes.RoutePlan",
+   "llm_router._internal.runtime.routes.ordered_routes"
+  ],
+  "suite_checked": true
+ }
+}

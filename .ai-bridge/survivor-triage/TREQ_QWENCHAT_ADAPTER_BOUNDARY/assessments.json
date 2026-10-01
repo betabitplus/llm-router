@@ -248,6 +248,31 @@
   },
   "prompt_sha256": "e71d55cba94a0667677e74e9ae60c2240c1858948c4b4682b0629400c9f11062"
  },
+ "5c98f844a8369f15": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_registry=ToolRegistry(tools={'t': ToolDefinition(name='t', description=None, parameters={}, descriptor={'type':'function','function':{'name':'t'}})}), tool_choice=None)",
+     "self_base_url": "'http://localhost:8000'",
+     "self_timeout_seconds": "600.0",
+     "uploader": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T144011Z-670876",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version only adds \"tools\" when tool_choice is not None, so a request with a non-empty tool registry and tool_choice=None gets tools in the original but not in the change. With tool_registry=None and a tool_choice set, the change also raises AttributeError.",
+    "response_sha256": "8768317309bfa3908ec58d9fb58dbfa524a6aa944e625b00f1177754f7611f4a",
+    "sources": [
+     "if request.tool_choice is not None and request.tool_registry.tools:",
+     "if request.tool_registry is not None and request.tool_registry.tools:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "a285803ba28aa5841336b91ae6243a727d9e8744d9c65f9534dfc2d2a1df1a95"
+ },
  "7a62ad64f09cc0a0": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {

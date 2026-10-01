@@ -64,6 +64,23 @@
    ]
   }
  ],
+ "FN-3A4B7540": [
+  {
+   "at": "2026-10-01T12:47:52.497749Z",
+   "call_id": "20261001T124531Z-758bf2",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "895148cc5b9f82a032ee00cf954987fe0ff1ff4b3d8755205cf63acd713fb501",
+   "reason": "",
+   "sources": [
+    "llm_router.Session",
+    "llm_router._api.session.Session"
+   ]
+  }
+ ],
  "cfdaa730a0d7b1f8": [
   {
    "at": "2026-09-29T10:38:22.574231Z",

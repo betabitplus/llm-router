@@ -1,0 +1,64 @@
+{
+ "FN-8FD05B4D": {
+  "adopted_at": "2026-10-01T13:06:10.954431Z",
+  "answer_sha256": "54e2b37dbf086f4d6946086b785b71685f035a41bbc2112df70b0a58dfd0d685",
+  "call_id": "20261001T130337Z-89725d",
+  "cascade": {
+   "3cc16a6300b216ed": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "5ed9365a38636da5": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-87B84725": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-8D7935BF": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "e1379ec0c0ed9e96": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "63efc77563bd6ea9e2f507078948355e78d644411ebc1c1e7ef384e437d5312c",
+  "effort": "high",
+  "function": "src/llm_router/_internal/runtime/routes.py::_resolve_model",
+  "keys": [
+   "3cc16a6300b216ed",
+   "5ed9365a38636da5",
+   "SM-87B84725",
+   "SM-8D7935BF",
+   "e1379ec0c0ed9e96"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_config_model_declaration_fn_8fd05b4d.py",
+  "response_sha256": "a4168c27318547147da4d321960008e8c66fc627061948fae330fda2a61a61ea",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.ProviderCatalog",
+   "llm_router._api.errors.ConfigurationError",
+   "llm_router._api.types.RouterProfile",
+   "llm_router._internal.config.build_default_config",
+   "llm_router._internal.runtime.routes.expand_route_plan"
+  ],
+  "suite_checked": true
+ }
+}

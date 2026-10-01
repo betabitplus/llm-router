@@ -1,17 +1,14 @@
 {
- "at": "2026-09-30T13:44:15.758430Z",
+ "at": "2026-10-01T13:45:38.552361Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_8139110fd930fa09.py",
   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_a2e61f2155653e45.py",
-  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py",
-  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_48e372dd.py",
-  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_f91afa31.py"
- ],
- "kept": [
-  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_8139110fd930fa09.py",
-  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_a2e61f2155653e45.py",
+  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_fn_c1ae2f64.py",
   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py",
   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_48e372dd.py"
+ ],
+ "kept": [
+  "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_fn_c1ae2f64.py"
  ],
  "restored": [],
  "removed": {
@@ -20,25 +17,48 @@
    "by": [
     "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py"
    ]
+  },
+  "8139110fd930fa09": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_8139110fd930fa09.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_fn_c1ae2f64.py"
+   ]
+  },
+  "a2e61f2155653e45": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_a2e61f2155653e45.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_fn_c1ae2f64.py"
+   ]
+  },
+  "SM-39305DEA": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_fn_c1ae2f64.py"
+   ]
+  },
+  "SM-48E372DD": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_48e372dd.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_fn_c1ae2f64.py"
+   ]
   }
  },
  "matrix": {
   "8139110fd930fa09": [
-   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_8139110fd930fa09.py"
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_8139110fd930fa09.py",
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_fn_c1ae2f64.py"
   ],
   "a2e61f2155653e45": [
-   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_a2e61f2155653e45.py"
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_a2e61f2155653e45.py",
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_fn_c1ae2f64.py"
   ],
   "SM-39305DEA": [
-   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py",
-   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_f91afa31.py"
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_fn_c1ae2f64.py",
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py"
   ],
   "SM-48E372DD": [
+   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_fn_c1ae2f64.py",
    "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_48e372dd.py"
-  ],
-  "SM-F91AFA31": [
-   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_39305dea.py",
-   "tests/llm_router/mutation_pins/test_pin_req_config_installation_coherence_sm_f91afa31.py"
   ]
  },
  "caught_before": [

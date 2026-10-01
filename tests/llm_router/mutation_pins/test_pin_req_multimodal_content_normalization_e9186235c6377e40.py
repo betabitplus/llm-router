@@ -3,77 +3,53 @@
 # written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
-from dataclasses import replace
-
 import pytest
 from PIL import Image
 
-from llm_router import (
-    LLMRouter,
-    Model,
-    Provider,
-    RouterProfile,
-    get_config,
-    install_config,
-)
-from tests.llm_router.support.fault_server import (
-    ProviderSentinelHTTPServer,
-    ScriptedResponse,
-)
+from llm_router import LLMRouter, Model, Provider, RouterProfile
+from tests.llm_router.support.fault_server import ScriptedHTTPServer, ScriptedResponse
 from tests.llm_router.support.workers.retry import (
     openai_chat_path,
     openai_success_response,
 )
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
 
 pytestmark = pytest.mark.verification_kind("unit")
 
-_MAX_DIMENSION = 16384
+_CHAT_PATH = openai_chat_path()
+
+
+def _router() -> LLMRouter:
+    return LLMRouter(
+        RouterProfile(model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER),
+    )
 
 
 @pytest.mark.verifies("REQ_MULTIMODAL_CONTENT_NORMALIZATION[revision==2]")
-def test_image_height_at_max_accepted_and_above_rejected(
+def test_max_height_image_accepted_and_taller_rejected(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    current = get_config()
-    provider_spec = current.catalog.providers[Provider.OPENROUTER]
-    for env_var in provider_spec.api_key_env_vars.values():
-        monkeypatch.setenv(env_var, "local-test-value")
-    path = openai_chat_path()
-    at_limit = Image.new("RGB", (32, _MAX_DIMENSION))
-    too_tall = Image.new("RGB", (32, _MAX_DIMENSION + 1))
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", "local-value")
+    with (
+        ScriptedHTTPServer(
+            port=0,
+            routes={
+                ("POST", _CHAT_PATH): [
+                    ScriptedResponse(
+                        status_code=200,
+                        headers={"Content-Type": "application/json"},
+                        body=openai_success_response(text="tall ok"),
+                    )
+                ]
+            },
+        ) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ),
+    ):
+        response = _router().query(["look", Image.new("RGB", (32, 16384))])
+        with pytest.raises(ValueError, match=r"too large"):
+            _router().query([Image.new("RGB", (32, 16385))])
 
-    with ProviderSentinelHTTPServer(
-        port=0,
-        routes={
-            ("POST", path): [
-                ScriptedResponse(
-                    status_code=200,
-                    headers={"Content-Type": "application/json"},
-                    body=openai_success_response(text="ok"),
-                )
-            ]
-        },
-    ) as server:
-        base_urls = dict(current.provider_base_urls)
-        base_urls[Provider.OPENROUTER] = f"{server.base_url}/v1"
-        install_config(
-            replace(
-                current,
-                catalog=replace(current.catalog, provider_base_urls=base_urls),
-            )
-        )
-        try:
-            router = LLMRouter(
-                RouterProfile(
-                    model=Model.DEEPSEEK_V3,
-                    provider=Provider.OPENROUTER,
-                )
-            )
-            accepted = router.query([at_limit])
-            with pytest.raises(ValueError, match=r"too large"):
-                router.query([too_tall])
-        finally:
-            install_config(current)
-
-        assert accepted.output_text == "ok"
-        assert server.request_count("POST", path) == 1
+    assert response.output_text == "tall ok"

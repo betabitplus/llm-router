@@ -17,6 +17,25 @@
    ]
   }
  ],
+ "FN-8B04992A": [
+  {
+   "at": "2026-10-01T13:03:02.749574Z",
+   "call_id": "20261001T130009Z-e6cf4c",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b62fd5cef2435862374c5bb0a016e48575676e4304fd78f4c9132c17b72a822e",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.assembly.build_default_config",
+    "llm_router._internal.config.validation.validate_config"
+   ]
+  }
+ ],
  "b6340db1c7f8750a": [
   {
    "at": "2026-09-29T10:38:22.580739Z",

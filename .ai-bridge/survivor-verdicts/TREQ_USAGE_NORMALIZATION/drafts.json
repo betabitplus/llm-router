@@ -35,6 +35,24 @@
    ]
   }
  ],
+ "FN-09E5F504": [
+  {
+   "at": "2026-10-01T13:14:34.288799Z",
+   "call_id": "20261001T131229Z-665427",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "65608496bccc26b67b46a018a6d121ab3bb2b165cc197281945e1f215e23e478",
+   "reason": "",
+   "sources": [
+    "llm_router.UsageStats",
+    "llm_router._internal.capabilities.usage.normalize_usage"
+   ]
+  }
+ ],
  "SM-4151C6BB": [
   {
    "at": "2026-09-30T14:01:24.339749Z",

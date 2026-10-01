@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import functools
 import hashlib
 import importlib.util
 import json
@@ -377,6 +378,7 @@ def check_verification_explorer(module: str) -> None:
     texts: dict[str, str] = {}
     broken = []
     links = [link for item in items for link in item["links"]] + [link for obj in model["objects"].values() for link in obj.get("links") or []]
+    report_files: set | None = None
     for link in links:
         href = link[1]
         if href.startswith(("http://", "https://", "#")):
@@ -388,13 +390,16 @@ def check_verification_explorer(module: str) -> None:
             continue
         if name == "mutation-report.html" and anchor.startswith("mutant/"):
             # Mutation Testing Elements routes by file, not by element id: the file must be in the report.
-            report_files = texts.setdefault("mutation-report.json#files", "\n".join(load(HTML / "mutation-report.json").get("files") or {}))
-            if anchor.removeprefix("mutant/") not in report_files.split("\n"):
+            # Read once: setdefault would read the 2 MB report again for every link.
+            if report_files is None:
+                report_files = set(load(HTML / "mutation-report.json").get("files") or {})
+            if anchor.removeprefix("mutant/") not in report_files:
                 broken.append(href)
             continue
         if anchor and not name.startswith("test-results/"):
-            text = texts.setdefault(name, path.read_text())
-            if f'id="{anchor}"' not in text:
+            if name not in texts:
+                texts[name] = path.read_text()
+            if f'id="{anchor}"' not in texts[name]:
                 broken.append(href)
     evidence_links = sorted(
         {
@@ -421,6 +426,7 @@ def check_verification_explorer(module: str) -> None:
     )
     dead = []
     monitors = sorted(HTML.glob("contract-evidence-*.html")) + [HTML / "verification-assurance.html"] + sorted(HTML.glob("assurance-*.html"))
+    kept_by_query: dict[str, list] = {}
     for monitor in monitors:
         text = monitor.read_text()
         # An inspector is embedded as a JSON string, where its quotes are escaped.
@@ -430,14 +436,17 @@ def check_verification_explorer(module: str) -> None:
         changes = (model["delta"].get("layers") or {}).get("items") or {}
         for query in found:
             params = [pair.split("=", 1) for pair in html_unescape(query).split("&")]
-            keep = [
-                item
-                for item in items
-                if all(
-                    explorer_matches(item, key, urllib_unquote(value.replace("+", " ")), changes)
-                    for key, value in params
-                )
-            ]
+            # Pages repeat the same links: each query is matched against the items once.
+            if query not in kept_by_query:
+                kept_by_query[query] = [
+                    item
+                    for item in items
+                    if all(
+                        explorer_matches(item, key, urllib_unquote(value.replace("+", " ")), changes)
+                        for key, value in params
+                    )
+                ]
+            keep = kept_by_query[query]
             # A list of changes may be empty: the page then says there is nothing to compare with yet or that
             # nothing changed.
             if not keep and not any(key == "change" for key, _value in params):
@@ -807,7 +816,14 @@ SECRET_PATTERNS = re.compile(
 )
 
 
+_BRIDGE_MODULES: dict[str, object] = {}
+
+
 def load_bridge_module(name: str, filename: str):
+    """A tool module of the pilot, loaded once for the whole gate whatever name a check gives it."""
+    if filename in _BRIDGE_MODULES:
+        sys.modules[name] = _BRIDGE_MODULES[filename]
+        return _BRIDGE_MODULES[filename]
     spec = importlib.util.spec_from_file_location(name, BRIDGE / filename)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"could not load {filename}")
@@ -815,6 +831,12 @@ def load_bridge_module(name: str, filename: str):
     # Its dataclasses resolve their annotations through sys.modules.
     sys.modules[name] = module
     spec.loader.exec_module(module)
+    if filename == "survivor_equivalence.py":
+        # Every answer's sources are checked against the lines its mutant changes: one diff per pair of
+        # versions, not one per answer that cites it.
+        diff = functools.lru_cache(maxsize=None)(lambda original, mutant, plain=module.changed_lines: tuple(plain(original, mutant)))
+        module.changed_lines = lambda original, mutant: list(diff(original, mutant))
+    _BRIDGE_MODULES[filename] = module
     return module
 
 
@@ -1062,7 +1084,7 @@ STRUCTURED_BYPASS_CONTROLS = {
     "REQ_IMAGE_INPUT": {"interface.payload-schema": (1, 1)},
     "REQ_VIDEO_INPUT": {"interface.payload-schema": (1, 1)},
 }
-DRAFT_CAUSES = {"kept", "syntax", "grounding", "runtime-api", "rules", "lint", "behaviour", "weak", "suite", "slow", "unknown"}
+DRAFT_CAUSES = {"kept", "syntax", "grounding", "runtime-api", "rules", "lint", "behaviour", "weak", "suite", "campaign", "slow", "unknown"}
 
 
 def check_draft_attempts(by_call: dict) -> None:
@@ -1362,7 +1384,19 @@ def check_model_roles_page(budget: dict) -> None:
 JUDGEMENT_STATUSES = {"found", "likely-equivalent", "unsure", "not-applicable"}
 
 
-PIN_HEADERS = ("# mutation-pin:", "# pinned-by:", "# written-by:", "# semantic-mutant:")
+PIN_HEADERS = ("# mutation-pin:", "# pinned-by:", "# written-by:", "# semantic-mutant:", "# kills:")
+
+
+def kills_header(keys: list[str], width: int = 88) -> str:
+    """A consolidated pin's `# kills:` lines as the builder writes them: its mutants in order, wrapped
+    at the project's line length."""
+    lines, line = [], "# kills:"
+    for key in keys:
+        if line != "# kills:" and len(line) + 1 + len(key) > width:
+            lines.append(line)
+            line = "# kills:"
+        line += " " + key
+    return "\n".join([*lines, line])
 # The draft author's rungs: who may have written a pin, and through which role (ADR_0004).
 PIN_WRITERS = {"draft author": ("draft_author", "draft_author_retry"), "draft author with tools": ("draft_author_tools",), "last resort": ("draft_author_last",)}
 
@@ -1505,10 +1539,11 @@ def check_survivor_verdicts(models, by_call: dict, usable: set) -> None:
         decided = load(folder / "decisions.json") if (folder / "decisions.json").is_file() else {}
         bound = pins_ok = subsumed_ok = True
         for key, entry in verdicts.items():
-            # A pin other pins of its contract made redundant waits beside its record, which names them.
+            # A pin other pins of its contract made redundant waits beside its record, which names them,
+            # only while its mutant's verdict that counts is still pin.
             subsumed = entry.get("subsumed")
             if subsumed:
-                subsumed_ok = subsumed_ok and not entry.get("pin") and bool(subsumed.get("by")) and (
+                subsumed_ok = subsumed_ok and not entry.get("pin") and bool(subsumed.get("by")) and effective_verdict(entry, decided.get(key)) == "pin" and (
                     folder / "subsumed-pins" / (Path(str((subsumed.get("pin") or {}).get("path") or "-")).name + ".txt")
                 ).is_file()
             # The verdict and, for a suppression, its review: each a stored, ledgered call's answer to the
@@ -1540,9 +1575,39 @@ def check_survivor_verdicts(models, by_call: dict, usable: set) -> None:
                 and effective_verdict(entry, decided.get(key)) == "pin"
                 and pin_origin_holds(models, by_call, folder, key, pin)
             )
+        # A consolidated pin (ADR_0006, 057): one module the cascade kept for every mutant it names, each
+        # still pinned by its verdict, as the draft author's ledgered answer wrote it.
+        consolidated = load(folder / "consolidated.json") if (folder / "consolidated.json").is_file() else {}
+        consolidated_ok = True
+        for group, pin in consolidated.items():
+            recorded.add(str(pin.get("path")))
+            pin_file = ROOT / str(pin.get("path"))
+            pin_text = pin_file.read_text() if pin_file.is_file() else ""
+            keys = list(pin.get("keys") or [])
+            response_path = folder / "responses" / f"{pin.get('call_id')}.json"
+            response = load(response_path) if response_path.is_file() else {}
+            call = by_call.get(str(pin.get("call_id"))) or {}
+            normalized = (
+                normalized_draft(semantic_module(), semantic_module().draft_from_answer(group, response.get("structured") or {}), str(pin.get("path")))[0]
+                if response.get("structured") else ""
+            )
+            consolidated_ok = consolidated_ok and (
+                pin_text.startswith(f"# mutation-pin: {folder.name} {group}\n")
+                and f"\n{kills_header(keys)}\n" in pin_text
+                and bool(keys)
+                and hashlib.sha256(pin_body(pin_text).encode()).hexdigest() == pin.get("draft_sha256")
+                and all(((pin.get("cascade") or {}).get(key) or {}).get("accepted") is True for key in keys)
+                and all(effective_verdict(verdicts.get(key) or {}, decided.get(key)) == "pin" for key in keys)
+                and bool(response) and not models.verify_response(response)
+                and models.response_sha256(response) == pin.get("response_sha256") == call.get("response_sha256")
+                and call.get("outcome") == "ok" and response.get("purpose") == "mutation-pin" and response.get("subject") == group
+                and str(call.get("role")) in ("draft_author", "draft_author_retry")
+                and hashlib.sha256(pin_body(normalized).encode()).hexdigest() == pin.get("draft_sha256")
+            )
         check(bound, f"{folder.name}: every verdict about its survivors is a stored, ledgered call's answer")
         check(pins_ok, f"{folder.name}: every mutation pin names its mutant and is the draft the cascade kept after a pin verdict, as its origin wrote it")
-        check(subsumed_ok, f"{folder.name}: every pin removed as redundant names the pins that kill its mutant and waits beside its record")
+        check(consolidated_ok, f"{folder.name}: every consolidated pin names the mutants it pins, each pinned by its verdict, and is the module the cascade kept for every one of them, as the draft author's ledgered answer wrote it")
+        check(subsumed_ok, f"{folder.name}: every pin removed as redundant names the pins that kill its mutant and waits beside its record while its verdict is pin")
     pin_files = sorted(str(path.relative_to(ROOT)) for path in (ROOT / "tests/llm_router/mutation_pins").glob("test_pin_*.py"))
     check(all(path in recorded for path in pin_files), f"every one of the {len(pin_files)} mutation pins is recorded with its verdict")
 
@@ -2891,6 +2956,7 @@ def main() -> None:
     sticky_route_page = (HTML / "contract-evidence-route-sticky-start.html").read_text()
     route_order_page = (HTML / "contract-evidence-route-order.html").read_text()
     rate_limit_page = (HTML / "contract-evidence-rate-limit-routing.html").read_text()
+    rate_limit_selection_page = (HTML / "contract-evidence-rate-limit-availability-selection.html").read_text()
     provider_retry_page = (HTML / "contract-evidence-provider-retry.html").read_text()
     provider_retry_classification_page = (
         HTML / "contract-evidence-provider-retry-classification.html"
@@ -4269,6 +4335,7 @@ def main() -> None:
         "REQ_ROUTE_ATTEMPT_LIMIT": attempt_limit_page,
         "REQ_ROUTE_STICKY_START": sticky_route_page,
         "REQ_RATE_LIMIT_ROUTING": rate_limit_page,
+        "TREQ_RATE_LIMIT_AVAILABILITY_SELECTION": rate_limit_selection_page,
         "REQ_PROVIDER_RETRY": provider_retry_page,
         "TREQ_PROVIDER_RETRY_CLASSIFICATION": provider_retry_classification_page,
         "TREQ_PROVIDER_RETRY_BOUNDS": provider_retry_bounds_page,
@@ -4340,6 +4407,12 @@ def main() -> None:
         "REQ_ROUTE_STICKY_START": {},
         "REQ_RATE_LIMIT_ROUTING": {
             "interface.error-status": (1, 1),
+        },
+        # The request journal catches a call with the blocked key while another is available (057);
+        # the limiter bypass control as before.
+        "TREQ_RATE_LIMIT_AVAILABILITY_SELECTION": {
+            "interface.unexpected-interaction": (1, 1),
+            "architecture.layer-bypass": (1, 1),
         },
     }
     for contract_id, expected_challenges in routing_fault_expectations.items():
@@ -4784,7 +4857,9 @@ def main() -> None:
                 "TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY",
                 "TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY",
             ],
-            "faults": {"interface.payload-schema": (3, 3)},
+            # A malformed success of every adapter becomes a ProviderError: OpenAI-compatible, QwenChat
+            # and Gemini WebAPI (056), Google GenAI and AI Studio (057).
+            "faults": {"interface.payload-schema": (5, 5)},
         },
         "TREQ_OPENAI_ADAPTER_BOUNDARY": {
             "cells": {
@@ -7577,6 +7652,8 @@ def main() -> None:
         unexpected.append(line)
     check(not unexpected, f"repository has no unrelated source changes outside approved pilot authoring files: {unexpected}")
 
+    # Kept for the next run however main was started.
+    save_normalized_drafts()
     print("\nACTIVE LLM-ROUTER MUTATION PILOT STRUCTURAL GATE: PASS")
 
 

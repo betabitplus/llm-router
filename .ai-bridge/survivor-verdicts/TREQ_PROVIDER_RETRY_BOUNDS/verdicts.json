@@ -41,40 +41,38 @@
  "06999e6775471416": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T090233Z-4a7a70",
+   "call_id": "20261001T201700Z-35359b",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant sets the wait's lower bound to max_wait_seconds, so every retry waits exactly the configured maximum. That wait never exceeds the maximum, and the stop condition still allows exactly max_attempts. The waits differ from the original's random ones, but no requirement or criterion asks for the minimum retry wait or random spacing.",
-   "response_sha256": "0d126e470f992e48e0e6dd8af8d82e7a3b7a5286f51a763da539aae9f0016d5d",
+   "reason": "With min set to max_wait_seconds, Tenacity's random-exponential wait always comes out as exactly max_wait_seconds. That still falls inside the required range [min_wait_seconds, max_wait_seconds], and the stop condition and retry predicate are unchanged. The versions do differ in how long each wait lasts (the original adds jitter and backs off exponentially), but no requirement, feature or goal asks for any particular wait distribution or backoff curve.",
+   "response_sha256": "5fe74f174df71ea91c29667527febef561b082c69e8e2b59dacf8de800f6ae41",
    "sources": [
-    "no wait before a retry shall exceed the configured maximum retry wait",
-    "Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.",
+    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
+    "Sync and async retry each wait at least the configured minimum and no longer than the configured maximum retry wait.",
     "wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds)",
-    "min=policy.min_wait_seconds,",
-    "stop=stop_after_attempt(policy.max_attempts)"
+    "min=policy.min_wait_seconds,"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "attribute",
-  "prompt_sha256": "93148a55799c536d347972f0c78bf5525191d16619bcea298b39a6472de1d6d3",
+  "prompt_sha256": "6edbbe42ef5e7cba3e5a30844607871a4a0bca71bbf106015d7a486252f780e3",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T090258Z-281e9f",
+   "call_id": "20261001T201721Z-ad748e",
    "confirmed": false,
    "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "93148a55799c536d347972f0c78bf5525191d16619bcea298b39a6472de1d6d3",
-   "reason": "The requirement only bounds the maximum wait, stipulating it should not exceed the configured maximum. The mutant sets the minimum wait to the maximum wait, which still honors the maximum wait bound and does not break any stated requirement.",
-   "response_sha256": "8b7d71ad5d145f2808f881a36503a3c7b996972bd6d24f4a90f832ae2a84f54d",
+   "prompt_sha256": "6edbbe42ef5e7cba3e5a30844607871a4a0bca71bbf106015d7a486252f780e3",
+   "reason": "The requirement and verification criteria only specify that the wait time must be bounded by the configured minimum and maximum values. Waiting exactly the maximum duration satisfies these bounds (it is at least the minimum and no longer than the maximum), and no requirement mandates exponential backoff or utilizing the minimum configuration to produce shorter waits.",
+   "response_sha256": "65166762db6b286e4885ac85dea7fa7f770e8705dfef6aeb3418f7f6d73a0494",
    "sources": [
-    "no wait before a retry shall exceed the configured maximum retry wait.",
-    "min=policy.min_wait_seconds,",
+    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
     "wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds)"
    ],
    "test_focus": "",
@@ -124,17 +122,17 @@
  "2a4f224cd89c9053": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T090237Z-125666",
+   "call_id": "20261001T201700Z-05ebee",
    "confirmed": false,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Capping wait_random_exponential at min_wait_seconds means every retry wait is at or below the configured maximum when min \u2264 max. When min > max, both versions wait exactly min. So the mutant meets the wait bound whenever the original does, and the attempt count is unchanged. What's lost is growing backoff and jitter, which no requirement or criterion asks for.",
-   "response_sha256": "755b86b4482ad4dbc58a2f4cc7fd9a9bcede486439d7587f86eab3bdeb0081c7",
+   "reason": "With the upper limit set to min_wait_seconds, Tenacity's random exponential wait always gives exactly the configured minimum (assuming min \u2264 max), so every wait still lasts at least the minimum and no longer than the maximum, and the attempt count is unchanged. The lost exponential growth and jitter are not something the requirement or its criteria ask for.",
+   "response_sha256": "3d67bb4bd61dd281cbe716ffc89e3b2bbcdc2e6c4df9ea49b14085bc8830e7f9",
    "sources": [
-    "no wait before a retry shall exceed the configured maximum retry wait.",
-    "Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.",
+    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
+    "Sync and async retry each wait at least the configured minimum and no longer than the configured maximum retry wait.",
     "wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds)",
     "max=policy.max_wait_seconds,"
    ],
@@ -142,24 +140,49 @@
    "verdict": "irrelevant"
   },
   "operator": "attribute",
-  "prompt_sha256": "73379e02399c96a6e07df3328aecc84c0e087c023fdb1f0b95ed2783bd9bf591",
+  "pin": {
+   "adopted_at": "2026-10-01T20:19:20.106666Z",
+   "answer_sha256": "b91beee8c0680a1189ea03784154625527caf35dedca550300b6dfcd76d0d0e0",
+   "call_id": "20261001T201809Z-ee8098",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "b91beee8c0680a1189ea03784154625527caf35dedca550300b6dfcd76d0d0e0",
+   "effort": "",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_2a4f224cd89c9053.py",
+   "response_sha256": "6f983cec367dd8982c3ee4e751e3a85fe51b5ded43d10638eeddd9ed351f22cb",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  },
+  "prompt_sha256": "927b1425a287a9960d6695e98b8eb53b0b7afe359db40edb3ef03b3589ce7da6",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T090311Z-32dc7c",
+   "call_id": "20261001T201733Z-caa978",
    "confirmed": false,
    "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "73379e02399c96a6e07df3328aecc84c0e087c023fdb1f0b95ed2783bd9bf591",
-   "reason": "The requirement specifies an upper bound for the retry wait but does not mandate an exponential backoff strategy or require the wait time to utilize or be capable of reaching the configured maximum. Capping the maximum wait at the minimum configuration still satisfies the constraint that no wait exceeds the configured maximum, making the change irrelevant.",
-   "response_sha256": "2f5df481dc42b60625abcc01d05177179ae27fca24d4cee43846ac8649abd73e",
+   "prompt_sha256": "927b1425a287a9960d6695e98b8eb53b0b7afe359db40edb3ef03b3589ce7da6",
+   "reason": "The changed version incorrectly sets the maximum parameter to the configured minimum retry wait, ignoring the configured maximum retry wait parameter entirely and thus failing to implement the required wait limits.",
+   "response_sha256": "d1df845469e37a6ac2b51c4e6eb8bfaa1cf1a5c00802f0b4bc5175abc5c80199",
    "sources": [
-    "Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.",
+    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
+    "max=policy.max_wait_seconds,",
     "max=policy.min_wait_seconds"
    ],
-   "test_focus": "",
-   "verdict": "irrelevant"
+   "test_focus": "The test must verify that the wait strategy is initialized using the configured maximum wait time, such as by inspecting the properties of the wait object.",
+   "verdict": "pin"
   }
  },
  "2ae84179fe3cd89c": {
@@ -359,20 +382,62 @@
    "verdict": "irrelevant"
   }
  },
+ "5ecf3277f62095b3": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T201700Z-5eea69",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only drops the before_sleep hook, which logs retries and reports state. Stop, wait and retry are unchanged, so the attempt count, the wait bounds and which errors get retried all stay the same. No requirement listed here asks for retry logging or state-sink notifications.",
+   "response_sha256": "83957f191e4a1c89bfa13051aeb9ce95add8cde150404fadb103a13d26dc8968",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "before_sleep=build_retry_before_sleep_logger(",
+    "event_type=\"llm_router.provider.retry.scheduled\","
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "dd57b7c97772f8766f4f8b771545ee165d745500006673e2d27d338cab5501ad",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20261001T201733Z-c714dd",
+   "confirmed": true,
+   "effort": "",
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "dd57b7c97772f8766f4f8b771545ee165d745500006673e2d27d338cab5501ad",
+   "reason": "The requirements strictly specify the attempt counts and wait duration bounds for retries, but do not mandate any logging or state sink updates before a retry. Therefore, the removal of the before_sleep logger does not violate any specified requirement.",
+   "response_sha256": "fed9dc02f408bed767d5117f8de48ec7e943c8f813581bf738d4ff1761522ac5",
+   "sources": [
+    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.; Sync and async retry each wait at least the configured minimum and no longer than the configured maximum retry wait.",
+    "before_sleep=build_retry_before_sleep_logger("
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
  "621cfe26a9c437b8": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T090237Z-4e0c8b",
+   "call_id": "20261001T201657Z-bf8b1b",
    "confirmed": true,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant caps the random-exponential wait at min_wait_seconds, so it never waits longer than the original. Every wait stays at or below the configured maximum retry wait, and the attempt count is unchanged. The requirement only sets upper bounds on attempts and waits; it never says waits must grow or use the full range up to the maximum, so the shorter waits break nothing it asks for.",
-   "response_sha256": "0895232e62b32b9241c63a85d0c989a8ebd232f0ad7457b5171a6f265a1649a4",
+   "reason": "The mutant collapses the wait ceiling to the minimum, so every retry wait equals the configured minimum. That still satisfies \"at least the configured minimum\" and \"no longer than the configured maximum\", and attempt counting and retry eligibility are unchanged. The lost exponential spread/backoff is something no requirement, Feature or Goal asks for.",
+   "response_sha256": "23bdf97299b801c0819dc2765a3eee2411de230d0393571510c794ff69e36e09",
    "sources": [
-    "no wait before a retry shall exceed the configured maximum retry wait.",
-    "Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.",
+    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
+    "Sync and async retry each wait at least the configured minimum and no longer than the configured maximum retry wait.",
     "wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.min_wait_seconds)",
     "max=policy.max_wait_seconds,"
    ],
@@ -380,26 +445,49 @@
    "verdict": "irrelevant"
   },
   "operator": "attribute",
-  "prompt_sha256": "d3a584c714b748ae2d88a005e8a14e78aba9d79d6b8166b632c267271b33e544",
+  "pin": {
+   "adopted_at": "2026-10-01T20:19:21.039475Z",
+   "answer_sha256": "ce72ce7b46ba9e205e7035f8c26877fd1d6e696b3e608069658d3180f062dd67",
+   "call_id": "20261001T201809Z-3fbfe4",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "ce72ce7b46ba9e205e7035f8c26877fd1d6e696b3e608069658d3180f062dd67",
+   "effort": "",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_621cfe26a9c437b8.py",
+   "response_sha256": "c0b912a9f436250d5da933d7e5601f636bb0a82e712ed374cff2bc5759b9fce8",
+   "source": "draft author",
+   "sources": [
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  "prompt_sha256": "90f0eef68f679e6cb4f8296866bedb7158f7daf18fb952d9a8a36d2a987e68aa",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T090311Z-a872f3",
+   "call_id": "20261001T201733Z-c14b90",
    "confirmed": true,
    "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "d3a584c714b748ae2d88a005e8a14e78aba9d79d6b8166b632c267271b33e544",
-   "reason": "The requirement strictly defines an upper bound for the retry delay without mandating a specific wait distribution or utilization of the maximum value. By capping the wait at the minimum wait seconds, the mutant still guarantees that the wait is no longer than the configured maximum retry wait, satisfying the requirement.",
-   "response_sha256": "4c8d5ed3456069e334c495cd81a4d2d3dcfc8ac8fb758ab4acc119cf7dfff64c",
+   "prompt_sha256": "90f0eef68f679e6cb4f8296866bedb7158f7daf18fb952d9a8a36d2a987e68aa",
+   "reason": "The mutant ignores the configured maximum wait time by capping the exponential backoff at the minimum wait time, which prevents the wait duration from scaling as intended.",
+   "response_sha256": "55bb10b252767eb8e82596242dbe7db66f28341b4911cf5e0ec7f87fa368743c",
    "sources": [
-    "no wait before a retry shall exceed the configured maximum retry wait.",
-    "Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.",
-    "max=policy.max_wait_seconds,",
-    "max=policy.min_wait_seconds),"
+    "Sync and async retry each wait at least the configured minimum and no longer than the configured maximum retry wait.",
+    "max=policy.max_wait_seconds",
+    "max=policy.min_wait_seconds"
    ],
-   "test_focus": "",
-   "verdict": "irrelevant"
+   "test_focus": "The test must verify that the retry policy's wait configuration correctly applies the specified maximum wait limit, rather than using the minimum for both bounds.",
+   "verdict": "pin"
   }
  },
  "7c23c1115ef38d7b": {
@@ -425,6 +513,119 @@
   "operator": "argument",
   "prompt_sha256": "75b87881baf681025cfa3eed28364a636e0f8f94a7aa55be4548af83ec616bf5"
  },
+ "85f375bc3e5d0561": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T170936Z-ae1ba2",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "feature",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the backoff, so retries fire immediately (wait_none) and the configured min_wait_seconds is ignored. The requirements only set an upper limit (\"no wait ... shall exceed the configured maximum retry wait\"), and a zero wait meets it. No requirement says whether Provider retry must back off or honour a minimum wait so that transient failures such as rate limits can clear, so the Feature's owner has to decide.",
+   "response_sha256": "faf7779fa2a76f21f1a2d3ce5a06034bf2f756e6717fe0c38b50db5963ff548c",
+   "sources": [
+    "no wait before a retry shall exceed the configured maximum retry wait",
+    "Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.",
+    "Recover from transient execution failures without unbounded work",
+    "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),"
+   ],
+   "test_focus": "",
+   "verdict": "escalate"
+  },
+  "operator": "argument",
+  "prompt_sha256": "6566afc71ceaf45dec579c8d1dcdce581edbb26a5518396a354c4e601ddf4ed6"
+ },
+ "909ea17c8e00b989": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T201700Z-1cc6c4",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the retry predicate. Tenacity's default then retries every exception, so permanent provider failures get retried up to max_attempts. REQ_PROVIDER_RETRY explicitly forbids treating permanent failures as transient.",
+   "response_sha256": "f671a53c66e28f6ad7dacd0df51d7c5a481afdde0be82da76f4f1cc0e4329383",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "retry=retry_if_exception(is_retryable_provider_error),",
+    "Retry only temporary provider failures"
+   ],
+   "test_focus": "Raise a non-retryable (permanent) provider error through build_provider_retrying with max_attempts > 1. Assert that the provider is called exactly once, the error is re-raised immediately, and no retry is scheduled (no sleep, no retry log).",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-10-01T20:20:47.231799Z",
+   "answer_sha256": "15fd4274a1fda4bfa0db0af6e8642ee03605da526d7eec0d7a0fabfb37d97be9",
+   "call_id": "20261001T201938Z-88754a",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "15fd4274a1fda4bfa0db0af6e8642ee03605da526d7eec0d7a0fabfb37d97be9",
+   "effort": "",
+   "model": "gemini-3.1-pro-high",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_909ea17c8e00b989.py",
+   "response_sha256": "7a46f194c2d5c3289f55455f534f65b3ecc6a1789ad6a41255bbaee71fd666d1",
+   "source": "draft author",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  },
+  "prompt_sha256": "72f9bb59e1336a6c1f151ae3744d7342031333f1f656c592e965701d51aa9c99"
+ },
+ "95c295ed20ab677a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T201700Z-dac681",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only removes the before_sleep logging/state-sink hook. Stop, wait and retry predicate are unchanged, so the attempt count, wait bounds and which failures are retried all stay the same. None of the requirements above asks for retry-scheduled events or state-sink callbacks.",
+   "response_sha256": "e73df9a96801a467e0b99b537b9a320e6fc6d8cca60a7dbb131420bec021c3e8",
+   "sources": [
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "before_sleep=build_retry_before_sleep_logger(",
+    "event_type=\"llm_router.provider.retry.scheduled\","
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "e32a4d5b722da3c0db8a87279e1bcf6c757db09bf43f24ed524842728008015b",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20261001T201721Z-8dfe34",
+   "confirmed": true,
+   "effort": "",
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "e32a4d5b722da3c0db8a87279e1bcf6c757db09bf43f24ed524842728008015b",
+   "reason": "The mutant removes the before_sleep logging callback from the retry configuration. This change does not affect the maximum attempts, wait times, or retry conditions, and no requirement specifies logging behavior for retries.",
+   "response_sha256": "3261714a7c7f477804b062125a178816d37f1afecc9927e5c9795171713544c7",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "        before_sleep=build_retry_before_sleep_logger("
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
  "983ba1af56c61839": {
   "answer": {
    "backend": "claude-cli",
@@ -448,31 +649,77 @@
   "operator": "argument",
   "prompt_sha256": "0be94ee87ac3ad37ae3c38b2a6e3b20c4ba5fcc66427e5acb33a89998f2a9886"
  },
- "a3f68e4f70d254ab": {
+ "SM-06C8D1CA": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T090357Z-7983be",
+   "call_id": "20261001T114454Z-5f27be",
    "confirmed": false,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "With reraise=False, once async retries run out, tenacity raises a RetryError wrapper instead of the provider's last exception. The attempt count does not change, but routing no longer receives \"the final failure\" that the technical requirement says must be surfaced, so anything in routing that classifies the provider error would break.",
-   "response_sha256": "6cc98c057b728e51136fa2e709d9f3a41b4d65d63237ef237fe593dcc02bb2f3",
+   "reason": "The mutant uses max_wait_seconds as the multiplier and drops the max cap. The ceiling is still max_wait on the first retry but grows to max_wait*2^(n-1) after that, so from the second retry on a wait can exceed the configured maximum retry wait. That breaks the technical requirement's wait bound.",
+   "response_sha256": "0e7daa05c13fce49b13c0b591d2f5a2f73afc45ae5337622bc90f44ad009d5f0",
+   "sources": [
+    "no wait before a retry shall exceed the configured maximum retry wait",
+    "Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.",
+    "multiplier=policy.max_wait_seconds,",
+    "max=policy.max_wait_seconds,"
+   ],
+   "test_focus": "With max_attempts >= 3 and a retryable error on every call, catch each requested wait on the sync and async paths and check that none exceeds policy.max_wait_seconds.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "662b6119f829050fb0bf90e328d2f4164714e8bccceb7ae91cbc15308cc88a4e"
+ },
+ "SM-57FED309": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T114454Z-dedc4b",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops `max=policy.max_wait_seconds`, which removes the cap on async backoff. Tenacity's default maximum is effectively unbounded, so later retries can wait much longer than the configured maximum retry wait. That breaks the technical requirement's wait bound and its async verification criterion.",
+   "response_sha256": "6853122db3195e195172b37a5d5de099948fa21ef60c0c228287f2ba9fa2a2e9",
+   "sources": [
+    "no wait before a retry shall exceed the configured maximum retry wait.",
+    "Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.",
+    "            max=policy.max_wait_seconds,",
+    "            multiplier=policy.min_wait_seconds,"
+   ],
+   "test_focus": "Build the async retrying with a small max_wait_seconds and enough max_attempts that the exponential backoff would grow past the cap. Record every sleep, for example by patching the async sleep or checking the wait strategy at high attempt numbers, and assert that none exceeds max_wait_seconds.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "c7b8ff9fae5e944846989ac67b9ae25a93d8995bde2d50cf95859ac4cfac8b83"
+ },
+ "a3f68e4f70d254ab": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T201700Z-98f38b",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "With reraise=False, a retryable error that uses up all attempts reaches the caller as a tenacity RetryError wrapper instead of the provider's own last exception. The technical requirement says the final failure must reach routing after the bounded attempts, so routing would now get a different exception type. Routing may then classify it wrongly, for example as temporary or permanent.",
+   "response_sha256": "b0e9ba46ab589f81c4bd874178efcf230350333d8423ab788f591a7861076e9b",
    "sources": [
     "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
-    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
-    "        reraise=True,",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "reraise=True,",
     "before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=False)"
    ],
-   "test_focus": "Make an async provider call that always raises a retryable error. Check that exactly policy.max_attempts calls are made, and that the exception raised is the original provider error type, not tenacity.RetryError.",
+   "test_focus": "Make an async provider call fail with a retryable error until max_attempts runs out. Check that the exception raised is the original provider error, not tenacity.RetryError, and that exactly max_attempts calls were made.",
    "verdict": "pin"
   },
   "operator": "boolean",
   "pin": {
-   "adopted_at": "2026-10-01T09:08:03.550730Z",
-   "answer_sha256": "81e9ce8524a9fc2f39041996a30b791c78472ca5dfb94680f77fd47853f7b8d3",
-   "call_id": "20261001T090706Z-eeffe6",
+   "adopted_at": "2026-10-01T20:21:00.215976Z",
+   "answer_sha256": "e75db85551beb94e19e4633caf197ac2ce5bd120215dab91b26b7d5355ec0934",
+   "call_id": "20261001T202012Z-de712c",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -481,13 +728,13 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "6d648b8d65eba66582e760ab39d7ee2b8ce6aadb1ffa443fec509d40334fa085",
+   "draft_sha256": "e75db85551beb94e19e4633caf197ac2ce5bd120215dab91b26b7d5355ec0934",
    "effort": "medium",
    "level": 2,
    "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_a3f68e4f70d254ab.py",
-   "response_sha256": "6f9941f5882c459b02c6e28841e1179f8bd3328d530622d19f7a5b92938cdc01",
+   "response_sha256": "e25d91c4a06019d9f265148f4348451a8183ca27e6e464195325bf3cfa93f2ac",
    "source": "draft author with tools",
    "sources": [
     "llm_router._api.errors.ProviderError",
@@ -495,7 +742,97 @@
     "llm_router._internal.providers.retry.build_provider_async_retrying"
    ]
   },
-  "prompt_sha256": "58f8dfc67910586a74b6a100b6018954eb38f26a11db9584ca6f520b6f068623"
+  "prompt_sha256": "f236573f59d94e411b6dfc35e592517c87e8e5d5aaf2bead10864418edad3eec"
+ },
+ "af31395bc89f6b7e": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T201700Z-0ef2ae",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the `is_retryable_provider_error` predicate, so the async policy retries every exception, including permanent provider failures, until max attempts. This breaks the requirement that permanent failures not be retried as if they were transient.",
+   "response_sha256": "887ad47aa00265d70b55405ee3bf08dd053badb51129a52b2b51d03c77362a60",
+   "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "retry=retry_if_exception(is_retryable_provider_error),",
+    "Retry only temporary provider failures"
+   ],
+   "test_focus": "Run the async retrying policy on a call that raises a permanent (non-retryable) provider error. Check that the call is attempted exactly once, with no sleep or retry-scheduled event, and that the original error is re-raised.",
+   "verdict": "pin"
+  },
+  "operator": "argument",
+  "pin": {
+   "adopted_at": "2026-10-01T20:20:52.698368Z",
+   "answer_sha256": "577fd6fd7f1419f7d7a1e4d03d609534b7e3813e35616e6222d1fd894fc202e0",
+   "call_id": "20261001T202001Z-4965d1",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "577fd6fd7f1419f7d7a1e4d03d609534b7e3813e35616e6222d1fd894fc202e0",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_af31395bc89f6b7e.py",
+   "response_sha256": "2c5729c4e08ddf4edbb99a607bdfeed5ece104553f248d8fd9f66ca57161f82c",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  "prompt_sha256": "8a10a0bcdee9f4c4b882caa5ea50e65056fe5c276250dd327d21ac3d2a0b12ba"
+ },
+ "ba9d483d07816a12": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T170936Z-f039f0",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant drops the wait strategy, so Tenacity falls back to zero wait. The attempt count is unchanged, and a zero wait never exceeds the configured maximum, so both verification criteria still hold. No requirement sets a minimum wait or requires exponential backoff, so this real difference touches nothing the requirements ask for.",
+   "response_sha256": "5203113caa4fd56ae624baba7260c93f0b2003210293985f95386ee5ba44becd",
+   "sources": [
+    "no wait before a retry shall exceed the configured maximum retry wait",
+    "Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.",
+    "provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing",
+    "wait=wait_random_exponential(\n            min=policy.min_wait_seconds,\n            max=policy.max_wait_seconds,\n        ),"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "argument",
+  "prompt_sha256": "03fefcc8a504bbc087810d5e6e07fe631d69e404df24c7c8e395338d6d36f383",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20261001T170957Z-45c19f",
+   "confirmed": false,
+   "effort": "",
+   "level": "goal",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "03fefcc8a504bbc087810d5e6e07fe631d69e404df24c7c8e395338d6d36f383",
+   "reason": "The requirements only cap the maximum wait time but fail to specify a minimum wait or backoff strategy, which are necessary to fulfill the goal's promise of actually recovering from transient execution failures rather than failing instantly.",
+   "response_sha256": "1ace8aa2de35403aca89e5079743963aa5a605f0cbb978b3e0a2e96d0c8e8ebe",
+   "sources": [
+    "Recover from transient execution failures without unbounded work",
+    "no wait before a retry shall exceed the configured maximum retry wait.",
+    "wait=wait_random_exponential("
+   ],
+   "test_focus": "",
+   "verdict": "escalate"
+  }
  },
  "bbfbe910308021a5": {
   "answer": {
@@ -581,39 +918,41 @@
  "c7a67bc7b5efb364": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T090357Z-9ea31a",
+   "call_id": "20261001T201700Z-6be986",
    "confirmed": false,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "With min set to max_wait_seconds, Tenacity always waits exactly max_wait_seconds. That never goes over the configured maximum wait, and stop_after_attempt(policy.max_attempts) is untouched, so both bounds still hold. The versions do differ in how long each wait lasts, but no requirement asks for a minimum wait or for exponential/random backoff, only for an upper limit on attempts and on wait time.",
-   "response_sha256": "a6b6aec35fa8aa154cb0d901f704c1de6a43b7bc8ef6b2c061f1fa97f9ed01d4",
+   "reason": "The mutant sets min=max_wait, so every retry wait is exactly the configured maximum. That still meets the requirement that each wait be at least the minimum and no longer than the maximum, and the attempt limit and retry rules are unchanged. No requirement asks for jitter, exponential growth or waits near the minimum, so the difference falls outside what is specified.",
+   "response_sha256": "f41e4c18143ac12251b4dd04199ba2eeb53ca54a843c6859a0f6bd059ecfcc95",
    "sources": [
-    "no wait before a retry shall exceed the configured maximum retry wait",
-    "provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing",
-    "Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.",
-    "wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds)"
+    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
+    "Sync and async retry each wait at least the configured minimum and no longer than the configured maximum retry wait.",
+    "wait=wait_random_exponential(min=policy.max_wait_seconds, max=policy.max_wait_seconds)",
+    "min=policy.min_wait_seconds,",
+    "Recover from transient execution failures without unbounded work"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "attribute",
-  "prompt_sha256": "291d20bc56adcc1554bfcc11430fb2e69475587f35790366f2a21faaa6ab4b68",
+  "prompt_sha256": "7cecbec4609cc729a97d5b8c3970faae24fa9c0fc668776407d7d2c7917241a2",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T090410Z-c68165",
+   "call_id": "20261001T201733Z-03d241",
    "confirmed": false,
    "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "291d20bc56adcc1554bfcc11430fb2e69475587f35790366f2a21faaa6ab4b68",
-   "reason": "The requirements and verification criteria only mandate that the retry wait time must not exceed the configured maximum. Changing the minimum wait time to equal the maximum wait time alters the implementation's behavior but still strictly obeys the upper bound, making the difference irrelevant to the requirements.",
-   "response_sha256": "bdfef5c919f2835326b9b50aca260f1322c2ecd9f3eee75c623a5e648e40b9b1",
+   "prompt_sha256": "7cecbec4609cc729a97d5b8c3970faae24fa9c0fc668776407d7d2c7917241a2",
+   "reason": "The requirement only mandates that the retry wait falls within the specified bounds (at least the minimum and at most the maximum). A constant wait of the maximum time satisfies these bounds, as the requirement does not specifically demand a random or exponential distribution.",
+   "response_sha256": "6be081dcec2deccc1823f7b1971d3fec4708119db543c3e10c9eebb99124b0d6",
    "sources": [
-    "no wait before a retry shall exceed the configured maximum retry wait.",
-    "min=policy.min_wait_seconds,",
+    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
+    "Sync and async retry each wait at least the configured minimum and no longer than the configured maximum retry wait.",
+    "min=policy.min_wait_seconds",
     "min=policy.max_wait_seconds"
    ],
    "test_focus": "",
@@ -623,28 +962,28 @@
  "cdebfb831ae4dc16": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T090357Z-907a0a",
+   "call_id": "20261001T201700Z-6c73bd",
    "confirmed": true,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "With reraise=False, Tenacity wraps the last exception in a RetryError once retries run out, so routing no longer gets the provider's own final failure. The attempt count and wait stay the same. The requirement says the final failure must be surfaced to routing, so this change breaks it.",
-   "response_sha256": "210caf4c54396a72724784ddb8b8f1e15feb26d9932c70be036a724c80d0116a",
+   "reason": "With reraise=False, Tenacity raises its own RetryError wrapper once retries run out, instead of the provider's last exception. Routing therefore never sees the final provider failure the requirement says must be surfaced, and its retry or fallback classification of that error type breaks.",
+   "response_sha256": "d2328bfd2a5b306388cd61f8c8cfd459f80fdd85ae2fc06a91dbcf9a6806fc69",
    "sources": [
-    "provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
     "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
-    "        reraise=True,",
-    "reraise=False)"
+    "reraise=True,",
+    "state_sink=state_sink), reraise=False)"
    ],
-   "test_focus": "After sync retries run out on a retryable provider error, the test must check that the last attempt's original provider exception reaches the caller. It must not be a tenacity RetryError, and there must be exactly max_attempts calls.",
+   "test_focus": "The test must exhaust retries on a retryable provider error with max_attempts=N, then check two things: exactly N calls are made, and the exception raised is the original provider exception, not tenacity.RetryError.",
    "verdict": "pin"
   },
   "operator": "boolean",
   "pin": {
-   "adopted_at": "2026-10-01T09:09:34.231805Z",
-   "answer_sha256": "040e79825b0262c038c300a60bfb97f2b9a9ddce1fd258b223b136cd89c06a82",
-   "call_id": "20261001T090758Z-ed5e07",
+   "adopted_at": "2026-10-01T20:21:47.172903Z",
+   "answer_sha256": "51def22f94f97982b569a0a96011911df6d150d593325a44c9b2cba59975ae29",
+   "call_id": "20261001T202044Z-27330d",
    "cascade": {
     "accepted": true,
     "fails_on_mutant": true,
@@ -653,21 +992,21 @@
     "passes_on_original": 5,
     "primitives": []
    },
-   "draft_sha256": "040e79825b0262c038c300a60bfb97f2b9a9ddce1fd258b223b136cd89c06a82",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
+   "draft_sha256": "51def22f94f97982b569a0a96011911df6d150d593325a44c9b2cba59975ae29",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_cdebfb831ae4dc16.py",
-   "response_sha256": "c641b7c162d6b7728537bc7906f0ba5c01c327710436ecaa777da4c3f86915c9",
-   "source": "last resort",
+   "response_sha256": "6f654562bf294e4fae28ae9b5df14ae697e218fa6ed3959b151f0ced8effca6e",
+   "source": "draft author with tools",
    "sources": [
-    "llm_router._internal.providers.retry.build_provider_retrying",
+    "llm_router._api.errors.ProviderError",
     "llm_router._internal.config.models.RetryPolicy",
-    "llm_router._api.errors.ProviderError"
+    "llm_router._internal.providers.retry.build_provider_retrying"
    ]
   },
-  "prompt_sha256": "73f1360b855b63cf6b346c9dd5cf0c5822e4f9b46111497461e9b9d3616487e3"
+  "prompt_sha256": "0122fa7d166aed38ff7a7d62de113569b67ae63b6d54012e9ee94e6fd57cad92"
  },
  "fbd59874e7604ef8": {
   "answer": {

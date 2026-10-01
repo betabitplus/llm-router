@@ -1,20 +1,46 @@
 {
- "at": "2026-09-30T13:45:50.490276Z",
+ "at": "2026-10-01T13:47:03.285698Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_req_tool_choice_e6293e4c0f29961b.py",
+  "tests/llm_router/mutation_pins/test_pin_req_tool_choice_eecdb1201e9ab7e6.py",
+  "tests/llm_router/mutation_pins/test_pin_req_tool_choice_fn_0ba02f80.py",
   "tests/llm_router/mutation_pins/test_pin_req_tool_choice_sm_b25d86b3.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_req_tool_choice_e6293e4c0f29961b.py",
-  "tests/llm_router/mutation_pins/test_pin_req_tool_choice_sm_b25d86b3.py"
+  "tests/llm_router/mutation_pins/test_pin_req_tool_choice_fn_0ba02f80.py"
  ],
  "restored": [],
- "removed": {},
+ "removed": {
+  "e6293e4c0f29961b": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_tool_choice_e6293e4c0f29961b.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_tool_choice_fn_0ba02f80.py"
+   ]
+  },
+  "eecdb1201e9ab7e6": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_tool_choice_eecdb1201e9ab7e6.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_tool_choice_fn_0ba02f80.py"
+   ]
+  },
+  "SM-B25D86B3": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_tool_choice_sm_b25d86b3.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_tool_choice_fn_0ba02f80.py"
+   ]
+  }
+ },
  "matrix": {
   "e6293e4c0f29961b": [
-   "tests/llm_router/mutation_pins/test_pin_req_tool_choice_e6293e4c0f29961b.py"
+   "tests/llm_router/mutation_pins/test_pin_req_tool_choice_e6293e4c0f29961b.py",
+   "tests/llm_router/mutation_pins/test_pin_req_tool_choice_fn_0ba02f80.py"
+  ],
+  "eecdb1201e9ab7e6": [
+   "tests/llm_router/mutation_pins/test_pin_req_tool_choice_eecdb1201e9ab7e6.py",
+   "tests/llm_router/mutation_pins/test_pin_req_tool_choice_fn_0ba02f80.py"
   ],
   "SM-B25D86B3": [
+   "tests/llm_router/mutation_pins/test_pin_req_tool_choice_fn_0ba02f80.py",
    "tests/llm_router/mutation_pins/test_pin_req_tool_choice_sm_b25d86b3.py"
   ]
  },
@@ -50,6 +76,7 @@
   "e6293e4c0f29961b",
   "e655ca49403fc3f5",
   "ed3054e3442bfcf1",
+  "eecdb1201e9ab7e6",
   "f08c4067a011bd9a",
   "f2a75152f0ef8ede"
  ]

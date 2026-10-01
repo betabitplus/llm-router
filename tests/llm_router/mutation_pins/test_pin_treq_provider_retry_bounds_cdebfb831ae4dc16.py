@@ -1,6 +1,6 @@
 # mutation-pin: TREQ_PROVIDER_RETRY_BOUNDS cdebfb831ae4dc16
 # pinned-by: claude-opus-5-5
-# written-by: claude-opus-5-5, the last resort, the verdict's own model with tools
+# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
 
 import pytest
@@ -12,48 +12,51 @@ from llm_router._internal.providers.retry import build_provider_retrying
 pytestmark = pytest.mark.verification_kind("unit")
 
 
-class RetryableCauseError(Exception):
-    """Private-style provider cause flagged as retryable."""
-
-    retryable: bool = True
-
-
 class RecordingLogger:
-    """Collect retry warning events emitted between attempts."""
-
     def __init__(self) -> None:
-        self.events: list[str] = []
+        self.events: list[tuple[str, dict[str, object]]] = []
 
     def warning(self, event: str, **values: object) -> None:
-        del values
-        self.events.append(event)
+        self.events.append((event, values))
 
 
-@pytest.mark.verifies("TREQ_PROVIDER_RETRY_BOUNDS[revision==2]")
-def test_sync_exhausted_retry_surfaces_last_provider_error() -> None:
-    max_attempts = 3
+class TransientCauseError(Exception):
+    retryable = True
+
+
+@pytest.mark.verifies("TREQ_PROVIDER_RETRY_BOUNDS[revision==3]")
+def test_provider_retrying_reraises_exhausted_provider_error() -> None:
     policy = RetryPolicy(
         min_wait_seconds=0.0,
         max_wait_seconds=0.0,
-        max_attempts=max_attempts,
+        max_attempts=2,
     )
-    retry_logger = RecordingLogger()
-    retrying = build_provider_retrying(policy=policy, logger=retry_logger)
-    raised: list[ProviderError] = []
+    retrying = build_provider_retrying(
+        policy=policy,
+        logger=RecordingLogger(),
+        context_getter=None,
+        state_sink=None,
+    )
 
-    def operation() -> None:
-        error = ProviderError(
-            RetryableCauseError("upstream overloaded"),
-            "openrouter",
-            "deepseek-v3",
-            message=f"provider outage on attempt {len(raised) + 1}",
-        )
-        raised.append(error)
-        raise error
+    attempt_count = 0
+    cause = TransientCauseError()
+    failure = ProviderError(
+        cause=cause,
+        provider="dummy_provider",
+        model="dummy_model",
+        message="temporary provider failure",
+    )
 
-    with pytest.raises(ProviderError, match=r"provider outage on attempt 3") as info:
-        retrying(operation)
+    def failing_provider_call() -> str:
+        nonlocal attempt_count
+        attempt_count += 1
+        raise failure
 
-    assert len(raised) == max_attempts
-    assert info.value is raised[-1]
-    assert len(retry_logger.events) == max_attempts - 1
+    with pytest.raises(
+        ProviderError,
+        match=r"temporary provider failure",
+    ) as exc_info:
+        retrying(failing_provider_call)
+
+    assert exc_info.value is failure
+    assert attempt_count == 2

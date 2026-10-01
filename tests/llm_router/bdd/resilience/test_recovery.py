@@ -66,11 +66,11 @@ for _test_name, _criterion in (
         "VC_PROVIDER_RETRY_ATTEMPT_BOUND",
     ),
     (
-        "test_synchronous_provider_retry_never_waits_longer_than_the_configured_maximum",
+        "test_synchronous_provider_retry_waits_within_the_configured_retry_wait_bounds",
         "VC_PROVIDER_RETRY_WAIT_BOUND",
     ),
     (
-        "test_asynchronous_provider_retry_never_waits_longer_than_the_configured_maximum",
+        "test_asynchronous_provider_retry_waits_within_the_configured_retry_wait_bounds",
         "VC_PROVIDER_RETRY_WAIT_BOUND",
     ),
     (
@@ -113,11 +113,11 @@ for _test_name, _path_id in (
         "async",
     ),
     (
-        "test_synchronous_provider_retry_never_waits_longer_than_the_configured_maximum",
+        "test_synchronous_provider_retry_waits_within_the_configured_retry_wait_bounds",
         "sync",
     ),
     (
-        "test_asynchronous_provider_retry_never_waits_longer_than_the_configured_maximum",
+        "test_asynchronous_provider_retry_waits_within_the_configured_retry_wait_bounds",
         "async",
     ),
     ("test_structured_output_stops_at_a_oneattempt_budget", "budget-1"),
@@ -614,12 +614,13 @@ def _run_recording_waits(
     monkeypatch: pytest.MonkeyPatch,
     scenario: str,
 ) -> None:
-    """Run three attempts with every retry wait recorded beside the configured maximum
+    """Run three attempts with every retry wait recorded beside the configured bounds
     instead of slept: the retry sleeps through ``time.sleep`` or ``asyncio.sleep``."""
-    waits: list[tuple[float, float]] = []
+    waits: list[tuple[float, float, float]] = []
 
     def record(seconds: float) -> None:
-        waits.append((float(seconds), get_config().retry_policy.max_wait_seconds))
+        policy = get_config().retry_policy
+        waits.append((float(seconds), policy.min_wait_seconds, policy.max_wait_seconds))
 
     async def record_async(seconds: float, *_args: object, **_kwargs: object) -> None:
         record(seconds)
@@ -655,16 +656,18 @@ def async_retry_waits(case: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> 
     _run_recording_waits(case, monkeypatch, "async_exhausted")
 
 
-@then("no synchronous retry wait exceeds the configured maximum")
-def sync_waits_within_maximum(case: dict[str, Any]) -> None:
+@then("every synchronous retry wait lies within the configured bounds")
+def sync_waits_within_bounds(case: dict[str, Any]) -> None:
     assert case["result"].ok is False
     assert len(case["waits"]) == 2
-    assert all(seconds <= maximum for seconds, maximum in case["waits"])
+    assert all(
+        minimum <= seconds <= maximum for seconds, minimum, maximum in case["waits"]
+    )
 
 
-@then("no asynchronous retry wait exceeds the configured maximum")
-def async_waits_within_maximum(case: dict[str, Any]) -> None:
-    sync_waits_within_maximum(case)
+@then("every asynchronous retry wait lies within the configured bounds")
+def async_waits_within_bounds(case: dict[str, Any]) -> None:
+    sync_waits_within_bounds(case)
 
 
 @given("every structured response is invalid", target_fixture="case")

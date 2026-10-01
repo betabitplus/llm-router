@@ -1,4 +1,30 @@
 {
+ "FN-0BA02F80": [
+  {
+   "at": "2026-10-01T13:01:08.785117Z",
+   "call_id": "20261001T125638Z-c4dae2",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "91f471cda2bce67325f343b307639764c5f83381691041cd90babb0da32e3472",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "py_lib_testkit._internal.test_support.http.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.tool_failure.google_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
+   ]
+  }
+ ],
  "SM-B25D86B3": [
   {
    "at": "2026-09-30T16:40:14.778908Z",

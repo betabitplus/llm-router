@@ -15,5 +15,41 @@
     "llm_router._internal.capabilities.tools.ToolRegistry"
    ]
   }
+ ],
+ "FN-8BF3E332": [
+  {
+   "at": "2026-10-01T13:14:28.431375Z",
+   "call_id": "20261001T131215Z-d02001",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "bd48e395a987c6bf82c2f511791254b1bdbe030b78daeb8819b5be44e24c7804",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert (\"Tool 'faili...ntimeError.\",) == {'value': 3} | Use -v to get more diff)",
+   "sources": [
+    "llm_router._api.errors.ToolExecutionError",
+    "llm_router._api.types.ToolCall",
+    "llm_router._internal.capabilities.tools.ToolRegistry"
+   ]
+  },
+  {
+   "at": "2026-10-01T13:14:58.599880Z",
+   "call_id": "20261001T131428Z-dbd416",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "52d7202546980fcdf8c7d61d4c1009ee11acaf34bc9fe402a8977e64975a5a49",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ToolExecutionError",
+    "llm_router._api.types.ToolCall",
+    "llm_router._internal.capabilities.tools.ToolRegistry"
+   ]
+  }
  ]
 }

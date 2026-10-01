@@ -1,64 +1,37 @@
 {
- "at": "2026-09-30T15:52:32.142901Z",
+ "at": "2026-10-01T20:25:56.287425Z",
  "pins": [
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_14086e0bf74da773.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_14f4d9793d873316.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_185b6874039f611f.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_20359188ebc2e80d.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_23b422ccd29d9e9f.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_2fe5c64afc7ed393.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_355054900e3b0e62.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_36fb82fcc47860a2.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_3efa4e88882211c0.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_40231175bc1ce35e.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_423e7eb093169520.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_474c40f4f8c20c86.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_5c98f844a8369f15.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7879b343f0d7cac0.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7a62ad64f09cc0a0.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7b8bea28d9ae00fa.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7f08bc96d2f666c5.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7ff18671bd521f50.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_80dc89d52f2c3e6f.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8654a7b1099c3580.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8920c14adbe7aa36.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_89cec15e825762c1.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8f495188e4365ff8.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8fddc8d6682ad36b.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_aeeb7e44dc927403.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b1c0fd5ecaa6d923.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b2c437a6ff46e0ea.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b2ede67441d3c603.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cb633e63a453812c.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cebb90925a422d7e.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_eefc9085c442a9e5.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fce408324289d87d.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fce408324289d87d.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_1d4b22d1.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_b1675618.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_e736b01d.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_eedab3ca.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_14086e0bf74da773.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_14f4d9793d873316.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_185b6874039f611f.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_20359188ebc2e80d.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_23b422ccd29d9e9f.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_2fe5c64afc7ed393.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_36fb82fcc47860a2.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_3efa4e88882211c0.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_40231175bc1ce35e.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_474c40f4f8c20c86.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_5c98f844a8369f15.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7879b343f0d7cac0.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7a62ad64f09cc0a0.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7b8bea28d9ae00fa.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7f08bc96d2f666c5.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7ff18671bd521f50.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8654a7b1099c3580.py",
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8920c14adbe7aa36.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8f495188e4365ff8.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8fddc8d6682ad36b.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_aeeb7e44dc927403.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b1c0fd5ecaa6d923.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b2c437a6ff46e0ea.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cb633e63a453812c.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cebb90925a422d7e.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_eefc9085c442a9e5.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_89cec15e825762c1.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_1d4b22d1.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_b1675618.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_e736b01d.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_eedab3ca.py"
  ],
  "restored": [
   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7879b343f0d7cac0.py"
@@ -199,120 +172,149 @@
   "fce408324289d87d": {
    "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fce408324289d87d.py",
    "by": [
-    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_eefc9085c442a9e5.py"
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_89cec15e825762c1.py"
+   ]
+  },
+  "14086e0bf74da773": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_14086e0bf74da773.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_e736b01d.py"
+   ]
+  },
+  "14f4d9793d873316": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_14f4d9793d873316.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_b1675618.py"
+   ]
+  },
+  "185b6874039f611f": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_185b6874039f611f.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_eedab3ca.py"
+   ]
+  },
+  "23b422ccd29d9e9f": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_23b422ccd29d9e9f.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_eedab3ca.py"
+   ]
+  },
+  "36fb82fcc47860a2": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_36fb82fcc47860a2.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_e736b01d.py"
+   ]
+  },
+  "40231175bc1ce35e": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_40231175bc1ce35e.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_b1675618.py"
+   ]
+  },
+  "7a62ad64f09cc0a0": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7a62ad64f09cc0a0.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_b1675618.py"
+   ]
+  },
+  "7f08bc96d2f666c5": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7f08bc96d2f666c5.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_b1675618.py"
+   ]
+  },
+  "8654a7b1099c3580": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8654a7b1099c3580.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_1d4b22d1.py"
+   ]
+  },
+  "8f495188e4365ff8": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8f495188e4365ff8.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_e736b01d.py"
+   ]
+  },
+  "8fddc8d6682ad36b": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8fddc8d6682ad36b.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_b1675618.py"
+   ]
+  },
+  "aeeb7e44dc927403": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_aeeb7e44dc927403.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_1d4b22d1.py"
+   ]
+  },
+  "b1c0fd5ecaa6d923": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b1c0fd5ecaa6d923.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_e736b01d.py"
+   ]
+  },
+  "b2c437a6ff46e0ea": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b2c437a6ff46e0ea.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_b1675618.py"
+   ]
+  },
+  "cb633e63a453812c": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cb633e63a453812c.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_1d4b22d1.py"
+   ]
+  },
+  "cebb90925a422d7e": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cebb90925a422d7e.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_e736b01d.py"
+   ]
+  },
+  "eefc9085c442a9e5": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_eefc9085c442a9e5.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_eedab3ca.py"
    ]
   }
  },
  "matrix": {
-  "14086e0bf74da773": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_14086e0bf74da773.py"
-  ],
-  "14f4d9793d873316": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_14f4d9793d873316.py"
-  ],
-  "185b6874039f611f": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_185b6874039f611f.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_423e7eb093169520.py"
-  ],
   "20359188ebc2e80d": [
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_20359188ebc2e80d.py"
-  ],
-  "23b422ccd29d9e9f": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_23b422ccd29d9e9f.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_355054900e3b0e62.py"
   ],
   "2fe5c64afc7ed393": [
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_2fe5c64afc7ed393.py"
   ],
-  "355054900e3b0e62": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_23b422ccd29d9e9f.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_355054900e3b0e62.py"
-  ],
-  "36fb82fcc47860a2": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_36fb82fcc47860a2.py"
-  ],
   "3efa4e88882211c0": [
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_3efa4e88882211c0.py"
-  ],
-  "40231175bc1ce35e": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_40231175bc1ce35e.py"
-  ],
-  "423e7eb093169520": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_185b6874039f611f.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_423e7eb093169520.py"
   ],
   "474c40f4f8c20c86": [
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_474c40f4f8c20c86.py"
   ],
+  "5c98f844a8369f15": [
+   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_5c98f844a8369f15.py"
+  ],
   "7879b343f0d7cac0": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_36fb82fcc47860a2.py",
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_3efa4e88882211c0.py",
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7879b343f0d7cac0.py",
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7b8bea28d9ae00fa.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8f495188e4365ff8.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b1c0fd5ecaa6d923.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b2ede67441d3c603.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cebb90925a422d7e.py"
-  ],
-  "7a62ad64f09cc0a0": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7a62ad64f09cc0a0.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fn_e736b01d.py"
   ],
   "7b8bea28d9ae00fa": [
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7b8bea28d9ae00fa.py"
   ],
-  "7f08bc96d2f666c5": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7f08bc96d2f666c5.py"
-  ],
   "7ff18671bd521f50": [
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7ff18671bd521f50.py"
-  ],
-  "80dc89d52f2c3e6f": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_80dc89d52f2c3e6f.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_eefc9085c442a9e5.py"
-  ],
-  "8654a7b1099c3580": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8654a7b1099c3580.py"
   ],
   "8920c14adbe7aa36": [
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8920c14adbe7aa36.py"
   ],
   "89cec15e825762c1": [
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_89cec15e825762c1.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_eefc9085c442a9e5.py",
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fce408324289d87d.py"
-  ],
-  "8f495188e4365ff8": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8f495188e4365ff8.py"
-  ],
-  "8fddc8d6682ad36b": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_8fddc8d6682ad36b.py"
-  ],
-  "aeeb7e44dc927403": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_aeeb7e44dc927403.py"
-  ],
-  "b1c0fd5ecaa6d923": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b1c0fd5ecaa6d923.py"
-  ],
-  "b2c437a6ff46e0ea": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b2c437a6ff46e0ea.py"
-  ],
-  "b2ede67441d3c603": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_7879b343f0d7cac0.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_b2ede67441d3c603.py"
-  ],
-  "cb633e63a453812c": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cb633e63a453812c.py"
-  ],
-  "cebb90925a422d7e": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_cebb90925a422d7e.py"
-  ],
-  "eefc9085c442a9e5": [
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_80dc89d52f2c3e6f.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_eefc9085c442a9e5.py"
   ],
   "fce408324289d87d": [
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_89cec15e825762c1.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_eefc9085c442a9e5.py",
    "tests/llm_router/mutation_pins/test_pin_treq_qwenchat_adapter_boundary_fce408324289d87d.py"
   ]
  },

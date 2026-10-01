@@ -1,15 +1,12 @@
 {
- "at": "2026-09-30T15:35:41.007578Z",
+ "at": "2026-10-01T20:25:14.940968Z",
  "pins": [
-  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_63b7393727f5c29f.py",
-  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_8d730e921a4ddffa.py",
-  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_be77717ccb35232b.py",
-  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_sm_12fa1e31.py"
+  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_759bb71cc9f30188.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_fn_7ac89673.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_63b7393727f5c29f.py",
-  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_be77717ccb35232b.py",
-  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_sm_12fa1e31.py"
+  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_759bb71cc9f30188.py",
+  "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_fn_7ac89673.py"
  ],
  "restored": [],
  "removed": {
@@ -24,21 +21,29 @@
    "by": [
     "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_be77717ccb35232b.py"
    ]
+  },
+  "63b7393727f5c29f": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_63b7393727f5c29f.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_fn_7ac89673.py"
+   ]
+  },
+  "be77717ccb35232b": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_be77717ccb35232b.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_fn_7ac89673.py"
+   ]
+  },
+  "SM-12FA1E31": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_sm_12fa1e31.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_fn_7ac89673.py"
+   ]
   }
  },
  "matrix": {
-  "63b7393727f5c29f": [
-   "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_63b7393727f5c29f.py"
-  ],
-  "8d730e921a4ddffa": [
-   "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_8d730e921a4ddffa.py",
-   "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_be77717ccb35232b.py"
-  ],
-  "be77717ccb35232b": [
-   "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_be77717ccb35232b.py"
-  ],
-  "SM-12FA1E31": [
-   "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_sm_12fa1e31.py"
+  "759bb71cc9f30188": [
+   "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_759bb71cc9f30188.py"
   ]
  },
  "caught_before": [
@@ -46,6 +51,7 @@
   "1f7bb1a6a5f9e700",
   "63b7393727f5c29f",
   "71081585658fdf5e",
+  "759bb71cc9f30188",
   "79a3682f04d9a62a",
   "84a7a3ae44f6c309",
   "8d730e921a4ddffa",

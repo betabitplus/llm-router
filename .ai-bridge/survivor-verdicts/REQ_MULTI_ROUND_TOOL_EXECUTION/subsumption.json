@@ -1,18 +1,14 @@
 {
- "at": "2026-09-30T13:45:05.703701Z",
+ "at": "2026-10-01T13:45:45.503178Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_9a1e3f3eefc3663d.py",
-  "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_bdd04396b959d4fd.py",
   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_c64b7deb7394ba40.py",
-  "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_ee8c1e76f998e445.py",
+  "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_fn_98397915.py",
   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_99b5ebcc.py",
   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_f43ca330.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_9a1e3f3eefc3663d.py",
-  "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_c64b7deb7394ba40.py",
-  "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_99b5ebcc.py",
-  "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_f43ca330.py"
+  "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_fn_98397915.py"
  ],
  "restored": [],
  "removed": {
@@ -29,29 +25,47 @@
     "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_9a1e3f3eefc3663d.py",
     "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_99b5ebcc.py"
    ]
+  },
+  "9a1e3f3eefc3663d": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_9a1e3f3eefc3663d.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_fn_98397915.py"
+   ]
+  },
+  "c64b7deb7394ba40": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_c64b7deb7394ba40.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_fn_98397915.py"
+   ]
+  },
+  "SM-99B5EBCC": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_99b5ebcc.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_fn_98397915.py"
+   ]
+  },
+  "SM-F43CA330": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_f43ca330.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_fn_98397915.py"
+   ]
   }
  },
  "matrix": {
   "9a1e3f3eefc3663d": [
-   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_9a1e3f3eefc3663d.py"
-  ],
-  "bdd04396b959d4fd": [
-   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_bdd04396b959d4fd.py",
-   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_99b5ebcc.py",
-   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_f43ca330.py"
+   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_9a1e3f3eefc3663d.py",
+   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_fn_98397915.py"
   ],
   "c64b7deb7394ba40": [
-   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_c64b7deb7394ba40.py"
-  ],
-  "ee8c1e76f998e445": [
-   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_9a1e3f3eefc3663d.py",
-   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_ee8c1e76f998e445.py",
-   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_99b5ebcc.py"
+   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_c64b7deb7394ba40.py",
+   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_fn_98397915.py"
   ],
   "SM-99B5EBCC": [
+   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_fn_98397915.py",
    "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_99b5ebcc.py"
   ],
   "SM-F43CA330": [
+   "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_fn_98397915.py",
    "tests/llm_router/mutation_pins/test_pin_req_multi_round_tool_execution_sm_f43ca330.py"
   ]
  },

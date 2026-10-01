@@ -260,6 +260,44 @@
    ]
   }
  ],
+ "FN-70C7F6F3": [
+  {
+   "at": "2026-10-01T13:10:49.689941Z",
+   "call_id": "20261001T130813Z-47dac1",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c541d078fd762f5e5825fb80a9577e59e873a1f497fc516bc043a236c032dd91",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
+ "FN-7F8E200A": [
+  {
+   "at": "2026-10-01T13:10:40.886808Z",
+   "call_id": "20261001T130644Z-3863bc",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "cce7794d71767183f77532b87124675a7f3a1f0d4810afa88339e51ec1b5597b",
+   "reason": "",
+   "sources": [
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router._internal.runtime.limiter.LimiterState"
+   ]
+  }
+ ],
  "cd5c3873436c0d0c": [
   {
    "at": "2026-09-29T11:47:11.544366Z",

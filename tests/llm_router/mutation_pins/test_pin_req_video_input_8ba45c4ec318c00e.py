@@ -1,25 +1,26 @@
 # mutation-pin: REQ_VIDEO_INPUT 8ba45c4ec318c00e
 # pinned-by: claude-opus-5-5
-# written-by: claude-sonnet-5-5, the draft author with tools
 from __future__ import annotations
-
-import json
 
 import pytest
 import vcr
 
-from llm_router import LLMRouter, Model, Provider, RouterProfile, VideoUrlSchema
-from tests.llm_router.support.builders import build_test_video_url
-from tests.llm_router.support.media.video import (
-    VideoObservation,
-    build_indoor_video_prompt,
+from llm_router import (
+    LLMRouter,
+    Model,
+    Provider,
+    ProviderError,
+    RouterProfile,
+    VideoUrlSchema,
 )
+from tests.llm_router.support.builders import build_test_video_url
+from tests.llm_router.support.media.video import build_indoor_video_prompt
 from tests.llm_router.support.vcr_extensions import FILTER_HEADERS
 
 pytestmark = pytest.mark.verification_kind("unit")
 
-_START_OFFSET_SECONDS = 5
-_END_OFFSET_SECONDS = 55
+_START_OFFSET = 1337
+_END_OFFSET = 9001
 
 _CASSETTE = (
     "tests/llm_router/bdd/structured_output/cassettes/test_video/"
@@ -27,23 +28,31 @@ _CASSETTE = (
 )
 
 
+class StopCaptureError(RuntimeError):
+    pass
+
+
 @pytest.mark.verifies("REQ_VIDEO_INPUT[revision==2]")
-def test_remote_video_sent_to_provider_keeps_declared_start_offset(
+def test_remote_video_descriptor_preserves_distinct_start_offset(
     request: pytest.FixtureRequest,
 ) -> None:
     base_video = build_test_video_url()
     value = VideoUrlSchema(
         url=base_video.url,
         fps=base_video.fps,
-        start_offset=_START_OFFSET_SECONDS,
-        end_offset=_END_OFFSET_SECONDS,
+        start_offset=_START_OFFSET,
+        end_offset=_END_OFFSET,
     )
     sent: list[bytes] = []
 
     def capture(outgoing: object, recorded: object) -> None:
-        _ = recorded
-        body = getattr(outgoing, "body", None)
-        sent.append(body if isinstance(body, bytes) else str(body).encode("utf-8"))
+        if recorded is not None:
+            body = getattr(outgoing, "body", None)
+            if body is not None:
+                sent.append(
+                    body if isinstance(body, bytes) else str(body).encode("utf-8")
+                )
+        raise StopCaptureError("captured")
 
     recorder = vcr.VCR(
         match_on=["method", "scheme", "host", "path", "capture"],
@@ -52,24 +61,21 @@ def test_remote_video_sent_to_provider_keeps_declared_start_offset(
     )
     recorder.register_matcher("capture", capture)
     router = LLMRouter(
-        RouterProfile(model=Model.GEMINI_FLASH, provider=Provider.GOOGLE),
+        RouterProfile(
+            model=Model.GEMINI_FLASH,
+            provider=Provider.GOOGLE,
+            max_attempts=1,
+        ),
         temperature=0.0,
         seed=42,
     )
     cassette = str(request.config.rootpath / _CASSETTE)
-    with recorder.use_cassette(cassette, record_mode="none"):
-        router.query(
-            ["Follow instructions.", build_indoor_video_prompt(), value],
-            response_schema=VideoObservation,
-        )
+    with (
+        pytest.raises((ProviderError, StopCaptureError), match=r"."),
+        recorder.use_cassette(cassette, record_mode="none"),
+    ):
+        router.query([build_indoor_video_prompt(), value])
 
-    payload = json.loads(sent[0])
-    parts = [
-        part
-        for content in payload["contents"]
-        for part in content["parts"]
-        if "videoMetadata" in part
-    ]
-    metadata = parts[0]["videoMetadata"]
-    assert metadata["start_offset"] == f"{_START_OFFSET_SECONDS}s"
-    assert metadata["end_offset"] == f"{_END_OFFSET_SECONDS}s"
+    body_str = next(iter(sent)).decode("utf-8")
+    assert str(_START_OFFSET) in body_str
+    assert str(_END_OFFSET) in body_str

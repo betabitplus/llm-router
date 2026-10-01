@@ -1,4 +1,24 @@
 {
+ "165277b3148f155e": [
+  {
+   "at": "2026-10-01T11:49:24.446081Z",
+   "call_id": "20261001T114645Z-285c24",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "af8562295062a16694d54f1e0fc8885eda811020dd1ecd50815e13a58e46437a",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.RouterProfile"
+   ]
+  }
+ ],
  "1c6b745faa58a462": [
   {
    "at": "2026-09-30T19:02:19.560139Z",
@@ -685,6 +705,81 @@
    ]
   }
  ],
+ "FN-0B39F604": [
+  {
+   "at": "2026-10-01T12:43:36.468134Z",
+   "call_id": "20261001T124058Z-f4af06",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "ea08c4e890b332684d5a090ba7a7a76f1847958b5280d61e3cb3a33535cd0c55",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response"
+   ]
+  }
+ ],
+ "FN-0FAB3592": [
+  {
+   "at": "2026-10-01T12:46:34.403520Z",
+   "call_id": "20261001T124111Z-1d4a49",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "e64e24df983f4d5431afec04369f49f90ca55a310f76bb8891c7f669ca3ccde7",
+   "reason": "",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "FN-5590ACAC": [
+  {
+   "at": "2026-10-01T12:43:24.473503Z",
+   "call_id": "20261001T124111Z-8f74e7",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "073594834947612e0b32c1698fda9339a6ba81833d2bf964acbdcd8af3513814",
+   "reason": "",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
+  }
+ ],
  "adb0de8f41da4f7e": [
   {
    "at": "2026-09-30T13:56:12.156024Z",
@@ -793,6 +888,71 @@
    "question_sha256": "1c37fcc3dff6a93f86f900139f7956cd6318a783f1b2123bb4b9f4bc93297d60",
    "reason": "it expects the provider request to fail, which holds only while the test run blocks the network; without --block-network the original reaches the real provider and passes",
    "sources": []
+  },
+  {
+   "at": "2026-10-01T11:49:44.084819Z",
+   "call_id": "20261001T114646Z-3081bc",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "ad52f0afb1bb2395b770df1ffe4d938b746e6a8ccb41b69d8f0f942a5e40476e",
+   "reason": "it breaks the project's lint rules (ruff: line 64: S110 `try`-`except`-`pass` detected, consider logging the exception)",
+   "sources": [
+    "llm_router.ApiKeyNotFoundError",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ResolvedKey",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config"
+   ]
+  },
+  {
+   "at": "2026-10-01T11:53:43.046631Z",
+   "call_id": "20261001T114944Z-bc95d7",
+   "cause": "slow",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "378d3cbcb4ca5c9e29673e18cab8ec5fa2b923860a0d278691ea22e9e68f36f6",
+   "reason": "it takes 13.17 s on the original, and a pin runs within 3 s",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.workers.worker_patches.patch_gemini_webapi"
+   ]
+  },
+  {
+   "at": "2026-10-01T11:55:06.538421Z",
+   "call_id": "20261001T115343Z-ea11cc",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "56dc915df86b1e28e697f716427c448e8b76d4076d58dad2e945f9ce8d23c7e4",
+   "reason": "",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "py_lib_testkit._internal.test_support.http.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url"
+   ]
   }
  ],
  "afe2fe11b15a368c": [

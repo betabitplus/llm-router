@@ -3,8 +3,13 @@
 pytest-gremlins 1.9 ships a "lightweight runner" that imports test modules and calls
 test functions without pytest. It cannot provide fixtures, parametrization or
 pytest-bdd scenarios, and it reports every test it cannot call as a caught mutant,
-so on a real suite it fabricates kills. Disabling it makes the engine fall back to
-its own bootstrap, which runs the selected tests with full pytest for each mutant.
+so on a real suite it fabricates kills; a test whose ``usefixtures`` mark sets up
+what it checks runs without it, so it also fabricates survivors. Disabling it makes
+the engine fall back to its own bootstrap, which runs the selected tests with full
+pytest for each mutant. The engine's parallel pool calls the runner by its own
+import, so the parallel run (``--gremlin-workers``) is the serial run's, its mutants
+in threads: each one's tests run with full pytest under the same time limits. The
+batch, fork and in-process executors would call the runner too; they are refused.
 
 When TERNFORGE_GREMLIN_SCOPE names a JSON file mapping source paths to line numbers,
 only mutants on those lines are kept. The filter runs after the engine generated and
@@ -49,7 +54,11 @@ import dataclasses
 import json
 import os
 import subprocess
+import sys
+import threading
+import time
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -121,8 +130,14 @@ for _operator in (tm.StatementRemoval, tm.BodyRemoval, *tm.PYTHON_OPERATORS):
     if _operator().name not in _registry.available():
         _registry.register(_operator)
 
-# Where the project's modules live: the Python operators read a callee's parameters there.
-PROJECT = tm.Project([Path.cwd() / "src", Path.cwd()])
+# Where the project's modules and its installed dependencies live (their versions locked): the Python
+# operators read a callee's parameters there. The dependencies come before the working tree, whose
+# virtual environment holds them.
+PROJECT = tm.Project([
+    Path.cwd() / "src",
+    *(Path(entry) for entry in sys.path if entry.endswith(("site-packages", "dist-packages")) and Path(entry).is_dir()),
+    Path.cwd(),
+])
 
 _engine_description = _transformer._get_mutation_description
 
@@ -274,6 +289,17 @@ def _span(gremlin) -> tuple[tuple[int, int], tuple[int, int], int]:
     return start, end, anchor
 
 
+def _arid_span(gremlin, start, end):  # noqa: ANN001, ANN202
+    """Where an arid rule must hold for a mutant: the keyword a removed argument passed, else the mutant."""
+    original, mutated = gremlin.original_node, gremlin.mutated_node
+    if gremlin.operator_name == "argument" and isinstance(original, ast.Call) and isinstance(mutated, ast.Call):
+        kept = {keyword.arg for keyword in mutated.keywords}
+        removed = [keyword for keyword in original.keywords if keyword.arg not in kept]
+        if len(removed) == 1:
+            return tm.node_span(removed[0])
+    return start, end
+
+
 def _replacement(gremlin) -> str:
     if gremlin.operator_name == "statement":
         return "pass"
@@ -301,7 +327,8 @@ def _generate_gremlins_in_scope(gremlin_session, source_files, rootdir) -> None:
         except SyntaxError:
             continue
         lines[path] = source.splitlines()
-        regions[path] = tm.arid_regions(trees[path], set(policy["arid_rules"]))
+        # Annotated first: a keyword a project callee only logs is arid too.
+        regions[path] = tm.arid_regions(tm.annotate(trees[path], path, PROJECT), set(policy["arid_rules"]))
         pragmas[path] = tm.parse_pragmas(source, trees[path])
         qualnames[path] = tm.qualname_index(trees[path])
         annotations[path] = tm.annotation_spans(trees[path])
@@ -337,7 +364,8 @@ def _generate_gremlins_in_scope(gremlin_session, source_files, rootdir) -> None:
             continue
         if gremlin.operator_name != "body" and not tm.within(bodies[path], start, end):
             STATE["static"].add(gremlin.gremlin_id)
-        rule = next((region.rule for region in regions[path] if region.contains(start, end)), None)
+        arid_start, arid_end = _arid_span(gremlin, start, end)
+        rule = next((region.rule for region in regions[path] if region.contains(arid_start, arid_end)), None)
         if rule:
             STATE["not_planted"].append(
                 {
@@ -367,15 +395,20 @@ def _generate_gremlins_in_scope(gremlin_session, source_files, rootdir) -> None:
     gremlin_session.gremlins = kept
 
     # What the validity filter kept out of the argument operator in the scoped code: a keyword
-    # the project's callee requires.
-    if "argument" in operators:
+    # the project's callee requires; and what the argument and conversion operators left out as
+    # no input could tell it from the original.
+    if {"argument", "conversion"} & operators:
         for path, tree in trees.items():
-            tm.annotate(tree, path, PROJECT)
             for node in ast.walk(tree):
-                if isinstance(node, ast.Call) and in_scope(path, node.lineno):
+                if not (isinstance(node, ast.Call) and in_scope(path, node.lineno)):
+                    continue
+                if "argument" in operators:
                     STATE["filtered"]["argument: required parameter"] += sum(
                         keyword.arg in (getattr(node, "_tf_required", set()) or set()) for keyword in node.keywords
                     )
+                for reason in tm.equivalent_sites(node):
+                    if reason.split(":", 1)[0] in operators:
+                        STATE["filtered"][reason] += 1
     # What the validity filter kept out of the body operator in the scoped code.
     if "body" in operators:
         for path, tree in trees.items():
@@ -428,15 +461,17 @@ def _select_tests_recording_reach(gremlin, gremlin_session):  # noqa: ANN001
 _test_gremlin = _gremlins_plugin._test_gremlin
 
 
-class _TimeLimited:
-    """The engine's ``subprocess`` with another time limit for a mutant's tests."""
+# The time limit of the mutant run in this thread; the parallel run tests several mutants at once.
+_LIMIT = threading.local()
 
-    def __init__(self, seconds: float) -> None:
-        self.seconds = seconds
+
+class _TimeLimited:
+    """The engine's ``subprocess``, with the time limit of the mutant run in the calling thread."""
 
     def run(self, *args, **kwargs):  # noqa: ANN002, ANN003, ANN201
-        if "timeout" in kwargs:
-            kwargs["timeout"] = self.seconds
+        seconds = getattr(_LIMIT, "seconds", None)
+        if seconds is not None and "timeout" in kwargs:
+            kwargs["timeout"] = seconds
         return subprocess.run(*args, **kwargs)  # noqa: PLW1510 - the engine passes check itself
 
     def __getattr__(self, name: str):  # noqa: ANN204
@@ -444,23 +479,77 @@ class _TimeLimited:
 
 
 def _test_within(gremlin, test_command, rootdir, instrumented_dir, seconds: float):  # noqa: ANN001, ANN201
-    engine_subprocess = _gremlins_plugin.subprocess
-    _gremlins_plugin.subprocess = _TimeLimited(seconds)
+    _LIMIT.seconds = seconds
     try:
         return _test_gremlin(gremlin, test_command, rootdir, instrumented_dir)
     finally:
-        _gremlins_plugin.subprocess = engine_subprocess
+        _LIMIT.seconds = None
 
 
 def _test_gremlin_unless_uncovered(gremlin, test_command, rootdir, instrumented_dir):  # noqa: ANN001
     if os.environ.get(SKIP_UNCOVERED_ENV) == "1" and STATE["reach"].get(gremlin.gremlin_id) is False:
         STATE["skipped"].add(gremlin.gremlin_id)
         return GremlinResult(gremlin=gremlin, status=GremlinResultStatus.SURVIVED)
+    started = time.monotonic()
     result = _test_within(gremlin, test_command, rootdir, instrumented_dir, float(os.environ.get(TIMEOUT_ENV) or 30))
     if result.status == GremlinResultStatus.TIMEOUT:
         # A slow suite is no hang: the time limit catches a mutant only when a run with room to spare times out too.
         result = _test_within(gremlin, test_command, rootdir, instrumented_dir, float(os.environ.get(CONFIRM_TIMEOUT_ENV) or 300))
-    return result
+    return dataclasses.replace(result, execution_time_ms=(time.monotonic() - started) * 1000)
+
+
+_check_cache = _gremlins_plugin._check_cache_for_gremlin
+
+
+def _check_cache_naming_tests(gremlin, selected_tests, gremlin_session):  # noqa: ANN001, ANN202
+    """A cached result names the tests it was run with, as a run's result does."""
+    cached = _check_cache(gremlin, selected_tests, gremlin_session)
+    return None if cached is None else dataclasses.replace(cached, selected_tests=list(selected_tests))
+
+
+def _run_parallel_full_pytest(session, gremlin_session):  # noqa: ANN001, ANN202
+    """The engine's parallel run as its serial run: pardoned and cached mutants first, then each other
+    mutant's selected tests with full pytest under the confirmed time limit, several mutants at once
+    in threads, each test run a process of its own; the results are cached and reported in mutant order."""
+    rootdir = _gremlins_plugin._get_rootdir(session.config)
+    command = _gremlins_plugin._build_test_command(gremlin_session.instrumented_dir, gremlin_session.preserved_addopts)
+    results: dict[str, GremlinResult] = {}
+    pending = []
+    for gremlin in gremlin_session.gremlins:
+        pardoned = _gremlins_plugin._immediate_result_if_pardoned(gremlin)
+        if pardoned is not None:
+            results[gremlin.gremlin_id] = pardoned
+            continue
+        selected = _gremlins_plugin._select_tests_for_gremlin_prioritized(gremlin, gremlin_session)
+        cached = _gremlins_plugin._check_cache_for_gremlin(gremlin, selected, gremlin_session)
+        if cached is not None:
+            gremlin_session.cache_hits += 1
+            results[gremlin.gremlin_id] = cached
+            continue
+        if gremlin_session.cache_enabled:
+            gremlin_session.cache_misses += 1
+        pending.append((gremlin, selected))
+
+    def run(item):  # noqa: ANN001, ANN202
+        gremlin, selected = item
+        test_command = _gremlins_plugin._build_filtered_test_command(command, selected, gremlin_session)
+        result = _gremlins_plugin._test_gremlin(gremlin, test_command, rootdir, gremlin_session.instrumented_dir)
+        return dataclasses.replace(result, selected_tests=list(selected))
+
+    workers = max(1, int(gremlin_session.parallel_workers or os.cpu_count() or 1))
+    print(f"\npytest-gremlins: {len(results)} pardoned or cached, {len(pending)} to test, {workers} at once with full pytest", flush=True)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for done, (item, result) in enumerate(zip(pending, pool.map(run, pending), strict=True), 1):
+            _gremlins_plugin._cache_gremlin_result(item[0], item[1], result, gremlin_session)
+            results[item[0].gremlin_id] = result
+            print(f"\rpytest-gremlins: Progress {done}/{len(pending)}", end="", flush=True)
+    print()
+    return [results[gremlin.gremlin_id] for gremlin in gremlin_session.gremlins if gremlin.gremlin_id in results]
+
+
+def _refused_executor(*_args: object, **_kwargs: object) -> None:
+    msg = "the project's mutation engine runs every mutant's tests with full pytest: the batch, fork and in-process executors call the lightweight runner"
+    raise pytest.UsageError(msg)
 
 
 def _mte_location(location) -> dict:
@@ -521,8 +610,13 @@ def _build_report_data_enriched(self, score):  # noqa: ANN001
 
 
 _gremlins_plugin.build_lightweight_command = _no_lightweight_runner
+_gremlins_plugin.subprocess = _TimeLimited()
 _gremlins_plugin._generate_gremlins = _generate_gremlins_in_scope
 _gremlins_plugin._select_tests_for_gremlin_prioritized = _select_tests_recording_reach
 _gremlins_plugin._test_gremlin = _test_gremlin_unless_uncovered
+_gremlins_plugin._check_cache_for_gremlin = _check_cache_naming_tests
+_gremlins_plugin._run_parallel_mutation_testing = _run_parallel_full_pytest
+_gremlins_plugin._run_batch_mutation_testing = _refused_executor
+_gremlins_plugin._run_mutation_testing_inprocess = _refused_executor
 JsonReporter._build_result = _build_result_enriched
 JsonReporter._build_report_data = _build_report_data_enriched

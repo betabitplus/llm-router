@@ -1,4 +1,22 @@
 {
+ "FN-C1AE2F64": [
+  {
+   "at": "2026-10-01T12:42:40.736102Z",
+   "call_id": "20261001T124111Z-b104f1",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "ce58e11b01b8ec16cde1b32f23ff2dbf93d3f0964d957d3ff6bf036dbca10da8",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ConfigurationError",
+    "llm_router._internal.config.state.get_config",
+    "llm_router._internal.config.state.install_config"
+   ]
+  }
+ ],
  "SM-39305DEA": [
   {
    "at": "2026-09-29T19:15:34.144376Z",

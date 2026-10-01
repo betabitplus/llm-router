@@ -204,6 +204,161 @@
     "tests.llm_router.support.media.video.build_indoor_video_prompt",
     "tests.llm_router.support.vcr_extensions.FILTER_HEADERS"
    ]
+  },
+  {
+   "at": "2026-10-01T12:19:28.135554Z",
+   "call_id": "20261001T121708Z-fda8f1",
+   "cause": "slow",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "83d41bc9f8b393c134defddd9e6d204156c995386b8caf5c6769db93d801dd90",
+   "reason": "it takes 3.49 s on the original, and a pin runs within 3 s",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.VideoUrlSchema",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "tests.llm_router.support.vcr_extensions.FILTER_HEADERS"
+   ]
+  },
+  {
+   "at": "2026-10-01T12:22:05.955144Z",
+   "call_id": "20261001T121928Z-7408db",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "dcfef1d75b17b7321b4c8f72d0da9ffb95243e4e60cdfe1831945a0b0aacec5f",
+   "reason": "it breaks the project's lint rules (ruff: line 34: ARG001 Unused function argument: `recorded`)",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._api.types.VideoUrlSchema"
+   ]
+  },
+  {
+   "at": "2026-10-01T15:04:48.666066Z",
+   "call_id": "20261001T150215Z-c1bad5",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "7b068066a43ab06d8e58ad32b0888bedeb4325045f9d67d2afb00ee1e174914e",
+   "reason": "it breaks the project's lint rules (ruff: line 32: N818 Exception name `StopCapture` should be named with an Error suffix | line 74: SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.RouterProfile",
+    "llm_router.VideoUrlSchema",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "tests.llm_router.support.media.video.build_indoor_video_prompt",
+    "tests.llm_router.support.vcr_extensions.FILTER_HEADERS"
+   ]
+  },
+  {
+   "at": "2026-10-01T15:06:17.071625Z",
+   "call_id": "20261001T150449Z-4b327b",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "51cc26b11044d597151d206d60b0c5cd4e91d09310a14cc09957d7329dbb7851",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderError",
+    "llm_router.RouterProfile",
+    "llm_router.VideoUrlSchema",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "tests.llm_router.support.media.video.build_indoor_video_prompt",
+    "tests.llm_router.support.vcr_extensions.FILTER_HEADERS"
+   ]
+  }
+ ],
+ "FN-727FC061": [
+  {
+   "at": "2026-10-01T13:01:53.238123Z",
+   "call_id": "20261001T125838Z-71aa04",
+   "cause": "slow",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "bd98b8f671a63742ca3b5bc571c83e42391737b57febc6f138a786a0de2f4a78",
+   "reason": "it takes 4.21 s on the original, and a pin runs within 3 s",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.VideoSchema",
+    "llm_router.VideoUrlSchema",
+    "tests.llm_router.support.builders.get_llm_router_test_data_path",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "tests.llm_router.support.media.video.VideoObservation",
+    "tests.llm_router.support.media.video.build_indoor_video_prompt",
+    "tests.llm_router.support.vcr_extensions.FILTER_HEADERS"
+   ]
+  },
+  {
+   "at": "2026-10-01T13:04:20.341266Z",
+   "call_id": "20261001T130153Z-d66c06",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8b73ec357ff9d467db13b002296d6e81758a8470822f35fc347640f813fd7634",
+   "reason": "it breaks the project's lint rules (ruff: line 50: SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements)",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._api.types.VideoSchema",
+    "llm_router._api.types.VideoUrlSchema",
+    "tests.llm_router.support.builders.get_llm_router_test_data_path",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "tests.llm_router.support.media.video.VideoObservation"
+   ]
+  },
+  {
+   "at": "2026-10-01T13:44:36.161925Z",
+   "call_id": "20261001T133943Z-8e355b",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "60be2ea717800e079e5b2bc0f30e41a6018d52aadbd7d0a0e702d012f0a67e39",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert '4s' == '5s' | - 5s | + 4s)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.VideoSchema",
+    "llm_router.VideoUrlSchema",
+    "tests.llm_router.support.builders.build_test_video_url",
+    "tests.llm_router.support.builders.get_llm_router_test_data_path",
+    "tests.llm_router.support.media.video.VideoObservation",
+    "tests.llm_router.support.media.video.build_indoor_video_prompt"
+   ]
   }
  ],
  "a6b4e513b6f3bf73": [

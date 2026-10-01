@@ -1,0 +1,83 @@
+{
+ "FN-70C7F6F3": {
+  "adopted_at": "2026-10-01T13:10:49.729150Z",
+  "answer_sha256": "dc07ffd5dcda58b48f4a9a01af297edd9ae5db63a8a793bf530f3b8000874d95",
+  "call_id": "20261001T130813Z-47dac1",
+  "cascade": {
+   "7cfc3f8477b3a2b8": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "96a28c868f99fb34": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "99d124741e83ae13": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "b368eb1c90479580912ce4417c9c79a790ca7c517a5d25eadb9972d8d6ba03e0",
+  "effort": "low",
+  "function": "src/llm_router/_internal/runtime/limiter.py::LimiterState.record_failure",
+  "keys": [
+   "7cfc3f8477b3a2b8",
+   "96a28c868f99fb34",
+   "99d124741e83ae13"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_fn_70c7f6f3.py",
+  "response_sha256": "edb312b8145c7143128ccc94640ecf3c0bf9501e716ba8cb2c59e78b8e3bc28d",
+  "source": "consolidation",
+  "sources": [
+   "llm_router._api.types.Provider",
+   "llm_router._api.types.ProviderLimits",
+   "llm_router._internal.runtime.limiter.LimiterState"
+  ],
+  "suite_checked": true
+ },
+ "FN-7F8E200A": {
+  "adopted_at": "2026-10-01T13:10:40.938846Z",
+  "answer_sha256": "f07d963a3093c4c8c833fb4e208d0ae093ee93203d9b10e9c38e9c7b965b7b4e",
+  "call_id": "20261001T130644Z-3863bc",
+  "cascade": {
+   "6a97bd579b2777e7": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "7ac50aa440bca50f": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "f07d963a3093c4c8c833fb4e208d0ae093ee93203d9b10e9c38e9c7b965b7b4e",
+  "effort": "low",
+  "function": "src/llm_router/_internal/runtime/limiter.py::LimiterState._bucket",
+  "keys": [
+   "6a97bd579b2777e7",
+   "7ac50aa440bca50f"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_fn_7f8e200a.py",
+  "response_sha256": "e3e014c7ee481c0fe942d79fcc5db80047e6cc7ca97a8c0a8e0d4ca62a9cea1d",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.Provider",
+   "llm_router.ProviderLimits",
+   "llm_router._internal.runtime.limiter.LimiterState"
+  ],
+  "suite_checked": true
+ }
+}

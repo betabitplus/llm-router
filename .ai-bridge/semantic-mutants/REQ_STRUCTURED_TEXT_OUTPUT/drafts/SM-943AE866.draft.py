@@ -13,7 +13,10 @@ from tests.llm_router.support.workers.retry import (
     openai_chat_path,
     openai_success_response,
 )
-from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
+from tests.llm_router.support.workers.worker_patches import (
+    install_fast_worker_runtime_config,
+    patched_openai_sdk,
+)
 
 pytestmark = pytest.mark.verification_kind("unit")
 
@@ -28,13 +31,23 @@ class VehicleCount(RootModel[int]):
 
 def _route() -> LLMRouter:
     return LLMRouter(
-        RouterProfile(model=Model.DEEPSEEK_V3, provider=Provider.OPENROUTER),
+        RouterProfile(
+            model=Model.DEEPSEEK_V3,
+            provider=Provider.OPENROUTER,
+            max_attempts=1,
+        ),
         temperature=0.0,
+        max_attempts=1,
     )
 
 
 def _query_with_body(monkeypatch: pytest.MonkeyPatch, body_text: str):
-    monkeypatch.setenv("OPENROUTER_API_KEY_1", "fence-assurance-value")
+    install_fast_worker_runtime_config(
+        retry_max_attempts=1,
+        structured_output_max_attempts=1,
+    )
+    value = "fence-assurance-value"
+    monkeypatch.setenv("OPENROUTER_API_KEY_1", value)
     response_body = openai_success_response(text=body_text)
     with (
         ScriptedHTTPServer(

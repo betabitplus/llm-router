@@ -1,0 +1,23 @@
+{
+ "395a299516e82a3e": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant drops max_chars=500 from the schema preview, so preview_text's own default applies: 160 characters, as the installed py_lib_runtime declares it (preview_text(value, *, max_chars=160)), not the larger or unbounded default the verdict feared. The preview stays bounded, only shorter, and the prompt stays within its cap (1,257 of 1,608 characters at the longest); the requirement asks only that every incorporated component be bounded. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after reading the callee's signature the verdict never saw.",
+  "verdict": "irrelevant"
+ },
+ "3d767806f2945e38": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant drops max_chars=300 from the validation-detail preview, so preview_text's own default applies: 160 characters, as the installed py_lib_runtime declares it (preview_text(value, *, max_chars=160)). The verdict assumed a default of 300 and the review an unbounded one; neither holds. The detail stays bounded, only shorter, and the prompt stays within its cap (1,457 of 1,608 characters at the longest), which is all the requirement asks: every incorporated component bounded. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after reading the callee's signature the verdict never saw.",
+  "verdict": "irrelevant"
+ },
+ "7ddc0005bc330ecf": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant drops max_chars=500 from the invalid-output preview, so preview_value's own default applies: 160 characters, as the installed py_lib_runtime declares it (preview_value(value, *, max_chars=160)), not the larger or unbounded default the verdict feared. The output stays bounded, only shorter, and the prompt stays within its cap (1,257 of 1,608 characters at the longest); the requirement asks only that every incorporated component be bounded. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after reading the callee's signature the verdict never saw.",
+  "verdict": "irrelevant"
+ }
+}

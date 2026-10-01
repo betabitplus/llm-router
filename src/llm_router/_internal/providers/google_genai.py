@@ -169,6 +169,22 @@ def parse_google_genai_response(
     response: object,
 ) -> ProviderResult:
     """Parse a Google GenAI response into the provider-neutral result port."""
+    if not _has_candidate_content(response):
+        # A success with no text, no parsed value and no function call is a malformed
+        # response, not an empty answer.
+        failure = ProviderFailure(
+            provider=request.provider,
+            model=request.model,
+            message="Provider response carried no candidate content.",
+            retryable=False,
+            retry_reason="missing_candidate_content",
+        )
+        raise ProviderError(
+            failure,
+            request.provider,
+            request.model,
+            message=failure.message,
+        )
     data = _response_data(response)
     result = ProviderResult(
         data=data,
@@ -404,6 +420,20 @@ def _response_tool_call_metadata(response: object) -> tuple[Mapping[str, Any], .
             else {"thought_signature": thought_signature}
         )
     return tuple(metadata)
+
+
+def _has_candidate_content(response: object) -> bool:
+    """Whether a response carries text, a parsed value or a function call."""
+    if (
+        str(getattr(response, "text", "") or "")
+        or getattr(response, "parsed", None) is not None
+    ):
+        return True
+    return any(
+        isinstance(getattr(part, "text", None), str)
+        or getattr(part, "function_call", None) is not None
+        for part in _candidate_parts(response)
+    )
 
 
 def _candidate_parts(response: object) -> list[object]:

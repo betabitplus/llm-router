@@ -17,5 +17,44 @@
     "llm_router._internal.providers.base.ProviderFailure"
    ]
   }
+ ],
+ "FN-12FC5C09": [
+  {
+   "at": "2026-10-01T13:12:52.380899Z",
+   "call_id": "20261001T131046Z-e01a2e",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "553bc02547975731dc853f07c2e7e2cd320f74b05f4c954dc2c788315cb80907",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest"
+   ]
+  }
+ ],
+ "FN-94D62FAE": [
+  {
+   "at": "2026-10-01T13:12:38.125235Z",
+   "call_id": "20261001T131040Z-19be3e",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "376909836589fcf49cf397ea112498dffe261e94fe9fd415142ebc5e4e201ab6",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.providers.base.ProviderFailure"
+   ]
+  }
  ]
 }

@@ -1,0 +1,112 @@
+{
+ "FN-039B7B95": {
+  "adopted_at": "2026-10-01T13:14:50.500761Z",
+  "answer_sha256": "d1a6a994f82e499408cc75a385dc368c2b69874659eda86b66f3cbc584ca5bf6",
+  "call_id": "20261001T131315Z-2b1fb8",
+  "cascade": {
+   "00e231387191a730": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-B91A9265": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "d1a6a994f82e499408cc75a385dc368c2b69874659eda86b66f3cbc584ca5bf6",
+  "effort": "high",
+  "function": "src/llm_router/_internal/session/serialization.py::encode_session",
+  "keys": [
+   "00e231387191a730",
+   "SM-B91A9265"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fn_039b7b95.py",
+  "response_sha256": "07ad7086973b607161dee862028e0d7a595665c59fec35258e57e211905e22a4",
+  "source": "consolidation",
+  "sources": [
+   "llm_router._api.types.ChatMessage",
+   "llm_router._internal.session.serialization.encode_session",
+   "llm_router._internal.session.serialization.decode_session"
+  ],
+  "suite_checked": true
+ },
+ "FN-1DD7271E": {
+  "adopted_at": "2026-10-01T13:13:26.910568Z",
+  "answer_sha256": "341c6a8b9b1c0b41a6479f923fe9f2441ccf682dd87b484b740f583e57883cf2",
+  "call_id": "20261001T131049Z-c3ec7a",
+  "cascade": {
+   "5e426e56bd7decaf": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "5eca933c7a02d62f": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "623b0ce689f82e48": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "73af7c5839a73039": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "84e67158176fdd1f": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "e4925bbc494ef9d1": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "f1db3a48e54f5fe2": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "5aaefb21e1f6b99251f285006579c4898e8c7ac15b66b7d259d03e1fbf3f591f",
+  "effort": "low",
+  "function": "src/llm_router/_internal/session/serialization.py::decode_session",
+  "keys": [
+   "5e426e56bd7decaf",
+   "5eca933c7a02d62f",
+   "623b0ce689f82e48",
+   "73af7c5839a73039",
+   "84e67158176fdd1f",
+   "e4925bbc494ef9d1",
+   "f1db3a48e54f5fe2"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_session_serialization_fn_1dd7271e.py",
+  "response_sha256": "d699bce236c14fb45a8717307841943d5b80ea122b82a19e06ebefcafb0d34e0",
+  "source": "consolidation",
+  "sources": [
+   "llm_router._internal.session.serialization.decode_session",
+   "llm_router._internal.session.serialization.encode_session",
+   "llm_router._internal.runtime.errors.SessionSerializationError",
+   "llm_router._api.types.ChatMessage"
+  ],
+  "suite_checked": true
+ }
+}

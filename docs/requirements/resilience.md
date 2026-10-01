@@ -120,13 +120,13 @@ Contracts in this capability:
 :id: TREQ_PROVIDER_RETRY_BOUNDS
 :collapse: true
 :status: accepted
-:revision: 2
+:revision: 3
 :required_evidence: impl;bdd
 :derives: REQ_PROVIDER_RETRY
 
-**Statement.** For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing. The initial provider call counts as attempt one, and no wait before a retry shall exceed the configured maximum retry wait.
+**Statement.** For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing. The initial provider call counts as attempt one, and every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.
 
-**Rationale.** Retry may improve availability only while same-route work remains bounded. A retry loop that exceeds its configured attempt budget can multiply latency and external calls before route fallback is allowed to proceed.
+**Rationale.** Retry may improve availability only while same-route work remains bounded. A retry loop that exceeds its configured attempt budget can multiply latency and external calls before route fallback is allowed to proceed, and one that retries sooner than the configured minimum returns to a provider before a transient failure, such as a rate limit, can clear.
 ```
 
 ::::{dropdown} Follow this contract to proof

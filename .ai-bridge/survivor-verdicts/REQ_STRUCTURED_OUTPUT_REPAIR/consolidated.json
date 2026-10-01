@@ -1,0 +1,55 @@
+{
+ "FN-7AC89673": {
+  "adopted_at": "2026-10-01T12:56:50.130903Z",
+  "answer_sha256": "05bcfba0c26a4befce7e9daeff1468afef5aa18eeed33959c0f903f1eed528c3",
+  "call_id": "20261001T124953Z-867cbe",
+  "cascade": {
+   "63b7393727f5c29f": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-12FA1E31": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "be77717ccb35232b": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "05bcfba0c26a4befce7e9daeff1468afef5aa18eeed33959c0f903f1eed528c3",
+  "effort": "high",
+  "function": "src/llm_router/_internal/runtime/executor.py::_advance_structured_result",
+  "keys": [
+   "63b7393727f5c29f",
+   "SM-12FA1E31",
+   "be77717ccb35232b"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_structured_output_repair_fn_7ac89673.py",
+  "response_sha256": "11e833bfeb4ecea9f9ae423eb4b5e07db48d9d5210426884248a916ffcc9cb5a",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.RouterProfile",
+   "llm_router.get_config",
+   "llm_router.install_config",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "tests.llm_router.support.fault_server.ScriptedResponse",
+   "tests.llm_router.support.workers.retry.openai_chat_path",
+   "tests.llm_router.support.workers.retry.openai_success_response",
+   "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+   "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+  ],
+  "suite_checked": true
+ }
+}

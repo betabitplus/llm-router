@@ -1,0 +1,43 @@
+{
+ "FN-71A91612": {
+  "adopted_at": "2026-10-01T12:42:21.022059Z",
+  "answer_sha256": "a5b1e859ad29c78a868a620aa4517359a09b393cd57fff4adf8b74dfe15f8ed6",
+  "call_id": "20261001T124111Z-e50687",
+  "cascade": {
+   "7476f8d4086d1401": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "be0c42b2c0522019": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "a5b1e859ad29c78a868a620aa4517359a09b393cd57fff4adf8b74dfe15f8ed6",
+  "effort": "",
+  "function": "src/llm_router/_internal/capabilities/media.py::describe_media",
+  "keys": [
+   "7476f8d4086d1401",
+   "be0c42b2c0522019"
+  ],
+  "model": "gemini-3.8-flash-medium",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_image_input_fn_71a91612.py",
+  "response_sha256": "a704f3160fe62b49cbc5a7cb9df8c60159c067780dd3207c6bd768f3c81a1fce",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.RouterProfile",
+   "tests.llm_router.support.builders.build_test_image",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+  ],
+  "suite_checked": true
+ }
+}

@@ -73,6 +73,9 @@ CONVERSION_LITERALS = {
     "dict": (ast.Dict, ast.DictComp),
 }
 CONTAINER_REMOVALS = 3
+# A copy whose only reader is one call that reads it once, at once (``payload.update(dict(extra))``):
+# the receiver's method, by the conversion it reads the same way, on a local bound only to a new one.
+COPY_READERS = {"update": {"dict": {"dict"}, "set": {"set", "frozenset", "list", "tuple"}}, "extend": {"list": {"list", "tuple"}}}
 # An attribute is swapped only for one whose name is at least this alike (difflib's ratio): the slip
 # of ``min_wait`` for ``max_wait``; unrelated names break a type and are caught at once (PyTation
 # found 94% of its swaps caught), so they cost a run and teach nothing.
@@ -418,20 +421,18 @@ class Project:
         self.imported[path] = found
         return found
 
-    def definition(self, tree: ast.Module, path: str, name: str) -> ast.AST | None:
-        """The def or class a module-level name stands for: the module's own, or one a project module defines."""
+    def definition(self, tree: ast.Module, path: str, name: str, hops: int = 0) -> ast.AST | None:
+        """The def or class a module-level name stands for: the module's own, or one a module under the
+        roots defines, followed through at most three re-exports (``from .text import preview_text``)."""
         for node in tree.body:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == name:
                 return node
         target = self.imports(tree, path).get(name)
-        if not target or target[1] is None:
+        if not target or target[1] is None or hops > 3:
             return None
         module_path = self.module_file(target[0])
         module_tree = self.tree(module_path) if module_path else None
-        for node in module_tree.body if module_tree is not None else []:
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == target[1]:
-                return node
-        return None
+        return self.definition(module_tree, str(module_path), target[1], hops + 1) if module_tree is not None else None
 
     def modules(self, tree: ast.Module, path: str) -> set[str]:
         """The names a module binds to modules: ``import x`` and ``from package import module``."""
@@ -519,11 +520,268 @@ def _is_dunder(name: str) -> bool:
     return name.startswith("__") and name.endswith("__")
 
 
+# --- what an argument or a conversion cannot change ----------------------------------------
+# Trivially equivalent mutants (Kintis et al., TCE: no input can tell them from the original), found
+# from the code as written: a mutant that cannot change a run is not planted, and the report counts it.
+
+_NO_VALUE = object()
+
+
+def _literal(node: ast.AST | None) -> object:
+    try:
+        return ast.literal_eval(node) if node is not None else _NO_VALUE
+    except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+        return _NO_VALUE
+
+
+def _same_value(left: object, right: object) -> bool:
+    """Equal values of equal types, all the way down: ``1``, ``1.0`` and ``True`` differ."""
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, (tuple, list)):
+        return len(left) == len(right) and all(_same_value(a, b) for a, b in zip(left, right, strict=True))
+    if isinstance(left, dict):
+        # The types are equal (checked above), which ty does not carry over to ``right``.
+        return list(left) == list(right) and all(_same_value(left[key], right[key]) for key in left)  # ty: ignore[not-subscriptable]
+    if isinstance(left, (set, frozenset)):
+        return left == right and sorted(map(repr, left)) == sorted(map(repr, right))
+    return left == right
+
+
+def parameter_defaults(definition: ast.AST | None) -> dict[str, ast.AST]:
+    """The default each optional parameter of a definition has as written: a function's own, or a
+    field's in a class that declares its fields (a value, or ``field(default=…)``)."""
+    if isinstance(definition, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        arguments = definition.args
+        positional = [*arguments.posonlyargs, *arguments.args]
+        found = {item.arg: default for item, default in zip(positional[len(positional) - len(arguments.defaults):], arguments.defaults, strict=True)}
+        found |= {item.arg: default for item, default in zip(arguments.kwonlyargs, arguments.kw_defaults, strict=True) if default is not None}
+        return found
+    if isinstance(definition, ast.ClassDef):
+        init = next((item for item in definition.body if isinstance(item, ast.FunctionDef) and item.name == "__init__"), None)
+        if init is not None:
+            return parameter_defaults(init)
+        if _declares_fields(definition):
+            found = {}
+            for item in definition.body:
+                if not (isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name) and item.value is not None):
+                    continue
+                value = item.value
+                if isinstance(value, ast.Call) and (dotted_name(value.func) or "").split(".")[-1] in {"field", "Field"}:
+                    value = next((keyword.value for keyword in value.keywords if keyword.arg == "default"), None)
+                if value is not None:
+                    found[item.target.id] = value
+            return found
+    return {}
+
+
+def _parents(root: ast.AST) -> dict[int, ast.AST]:
+    return {id(child): parent for parent in ast.walk(root) for child in ast.iter_child_nodes(parent)}
+
+
+def truth_read(node: ast.AST, parent_of_node=None) -> bool:  # noqa: ANN001
+    """Whether only the truth of what an expression gives is read where it stands: the test of an if,
+    a while, a conditional expression or an assert, the operand of ``not``, a comprehension's filter,
+    or an operand of ``and``/``or`` that stands in such a place itself."""
+    parent_of_node = parent_of_node or parent_of
+    parent = parent_of_node(node)
+    if isinstance(parent, (ast.If, ast.While, ast.IfExp, ast.Assert)) and parent.test is node:
+        return True
+    if isinstance(parent, ast.UnaryOp) and isinstance(parent.op, ast.Not):
+        return True
+    if isinstance(parent, ast.comprehension) and any(item is node for item in parent.ifs):
+        return True
+    return isinstance(parent, ast.BoolOp) and truth_read(parent, parent_of_node)
+
+
+def _names_read_only(function: ast.AST, name: str, reader, parents: dict[int, ast.AST]) -> bool:  # noqa: ANN001
+    """Whether a function never rebinds a name and reads it at least once, each time where ``reader`` says."""
+    reads = 0
+    for item in ast.walk(function):
+        if isinstance(item, (ast.Global, ast.Nonlocal)) and name in item.names:
+            return False
+        if isinstance(item, ast.arg) and item.arg == name and parents.get(id(item)) is not function.args:
+            return False
+        if isinstance(item, ast.Name) and item.id == name:
+            if not isinstance(item.ctx, ast.Load) or not reader(item):
+                return False
+            reads += 1
+    return reads > 0
+
+
+def truth_only_parameters(definition: ast.AST | None) -> set[str]:
+    """The parameters a function only tests for truth (``if not condition: raise …``)."""
+    if not isinstance(definition, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        return set()
+    cached = getattr(definition, "_tf_truth_only", None)
+    if cached is None:
+        parents = _parents(definition)
+        arguments = definition.args
+        names = {item.arg for item in [*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs]} - {"self", "cls"}
+        cached = {
+            name for name in names
+            if _names_read_only(definition, name, lambda item: truth_read(item, lambda node: parents.get(id(node))), parents)
+        }
+        definition._tf_truth_only = cached
+    return cached
+
+
+def log_only_parameters(definition: ast.AST | None) -> set[str]:
+    """The parameters a function only hands to logging: each read is inside the arguments of a
+    logging call or of a call that builds a logging hook, as the arid.logging rule reads them."""
+    if not isinstance(definition, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        return set()
+    cached = getattr(definition, "_tf_log_only", None)
+    if cached is None:
+        parents = _parents(definition)
+
+        def logged(item: ast.AST) -> bool:
+            child, parent = item, parents.get(id(item))
+            while parent is not None and parent is not definition:
+                if isinstance(parent, ast.Call) and child is not parent.func and (_is_logging_call(parent) or _builds_log_hook(parent)):
+                    return True
+                child, parent = parent, parents.get(id(parent))
+            return False
+
+        arguments = definition.args
+        names = {item.arg for item in [*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs]} - {"self", "cls"}
+        cached = {name for name in names if _names_read_only(definition, name, logged, parents)}
+        definition._tf_log_only = cached
+    return cached
+
+
+def _positional_names(definition: ast.AST | None, *, bound: bool) -> list[str]:
+    if not isinstance(definition, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        return []
+    names = [item.arg for item in [*definition.args.posonlyargs, *definition.args.args]]
+    return names[1:] if bound else names
+
+
+def only_truth_read(call: ast.Call) -> bool:
+    """Whether only the truth of a call's result is read: where it stands, through a local the
+    function binds once and only tests, or by a project callee that only tests the parameter."""
+    if truth_read(call):
+        return True
+    parent = parent_of(call)
+    if isinstance(parent, ast.keyword):
+        owner = parent_of(parent)
+        return parent.arg in (getattr(owner, "_tf_truth_parameters", set()) or set())
+    if isinstance(parent, ast.Call) and call is not parent.func:
+        index = next((position for position, item in enumerate(parent.args) if item is call), None)
+        if index is None or any(isinstance(item, ast.Starred) for item in parent.args[:index + 1]):
+            return False
+        names = getattr(parent, "_tf_positional", []) or []
+        return index < len(names) and names[index] in (getattr(parent, "_tf_truth_parameters", set()) or set())
+    if isinstance(parent, ast.Assign) and len(parent.targets) == 1 and isinstance(parent.targets[0], ast.Name):
+        function = _enclosing(parent, (ast.FunctionDef, ast.AsyncFunctionDef))
+        return function is not None and _local_truth_only(function, parent.targets[0].id, parent.targets[0])
+    return False
+
+
+def _local_truth_only(function: ast.AST, name: str, binding: ast.Name) -> bool:
+    """Whether a function binds a local once, at ``binding``, and only tests it for truth."""
+    reads = 0
+    for item in ast.walk(function):
+        if isinstance(item, (ast.Global, ast.Nonlocal)) and name in item.names:
+            return False
+        if isinstance(item, ast.arg) and item.arg == name:
+            return False
+        if isinstance(item, ast.Name) and item.id == name and item is not binding:
+            if not isinstance(item.ctx, ast.Load) or not truth_read(item):
+                return False
+            reads += 1
+    return reads > 0
+
+
+def read_once_by_local(call: ast.Call) -> bool:
+    """Whether a conversion's copy is read once, at once, by one method of a local the function binds
+    only to a new container of that method's kind (``payload.update(dict(extra))``)."""
+    parent = parent_of(call)
+    if not (
+        isinstance(parent, ast.Call) and len(parent.args) == 1 and parent.args[0] is call and not parent.keywords
+        and isinstance(parent.func, ast.Attribute) and parent.func.attr in COPY_READERS
+        and isinstance(parent.func.value, ast.Name) and isinstance(call.func, ast.Name)
+    ):
+        return False
+    function = _enclosing(parent, (ast.FunctionDef, ast.AsyncFunctionDef))
+    if function is None:
+        return False
+    name = parent.func.value.id
+    kinds = set()
+    for item in ast.walk(function):
+        if isinstance(item, (ast.Global, ast.Nonlocal)) and name in item.names:
+            return False
+        if isinstance(item, ast.arg) and item.arg == name:
+            return False
+        if isinstance(item, ast.Name) and item.id == name and not isinstance(item.ctx, ast.Load):
+            owner = parent_of(item)
+            value = owner.value if isinstance(owner, (ast.Assign, ast.AnnAssign)) and len(getattr(owner, "targets", [item])) == 1 else None
+            kind = _new_container_kind(value)
+            if kind is None:
+                return False
+            kinds.add(kind)
+    return len(kinds) == 1 and call.func.id in COPY_READERS[parent.func.attr].get(kinds.pop(), set())
+
+
+def _new_container_kind(value: ast.AST | None) -> str | None:
+    if isinstance(value, (ast.Dict, ast.DictComp)):
+        return "dict"
+    if isinstance(value, (ast.List, ast.ListComp)):
+        return "list"
+    if isinstance(value, (ast.Set, ast.SetComp)):
+        return "set"
+    if isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id in {"dict", "list", "set"}:
+        return value.func.id
+    return None
+
+
+def default_valued_keywords(call: ast.Call) -> list[ast.keyword]:
+    """The keywords of a call that pass a project callee's default as it is written there; as the
+    annotation read them, once the call is annotated."""
+    defaulted = getattr(call, "_tf_defaulted", None)
+    if defaulted is not None:
+        return [keyword for keyword in call.keywords if keyword.arg in defaulted]
+    defaults = getattr(call, "_tf_defaults", {}) or {}
+    return [
+        keyword for keyword in call.keywords
+        if keyword.arg in defaults
+        and (value := _literal(keyword.value)) is not _NO_VALUE
+        and (default := _literal(defaults[keyword.arg])) is not _NO_VALUE
+        and _same_value(value, default)
+    ]
+
+
+def _equivalent_conversion(node: ast.Call) -> str:
+    """Why removing a conversion cannot change a run, or nothing; as the annotation read it, once
+    the call is annotated."""
+    known = getattr(node, "_tf_equivalent", None)
+    if known is not None:
+        return known
+    if node.func.id == "bool" and only_truth_read(node):
+        return "conversion: only its truth is read"
+    if node.func.id in {"dict", "list", "tuple", "set", "frozenset"} and read_once_by_local(node):
+        return "conversion: one call reads the copy at once"
+    return ""
+
+
+def equivalent_sites(node: ast.AST) -> list[str]:
+    """Why the Python operators plant no mutant on a site of an annotated tree, once per mutant they
+    leave out because no input could tell it from the original."""
+    if not isinstance(node, ast.Call):
+        return []
+    required = getattr(node, "_tf_required", set()) or set()
+    found = ["argument: passes the callee's default" for keyword in default_valued_keywords(node) if keyword.arg not in required]
+    if ConversionRemoval().plantable(node) and (reason := _equivalent_conversion(node)):
+        found.append(reason)
+    return found
+
+
 def annotate(tree: ast.Module, path: str = "", project: Project | None = None) -> ast.Module:
     """Mark on each node what the Python operators read: its parent, whether it is the condition
-    of an if, while or conditional expression, the keywords a project callee requires, whether a
-    call stands as a statement or is made on a module, and for an attribute read the other
-    attributes the same code reads on the same object."""
+    of an if, while or conditional expression, the keywords a project callee requires, the defaults
+    it has and the parameters it only tests or only logs, whether a call stands as a statement or is
+    made on a module, and for an attribute read the other attributes the same code reads on the
+    same object."""
     if getattr(tree, "_tf_annotated", False):
         return tree
     tree._tf_annotated = True
@@ -550,6 +808,7 @@ def annotate(tree: ast.Module, path: str = "", project: Project | None = None) -
             receiver = node.func.value if isinstance(node.func, ast.Attribute) else None
             node._tf_module_receiver = isinstance(receiver, ast.Name) and receiver.id in modules
             definition = None
+            bound = False
             if project is not None and isinstance(node.func, ast.Name):
                 definition = project.definition(tree, path, node.func.id)
             elif isinstance(receiver, ast.Name) and receiver.id in {"self", "cls"} and isinstance(node.func, ast.Attribute):
@@ -558,7 +817,12 @@ def annotate(tree: ast.Module, path: str = "", project: Project | None = None) -
                     (item for item in getattr(cls, "body", []) if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name == node.func.attr),
                     None,
                 )
+                bound = True
             node._tf_required = required_parameters(definition)
+            node._tf_defaults = parameter_defaults(definition)
+            node._tf_truth_parameters = truth_only_parameters(definition)
+            node._tf_log_parameters = log_only_parameters(definition)
+            node._tf_positional = _positional_names(definition, bound=bound)
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             reads: dict[str, set[str]] = {}
             attributes = []
@@ -579,6 +843,14 @@ def annotate(tree: ast.Module, path: str = "", project: Project | None = None) -
                 reads["self"] = reads.get("self", set()) | _class_attributes(owner)
             for item, receiver in attributes:
                 item._tf_siblings = sorted(reads.get(receiver, set()) - {item.attr})
+    # What makes a mutant trivially equivalent is read here, from the code as written: the engine
+    # plants its mutants children first, so by the time a call is visited the literal a keyword
+    # passes, or the container a local is bound to, may already be a switch between mutants.
+    conversion = ConversionRemoval()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            node._tf_defaulted = frozenset(keyword.arg for keyword in default_valued_keywords(node))
+            node._tf_equivalent = _equivalent_conversion(node) if conversion.plantable(node) else ""
     return tree
 
 
@@ -607,7 +879,11 @@ class ArgumentRemoval(_PythonOperator):
         if not isinstance(node, ast.Call):
             return []
         required = getattr(node, "_tf_required", set()) or set()
-        return [index for index, keyword in enumerate(node.keywords) if keyword.arg is not None and keyword.arg not in required]
+        defaulted = {keyword.arg for keyword in default_valued_keywords(node)}
+        return [
+            index for index, keyword in enumerate(node.keywords)
+            if keyword.arg is not None and keyword.arg not in required and keyword.arg not in defaulted
+        ]
 
     def can_mutate(self, node: ast.AST) -> bool:
         return bool(self.removable(node))
@@ -744,7 +1020,8 @@ class ConversionRemoval(_PythonOperator):
     name = "conversion"
     description = "Remove a built-in conversion"
 
-    def can_mutate(self, node: ast.AST) -> bool:
+    def plantable(self, node: ast.AST) -> bool:
+        """A conversion whose removal is a valid mutant, whether or not it can change a run."""
         if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in CONVERSIONS):
             return False
         if len(node.args) != 1 or node.keywords or isinstance(node.args[0], ast.Starred) or getattr(node, "_tf_statement", False):
@@ -755,6 +1032,9 @@ class ConversionRemoval(_PythonOperator):
         if isinstance(value, ast.Constant) and type(value.value).__name__ == node.func.id:
             return False
         return not (isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id == node.func.id)
+
+    def can_mutate(self, node: ast.AST) -> bool:
+        return self.plantable(node) and not _equivalent_conversion(node)
 
     def mutate(self, node: ast.AST) -> list[ast.AST]:
         if not self.can_mutate(node):
@@ -958,6 +1238,10 @@ def arid_regions(tree: ast.AST, rules: set[str]) -> list[Region]:
             regions.append(Region("arid.logging", *node_span(node)))
         if isinstance(node, ast.Call) and "arid.logging" in rules and _builds_log_hook(node):
             regions.append(Region("arid.logging", *node_span(node)))
+        # A keyword a project callee only hands to logging (annotated trees only).
+        if isinstance(node, ast.Call) and "arid.logging" in rules:
+            logged = getattr(node, "_tf_log_parameters", set()) or set()
+            regions.extend(Region("arid.logging", *node_span(keyword)) for keyword in node.keywords if keyword.arg in logged)
         if call is not None and "arid.sleep" in rules and (dotted_name(call.func) or "") in SLEEP_CALLS:
             regions.append(Region("arid.sleep", *node_span(node)))
         if (

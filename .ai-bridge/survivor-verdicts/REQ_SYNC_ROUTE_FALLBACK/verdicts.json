@@ -82,26 +82,32 @@
    "verdict": "pin"
   },
   "operator": "return",
-  "pin": {
-   "adopted_at": "2026-09-27T23:57:15.355576Z",
-   "answer_sha256": "3c6b72db6c2b0775c0a48136b666849f22b33a8b0cc01529d27954124ff1da61",
-   "call_id": "20260927T234031Z-2910b2",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "418bdf13b8f9e3cb2768fb520b8caa88ba10bcad4a95c8617f982edbda79f114",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_45f4eab791155bbe.py",
-   "response_sha256": "7a76280207589882eb5d376cdb880342e7b4eb61908026ccb22e4aec293f6027",
-   "source": "draft author"
-  },
-  "prompt_sha256": "85e6db6cfc794b8a7bc14bd55b1131ea3920ae825d84fac732821e04dd78b505"
+  "prompt_sha256": "85e6db6cfc794b8a7bc14bd55b1131ea3920ae825d84fac732821e04dd78b505",
+  "subsumed": {
+   "at": "2026-10-01T13:46:54.300692Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_fn_18e45f3c.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T23:57:15.355576Z",
+    "answer_sha256": "3c6b72db6c2b0775c0a48136b666849f22b33a8b0cc01529d27954124ff1da61",
+    "call_id": "20260927T234031Z-2910b2",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "418bdf13b8f9e3cb2768fb520b8caa88ba10bcad4a95c8617f982edbda79f114",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_45f4eab791155bbe.py",
+    "response_sha256": "7a76280207589882eb5d376cdb880342e7b4eb61908026ccb22e4aec293f6027",
+    "source": "draft author"
+   }
+  }
  },
  "4d881c5bf4db6b9f": {
   "answer": {
@@ -271,26 +277,32 @@
    "verdict": "pin"
   },
   "operator": "statement",
-  "pin": {
-   "adopted_at": "2026-09-27T23:57:15.356316Z",
-   "answer_sha256": "0ec5a53625d32da9de9606b9b1da00aa3e0637a42a352be731cc9beb03bbc736",
-   "call_id": "20260927T234117Z-0dbd87",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "6ff38cb9610579bbd54694dea2cfc22823f3756a91008866d8117f051109fd40",
-   "model": "gemini-3.8-flash-medium",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py",
-   "response_sha256": "07e65302c846350874bbf4bbe741f0da3e8b2ca5cc64d161e86bde9bf49a7ca7",
-   "source": "draft author"
-  },
-  "prompt_sha256": "54a7a11044b4fd9d15e7a317b3cb44c3b47f6e8d18db256155c7d30c03070d1d"
+  "prompt_sha256": "54a7a11044b4fd9d15e7a317b3cb44c3b47f6e8d18db256155c7d30c03070d1d",
+  "subsumed": {
+   "at": "2026-10-01T13:46:54.301420Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_fn_18e45f3c.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-27T23:57:15.356316Z",
+    "answer_sha256": "0ec5a53625d32da9de9606b9b1da00aa3e0637a42a352be731cc9beb03bbc736",
+    "call_id": "20260927T234117Z-0dbd87",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "6ff38cb9610579bbd54694dea2cfc22823f3756a91008866d8117f051109fd40",
+    "model": "gemini-3.8-flash-medium",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_sync_route_fallback_b4662840626becac.py",
+    "response_sha256": "07e65302c846350874bbf4bbe741f0da3e8b2ca5cc64d161e86bde9bf49a7ca7",
+    "source": "draft author"
+   }
+  }
  },
  "b9c20a38b4b7e255": {
   "answer": {

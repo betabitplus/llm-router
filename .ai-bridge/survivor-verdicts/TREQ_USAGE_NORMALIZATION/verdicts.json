@@ -53,31 +53,37 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.597974Z",
-   "answer_sha256": "e9d110596348208b687bbf3315426afbe8017a07bb68f232b555acecd383eb32",
-   "call_id": "20260929T112259Z-b58558",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "e9d110596348208b687bbf3315426afbe8017a07bb68f232b555acecd383eb32",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_3b9da8b0c2e02991.py",
-   "response_sha256": "6caab6c746032908d63fb35a56b2d27432517682093c111ae184fee5abe4e620",
-   "source": "draft author",
-   "sources": [
-    "llm_router.UsageStats",
-    "llm_router._internal.capabilities.usage.normalize_usage"
-   ]
-  },
-  "prompt_sha256": "3d675e6ae93fbde7c522e01966c13aab75bc563224fc1aab7d0130b2a1b52543"
+  "prompt_sha256": "3d675e6ae93fbde7c522e01966c13aab75bc563224fc1aab7d0130b2a1b52543",
+  "subsumed": {
+   "at": "2026-10-01T13:50:01.961015Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_fn_09e5f504.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.597974Z",
+    "answer_sha256": "e9d110596348208b687bbf3315426afbe8017a07bb68f232b555acecd383eb32",
+    "call_id": "20260929T112259Z-b58558",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "e9d110596348208b687bbf3315426afbe8017a07bb68f232b555acecd383eb32",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_3b9da8b0c2e02991.py",
+    "response_sha256": "6caab6c746032908d63fb35a56b2d27432517682093c111ae184fee5abe4e620",
+    "source": "draft author",
+    "sources": [
+     "llm_router.UsageStats",
+     "llm_router._internal.capabilities.usage.normalize_usage"
+    ]
+   }
+  }
  },
  "516ee0826f5a2224": {
   "answer": {
@@ -99,31 +105,37 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.598592Z",
-   "answer_sha256": "dede06f9987aeb49c62095b79f1754dfdf4a0995020d9bc8d7f782d25db0015d",
-   "call_id": "20260929T112300Z-6f4371",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "dede06f9987aeb49c62095b79f1754dfdf4a0995020d9bc8d7f782d25db0015d",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_516ee0826f5a2224.py",
-   "response_sha256": "23c34fd53d00f9145ad120251da09163c7d661e215cdcf9e17a577d7ce9c2666",
-   "source": "draft author",
-   "sources": [
-    "llm_router.UsageStats",
-    "llm_router._internal.capabilities.usage.normalize_usage"
-   ]
-  },
-  "prompt_sha256": "ce2ae86df62e865c3efc6eb24a0e2c8fdab22c79ffc07a4fbd73e58b5def4953"
+  "prompt_sha256": "ce2ae86df62e865c3efc6eb24a0e2c8fdab22c79ffc07a4fbd73e58b5def4953",
+  "subsumed": {
+   "at": "2026-10-01T13:50:01.961395Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_fn_09e5f504.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.598592Z",
+    "answer_sha256": "dede06f9987aeb49c62095b79f1754dfdf4a0995020d9bc8d7f782d25db0015d",
+    "call_id": "20260929T112300Z-6f4371",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "dede06f9987aeb49c62095b79f1754dfdf4a0995020d9bc8d7f782d25db0015d",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_usage_normalization_516ee0826f5a2224.py",
+    "response_sha256": "23c34fd53d00f9145ad120251da09163c7d661e215cdcf9e17a577d7ce9c2666",
+    "source": "draft author",
+    "sources": [
+     "llm_router.UsageStats",
+     "llm_router._internal.capabilities.usage.normalize_usage"
+    ]
+   }
+  }
  },
  "58413afa88ad9810": {
   "answer": {

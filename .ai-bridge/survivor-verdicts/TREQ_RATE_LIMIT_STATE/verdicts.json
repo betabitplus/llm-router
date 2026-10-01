@@ -227,36 +227,42 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-30T14:07:23.923288Z",
-   "answer_sha256": "193b33e22a2862c56f5b2074dccb0aa7cd2af61e9b12443ce2d3a30ebb412772",
-   "call_id": "20260930T140320Z-de5242",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "193b33e22a2862c56f5b2074dccb0aa7cd2af61e9b12443ce2d3a30ebb412772",
-   "effort": "xhigh",
-   "level": 3,
-   "model": "claude-opus-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_6a97bd579b2777e7.py",
-   "response_sha256": "5123b348e141739303deef0998a1cd4e429eda5bf923e0f881caed54617100e4",
-   "source": "last resort",
-   "sources": [
-    "llm_router.Provider",
-    "llm_router.ProviderLimits",
-    "llm_router._internal.runtime.limiter.LimiterState",
-    "llm_router._internal.runtime.limiter.LimiterState.record_failure",
-    "llm_router._internal.runtime.limiter.LimiterState.record_success",
-    "llm_router._internal.runtime.limiter.LimiterState.wait_seconds"
-   ]
-  },
-  "prompt_sha256": "f078215a5315ed64e84d78cd740e4c9c04746587c25d46e6c47f70d9684129d1"
+  "prompt_sha256": "f078215a5315ed64e84d78cd740e4c9c04746587c25d46e6c47f70d9684129d1",
+  "subsumed": {
+   "at": "2026-10-01T13:49:31.241018Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_fn_7f8e200a.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-30T14:07:23.923288Z",
+    "answer_sha256": "193b33e22a2862c56f5b2074dccb0aa7cd2af61e9b12443ce2d3a30ebb412772",
+    "call_id": "20260930T140320Z-de5242",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "193b33e22a2862c56f5b2074dccb0aa7cd2af61e9b12443ce2d3a30ebb412772",
+    "effort": "xhigh",
+    "level": 3,
+    "model": "claude-opus-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_6a97bd579b2777e7.py",
+    "response_sha256": "5123b348e141739303deef0998a1cd4e429eda5bf923e0f881caed54617100e4",
+    "source": "last resort",
+    "sources": [
+     "llm_router.Provider",
+     "llm_router.ProviderLimits",
+     "llm_router._internal.runtime.limiter.LimiterState",
+     "llm_router._internal.runtime.limiter.LimiterState.record_failure",
+     "llm_router._internal.runtime.limiter.LimiterState.record_success",
+     "llm_router._internal.runtime.limiter.LimiterState.wait_seconds"
+    ]
+   }
+  }
  },
  "753353272439298a": {
   "answer": {
@@ -320,34 +326,40 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.585271Z",
-   "answer_sha256": "4d8014dc572d69e11d877b50fc9278040f3687dd4b5198a3819fecc2ff6ac91e",
-   "call_id": "20260929T112233Z-b48030",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "4d8014dc572d69e11d877b50fc9278040f3687dd4b5198a3819fecc2ff6ac91e",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7ac50aa440bca50f.py",
-   "response_sha256": "d2799d61d8e97a4671528321893066260fd2d202368311cd10c494a8268abc3e",
-   "source": "draft author",
-   "sources": [
-    "llm_router._api.types.Provider",
-    "llm_router._api.types.ProviderLimits",
-    "llm_router._internal.runtime.limiter.LimiterState",
-    "llm_router.Provider",
-    "llm_router.ProviderLimits"
-   ]
-  },
-  "prompt_sha256": "462375c7dcb6ce7a6d98dab3972a2f732adc9e796d8bc8f9c8dd7b0a642f93d2"
+  "prompt_sha256": "462375c7dcb6ce7a6d98dab3972a2f732adc9e796d8bc8f9c8dd7b0a642f93d2",
+  "subsumed": {
+   "at": "2026-10-01T13:49:31.241497Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_fn_7f8e200a.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.585271Z",
+    "answer_sha256": "4d8014dc572d69e11d877b50fc9278040f3687dd4b5198a3819fecc2ff6ac91e",
+    "call_id": "20260929T112233Z-b48030",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "4d8014dc572d69e11d877b50fc9278040f3687dd4b5198a3819fecc2ff6ac91e",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7ac50aa440bca50f.py",
+    "response_sha256": "d2799d61d8e97a4671528321893066260fd2d202368311cd10c494a8268abc3e",
+    "source": "draft author",
+    "sources": [
+     "llm_router._api.types.Provider",
+     "llm_router._api.types.ProviderLimits",
+     "llm_router._internal.runtime.limiter.LimiterState",
+     "llm_router.Provider",
+     "llm_router.ProviderLimits"
+    ]
+   }
+  }
  },
  "7cd0a40c605b3f65": {
   "answer": {
@@ -410,32 +422,38 @@
    "verdict": "pin"
   },
   "operator": "boundary",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.585951Z",
-   "answer_sha256": "ac41e669a8a927faeb4db37b8b51cba45851e578d5ac767cc7524d0bbdfdce44",
-   "call_id": "20260929T112234Z-9c5d34",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "ac41e669a8a927faeb4db37b8b51cba45851e578d5ac767cc7524d0bbdfdce44",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7cfc3f8477b3a2b8.py",
-   "response_sha256": "6cff0a6bee33bfb645e8a75daccacf5a3ef9c0001a45944a60963fff387921fc",
-   "source": "draft author",
-   "sources": [
-    "llm_router._api.types.Provider",
-    "llm_router._api.types.ProviderLimits",
-    "llm_router._internal.runtime.limiter.LimiterState"
-   ]
-  },
-  "prompt_sha256": "51ba1647e9cf9534b2496716e50b948d7c51f808eadae2f0982c65e386e13644"
+  "prompt_sha256": "51ba1647e9cf9534b2496716e50b948d7c51f808eadae2f0982c65e386e13644",
+  "subsumed": {
+   "at": "2026-10-01T13:49:31.242130Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_fn_70c7f6f3.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.585951Z",
+    "answer_sha256": "ac41e669a8a927faeb4db37b8b51cba45851e578d5ac767cc7524d0bbdfdce44",
+    "call_id": "20260929T112234Z-9c5d34",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "ac41e669a8a927faeb4db37b8b51cba45851e578d5ac767cc7524d0bbdfdce44",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_7cfc3f8477b3a2b8.py",
+    "response_sha256": "6cff0a6bee33bfb645e8a75daccacf5a3ef9c0001a45944a60963fff387921fc",
+    "source": "draft author",
+    "sources": [
+     "llm_router._api.types.Provider",
+     "llm_router._api.types.ProviderLimits",
+     "llm_router._internal.runtime.limiter.LimiterState"
+    ]
+   }
+  }
  },
  "7d8cf2a980915b49": {
   "answer": {
@@ -593,32 +611,38 @@
    "verdict": "pin"
   },
   "operator": "statement",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.587220Z",
-   "answer_sha256": "5b652120e57c9f35da8c8855ece1c058e732e128fee4b133025dc6582d6fc55d",
-   "call_id": "20260929T112239Z-7a7ec1",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "247fac8816c1954954fd603d750517f1b014f971d74a7a06f3b2a192f6fc2a53",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_96a28c868f99fb34.py",
-   "response_sha256": "0d4108a0fed63af2e3ee94fdc1ff31d6dc24f4ae8ec08f9a057571d88159791c",
-   "source": "draft author",
-   "sources": [
-    "llm_router._api.types.Provider",
-    "llm_router._api.types.ProviderLimits",
-    "llm_router._internal.runtime.limiter.LimiterState"
-   ]
-  },
-  "prompt_sha256": "2ab10ed873572b06ede6f3b6ee4c929890a0c4b8a53b6c6bdc51b6904d458004"
+  "prompt_sha256": "2ab10ed873572b06ede6f3b6ee4c929890a0c4b8a53b6c6bdc51b6904d458004",
+  "subsumed": {
+   "at": "2026-10-01T13:49:31.243765Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_fn_70c7f6f3.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.587220Z",
+    "answer_sha256": "5b652120e57c9f35da8c8855ece1c058e732e128fee4b133025dc6582d6fc55d",
+    "call_id": "20260929T112239Z-7a7ec1",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "247fac8816c1954954fd603d750517f1b014f971d74a7a06f3b2a192f6fc2a53",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_96a28c868f99fb34.py",
+    "response_sha256": "0d4108a0fed63af2e3ee94fdc1ff31d6dc24f4ae8ec08f9a057571d88159791c",
+    "source": "draft author",
+    "sources": [
+     "llm_router._api.types.Provider",
+     "llm_router._api.types.ProviderLimits",
+     "llm_router._internal.runtime.limiter.LimiterState"
+    ]
+   }
+  }
  },
  "99d124741e83ae13": {
   "answer": {
@@ -639,32 +663,38 @@
    "verdict": "pin"
   },
   "operator": "conditional",
-  "pin": {
-   "adopted_at": "2026-09-29T11:47:11.587910Z",
-   "answer_sha256": "10839b5669ae29a276f26aa68d774e656bd7e514a738725c13c5c75f49e8d489",
-   "call_id": "20260929T112240Z-58f6c5",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "10839b5669ae29a276f26aa68d774e656bd7e514a738725c13c5c75f49e8d489",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_99d124741e83ae13.py",
-   "response_sha256": "857c60f20eff95148fa285c7b80bcc97198133982191721601dff66b16388bac",
-   "source": "draft author",
-   "sources": [
-    "llm_router._api.types.Provider",
-    "llm_router._api.types.ProviderLimits",
-    "llm_router._internal.runtime.limiter.LimiterState"
-   ]
-  },
-  "prompt_sha256": "aa7f34a8e9322a39676f2ec9899cf8fd08ca00cbab4267a7c2c1cf09afad0697"
+  "prompt_sha256": "aa7f34a8e9322a39676f2ec9899cf8fd08ca00cbab4267a7c2c1cf09afad0697",
+  "subsumed": {
+   "at": "2026-10-01T13:49:31.244340Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_fn_70c7f6f3.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T11:47:11.587910Z",
+    "answer_sha256": "10839b5669ae29a276f26aa68d774e656bd7e514a738725c13c5c75f49e8d489",
+    "call_id": "20260929T112240Z-58f6c5",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "10839b5669ae29a276f26aa68d774e656bd7e514a738725c13c5c75f49e8d489",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_state_99d124741e83ae13.py",
+    "response_sha256": "857c60f20eff95148fa285c7b80bcc97198133982191721601dff66b16388bac",
+    "source": "draft author",
+    "sources": [
+     "llm_router._api.types.Provider",
+     "llm_router._api.types.ProviderLimits",
+     "llm_router._internal.runtime.limiter.LimiterState"
+    ]
+   }
+  }
  },
  "9abb29c158374ba9": {
   "answer": {

@@ -354,6 +354,69 @@
    ]
   }
  ],
+ "FN-3C682C36": [
+  {
+   "at": "2026-10-01T13:05:38.898334Z",
+   "call_id": "20261001T130302Z-dcd807",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "fd59ed99c46a651a49767d43d3aec902970bb2f8a215301d48de72875badf83e",
+   "reason": "it does not pass on the original 5 times in a row (pytest: Failed: DID NOT RAISE ProviderError)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ]
+  },
+  {
+   "at": "2026-10-01T13:10:01.666591Z",
+   "call_id": "20261001T130539Z-640602",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "cdc403dc78fdc7095efb47bc0309402afc42f65672faa79c20bdddaf86beaabf",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ]
+  }
+ ],
+ "FN-996577DC": [
+  {
+   "at": "2026-10-01T13:04:27.845705Z",
+   "call_id": "20261001T130116Z-1c615a",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b285b23963de5a16c028c97b06009b5f332c5e9840b6eaf0de16f954edf43578",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.retry.classify_status_code",
+    "llm_router._internal.providers.retry.RetryClassification",
+    "llm_router._internal.providers.retry.RetryDecision"
+   ]
+  }
+ ],
  "SM-11502F33": [
   {
    "at": "2026-09-29T19:15:34.152485Z",

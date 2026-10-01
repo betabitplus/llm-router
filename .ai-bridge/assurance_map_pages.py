@@ -3778,6 +3778,8 @@ MODEL_ROLES_TONES = {
     "lint": "var(--tf-hm-na-strong)",
     # Kept alone, failed in the full run: a runtime fault, patterned as the weak one is.
     "suite": "repeating-linear-gradient(-45deg,color-mix(in srgb,var(--tf-hm-fail) 78%,var(--tf-hm-na)) 0 3px,var(--tf-hm-na) 3px 6px)",
+    # Kept alone, missed its mutant where the campaign switches it on: the suite's pattern, the weak one's strength.
+    "campaign": "repeating-linear-gradient(-45deg,color-mix(in srgb,var(--tf-hm-fail) 55%,var(--tf-hm-na)) 0 3px,var(--tf-hm-na) 3px 6px)",
     # Correct, only too slow for a pin: a lighter tone of the weak one's pattern.
     "slow": "repeating-linear-gradient(45deg,color-mix(in srgb,var(--tf-hm-fail) 30%,var(--tf-hm-na)) 0 3px,var(--tf-hm-na) 3px 6px)",
     "unknown": "var(--tf-hm-na)",

@@ -47,6 +47,34 @@
    ]
   }
  ],
+ "759bb71cc9f30188": [
+  {
+   "at": "2026-10-01T17:12:06.145062Z",
+   "call_id": "20261001T171041Z-8f0868",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "0c516659f5acd4ffe01c0350ef45b8695d8f697d5216b6d0058b927e590a6450",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.assertions.parse_json_object",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
  "8d730e921a4ddffa": [
   {
    "at": "2026-09-29T10:38:22.576818Z",
@@ -126,6 +154,59 @@
     "tests.llm_router.support.workers.retry.openai_chat_path",
     "tests.llm_router.support.workers.retry.openai_success_response",
     "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config"
+   ]
+  }
+ ],
+ "FN-7AC89673": [
+  {
+   "at": "2026-10-01T12:49:52.815531Z",
+   "call_id": "20261001T124627Z-22363c",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "e3e083f85efb96f5283f48300245b965ac3db555cc46993cc12837de157455ba",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert 'Return only valid JSON that satisfies the schema' in '{\"model\":\"deepseek/deepseek-chat-v3-0324:free\",\"messages\":[{\"role\":\"user\",\"content\":\"Add 7 and 6.\"},{\"role\":\"assistan...json_schema\",\"json_schema\":{\"name\":\"Empty\",\"schema\":{\"properties\":{},\"title\":\"Empty\",\"type\":\"object\"},\"strict\":true}}})",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-01T12:56:50.080861Z",
+   "call_id": "20261001T124953Z-867cbe",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "d57a1eca38de3fac3d5de25d1cd7454b498a6f07d7deb030e7abfebf0635195e",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   }
  ],

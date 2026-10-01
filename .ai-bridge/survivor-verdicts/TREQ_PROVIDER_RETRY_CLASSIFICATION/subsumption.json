@@ -1,5 +1,5 @@
 {
- "at": "2026-09-30T13:47:21.613886Z",
+ "at": "2026-10-01T13:48:33.196508Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_103e134c5bae2419.py",
   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_1cb6c482c58e73ea.py",
@@ -10,21 +10,17 @@
   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_bc22a7f5ad518a96.py",
   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_dad9cc03506dec74.py",
   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_f49ab970d70faf89.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_996577dc.py",
   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_11502f33.py",
   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_f4ac62d8.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_103e134c5bae2419.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_1cb6c482c58e73ea.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_2f11d5445216910c.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_3c58e8e9e5eaec8a.py",
   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_5a829211adec3347.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_77d6a6e9eef042e8.py",
   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_bc22a7f5ad518a96.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_dad9cc03506dec74.py",
   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_f49ab970d70faf89.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_11502f33.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_f4ac62d8.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_996577dc.py"
  ],
  "restored": [
   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_5a829211adec3347.py",
@@ -42,6 +38,58 @@
    "by": [
     "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_2f11d5445216910c.py"
    ]
+  },
+  "103e134c5bae2419": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_103e134c5bae2419.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_bc22a7f5ad518a96.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py"
+   ]
+  },
+  "1cb6c482c58e73ea": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_1cb6c482c58e73ea.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py"
+   ]
+  },
+  "2f11d5445216910c": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_2f11d5445216910c.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_5a829211adec3347.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_f49ab970d70faf89.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_996577dc.py"
+   ]
+  },
+  "3c58e8e9e5eaec8a": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_3c58e8e9e5eaec8a.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py"
+   ]
+  },
+  "77d6a6e9eef042e8": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_77d6a6e9eef042e8.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_996577dc.py"
+   ]
+  },
+  "dad9cc03506dec74": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_dad9cc03506dec74.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_bc22a7f5ad518a96.py",
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py"
+   ]
+  },
+  "SM-11502F33": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_11502f33.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_bc22a7f5ad518a96.py"
+   ]
+  },
+  "SM-F4AC62D8": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_f4ac62d8.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py"
+   ]
   }
  },
  "matrix": {
@@ -51,28 +99,34 @@
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_3c58e8e9e5eaec8a.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_bc22a7f5ad518a96.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_dad9cc03506dec74.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_f4ac62d8.py"
   ],
   "1cb6c482c58e73ea": [
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_1cb6c482c58e73ea.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_3c58e8e9e5eaec8a.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_f4ac62d8.py"
   ],
   "2f11d5445216910c": [
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_2f11d5445216910c.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_5a829211adec3347.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_f49ab970d70faf89.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_f49ab970d70faf89.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_996577dc.py"
   ],
   "3c58e8e9e5eaec8a": [
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_3c58e8e9e5eaec8a.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_f4ac62d8.py"
   ],
   "5a829211adec3347": [
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_2f11d5445216910c.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_5a829211adec3347.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_5a829211adec3347.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_996577dc.py"
   ],
   "77d6a6e9eef042e8": [
-   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_77d6a6e9eef042e8.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_77d6a6e9eef042e8.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_996577dc.py"
   ],
   "bc22a7f5ad518a96": [
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_103e134c5bae2419.py",
@@ -80,22 +134,29 @@
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_3c58e8e9e5eaec8a.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_bc22a7f5ad518a96.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_dad9cc03506dec74.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_f4ac62d8.py"
   ],
   "dad9cc03506dec74": [
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_103e134c5bae2419.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_1cb6c482c58e73ea.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_3c58e8e9e5eaec8a.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_bc22a7f5ad518a96.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_dad9cc03506dec74.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_dad9cc03506dec74.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_f4ac62d8.py"
   ],
   "f49ab970d70faf89": [
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_2f11d5445216910c.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_f49ab970d70faf89.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_f49ab970d70faf89.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_996577dc.py"
   ],
   "SM-11502F33": [
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_bc22a7f5ad518a96.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_11502f33.py"
   ],
   "SM-F4AC62D8": [
+   "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_fn_3c682c36.py",
    "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_classification_sm_f4ac62d8.py"
   ]
  },

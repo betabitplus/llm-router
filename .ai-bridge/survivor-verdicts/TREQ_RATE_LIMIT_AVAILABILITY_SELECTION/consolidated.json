@@ -1,0 +1,78 @@
+{
+ "FN-2D644D4D": {
+  "adopted_at": "2026-10-01T13:42:00.668829Z",
+  "answer_sha256": "7ba0f28436a6cb721e0f08a06fef5a9b5d58a10a5f734d7b8a75771a0413b9af",
+  "call_id": "20261001T130938Z-6123da",
+  "cascade": {
+   "0c99e43a9ccfd476": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "0d1ec285e912ae10": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "2028da967c88aa09": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "87ecdb53561b826d": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "e92263fea0939fa2": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "f71e9f7973e36624": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "7ba0f28436a6cb721e0f08a06fef5a9b5d58a10a5f734d7b8a75771a0413b9af",
+  "effort": "high",
+  "function": "src/llm_router/_internal/runtime/router.py::RouterRuntime._prepare_request",
+  "keys": [
+   "0c99e43a9ccfd476",
+   "0d1ec285e912ae10",
+   "2028da967c88aa09",
+   "87ecdb53561b826d",
+   "e92263fea0939fa2",
+   "f71e9f7973e36624"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py",
+  "response_sha256": "760e14316752e7af24fb1d43c52b53648d62cc955999f5e2bd596c828cd2932c",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.ProviderError",
+   "llm_router.ProviderLimits",
+   "llm_router.RouterProfile",
+   "llm_router.KeyId",
+   "llm_router._internal.runtime.limiter.KeyResolver",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "tests.llm_router.support.fault_server.ScriptedResponse",
+   "tests.llm_router.support.workers.retry.openai_chat_path",
+   "tests.llm_router.support.workers.retry.openai_error_response",
+   "tests.llm_router.support.workers.retry.openai_success_response",
+   "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+  ],
+  "suite_checked": true
+ }
+}

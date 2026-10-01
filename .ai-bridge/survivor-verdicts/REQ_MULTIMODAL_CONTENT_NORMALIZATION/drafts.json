@@ -666,6 +666,82 @@
     "tests.llm_router.support.fault_server.ScriptedResponse",
     "tests.llm_router.support.workers.retry.openai_chat_path"
    ]
+  },
+  {
+   "at": "2026-10-01T12:20:13.871149Z",
+   "call_id": "20261001T121805Z-3250f1",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "b94c4e7941431c13df328fe2a6ef102b558a23b5d40dccbd119c56e6be0b8ee4",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "llm_router._internal.config.state.get_config",
+    "llm_router._internal.config.state.install_config",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ]
+  }
+ ],
+ "FN-12B31C40": [
+  {
+   "at": "2026-10-01T13:40:15.729002Z",
+   "call_id": "20261001T124111Z-bc7aa4",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "ace97b3142aa4c2e27aabdf3afde4f0e2abea1c2366438fe60b55e92b1373f64",
+   "reason": "it does not pass on the original 5 times in a row (pytest: the run did not finish within 60 seconds)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response"
+   ]
+  },
+  {
+   "at": "2026-10-01T13:42:52.221364Z",
+   "call_id": "20261001T134016Z-b400c8",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "8b1f3fc1964dfaf854b927616158a5206e577260c7350b0b7cb4daea8ffae3fa",
+   "reason": "it does not pass on the original 5 times in a row (pytest: the run did not finish within 60 seconds)",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "py_lib_testkit._internal.test_support.http.ScriptedResponse",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ],
  "SM-227845E0": [
@@ -1298,6 +1374,107 @@
     "tests.llm_router.support.fault_server.ScriptedResponse",
     "tests.llm_router.support.workers.retry.openai_chat_path",
     "tests.llm_router.support.workers.retry.openai_success_response"
+   ]
+  },
+  {
+   "at": "2026-10-01T12:20:09.758708Z",
+   "call_id": "20261001T121729Z-731da3",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "8cc8747e9734ba0fef74f810e79ed3ca13620fc14b2add3d355b75edd024f4a6",
+   "reason": "it imports llm_router._internal.capabilities.content",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  },
+  {
+   "at": "2026-10-01T12:25:21.219153Z",
+   "call_id": "20261001T122010Z-2ec9ad",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "0a41188b5578af24a12a0afc42b0ad78f7bba5ab7fa4a019ae3ddc7d27ad74ba",
+   "reason": "it does not pass on the original 5 times in a row (pytest: Failed: DID NOT RAISE ValueError)",
+   "sources": [
+    "llm_router._api.types.ChatMessage"
+   ]
+  },
+  {
+   "at": "2026-10-01T15:05:24.893571Z",
+   "call_id": "20261001T150237Z-6a45c6",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "6994406d05b98c89cab5a44949f48f8e3274156e4cbbe440b7ebed58764fc8de",
+   "reason": "it does not pass on the original 5 times in a row (pytest: TypeError: LLMRouterConfig.__init__() got an unexpected keyword argument 'provider_base_urls')",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-01T15:07:48.360491Z",
+   "call_id": "20261001T150525Z-071934",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "4ae7f4fc51ec7a7a851efdd72192309997cebd6d4606c88ee2f66297f6c38035",
+   "reason": "it imports py_lib_testkit._internal.test_support.http",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "py_lib_testkit._internal.test_support.http.ScriptedResponse",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.install_worker_provider_base_url",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-01T15:09:15.642157Z",
+   "call_id": "20261001T150748Z-b1ec57",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c4d0c0d91df59c092bcee96b754f5d797a5e8791c5f65e7ac009bdd1d2b1c70f",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   }
  ],

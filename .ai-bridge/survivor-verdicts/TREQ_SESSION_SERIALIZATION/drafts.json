@@ -164,6 +164,62 @@
    ]
   }
  ],
+ "FN-039B7B95": [
+  {
+   "at": "2026-10-01T13:13:15.451427Z",
+   "call_id": "20261001T131110Z-7c4e96",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "20be2f88a61d7dc1cb1c5df546c751d15a9b05840cd84430f19d8dd177ecc46f",
+   "reason": "it breaks the project's lint rules (ruff: line 23: B905 `zip()` without an explicit `strict=` parameter)",
+   "sources": [
+    "llm_router._internal.session.serialization.encode_session",
+    "llm_router._internal.session.serialization.decode_session",
+    "llm_router._api.types.ChatMessage"
+   ]
+  },
+  {
+   "at": "2026-10-01T13:14:50.450835Z",
+   "call_id": "20261001T131315Z-2b1fb8",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "760fab461932cb2e4049dccd55d188a122435fe1c1bb60d0fff083c3012dc6f4",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.ChatMessage",
+    "llm_router._internal.session.serialization.encode_session",
+    "llm_router._internal.session.serialization.decode_session"
+   ]
+  }
+ ],
+ "FN-1DD7271E": [
+  {
+   "at": "2026-10-01T13:13:26.835777Z",
+   "call_id": "20261001T131049Z-c3ec7a",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f962bc4dfab00529c42405e7ffbfe1a65ea657b9ad0237007b241a81e93d2369",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.session.serialization.decode_session",
+    "llm_router._internal.session.serialization.encode_session",
+    "llm_router._internal.runtime.errors.SessionSerializationError",
+    "llm_router._api.types.ChatMessage"
+   ]
+  }
+ ],
  "SM-B91A9265": [
   {
    "at": "2026-09-29T19:15:34.153141Z",

@@ -58,39 +58,45 @@
    "verdict": "pin"
   },
   "operator": "method",
-  "pin": {
-   "adopted_at": "2026-09-29T12:16:07.613758Z",
-   "answer_sha256": "000f2ea92c4491954371a5d6287c467b992f302202d4a6203d7ad29eaa6243f9",
-   "call_id": "20260929T120217Z-cdcc83",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "000f2ea92c4491954371a5d6287c467b992f302202d4a6203d7ad29eaa6243f9",
-   "effort": "medium",
-   "level": 2,
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_4180d032448ab8db.py",
-   "response_sha256": "70f6bf336257767cf8d000f87237bfcd4f74e4151ce9f36eaa229a603c7fcc8a",
-   "source": "draft author with tools",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "8e091d0809ec2831f1de9b9b12781541c12c7e56b3fde0da84ea832acc92db49"
+  "prompt_sha256": "8e091d0809ec2831f1de9b9b12781541c12c7e56b3fde0da84ea832acc92db49",
+  "subsumed": {
+   "at": "2026-10-01T13:47:10.893017Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_fn_e206a50b.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T12:16:07.613758Z",
+    "answer_sha256": "000f2ea92c4491954371a5d6287c467b992f302202d4a6203d7ad29eaa6243f9",
+    "call_id": "20260929T120217Z-cdcc83",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "000f2ea92c4491954371a5d6287c467b992f302202d4a6203d7ad29eaa6243f9",
+    "effort": "medium",
+    "level": 2,
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_4180d032448ab8db.py",
+    "response_sha256": "70f6bf336257767cf8d000f87237bfcd4f74e4151ce9f36eaa229a603c7fcc8a",
+    "source": "draft author with tools",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "4d9aa4fd0372304b": {
   "answer": {
@@ -231,38 +237,44 @@
    "verdict": "pin"
   },
   "operator": "semantic",
-  "pin": {
-   "adopted_at": "2026-09-29T19:15:34.165698Z",
-   "answer_sha256": "caf2009cd0ad9f9a6f48c0c5f471508feb728108e24785e4bb0d52952632beec",
-   "call_id": "20260929T191342Z-17f88b",
-   "cascade": {
-    "accepted": true,
-    "fails_on_mutant": true,
-    "imports_beyond_allowed": [],
-    "lint": [],
-    "passes_on_original": 5,
-    "primitives": []
-   },
-   "draft_sha256": "caf2009cd0ad9f9a6f48c0c5f471508feb728108e24785e4bb0d52952632beec",
-   "effort": "low",
-   "model": "claude-sonnet-5-5",
-   "normalizer": "ruff 0.16.3",
-   "path": "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_sm_2027036f.py",
-   "response_sha256": "163cf6b93df6516d439952dd695f089978612693906bc6a235aa7bdb70bdf512",
-   "source": "draft author",
-   "sources": [
-    "llm_router.LLMRouter",
-    "llm_router.Model",
-    "llm_router.Provider",
-    "llm_router.RouterProfile",
-    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
-    "tests.llm_router.support.fault_server.ScriptedResponse",
-    "tests.llm_router.support.workers.retry.openai_chat_path",
-    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
-    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
-   ]
-  },
-  "prompt_sha256": "20903dd097c6d83a7ea90f5531978b201ce4e0e098c1cc4dcf1df4c718e70a27"
+  "prompt_sha256": "20903dd097c6d83a7ea90f5531978b201ce4e0e098c1cc4dcf1df4c718e70a27",
+  "subsumed": {
+   "at": "2026-10-01T13:47:10.893284Z",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_fn_e206a50b.py"
+   ],
+   "pin": {
+    "adopted_at": "2026-09-29T19:15:34.165698Z",
+    "answer_sha256": "caf2009cd0ad9f9a6f48c0c5f471508feb728108e24785e4bb0d52952632beec",
+    "call_id": "20260929T191342Z-17f88b",
+    "cascade": {
+     "accepted": true,
+     "fails_on_mutant": true,
+     "imports_beyond_allowed": [],
+     "lint": [],
+     "passes_on_original": 5,
+     "primitives": []
+    },
+    "draft_sha256": "caf2009cd0ad9f9a6f48c0c5f471508feb728108e24785e4bb0d52952632beec",
+    "effort": "low",
+    "model": "claude-sonnet-5-5",
+    "normalizer": "ruff 0.16.3",
+    "path": "tests/llm_router/mutation_pins/test_pin_req_tool_runtime_safety_sm_2027036f.py",
+    "response_sha256": "163cf6b93df6516d439952dd695f089978612693906bc6a235aa7bdb70bdf512",
+    "source": "draft author",
+    "sources": [
+     "llm_router.LLMRouter",
+     "llm_router.Model",
+     "llm_router.Provider",
+     "llm_router.RouterProfile",
+     "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+     "tests.llm_router.support.fault_server.ScriptedResponse",
+     "tests.llm_router.support.workers.retry.openai_chat_path",
+     "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+    ]
+   }
+  }
  },
  "SM-80E21F07": {
   "answer": {
@@ -392,14 +404,14 @@
  "b286d88b39b3a8e6": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T062428Z-ecb249",
+   "call_id": "20261001T114021Z-d30387",
    "confirmed": true,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The criterion says that at the round limit, execution must stop and the outstanding tool call must be kept. The mutant drops `outstanding_tool_calls` on exactly that path: a confirmed input with `max_rounds=0` lost `ToolCall(name='my_tool')`. `_run_logged_tool_round` reaches this branch by passing the provider result's tool calls into `run_tool_round`.",
-   "response_sha256": "d0dd05f769256136c89bd0373f646f091019d3ab08fbf042a61a7b42be49ef27",
+   "reason": "When the round limit is reached, the mutant drops the parsed calls from outstanding_tool_calls. That breaks the criterion that execution stops at the limit and preserves the outstanding tool call. _run_logged_tool_round passes result.tool_calls to run_tool_round and returns the new state unchanged, so the loss can be seen there.",
+   "response_sha256": "7253ef092899855890a8a4d723b962ad3f95b114b48dd80d4f069c3f9ddfd9ab",
    "sources": [
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
     "tool execution shall stop at the configured maximum round count.",
@@ -407,11 +419,11 @@
     "outstanding_tool_calls=parsed_calls,",
     "next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )"
    ],
-   "test_focus": "Call `_run_logged_tool_round` with `state=ToolLoopState(max_rounds=0)` and a `ProviderResult` whose `tool_calls=(ToolCall(name='my_tool', args={}),)`, using an empty `ToolRegistry`. Assert that the returned state's `outstanding_tool_calls` still contains that `ToolCall` and that `completed_rounds` is still 0.",
+   "test_focus": "Call _run_logged_tool_round with ToolLoopState(max_rounds=0), a ProviderResult whose tool_calls=(ToolCall(name=\"my_tool\"),) and an empty ToolRegistry. Assert the returned state has no new steps, completed_rounds stays 0, and outstanding_tool_calls equals the given call.",
    "verdict": "pin"
   },
   "operator": "argument",
-  "prompt_sha256": "688ff8e691918422100e06b02fcf2b66a24c4310c783a17fa84f51c26c4073cf"
+  "prompt_sha256": "8a55cc719b0f1663b98d4107e089ab9fbf2de3d431a9165b8726524cffe5d600"
  },
  "b93510947e39b6d5": {
   "answer": {
@@ -458,26 +470,44 @@
  "c7d2d7e9975406e2": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T062428Z-cc0a64",
+   "call_id": "20261001T114021Z-720632",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "requirement",
+   "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "`_run_logged_tool_round` calls `run_tool_round` with any state and with `result.tool_calls`, so it can pass in a state that has already reached the round limit. In the mutant it then returns `outstanding_tool_calls` as a single-use generator instead of the declared `tuple[ToolCall, ...]`. That generator does not equal a tuple, always counts as true, and is empty on a second read, so the outstanding call is not reliably kept. That breaks the requirement that execution stops at the round limit and keeps the outstanding call.",
-   "response_sha256": "8efa01b8e9936146b0a280dd6cd841c28442ad2ac90091ee131bf90a1fad91bd",
+   "reason": "The only caller passes already-parsed `result.tool_calls`, and the outstanding calls still come out of the generator into the public response. So the generator-vs-tuple difference only shows in internal ToolLoopState, never in the public response the requirement observes. Every draft test, including one run in a project copy, passed on both versions.",
+   "response_sha256": "0794fca4ef6e242b5e2e63ef0cfe8486658facf8e016b3c1666bb54764ea8cc1",
    "sources": [
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
-    "tool execution shall stop at the configured maximum round count",
     "parsed_calls = (parse_tool_call(call) for call in tool_calls)",
     "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)",
-    "next_state = run_tool_round("
+    "tool_calls=result.tool_calls,"
    ],
-   "test_focus": "Call `_run_logged_tool_round` with `ToolLoopState(max_rounds=1, completed_rounds=1)` and a `ProviderResult` holding one `ToolCall`. Check that no step is executed, that `next_state.outstanding_tool_calls == (call,)`, and that it is still `(call,)` when read a second time.",
-   "verdict": "pin"
+   "test_focus": "",
+   "verdict": "irrelevant"
   },
   "operator": "conversion",
-  "prompt_sha256": "d72408e3c3303724e7288b666a3ff4236070ca2c0084afb7754377aabaa11d3f"
+  "prompt_sha256": "a286460af01d4e61b4b3f94eb689129df1fe899552e055826f2db20fdbebdf89",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20261001T114054Z-273fc0",
+   "confirmed": true,
+   "effort": "",
+   "level": "requirement",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "a286460af01d4e61b4b3f94eb689129df1fe899552e055826f2db20fdbebdf89",
+   "reason": "The mutant assigns a generator instead of a sequence to `outstanding_tool_calls` when tool execution is not allowed. This violates the requirement to preserve the outstanding tool calls in the public response, as generators are not stable, reusable sequences and will fail to serialize or preserve the calls correctly.",
+   "response_sha256": "2ea0d3d7c0b307b018d581bdf6754ff0c56a27ee49a877594d3b2fb0cea823b5",
+   "sources": [
+    "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
+    "parsed_calls = (parse_tool_call(call) for call in tool_calls)",
+    "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
+   ],
+   "test_focus": "Call `_run_logged_tool_round` with a `ToolLoopState` where `can_execute_tools()` is false (e.g., maximum rounds reached) and a `ProviderResult` containing `tool_calls` to verify that `outstanding_tool_calls` is returned as a stable sequence, not a generator.",
+   "verdict": "pin"
+  }
  },
  "cc2237e2e7228b57": {
   "answer": {
@@ -497,42 +527,41 @@
  "da6dae3b18c978b6": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T152405Z-726eb7",
+   "call_id": "20261001T114021Z-1540a5",
    "confirmed": true,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only resets the internal completed_rounds counter once the limit is hit. It still returns the outstanding calls and runs no tool, so execution stops at the limit and the outstanding call is kept. The only caller, _run_logged_tool_round, reads just next_state.steps and passes the old state to logging, and no test run on a full copy of the project could see the counter in a public result. So the change touches nothing the requirement asks for.",
-   "response_sha256": "01eb1435c0c382cb57d8594b854bcdd359ca5cb96aed82ad22611218023049e5",
+   "reason": "The mutant only resets completed_rounds to its default in the branch where no more rounds may run. It still executes nothing there and still keeps the outstanding calls. The only caller, _run_logged_tool_round, logs with the old `state` and logs only new steps, and this branch adds none. A test ladder run in a copy of the project could not show the reset counter in the public response, so the round limit and the preserved outstanding call both still hold.",
+   "response_sha256": "39dbc633224693b481094e7648d850f2410b0259fbf155bc7a7e2c7a15148975",
    "sources": [
-    "tool execution shall stop at the configured maximum round count",
+    "tool execution shall stop at the configured maximum round count.",
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
     "return ToolLoopState(max_rounds=state.max_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)",
-    "for step in next_state.steps[len(state.steps) :]:",
-    "_log_tool_completed(request=request, state=state, tool_name=step.tool_name)"
+    "for step in next_state.steps[len(state.steps) :]:\n        _log_tool_completed(request=request, state=state, tool_name=step.tool_name)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "dc557dc7c27e629244a766e4c46c917fa3bc4b800550b5463ed61fa705110be2",
+  "prompt_sha256": "f3dcd5b3368dd69de3abab2c78fbadba99c11ecc7568067c35ecf090713c6cff",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T152422Z-21049f",
+   "call_id": "20261001T114054Z-297718",
    "confirmed": true,
    "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "dc557dc7c27e629244a766e4c46c917fa3bc4b800550b5463ed61fa705110be2",
-   "reason": "Omitting the completed rounds from the returned state resets the counter to zero when the limit is reached, which causes any outer execution loop relying on this state to continue indefinitely instead of stopping.",
-   "response_sha256": "5fff565fe211a6bf269b4c5d620a58ee14bb5e7eb62cde78c1c1b8a9bc34f8c8",
+   "prompt_sha256": "f3dcd5b3368dd69de3abab2c78fbadba99c11ecc7568067c35ecf090713c6cff",
+   "reason": "The mutant drops completed_rounds when returning outstanding tool calls, resetting it to 0. If max_tool_rounds > 0, this causes can_execute_tools() to evaluate to true again, preventing the router loop from stopping at the configured limit.",
+   "response_sha256": "e31f783e7683688c426bf7d364467cd7e9c18dcd9a39dbbaf61f7c98da76925d",
    "sources": [
-    "Tool execution stops at the configured round limit",
+    "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
     "completed_rounds=state.completed_rounds,"
    ],
-   "test_focus": "Call _run_logged_tool_round with a ToolLoopState that has reached its round limit (e.g., completed_rounds=1 and max_rounds=1), and assert that the returned state preserves the completed rounds count.",
+   "test_focus": "A test must call LLMRouter.query with max_tool_rounds=1 and a prompt eliciting multiple sequential tool calls, so that _run_logged_tool_round passes a state with completed_rounds=1 to the mutant when the limit is reached.",
    "verdict": "pin"
   }
  },
@@ -674,24 +703,24 @@
  "f7f884d8946a1724": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T062428Z-f6f49d",
+   "call_id": "20261001T114021Z-fbabeb",
    "confirmed": true,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "When the round limit has been reached, the mutant returns a state without the steps from earlier rounds, so the response the user sees at the limit loses the tool work that already ran. `_run_logged_tool_round` passes the accumulated `state` straight to `run_tool_round`, so a run with `max_rounds=1` and a second tool-call turn reaches the changed branch. The changed branch is the one that has to keep the stopped round intact in the public response.",
-   "response_sha256": "3c327e0231946bdd1c1611176d7d3743a997a5762c1261a5c911278fd48c987a",
+   "reason": "This is a real regression. The executor's caller `_run_logged_tool_round` passes the running state straight through, so a state that has finished its rounds and already has steps reaches the round-limit branch. There the mutant drops every executed step. The run then stops at the round limit with a wiped history, so the public response no longer reflects the tool rounds that actually ran.",
+   "response_sha256": "5745903613eda1ba1d9e7e44e61fce62a16d764fac49e6e97d5cc7b934f0c319",
    "sources": [
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
     "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, outstanding_tool_calls=parsed_calls)",
-    "next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )",
-    "steps=state.steps,"
+    "steps=state.steps,",
+    "next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )"
    ],
-   "test_focus": "Call `_run_logged_tool_round` with `ToolLoopState(max_rounds=1, completed_rounds=1, steps=(ToolStep(tool_name='t'),))` and a `ProviderResult` with one `ToolCall`. Check that the returned state keeps the earlier step and that the call is in `outstanding_tool_calls`.",
+   "test_focus": "Call `_run_logged_tool_round` with state `ToolLoopState(max_rounds=1, completed_rounds=1, steps=(ToolStep(tool_name=\"t\", args={}, result=1),))` and a `ProviderResult` whose `tool_calls` holds one `ToolCall`. Or call `LLMRouter.query` with `max_tool_rounds=1` and two tool-call turns. Check that the earlier step stays in `steps`/`tool_trace` and that the outstanding call is preserved.",
    "verdict": "pin"
   },
   "operator": "argument",
-  "prompt_sha256": "ef0b296800d32a760156f924ad1212dcdfd3a91faa6582f6b6a82dcd0a4f068a"
+  "prompt_sha256": "9b725668d3c992a3e5fb6dc7fa05cdf64e2dfa0812308ad83c1eafc23abc1957"
  }
 }

@@ -1,13 +1,13 @@
 {
- "at": "2026-09-30T18:37:25.642271Z",
+ "at": "2026-10-01T13:47:36.427297Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_03b3464429e96b31.py",
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_0bdce5fb12999eee.py",
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_4e35b24fc276e4ad.py",
-  "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_ab94f138074323bc.py",
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_e9186235c6377e40.py",
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_f02a96133d01bfce.py",
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_227845e0.py",
+  "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_9b37a894.py",
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_e1b20e59.py"
  ],
  "kept": [
@@ -15,8 +15,8 @@
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_0bdce5fb12999eee.py",
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_4e35b24fc276e4ad.py",
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_e9186235c6377e40.py",
-  "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_f02a96133d01bfce.py",
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_227845e0.py",
+  "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_9b37a894.py",
   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_e1b20e59.py"
  ],
  "restored": [],
@@ -32,6 +32,12 @@
    "by": [
     "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_e9186235c6377e40.py"
    ]
+  },
+  "f02a96133d01bfce": {
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_f02a96133d01bfce.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_9b37a894.py"
+   ]
   }
  },
  "matrix": {
@@ -44,18 +50,18 @@
   "4e35b24fc276e4ad": [
    "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_4e35b24fc276e4ad.py"
   ],
-  "ab94f138074323bc": [
-   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_ab94f138074323bc.py",
-   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_e9186235c6377e40.py"
-  ],
   "e9186235c6377e40": [
    "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_e9186235c6377e40.py"
   ],
   "f02a96133d01bfce": [
-   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_f02a96133d01bfce.py"
+   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_f02a96133d01bfce.py",
+   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_9b37a894.py"
   ],
   "SM-227845E0": [
    "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_227845e0.py"
+  ],
+  "SM-9B37A894": [
+   "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_9b37a894.py"
   ],
   "SM-E1B20E59": [
    "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_e1b20e59.py"
@@ -68,7 +74,6 @@
   "09225d753d91581a",
   "0b8ea52e5994ca62",
   "0bdce5fb12999eee",
-  "0c1b36286cf6938e",
   "0d1a77f94e50b1d4",
   "15726577ab3333a4",
   "1d9bf906ccbb71e1",
@@ -124,7 +129,6 @@
   "SM-57AE760A",
   "SM-5D7E3719",
   "SM-5FE3A2BD",
-  "SM-73959DE4",
   "SM-7AAE5ABD",
   "SM-7E73F3C1",
   "SM-8D54388C",
@@ -149,7 +153,6 @@
   "a50520a4dbcf781f",
   "a5d88d77198072f7",
   "a6b4e513b6f3bf73",
-  "a9925109311de4d5",
   "ab94f138074323bc",
   "b56ba64db12d1304",
   "bc13dc65942f6ef3",

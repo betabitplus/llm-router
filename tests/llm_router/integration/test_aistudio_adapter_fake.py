@@ -211,6 +211,46 @@ def test_aistudio_native_retryable_status_is_translated() -> None:
         assert exc_info.value.cause.retry_reason == "retryable_status"
 
 
+@pytest.mark.verifies("REQ_PROVIDER_ADAPTER_INTEROPERABILITY[revision==2]")
+@pytest.mark.fault_item(
+    "REQ_PROVIDER_ADAPTER_INTEROPERABILITY", "interface.payload-schema"
+)
+def test_aistudio_native_answer_without_candidate_content_is_a_provider_error() -> None:
+    path = aistudio_video_path(model=Model.GEMINI_FLASH)
+    retain_fault_injection(
+        contract_id="REQ_PROVIDER_ADAPTER_INTEROPERABILITY",
+        fault_class="interface.payload-schema",
+        mechanism="scripted AI Studio native stream has a candidate without content",
+    )
+    request = _request(
+        messages=[
+            normalize_content(
+                [VideoUrlSchema(url="https://example.test/clip.mp4", fps=2)]
+            )
+        ]
+    )
+    stream = (
+        "data: " + json.dumps({"candidates": [{"finishReason": "SAFETY"}]})
+    ) + "\n\ndata: [DONE]\n\n"
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", path): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "text/event-stream"},
+                    body=stream.encode("utf-8"),
+                )
+            ]
+        },
+    ) as server:
+        with pytest.raises(ProviderError) as exc_info:
+            _adapter(server).execute(request)
+
+        assert exc_info.value.cause.retryable is False
+        assert exc_info.value.cause.retry_reason == "missing_candidate_content"
+
+
 for _test_name in (
     "test_aistudio_text_uses_openai_compatible_transport",
     "test_aistudio_video_uses_native_transport",

@@ -1,0 +1,108 @@
+{
+ "FN-45935BEB": {
+  "adopted_at": "2026-10-01T12:44:40.869490Z",
+  "answer_sha256": "9395e4fed668e23a89cad3d19eba3cd44997042463defccc9432c09d87031671",
+  "call_id": "20261001T124111Z-c29134",
+  "cascade": {
+   "2f06445af49144cc": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "3dc1348c54023b59": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "4185d08c0ebf67fe": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "8a48c40fdfe50bce": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-230B4176": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "SM-AA98B36D": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "b5451a90524408d8": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "c673733c4b655a92": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "e1a047184fcbb294": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "fddc853000a48d63": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "9395e4fed668e23a89cad3d19eba3cd44997042463defccc9432c09d87031671",
+  "effort": "",
+  "function": "src/llm_router/_internal/runtime/router.py::RouterRuntime._run_async",
+  "keys": [
+   "2f06445af49144cc",
+   "3dc1348c54023b59",
+   "4185d08c0ebf67fe",
+   "8a48c40fdfe50bce",
+   "SM-230B4176",
+   "SM-AA98B36D",
+   "b5451a90524408d8",
+   "c673733c4b655a92",
+   "e1a047184fcbb294",
+   "fddc853000a48d63"
+  ],
+  "model": "gemini-3.8-flash-medium",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_req_async_provider_execution_fn_45935beb.py",
+  "response_sha256": "269e4d1b9615c7b6a69abc80d739cba62f1fb08454beeda8bc7da7bd98fe5368",
+  "source": "consolidation",
+  "sources": [
+   "llm_router.LLMRouter",
+   "llm_router.Model",
+   "llm_router.Provider",
+   "llm_router.ProviderLimits",
+   "llm_router.RouterProfile",
+   "llm_router.Session",
+   "llm_router.get_config",
+   "llm_router.install_config",
+   "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+   "tests.llm_router.support.fault_server.ScriptedResponse",
+   "tests.llm_router.support.workers.retry.openai_chat_path",
+   "tests.llm_router.support.workers.retry.openai_error_response",
+   "tests.llm_router.support.workers.retry.openai_success_response",
+   "tests.llm_router.support.workers.retry.patched_openai_sdk",
+   "tests.llm_router.support.workers.retry.qwen_chat_path",
+   "tests.llm_router.support.workers.retry.qwen_success_response"
+  ],
+  "suite_checked": true
+ }
+}

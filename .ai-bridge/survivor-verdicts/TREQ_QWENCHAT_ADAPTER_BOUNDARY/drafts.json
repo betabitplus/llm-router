@@ -263,6 +263,29 @@
    ]
   }
  ],
+ "5c98f844a8369f15": [
+  {
+   "at": "2026-10-01T14:42:56.191996Z",
+   "call_id": "20261001T144159Z-0ddd15",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "1c1cf0dfebeb2eb7598e2fff82ce6c8705b24e3ebbab6f4e1ff1c7e76e253350",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolDefinition",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
  "7a62ad64f09cc0a0": [
   {
    "at": "2026-09-29T11:47:11.542454Z",
@@ -509,6 +532,172 @@
     "llm_router._internal.capabilities.content.normalize_content",
     "llm_router._internal.providers.base.ProviderCredential",
     "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "FN-18B6BF98": [
+  {
+   "at": "2026-10-01T13:07:43.850625Z",
+   "call_id": "20261001T130404Z-ee85eb",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "3c60e81df17b39c06f320243c5f95d2da621a95f65d174eb4b534d3bea9d5b24",
+   "reason": "it does not fail on the mutant: of the changed lines 171\u2013180 it runs lines 171\u2013173 and 179 but never lines 175 and 180",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter",
+    "llm_router._internal.providers.qwenchat.transport_failure"
+   ]
+  },
+  {
+   "at": "2026-10-01T13:10:46.184008Z",
+   "call_id": "20261001T130744Z-8113ca",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1fdecf187205701e7018d017ed5cba30a094bf74f0d38908db4d4d47cea0e00c",
+   "reason": "it imports py_lib_testkit._internal.test_support.http",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter",
+    "llm_router._internal.providers.qwenchat.json_headers",
+    "llm_router._internal.providers.qwenchat.transport_failure",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "py_lib_testkit._internal.test_support.http.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.qwen_chat_path",
+    "tests.llm_router.support.workers.retry.qwen_error_response",
+    "tests.llm_router.support.workers.retry.qwen_success_response",
+    "tests.llm_router.support.workers.retry.qwen_upload_path",
+    "tests.llm_router.support.workers.retry.qwen_upload_success_response"
+   ]
+  }
+ ],
+ "FN-1D4B22D1": [
+  {
+   "at": "2026-10-01T13:08:41.782258Z",
+   "call_id": "20261001T130428Z-ad6f7f",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7a6c55e591a465270c27b919020ca3314ca96424e0e9c6f02b5abc38df608b5d",
+   "reason": "it does not fail on the mutant: of the changed lines 135\u2013144 it runs lines 135\u2013137 and 143 but never line 144",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  },
+  {
+   "at": "2026-10-01T13:11:09.926394Z",
+   "call_id": "20261001T130841Z-851181",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "cf69e2ae01a17d9fc5d9b5ff70121d9ffb73dc799afb267a90818034ff57bc34",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter",
+    "llm_router._internal.providers.qwenchat.transport_failure"
+   ]
+  }
+ ],
+ "FN-B1675618": [
+  {
+   "at": "2026-10-01T13:08:13.020210Z",
+   "call_id": "20261001T130420Z-b83159",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "83d954852def23759583e2878032a48876c09e01b7424d07aa297c77d37ae1f0",
+   "reason": "",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolChoice",
+    "llm_router._internal.capabilities.tools.ToolDefinition",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "FN-E736B01D": [
+  {
+   "at": "2026-10-01T13:06:43.994740Z",
+   "call_id": "20261001T130356Z-492613",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "2140030730e7981dd5b3d21b5fb7c68e75dba6a56edd7d77b6c4790165626d6b",
+   "reason": "",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.tools.ToolChoice",
+    "llm_router._internal.capabilities.tools.ToolDefinition",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.qwenchat.QwenChatAdapter"
+   ]
+  }
+ ],
+ "FN-EEDAB3CA": [
+  {
+   "at": "2026-10-01T13:04:50.943730Z",
+   "call_id": "20261001T130310Z-d81e9f",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0b45b5fd3a20dea85d594230ac89b46c0fedf5ccea421cd667f1f20d19a86620",
+   "reason": "",
+   "sources": [
     "llm_router._internal.providers.qwenchat.QwenChatAdapter"
    ]
   }

@@ -297,6 +297,22 @@ def _parse_native_response(
             message=failure.message,
         )
     lines = response.text.splitlines()
+    if not _stream_text_parts(lines):
+        # A success whose stream carries no candidate text part is a malformed response,
+        # not an empty answer.
+        failure = ProviderFailure(
+            provider=request.provider,
+            model=request.model,
+            message="Provider response carried no candidate content.",
+            retryable=False,
+            retry_reason="missing_candidate_content",
+        )
+        raise ProviderError(
+            failure,
+            request.provider,
+            request.model,
+            message=failure.message,
+        )
     output_text = parse_stream_text(lines)
     usage = normalize_usage({"usageMetadata": parse_usage_metadata(lines)})
     data: dict[str, Any] = {
@@ -330,9 +346,13 @@ def _log_provider_start(request: ProviderRequest) -> None:
 
 def parse_stream_text(lines: list[str]) -> str:
     """Parse Gemini streamed response lines into text."""
-    payloads = _parse_stream_payloads(lines)
+    return "".join(_stream_text_parts(lines))
+
+
+def _stream_text_parts(lines: list[str]) -> list[str]:
+    """The text parts of the first candidate of every streamed payload, in order."""
     texts: list[str] = []
-    for payload in payloads:
+    for payload in _parse_stream_payloads(lines):
         candidates = payload.get("candidates")
         if not isinstance(candidates, list) or not candidates:
             continue
@@ -347,7 +367,7 @@ def parse_stream_text(lines: list[str]) -> str:
             for part in parts
             if isinstance(part, dict) and isinstance(part.get("text"), str)
         )
-    return "".join(texts)
+    return texts
 
 
 def parse_usage_metadata(lines: list[str]) -> dict[str, int]:

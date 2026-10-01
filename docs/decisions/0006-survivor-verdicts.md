@@ -45,7 +45,14 @@ irrelevant, reviewed as any suppression, and a mutant still pinned waits for the
 first changes, one in ten of the suppressions another answerer decided is asked again, and one
 the role no longer upholds is pinned (amended 2026-09-30). A pin whose mutant other pins of its
 contract kill is removed, by the kill matrix of the contract's pins and a greedy cover, and comes
-back as it was when the campaign shows the removal cost a kill (amended 2026-09-30). An escalated survivor keeps its class failing and waits for the person, whose
+back as it was when the campaign shows the removal cost a kill (amended 2026-09-30). The pins of one
+function become one: the draft author is shown each of its pinned defects with the test that catches
+it now and writes one module that fails on all of them, adopted only when the cascade keeps it for
+every one, after which the subsumption removes the pins it makes redundant (amended 2026-10-01,
+after AdverTest: a target's survivors given together; one pin per mutant had left most functions with
+several). A pin a new pin's full test run fails, or one whose mutant the campaign still reports as
+surviving, is taken back with its reason (amended 2026-10-01), as is a pin whose mutant a recorded decision says
+needs none. An escalated survivor keeps its class failing and waits for the person, whose
 verdict wins over the model's. The person decides only what a Goal or Feature promises: an
 escalation that turns on a requirement's or technical requirement's wording, and a pin no rung
 could write, are decided by the person's delegate (the agent's model, Claude Opus 5.5), who
@@ -70,9 +77,11 @@ applies the recorded verdicts goes to `ternforge-infra-ci`; verdict and canary r
 runs on request. The default roles and canaries go to the project template.
 
 A requirement's new revision retires the pins of the old one: `--revise-pins` removes every pin
-that verifies an older revision than the docs declare, with its record, and rebuilds the
-assessors' calibration from stored answers without asking a model; the next decision asks the
-new question and pins the mutant anew.
+that verifies an older revision than the docs declare, with its record; once the portal holds the
+new revision, the assessors' calibration is rebuilt from stored answers without asking a model
+(amended 2026-10-01: the calibration reads the requirements from the portal, which cannot build
+while pins of the old revision remain); the next decision asks the new question and pins the
+mutant anew.
 
 **Alternatives considered.** A person reviewing every survivor was rejected: it blocks
 Features on decisions the person does not own. Taking the assessors' unanimous equivalent as

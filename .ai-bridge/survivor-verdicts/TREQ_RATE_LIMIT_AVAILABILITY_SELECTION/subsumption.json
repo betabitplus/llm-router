@@ -1,57 +1,93 @@
 {
- "at": "2026-09-30T13:47:11.562075Z",
+ "at": "2026-10-01T13:49:09.516664Z",
  "pins": [
   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0c99e43a9ccfd476.py",
   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0d1ec285e912ae10.py",
   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_2028da967c88aa09.py",
   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_87ecdb53561b826d.py",
   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_e92263fea0939fa2.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py",
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
  ],
  "kept": [
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0c99e43a9ccfd476.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0d1ec285e912ae10.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_2028da967c88aa09.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_87ecdb53561b826d.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_e92263fea0939fa2.py",
-  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py"
+  "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
  ],
  "restored": [],
- "removed": {},
+ "removed": {
+  "0c99e43a9ccfd476": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0c99e43a9ccfd476.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
+   ]
+  },
+  "0d1ec285e912ae10": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0d1ec285e912ae10.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
+   ]
+  },
+  "2028da967c88aa09": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_2028da967c88aa09.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
+   ]
+  },
+  "87ecdb53561b826d": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_87ecdb53561b826d.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
+   ]
+  },
+  "e92263fea0939fa2": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_e92263fea0939fa2.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
+   ]
+  },
+  "f71e9f7973e36624": {
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py",
+   "by": [
+    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
+   ]
+  }
+ },
  "matrix": {
   "0c99e43a9ccfd476": [
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0c99e43a9ccfd476.py",
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_2028da967c88aa09.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_87ecdb53561b826d.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
   ],
   "0d1ec285e912ae10": [
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0c99e43a9ccfd476.py",
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0d1ec285e912ae10.py",
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_2028da967c88aa09.py",
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_87ecdb53561b826d.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
   ],
   "2028da967c88aa09": [
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0c99e43a9ccfd476.py",
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_2028da967c88aa09.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_87ecdb53561b826d.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
   ],
   "87ecdb53561b826d": [
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0c99e43a9ccfd476.py",
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_2028da967c88aa09.py",
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_87ecdb53561b826d.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
   ],
   "e92263fea0939fa2": [
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_e92263fea0939fa2.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_e92263fea0939fa2.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
   ],
   "f71e9f7973e36624": [
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_0c99e43a9ccfd476.py",
    "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_2028da967c88aa09.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_87ecdb53561b826d.py",
-   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py"
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_f71e9f7973e36624.py",
+   "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_fn_2d644d4d.py"
   ]
  },
  "caught_before": [

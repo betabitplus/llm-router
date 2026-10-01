@@ -1,0 +1,39 @@
+{
+ "FN-8B04992A": {
+  "adopted_at": "2026-10-01T13:03:02.799200Z",
+  "answer_sha256": "b760910b3a0ee74fe006b5446977af333ee4180a48de40fedaab94bb86227b65",
+  "call_id": "20261001T130009Z-e6cf4c",
+  "cascade": {
+   "3b57c08f839ab791": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   },
+   "b6340db1c7f8750a": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "passes_on_original": 5,
+    "slow_seconds": null
+   }
+  },
+  "draft_sha256": "b760910b3a0ee74fe006b5446977af333ee4180a48de40fedaab94bb86227b65",
+  "effort": "low",
+  "function": "src/llm_router/_internal/config/validation.py::validate_config",
+  "keys": [
+   "3b57c08f839ab791",
+   "b6340db1c7f8750a"
+  ],
+  "model": "claude-sonnet-5-5",
+  "normalizer": "ruff 0.16.3",
+  "path": "tests/llm_router/mutation_pins/test_pin_treq_config_attempt_timeout_fn_8b04992a.py",
+  "response_sha256": "59462d615e58bdad57b68c4896535ac9cab355c2035b18ef8f9d19a0f0cc2187",
+  "source": "consolidation",
+  "sources": [
+   "llm_router._api.errors.ConfigurationError",
+   "llm_router._internal.config.assembly.build_default_config",
+   "llm_router._internal.config.validation.validate_config"
+  ],
+  "suite_checked": true
+ }
+}

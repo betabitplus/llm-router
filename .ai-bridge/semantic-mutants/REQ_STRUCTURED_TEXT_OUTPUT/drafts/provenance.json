@@ -19,12 +19,12 @@
  },
  "SM-943AE866": {
   "kind": "model",
-  "call_id": "20260929T165733Z-e70081",
-  "backend": "claude-cli",
-  "backend_version": "2.1.282",
-  "model": "claude-sonnet-5-5",
-  "response_sha256": "9fa7468ab50ed5006838e3ad54de1696761700bfde6e1a5f6979c6c51abbaccc",
-  "attempt": 1
+  "call_id": "20261001T203446Z-2c563b",
+  "backend": "antigravity-cli",
+  "backend_version": "1.2.14",
+  "model": "gemini-3.8-flash-medium",
+  "response_sha256": "779ce4ef5ca028b6151340afbc189101cea75c7dec3ea133a483388a3eb36273",
+  "attempt": 2
  },
  "SM-A1CB8BE4": {
   "kind": "model",

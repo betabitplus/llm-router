@@ -70,6 +70,68 @@
   },
   "prompt_sha256": "37e4ae2053da249731bcd954f0fe6e7044efd71b18770f1609a6e9fa83e2cc37"
  },
+ "43eb66a1bd8232c0": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_PRO, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=1, structured_output_max_attempts=2, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema={\"type\": \"string\"}, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model=\"gemini-pro\", credential=ProviderCredential(key_id=1, env_var=\"A\", value=\"B\"), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model=\"gemini-pro\", output_text=\"\")",
+     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=None, schema={\"type\": \"integer\"}, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T170201Z-ad6f3d",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version explicitly assigns `schema=plan.schema` when creating the new loop state, whereas the changed version omits this argument, which will result in different state schemas if `state.schema` initially differs from `plan.schema`.",
+    "response_sha256": "5abaa6d724dcf167f096a09fb0f53be1fe9fc596e1ce8e37efd1ac1b81cd4fcf",
+    "sources": [
+     "            schema=plan.schema,\n            tool_registry=None,\n            tool_choice=None,\n            structured_attempts=next_attempts,",
+     "    return _ResultStep(state=replace(state, messages=append_repair_message(state.messages, request=provider_request, schema=plan.schema, result=result, error_message=error_message), tool_registry=None, tool_choice=None, structured_attempts=next_attempts))"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T170221Z-c3bd6b",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Because state already holds plan.schema, omitting schema=plan.schema in replace preserves the existing schema and produces an identical loop state.",
+    "response_sha256": "dd3aff82d581422747cf1070ef75eb598e707c7cc1626623a952e99d1427b0b9",
+    "sources": [
+     "            schema=plan.schema,",
+     "    return _ResultStep(state=replace(state, messages=append_repair_message(state.messages, request=provider_request, schema=plan.schema, result=result, error_message=error_message), tool_registry=None, tool_choice=None, structured_attempts=next_attempts))"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig with structured_output_max_attempts=3",
+     "plan": "_ExecutionPlan(schema=<SchemaSpec S>, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "any valid ProviderRequest",
+     "result": "ProviderResult with output_text that fails validation against S",
+     "state": "_ExecutionLoopState(messages=(), tool_state=<ToolLoopState>, tool_choice=None, tool_registry=None, schema=None, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T170217Z-260d8c",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops schema=plan.schema from replace(), so when state.schema differs from plan.schema the repair step's state.schema differs between the versions.",
+    "response_sha256": "d7806e952f2fdcac2cbc11d9de55b918804f1c2b5882425afe731e3f138112a2",
+    "sources": [
+     "schema=plan.schema,",
+     "tool_registry=None,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "c1d5787503109e7b1b70a0766e60aca1d127fc13646ec4991af568c741376517"
+ },
  "63b7393727f5c29f": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -160,6 +222,142 @@
    }
   },
   "prompt_sha256": "e105f3a2a0318ff1e7e1ad73c375dadc03c38676ccf6eeb9e6c5a5f4ae4ff32b"
+ },
+ "759bb71cc9f30188": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=1, structured_output_max_attempts=2, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema={\"type\": \"object\"}, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"flash\", credential=ProviderCredential(key_id=1, env_var=\"x\", value=\"y\"), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"flash\", output_text=\"\")",
+     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=\"auto\", tool_registry=None, schema={\"type\": \"object\"}, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T170201Z-a0c440",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits `tool_choice=None` in the `replace` call, meaning it improperly retains a non-None `tool_choice` from the input state during schema repair, whereas the original version correctly resets it to None.",
+    "response_sha256": "7cea098db29fbef55ddacddb63793733b5164e238f18e521063b7b552abc773d",
+    "sources": [
+     "            schema=plan.schema,\n            tool_registry=None,\n            tool_choice=None,\n            structured_attempts=next_attempts,"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=0, structured_output_max_attempts=2, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema={\"type\": \"object\"}, tool_registry=None, tool_choice=\"auto\", max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id=\"req_1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", credential=ProviderCredential(key_id=0, env_var=\"ENV\", value=\"val\"), messages=(NormalizedMessage(role=\"user\", parts=(), meta={}),), schema={\"type\": \"object\"}, tool_choice=\"auto\")",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", output_text=\"not json\")",
+     "state": "_ExecutionLoopState(messages=(NormalizedMessage(role=\"user\", parts=(), meta={}),), tool_state=None, tool_choice=\"auto\", tool_registry=None, schema={\"type\": \"object\"}, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T170201Z-a71f61",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When structured validation fails and repair attempts remain, the original version resets tool_choice to None in the returned loop state, whereas the changed version preserves the existing tool_choice from state.",
+    "response_sha256": "6831fdceb3558e7459b79a900737f2d3903704ac286d5a02bcf44ddfa619675c",
+    "sources": [
+     "            tool_choice=None,",
+     "    return _ResultStep(state=replace(state, messages=append_repair_message(state.messages, request=provider_request, schema=plan.schema, result=result, error_message=error_message), schema=plan.schema, tool_registry=None, structured_attempts=next_attempts))"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig with structured_output_max_attempts=3",
+     "plan": "_ExecutionPlan(schema=<a SchemaSpec>, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "any ProviderRequest with a schema",
+     "result": "ProviderResult whose output fails schema validation, e.g. output_text='not json'",
+     "state": "_ExecutionLoopState(messages=(), tool_state=<ToolLoopState>, tool_choice=<non-None ToolChoice>, tool_registry=None, schema=<a SchemaSpec>, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T170221Z-91f712",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops tool_choice=None from replace(), so on the repair path a non-None state.tool_choice is preserved instead of being reset to None.",
+    "response_sha256": "bcc490dad4f66ea7aadd1b94c0d23ba4b509812a8fd4a3daed7b2887ff8eba5c",
+    "sources": [
+     "tool_registry=None,\n            tool_choice=None,\n            structured_attempts=next_attempts,",
+     "schema=plan.schema, tool_registry=None, structured_attempts=next_attempts))"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "a6cf588ec82947324adc39d58fde3ad59618d681b7597d5481e1a272d81c4812"
+ },
+ "7d7bccdbf94b90fa": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=0, structured_output_max_attempts=2, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema=\"schema\", tool_registry=None, tool_choice=None, max_tool_rounds=0)",
+     "provider_request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", credential=ProviderCredential(key_id=1, env_var=\"KEY\", value=\"val\"), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini\", output_text=\"bad\")",
+     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=\"not_none\", schema=\"schema\", structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T170221Z-4e32d6",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version explicitly sets tool_registry=None when creating the new state during a schema repair loop, while the changed version omits this argument in replace(), causing the new state to retain its previous tool_registry value.",
+    "response_sha256": "815fab90608ebd7f9b203443999bc8e3d2ca0833bb2c0654b22feacb32c45cbf",
+    "sources": [
+     "            schema=plan.schema,",
+     "            tool_registry=None,",
+     "            tool_choice=None,"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=1, structured_output_max_attempts=2, provider_limits=None), catalog=ProviderCatalog())",
+     "plan": "_ExecutionPlan(schema={\"type\": \"object\"}, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(request_id=\"test\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", credential=ProviderCredential(key_id=1, env_var=\"KEY\", value=\"val\"), messages=())",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", output_text=\"invalid json\")",
+     "state": "_ExecutionLoopState(messages=(), tool_state=None, tool_choice=None, tool_registry=\"tools\", schema=None, structured_attempts=0)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T170221Z-4625b9",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When structured output validation fails and repair begins, the original version resets state.tool_registry to None whereas the changed version preserves the existing tool_registry in state.",
+    "response_sha256": "1c7a25240096645ab8b9df27ee48a3488cca8b4f7da5701cb7ba92a2f74adef6",
+    "sources": [
+     "            tool_registry=None,",
+     "    return _ResultStep(state=replace(state, messages=append_repair_message(state.messages, request=provider_request, schema=plan.schema, result=result, error_message=error_message), schema=plan.schema, tool_choice=None, structured_attempts=next_attempts))"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig with structured_output_max_attempts=3",
+     "plan": "_ExecutionPlan with a schema, so validation can fail",
+     "provider_request": "any valid ProviderRequest",
+     "result": "ProviderResult whose output_text fails schema validation",
+     "state": "_ExecutionLoopState with structured_attempts=0 and a non-None tool_registry"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T170217Z-5bc88e",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version no longer passes tool_registry=None in the repair branch, so the returned state keeps a non-None tool_registry where the original sets it to None.",
+    "response_sha256": "1d826da2a7e5b5d1f955421b716961f6e53174c03c90e66ac72c1191e485fa35",
+    "sources": [
+     "schema=plan.schema,\n            tool_registry=None,\n            tool_choice=None,",
+     "_log_schema_repair_started(request=provider_request)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "8e754ae729e3ea310307399c55ec8aa3eae99833810247660ac1bba4acefbde5"
  },
  "868533cd04ee427f": {
   "answers": {

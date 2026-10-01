@@ -2,59 +2,78 @@
 # pinned-by: claude-opus-5-5
 from __future__ import annotations
 
+import json
+
 import pytest
 
-from llm_router._internal.config import build_default_config
-from llm_router._internal.runtime.effective_settings import (
-    RouterDefaults,
-    resolve_effective_settings,
+from llm_router import LLMRouter, Model, Provider, RouterProfile
+from tests.llm_router.support.fault_server import (
+    ScriptedHTTPServer,
+    ScriptedResponse,
 )
-from llm_router._internal.runtime.routes import RouteGenerationDefaults
+from tests.llm_router.support.workers.retry import (
+    openai_chat_path,
+    openai_success_response,
+)
+from tests.llm_router.support.workers.worker_patches import patched_openai_sdk
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
 @pytest.mark.verifies("REQ_REQUEST_OVERRIDE_PRECEDENCE[revision==1]")
-def test_router_default_kwargs_override_route_and_yield_to_request() -> None:
-    config = build_default_config()
-    route_defaults = RouteGenerationDefaults(
-        key_id=1,
-        kwargs={
-            "priority_lane": "standard",
-            "tenant_id": "tenant-route",
-            "log_tag": "audit-route",
-        },
+def test_kwargs_precedence_route_router_call(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    route_ident = 1
+    monkeypatch.setenv(
+        f"OPENROUTER_API_KEY_{route_ident}",
+        f"value-{route_ident}",
     )
-    router_defaults = RouterDefaults(
-        values={},
-        kwargs={
-            "priority_lane": "expedited",
-            "tenant_id": "tenant-router",
-            "routing_tag": "cluster-primary",
-        },
+    profile = RouterProfile(
+        model=Model.DEEPSEEK_V3,
+        provider=Provider.OPENROUTER,
+        key_id=route_ident,
+        max_attempts=1,
+        kwargs={"user": "route-user", "stop": ["route-stop"]},
     )
-    call_overrides = {
-        "tenant_id": "tenant-call",
-        "client_label": "batch-worker",
-    }
+    router = LLMRouter(
+        profile,
+        max_attempts=1,
+        user="router-user",
+        stop=["router-stop"],
+        presence_penalty=1.0,
+        frequency_penalty=1.0,
+        metadata={"tier": "router"},
+        shuffle_fallbacks=False,
+        round_robin_start=False,
+    )
+    path = openai_chat_path()
+    response = ScriptedResponse(
+        status_code=200,
+        headers={"Content-Type": "application/json"},
+        body=openai_success_response(text="done"),
+    )
+    with (
+        ScriptedHTTPServer(port=0, routes={("POST", path): [response]}) as server,
+        patched_openai_sdk(
+            forced_base_url=f"{server.base_url}/v1",
+            disable_sdk_retries=True,
+        ),
+    ):
+        router.query(
+            "hello",
+            user="call-user",
+            top_p=0.5,
+            frequency_penalty=None,
+            metadata={},
+        )
 
-    effective = resolve_effective_settings(
-        config=config,
-        route_defaults=route_defaults,
-        route_policy_defaults={},
-        router_defaults=router_defaults,
-        call_overrides=call_overrides,
-    )
+        (record,) = server.recorded_requests("POST", path)
+        recorded = json.loads(record.body)
 
-    assert effective.kwargs["priority_lane"] == "expedited"
-    assert effective.kwargs["tenant_id"] == "tenant-call"
-    assert effective.kwargs["routing_tag"] == "cluster-primary"
-    assert effective.kwargs["log_tag"] == "audit-route"
-    assert effective.kwargs["client_label"] == "batch-worker"
-    assert effective.kwargs == {
-        "priority_lane": "expedited",
-        "tenant_id": "tenant-call",
-        "routing_tag": "cluster-primary",
-        "log_tag": "audit-route",
-        "client_label": "batch-worker",
-    }
+    assert recorded.get("presence_penalty") == 1.0
+    assert recorded.get("stop") == ["router-stop"]
+    assert recorded.get("user") == "call-user"
+    assert recorded.get("top_p") == 0.5
+    assert recorded.get("frequency_penalty") is None
+    assert recorded.get("metadata") == {}

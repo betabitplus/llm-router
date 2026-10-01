@@ -20,6 +20,28 @@
    ]
   }
  ],
+ "FN-71A91612": [
+  {
+   "at": "2026-10-01T12:42:20.986090Z",
+   "call_id": "20261001T124111Z-e50687",
+   "cause": "kept",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "d96825690a262c076fac9504eaec339b9269b3ecf3dcf75b2549ad4b21c7bc43",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.builders.build_test_image",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
  "be0c42b2c0522019": [
   {
    "at": "2026-09-29T00:24:30.361535Z",
